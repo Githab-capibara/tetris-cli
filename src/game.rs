@@ -24,6 +24,7 @@ use termion::color::{Color, Reset, White};
 /// Количество кадров в секунду.
 ///
 /// Обеспечивает плавную анимацию игры.
+/// Стандартное значение для большинства игр - 60 FPS.
 pub const FPS: u64 = 60;
 
 /// Границы игрового поля с заголовками.
@@ -184,34 +185,41 @@ impl GameState {
     /// Запустить игровой цикл и вернуть финальный счёт.
     ///
     /// # Аргументы
-    /// * `cnv` - канвас для отрисовки
+    /// * `cnv` - канвас для отрисовки игрового поля
     /// * `inp` - читатель нажатий клавиш
     /// * `hs_disp` - строка для отображения рекорда
     ///
     /// # Возвращает
-    /// Финальный счёт игрока
+    /// Финальный счёт игрока (0 если игрок вышел досрочно)
+    ///
+    /// # Примечания
+    /// Цикл работает до проигрыша или выхода пользователя (Backspace)
     pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &str) -> u64 {
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
         loop {
-            // Поддержание стабильного FPS
+            // Поддержание стабильного FPS - расчёт дельты времени
             let now = Instant::now();
             let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
             if delta_time_ms < interval_ms {
+                // Сон для экономии CPU и поддержания стабильного FPS
                 sleep(Duration::from_millis(interval_ms - delta_time_ms));
                 continue;
             }
             last_time = now;
 
+            // Обновление состояния игры
             match self.update(inp, delta_time_ms) {
                 UpdateEndState::Continue => {}
                 UpdateEndState::Quit => {
+                    // Выход в меню без сохранения счёта
                     return 0;
                 }
                 UpdateEndState::Lost => {
                     // Отображение сообщения о проигрыше
                     cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
                     cnv.flush();
+                    // Пауза перед возвратом в меню
                     sleep(Duration::from_millis(1500));
                     break;
                 }
@@ -222,7 +230,7 @@ impl GameState {
                         if key == b'p' {
                             break;
                         } else if key == 127 {
-                            // Backspace во время паузы — выход
+                            // Backspace во время паузы — выход в меню
                             cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
                             return 0;
                         }
@@ -231,41 +239,57 @@ impl GameState {
                     }
                 }
             }
+            // Отрисовка текущего кадра
             self.draw(cnv, hs_disp);
         }
 
         self.score
     }
 
-    /// Обновить состояние игры.
+    /// Обновить состояние игры за один кадр.
     ///
     /// # Аргументы
     /// * `inp` - читатель нажатий клавиш
     /// * `delta_time_ms` - время, прошедшее с последнего кадра (мс)
     ///
     /// # Возвращает
-    /// Состояние завершения обновления
+    /// Состояние завершения обновления:
+    /// - `Continue` - продолжить игру
+    /// - `Quit` - выход в меню
+    /// - `Lost` - проигрыш
+    /// - `Pause` - пауза
+    ///
+    /// # Обработка ввода
+    /// - `Backspace` (127) - выход в меню
+    /// - `p` - пауза
+    /// - `a/d` - перемещение влево/вправо
+    /// - `q/e` - вращение против/по часовой стрелке
+    /// - `s` - мгновенное падение
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
         match key {
             127 => return UpdateEndState::Quit,   // Backspace — выход в меню
             b'p' => return UpdateEndState::Pause, // p — пауза
             b'a' => {
+                // Перемещение влево
                 if self.can_move_curr_shape(Dir::Left) {
                     self.curr_shape.pos.0 -= 1.0;
                 }
             }
             b'd' => {
+                // Перемещение вправо
                 if self.can_move_curr_shape(Dir::Right) {
                     self.curr_shape.pos.0 += 1.0;
                 }
             }
             b'q' => {
+                // Вращение против часовой стрелки
                 if self.can_rotate_curr_shape(Dir::Left) {
                     self.curr_shape.rotate(Dir::Left);
                 }
             }
             b'e' => {
+                // Вращение по часовой стрелке
                 if self.can_rotate_curr_shape(Dir::Right) {
                     self.curr_shape.rotate(Dir::Right);
                 }
@@ -281,11 +305,12 @@ impl GameState {
             _ => {}
         }
 
+        // Обработка падения фигуры
         if self.can_move_curr_shape(Dir::Down) {
             // Плавное падение с учётом скорости и времени
             self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / 1_000.0);
         } else if self.land_timer > 0.0 {
-            // Таймер перед фиксацией фигуры (даёт время на перемещение)
+            // Таймер задержки перед фиксацией (даёт время на перемещение)
             self.land_timer -= delta_time_ms as f64 / 1000.0;
         } else if self.curr_shape.pos.1 <= 1.0 {
             // Фигура застряла вверху — проигрыш
@@ -294,11 +319,13 @@ impl GameState {
             // Фиксация фигуры и начисление очков
             self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
 
+            // Сохранение фигуры в сетке поля
             self.save_tetromino();
+            // Проверка и удаление заполненных линий
             self.check_rows();
 
+            // Сброс таймера и переход к следующей фигуре
             self.land_timer = LAND_TIME_DELAY_S;
-            // Переход к следующей фигуре
             self.curr_shape = self.next_shape;
             self.next_shape = Tetromino::select();
         }
@@ -328,12 +355,25 @@ impl GameState {
 
     /// Проверить заполненные линии и удалить их.
     ///
-    /// Удаляет все заполненные линии, сдвигает верхние линии вниз
-    /// и обновляет счёт, уровень и скорость игры.
+    /// Алгоритм работы:
+    /// 1. Поиск полностью заполненных линий
+    /// 2. Удаление заполненных линий
+    /// 3. Сдвиг верхних линий вниз
+    /// 4. Обновление счёта, уровня и скорости
+    ///
+    /// # Система очков
+    /// - 1 линия: 100 очков (×1)
+    /// - 2 линии: 200 очков (×2)
+    /// - 3 линии: 400 очков (×4)
+    /// - 4 линии: 800 очков (×8)
+    ///
+    /// # Примечания
+    /// - Уровень повышается каждые LINES_PER_LEVEL линий
+    /// - Скорость увеличивается на SPD_INC за каждую линию
     fn check_rows(&mut self) {
         let mut rows_to_remove = Vec::new();
 
-        // Поиск заполненных линий
+        // Поиск заполненных линий (снизу вверх)
         for y in 0..GRID_HEIGHT {
             let mut row_full = true;
             for x in 0..GRID_WIDTH {
@@ -350,6 +390,7 @@ impl GameState {
         let num_filled_rows = rows_to_remove.len();
 
         // Удаление заполненных линий и сдвиг верхних строк вниз
+        // Обработка снизу вверх для корректного сдвига
         for (shift_count, &row) in rows_to_remove.iter().rev().enumerate() {
             // Сдвиг всех строк выше на (shift_count + 1) вниз
             for y in (0..row).rev() {
@@ -374,7 +415,7 @@ impl GameState {
             // Увеличение скорости игры
             self.fall_spd += SPD_INC * num_filled_rows as f32;
 
-            // Начисление очков за линии
+            // Начисление очков за линии с экспоненциальным бонусом
             // Бонус за несколько линий: 100, 200, 400, 800...
             self.score += ROW_SCORE_INC * (1 << (num_filled_rows - 1));
         }
@@ -385,6 +426,14 @@ impl GameState {
     /// # Аргументы
     /// * `cnv` - канвас для отрисовки
     /// * `hs_disp` - строка для отображения рекорда
+    ///
+    /// # Порядок отрисовки
+    /// 1. Границы игрового поля
+    /// 2. Счёт, рекорд, уровень, линии
+    /// 3. Зафиксированные фигуры на поле
+    /// 4. Призрачная фигура (точка приземления)
+    /// 5. Текущая падающая фигура
+    /// 6. Предпросмотр следующей фигуры
     fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
@@ -502,10 +551,14 @@ impl GameState {
     /// Проверить возможность движения текущей фигуры в заданном направлении.
     ///
     /// # Аргументы
-    /// * `dir` - направление движения
+    /// * `dir` - направление движения (Left, Right, Down)
     ///
     /// # Возвращает
     /// `true` если движение возможно, `false` в противном случае
+    ///
+    /// # Проверки
+    /// 1. Выход за границы игрового поля
+    /// 2. Столкновение с зафиксированными фигурами
     fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
@@ -544,6 +597,10 @@ impl GameState {
     ///
     /// # Возвращает
     /// `true` если движение возможно
+    ///
+    /// # Отличия от can_move_curr_shape
+    /// Использует immutable ссылку на self, так как призрачная фигура
+    /// не изменяет состояние игры
     fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
         let (shape_x, shape_y) = ghost.pos;
         let shape_block_x = shape_x as i16;
@@ -574,10 +631,15 @@ impl GameState {
     /// Проверить возможность вращения текущей фигуры.
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения
+    /// * `dir` - направление вращения (Left = против часовой, Right = по часовой)
     ///
     /// # Возвращает
     /// `true` если вращение возможно
+    ///
+    /// # Алгоритм
+    /// 1. Создаётся временная копия фигуры
+    /// 2. Применяется вращение к копии
+    /// 3. Проверяется валидность новой позиции
     fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;

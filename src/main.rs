@@ -79,21 +79,26 @@ const LEADERBOARD_MENU: [&str; 8] = [
 ///
 /// Выполняет инициализацию терминала, загрузку рекордов
 /// и запускает главный цикл меню.
+///
+/// # Паника
+/// Паникует, если не удалось получить размер терминала
 fn main() {
     // Загрузка рекорда из файла конфигурации
     let save = SaveData::load_config();
     let mut high_score = save.assert_hs();
 
-    // Загрузка таблицы лидеров
+    // Загрузка и валидация таблицы лидеров
     let mut leaderboard = Leaderboard::load();
     leaderboard.validate();
 
     // Проверка достаточного размера терминала
     let (width, height) = terminal_size().expect("Не удалось получить размер терминала");
     if width < DISP_WIDTH || height < DISP_HEIGHT {
-        println!(
-            "Невозможно запустить игру! Окно терминала слишком маленькое. Минимальный размер: {}x{}",
-            DISP_WIDTH, DISP_HEIGHT
+        eprintln!(
+            "Ошибка: окно терминала слишком маленькое!\n\
+             Минимальный размер: {}x{} символов.\n\
+             Текущий размер: {}x{} символов.",
+            DISP_WIDTH, DISP_HEIGHT, width, height
         );
         return;
     }
@@ -124,7 +129,7 @@ fn main() {
         let key = inp.get_key();
         match key {
             b'\n' | b'\r' => {
-                // Enter — начать игру
+                // Enter — начать новую игру
                 let mut state = GameState::new();
                 let new_score = state.play(&mut cnv, &mut inp, hs_str.as_str());
 
@@ -148,7 +153,7 @@ fn main() {
                 // L — показать таблицу лидеров
                 show_leaderboard(&mut cnv, &mut inp, &leaderboard);
             }
-            127 => break, // Backspace — выход
+            127 => break, // Backspace — выход из приложения
             _ => {}
         }
     }
@@ -159,11 +164,14 @@ fn main() {
 /// Запрос имени игрока после завершения игры.
 ///
 /// # Аргументы
-/// * `cnv` - канвас для отрисовки
+/// * `cnv` - канвас для отрисовки интерфейса
 /// * `inp` - читатель нажатий клавиш
 ///
 /// # Возвращает
 /// Введённое имя (до 10 символов) или пустую строку при отказе
+///
+/// # Примечания
+/// Функция ожидает ввод имени до нажатия Enter или отмены через Backspace
 fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
     let mut name = String::new();
     const MAX_NAME_LEN: usize = 10;
@@ -175,25 +183,25 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
     loop {
         let key = inp.get_key();
         if key == b'\n' || key == b'\r' {
-            // Enter — подтверждение
+            // Enter — подтверждение имени
             break;
         } else if key == 127 {
-            // Backspace — отмена
+            // Backspace — отмена и удаление символа
             if !name.is_empty() {
                 name.pop();
-                // Очистка и перерисовка
+                // Очистка и перерисовка поля ввода
                 cnv.draw_string("            ", (16, 10), MENU_COLOR, &Reset);
                 cnv.draw_string(&name, (16, 10), MENU_COLOR, &Reset);
                 cnv.flush();
             }
         } else if (32..=126).contains(&key) && name.len() < MAX_NAME_LEN {
-            // Печатаемые символы
+            // Печатаемые символы (пробел ~ тильда)
             name.push(key as char);
             cnv.draw_string(&name, (16, 10), MENU_COLOR, &Reset);
             cnv.flush();
         }
 
-        // Таймаут для предотвращения зависания
+        // Небольшая задержка для предотвращения высокой нагрузки на CPU
         sleep(Duration::from_millis(50));
     }
 
@@ -203,9 +211,12 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
 /// Показать таблицу лидеров.
 ///
 /// # Аргументы
-/// * `cnv` - канвас для отрисовки
+/// * `cnv` - канвас для отрисовки интерфейса
 /// * `inp` - читатель нажатий клавиш
 /// * `leaderboard` - таблица лидеров для отображения
+///
+/// # Примечания
+/// Ожидает нажатия любой клавиши для возврата в меню
 fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderboard) {
     cnv.draw_strs(&LEADERBOARD_MENU, (1, 1), MENU_COLOR, &Reset);
 
@@ -218,7 +229,7 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
     cnv.draw_string("Нажмите любую клавишу", (3, 12), MENU_COLOR, &Reset);
     cnv.flush();
 
-    // Ожидание нажатия любой клавиши
+    // Ожидание нажатия любой клавиши для возврата в меню
     loop {
         let key = inp.get_key();
         if key != 0 {

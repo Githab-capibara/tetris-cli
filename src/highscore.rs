@@ -5,6 +5,12 @@
 //! Этот модуль предоставляет функциональность для сохранения и загрузки рекордов игры.
 //! Поддерживается как одиночный рекорд, так и таблица лидеров (топ-5 результатов).
 //! Все рекорды защищены от подделки с помощью хеширования с солью.
+//!
+//! ## Структура модуля
+//! - Вспомогательные функции для хеширования
+//! - `SaveData` - данные для сохранения одиночного рекорда
+//! - `LeaderboardEntry` - запись в таблице лидеров
+//! - `Leaderboard` - таблица лидеров (топ-5)
 
 use confy::{load, store};
 use rand::{thread_rng, Rng};
@@ -13,6 +19,31 @@ use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
 };
+
+// ===========================================================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ===========================================================================
+// Общие функции для генерации хешей и солей
+// Используются в SaveData и LeaderboardEntry
+
+/// Сгенерировать случайный хэш из 20 цифр.
+///
+/// Используется криптографически стойкий генератор случайных чисел.
+/// Возвращает строку вида "12345678901234567890"
+fn get_random_hash() -> String {
+    let mut rng = thread_rng();
+    (0..20).map(|_| rng.gen_range(0..10).to_string()).collect()
+}
+
+/// Получить хэш строки в шестнадцатеричном формате.
+///
+/// Использует DefaultHasher для вычисления хеша.
+/// Возвращает строку из 16 шестнадцатеричных символов.
+fn get_hash(msg: &str) -> String {
+    let mut hasher = DefaultHasher::new();
+    msg.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
+}
 
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
@@ -57,26 +88,10 @@ pub struct Leaderboard {
 impl SaveData {
     /// Загрузить конфигурацию из файла.
     ///
-    /// Возвращает SaveData по умолчанию при ошибке загрузки.
+    /// # Возвращает
+    /// SaveData по умолчанию при ошибке загрузки
     pub fn load_config() -> Self {
         load(APP_NAME).unwrap_or_default()
-    }
-
-    /// Сгенерировать случайный хэш из 20 цифр.
-    ///
-    /// Используется криптографически стойкий генератор случайных чисел.
-    fn get_random_hash() -> String {
-        let mut rng = thread_rng();
-        (0..20).map(|_| rng.gen_range(0..10).to_string()).collect()
-    }
-
-    /// Получить хэш строки в шестнадцатеричном формате.
-    ///
-    /// Использует DefaultHasher для вычисления хеша.
-    fn get_hash(msg: &str) -> String {
-        let mut hasher = DefaultHasher::new();
-        msg.hash(&mut hasher);
-        format!("{:016x}", hasher.finish())
     }
 
     /// Создать SaveData из значения рекорда.
@@ -86,11 +101,18 @@ impl SaveData {
     ///
     /// # Возвращает
     /// Новый экземпляр SaveData с вычисленным хешем
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::highscore::SaveData;
+    /// let save = SaveData::from_value(1000);
+    /// // save.high_score содержит значение 1000
+    /// ```
     pub fn from_value(high_score: u64) -> Self {
         let high_score_str = high_score.to_string();
-        let salt = Self::get_random_hash();
+        let salt = get_random_hash();
         let salt_and_hs = salt.clone() + &high_score_str;
-        let hash = Self::get_hash(&salt_and_hs);
+        let hash = get_hash(&salt_and_hs);
 
         Self {
             high_score,
@@ -104,7 +126,8 @@ impl SaveData {
     /// # Аргументы
     /// * `high_score` - значение рекорда для сохранения
     ///
-    /// При ошибке сохранения выводит сообщение в stderr.
+    /// # Ошибки
+    /// При ошибке сохранения выводит сообщение в stderr
     pub fn save_value(high_score: u64) {
         let save = Self::from_value(high_score);
         if let Err(e) = store(APP_NAME, save) {
@@ -114,11 +137,19 @@ impl SaveData {
 
     /// Проверить целостность рекорда и вернуть значение.
     ///
-    /// Возвращает 0, если хэш не совпадает (подделка).
+    /// # Возвращает
+    /// Значение рекорда, если хэш совпадает, или 0 при подделке
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::highscore::SaveData;
+    /// let save = SaveData::from_value(1000);
+    /// assert_eq!(save.assert_hs(), 1000);
+    /// ```
     pub fn assert_hs(&self) -> u64 {
         let high_score_str = self.high_score.to_string();
         let salt_and_hs = self.high_score_salt.clone() + &high_score_str;
-        let test_hash = Self::get_hash(&salt_and_hs);
+        let test_hash = get_hash(&salt_and_hs);
 
         if self.high_score_hash == test_hash {
             self.high_score
@@ -143,10 +174,18 @@ impl LeaderboardEntry {
     ///
     /// # Возвращает
     /// Новый экземпляр LeaderboardEntry с вычисленным хешем
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::highscore::LeaderboardEntry;
+    /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    /// assert_eq!(entry.name, "Player");
+    /// assert_eq!(entry.score, 1000);
+    /// ```
     pub fn new(name: String, score: u64) -> Self {
-        let salt = Self::get_random_hash();
+        let salt = get_random_hash();
         let salt_and_score = format!("{}{}{}", salt, name, score);
-        let hash = Self::get_hash(&salt_and_score);
+        let hash = get_hash(&salt_and_score);
 
         Self {
             name,
@@ -156,26 +195,20 @@ impl LeaderboardEntry {
         }
     }
 
-    /// Сгенерировать случайный хэш из 20 цифр.
-    fn get_random_hash() -> String {
-        let mut rng = thread_rng();
-        (0..20).map(|_| rng.gen_range(0..10).to_string()).collect()
-    }
-
-    /// Получить хэш строки в шестнадцатеричном формате.
-    fn get_hash(msg: &str) -> String {
-        let mut hasher = DefaultHasher::new();
-        msg.hash(&mut hasher);
-        format!("{:016x}", hasher.finish())
-    }
-
     /// Проверить целостность записи.
     ///
     /// # Возвращает
     /// `true` если хэш совпадает, `false` если запись была подделана
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::highscore::LeaderboardEntry;
+    /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    /// assert!(entry.is_valid());
+    /// ```
     pub fn is_valid(&self) -> bool {
         let salt_and_score = format!("{}{}{}", self.salt, self.name, self.score);
-        let test_hash = Self::get_hash(&salt_and_score);
+        let test_hash = get_hash(&salt_and_score);
         self.hash == test_hash
     }
 }
