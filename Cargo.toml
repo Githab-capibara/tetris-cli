@@ -2,14 +2,23 @@
 name = "tetris-cli"
 version = "23.96.1"
 edition = "2021"
-description = "A tetris clone for your terminal."
+description = "Классическая игра Тетрис для терминала Linux/Unix"
 license = "GPL-3.0"
-repository = "https://github.com/blueOkiris/tetris-cli"
+repository = "https://github.com/Githab-capibara/tetris-cli"
+documentation = "https://github.com/Githab-capibara/tetris-cli/tree/master/docs"
+readme = "README.md"
+keywords = ["tetris", "game", "terminal", "cli", "rust"]
+categories = ["games", "command-line-utilities"]
+
+# Документация для rustdoc
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 termion = "1.5.6"
 rand = "0.8.4"
 confy = "0.4.0"
-serde = { version = "1.0", features = [ "derive" ] }
+serde = { version = "1.0", features = ["derive"] }
 big_num = "0.1.0"
 libmath = "0.2.1"
