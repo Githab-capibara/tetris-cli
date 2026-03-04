@@ -2,16 +2,12 @@
 //!
 //! Автор: Dylan Turner
 
-use rand::{
-    distributions::{
-        Distribution, Standard
-    },
-    Rng, random
-};
-use termion::color::{
-    Color, Magenta, Yellow, Blue, Green, LightRed, LightYellow, Cyan,
-};
 use crate::game::Dir;
+use rand::{
+    distributions::{Distribution, Standard},
+    random, Rng,
+};
+use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
 /*
  * Фигура может занимать от -2 до 2 по всем направлениям (из-за вращений),
@@ -32,18 +28,24 @@ use crate::game::Dir;
 
 /// Координаты блоков для каждого типа фигур.
 const SHAPE_COORDS: [[(i16, i16); 4]; 7] = [
-    [ (-1,  0), (0,  0), ( 1, 0), ( 0, 1) ], // T
-    [ (-1, -1), (0, -1), ( 0, 0), ( 0, 1) ], // L
-    [ ( 1, -1), (0, -1), ( 0, 0), ( 0, 1) ], // J (зеркальная L)
-    [ ( 0, -1), (0,  0), ( 1, 0), ( 1, 1) ], // S
-    [ ( 0, -1), (0,  0), (-1, 0), (-1, 1) ], // Z
-    [ ( 0,  0), (1,  0), ( 0, 1), ( 1, 1) ], // O (квадрат)
-    [ ( 0, -1), (0,  0), ( 0, 1), ( 0, 2) ]  // I (линия)
+    [(-1, 0), (0, 0), (1, 0), (0, 1)],   // T
+    [(-1, -1), (0, -1), (0, 0), (0, 1)], // L
+    [(1, -1), (0, -1), (0, 0), (0, 1)],  // J (зеркальная L)
+    [(0, -1), (0, 0), (1, 0), (1, 1)],   // S
+    [(0, -1), (0, 0), (-1, 0), (-1, 1)], // Z
+    [(0, 0), (1, 0), (0, 1), (1, 1)],    // O (квадрат)
+    [(0, -1), (0, 0), (0, 1), (0, 2)],   // I (линия)
 ];
 
 /// Цвета для каждой фигуры.
 pub const SHAPE_COLORS: [&dyn Color; 7] = [
-    &Magenta, &Yellow, &Blue, &Green, &LightRed, &LightYellow, &Cyan
+    &Magenta,
+    &Yellow,
+    &Blue,
+    &Green,
+    &LightRed,
+    &LightYellow,
+    &Cyan,
 ];
 
 /// Типы фигур тетромино.
@@ -62,7 +64,7 @@ pub enum ShapeType {
     /// Квадрат.
     O,
     /// Линия.
-    I
+    I,
 }
 
 /// Распределение для случайного выбора фигуры.
@@ -76,7 +78,7 @@ impl Distribution<ShapeType> for Standard {
             4 => ShapeType::Z,
             5 => ShapeType::O,
             6 => ShapeType::I,
-            _ => unreachable!("Неверный диапазон фигуры")
+            _ => unreachable!("Неверный диапазон фигуры"),
         }
     }
 }
@@ -91,7 +93,7 @@ pub struct Tetromino {
     /// Координаты блоков относительно центра.
     pub coords: [(i16, i16); 4],
     /// Индекс цвета (0-6).
-    pub fg: usize
+    pub fg: usize,
 }
 
 impl Tetromino {
@@ -102,7 +104,7 @@ impl Tetromino {
             pos: (4.0, 0.0), // Начальная позиция по центру
             shape,
             coords: SHAPE_COORDS[shape as usize],
-            fg: shape as usize
+            fg: shape as usize,
         }
     }
 
@@ -116,9 +118,9 @@ impl Tetromino {
         for i in 0..4 {
             let (x, y) = self.coords[i];
             match dir {
-                Dir::Left => self.coords[i] = (y, -x),   // Поворот против часовой
-                Dir::Right => self.coords[i] = (-y, x),  // Поворот по часовой
-                Dir::Down => {} // Не используется
+                Dir::Left => self.coords[i] = (y, -x), // Поворот против часовой
+                Dir::Right => self.coords[i] = (-y, x), // Поворот по часовой
+                Dir::Down => {}                        // Не используется
             }
         }
     }

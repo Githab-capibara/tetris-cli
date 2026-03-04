@@ -43,6 +43,6 @@
 //! GPL-3.0
 
 pub mod game;
-pub mod tetromino;
-pub mod io;
 pub mod highscore;
+pub mod io;
+pub mod tetromino;
