@@ -241,7 +241,6 @@ impl GameState {
 
     /// Проверить заполненные линии и удалить их.
     fn check_rows(&mut self) {
-        let mut num_filled_rows = 0;
         let mut rows_to_remove = Vec::new();
 
         // Поиск заполненных линий
@@ -255,18 +254,19 @@ impl GameState {
             }
             if row_full {
                 rows_to_remove.push(y);
-                num_filled_rows += 1;
             }
         }
 
+        let num_filled_rows = rows_to_remove.len();
+
         // Удаление заполненных линий и сдвиг верхних строк вниз
-        for &row in rows_to_remove.iter().rev() {
-            // Сдвиг всех строк выше на одну вниз
+        for (shift_count, &row) in rows_to_remove.iter().rev().enumerate() {
+            // Сдвиг всех строк выше на (shift_count + 1) вниз
             for y in (0..row).rev() {
-                self.blocks[y + 1] = self.blocks[y];
+                self.blocks[y + shift_count + 1] = self.blocks[y];
             }
             // Очистка верхней строки
-            self.blocks[0] = [-1; GRID_WIDTH];
+            self.blocks[shift_count] = [-1; GRID_WIDTH];
         }
 
         if num_filled_rows > 0 {
