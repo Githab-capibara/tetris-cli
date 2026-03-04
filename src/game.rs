@@ -1,7 +1,6 @@
-/*
- * Author: Dylan Turner
- * Description: Main game loop
- */
+//! Основной игровой цикл.
+//!
+//! Автор: Dylan Turner
 
 use std::{
     thread::sleep,
@@ -12,7 +11,6 @@ use std::{
 use termion::color::{
     Color, White, Reset
 };
-use math::round::floor;
 use crate::io::{
     Canvas, KeyReader,
     DISP_HEIGHT, GRID_WIDTH, GRID_HEIGHT, SHAPE_WIDTH, SHAPE_STR
@@ -21,12 +19,14 @@ use crate::tetromino::{
     SHAPE_COLORS, Tetromino
 };
 
+/// Количество кадров в секунду.
 pub const FPS: u64 = 60;
-const BORDER: [&'static str; DISP_HEIGHT as usize] = [
-    "H:                    ",
-    "S:                    ",
+/// Границы игрового поля с заголовками.
+const BORDER: [&str; DISP_HEIGHT as usize] = [
+    "                      ",
+    "Счёт:                 ",
+    "Рекорд:               ",
     "╔════════════════════╗",
-    "║                    ║",
     "║                    ║",
     "║                    ║",
     "║                    ║",
@@ -49,81 +49,93 @@ const BORDER: [&'static str; DISP_HEIGHT as usize] = [
     "║                    ║",
     "╚════════════════════╝"
 ];
-const PAUSE: [&'static str; 3 as usize] = [
+/// Сообщение о паузе.
+const PAUSE: [&str; 3] = [
     "╔════════╗",
-    "║ PAUSED ║",
+    "║ ПАУЗА  ║",
     "╚════════╝"
 ];
+/// Сообщение о проигрыше.
+const GAME_OVER: [&str; 3] = [
+    "╔════════════╗",
+    "║ ИГРА ОКОНЧЕНА ║",
+    "╚════════════╝"
+];
+/// Цвет границ.
 const BORDER_COLOR: &dyn Color = &White;
-const SCORE_COLOR: &dyn Color = &White;
+/// Смещение отрисовки фигур по вертикали.
 const SHAPE_DRAW_OFFSET: i16 = 5;
+/// Начальная скорость падения.
 const INITIAL_FALL_SPD: f32 = 0.9;
+/// Задержка времени приземления (секунды).
 const LAND_TIME_DELAY_S: f64 = 0.1;
+/// Прирост скорости.
 const SPD_INC: f32 = 0.05;
+/// Очки за заполненную линию.
 const ROW_SCORE_INC: u64 = 100;
+/// Очки за фигуру.
 const PIECE_SCORE_INC: u64 = 100;
-const PIECE_SCORE_FAL_MULT: f32 = 50.0;
+/// Множитель очков за падение.
+const PIECE_SCORE_FALL_MULT: f32 = 50.0;
 
+/// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
 pub enum Dir {
+    /// Вниз.
     Down,
+    /// Влево.
     Left,
+    /// Вправо.
     Right
 }
 
+/// Состояние игры.
 pub struct GameState {
+    /// Текущий счёт.
     score: u64,
+    /// Текущая фигура.
     curr_shape: Tetromino,
+    /// Скорость падения.
     fall_spd: f32,
+    /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
+    /// Таймер приземления.
     land_timer: f64
 }
 
+/// Состояние завершения обновления.
 enum UpdateEndState {
+    /// Выход из игры.
     Quit,
+    /// Проигрыш.
     Lost,
+    /// Продолжить.
     Continue,
+    /// Пауза.
     Pause
 }
 
 impl GameState {
+    /// Создать новое состояние игры.
     pub fn new() -> Self {
         Self {
             score: 0,
             curr_shape: Tetromino::select(),
             fall_spd: INITIAL_FALL_SPD,
-            blocks: [
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-                [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ]
-            ], land_timer: LAND_TIME_DELAY_S
+            // Инициализация поля пустыми клетками (-1)
+            blocks: [[ -1; GRID_WIDTH ]; GRID_HEIGHT],
+            land_timer: LAND_TIME_DELAY_S
         }
     }
 
-    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &Vec<&String>) -> u64 {
+    /// Запустить игровой цикл и вернуть финальный счёт.
+    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &String) -> u64 {
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
         loop {
-            // Keep stable fps
+            // Поддержание стабильного FPS
             let now = Instant::now();
-            let delta_time_ms = (now.duration_since(last_time).subsec_nanos() / 1_000_000) as u64;
+            let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
             if delta_time_ms < interval_ms {
                 sleep(Duration::from_millis(interval_ms - delta_time_ms));
                 continue;
@@ -134,13 +146,26 @@ impl GameState {
                 UpdateEndState::Continue => {},
                 UpdateEndState::Quit => {
                     return 0;
-                }, UpdateEndState::Lost => {
+                },
+                UpdateEndState::Lost => {
+                    // Отображение сообщения о проигрыше
+                    cnv.draw_strs(&GAME_OVER.to_vec(), (10, 12), BORDER_COLOR, &Reset);
+                    cnv.flush();
+                    sleep(Duration::from_millis(1500));
                     break;
                 },
                 UpdateEndState::Pause => {
-                    // Keep the game paused until 'p' is pressed again
-                    while inp.get_key() != b'p' {
-                        cnv.draw_strs(&PAUSE.to_vec(), (7, 13), BORDER_COLOR, &Reset); // Drawing the pause text
+                    // Ожидание повторного нажатия 'p' для снятия с паузы
+                    loop {
+                        let key = inp.get_key();
+                        if key == b'p' {
+                            break;
+                        } else if key == 127 {
+                            // Backspace во время паузы — выход
+                            cnv.draw_strs(&PAUSE.to_vec(), (7, 13), BORDER_COLOR, &Reset);
+                            return 0;
+                        }
+                        cnv.draw_strs(&PAUSE.to_vec(), (7, 13), BORDER_COLOR, &Reset);
                         sleep(Duration::from_millis(interval_ms));
                     }
                 }
@@ -150,45 +175,56 @@ impl GameState {
 
         self.score
     }
-    
+
+    /// Обновить состояние игры.
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
         match key {
-            127 => return UpdateEndState::Quit, // Backspace -> back to menu
-            b'p' => return UpdateEndState::Pause, // p -> Pause
+            127 => return UpdateEndState::Quit, // Backspace — выход в меню
+            b'p' => return UpdateEndState::Pause, // p — пауза
             b'a' => {
                 if self.can_move_curr_shape(Dir::Left) {
                     self.curr_shape.pos.0 -= 1.0;
                 }
-            }, b'd' => {
+            },
+            b'd' => {
                 if self.can_move_curr_shape(Dir::Right) {
                     self.curr_shape.pos.0 += 1.0;
                 }
-            }, b'q' => {
+            },
+            b'q' => {
                 if self.can_rotate_curr_shape(Dir::Left) {
                     self.curr_shape.rotate(Dir::Left);
                 }
-            }, b'e' => {
+            },
+            b'e' => {
                 if self.can_rotate_curr_shape(Dir::Right) {
                     self.curr_shape.rotate(Dir::Right);
                 }
-            }, b's' => {
-                self.curr_shape.pos.1 = floor(self.curr_shape.pos.1 as f64, 0) as f32;
+            },
+            b's' => {
+                // Мгновенное падение: опускаем фигуру до упора
                 while self.can_move_curr_shape(Dir::Down) {
-                    self.curr_shape.pos.1 += 0.5; // Make sure not to skip
+                    self.curr_shape.pos.1 += 1.0;
                 }
+                // Фиксируем таймер для немедленного приземления
+                self.land_timer = 0.0;
             }
             _ => {}
         }
 
         if self.can_move_curr_shape(Dir::Down) {
+            // Плавное падение с учётом скорости и времени
             self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / 1_000.0);
-        } else if self.land_timer > 0.0 { // Allow a few ms for moving b4 settling
-            self.land_timer -= delta_time_ms as f64 / 1_0000.0;
-        } else if self.curr_shape.pos.1 <= 1.0 { // Landed at start means death
+        } else if self.land_timer > 0.0 {
+            // Таймер перед фиксацией фигуры (даёт время на перемещение)
+            self.land_timer -= delta_time_ms as f64 / 1000.0;
+        } else if self.curr_shape.pos.1 <= 1.0 {
+            // Фигура застряла вверху — проигрыш
             return UpdateEndState::Lost;
         } else {
-            self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FAL_MULT) as u64;
+            // Фиксация фигуры и начисление очков
+            self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
 
             self.save_tetromino();
             self.check_rows();
@@ -200,24 +236,26 @@ impl GameState {
         UpdateEndState::Continue
     }
 
-    // Permanently store the block data of the current shape after landing
+    /// Сохранить данные текущей фигуры в сетке после приземления.
     fn save_tetromino(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
-        let shape_block_x = floor(shape_x as f64, 0) as i16;
-        let shape_block_y = floor(shape_y as f64, 0) as i16;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
         for coord in self.curr_shape.coords {
-            let (mut coord_x, mut coord_y) = coord;
-            coord_x += shape_block_x;
-            coord_y += shape_block_y;
+            let (coord_x, coord_y) = coord;
+            let x = (coord_x + shape_block_x) as usize;
+            let y = (coord_y + shape_block_y) as usize;
 
-            self.blocks[coord_y as usize][coord_x as usize] = self.curr_shape.fg as i8;
+            self.blocks[y][x] = self.curr_shape.fg as i8;
         }
     }
 
-    // Check if we can delete rows and shift everything
+    /// Проверить заполненные линии и удалить их.
     fn check_rows(&mut self) {
         let mut num_filled_rows = 0;
+        let mut rows_to_remove = Vec::new();
 
+        // Поиск заполненных линий
         for y in 0..GRID_HEIGHT {
             let mut row_full = true;
             for x in 0..GRID_WIDTH {
@@ -227,35 +265,41 @@ impl GameState {
                 }
             }
             if row_full {
+                rows_to_remove.push(y);
                 num_filled_rows += 1;
-
-                // Update game speed
-                self.fall_spd += SPD_INC;
-
-                // Move rows above down (will also replace data in row y, so no clear needed)
-                for y_above in (0..y).rev() {
-                    for x in 0..GRID_WIDTH {
-                        self.blocks[y_above + 1][x] = self.blocks[y_above][x];
-                    }
-                }
             }
         }
 
-        if num_filled_rows == 1 {
-            self.score += ROW_SCORE_INC;
-        } else if num_filled_rows > 1 {
-            self.score += ROW_SCORE_INC * ((num_filled_rows - 1) << 1); // eg 100 to 200, 400, 600
+        // Удаление заполненных линий и сдвиг верхних строк вниз
+        for &row in rows_to_remove.iter().rev() {
+            // Сдвиг всех строк выше на одну вниз
+            for y in (0..row).rev() {
+                self.blocks[y + 1] = self.blocks[y];
+            }
+            // Очистка верхней строки
+            self.blocks[0] = [-1; GRID_WIDTH];
+        }
+
+        if num_filled_rows > 0 {
+            // Увеличение скорости игры
+            self.fall_spd += SPD_INC * num_filled_rows as f32;
+
+            // Начисление очков за линии
+            // Бонус за несколько линий: 100, 200, 400, 800...
+            self.score += ROW_SCORE_INC * (1 << (num_filled_rows - 1));
         }
     }
 
-    fn draw(&mut self, cnv: &mut Canvas, hs_disp: &Vec<&String>) {
+    /// Отрисовать текущее состояние игры.
+    fn draw(&mut self, cnv: &mut Canvas, hs_disp: &String) {
         cnv.draw_strs(&BORDER.to_vec(), (1, 1), BORDER_COLOR, &Reset);
 
+        // Отрисовка рекорда и текущего счёта
         let score_str = format!("{:020}", self.score);
-        let score_disp = vec![ &score_str ];
-        cnv.draw_strings(&hs_disp, (3, 1), SCORE_COLOR, &Reset);
-        cnv.draw_strings(&score_disp, (3, 2), SCORE_COLOR, &Reset);
-        
+        cnv.draw_string(&score_str, (7, 2), BORDER_COLOR, &Reset);
+        cnv.draw_string(hs_disp, (9, 2), BORDER_COLOR, &Reset);
+
+        // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
@@ -268,17 +312,14 @@ impl GameState {
             }
         }
 
-        // Dealing with whole display! Not just grid
+        // Отрисовка текущей падающей фигуры
         let (shape_x, shape_y) = self.curr_shape.pos;
-        let shape_block_x = floor(shape_x as f64, 0) as i16;
-        let shape_block_y = floor(shape_y as f64, 0) as i16;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
         for coord in self.curr_shape.coords {
-            let (mut coord_x, mut coord_y) = coord;
-            coord_x += shape_block_x;
-            coord_y += shape_block_y;
-
-            let x = coord_x * SHAPE_WIDTH as i16 + 2;
-            let y = coord_y + SHAPE_DRAW_OFFSET;
+            let (coord_x, coord_y) = coord;
+            let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
+            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
             cnv.draw_strs(
                 &vec![ SHAPE_STR ], (x as u16, y as u16), SHAPE_COLORS[self.curr_shape.fg], &Reset
@@ -288,68 +329,59 @@ impl GameState {
         cnv.flush();
     }
 
-    // Check if a block is able to move in a given direction
+    /// Проверить возможность движения текущей фигуры в заданном направлении.
     fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
-        // Get position in a grid format (we want slow movement, so we use actually use floats)
         let (shape_x, shape_y) = self.curr_shape.pos;
-        let shape_block_x = floor(shape_x as f64, 0) as i16;
-        let shape_block_y = floor(shape_y as f64, 0) as i16;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
 
         for coord in self.curr_shape.coords {
-            let (mut coord_x, mut coord_y) = coord;
-            coord_x += shape_block_x;
-            coord_y += shape_block_y;
+            let (coord_x, coord_y) = coord;
+            let mut check_x = coord_x + shape_block_x;
+            let mut check_y = coord_y + shape_block_y;
 
-            // Adjust the x/y in the direction we want to test
+            // Корректировка координат в зависимости от направления
             match dir {
-                Dir::Left => {
-                    coord_x -= 1;
-                }, Dir::Right => {
-                    coord_x += 1;
-                }, Dir::Down => {
-                    coord_y += 1;
-                }
+                Dir::Left => check_x -= 1,
+                Dir::Right => check_x += 1,
+                Dir::Down => check_y += 1
             }
 
-            // Deal with just grid! Not whole display
-            if coord_x < 0 || coord_x >= GRID_WIDTH as i16 || coord_y >= GRID_HEIGHT as i16 {
+            // Проверка выхода за границы сетки
+            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
                 return false;
             }
 
-            if coord_y >= 0 && self.blocks[coord_y as usize][coord_x as usize] != -1 {
+            // Проверка столкновения с зафиксированными фигурами
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
         true
     }
 
-    // Basically check if "can_move" to the current position after rotation
+    /// Проверить возможность вращения текущей фигуры.
     fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
-        if dir == Dir::Down {
-            return true;
-        }
-
-        // Create temp shape and rotate it
+        // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape.clone();
         temp_shape.rotate(dir);
 
-        // Check if it's valid
+        // Проверка валидности новой позиции
         let (shape_x, shape_y) = temp_shape.pos;
-        let shape_block_x = floor(shape_x as f64, 0) as i16;
-        let shape_block_y = floor(shape_y as f64, 0) as i16;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
         for coord in temp_shape.coords {
-            let (mut coord_x, mut coord_y) = coord;
-            coord_x += shape_block_x;
-            coord_y += shape_block_y;
+            let (coord_x, coord_y) = coord;
+            let check_x = coord_x + shape_block_x;
+            let check_y = coord_y + shape_block_y;
 
-            // NOTE: Unlike can_move, we don't want to adjust the coords
-
-            // Deal with just grid! Not whole display
-            if coord_x < 0 || coord_x >= GRID_WIDTH as i16 || coord_y >= GRID_HEIGHT as i16 {
+            // Проверка выхода за границы сетки
+            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
                 return false;
             }
 
-            if coord_y >= 0 && self.blocks[coord_y as usize][coord_x as usize] != -1 {
+            // Проверка столкновения с зафиксированными фигурами
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
