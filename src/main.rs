@@ -83,10 +83,10 @@ fn main() {
         last_time = now;
 
         // Преобразование рекорда в строку для отображения
-        let hs_str = format!("{:020}", high_score);
+        let hs_str = format!("{:10}", high_score);
 
         cnv.draw_strs(&MENU, (1, 1), &MENU_COLOR, &Reset);
-        cnv.draw_string(&hs_str, (2, 22), &MENU_COLOR, &Reset);
+        cnv.draw_string(&hs_str, (11, 21), &MENU_COLOR, &Reset);
         cnv.flush();
 
         let key = inp.get_key();
