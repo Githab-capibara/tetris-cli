@@ -1,6 +1,17 @@
 //! Основной игровой цикл.
 //!
 //! Автор: Dylan Turner
+//!
+//! Этот модуль содержит основную игровую логику Tetris CLI.
+//! Реализует игровой цикл, обработку ввода, отрисовку и систему очков.
+//!
+//! ## Особенности реализации
+//! - Поддержка 60 FPS для плавной анимации
+//! - Прогрессивная сложность (увеличение скорости)
+//! - Система уровней (каждые 10 линий)
+//! - Предпросмотр следующей фигуры
+//! - "Призрачная" фигура (показывает точку приземления)
+//! - Таблица лидеров (топ-5)
 
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
@@ -11,15 +22,26 @@ use std::{
 use termion::color::{Color, Reset, White};
 
 /// Количество кадров в секунду.
+///
+/// Обеспечивает плавную анимацию игры.
 pub const FPS: u64 = 60;
+
 /// Границы игрового поля с заголовками.
+///
+/// Содержит 25 строк:
+/// - Строка 1: пустая
+/// - Строка 2: "Счёт:"
+/// - Строка 3: "Рекорд:"
+/// - Строка 4: "Уровень:"
+/// - Строка 5: "Линии:"
+/// - Строки 6-25: игровое поле с границами
 const BORDER: [&str; DISP_HEIGHT as usize] = [
     "                      ",
     "Счёт:                 ",
     "Рекорд:               ",
+    "Уровень:              ",
+    "Линии:                ",
     "╔════════════════════╗",
-    "║                    ║",
-    "║                    ║",
     "║                    ║",
     "║                    ║",
     "║                    ║",
@@ -40,26 +62,45 @@ const BORDER: [&str; DISP_HEIGHT as usize] = [
     "║                    ║",
     "╚════════════════════╝",
 ];
+
 /// Сообщение о паузе.
 const PAUSE: [&str; 3] = ["╔════════╗", "║ ПАУЗА  ║", "╚════════╝"];
+
 /// Сообщение о проигрыше.
 const GAME_OVER: [&str; 3] = ["╔════════════╗", "║ ИГРА ОКОНЧЕНА ║", "╚════════════╝"];
+
 /// Цвет границ.
 const BORDER_COLOR: &dyn Color = &White;
+
 /// Смещение отрисовки фигур по вертикали.
+///
+/// Учитывает заголовки (Счёт, Рекорд, Уровень, Линии) и верхнюю границу.
 const SHAPE_DRAW_OFFSET: i16 = 5;
+
 /// Начальная скорость падения.
-const INITIAL_FALL_SPD: f32 = 0.9;
+///
+/// Измеряется в блоках за секунду.
+pub const INITIAL_FALL_SPD: f32 = 0.9;
+
 /// Задержка времени приземления (секунды).
-const LAND_TIME_DELAY_S: f64 = 0.1;
-/// Прирост скорости.
-const SPD_INC: f32 = 0.05;
+///
+/// Даёт игроку время на перемещение фигуры после касания.
+pub const LAND_TIME_DELAY_S: f64 = 0.1;
+
+/// Прирост скорости за уровень.
+pub const SPD_INC: f32 = 0.05;
+
 /// Очки за заполненную линию.
-const ROW_SCORE_INC: u64 = 100;
+pub const ROW_SCORE_INC: u64 = 100;
+
 /// Очки за фигуру.
 const PIECE_SCORE_INC: u64 = 100;
+
 /// Множитель очков за падение.
 const PIECE_SCORE_FALL_MULT: f32 = 50.0;
+
+/// Количество линий для повышения уровня.
+pub const LINES_PER_LEVEL: u32 = 10;
 
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
@@ -73,11 +114,23 @@ pub enum Dir {
 }
 
 /// Состояние игры.
+///
+/// Содержит всю информацию о текущем состоянии игры:
+/// - Счёт, уровень, количество линий
+/// - Текущая и следующая фигуры
+/// - Игровое поле
+/// - Таймеры и скорость
 pub struct GameState {
     /// Текущий счёт.
     score: u64,
+    /// Текущий уровень.
+    level: u32,
+    /// Количество удалённых линий.
+    lines_cleared: u32,
     /// Текущая фигура.
     curr_shape: Tetromino,
+    /// Следующая фигура (для предпросмотра).
+    next_shape: Tetromino,
     /// Скорость падения.
     fall_spd: f32,
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
@@ -106,10 +159,21 @@ impl Default for GameState {
 
 impl GameState {
     /// Создать новое состояние игры.
+    ///
+    /// Инициализирует все поля значениями по умолчанию:
+    /// - Счёт: 0
+    /// - Уровень: 1
+    /// - Скорость: INITIAL_FALL_SPD
+    /// - Поле: пустое
     pub fn new() -> Self {
+        let curr_shape = Tetromino::select();
+        let next_shape = Tetromino::select();
         Self {
             score: 0,
-            curr_shape: Tetromino::select(),
+            level: 1,
+            lines_cleared: 0,
+            curr_shape,
+            next_shape,
             fall_spd: INITIAL_FALL_SPD,
             // Инициализация поля пустыми клетками (-1)
             blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
@@ -118,6 +182,14 @@ impl GameState {
     }
 
     /// Запустить игровой цикл и вернуть финальный счёт.
+    ///
+    /// # Аргументы
+    /// * `cnv` - канвас для отрисовки
+    /// * `inp` - читатель нажатий клавиш
+    /// * `hs_disp` - строка для отображения рекорда
+    ///
+    /// # Возвращает
+    /// Финальный счёт игрока
     pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &str) -> u64 {
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
@@ -166,6 +238,13 @@ impl GameState {
     }
 
     /// Обновить состояние игры.
+    ///
+    /// # Аргументы
+    /// * `inp` - читатель нажатий клавиш
+    /// * `delta_time_ms` - время, прошедшее с последнего кадра (мс)
+    ///
+    /// # Возвращает
+    /// Состояние завершения обновления
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
         match key {
@@ -219,13 +298,18 @@ impl GameState {
             self.check_rows();
 
             self.land_timer = LAND_TIME_DELAY_S;
-            self.curr_shape = Tetromino::select();
+            // Переход к следующей фигуре
+            self.curr_shape = self.next_shape;
+            self.next_shape = Tetromino::select();
         }
 
         UpdateEndState::Continue
     }
 
     /// Сохранить данные текущей фигуры в сетке после приземления.
+    ///
+    /// Преобразует плавающие координаты фигуры в индексы сетки
+    /// и записывает цвет фигуры в соответствующие клетки.
     fn save_tetromino(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
@@ -235,11 +319,17 @@ impl GameState {
             let x = (coord_x + shape_block_x) as usize;
             let y = (coord_y + shape_block_y) as usize;
 
-            self.blocks[y][x] = self.curr_shape.fg as i8;
+            // Проверка границ перед записью
+            if y < GRID_HEIGHT && x < GRID_WIDTH {
+                self.blocks[y][x] = self.curr_shape.fg as i8;
+            }
         }
     }
 
     /// Проверить заполненные линии и удалить их.
+    ///
+    /// Удаляет все заполненные линии, сдвигает верхние линии вниз
+    /// и обновляет счёт, уровень и скорость игры.
     fn check_rows(&mut self) {
         let mut rows_to_remove = Vec::new();
 
@@ -270,6 +360,17 @@ impl GameState {
         }
 
         if num_filled_rows > 0 {
+            // Обновление количества удалённых линий
+            self.lines_cleared += num_filled_rows as u32;
+
+            // Проверка повышения уровня (каждые 10 линий)
+            let new_level = (self.lines_cleared / LINES_PER_LEVEL) + 1;
+            if new_level > self.level {
+                self.level = new_level;
+                // Бонус за повышение уровня
+                self.score += 500 * (new_level - 1) as u64;
+            }
+
             // Увеличение скорости игры
             self.fall_spd += SPD_INC * num_filled_rows as f32;
 
@@ -280,13 +381,22 @@ impl GameState {
     }
 
     /// Отрисовать текущее состояние игры.
+    ///
+    /// # Аргументы
+    /// * `cnv` - канвас для отрисовки
+    /// * `hs_disp` - строка для отображения рекорда
     fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда и текущего счёта
         let score_str = format!("{:10}", self.score);
+        let level_str = format!("{:10}", self.level);
+        let lines_str = format!("{:10}", self.lines_cleared);
+
         cnv.draw_string(&score_str, (7, 2), BORDER_COLOR, &Reset);
         cnv.draw_string(hs_disp, (7, 3), BORDER_COLOR, &Reset);
+        cnv.draw_string(&level_str, (10, 4), BORDER_COLOR, &Reset);
+        cnv.draw_string(&lines_str, (10, 5), BORDER_COLOR, &Reset);
 
         // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
@@ -305,6 +415,9 @@ impl GameState {
             }
         }
 
+        // Отрисовка призрачной фигуры (показывает точку приземления)
+        self.draw_ghost_shape(cnv);
+
         // Отрисовка текущей падающей фигуры
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
@@ -322,10 +435,77 @@ impl GameState {
             );
         }
 
+        // Отрисовка следующей фигуры (предпросмотр)
+        self.draw_next_shape(cnv);
+
         cnv.flush();
     }
 
+    /// Отрисовать призрачную фигуру (точку приземления).
+    ///
+    /// Показывает, где приземлится текущая фигура, если отпустить её.
+    fn draw_ghost_shape(&mut self, cnv: &mut Canvas) {
+        // Копирование текущей фигуры для расчёта точки приземления
+        let mut ghost_shape = self.curr_shape;
+
+        // Опустить фигуру до упора
+        while self.can_move_ghost_shape(&ghost_shape, Dir::Down) {
+            ghost_shape.pos.1 += 1.0;
+        }
+
+        // Отрисовка призрачной фигуры (полупрозрачная)
+        let (shape_x, shape_y) = ghost_shape.pos;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
+        for coord in ghost_shape.coords {
+            let (coord_x, coord_y) = coord;
+            let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
+            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
+
+            // Отрисовка контуром (символ ░░)
+            cnv.draw_strs(
+                &["░░"],
+                (x as u16, y as u16),
+                SHAPE_COLORS[ghost_shape.fg],
+                &Reset,
+            );
+        }
+    }
+
+    /// Отрисовать следующую фигуру (предпросмотр справа от поля).
+    ///
+    /// Показывает, какая фигура появится следующей.
+    fn draw_next_shape(&mut self, cnv: &mut Canvas) {
+        // Позиция предпросмотра (справа от игрового поля)
+        let preview_x = 24u16;
+        let preview_y = 8u16;
+
+        cnv.draw_string("След:", (preview_x, preview_y - 2), BORDER_COLOR, &Reset);
+
+        // Отрисовка блоков следующей фигуры
+        for coord in self.next_shape.coords {
+            let (coord_x, coord_y) = coord;
+            let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16 + 2;
+            let y = preview_y as i16 + coord_y + 1;
+
+            if x >= 0 && y >= 0 {
+                cnv.draw_strs(
+                    &[SHAPE_STR],
+                    (x as u16, y as u16),
+                    SHAPE_COLORS[self.next_shape.fg],
+                    &Reset,
+                );
+            }
+        }
+    }
+
     /// Проверить возможность движения текущей фигуры в заданном направлении.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление движения
+    ///
+    /// # Возвращает
+    /// `true` если движение возможно, `false` в противном случае
     fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
@@ -356,7 +536,48 @@ impl GameState {
         true
     }
 
+    /// Проверить возможность движения призрачной фигуры.
+    ///
+    /// # Аргументы
+    /// * `ghost` - призрачная фигура для проверки
+    /// * `dir` - направление движения
+    ///
+    /// # Возвращает
+    /// `true` если движение возможно
+    fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
+        let (shape_x, shape_y) = ghost.pos;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
+
+        for coord in ghost.coords {
+            let (coord_x, coord_y) = coord;
+            let mut check_x = coord_x + shape_block_x;
+            let mut check_y = coord_y + shape_block_y;
+
+            match dir {
+                Dir::Left => check_x -= 1,
+                Dir::Right => check_x += 1,
+                Dir::Down => check_y += 1,
+            }
+
+            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
+                return false;
+            }
+
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
+                return false;
+            }
+        }
+        true
+    }
+
     /// Проверить возможность вращения текущей фигуры.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление вращения
+    ///
+    /// # Возвращает
+    /// `true` если вращение возможно
     fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
@@ -382,5 +603,35 @@ impl GameState {
             }
         }
         true
+    }
+
+    /// Получить текущий уровень.
+    pub fn get_level(&self) -> u32 {
+        self.level
+    }
+
+    /// Получить количество удалённых линий.
+    pub fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared
+    }
+
+    /// Получить следующую фигуру.
+    pub fn get_next_shape(&self) -> &Tetromino {
+        &self.next_shape
+    }
+
+    /// Получить текущий счёт.
+    pub fn get_score(&self) -> u64 {
+        self.score
+    }
+
+    /// Получить скорость падения.
+    pub fn get_fall_spd(&self) -> f32 {
+        self.fall_spd
+    }
+
+    /// Получить игровое поле (для тестов).
+    pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &self.blocks
     }
 }
