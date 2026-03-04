@@ -2,30 +2,22 @@
 //!
 //! Автор: Dylan Turner
 
-mod io;
 mod game;
 mod highscore;
+mod io;
 mod tetromino;
 
+use crate::game::{GameState, FPS};
+use crate::highscore::SaveData;
+use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
 use std::{
     thread::sleep,
-    time::{
-        Instant, Duration
-    }
+    time::{Duration, Instant},
 };
 use termion::{
-    color::{
-        Color, White, Reset
-    },
-    terminal_size
+    color::{Color, Reset, White},
+    terminal_size,
 };
-use crate::io::{
-    DISP_WIDTH, DISP_HEIGHT, Canvas, KeyReader
-};
-use crate::game::{
-    FPS, GameState
-};
-use crate::highscore::SaveData;
 
 /// Меню игры с управлением и информацией.
 const MENU: [&str; DISP_HEIGHT as usize] = [
@@ -53,7 +45,7 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
     "║                    ║",
     "║                    ║",
     "╚════════════════════╝",
-    "                      "
+    "                      ",
 ];
 /// Цвет меню.
 const MENU_COLOR: &dyn Color = &White;
@@ -107,7 +99,7 @@ fn main() {
                     high_score = new_score;
                     SaveData::save_value(high_score);
                 }
-            },
+            }
             127 => break, // Backspace — выход
             _ => {}
         }

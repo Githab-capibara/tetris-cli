@@ -2,22 +2,13 @@
 //!
 //! Автор: Dylan Turner
 
+use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use std::{
     thread::sleep,
-    time::{
-        Instant, Duration
-    }
+    time::{Duration, Instant},
 };
-use termion::color::{
-    Color, White, Reset
-};
-use crate::io::{
-    Canvas, KeyReader,
-    DISP_HEIGHT, GRID_WIDTH, GRID_HEIGHT, SHAPE_WIDTH, SHAPE_STR
-};
-use crate::tetromino::{
-    SHAPE_COLORS, Tetromino
-};
+use termion::color::{Color, Reset, White};
 
 /// Количество кадров в секунду.
 pub const FPS: u64 = 60;
@@ -47,20 +38,12 @@ const BORDER: [&str; DISP_HEIGHT as usize] = [
     "║                    ║",
     "║                    ║",
     "║                    ║",
-    "╚════════════════════╝"
+    "╚════════════════════╝",
 ];
 /// Сообщение о паузе.
-const PAUSE: [&str; 3] = [
-    "╔════════╗",
-    "║ ПАУЗА  ║",
-    "╚════════╝"
-];
+const PAUSE: [&str; 3] = ["╔════════╗", "║ ПАУЗА  ║", "╚════════╝"];
 /// Сообщение о проигрыше.
-const GAME_OVER: [&str; 3] = [
-    "╔════════════╗",
-    "║ ИГРА ОКОНЧЕНА ║",
-    "╚════════════╝"
-];
+const GAME_OVER: [&str; 3] = ["╔════════════╗", "║ ИГРА ОКОНЧЕНА ║", "╚════════════╝"];
 /// Цвет границ.
 const BORDER_COLOR: &dyn Color = &White;
 /// Смещение отрисовки фигур по вертикали.
@@ -86,7 +69,7 @@ pub enum Dir {
     /// Влево.
     Left,
     /// Вправо.
-    Right
+    Right,
 }
 
 /// Состояние игры.
@@ -100,7 +83,7 @@ pub struct GameState {
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Таймер приземления.
-    land_timer: f64
+    land_timer: f64,
 }
 
 /// Состояние завершения обновления.
@@ -112,7 +95,7 @@ enum UpdateEndState {
     /// Продолжить.
     Continue,
     /// Пауза.
-    Pause
+    Pause,
 }
 
 impl Default for GameState {
@@ -129,8 +112,8 @@ impl GameState {
             curr_shape: Tetromino::select(),
             fall_spd: INITIAL_FALL_SPD,
             // Инициализация поля пустыми клетками (-1)
-            blocks: [[ -1; GRID_WIDTH ]; GRID_HEIGHT],
-            land_timer: LAND_TIME_DELAY_S
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            land_timer: LAND_TIME_DELAY_S,
         }
     }
 
@@ -149,17 +132,17 @@ impl GameState {
             last_time = now;
 
             match self.update(inp, delta_time_ms) {
-                UpdateEndState::Continue => {},
+                UpdateEndState::Continue => {}
                 UpdateEndState::Quit => {
                     return 0;
-                },
+                }
                 UpdateEndState::Lost => {
                     // Отображение сообщения о проигрыше
                     cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
                     cnv.flush();
                     sleep(Duration::from_millis(1500));
                     break;
-                },
+                }
                 UpdateEndState::Pause => {
                     // Ожидание повторного нажатия 'p' для снятия с паузы
                     loop {
@@ -186,28 +169,28 @@ impl GameState {
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
         match key {
-            127 => return UpdateEndState::Quit, // Backspace — выход в меню
+            127 => return UpdateEndState::Quit,   // Backspace — выход в меню
             b'p' => return UpdateEndState::Pause, // p — пауза
             b'a' => {
                 if self.can_move_curr_shape(Dir::Left) {
                     self.curr_shape.pos.0 -= 1.0;
                 }
-            },
+            }
             b'd' => {
                 if self.can_move_curr_shape(Dir::Right) {
                     self.curr_shape.pos.0 += 1.0;
                 }
-            },
+            }
             b'q' => {
                 if self.can_rotate_curr_shape(Dir::Left) {
                     self.curr_shape.rotate(Dir::Left);
                 }
-            },
+            }
             b'e' => {
                 if self.can_rotate_curr_shape(Dir::Right) {
                     self.curr_shape.rotate(Dir::Right);
                 }
-            },
+            }
             b's' => {
                 // Мгновенное падение: опускаем фигуру до упора
                 while self.can_move_curr_shape(Dir::Down) {
@@ -310,9 +293,13 @@ impl GameState {
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
                     cnv.draw_strs(
-                        &[ SHAPE_STR ],
-                        ((x * SHAPE_WIDTH + 2) as u16, (y + SHAPE_DRAW_OFFSET as usize) as u16),
-                        SHAPE_COLORS[self.blocks[y][x] as usize], &Reset
+                        &[SHAPE_STR],
+                        (
+                            (x * SHAPE_WIDTH + 2) as u16,
+                            (y + SHAPE_DRAW_OFFSET as usize) as u16,
+                        ),
+                        SHAPE_COLORS[self.blocks[y][x] as usize],
+                        &Reset,
                     );
                 }
             }
@@ -328,7 +315,10 @@ impl GameState {
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
             cnv.draw_strs(
-                &[ SHAPE_STR ], (x as u16, y as u16), SHAPE_COLORS[self.curr_shape.fg], &Reset
+                &[SHAPE_STR],
+                (x as u16, y as u16),
+                SHAPE_COLORS[self.curr_shape.fg],
+                &Reset,
             );
         }
 
@@ -350,7 +340,7 @@ impl GameState {
             match dir {
                 Dir::Left => check_x -= 1,
                 Dir::Right => check_x += 1,
-                Dir::Down => check_y += 1
+                Dir::Down => check_y += 1,
             }
 
             // Проверка выхода за границы сетки

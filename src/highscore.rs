@@ -2,20 +2,12 @@
 //!
 //! Автор: Dylan Turner
 
-use serde::{
-    Serialize, Deserialize
-};
-use confy::{
-    load, store
-};
-use rand::{
-    Rng, thread_rng
-};
+use confy::{load, store};
+use rand::{thread_rng, Rng};
+use serde::{Deserialize, Serialize};
 use std::{
-    hash::{
-        Hash, Hasher
-    },
-    collections::hash_map::DefaultHasher
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
 };
 
 /// Имя приложения для конфигурации.
@@ -29,7 +21,7 @@ pub struct SaveData {
     /// Соль для хэша (защита от подделки).
     high_score_salt: String,
     /// Хэш рекорда с солью.
-    high_score_hash: String
+    high_score_hash: String,
 }
 
 impl SaveData {
@@ -41,9 +33,7 @@ impl SaveData {
     /// Сгенерировать случайный хэш из 20 цифр.
     fn get_random_hash() -> String {
         let mut rng = thread_rng();
-        (0..20)
-            .map(|_| rng.gen_range(0..10).to_string())
-            .collect()
+        (0..20).map(|_| rng.gen_range(0..10).to_string()).collect()
     }
 
     /// Получить хэш строки в шестнадцатеричном формате.
@@ -63,7 +53,7 @@ impl SaveData {
         Self {
             high_score,
             high_score_salt: salt,
-            high_score_hash: hash
+            high_score_hash: hash,
         }
     }
 
