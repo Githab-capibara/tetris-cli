@@ -1,48 +1,55 @@
-/*
- * Author: Dylan Turner
- * Description: Handle key input and drawing
- */
+//! Обработка ввода и вывода.
+//!
+//! Автор: Dylan Turner
 
 use termion::{
-    clear::All, cursor::{ Goto, Hide, Show },
+    clear::All,
+    cursor::{ Goto, Hide, Show },
     raw::{ RawTerminal, IntoRawMode },
     color::{ Color, Fg, Bg, Reset },
     async_stdin, AsyncReader
 };
 use std::io::{ Write, stdout, Stdout, Read };
 
-// Double block shapes in a 10x20 grid plus borders and extra enter space
-pub const SHAPE_STR: &'static str = "██";
+/// Строковое представление блока фигуры.
+pub const SHAPE_STR: &str = "██";
+/// Ширина блока в символах.
 pub const SHAPE_WIDTH: usize = 2;
+/// Ширина игрового поля в блоках.
 pub const GRID_WIDTH: usize = 10;
+/// Высота игрового поля в блоках.
 pub const GRID_HEIGHT: usize = 20;
-pub const DISP_WIDTH: u16 = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2; 
+/// Полная ширина дисплея (с учётом границ).
+pub const DISP_WIDTH: u16 = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
+/// Полная высота дисплея (с учётом границ и отступов).
 pub const DISP_HEIGHT: u16 = GRID_HEIGHT as u16 + 5;
 
-// An object that lets you draw to it
+/// Канвас для отрисовки в терминале.
 pub struct Canvas {
     out: RawTerminal<Stdout>
 }
 
 impl Canvas {
+    /// Создать новый канвас и подготовить терминал.
     pub fn new() -> Self {
-        let mut out = stdout().into_raw_mode().unwrap();
-        write!(out, "{}{}", All, Goto(1, 1)).unwrap();
-        out.flush().unwrap();
+        let mut out = stdout().into_raw_mode().expect("Не удалось перейти в raw-режим");
+        write!(out, "{}{}", All, Goto(1, 1)).expect("Не удалось очистить экран");
+        out.flush().expect("Не удалось выполнить flush");
 
-        write!(out, "{}", Hide).unwrap(); // Hide the cursor
+        write!(out, "{}", Hide).expect("Не удалось скрыть курсор");
 
         Self { out }
     }
 
+    /// Сбросить терминал в исходное состояние.
     pub fn reset(&mut self) {
-        write!(self.out, "{}\r\n", Show).unwrap();
-        self.out.flush().unwrap();
+        write!(self.out, "{}\r\n", Show).expect("Не удалось показать курсор");
+        self.out.flush().expect("Не удалось выполнить flush");
     }
 
-    // Can't figure out how to combine the two due to &'static part of str
+    /// Отрисовать строки (статические).
     pub fn draw_strs(
-            &mut self, lines: &Vec<&'static str>, pos: (u16, u16),
+            &mut self, lines: &[&str], pos: (u16, u16),
             fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
@@ -50,46 +57,48 @@ impl Canvas {
                 self.out, "{}{}{}{}{}{}",
                 Goto(x, y), Fg(fg), Bg(bg), line,
                 Fg(Reset), Bg(Reset)
-            ).unwrap();
+            ).expect("Не удалось отрисовать строку");
             y += 1;
         }
     }
 
-    pub fn draw_strings(
-            &mut self, lines: &Vec<&String>, pos: (u16, u16),
+    /// Отрисовать строку (динамическую String).
+    pub fn draw_string(
+            &mut self, text: &str, pos: (u16, u16),
             fg: &dyn Color, bg: &dyn Color) {
-        let (x, mut y) = pos;
-        for line in lines {
-            write!(
-                self.out, "{}{}{}{}{}{}",
-                Goto(x, y), Fg(fg), Bg(bg), line,
-                Fg(Reset), Bg(Reset)
-            ).unwrap();
-            y += 1;
-        }
+        let (x, y) = pos;
+        write!(
+            self.out, "{}{}{}{}{}{}",
+            Goto(x, y), Fg(fg), Bg(bg), text,
+            Fg(Reset), Bg(Reset)
+        ).expect("Не удалось отрисовать строку");
     }
 
+    /// Обновить вывод (flush).
     pub fn flush(&mut self) {
-        self.out.flush().unwrap();
+        self.out.flush().expect("Не удалось выполнить flush");
     }
 }
 
-// An object that lets you read key presses
+/// Читатель нажатий клавиш в асинхронном режиме.
 pub struct KeyReader {
     inp: AsyncReader
 }
 
 impl KeyReader {
+    /// Создать новый читатель клавиш.
     pub fn new() -> Self {
         let inp = async_stdin();
-        Self {
-            inp
-        }
+        Self { inp }
     }
 
+    /// Получить код нажатой клавиши.
+    /// Возвращает 0 при ошибке чтения.
     pub fn get_key(&mut self) -> u8 {
         let mut key_bytes: [u8; 1] = [ 0 ];
-        self.inp.read(&mut key_bytes).unwrap();
-        return  key_bytes[0];
+        match self.inp.read_exact(&mut key_bytes) {
+            Ok(_) => key_bytes[0],
+            Err(_) => 0
+        }
     }
 }

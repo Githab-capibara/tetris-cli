@@ -1,30 +1,29 @@
 # Tetris CLI
 
-## Description
+## Описание
 
-Tiny tetris game in a terminal
+Мини-игра Тетрис для вашего терминала.
 
-![screenshot](docs/img/screenshot.png)
+![скриншот](docs/img/screenshot.png)
 
-Install with `cargo install tetris-cli`
+Установить: `cargo install tetris-cli`
 
-Requires a Linux or other \*nix Terminal (i.e. won't work in Windows Terminal)
+Требуется Linux или другой *nix-терминал (не работает в Windows Terminal)
 
-Available for Arch on the AUR as [tetris-cli-git](https://aur.archlinux.org/packages/tetris-terminal-git)
+Доступно для Arch в AUR как [tetris-cli-git](https://aur.archlinux.org/packages/tetris-terminal-git)
 
-and on NetBSD [tetris-cli](https://pkgsrc.se/games/tetris-cli) from the official repositories.
+и для NetBSD [tetris-cli](https://pkgsrc.se/games/tetris-cli) из официальных репозиториев.
 
-## Controls
+## Управление
 
-+ a -> Move left
-+ d -> Move right
-+ q -> Rotate left
-+ e -> Rotate right
-+ s -> Instant drop
-+ p -> Pause
-+ Backspace -> Quit
++ a → Движение влево
++ d → Движение вправо
++ q → Поворот влево
++ e → Поворот вправо
++ s → Мгновенное падение
++ p → Пауза
++ Backspace → Выход
 
-## Build dependencies
+## Зависимости для сборки
 
-You should just need the [Rust programming language](https://www.rust-lang.org/tools/install) installed and a \*nix machine (Windows cmd is bad when it comes to terminal graphics).
-
+Вам понадобится только [язык программирования Rust](https://www.rust-lang.org/tools/install) и *nix-машина (Windows cmd плохо работает с терминальной графикой).
