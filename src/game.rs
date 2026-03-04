@@ -115,6 +115,12 @@ enum UpdateEndState {
     Pause
 }
 
+impl Default for GameState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameState {
     /// Создать новое состояние игры.
     pub fn new() -> Self {
@@ -129,7 +135,7 @@ impl GameState {
     }
 
     /// Запустить игровой цикл и вернуть финальный счёт.
-    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &String) -> u64 {
+    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &str) -> u64 {
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
         loop {
@@ -149,7 +155,7 @@ impl GameState {
                 },
                 UpdateEndState::Lost => {
                     // Отображение сообщения о проигрыше
-                    cnv.draw_strs(&GAME_OVER.to_vec(), (10, 12), BORDER_COLOR, &Reset);
+                    cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
                     cnv.flush();
                     sleep(Duration::from_millis(1500));
                     break;
@@ -162,10 +168,10 @@ impl GameState {
                             break;
                         } else if key == 127 {
                             // Backspace во время паузы — выход
-                            cnv.draw_strs(&PAUSE.to_vec(), (7, 13), BORDER_COLOR, &Reset);
+                            cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
                             return 0;
                         }
-                        cnv.draw_strs(&PAUSE.to_vec(), (7, 13), BORDER_COLOR, &Reset);
+                        cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
                         sleep(Duration::from_millis(interval_ms));
                     }
                 }
@@ -291,8 +297,8 @@ impl GameState {
     }
 
     /// Отрисовать текущее состояние игры.
-    fn draw(&mut self, cnv: &mut Canvas, hs_disp: &String) {
-        cnv.draw_strs(&BORDER.to_vec(), (1, 1), BORDER_COLOR, &Reset);
+    fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
+        cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда и текущего счёта
         let score_str = format!("{:020}", self.score);
@@ -304,7 +310,7 @@ impl GameState {
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
                     cnv.draw_strs(
-                        &vec![ SHAPE_STR ],
+                        &[ SHAPE_STR ],
                         ((x * SHAPE_WIDTH + 2) as u16, (y + SHAPE_DRAW_OFFSET as usize) as u16),
                         SHAPE_COLORS[self.blocks[y][x] as usize], &Reset
                     );
@@ -322,7 +328,7 @@ impl GameState {
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
             cnv.draw_strs(
-                &vec![ SHAPE_STR ], (x as u16, y as u16), SHAPE_COLORS[self.curr_shape.fg], &Reset
+                &[ SHAPE_STR ], (x as u16, y as u16), SHAPE_COLORS[self.curr_shape.fg], &Reset
             );
         }
 
@@ -363,7 +369,7 @@ impl GameState {
     /// Проверить возможность вращения текущей фигуры.
     fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
-        let mut temp_shape = self.curr_shape.clone();
+        let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
 
         // Проверка валидности новой позиции

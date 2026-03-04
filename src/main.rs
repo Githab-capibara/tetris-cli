@@ -83,8 +83,7 @@ fn main() {
     loop {
         // Поддержание стабильного FPS
         let now = Instant::now();
-        let delta_time_ms =
-            (now.duration_since(last_time).subsec_nanos() / 1_000_000) as u64;
+        let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
         if delta_time_ms < interval_ms {
             sleep(Duration::from_millis(interval_ms - delta_time_ms));
             continue;
@@ -94,7 +93,7 @@ fn main() {
         // Преобразование рекорда в строку для отображения
         let hs_str = format!("{:020}", high_score);
 
-        cnv.draw_strs(&MENU.to_vec(), (1, 1), &MENU_COLOR, &Reset);
+        cnv.draw_strs(&MENU, (1, 1), &MENU_COLOR, &Reset);
         cnv.draw_string(&hs_str, (2, 22), &MENU_COLOR, &Reset);
         cnv.flush();
 
@@ -103,7 +102,7 @@ fn main() {
             b'\n' | b'\r' => {
                 // Enter — начать игру
                 let mut state = GameState::new();
-                let new_score = state.play(&mut cnv, &mut inp, &hs_str);
+                let new_score = state.play(&mut cnv, &mut inp, hs_str.as_str());
                 if new_score > high_score {
                     high_score = new_score;
                     SaveData::save_value(high_score);

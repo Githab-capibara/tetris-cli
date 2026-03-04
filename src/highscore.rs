@@ -35,10 +35,7 @@ pub struct SaveData {
 impl SaveData {
     /// Загрузить конфигурацию из файла.
     pub fn load_config() -> Self {
-        match load(APP_NAME) {
-            Err(_) => SaveData::default(),
-            Ok(save) => save
-        }
+        load(APP_NAME).unwrap_or_default()
     }
 
     /// Сгенерировать случайный хэш из 20 цифр.

@@ -29,6 +29,12 @@ pub struct Canvas {
     out: RawTerminal<Stdout>
 }
 
+impl Default for Canvas {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Canvas {
     /// Создать новый канвас и подготовить терминал.
     pub fn new() -> Self {
@@ -83,6 +89,12 @@ impl Canvas {
 /// Читатель нажатий клавиш в асинхронном режиме.
 pub struct KeyReader {
     inp: AsyncReader
+}
+
+impl Default for KeyReader {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl KeyReader {
