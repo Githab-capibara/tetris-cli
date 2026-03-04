@@ -284,9 +284,9 @@ impl GameState {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда и текущего счёта
-        let score_str = format!("{:020}", self.score);
+        let score_str = format!("{:10}", self.score);
         cnv.draw_string(&score_str, (7, 2), BORDER_COLOR, &Reset);
-        cnv.draw_string(hs_disp, (9, 2), BORDER_COLOR, &Reset);
+        cnv.draw_string(hs_disp, (7, 3), BORDER_COLOR, &Reset);
 
         // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
