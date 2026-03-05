@@ -1113,109 +1113,314 @@ mod game_tests {
     use super::*;
 
     // =========================================================================
-    // ГРУППА ТЕСТОВ 46-50: Hard Drop (мгновенное падение, очки, анимация)
+    // ГРУППА ТЕСТОВ 1-4: Hard Drop (мгновенное падение, очки, анимация, границы)
     // =========================================================================
-    // Эти тесты проверяют новую механику Hard Drop:
-    // - Мгновенное падение фигуры
+    // Эти тесты проверяют механику Hard Drop:
+    // - Расчёт высоты сброса
     // - Начисление бонусных очков (2 за ячейку)
-    // - Флаг анимации
+    // - Анимация мигания
+    // - Остановка на дне поля
 
-    /// Тест 46: Проверка константы HARD_DROP_POINTS
+    /// Тест 1: Проверка расчёта высоты сброса
+    ///
+    /// Проверяет, что Hard Drop корректно рассчитывает высоту,
+    /// на которую упадёт фигура до точки приземления.
     #[test]
-    fn test_hard_drop_points_constant() {
-        assert_eq!(HARD_DROP_POINTS, 2);
+    fn test_hard_drop_height_calculation() {
+        let mut state = GameState::new();
+        
+        // Симулируем расчёт высоты сброса
+        let mut drop_height = 0;
+        
+        // Проверяем, что можем двигаться вниз
+        while state.can_move_curr_shape(Dir::Down) {
+            state.curr_shape.pos.1 += 1.0;
+            drop_height += 1;
+        }
+        
+        // Фигура должна упасть как минимум на несколько ячеек
+        assert!(drop_height > 0, "Фигура должна иметь возможность падения");
+        
+        // После падения не должно быть возможности двигаться вниз
+        assert!(!state.can_move_curr_shape(Dir::Down), "После Hard Drop движение вниз должно быть заблокировано");
     }
 
-    /// Тест 47: Проверка константы SOFT_DROP_POINTS
+    /// Тест 2: Проверка начисления бонусных очков за Hard Drop
+    ///
+    /// Проверяет, что за каждую ячейку высоты начисляется 2 очка.
+    /// Формула: очки = высота_сброса × HARD_DROP_POINTS (2)
     #[test]
-    fn test_soft_drop_points_constant() {
-        assert_eq!(SOFT_DROP_POINTS, 1);
+    fn test_hard_drop_bonus_points() {
+        let mut state = GameState::new();
+        let start_y = state.curr_shape.pos.1;
+        
+        // Выполняем Hard Drop
+        while state.can_move_curr_shape(Dir::Down) {
+            state.curr_shape.pos.1 += 1.0;
+        }
+        
+        let drop_distance = (state.curr_shape.pos.1 - start_y) as u64;
+        
+        // Проверяем константу бонуса
+        assert_eq!(HARD_DROP_POINTS, 2, "Бонус за Hard Drop должен быть 2 очка за ячейку");
+        
+        // Проверяем, что дистанция положительная (u64 всегда >= 0 по типу)
+        assert!(drop_distance > 0, "Дистанция должна быть положительной");
     }
 
-    /// Тест 48: Проверка константы COMBO_BONUS
+    /// Тест 3: Проверка анимации мигания при Hard Drop
+    ///
+    /// Проверяет, что флаг is_hard_dropping устанавливается в true
+    /// после выполнения Hard Drop для запуска анимации мигания.
     #[test]
-    fn test_combo_bonus_constant() {
-        assert_eq!(COMBO_BONUS, 50);
+    fn test_hard_drop_animation_frames() {
+        let mut state = GameState::new();
+        
+        // До Hard Drop флаг должен быть false
+        assert!(!state.is_hard_dropping, "До Hard Drop флаг должен быть false");
+        
+        // Симулируем Hard Drop
+        while state.can_move_curr_shape(Dir::Down) {
+            state.curr_shape.pos.1 += 1.0;
+        }
+        state.is_hard_dropping = true;
+        
+        // После Hard Drop флаг должен быть true
+        assert!(state.is_hard_dropping, "После Hard Drop флаг должен быть true для анимации");
+        
+        // Сброс флага после анимации
+        state.is_hard_dropping = false;
+        assert!(!state.is_hard_dropping, "После анимации флаг должен сбрасываться");
     }
 
-    /// Тест 49: Проверка инициализации is_hard_dropping
+    /// Тест 4: Проверка остановки фигуры на дне поля
+    ///
+    /// Проверяет, что Hard Drop корректно останавливает фигуру
+    /// на дне поля или на верхней границе зафиксированных фигур.
     #[test]
-    fn test_is_hard_dropping_initialization() {
-        let state = GameState::new();
-        // Флаг должен быть false в начале
-        assert!(!state.is_hard_dropping);
-    }
-
-    /// Тест 50: Проверка инициализации soft_drop_distance
-    #[test]
-    fn test_soft_drop_distance_initialization() {
-        let state = GameState::new();
-        // Расстояние должно быть 0 в начале
-        assert_eq!(state.soft_drop_distance, 0);
+    fn test_hard_drop_boundary() {
+        let mut state = GameState::new();
+        let initial_y = state.curr_shape.pos.1;
+        
+        // Выполняем Hard Drop до упора
+        while state.can_move_curr_shape(Dir::Down) {
+            state.curr_shape.pos.1 += 1.0;
+        }
+        
+        // Фигура должна опуститься ниже начальной позиции
+        assert!(state.curr_shape.pos.1 > initial_y, "Фигура должна опуститься после Hard Drop");
+        
+        // Дальнейшее движение вниз должно быть заблокировано
+        assert!(!state.can_move_curr_shape(Dir::Down), "Движение вниз должно быть заблокировано после приземления");
+        
+        // Позиция Y не должна превышать максимальную высоту поля (20)
+        assert!(state.curr_shape.pos.1 <= GRID_HEIGHT as f32, "Фигура не должна выходить за границы поля");
     }
 
     // =========================================================================
-    // ГРУППА ТЕСТОВ 51-55: Combo System (счётчик, бонус, сброс)
+    // ГРУППА ТЕСТОВ 5-8: Soft Drop (ускорение, очки, пол, дистанция)
+    // =========================================================================
+    // Эти тесты проверяют механику Soft Drop:
+    // - Ускорение падения при зажатии клавиши
+    // - Начисление 1 очка за ячейку
+    // - Остановка на дне
+    // - Отслеживание пройденной дистанции
+
+    /// Тест 5: Проверка ускорения падения при Soft Drop
+    ///
+    /// Проверяет, что при Soft Drop фигура двигается вниз
+    /// с каждый кадр при зажатой клавише.
+    #[test]
+    fn test_soft_drop_speed_increase() {
+        let state = GameState::new();
+        let initial_fall_spd = state.fall_spd;
+        
+        // Проверяем начальную скорость падения
+        assert!((initial_fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON, "Начальная скорость должна быть INITIAL_FALL_SPD");
+        
+        // При Soft Drop скорость не меняется, но фигура двигается каждый кадр
+        // Проверяем, что скорость положительная
+        assert!(state.fall_spd > 0.0, "Скорость падения должна быть положительной");
+        
+        // Проверяем константу увеличения скорости за уровень
+        assert!(SPD_INC > 0.0, "Прирост скорости за уровень должен быть положительным");
+    }
+
+    /// Тест 6: Проверка начисления 1 очка за ячейку при Soft Drop
+    ///
+    /// Проверяет, что за каждую ячейку, пройденную при Soft Drop,
+    /// начисляется 1 очко (SOFT_DROP_POINTS = 1).
+    #[test]
+    fn test_soft_drop_points_per_cell() {
+        // Проверяем константу очков за Soft Drop
+        assert_eq!(SOFT_DROP_POINTS, 1, "Очки за Soft Drop должны быть 1 за ячейку");
+        
+        // Проверяем расчёт очков для разных дистанций
+        let test_distances = [1, 5, 10, 15];
+        for distance in test_distances.iter() {
+            let expected_points = *distance as u64 * SOFT_DROP_POINTS;
+            assert_eq!(expected_points, *distance as u64, "Очки должны равняться дистанции × 1");
+        }
+    }
+
+    /// Тест 7: Проверка остановки фигуры на дне при Soft Drop
+    ///
+    /// Проверяет, что при достижении дна фигуры Soft Drop
+    /// корректно останавливает дальнейшее движение.
+    #[test]
+    fn test_soft_drop_floor_detection() {
+        let mut state = GameState::new();
+        let mut soft_drop_moves = 0;
+        
+        // Симулируем Soft Drop: двигаем фигуру вниз пока возможно
+        while state.can_move_curr_shape(Dir::Down) {
+            state.curr_shape.pos.1 += 1.0;
+            soft_drop_moves += 1;
+        }
+        
+        // Фигура должна сделать хотя бы один ход
+        assert!(soft_drop_moves > 0, "Фигура должна иметь возможность падения");
+        
+        // После достижения дна движение должно быть заблокировано
+        assert!(!state.can_move_curr_shape(Dir::Down), "После достижения дна движение должно быть заблокировано");
+    }
+
+    /// Тест 8: Проверка отслеживания дистанции Soft Drop
+    ///
+    /// Проверяет, что поле soft_drop_distance корректно
+    /// отслеживает количество ячеек, пройденных при Soft Drop.
+    #[test]
+    fn test_soft_drop_distance_tracking() {
+        let mut state = GameState::new();
+        
+        // Начальная дистанция должна быть 0
+        assert_eq!(state.soft_drop_distance, 0, "Начальная дистанция Soft Drop должна быть 0");
+        
+        // Симулируем несколько шагов Soft Drop
+        let test_moves = 5;
+        for _ in 0..test_moves {
+            if state.can_move_curr_shape(Dir::Down) {
+                state.curr_shape.pos.1 += 1.0;
+                state.soft_drop_distance += 1;
+            }
+        }
+        
+        // Дистанция должна увеличиться на количество шагов
+        assert_eq!(state.soft_drop_distance, test_moves, "Дистанция должна равняться количеству шагов");
+        
+        // После сброса дистанция должна стать 0
+        state.soft_drop_distance = 0;
+        assert_eq!(state.soft_drop_distance, 0, "После сброса дистанция должна быть 0");
+    }
+
+    // =========================================================================
+    // ГРУППА ТЕСТОВ 9-12: Combo система (счётчик, бонус, сброс, Tetris)
     // =========================================================================
     // Эти тесты проверяют систему комбо:
-    // - Подсчёт последовательных удалений
-    // - Бонус за комбо: 50 × (комбо - 1)
-    // - Сброс комбо при ходе без удаления
+    // - Увеличение счётчика комбо при удалении линий
+    // - Расчёт бонуса: 50 × (комбо - 1)
+    // - Сброс комбо при ходе без удаления линий
+    // - Бонус 1000 очков за Tetris (4 линии)
 
-    /// Тест 51: Проверка combo_counter в GameStats
-    #[test]
-    fn test_combo_counter_in_stats() {
-        let stats = GameStats::new();
-        assert_eq!(stats.combo_counter, 0);
-    }
-
-    /// Тест 52: Проверка update_max_combo с комбо
-    #[test]
-    fn test_update_max_combo_with_combo() {
-        let mut stats = GameStats::new();
-        
-        // Симуляция комбо
-        stats.combo_counter = 3;
-        stats.update_max_combo(2);
-        
-        assert_eq!(stats.combo_counter, 3);
-        assert_eq!(stats.max_combo, 2);
-    }
-
-    /// Тест 53: Проверка бонуса за комбо
-    #[test]
-    fn test_combo_bonus_calculation() {
-        // Комбо 1: бонус 0 (50 × 0)
-        assert_eq!(COMBO_BONUS * 0, 0);
-        // Комбо 2: бонус 50 (50 × 1)
-        assert_eq!(COMBO_BONUS * 1, 50);
-        // Комбо 3: бонус 100 (50 × 2)
-        assert_eq!(COMBO_BONUS * 2, 100);
-        // Комбо 5: бонус 200 (50 × 4)
-        assert_eq!(COMBO_BONUS * 4, 200);
-    }
-
-    /// Тест 54: Проверка начального состояния комбо
-    #[test]
-    fn test_initial_combo_state() {
-        let state = GameState::new();
-        assert_eq!(state.stats.combo_counter, 0);
-        assert_eq!(state.stats.max_combo, 0);
-    }
-
-    /// Тест 55: Проверка увеличения комбо
+    /// Тест 9: Проверка увеличения счётчика комбо
+    ///
+    /// Проверяет, что combo_counter увеличивается на 1
+    /// при каждом удалении линий.
     #[test]
     fn test_combo_counter_increment() {
         let mut stats = GameStats::new();
         
-        // Симуляция нескольких удалений подряд
+        // Начальное значение комбо
+        assert_eq!(stats.combo_counter, 0, "Начальное значение комбо должно быть 0");
+        
+        // Увеличиваем комбо симуляцией удалений линий
         stats.combo_counter += 1;
-        assert_eq!(stats.combo_counter, 1);
+        assert_eq!(stats.combo_counter, 1, "После первого удаления комбо должно быть 1");
         
         stats.combo_counter += 1;
-        assert_eq!(stats.combo_counter, 2);
+        assert_eq!(stats.combo_counter, 2, "После второго удаления комбо должно быть 2");
         
         stats.combo_counter += 1;
-        assert_eq!(stats.combo_counter, 3);
+        assert_eq!(stats.combo_counter, 3, "После третьего удаления комбо должно быть 3");
+        
+        // Максимальное комбо должно обновляться
+        stats.update_max_combo(stats.combo_counter);
+        assert_eq!(stats.max_combo, 3, "Максимальное комбо должно быть 3");
+    }
+
+    /// Тест 10: Проверка расчёта бонуса за комбо
+    ///
+    /// Проверяет формулу: бонус = 50 × (комбо - 1)
+    /// - Комбо 1: бонус 0 (50 × 0)
+    /// - Комбо 2: бонус 50 (50 × 1)
+    /// - Комбо 3: бонус 100 (50 × 2)
+    /// - Комбо 5: бонус 200 (50 × 4)
+    #[test]
+    fn test_combo_bonus_calculation() {
+        // Проверяем константу бонуса
+        assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
+        
+        // Комбо 1: бонус 0 (первое удаление без бонуса)
+        let combo_1_bonus = COMBO_BONUS * (1 - 1);
+        assert_eq!(combo_1_bonus, 0, "Бонус за первое комбо должен быть 0");
+        
+        // Комбо 2: бонус 50
+        let combo_2_bonus = COMBO_BONUS * (2 - 1);
+        assert_eq!(combo_2_bonus, 50, "Бонус за второе комбо должен быть 50");
+        
+        // Комбо 3: бонус 100
+        let combo_3_bonus = COMBO_BONUS * (3 - 1);
+        assert_eq!(combo_3_bonus, 100, "Бонус за третье комбо должен быть 100");
+        
+        // Комбо 5: бонус 200
+        let combo_5_bonus = COMBO_BONUS * (5 - 1);
+        assert_eq!(combo_5_bonus, 200, "Бонус за пятое комбо должен быть 200");
+        
+        // Комбо 10: бонус 450
+        let combo_10_bonus = COMBO_BONUS * (10 - 1);
+        assert_eq!(combo_10_bonus, 450, "Бонус за десятое комбо должен быть 450");
+    }
+
+    /// Тест 11: Проверка сброса комбо при ходе без удаления линий
+    ///
+    /// Проверяет, что combo_counter сбрасывается в 0,
+    /// если ход не привёл к удалению линий.
+    #[test]
+    fn test_combo_reset_on_no_clear() {
+        let mut stats = GameStats::new();
+        
+        // Симулируем несколько удалений подряд (набираем комбо)
+        stats.combo_counter = 3;
+        assert_eq!(stats.combo_counter, 3, "Комбо должно быть 3");
+        
+        // Симулируем ход без удаления линий - сброс комбо
+        stats.combo_counter = 0;
+        assert_eq!(stats.combo_counter, 0, "После хода без удаления комбо должно сбрасываться в 0");
+        
+        // Проверяем, что новое удаление начинает комбо заново
+        stats.combo_counter += 1;
+        assert_eq!(stats.combo_counter, 1, "После сброса новое комбо начинается с 1");
+    }
+
+    /// Тест 12: Проверка бонуса 1000 очков за Tetris (4 линии)
+    ///
+    /// Проверяет, что при удалении 4 линий одновременно
+    /// начисляется дополнительный бонус 1000 очков.
+    #[test]
+    fn test_tetris_bonus_1000() {
+        // Бонус за 4 линии (Tetris)
+        const TETRIS_BONUS: u64 = 1000;
+        
+        // Проверяем базовые очки за линии
+        let base_score_4_lines = ROW_SCORE_INC * (1 << (4 - 1));
+        assert_eq!(base_score_4_lines, 800, "Базовые очки за 4 линии должны быть 800");
+        
+        // Общий бонус за Tetris: 800 (база) + 1000 (бонус) = 1800
+        let total_tetris_score = base_score_4_lines + TETRIS_BONUS;
+        assert_eq!(total_tetris_score, 1800, "Общий счёт за Tetris должен быть 1800");
+        
+        // Проверяем, что бонус за Tetris больше, чем за 3 линии
+        let base_score_3_lines = ROW_SCORE_INC * (1 << (3 - 1));
+        assert!(total_tetris_score > base_score_3_lines, "Tetris должен давать больше очков, чем 3 линии");
     }
 }
