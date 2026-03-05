@@ -548,9 +548,11 @@ impl GameState {
         }
     }
 
-    /// Проверить возможность движения текущей фигуры в заданном направлении.
+    /// Проверить возможность движения фигуры в заданном направлении.
     ///
     /// # Аргументы
+    /// * `coords` - координаты блоков фигуры
+    /// * `pos` - позиция фигуры (x, y)
     /// * `dir` - направление движения (Left, Right, Down)
     ///
     /// # Возвращает
@@ -559,12 +561,12 @@ impl GameState {
     /// # Проверки
     /// 1. Выход за границы игрового поля
     /// 2. Столкновение с зафиксированными фигурами
-    fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
-        let (shape_x, shape_y) = self.curr_shape.pos;
+    fn check_collision(&self, coords: &[(i16, i16)], pos: (f32, f32), dir: Dir) -> bool {
+        let (shape_x, shape_y) = pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
 
-        for coord in self.curr_shape.coords {
+        for coord in coords {
             let (coord_x, coord_y) = coord;
             let mut check_x = coord_x + shape_block_x;
             let mut check_y = coord_y + shape_block_y;
@@ -589,6 +591,21 @@ impl GameState {
         true
     }
 
+    /// Проверить возможность движения текущей фигуры в заданном направлении.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление движения (Left, Right, Down)
+    ///
+    /// # Возвращает
+    /// `true` если движение возможно, `false` в противном случае
+    ///
+    /// # Проверки
+    /// 1. Выход за границы игрового поля
+    /// 2. Столкновение с зафиксированными фигурами
+    fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
+        self.check_collision(&self.curr_shape.coords, self.curr_shape.pos, dir)
+    }
+
     /// Проверить возможность движения призрачной фигуры.
     ///
     /// # Аргументы
@@ -602,30 +619,7 @@ impl GameState {
     /// Использует immutable ссылку на self, так как призрачная фигура
     /// не изменяет состояние игры
     fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
-        let (shape_x, shape_y) = ghost.pos;
-        let shape_block_x = shape_x as i16;
-        let shape_block_y = shape_y as i16;
-
-        for coord in ghost.coords {
-            let (coord_x, coord_y) = coord;
-            let mut check_x = coord_x + shape_block_x;
-            let mut check_y = coord_y + shape_block_y;
-
-            match dir {
-                Dir::Left => check_x -= 1,
-                Dir::Right => check_x += 1,
-                Dir::Down => check_y += 1,
-            }
-
-            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
-                return false;
-            }
-
-            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
-                return false;
-            }
-        }
-        true
+        self.check_collision(&ghost.coords, ghost.pos, dir)
     }
 
     /// Проверить возможность вращения текущей фигуры.
@@ -639,60 +633,48 @@ impl GameState {
     /// # Алгоритм
     /// 1. Создаётся временная копия фигуры
     /// 2. Применяется вращение к копии
-    /// 3. Проверяется валидность новой позиции
+    /// 3. Проверяется валидность новой позиции с помощью check_collision
     fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
 
-        // Проверка валидности новой позиции
-        let (shape_x, shape_y) = temp_shape.pos;
-        let shape_block_x = shape_x as i16;
-        let shape_block_y = shape_y as i16;
-        for coord in temp_shape.coords {
-            let (coord_x, coord_y) = coord;
-            let check_x = coord_x + shape_block_x;
-            let check_y = coord_y + shape_block_y;
-
-            // Проверка выхода за границы сетки
-            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
-                return false;
-            }
-
-            // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
-                return false;
-            }
-        }
-        true
+        // Проверка валидности новой позиции с помощью общего метода
+        self.check_collision(&temp_shape.coords, temp_shape.pos, Dir::Down)
     }
 
     /// Получить текущий уровень.
+    #[allow(dead_code)]
     pub fn get_level(&self) -> u32 {
         self.level
     }
 
     /// Получить количество удалённых линий.
+    #[allow(dead_code)]
     pub fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 
     /// Получить следующую фигуру.
+    #[allow(dead_code)]
     pub fn get_next_shape(&self) -> &Tetromino {
         &self.next_shape
     }
 
     /// Получить текущий счёт.
+    #[allow(dead_code)]
     pub fn get_score(&self) -> u64 {
         self.score
     }
 
     /// Получить скорость падения.
+    #[allow(dead_code)]
     pub fn get_fall_spd(&self) -> f32 {
         self.fall_spd
     }
 
     /// Получить игровое поле (для тестов).
+    #[allow(dead_code)]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
