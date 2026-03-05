@@ -19,6 +19,10 @@
 - 👻 **Призрачная фигура** — показывает, куда упадёт фигура
 - 👀 **Предпросмотр** — показ следующей фигуры
 - 📊 **Таблица лидеров** — топ-5 лучших результатов
+- 🔄 **Удержание фигуры (Hold)** — отложите фигуру для последующего использования
+- 🔊 **Звуковые эффекты** — терминальный bell при удалении линий
+- 📈 **Статистика игры** — подсчёт фигур, комбо, время игры
+- 🏃 **Режим спринт** — очистите 40 линий как можно быстрее
 
 ## 🚀 Установка
 
@@ -51,9 +55,11 @@ cargo run
 | `q` | Поворот фигуры против часовой стрелки |
 | `e` | Поворот фигуры по часовой стрелке |
 | `s` | Мгновенное падение (hard drop) |
+| `c` | Удержать фигуру (Hold) |
 | `p` | Пауза / Продолжить |
 | `Backspace` | Выход в меню / Выход из паузы |
-| `Enter` | Начать игру (в меню) |
+| `Enter` | Начать классическую игру |
+| `r` | Начать режим спринт (40 линий) |
 | `l` | Показать таблицу лидеров |
 
 ## 📋 Системные требования
@@ -84,6 +90,41 @@ cargo run
 ### Проигрыш
 
 Игра заканчивается, когда новая фигура не может появиться на поле (заблокирована другими фигурами).
+
+## 🆕 Новые функции (версия 23.96.2)
+
+### 🔄 Удержание фигуры (Hold)
+
+Нажмите **`c`**, чтобы отложить текущую фигуру. Вы можете использовать удержание один раз за ход. При повторном нажатии `c` удержанная фигура поменяется местами с текущей.
+
+**Особенности:**
+- Удержанная фигура отображается слева от игрового поля
+- Можно использовать только один раз за ход
+- При удержании позиция фигуры сбрасывается к центру
+
+### 🔊 Звуковые эффекты
+
+При удалении линий воспроизводится терминальный bell-сигнал. Это даёт звуковую обратную связь об успешном удалении линий.
+
+### 📈 Статистика игры
+
+После завершения игры отображается подробная статистика:
+- **Время игры** — общее время с начала
+- **Количество фигур** — сколько фигур каждого типа использовано
+- **Максимальное комбо** — наибольшее количество одновременных линий
+- **Режим игры** — классический или спринт
+
+### 🏃 Режим спринт
+
+Нажмите **`r`** в главном меню для запуска режима спринт.
+
+**Цель:** Очистить 40 линий как можно быстрее.
+
+**Особенности:**
+- Отображается таймер времени
+- Показывается прогресс (X/40 линий)
+- Результат не сохраняется в таблицу лидеров
+- После завершения показывается статистика
 
 ## 🏗️ Архитектура
 
@@ -205,13 +246,20 @@ tetris-cli/
 
 ## 🧪 Тестирование
 
-Проект содержит 20 модульных тестов, покрывающих:
+Проект содержит **40 модульных тестов** и **15 doctest**, покрывающих:
+
+### Группы тестов
 
 1. **Tetromino (4 теста)**: создание фигур, вращение, координаты
 2. **GameState (6 тестов)**: движение, столкновения, сохранение фигур
 3. **Линии и уровни (4 теста)**: удаление, подсчёт, повышение уровня
 4. **Leaderboard (4 теста)**: добавление, сортировка, валидация
 5. **Константы и границы (2 теста)**: размеры поля, проверка границ
+6. **GameStats (4 теста)**: создание, add_piece, total_pieces, update_max_combo
+7. **Hold (4 теста)**: первое удержание, обмен, запрет, сброс
+8. **Sprint (4 теста)**: создание, таймер, константа, прогресс
+9. **GameMode (4 теста)**: classic, get_mode, get_stats, timer
+10. **Интеграция (4 теста)**: статистика, bell, held_shape, can_hold
 
 ### Запуск тестов
 
@@ -222,29 +270,24 @@ cargo test
 ### Покрытие тестов
 
 ```
-running 20 tests
+running 40 tests
+test tetromino::tests::test_bell_constant_exists ... ok
+test tetromino::tests::test_can_hold_flag ... ok
+test tetromino::tests::test_classic_mode_default ... ok
 test tetromino::tests::test_field_dimensions ... ok
 test tetromino::tests::test_game_constants ... ok
 test tetromino::tests::test_game_state_creation ... ok
 test tetromino::tests::test_game_state_empty_field ... ok
 test tetromino::tests::test_game_state_initial_speed ... ok
-test tetromino::tests::test_game_state_next_shape_exists ... ok
-test tetromino::tests::test_leaderboard_add_score ... ok
-test tetromino::tests::test_leaderboard_entry_creation ... ok
-test tetromino::tests::test_leaderboard_entry_validation ... ok
-test tetromino::tests::test_level_calculation ... ok
-test tetromino::tests::test_line_bonus_calculation ... ok
-test tetromino::tests::test_lines_per_level_constant ... ok
-test tetromino::tests::test_leaderboard_sorting ... ok
-test tetromino::tests::test_shape_colors_assigned ... ok
-test tetromino::tests::test_random_shape_selection ... ok
-test tetromino::tests::test_speed_increase ... ok
-test tetromino::tests::test_tetromino_i_creation ... ok
-test tetromino::tests::test_tetromino_o_no_rotate ... ok
-test tetromino::tests::test_tetromino_rotate_clockwise ... ok
-test tetromino::tests::test_tetromino_t_creation ... ok
+test tetromino::tests::test_game_stats_add_piece ... ok
+test tetromino::tests::test_game_stats_new ... ok
+...
 
-test result: ok. 20 passed; 0 failed
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+
+running 15 doctests
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 ## 🐛 Известные ограничения
