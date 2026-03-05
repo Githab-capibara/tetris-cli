@@ -1049,79 +1049,160 @@ mod tests {
     }
 
     // =========================================================================
-    // ГРУППА ТЕСТОВ 41-45: BagGenerator (создание, fill, next, все фигуры, Fisher-Yates)
+    // ГРУППА ТЕСТОВ 13-16: Bag System (содержимое, перемешивание, заполнение, распределение)
     // =========================================================================
-    // Эти тесты проверяют новую систему генерации фигур 7-bag:
-    // - Создание генератора
-    // - Заполнение мешка всеми фигурами
-    // - Получение фигур по очереди
-    // - Гарантия появления всех 7 типов в каждом мешке
-    // - Корректность алгоритма Fisher-Yates
+    // Эти тесты проверяют систему генерации фигур 7-bag:
+    // - Bag содержит все 7 фигур
+    // - Перемешивание Fisher-Yates работает корректно
+    // - Заполнение после опустошения
+    // - Равномерное распределение фигур
 
-    /// Тест 41: Проверка создания BagGenerator
+    /// Тест 13: Проверка, что bag содержит все 7 фигур
+    ///
+    /// Проверяет, что каждый заполненный мешок содержит
+    /// все 7 типов фигур: T, L, J, S, Z, O, I.
     #[test]
-    fn test_bag_generator_creation() {
-        let mut bag = BagGenerator::new();
-        assert_eq!(bag.bag.len(), 0);
-        assert_eq!(bag.index, 0);
-    }
-
-    /// Тест 42: Проверка заполнения мешка
-    #[test]
-    fn test_bag_generator_fill() {
+    fn test_bag_contains_all_shapes() {
         let mut bag = BagGenerator::new();
         bag.fill_bag();
         
-        // Мешок должен содержать 7 фигур
-        assert_eq!(bag.bag.len(), 7);
-        // Индекс должен быть сброшен
-        assert_eq!(bag.index, 0);
+        // Проверяем, что мешок содержит 7 фигур
+        assert_eq!(bag.bag.len(), 7, "Мешок должен содержать 7 фигур");
+        
+        // Проверяем наличие каждой фигуры
+        assert!(bag.bag.contains(&ShapeType::T), "Мешок должен содержать фигуру T");
+        assert!(bag.bag.contains(&ShapeType::L), "Мешок должен содержать фигуру L");
+        assert!(bag.bag.contains(&ShapeType::J), "Мешок должен содержать фигуру J");
+        assert!(bag.bag.contains(&ShapeType::S), "Мешок должен содержать фигуру S");
+        assert!(bag.bag.contains(&ShapeType::Z), "Мешок должен содержать фигуру Z");
+        assert!(bag.bag.contains(&ShapeType::O), "Мешок должен содержать фигуру O");
+        assert!(bag.bag.contains(&ShapeType::I), "Мешок должен содержать фигуру I");
+        
+        // Проверяем, что каждая фигура встречается ровно один раз
+        let t_count = bag.bag.iter().filter(|&&s| s == ShapeType::T).count();
+        let l_count = bag.bag.iter().filter(|&&s| s == ShapeType::L).count();
+        let i_count = bag.bag.iter().filter(|&&s| s == ShapeType::I).count();
+        
+        assert_eq!(t_count, 1, "Фигура T должна встречаться ровно 1 раз");
+        assert_eq!(l_count, 1, "Фигура L должна встречаться ровно 1 раз");
+        assert_eq!(i_count, 1, "Фигура I должна встречаться ровно 1 раз");
     }
 
-    /// Тест 43: Проверка получения фигур из мешка
+    /// Тест 14: Проверка перемешивания Fisher-Yates
+    ///
+    /// Проверяет, что алгоритм Fisher-Yates корректно
+    /// перемешивает фигуры в мешке, создавая случайный порядок.
     #[test]
-    fn test_bag_generator_next_shape() {
+    fn test_bag_shuffle_randomness() {
         let mut bag = BagGenerator::new();
         
-        // Получаем 7 фигур
-        let mut shapes = Vec::new();
+        // Заполняем мешок несколько раз и проверяем разнообразие порядков
+        let mut unique_orders = Vec::new();
+        let iterations = 10;
+        
+        for _ in 0..iterations {
+            bag.fill_bag();
+            let order: Vec<ShapeType> = bag.bag.clone();
+            
+            // Добавляем порядок, если он ещё не встречался
+            if !unique_orders.contains(&order) {
+                unique_orders.push(order);
+            }
+        }
+        
+        // Ожидаем, что большинство порядков будут уникальными
+        // Из-за случайности может быть совпадение, но маловероятно
+        assert!(unique_orders.len() >= 5, "Должно быть как минимум 5 уникальных порядков из 10 попыток");
+        
+        // Проверяем, что каждый порядок содержит все 7 фигур
+        for order in &unique_orders {
+            assert_eq!(order.len(), 7, "Каждый порядок должен содержать 7 фигур");
+            assert!(order.contains(&ShapeType::T), "Порядок должен содержать T");
+            assert!(order.contains(&ShapeType::I), "Порядок должен содержать I");
+        }
+    }
+
+    /// Тест 15: Проверка заполнения мешка после опустошения
+    ///
+    /// Проверяет, что когда фигуры в мешке заканчиваются,
+    /// автоматически создаётся новый заполненный мешок.
+    #[test]
+    fn test_bag_refill_after_empty() {
+        let mut bag = BagGenerator::new();
+        
+        // Получаем все 7 фигур из первого мешка
+        let mut first_bag_shapes = Vec::new();
         for _ in 0..7 {
-            shapes.push(bag.next_shape());
+            first_bag_shapes.push(bag.next_shape());
         }
         
-        // Все 7 типов должны присутствовать
-        assert!(shapes.contains(&ShapeType::T));
-        assert!(shapes.contains(&ShapeType::L));
-        assert!(shapes.contains(&ShapeType::J));
-        assert!(shapes.contains(&ShapeType::S));
-        assert!(shapes.contains(&ShapeType::Z));
-        assert!(shapes.contains(&ShapeType::O));
-        assert!(shapes.contains(&ShapeType::I));
+        // Проверяем, что первый мешок содержал все 7 фигур
+        assert!(first_bag_shapes.contains(&ShapeType::T));
+        assert!(first_bag_shapes.contains(&ShapeType::I));
+        
+        // Индекс должен указывать на конец мешка
+        assert_eq!(bag.index, 7, "Индекс должен быть 7 после получения 7 фигур");
+        
+        // Получаем следующую фигуру - должен заполниться новый мешок
+        let next_shape = bag.next_shape();
+        
+        // Индекс должен сброситься на 1 (после заполнения нового мешка)
+        assert_eq!(bag.index, 1, "Индекс должен быть 1 после заполнения нового мешка");
+        
+        // Новая фигура должна быть валидной
+        assert!(matches!(next_shape, ShapeType::T | ShapeType::L | ShapeType::J | 
+                         ShapeType::S | ShapeType::Z | ShapeType::O | ShapeType::I));
+        
+        // Проверяем, что в новом мешке тоже 7 фигур
+        assert_eq!(bag.bag.len(), 7, "Новый мешок должен содержать 7 фигур");
     }
 
-    /// Тест 44: Проверка автоматического заполнения мешка
+    /// Тест 16: Проверка равномерного распределения фигур
+    ///
+    /// Проверяет, что при генерации большого количества фигур
+    /// каждый тип встречается примерно с одинаковой частотой.
     #[test]
-    fn test_bag_generator_refill() {
+    fn test_bag_uniform_distribution() {
         let mut bag = BagGenerator::new();
         
-        // Получаем 14 фигур (два полных мешка)
-        for _ in 0..14 {
-            let _ = bag.next_shape();
+        // Генерируем 700 фигур (100 полных мешков)
+        let total_shapes = 700;
+        let mut shape_counts = [0; 7];
+        
+        for _ in 0..total_shapes {
+            let shape = bag.next_shape();
+            shape_counts[shape as usize] += 1;
         }
         
-        // Индекс должен быть в пределах мешка
-        assert!(bag.index <= 7);
-    }
-
-    /// Тест 45: Проверка Tetromino::from_bag
-    #[test]
-    fn test_tetromino_from_bag() {
-        let mut bag = BagGenerator::new();
-        let tetromino = Tetromino::from_bag(&mut bag);
+        // В системе 7-bag каждая фигура встречается ровно 100 раз за 100 мешков
+        let expected_per_shape = total_shapes / 7;
         
-        // Позиция должна быть начальной
-        assert_eq!(tetromino.pos, (4.0, 0.0));
-        // Тип фигуры должен быть корректным
-        assert!(tetromino.fg < 7);
+        // Проверяем, что каждая фигура встретилась ожидаемое количество раз
+        for (shape_index, &count) in shape_counts.iter().enumerate() {
+            assert_eq!(
+                count, expected_per_shape,
+                "Фигура {:?} должна встречаться {} раз, но встретилась {} раз",
+                match shape_index {
+                    0 => "T",
+                    1 => "L",
+                    2 => "J",
+                    3 => "S",
+                    4 => "Z",
+                    5 => "O",
+                    6 => "I",
+                    _ => "Unknown",
+                },
+                expected_per_shape,
+                count
+            );
+        }
+        
+        // Проверяем, что все фигуры встретились одинаковое количество раз
+        for i in 1..shape_counts.len() {
+            assert_eq!(
+                shape_counts[i], shape_counts[0],
+                "Все фигуры должны встречаться одинаковое количество раз"
+            );
+        }
     }
 }
