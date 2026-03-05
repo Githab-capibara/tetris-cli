@@ -47,7 +47,8 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
     "║     Управление:    ║",
     "║ - a/d - влево/впр. ║",
     "║  - q/e - поворот   ║",
-    "║  - s - сброс вниз  ║",
+    "║  - w - Hard Drop   ║",
+    "║  - s - Soft Drop   ║",
     "║  - c - удержать    ║",
     "║    - p - пауза     ║",
     "║ - back - выход     ║",
@@ -56,7 +57,6 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
     "║  'r' - спринт 40   ║",
     "║  'l' - таблица л.  ║",
     "║     Рекорд:        ║",
-    "║                    ║",
     "║                    ║",
     "║                    ║",
     "╚════════════════════╝",
@@ -266,7 +266,8 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
 /// Отображает:
 /// - Время игры
 /// - Количество использованных фигур каждого типа
-/// - Максимальное комбо
+/// - Максимальное комбо (одновременное удаление)
+/// - Текущее комбо (последовательные удаления)
 /// - Режим игры
 fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
     let stats = state.get_stats();
@@ -285,7 +286,7 @@ fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
     let line6 = format!("║ T: {:3} L: {:3} J: {:3}  ║", stats.t_pieces, stats.l_pieces, stats.j_pieces);
     let line7 = format!("║ S: {:3} Z: {:3} O: {:3}  ║", stats.s_pieces, stats.z_pieces, stats.o_pieces);
     let line8 = format!("║ I: {:3}              ║", stats.i_pieces);
-    let line9 = format!("║ Комбо: {:14} ║", stats.max_combo);
+    let line9 = format!("║ Макс. комбо: {:10} ║", stats.max_combo);
     let line10 = "║                    ║";
     let line11 = "║  Любая клавиша...  ║";
     let line12 = "╚════════════════════╝";

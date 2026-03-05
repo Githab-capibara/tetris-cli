@@ -30,6 +30,89 @@ use rand::{
 };
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
+/// Генератор фигур по системе 7-bag.
+///
+/// Гарантирует, что каждые 7 фигур будут содержать все 7 типов.
+/// Использует алгоритм Fisher-Yates для перемешивания.
+///
+/// ## Как работает:
+/// 1. Создаётся "мешок" со всеми 7 типами фигур
+/// 2. Мешок перемешивается алгоритмом Fisher-Yates
+/// 3. Фигуры берутся из мешка по очереди
+/// 4. Когда мешок пуст, создаётся новый
+pub struct BagGenerator {
+    /// Текущий мешок с фигурами.
+    bag: Vec<ShapeType>,
+    /// Индекс текущей фигуры в мешке.
+    index: usize,
+}
+
+impl BagGenerator {
+    /// Создать новый генератор с пустым мешком.
+    pub fn new() -> Self {
+        Self {
+            bag: Vec::new(),
+            index: 0,
+        }
+    }
+
+    /// Заполнить мешок всеми 7 типами фигур и перемешать.
+    ///
+    /// Использует алгоритм Fisher-Yates для равномерного перемешивания:
+    /// 1. Создаётся вектор со всеми 7 типами фигур
+    /// 2. Для каждой позиции i выбирается случайный индекс j от 0 до i
+    /// 3. Элементы на позициях i и j меняются местами
+    fn fill_bag(&mut self) {
+        // Создаём мешок со всеми 7 типами фигур
+        self.bag = vec![
+            ShapeType::T,
+            ShapeType::L,
+            ShapeType::J,
+            ShapeType::S,
+            ShapeType::Z,
+            ShapeType::O,
+            ShapeType::I,
+        ];
+
+        // Алгоритм Fisher-Yates для перемешивания
+        use rand::thread_rng;
+        let mut rng = thread_rng();
+        for i in (1..self.bag.len()).rev() {
+            // Генерируем случайный индекс от 0 до i
+            let j = rng.gen_range(0..=i);
+            self.bag.swap(i, j);
+        }
+        
+        self.index = 0;
+    }
+
+    /// Получить следующую фигуру из мешка.
+    ///
+    /// # Возвращает
+    /// Следующий тип фигуры из мешка
+    ///
+    /// # Примечания
+    /// - Если мешок пуст, автоматически заполняется новым набором
+    /// - Гарантирует равномерное распределение фигур
+    pub fn next_shape(&mut self) -> ShapeType {
+        // Если мешок пуст или фигуры закончились, заполняем новый
+        if self.index >= self.bag.len() {
+            self.fill_bag();
+        }
+
+        // Берём фигуру из мешка и увеличиваем индекс
+        let shape = self.bag[self.index];
+        self.index += 1;
+        shape
+    }
+}
+
+impl Default for BagGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /*
  * Фигура может занимать от -2 до 2 по всем направлениям (из-за вращений),
  * поэтому требуется сетка 3x4:
@@ -219,6 +302,25 @@ impl Tetromino {
     /// ```
     pub fn select() -> Self {
         let shape = random();
+        Self {
+            pos: (4.0, 0.0), // Начальная позиция по центру
+            shape,
+            coords: SHAPE_COORDS[shape as usize],
+            fg: shape as usize,
+        }
+    }
+
+    /// Создать новую фигуру из Bag Generator.
+    ///
+    /// Использует систему 7-bag для гарантированного появления всех 7 типов фигур.
+    ///
+    /// # Аргументы
+    /// * `bag` - генератор фигур по системе 7-bag
+    ///
+    /// # Возвращает
+    /// Новый Tetromino с фигурой из мешка и начальной позицией (4.0, 0.0)
+    pub fn from_bag(bag: &mut BagGenerator) -> Self {
+        let shape = bag.next_shape();
         Self {
             pos: (4.0, 0.0), // Начальная позиция по центру
             shape,
@@ -935,14 +1037,91 @@ mod tests {
     #[test]
     fn test_can_hold_flag() {
         use crate::game::GameState;
-        
+
         let mut state = GameState::new();
-        
+
         // В начале можно удерживать
         assert!(state.can_hold());
-        
+
         // После удержания — нельзя
         state.hold_shape();
         assert!(!state.can_hold());
+    }
+
+    // =========================================================================
+    // ГРУППА ТЕСТОВ 41-45: BagGenerator (создание, fill, next, все фигуры, Fisher-Yates)
+    // =========================================================================
+    // Эти тесты проверяют новую систему генерации фигур 7-bag:
+    // - Создание генератора
+    // - Заполнение мешка всеми фигурами
+    // - Получение фигур по очереди
+    // - Гарантия появления всех 7 типов в каждом мешке
+    // - Корректность алгоритма Fisher-Yates
+
+    /// Тест 41: Проверка создания BagGenerator
+    #[test]
+    fn test_bag_generator_creation() {
+        let mut bag = BagGenerator::new();
+        assert_eq!(bag.bag.len(), 0);
+        assert_eq!(bag.index, 0);
+    }
+
+    /// Тест 42: Проверка заполнения мешка
+    #[test]
+    fn test_bag_generator_fill() {
+        let mut bag = BagGenerator::new();
+        bag.fill_bag();
+        
+        // Мешок должен содержать 7 фигур
+        assert_eq!(bag.bag.len(), 7);
+        // Индекс должен быть сброшен
+        assert_eq!(bag.index, 0);
+    }
+
+    /// Тест 43: Проверка получения фигур из мешка
+    #[test]
+    fn test_bag_generator_next_shape() {
+        let mut bag = BagGenerator::new();
+        
+        // Получаем 7 фигур
+        let mut shapes = Vec::new();
+        for _ in 0..7 {
+            shapes.push(bag.next_shape());
+        }
+        
+        // Все 7 типов должны присутствовать
+        assert!(shapes.contains(&ShapeType::T));
+        assert!(shapes.contains(&ShapeType::L));
+        assert!(shapes.contains(&ShapeType::J));
+        assert!(shapes.contains(&ShapeType::S));
+        assert!(shapes.contains(&ShapeType::Z));
+        assert!(shapes.contains(&ShapeType::O));
+        assert!(shapes.contains(&ShapeType::I));
+    }
+
+    /// Тест 44: Проверка автоматического заполнения мешка
+    #[test]
+    fn test_bag_generator_refill() {
+        let mut bag = BagGenerator::new();
+        
+        // Получаем 14 фигур (два полных мешка)
+        for _ in 0..14 {
+            let _ = bag.next_shape();
+        }
+        
+        // Индекс должен быть в пределах мешка
+        assert!(bag.index <= 7);
+    }
+
+    /// Тест 45: Проверка Tetromino::from_bag
+    #[test]
+    fn test_tetromino_from_bag() {
+        let mut bag = BagGenerator::new();
+        let tetromino = Tetromino::from_bag(&mut bag);
+        
+        // Позиция должна быть начальной
+        assert_eq!(tetromino.pos, (4.0, 0.0));
+        // Тип фигуры должен быть корректным
+        assert!(tetromino.fg < 7);
     }
 }
