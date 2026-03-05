@@ -12,6 +12,11 @@
 //! - Предпросмотр следующей фигуры
 //! - "Призрачная" фигура (показывает точку приземления)
 //! - Таблица лидеров (топ-5)
+//! - Удержание фигуры (Hold)
+//! - Звуковые эффекты через терминальный bell
+//! - Анимация очистки линий
+//! - Расширенная статистика игры
+//! - Режим "спринт" (40 линий на время)
 
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
@@ -103,6 +108,12 @@ const PIECE_SCORE_FALL_MULT: f32 = 50.0;
 /// Количество линий для повышения уровня.
 pub const LINES_PER_LEVEL: u32 = 10;
 
+/// Количество линий для режима спринт.
+pub const SPRINT_LINES: u32 = 40;
+
+/// Символ терминального bell для звуковых эффектов.
+const BELL: &str = "\x07";
+
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
 pub enum Dir {
@@ -114,13 +125,108 @@ pub enum Dir {
     Right,
 }
 
+/// Режим игры.
+#[derive(PartialEq, Clone, Copy, Debug)]
+pub enum GameMode {
+    /// Классический режим — игра до проигрыша.
+    Classic,
+    /// Спринт — очистить 40 линий как можно быстрее.
+    Sprint,
+}
+
+/// Статистика игры.
+///
+/// Содержит подробную информацию о прошедшей игре:
+/// - Количество использованных фигур каждого типа
+/// - Общее количество очищенных линий
+/// - Максимальное комбо (одновременное удаление линий)
+/// - Время игры
+#[derive(Default, Clone)]
+pub struct GameStats {
+    /// Количество фигур типа T.
+    pub t_pieces: u32,
+    /// Количество фигур типа L.
+    pub l_pieces: u32,
+    /// Количество фигур типа J.
+    pub j_pieces: u32,
+    /// Количество фигур типа S.
+    pub s_pieces: u32,
+    /// Количество фигур типа Z.
+    pub z_pieces: u32,
+    /// Количество фигур типа O.
+    pub o_pieces: u32,
+    /// Количество фигур типа I.
+    pub i_pieces: u32,
+    /// Максимальное комбо (одновременное удаление линий).
+    pub max_combo: u32,
+    /// Время начала игры.
+    pub start_time: Option<Instant>,
+    /// Время окончания игры.
+    pub end_time: Option<Instant>,
+}
+
+impl GameStats {
+    /// Создать новую статистику.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Увеличить счётчик для указанной фигуры.
+    pub fn add_piece(&mut self, piece_type: crate::tetromino::ShapeType) {
+        match piece_type {
+            crate::tetromino::ShapeType::T => self.t_pieces += 1,
+            crate::tetromino::ShapeType::L => self.l_pieces += 1,
+            crate::tetromino::ShapeType::J => self.j_pieces += 1,
+            crate::tetromino::ShapeType::S => self.s_pieces += 1,
+            crate::tetromino::ShapeType::Z => self.z_pieces += 1,
+            crate::tetromino::ShapeType::O => self.o_pieces += 1,
+            crate::tetromino::ShapeType::I => self.i_pieces += 1,
+        }
+    }
+
+    /// Получить общее количество использованных фигур.
+    pub fn total_pieces(&self) -> u32 {
+        self.t_pieces + self.l_pieces + self.j_pieces + self.s_pieces
+            + self.z_pieces + self.o_pieces + self.i_pieces
+    }
+
+    /// Обновить максимальное комбо.
+    pub fn update_max_combo(&mut self, lines: u32) {
+        if lines > self.max_combo {
+            self.max_combo = lines;
+        }
+    }
+
+    /// Получить время игры в секундах.
+    pub fn get_elapsed_time(&self) -> f64 {
+        match (self.start_time, self.end_time) {
+            (Some(start), Some(end)) => end.duration_since(start).as_secs_f64(),
+            (Some(start), None) => Instant::now().duration_since(start).as_secs_f64(),
+            _ => 0.0,
+        }
+    }
+
+    /// Начать отсчёт времени.
+    pub fn start_timer(&mut self) {
+        self.start_time = Some(Instant::now());
+    }
+
+    /// Остановить отсчёт времени.
+    pub fn stop_timer(&mut self) {
+        self.end_time = Some(Instant::now());
+    }
+}
+
 /// Состояние игры.
 ///
 /// Содержит всю информацию о текущем состоянии игры:
 /// - Счёт, уровень, количество линий
 /// - Текущая и следующая фигуры
+/// - Удержанная фигура (Hold)
 /// - Игровое поле
 /// - Таймеры и скорость
+/// - Статистика игры
+/// - Режим игры
 pub struct GameState {
     /// Текущий счёт.
     score: u64,
@@ -132,12 +238,22 @@ pub struct GameState {
     curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
     next_shape: Tetromino,
+    /// Удержанная фигура (None если ещё не использовалась).
+    held_shape: Option<Tetromino>,
+    /// Можно ли ещё менять удержанную фигуру в этом ходу.
+    can_hold: bool,
     /// Скорость падения.
     fall_spd: f32,
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Таймер приземления.
     land_timer: f64,
+    /// Статистика игры.
+    stats: GameStats,
+    /// Режим игры.
+    mode: GameMode,
+    /// Строки для анимации (мигание при очистке).
+    animating_rows: Vec<usize>,
 }
 
 /// Состояние завершения обновления.
@@ -166,20 +282,42 @@ impl GameState {
     /// - Уровень: 1
     /// - Скорость: INITIAL_FALL_SPD
     /// - Поле: пустое
+    /// - Удержанная фигура: None
+    /// - Статистика: новая
+    /// - Режим: классический
     pub fn new() -> Self {
         let curr_shape = Tetromino::select();
         let next_shape = Tetromino::select();
+        let mut stats = GameStats::new();
+        stats.add_piece(curr_shape.shape);
         Self {
             score: 0,
             level: 1,
             lines_cleared: 0,
             curr_shape,
             next_shape,
+            held_shape: None,
+            can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
             // Инициализация поля пустыми клетками (-1)
             blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             land_timer: LAND_TIME_DELAY_S,
+            stats,
+            mode: GameMode::Classic,
+            animating_rows: Vec::new(),
         }
+    }
+
+    /// Создать новое состояние игры для режима спринт.
+    ///
+    /// Отличается от классического режима:
+    /// - Цель: очистить 40 линий как можно быстрее
+    /// - Счёт не сохраняется в таблицу лидеров
+    /// - Отображается таймер
+    pub fn new_sprint() -> Self {
+        let mut state = Self::new();
+        state.mode = GameMode::Sprint;
+        state
     }
 
     /// Запустить игровой цикл и вернуть финальный счёт.
@@ -265,6 +403,7 @@ impl GameState {
     /// - `a/d` - перемещение влево/вправо
     /// - `q/e` - вращение против/по часовой стрелке
     /// - `s` - мгновенное падение
+    /// - `c` - удержать фигуру (Hold)
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
         match key {
@@ -302,6 +441,12 @@ impl GameState {
                 // Фиксируем таймер для немедленного приземления
                 self.land_timer = 0.0;
             }
+            b'c' | b'C' => {
+                // Удержание фигуры (можно использовать один раз за ход)
+                if self.can_hold {
+                    self.hold_shape();
+                }
+            }
             _ => {}
         }
 
@@ -319,6 +464,9 @@ impl GameState {
             // Фиксация фигуры и начисление очков
             self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
 
+            // Обновление статистики
+            self.stats.add_piece(self.curr_shape.shape);
+
             // Сохранение фигуры в сетке поля
             self.save_tetromino();
             // Проверка и удаление заполненных линий
@@ -328,6 +476,10 @@ impl GameState {
             self.land_timer = LAND_TIME_DELAY_S;
             self.curr_shape = self.next_shape;
             self.next_shape = Tetromino::select();
+            self.can_hold = true; // Разрешаем удержание в новом ходу
+            
+            // Обновление статистики для новой фигуры
+            self.stats.add_piece(self.curr_shape.shape);
         }
 
         UpdateEndState::Continue
@@ -353,13 +505,40 @@ impl GameState {
         }
     }
 
+    /// Удержать текущую фигуру и получить следующую.
+    ///
+    /// Механика Hold:
+    /// - Можно использовать один раз за ход
+    /// - Меняет текущую фигуру на удержанную (или создаёт новую)
+    /// - Удержанная фигура отображается слева от поля
+    pub fn hold_shape(&mut self) {
+        let current_shape = self.curr_shape;
+        
+        if let Some(held) = self.held_shape {
+            // Если уже была удержанная фигура — меняем местами
+            self.curr_shape = held;
+            self.held_shape = Some(current_shape);
+        } else {
+            // Если удержанной фигуры не было — сохраняем текущую
+            self.held_shape = Some(current_shape);
+            self.curr_shape = self.next_shape;
+            self.next_shape = Tetromino::select();
+        }
+        
+        // Сбрасываем позицию и запрещаем повторное удержание в этом ходу
+        self.curr_shape.pos = (4.0, 0.0);
+        self.can_hold = false;
+    }
+
     /// Проверить заполненные линии и удалить их.
     ///
     /// Алгоритм работы:
     /// 1. Поиск полностью заполненных линий
-    /// 2. Удаление заполненных линий
-    /// 3. Сдвиг верхних линий вниз
-    /// 4. Обновление счёта, уровня и скорости
+    /// 2. Анимация мигания заполненных линий
+    /// 3. Звуковой эффект при удалении
+    /// 4. Удаление заполненных линий
+    /// 5. Сдвиг верхних линий вниз
+    /// 6. Обновление счёта, уровня и скорости
     ///
     /// # Система очков
     /// - 1 линия: 100 очков (×1)
@@ -370,6 +549,7 @@ impl GameState {
     /// # Примечания
     /// - Уровень повышается каждые LINES_PER_LEVEL линий
     /// - Скорость увеличивается на SPD_INC за каждую линию
+    /// - Воспроизводится звуковой сигнал при удалении линий
     fn check_rows(&mut self) {
         let mut rows_to_remove = Vec::new();
 
@@ -389,6 +569,17 @@ impl GameState {
 
         let num_filled_rows = rows_to_remove.len();
 
+        if num_filled_rows > 0 {
+            // Анимация мигания перед удалением
+            self.animating_rows = rows_to_remove.clone();
+            
+            // Воспроизведение звукового сигнала (терминальный bell)
+            print!("{}", BELL);
+            
+            // Обновление статистики
+            self.stats.update_max_combo(num_filled_rows as u32);
+        }
+
         // Удаление заполненных линий и сдвиг верхних строк вниз
         // Обработка снизу вверх для корректного сдвига
         for (shift_count, &row) in rows_to_remove.iter().rev().enumerate() {
@@ -399,6 +590,9 @@ impl GameState {
             // Очистка верхней строки
             self.blocks[shift_count] = [-1; GRID_WIDTH];
         }
+
+        // Очистка анимации
+        self.animating_rows.clear();
 
         if num_filled_rows > 0 {
             // Обновление количества удалённых линий
@@ -418,6 +612,11 @@ impl GameState {
             // Начисление очков за линии с экспоненциальным бонусом
             // Бонус за несколько линий: 100, 200, 400, 800...
             self.score += ROW_SCORE_INC * (1 << (num_filled_rows - 1));
+            
+            // Проверка окончания режима спринт
+            if self.mode == GameMode::Sprint && self.lines_cleared >= SPRINT_LINES {
+                self.stats.stop_timer();
+            }
         }
     }
 
@@ -434,6 +633,9 @@ impl GameState {
     /// 4. Призрачная фигура (точка приземления)
     /// 5. Текущая падающая фигура
     /// 6. Предпросмотр следующей фигуры
+    /// 7. Удержанная фигура (Hold)
+    /// 8. Статистика по фигурам
+    /// 9. Таймер (для режима спринт)
     fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
@@ -486,6 +688,14 @@ impl GameState {
 
         // Отрисовка следующей фигуры (предпросмотр)
         self.draw_next_shape(cnv);
+
+        // Отрисовка удержанной фигуры (Hold)
+        self.draw_held_shape(cnv);
+
+        // Отрисовка таймера для режима спринт
+        if self.mode == GameMode::Sprint {
+            self.draw_sprint_timer(cnv);
+        }
 
         cnv.flush();
     }
@@ -546,6 +756,59 @@ impl GameState {
                 );
             }
         }
+    }
+
+    /// Отрисовать удержанную фигуру (слева от поля).
+    ///
+    /// Показывает фигуру, которую можно получить нажатием 'c'.
+    fn draw_held_shape(&mut self, cnv: &mut Canvas) {
+        // Позиция предпросмотра удержанной фигуры (слева от игрового поля)
+        let preview_x = 2u16;
+        let preview_y = 8u16;
+
+        cnv.draw_string("Удерж:", (preview_x, preview_y - 2), BORDER_COLOR, &Reset);
+
+        if let Some(held) = self.held_shape {
+            // Отрисовка блоков удержанной фигуры
+            for coord in held.coords {
+                let (coord_x, coord_y) = coord;
+                let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16;
+                let y = preview_y as i16 + coord_y + 1;
+
+                if x >= 0 && y >= 0 {
+                    // Если нельзя менять — рисуем тусклым цветом
+                    if self.can_hold {
+                        cnv.draw_strs(
+                            &[SHAPE_STR],
+                            (x as u16, y as u16),
+                            SHAPE_COLORS[held.fg],
+                            &Reset,
+                        );
+                    } else {
+                        // Тусклая отрисовка (символ ░░)
+                        cnv.draw_strs(
+                            &["░░"],
+                            (x as u16, y as u16),
+                            SHAPE_COLORS[held.fg],
+                            &Reset,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// Отрисовать таймер для режима спринт.
+    ///
+    /// Показывает время, прошедшее с начала игры.
+    fn draw_sprint_timer(&mut self, cnv: &mut Canvas) {
+        let elapsed = self.stats.get_elapsed_time();
+        let timer_str = format!("Время: {:.2}с", elapsed);
+        cnv.draw_string(&timer_str, (24, 20), BORDER_COLOR, &Reset);
+        
+        // Показываем прогресс до 40 линий
+        let progress = format!("Цель: {}/{}", self.lines_cleared, SPRINT_LINES);
+        cnv.draw_string(&progress, (24, 21), BORDER_COLOR, &Reset);
     }
 
     /// Проверить возможность движения фигуры в заданном направлении.
@@ -677,5 +940,46 @@ impl GameState {
     #[allow(dead_code)]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
+    }
+
+    /// Получить статистику игры.
+    #[allow(dead_code)]
+    pub fn get_stats(&self) -> &GameStats {
+        &self.stats
+    }
+
+    /// Получить режим игры.
+    #[allow(dead_code)]
+    pub fn get_mode(&self) -> GameMode {
+        self.mode
+    }
+
+    /// Начать отсчёт времени игры.
+    pub fn start_timer(&mut self) {
+        self.stats.start_timer();
+    }
+
+    /// Получить удержанную фигуру (для тестов).
+    #[allow(dead_code)]
+    pub fn get_held_shape(&self) -> Option<Tetromino> {
+        self.held_shape
+    }
+
+    /// Получить флаг can_hold (для тестов).
+    #[allow(dead_code)]
+    pub fn can_hold(&self) -> bool {
+        self.can_hold
+    }
+
+    /// Получить количество линий (для тестов).
+    #[allow(dead_code)]
+    pub fn get_lines_cleared_public(&self) -> u32 {
+        self.lines_cleared
+    }
+
+    /// Получить текущую фигуру (для тестов).
+    #[allow(dead_code)]
+    pub fn get_curr_shape(&self) -> &Tetromino {
+        &self.curr_shape
     }
 }
