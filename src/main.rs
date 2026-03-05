@@ -7,13 +7,15 @@
 //! - Загрузку и сохранение рекордов
 //! - Проверку размера терминала
 //! - Запуск игрового цикла
+//! - Выбор режима игры (классический/спринт)
+//! - Отображение статистики после игры
 
 mod game;
 mod highscore;
 mod io;
 mod tetromino;
 
-use crate::game::{GameState, FPS};
+use crate::game::{GameMode, GameState, FPS};
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
 use std::{
@@ -32,6 +34,7 @@ use termion::{
 /// - Информация об авторе
 /// - Управление
 /// - Поле для отображения рекорда
+/// - Опция выбора режима спринт
 const MENU: [&str; DISP_HEIGHT as usize] = [
     "                      ",
     "╔════════════════════╗",
@@ -45,13 +48,13 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
     "║ - a/d - влево/впр. ║",
     "║  - q/e - поворот   ║",
     "║  - s - сброс вниз  ║",
+    "║  - c - удержать    ║",
     "║    - p - пауза     ║",
     "║ - back - выход     ║",
     "║                    ║",
-    "║                    ║",
-    "║  Enter для начала... ║",
-    "║                    ║",
-    "║                    ║",
+    "║ Enter - классика   ║",
+    "║  'r' - спринт 40   ║",
+    "║  'l' - таблица л.  ║",
     "║     Рекорд:        ║",
     "║                    ║",
     "║                    ║",
@@ -129,9 +132,13 @@ fn main() {
         let key = inp.get_key();
         match key {
             b'\n' | b'\r' => {
-                // Enter — начать новую игру
+                // Enter — начать классическую игру
                 let mut state = GameState::new();
+                state.start_timer();
                 let new_score = state.play(&mut cnv, &mut inp, hs_str.as_str());
+
+                // Отображение статистики после игры
+                show_game_stats(&mut cnv, &mut inp, &state);
 
                 // Сохранение рекорда в таблицу лидеров
                 if new_score > 0 {
@@ -148,6 +155,15 @@ fn main() {
                         SaveData::save_value(high_score);
                     }
                 }
+            }
+            b'r' => {
+                // R — начать режим спринт
+                let mut state = GameState::new_sprint();
+                state.start_timer();
+                state.play(&mut cnv, &mut inp, hs_str.as_str());
+
+                // Отображение статистики после игры
+                show_game_stats(&mut cnv, &mut inp, &state);
             }
             b'l' => {
                 // L — показать таблицу лидеров
@@ -227,6 +243,70 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
     }
 
     cnv.draw_string("Нажмите любую клавишу", (3, 12), MENU_COLOR, &Reset);
+    cnv.flush();
+
+    // Ожидание нажатия любой клавиши для возврата в меню
+    loop {
+        let key = inp.get_key();
+        if key != 0 {
+            break;
+        }
+        sleep(Duration::from_millis(50));
+    }
+}
+
+/// Показать статистику после завершения игры.
+///
+/// # Аргументы
+/// * `cnv` - канвас для отрисовки интерфейса
+/// * `inp` - читатель нажатий клавиш
+/// * `state` - состояние игры для получения статистики
+///
+/// # Примечания
+/// Отображает:
+/// - Время игры
+/// - Количество использованных фигур каждого типа
+/// - Максимальное комбо
+/// - Режим игры
+fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
+    let stats = state.get_stats();
+    let mode_str = match state.get_mode() {
+        GameMode::Classic => "Классика",
+        GameMode::Sprint => "Спринт",
+    };
+
+    // Создаём именованные переменные для всех строк
+    let line0 = "╔════════════════════╗";
+    let line1 = "║   СТАТИСТИКА ИГРЫ  ║";
+    let line2 = "║                    ║";
+    let line3 = format!("║ Режим: {:14} ║", mode_str);
+    let line4 = format!("║ Время: {:14.1} ║", stats.get_elapsed_time());
+    let line5 = format!("║ Фигур: {:14} ║", stats.total_pieces());
+    let line6 = format!("║ T: {:3} L: {:3} J: {:3}  ║", stats.t_pieces, stats.l_pieces, stats.j_pieces);
+    let line7 = format!("║ S: {:3} Z: {:3} O: {:3}  ║", stats.s_pieces, stats.z_pieces, stats.o_pieces);
+    let line8 = format!("║ I: {:3}              ║", stats.i_pieces);
+    let line9 = format!("║ Комбо: {:14} ║", stats.max_combo);
+    let line10 = "║                    ║";
+    let line11 = "║  Любая клавиша...  ║";
+    let line12 = "╚════════════════════╝";
+
+    let lines = [
+        line0,
+        line1,
+        line2,
+        &line3,
+        &line4,
+        &line5,
+        &line6,
+        &line7,
+        &line8,
+        &line9,
+        line10,
+        line11,
+        line12,
+    ];
+
+    cnv.draw_strs(&lines, (1, 1), MENU_COLOR, &Reset);
     cnv.flush();
 
     // Ожидание нажатия любой клавиши для возврата в меню
