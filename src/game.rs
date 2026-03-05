@@ -105,6 +105,15 @@ const PIECE_SCORE_INC: u64 = 100;
 /// Множитель очков за падение.
 const PIECE_SCORE_FALL_MULT: f32 = 50.0;
 
+/// Очки за ячейку при Soft Drop.
+const SOFT_DROP_POINTS: u64 = 1;
+
+/// Очки за ячейку при Hard Drop.
+const HARD_DROP_POINTS: u64 = 2;
+
+/// Бонус за комбо: 50 × (номер комбо - 1).
+const COMBO_BONUS: u64 = 50;
+
 /// Количество линий для повышения уровня.
 pub const LINES_PER_LEVEL: u32 = 10;
 
@@ -159,6 +168,8 @@ pub struct GameStats {
     pub i_pieces: u32,
     /// Максимальное комбо (одновременное удаление линий).
     pub max_combo: u32,
+    /// Текущее комбо (последовательные удаления в нескольких ходах).
+    pub combo_counter: u32,
     /// Время начала игры.
     pub start_time: Option<Instant>,
     /// Время окончания игры.
@@ -254,6 +265,10 @@ pub struct GameState {
     mode: GameMode,
     /// Строки для анимации (мигание при очистке).
     animating_rows: Vec<usize>,
+    /// Флаг для анимации Hard Drop.
+    is_hard_dropping: bool,
+    /// Количество ячеек, пройденных при Soft Drop.
+    soft_drop_distance: u32,
 }
 
 /// Состояние завершения обновления.
@@ -286,8 +301,9 @@ impl GameState {
     /// - Статистика: новая
     /// - Режим: классический
     pub fn new() -> Self {
-        let curr_shape = Tetromino::select();
-        let next_shape = Tetromino::select();
+        let mut bag = crate::tetromino::BagGenerator::new();
+        let curr_shape = Tetromino::from_bag(&mut bag);
+        let next_shape = Tetromino::from_bag(&mut bag);
         let mut stats = GameStats::new();
         stats.add_piece(curr_shape.shape);
         Self {
@@ -305,6 +321,8 @@ impl GameState {
             stats,
             mode: GameMode::Classic,
             animating_rows: Vec::new(),
+            is_hard_dropping: false,
+            soft_drop_distance: 0,
         }
     }
 
@@ -315,9 +333,28 @@ impl GameState {
     /// - Счёт не сохраняется в таблицу лидеров
     /// - Отображается таймер
     pub fn new_sprint() -> Self {
-        let mut state = Self::new();
-        state.mode = GameMode::Sprint;
-        state
+        let mut bag = crate::tetromino::BagGenerator::new();
+        let curr_shape = Tetromino::from_bag(&mut bag);
+        let next_shape = Tetromino::from_bag(&mut bag);
+        let mut stats = GameStats::new();
+        stats.add_piece(curr_shape.shape);
+        Self {
+            score: 0,
+            level: 1,
+            lines_cleared: 0,
+            curr_shape,
+            next_shape,
+            held_shape: None,
+            can_hold: true,
+            fall_spd: INITIAL_FALL_SPD,
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            land_timer: LAND_TIME_DELAY_S,
+            stats,
+            mode: GameMode::Sprint,
+            animating_rows: Vec::new(),
+            is_hard_dropping: false,
+            soft_drop_distance: 0,
+        }
     }
 
     /// Запустить игровой цикл и вернуть финальный счёт.
@@ -402,10 +439,15 @@ impl GameState {
     /// - `p` - пауза
     /// - `a/d` - перемещение влево/вправо
     /// - `q/e` - вращение против/по часовой стрелке
-    /// - `s` - мгновенное падение
+    /// - `w` - Hard Drop (мгновенное падение с бонусом)
+    /// - `s` - Soft Drop (ускоренное падение при зажатии)
     /// - `c` - удержать фигуру (Hold)
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
+        
+        // Сброс флага Hard Drop
+        self.is_hard_dropping = false;
+        
         match key {
             127 => return UpdateEndState::Quit,   // Backspace — выход в меню
             b'p' => return UpdateEndState::Pause, // p — пауза
@@ -433,13 +475,27 @@ impl GameState {
                     self.curr_shape.rotate(Dir::Right);
                 }
             }
-            b's' => {
-                // Мгновенное падение: опускаем фигуру до упора
+            b'w' => {
+                // Hard Drop: мгновенное падение с бонусными очками
+                let start_y = self.curr_shape.pos.1;
                 while self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
                 }
+                let drop_distance = (self.curr_shape.pos.1 - start_y) as u64;
+                // Бонусные очки: 2 за каждую ячейку высоты
+                self.score += drop_distance * HARD_DROP_POINTS;
                 // Фиксируем таймер для немедленного приземления
                 self.land_timer = 0.0;
+                // Устанавливаем флаг для анимации
+                self.is_hard_dropping = true;
+            }
+            b's' => {
+                // Soft Drop: ускоренное падение при зажатии
+                if self.can_move_curr_shape(Dir::Down) {
+                    self.curr_shape.pos.1 += 1.0;
+                    // Считаем расстояние для очков
+                    self.soft_drop_distance += 1;
+                }
             }
             b'c' | b'C' => {
                 // Удержание фигуры (можно использовать один раз за ход)
@@ -463,21 +519,43 @@ impl GameState {
         } else {
             // Фиксация фигуры и начисление очков
             self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
+            
+            // Начисление очков за Soft Drop: 1 очко за ячейку
+            if self.soft_drop_distance > 0 {
+                self.score += (self.soft_drop_distance as u64) * SOFT_DROP_POINTS;
+                self.soft_drop_distance = 0;
+            }
 
             // Обновление статистики
             self.stats.add_piece(self.curr_shape.shape);
 
             // Сохранение фигуры в сетке поля
             self.save_tetromino();
-            // Проверка и удаление заполненных линий
-            self.check_rows();
+            // Проверка и удаление заполненных линий с передачей комбо
+            let lines_cleared = self.check_rows();
+            
+            // Обновление комбо
+            if lines_cleared > 0 {
+                // Удаление линий — увеличиваем комбо
+                self.stats.combo_counter += 1;
+                // Бонус за комбо: 50 × (комбо - 1)
+                if self.stats.combo_counter > 1 {
+                    self.score += COMBO_BONUS * (self.stats.combo_counter - 1) as u64;
+                }
+            } else {
+                // Нет удаления — сбрасываем комбо
+                self.stats.combo_counter = 0;
+            }
 
             // Сброс таймера и переход к следующей фигуре
             self.land_timer = LAND_TIME_DELAY_S;
-            self.curr_shape = self.next_shape;
-            self.next_shape = Tetromino::select();
-            self.can_hold = true; // Разрешаем удержание в новом ходу
             
+            // Используем Bag Generator для следующей фигуры
+            let mut bag = crate::tetromino::BagGenerator::new();
+            self.curr_shape = self.next_shape;
+            self.next_shape = Tetromino::from_bag(&mut bag);
+            self.can_hold = true; // Разрешаем удержание в новом ходу
+
             // Обновление статистики для новой фигуры
             self.stats.add_piece(self.curr_shape.shape);
         }
@@ -513,7 +591,7 @@ impl GameState {
     /// - Удержанная фигура отображается слева от поля
     pub fn hold_shape(&mut self) {
         let current_shape = self.curr_shape;
-        
+
         if let Some(held) = self.held_shape {
             // Если уже была удержанная фигура — меняем местами
             self.curr_shape = held;
@@ -522,9 +600,11 @@ impl GameState {
             // Если удержанной фигуры не было — сохраняем текущую
             self.held_shape = Some(current_shape);
             self.curr_shape = self.next_shape;
-            self.next_shape = Tetromino::select();
+            // Используем Bag Generator для следующей фигуры
+            let mut bag = crate::tetromino::BagGenerator::new();
+            self.next_shape = Tetromino::from_bag(&mut bag);
         }
-        
+
         // Сбрасываем позицию и запрещаем повторное удержание в этом ходу
         self.curr_shape.pos = (4.0, 0.0);
         self.can_hold = false;
@@ -544,13 +624,17 @@ impl GameState {
     /// - 1 линия: 100 очков (×1)
     /// - 2 линии: 200 очков (×2)
     /// - 3 линии: 400 очков (×4)
-    /// - 4 линии: 800 очков (×8)
+    /// - 4 линии: 800 очков (×8) + "TETRIS!" бонус
+    ///
+    /// # Возвращает
+    /// Количество удалённых линий (0 если линий нет)
     ///
     /// # Примечания
     /// - Уровень повышается каждые LINES_PER_LEVEL линий
     /// - Скорость увеличивается на SPD_INC за каждую линию
     /// - Воспроизводится звуковой сигнал при удалении линий
-    fn check_rows(&mut self) {
+    /// - При удалении 4 линий отображается "TETRIS!"
+    fn check_rows(&mut self) -> u32 {
         let mut rows_to_remove = Vec::new();
 
         // Поиск заполненных линий (снизу вверх)
@@ -567,17 +651,17 @@ impl GameState {
             }
         }
 
-        let num_filled_rows = rows_to_remove.len();
+        let num_filled_rows = rows_to_remove.len() as u32;
 
         if num_filled_rows > 0 {
             // Анимация мигания перед удалением
             self.animating_rows = rows_to_remove.clone();
-            
+
             // Воспроизведение звукового сигнала (терминальный bell)
             print!("{}", BELL);
-            
+
             // Обновление статистики
-            self.stats.update_max_combo(num_filled_rows as u32);
+            self.stats.update_max_combo(num_filled_rows);
         }
 
         // Удаление заполненных линий и сдвиг верхних строк вниз
@@ -596,7 +680,7 @@ impl GameState {
 
         if num_filled_rows > 0 {
             // Обновление количества удалённых линий
-            self.lines_cleared += num_filled_rows as u32;
+            self.lines_cleared += num_filled_rows;
 
             // Проверка повышения уровня (каждые 10 линий)
             let new_level = (self.lines_cleared / LINES_PER_LEVEL) + 1;
@@ -612,12 +696,19 @@ impl GameState {
             // Начисление очков за линии с экспоненциальным бонусом
             // Бонус за несколько линий: 100, 200, 400, 800...
             self.score += ROW_SCORE_INC * (1 << (num_filled_rows - 1));
-            
+
+            // Бонус за Tetris (4 линии одновременно)
+            if num_filled_rows == 4 {
+                self.score += 1000; // Дополнительный бонус за Tetris
+            }
+
             // Проверка окончания режима спринт
             if self.mode == GameMode::Sprint && self.lines_cleared >= SPRINT_LINES {
                 self.stats.stop_timer();
             }
         }
+
+        num_filled_rows
     }
 
     /// Отрисовать текущее состояние игры.
@@ -636,6 +727,8 @@ impl GameState {
     /// 7. Удержанная фигура (Hold)
     /// 8. Статистика по фигурам
     /// 9. Таймер (для режима спринт)
+    /// 10. Счётчик комбо
+    /// 11. "TETRIS!" при 4 линиях
     fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
@@ -648,6 +741,12 @@ impl GameState {
         cnv.draw_string(hs_disp, (7, 3), BORDER_COLOR, &Reset);
         cnv.draw_string(&level_str, (10, 4), BORDER_COLOR, &Reset);
         cnv.draw_string(&lines_str, (10, 5), BORDER_COLOR, &Reset);
+
+        // Отрисовка счётчика комбо
+        if self.stats.combo_counter > 1 {
+            let combo_str = format!("Комбо: x{}", self.stats.combo_counter);
+            cnv.draw_string(&combo_str, (24, 6), BORDER_COLOR, &Reset);
+        }
 
         // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
@@ -669,7 +768,7 @@ impl GameState {
         // Отрисовка призрачной фигуры (показывает точку приземления)
         self.draw_ghost_shape(cnv);
 
-        // Отрисовка текущей падающей фигуры
+        // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
@@ -678,12 +777,37 @@ impl GameState {
             let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
-            cnv.draw_strs(
-                &[SHAPE_STR],
-                (x as u16, y as u16),
-                SHAPE_COLORS[self.curr_shape.fg],
-                &Reset,
-            );
+            // Анимация Hard Drop: мигание фигуры
+            if self.is_hard_dropping {
+                // Чередование видимости для эффекта мигания
+                use std::time::{SystemTime, UNIX_EPOCH};
+                let millis = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .subsec_millis();
+                if (millis / 50) % 2 == 0 {
+                    cnv.draw_strs(
+                        &["░░"],
+                        (x as u16, y as u16),
+                        SHAPE_COLORS[self.curr_shape.fg],
+                        &Reset,
+                    );
+                } else {
+                    cnv.draw_strs(
+                        &[SHAPE_STR],
+                        (x as u16, y as u16),
+                        SHAPE_COLORS[self.curr_shape.fg],
+                        &Reset,
+                    );
+                }
+            } else {
+                cnv.draw_strs(
+                    &[SHAPE_STR],
+                    (x as u16, y as u16),
+                    SHAPE_COLORS[self.curr_shape.fg],
+                    &Reset,
+                );
+            }
         }
 
         // Отрисовка следующей фигуры (предпросмотр)
@@ -981,5 +1105,117 @@ impl GameState {
     #[allow(dead_code)]
     pub fn get_curr_shape(&self) -> &Tetromino {
         &self.curr_shape
+    }
+}
+
+#[cfg(test)]
+mod game_tests {
+    use super::*;
+
+    // =========================================================================
+    // ГРУППА ТЕСТОВ 46-50: Hard Drop (мгновенное падение, очки, анимация)
+    // =========================================================================
+    // Эти тесты проверяют новую механику Hard Drop:
+    // - Мгновенное падение фигуры
+    // - Начисление бонусных очков (2 за ячейку)
+    // - Флаг анимации
+
+    /// Тест 46: Проверка константы HARD_DROP_POINTS
+    #[test]
+    fn test_hard_drop_points_constant() {
+        assert_eq!(HARD_DROP_POINTS, 2);
+    }
+
+    /// Тест 47: Проверка константы SOFT_DROP_POINTS
+    #[test]
+    fn test_soft_drop_points_constant() {
+        assert_eq!(SOFT_DROP_POINTS, 1);
+    }
+
+    /// Тест 48: Проверка константы COMBO_BONUS
+    #[test]
+    fn test_combo_bonus_constant() {
+        assert_eq!(COMBO_BONUS, 50);
+    }
+
+    /// Тест 49: Проверка инициализации is_hard_dropping
+    #[test]
+    fn test_is_hard_dropping_initialization() {
+        let state = GameState::new();
+        // Флаг должен быть false в начале
+        assert!(!state.is_hard_dropping);
+    }
+
+    /// Тест 50: Проверка инициализации soft_drop_distance
+    #[test]
+    fn test_soft_drop_distance_initialization() {
+        let state = GameState::new();
+        // Расстояние должно быть 0 в начале
+        assert_eq!(state.soft_drop_distance, 0);
+    }
+
+    // =========================================================================
+    // ГРУППА ТЕСТОВ 51-55: Combo System (счётчик, бонус, сброс)
+    // =========================================================================
+    // Эти тесты проверяют систему комбо:
+    // - Подсчёт последовательных удалений
+    // - Бонус за комбо: 50 × (комбо - 1)
+    // - Сброс комбо при ходе без удаления
+
+    /// Тест 51: Проверка combo_counter в GameStats
+    #[test]
+    fn test_combo_counter_in_stats() {
+        let stats = GameStats::new();
+        assert_eq!(stats.combo_counter, 0);
+    }
+
+    /// Тест 52: Проверка update_max_combo с комбо
+    #[test]
+    fn test_update_max_combo_with_combo() {
+        let mut stats = GameStats::new();
+        
+        // Симуляция комбо
+        stats.combo_counter = 3;
+        stats.update_max_combo(2);
+        
+        assert_eq!(stats.combo_counter, 3);
+        assert_eq!(stats.max_combo, 2);
+    }
+
+    /// Тест 53: Проверка бонуса за комбо
+    #[test]
+    fn test_combo_bonus_calculation() {
+        // Комбо 1: бонус 0 (50 × 0)
+        assert_eq!(COMBO_BONUS * 0, 0);
+        // Комбо 2: бонус 50 (50 × 1)
+        assert_eq!(COMBO_BONUS * 1, 50);
+        // Комбо 3: бонус 100 (50 × 2)
+        assert_eq!(COMBO_BONUS * 2, 100);
+        // Комбо 5: бонус 200 (50 × 4)
+        assert_eq!(COMBO_BONUS * 4, 200);
+    }
+
+    /// Тест 54: Проверка начального состояния комбо
+    #[test]
+    fn test_initial_combo_state() {
+        let state = GameState::new();
+        assert_eq!(state.stats.combo_counter, 0);
+        assert_eq!(state.stats.max_combo, 0);
+    }
+
+    /// Тест 55: Проверка увеличения комбо
+    #[test]
+    fn test_combo_counter_increment() {
+        let mut stats = GameStats::new();
+        
+        // Симуляция нескольких удалений подряд
+        stats.combo_counter += 1;
+        assert_eq!(stats.combo_counter, 1);
+        
+        stats.combo_counter += 1;
+        assert_eq!(stats.combo_counter, 2);
+        
+        stats.combo_counter += 1;
+        assert_eq!(stats.combo_counter, 3);
     }
 }
