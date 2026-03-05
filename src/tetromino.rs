@@ -680,20 +680,24 @@ mod tests {
         use crate::game::GameState;
         let mut state = GameState::new();
         
-        // Запоминаем текущую фигуру
+        // Запоминаем текущую и следующую фигуры
         let initial_shape = state.get_curr_shape().shape;
+        let next_shape = state.get_next_shape().shape;
         
         // Удерживаем фигуру
         state.hold_shape();
         
         // Текущая фигура должна измениться на следующую
-        assert_ne!(state.get_curr_shape().shape, initial_shape);
+        assert_eq!(state.get_curr_shape().shape, next_shape);
         
         // Удержанная фигура должна быть установлена
         assert!(state.get_held_shape().is_some());
         
         // Удержание должно быть запрещено
         assert!(!state.can_hold());
+        
+        // Удержанная фигура должна быть той, что была изначально
+        assert_eq!(state.get_held_shape().unwrap().shape, initial_shape);
     }
 
     /// Тест 26: Проверка обмена удержанной фигуры
