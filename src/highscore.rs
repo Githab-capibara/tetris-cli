@@ -275,6 +275,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Лучший рекорд или 0, если таблица пуста
+    #[allow(dead_code)]
     pub fn get_best_score(&self) -> u64 {
         self.entries.first().map(|e| e.score).unwrap_or(0)
     }
@@ -287,6 +288,7 @@ impl Leaderboard {
     }
 
     /// Очистить таблицу лидеров.
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.entries.clear();
     }
@@ -295,6 +297,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Количество записей
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.entries.len()
     }
@@ -303,6 +306,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если таблица пуста
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
