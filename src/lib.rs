@@ -592,6 +592,7 @@ pub use controls::ControlsConfig;
 
 #[cfg(test)]
 mod testes {
+    pub mod test_achievements;
     pub mod test_controls;
     pub mod test_game_logic;
     pub mod test_highscore;
