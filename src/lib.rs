@@ -583,3 +583,19 @@ pub use highscore::{Leaderboard, LeaderboardEntry, SaveData};
 
 // Экспорт типов из модуля controls
 pub use controls::ControlsConfig;
+
+// ============================================================================
+// МОДУЛИ ТЕСТОВ
+// ============================================================================
+// Интеграционные тесты для проверки всех компонентов игры.
+// Тесты разбиты по категориям для лучшей организации.
+
+#[cfg(test)]
+mod testes {
+    pub mod test_controls;
+    pub mod test_game_logic;
+    pub mod test_tetromino;
+    pub mod test_highscore;
+    pub mod test_io;
+    pub mod test_integration;
+}
