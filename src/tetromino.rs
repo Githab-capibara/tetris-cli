@@ -105,6 +105,18 @@ impl BagGenerator {
         self.index += 1;
         shape
     }
+
+    /// Получить текущий мешок фигур (для тестов).
+    #[cfg(test)]
+    pub fn get_bag(&self) -> &Vec<ShapeType> {
+        &self.bag
+    }
+
+    /// Получить текущий индекс в мешке (для тестов).
+    #[cfg(test)]
+    pub fn get_index(&self) -> usize {
+        self.index
+    }
 }
 
 impl Default for BagGenerator {
@@ -1068,42 +1080,42 @@ mod tests {
         bag.fill_bag();
 
         // Проверяем, что мешок содержит 7 фигур
-        assert_eq!(bag.bag.len(), 7, "Мешок должен содержать 7 фигур");
+        assert_eq!(bag.get_bag().len(), 7, "Мешок должен содержать 7 фигур");
 
         // Проверяем наличие каждой фигуры
         assert!(
-            bag.bag.contains(&ShapeType::T),
+            bag.get_bag().contains(&ShapeType::T),
             "Мешок должен содержать фигуру T"
         );
         assert!(
-            bag.bag.contains(&ShapeType::L),
+            bag.get_bag().contains(&ShapeType::L),
             "Мешок должен содержать фигуру L"
         );
         assert!(
-            bag.bag.contains(&ShapeType::J),
+            bag.get_bag().contains(&ShapeType::J),
             "Мешок должен содержать фигуру J"
         );
         assert!(
-            bag.bag.contains(&ShapeType::S),
+            bag.get_bag().contains(&ShapeType::S),
             "Мешок должен содержать фигуру S"
         );
         assert!(
-            bag.bag.contains(&ShapeType::Z),
+            bag.get_bag().contains(&ShapeType::Z),
             "Мешок должен содержать фигуру Z"
         );
         assert!(
-            bag.bag.contains(&ShapeType::O),
+            bag.get_bag().contains(&ShapeType::O),
             "Мешок должен содержать фигуру O"
         );
         assert!(
-            bag.bag.contains(&ShapeType::I),
+            bag.get_bag().contains(&ShapeType::I),
             "Мешок должен содержать фигуру I"
         );
 
         // Проверяем, что каждая фигура встречается ровно один раз
-        let t_count = bag.bag.iter().filter(|&&s| s == ShapeType::T).count();
-        let l_count = bag.bag.iter().filter(|&&s| s == ShapeType::L).count();
-        let i_count = bag.bag.iter().filter(|&&s| s == ShapeType::I).count();
+        let t_count = bag.get_bag().iter().filter(|&&s| s == ShapeType::T).count();
+        let l_count = bag.get_bag().iter().filter(|&&s| s == ShapeType::L).count();
+        let i_count = bag.get_bag().iter().filter(|&&s| s == ShapeType::I).count();
 
         assert_eq!(t_count, 1, "Фигура T должна встречаться ровно 1 раз");
         assert_eq!(l_count, 1, "Фигура L должна встречаться ровно 1 раз");
@@ -1166,14 +1178,15 @@ mod tests {
         assert!(first_bag_shapes.contains(&ShapeType::I));
 
         // Индекс должен указывать на конец мешка
-        assert_eq!(bag.index, 7, "Индекс должен быть 7 после получения 7 фигур");
+        assert_eq!(bag.get_index(), 7, "Индекс должен быть 7 после получения 7 фигур");
 
         // Получаем следующую фигуру - должен заполниться новый мешок
         let next_shape = bag.next_shape();
 
         // Индекс должен сброситься на 1 (после заполнения нового мешка)
         assert_eq!(
-            bag.index, 1,
+            bag.get_index(),
+            1,
             "Индекс должен быть 1 после заполнения нового мешка"
         );
 
@@ -1190,7 +1203,7 @@ mod tests {
         ));
 
         // Проверяем, что в новом мешке тоже 7 фигур
-        assert_eq!(bag.bag.len(), 7, "Новый мешок должен содержать 7 фигур");
+        assert_eq!(bag.get_bag().len(), 7, "Новый мешок должен содержать 7 фигур");
     }
 
     /// Тест 16: Проверка равномерного распределения фигур

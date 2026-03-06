@@ -834,10 +834,10 @@ impl GameState {
                 use std::time::{SystemTime, UNIX_EPOCH};
                 let millis = SystemTime::now()
                     .duration_since(UNIX_EPOCH)
-                    .unwrap()
+                    .expect("Время не может быть отрицательным")
                     .subsec_millis();
                 // Мигание: каждые 50 мс меняем символ (полный блок/полупрозрачный)
-                let show_solid = ((millis / 50) % 2).is_multiple_of(2);
+                let show_solid = (millis / 50) % 2 == 0;
                 let shape_symbol = if show_solid { SHAPE_STR } else { "░░" };
                 cnv.draw_strs(
                     &[shape_symbol],
