@@ -7,9 +7,11 @@
 //! - `test_highscore` - тесты системы рекордов (15 тестов)
 //! - `test_io` - тесты ввода/вывода (10 тестов)
 //! - `test_integration` - интеграционные тесты (20 тестов)
+//! - `test_achievements` - тесты системы достижений (20 тестов)
 //!
-//! Итого: 120 тестов
+//! Итого: 140 тестов
 
+pub mod test_achievements;
 pub mod test_controls;
 pub mod test_game_logic;
 pub mod test_tetromino;

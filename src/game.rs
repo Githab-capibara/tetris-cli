@@ -120,8 +120,14 @@ pub const LINES_PER_LEVEL: u32 = 10;
 /// Количество линий для режима спринт.
 pub const SPRINT_LINES: u32 = 40;
 
+/// Количество линий для режима марафон.
+pub const MARATHON_LINES: u32 = 150;
+
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
+
+/// Символ для отрисовки призрачной фигуры (полупрозрачный блок).
+pub const GHOST_SHAPE_STR: &str = "░░";
 
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
@@ -141,6 +147,8 @@ pub enum GameMode {
     Classic,
     /// Спринт — очистить 40 линий как можно быстрее.
     Sprint,
+    /// Марафон — очистить 150 линий с нарастающей сложностью.
+    Marathon,
 }
 
 /// Статистика игры.
@@ -150,6 +158,7 @@ pub enum GameMode {
 /// - Общее количество очищенных линий
 /// - Максимальное комбо (одновременное удаление линий)
 /// - Время игры
+/// - Полученные достижения
 #[derive(Default, Clone)]
 pub struct GameStats {
     /// Количество фигур типа T.
@@ -174,6 +183,67 @@ pub struct GameStats {
     pub start_time: Option<Instant>,
     /// Время окончания игры.
     pub end_time: Option<Instant>,
+    /// Полученные достижения.
+    pub achievements: Vec<Achievement>,
+    /// Количество Tetris (4 линии одновременно).
+    pub tetris_count: u32,
+    /// Общее количество удалённых линий.
+    pub total_lines: u32,
+}
+
+/// Достижение в игре.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Achievement {
+    /// Название достижения.
+    pub name: String,
+    /// Описание достижения.
+    pub description: String,
+    /// Очки за достижение.
+    pub points: u32,
+}
+
+impl Achievement {
+    /// Создать новое достижение.
+    pub fn new(name: &str, description: &str, points: u32) -> Self {
+        Self {
+            name: name.to_string(),
+            description: description.to_string(),
+            points,
+        }
+    }
+
+    /// Достижение "Первый Tetris" — удалить 4 линии одновременно.
+    pub fn first_tetris() -> Self {
+        Self::new("🏆 TETRIS!", "Удалите 4 линии одновременно", 100)
+    }
+
+    /// Достижение "Комбо-мастер" — достичь комбо x5.
+    pub fn combo_master(combo: u32) -> Self {
+        Self::new(
+            "🔥 Комбо-мастер",
+            &format!("Достигните комбо x{}", combo),
+            50 * combo,
+        )
+    }
+
+    /// Достижение "Спринтер" — завершить режим спринт.
+    pub fn sprinter() -> Self {
+        Self::new("⚡ Спринтер", "Завершите режим спринт", 200)
+    }
+
+    /// Достижение "Марафонец" — завершить режим марафон.
+    pub fn marathoner() -> Self {
+        Self::new("🏃 Марафонец", "Завершите режим марафон", 500)
+    }
+
+    /// Достижение "Ветеран" — достичь уровня 10.
+    pub fn veteran(level: u32) -> Self {
+        Self::new(
+            "⭐ Ветеран",
+            &format!("Достигните уровня {}", level),
+            100 * level,
+        )
+    }
 }
 
 impl GameStats {
@@ -230,6 +300,67 @@ impl GameStats {
     /// Остановить отсчёт времени.
     pub fn stop_timer(&mut self) {
         self.end_time = Some(Instant::now());
+    }
+
+    /// Проверить и добавить достижения.
+    ///
+    /// # Аргументы
+    /// * `lines` — количество удалённых линий в текущем ходе
+    /// * `level` — текущий уровень
+    /// * `mode` — режим игры
+    ///
+    /// # Возвращает
+    /// Вектор новых полученных достижений
+    pub fn check_achievements(&mut self, lines: u32, level: u32, mode: GameMode) -> Vec<Achievement> {
+        let mut new_achievements = Vec::new();
+
+        // Достижение за Tetris (4 линии одновременно)
+        if lines == 4 {
+            // Увеличиваем счётчик Tetris каждый раз
+            self.tetris_count += 1;
+            
+            // Добавляем достижение только если его ещё нет
+            if !self.achievements.iter().any(|a| a.name == "🏆 TETRIS!") {
+                new_achievements.push(Achievement::first_tetris());
+            }
+        }
+
+        // Достижения за комбо
+        if self.combo_counter >= 5 {
+            if !self.achievements.iter().any(|a| a.name.starts_with("🔥")) {
+                new_achievements.push(Achievement::combo_master(self.combo_counter));
+            }
+        }
+
+        // Достижение за завершение спринта
+        if mode == GameMode::Sprint && self.total_lines >= SPRINT_LINES {
+            if !self.achievements.iter().any(|a| a.name == "⚡ Спринтер") {
+                new_achievements.push(Achievement::sprinter());
+            }
+        }
+
+        // Достижение за завершение марафона
+        if mode == GameMode::Marathon && self.total_lines >= MARATHON_LINES {
+            if !self.achievements.iter().any(|a| a.name == "🏃 Марафонец") {
+                new_achievements.push(Achievement::marathoner());
+            }
+        }
+
+        // Достижения за уровни (каждые 5 уровней)
+        if level >= 5 && level % 5 == 0 {
+            if !self.achievements.iter().any(|a| a.name.starts_with("⭐")) {
+                new_achievements.push(Achievement::veteran(level));
+            }
+        }
+
+        // Добавляем достижения в список
+        for achievement in &new_achievements {
+            if !self.achievements.iter().any(|a| a.name == achievement.name) {
+                self.achievements.push(achievement.clone());
+            }
+        }
+
+        new_achievements
     }
 }
 
@@ -356,6 +487,37 @@ impl GameState {
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Sprint,
+            animating_rows: Vec::new(),
+            is_hard_dropping: false,
+            soft_drop_distance: 0,
+        }
+    }
+
+    /// Создать новое состояние игры для режима марафон.
+    ///
+    /// Отличается от классического режима:
+    /// - Цель: очистить 150 линий
+    /// - Сложность растёт быстрее (каждые 5 линий)
+    /// - Сохраняется в таблицу лидеров
+    pub fn new_marathon() -> Self {
+        let mut bag = crate::tetromino::BagGenerator::new();
+        let curr_shape = Tetromino::from_bag(&mut bag);
+        let next_shape = Tetromino::from_bag(&mut bag);
+        let mut stats = GameStats::new();
+        stats.add_piece(curr_shape.shape);
+        Self {
+            score: 0,
+            level: 1,
+            lines_cleared: 0,
+            curr_shape,
+            next_shape,
+            held_shape: None,
+            can_hold: true,
+            fall_spd: INITIAL_FALL_SPD,
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            land_timer: LAND_TIME_DELAY_S,
+            stats,
+            mode: GameMode::Marathon,
             animating_rows: Vec::new(),
             is_hard_dropping: false,
             soft_drop_distance: 0,
