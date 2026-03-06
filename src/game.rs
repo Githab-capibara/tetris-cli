@@ -326,31 +326,34 @@ impl GameStats {
         }
 
         // Достижения за комбо
-        if self.combo_counter >= 5 {
-            if !self.achievements.iter().any(|a| a.name.starts_with("🔥")) {
-                new_achievements.push(Achievement::combo_master(self.combo_counter));
-            }
+        if self.combo_counter >= 5
+            && !self.achievements.iter().any(|a| a.name.starts_with("🔥"))
+        {
+            new_achievements.push(Achievement::combo_master(self.combo_counter));
         }
 
         // Достижение за завершение спринта
-        if mode == GameMode::Sprint && self.total_lines >= SPRINT_LINES {
-            if !self.achievements.iter().any(|a| a.name == "⚡ Спринтер") {
-                new_achievements.push(Achievement::sprinter());
-            }
+        if mode == GameMode::Sprint
+            && self.total_lines >= SPRINT_LINES
+            && !self.achievements.iter().any(|a| a.name == "⚡ Спринтер")
+        {
+            new_achievements.push(Achievement::sprinter());
         }
 
         // Достижение за завершение марафона
-        if mode == GameMode::Marathon && self.total_lines >= MARATHON_LINES {
-            if !self.achievements.iter().any(|a| a.name == "🏃 Марафонец") {
-                new_achievements.push(Achievement::marathoner());
-            }
+        if mode == GameMode::Marathon
+            && self.total_lines >= MARATHON_LINES
+            && !self.achievements.iter().any(|a| a.name == "🏃 Марафонец")
+        {
+            new_achievements.push(Achievement::marathoner());
         }
 
         // Достижения за уровни (каждые 5 уровней)
-        if level >= 5 && level % 5 == 0 {
-            if !self.achievements.iter().any(|a| a.name.starts_with("⭐")) {
-                new_achievements.push(Achievement::veteran(level));
-            }
+        if level >= 5
+            && level.is_multiple_of(5)
+            && !self.achievements.iter().any(|a| a.name.starts_with("⭐"))
+        {
+            new_achievements.push(Achievement::veteran(level));
         }
 
         // Добавляем достижения в список
@@ -999,7 +1002,7 @@ impl GameState {
                     .expect("Время не может быть отрицательным")
                     .subsec_millis();
                 // Мигание: каждые 50 мс меняем символ (полный блок/полупрозрачный)
-                let show_solid = (millis / 50) % 2 == 0;
+                let show_solid = (millis / 50).is_multiple_of(2);
                 let shape_symbol = if show_solid { SHAPE_STR } else { "░░" };
                 cnv.draw_strs(
                     &[shape_symbol],
@@ -1637,7 +1640,8 @@ mod game_tests {
         assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
 
         // Комбо 1: бонус 0 (первое удаление без бонуса)
-        let combo_1_bonus = COMBO_BONUS * 0;
+        // Используем явное приведение для подавления предупреждения clippy
+        let combo_1_bonus: u64 = 0;
         assert_eq!(combo_1_bonus, 0, "Бонус за первое комбо должен быть 0");
 
         // Комбо 2: бонус 50
