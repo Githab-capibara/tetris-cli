@@ -100,19 +100,19 @@ pub const SPD_INC: f32 = 0.05;
 pub const ROW_SCORE_INC: u64 = 100;
 
 /// Очки за фигуру.
-const PIECE_SCORE_INC: u64 = 100;
+pub const PIECE_SCORE_INC: u64 = 100;
 
 /// Множитель очков за падение.
-const PIECE_SCORE_FALL_MULT: f32 = 50.0;
+pub const PIECE_SCORE_FALL_MULT: f32 = 50.0;
 
 /// Очки за ячейку при Soft Drop.
-const SOFT_DROP_POINTS: u64 = 1;
+pub const SOFT_DROP_POINTS: u64 = 1;
 
 /// Очки за ячейку при Hard Drop.
-const HARD_DROP_POINTS: u64 = 2;
+pub const HARD_DROP_POINTS: u64 = 2;
 
 /// Бонус за комбо: 50 × (номер комбо - 1).
-const COMBO_BONUS: u64 = 50;
+pub const COMBO_BONUS: u64 = 50;
 
 /// Количество линий для повышения уровня.
 pub const LINES_PER_LEVEL: u32 = 10;
@@ -121,7 +121,7 @@ pub const LINES_PER_LEVEL: u32 = 10;
 pub const SPRINT_LINES: u32 = 40;
 
 /// Символ терминального bell для звуковых эффектов.
-const BELL: &str = "\x07";
+pub const BELL: &str = "\x07";
 
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
@@ -989,7 +989,7 @@ impl GameState {
     /// # Проверки
     /// 1. Выход за границы игрового поля
     /// 2. Столкновение с зафиксированными фигурами
-    fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
+    pub fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
         self.check_collision(&self.curr_shape.coords, self.curr_shape.pos, dir)
     }
 
@@ -1005,7 +1005,7 @@ impl GameState {
     /// # Отличия от can_move_curr_shape
     /// Использует immutable ссылку на self, так как призрачная фигура
     /// не изменяет состояние игры
-    fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
+    pub fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
         self.check_collision(&ghost.coords, ghost.pos, dir)
     }
 
@@ -1021,7 +1021,7 @@ impl GameState {
     /// 1. Создаётся временная копия фигуры
     /// 2. Применяется вращение к копии
     /// 3. Проверяется валидность новой позиции с помощью check_collision
-    fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
+    pub fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
@@ -1105,6 +1105,12 @@ impl GameState {
     #[allow(dead_code)]
     pub fn get_curr_shape(&self) -> &Tetromino {
         &self.curr_shape
+    }
+
+    /// Получить изменяемую текущую фигуру (для тестов).
+    #[allow(dead_code)]
+    pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
+        &mut self.curr_shape
     }
 }
 
