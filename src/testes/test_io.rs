@@ -25,11 +25,11 @@ use crate::io::{
 fn test_canvas_creation() {
     // Создаём канвас
     let result = std::panic::catch_unwind(|| {
-        let canvas = Canvas::new();
+        let _canvas = Canvas::new();
         // Канвас создан успешно
         true
     });
-    
+
     // Проверяем, что создание не вызвало панику
     // (в некоторых средах тестирования raw-режим может быть недоступен)
     match result {

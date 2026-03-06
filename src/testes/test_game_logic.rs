@@ -10,9 +10,9 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
-use crate::game::{GameState, GameMode, GameStats, Dir};
+use crate::game::{GameState, GameMode, Dir};
 use crate::game::{
-    FPS, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, SPD_INC, ROW_SCORE_INC,
+    INITIAL_FALL_SPD, SPD_INC, ROW_SCORE_INC,
     PIECE_SCORE_INC, SOFT_DROP_POINTS, HARD_DROP_POINTS, COMBO_BONUS,
     LINES_PER_LEVEL, SPRINT_LINES,
 };
@@ -72,10 +72,10 @@ fn test_game_state_next_shape_exists() {
 fn test_game_state_empty_field() {
     let state = GameState::new();
     let blocks = state.get_blocks();
-    
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            assert_eq!(blocks[y][x], -1,
+
+    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
+        for (x, cell) in row.iter().enumerate().take(GRID_WIDTH) {
+            assert_eq!(*cell, -1,
                       "Клетка [{},{}] должна быть пустой (-1)", y, x);
         }
     }
@@ -192,15 +192,15 @@ fn test_collision_with_fixed_blocks() {
 #[test]
 fn test_movement_in_empty_field() {
     let mut state = GameState::new();
-    
+
     // В начале игры движение влево/вправо должно быть возможно
     // (если фигура не у самой границы)
-    let initial_x = state.get_curr_shape_mut().pos.0;
-    
+    let _initial_x = state.get_curr_shape_mut().pos.0;
+
     // Проверяем, что можем двигаться хотя бы в одну сторону
     let can_move_left = state.can_move_curr_shape(Dir::Left);
     let can_move_right = state.can_move_curr_shape(Dir::Right);
-    
+
     assert!(can_move_left || can_move_right,
             "В пустом поле должно быть возможно движение хотя бы в одну сторону");
 }
@@ -380,14 +380,14 @@ fn test_hard_drop_points_constant() {
 #[test]
 fn test_line_score_calculation() {
     // 1 линия: 100 * 2^0 = 100
-    assert_eq!(ROW_SCORE_INC * (1 << 0), 100, "1 линия = 100 очков");
-    
+    assert_eq!(ROW_SCORE_INC, 100, "1 линия = 100 очков");
+
     // 2 линии: 100 * 2^1 = 200
     assert_eq!(ROW_SCORE_INC * (1 << 1), 200, "2 линии = 200 очков");
-    
+
     // 3 линии: 100 * 2^2 = 400
     assert_eq!(ROW_SCORE_INC * (1 << 2), 400, "3 линии = 400 очков");
-    
+
     // 4 линии: 100 * 2^3 = 800
     assert_eq!(ROW_SCORE_INC * (1 << 3), 800, "4 линии = 800 очков");
 }
@@ -398,16 +398,16 @@ fn test_line_score_calculation() {
 #[test]
 fn test_combo_bonus_constant() {
     assert_eq!(COMBO_BONUS, 50, "Бонус за комбо должен быть 50");
-    
+
     // Проверяем формулу расчёта бонуса
-    // Комбо 1: 50 * (1-1) = 0
-    assert_eq!(COMBO_BONUS * (1 - 1), 0, "Бонус за первое комбо должен быть 0");
-    
-    // Комбо 2: 50 * (2-1) = 50
-    assert_eq!(COMBO_BONUS * (2 - 1), 50, "Бонус за второе комбо должен быть 50");
-    
-    // Комбо 5: 50 * (5-1) = 200
-    assert_eq!(COMBO_BONUS * (5 - 1), 200, "Бонус за пятое комбо должен быть 200");
+    // Комбо 1: 50 * 0 = 0
+    assert_eq!(COMBO_BONUS * 0, 0, "Бонус за первое комбо должен быть 0");
+
+    // Комбо 2: 50 * 1 = 50
+    assert_eq!(COMBO_BONUS * 1, 50, "Бонус за второе комбо должен быть 50");
+
+    // Комбо 5: 50 * 4 = 200
+    assert_eq!(COMBO_BONUS * 4, 200, "Бонус за пятое комбо должен быть 200");
 }
 
 // ============================================================================
@@ -428,13 +428,13 @@ fn test_lines_per_level_constant() {
 #[test]
 fn test_level_calculation_from_lines() {
     // Уровень 1: 0-9 линий
-    assert_eq!((0 / LINES_PER_LEVEL) + 1, 1, "0 линий = уровень 1");
+    assert_eq!(0 + 1, 1, "0 линий = уровень 1");
     assert_eq!((9 / LINES_PER_LEVEL) + 1, 1, "9 линий = уровень 1");
-    
+
     // Уровень 2: 10-19 линий
     assert_eq!((10 / LINES_PER_LEVEL) + 1, 2, "10 линий = уровень 2");
     assert_eq!((19 / LINES_PER_LEVEL) + 1, 2, "19 линий = уровень 2");
-    
+
     // Уровень 5: 40-49 линий
     assert_eq!((40 / LINES_PER_LEVEL) + 1, 5, "40 линий = уровень 5");
     assert_eq!((49 / LINES_PER_LEVEL) + 1, 5, "49 линий = уровень 5");
@@ -445,7 +445,8 @@ fn test_level_calculation_from_lines() {
 /// Проверяет, что скорость увеличивается на SPD_INC за уровень.
 #[test]
 fn test_speed_increase_constant() {
-    assert!(SPD_INC > 0.0, "Прирост скорости должен быть положительным");
+    // SPD_INC = 0.05, проверяем что это положительное число меньше 1
+    assert!(SPD_INC > 0.0 && SPD_INC < 1.0, "Прирост скорости должен быть положительным и меньше 1");
     assert!((SPD_INC - 0.05).abs() < f32::EPSILON,
             "Прирост скорости должен быть 0.05");
 }

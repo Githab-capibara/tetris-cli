@@ -92,7 +92,7 @@ impl ControlsConfig {
     /// ```
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+            .map_err(|e| io::Error::other(e.to_string()))?;
         fs::write(path, json)?;
         Ok(())
     }
