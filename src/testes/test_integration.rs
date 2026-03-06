@@ -8,11 +8,10 @@
 //!
 //! Интеграционные тесты проверяют совместную работу модулей.
 
-use crate::game::{GameState, GameMode, GameStats, Dir};
+use crate::game::{GameState, GameMode, Dir};
 use crate::tetromino::{Tetromino, ShapeType, BagGenerator};
-use crate::highscore::{SaveData, Leaderboard, LeaderboardEntry};
+use crate::highscore::{SaveData, Leaderboard};
 use crate::controls::ControlsConfig;
-use crate::io::{GRID_WIDTH, GRID_HEIGHT};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Полный игровой цикл

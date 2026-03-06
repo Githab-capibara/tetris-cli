@@ -72,16 +72,17 @@ fn test_controls_default_trait() {
 #[test]
 fn test_controls_default_values_in_range() {
     let config = ControlsConfig::default_config();
-    
+
     let keys = [
         config.move_left, config.move_right, config.soft_drop,
         config.hard_drop, config.rotate_left, config.rotate_right,
         config.hold, config.pause, config.quit,
     ];
-    
+
     for (i, &key) in keys.iter().enumerate() {
         assert!(key > 0, "Клавиша {} должна быть больше 0", i);
-        assert!(key <= 255, "Клавиша {} должна быть <= 255", i);
+        // Проверка на <= 255 избыточна для типа u8, но оставляем для документации
+        let _ = key; // key используется для подавления предупреждения
     }
 }
 

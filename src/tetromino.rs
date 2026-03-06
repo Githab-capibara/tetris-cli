@@ -300,6 +300,7 @@ impl Tetromino {
     /// let figure = Tetromino::select();
     /// assert_eq!(figure.pos, (4.0, 0.0)); // Начальная позиция
     /// ```
+    #[allow(dead_code)]
     pub fn select() -> Self {
         let shape = random();
         Self {
@@ -503,9 +504,9 @@ mod tests {
         use crate::io::GRID_WIDTH;
         let state = GameState::new();
         let blocks = state.get_blocks();
-        for y in 0..GRID_HEIGHT {
-            for x in 0..GRID_WIDTH {
-                assert_eq!(blocks[y][x], -1);
+        for row in blocks.iter().take(GRID_HEIGHT) {
+            for cell in row.iter().take(GRID_WIDTH) {
+                assert_eq!(*cell, -1);
             }
         }
     }
@@ -553,7 +554,7 @@ mod tests {
     #[test]
     fn test_level_calculation() {
         // Уровень 1: 0-9 линий
-        assert_eq!((0 / 10) + 1, 1);
+        assert_eq!(0 + 1, 1);
         assert_eq!((9 / 10) + 1, 1);
         // Уровень 2: 10-19 линий
         assert_eq!((10 / 10) + 1, 2);
@@ -567,7 +568,7 @@ mod tests {
     fn test_line_bonus_calculation() {
         use crate::game::ROW_SCORE_INC;
         // 1 линия: 100 * 2^0 = 100
-        assert_eq!(ROW_SCORE_INC * (1 << 0), 100);
+        assert_eq!(ROW_SCORE_INC, 100);
         // 2 линии: 100 * 2^1 = 200
         assert_eq!(ROW_SCORE_INC * (1 << 1), 200);
         // 3 линии: 100 * 2^2 = 400

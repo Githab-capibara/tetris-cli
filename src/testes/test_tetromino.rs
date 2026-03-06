@@ -11,7 +11,6 @@
 
 use crate::tetromino::{Tetromino, ShapeType, BagGenerator, SHAPE_COORDS, SHAPE_COLORS};
 use crate::game::Dir;
-use rand::{random, Rng};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-7: Создание каждой фигуры
