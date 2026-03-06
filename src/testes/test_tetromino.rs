@@ -510,14 +510,14 @@ fn test_shape_coords_bounds() {
     for (shape_idx, coords) in SHAPE_COORDS.iter().enumerate() {
         for (block_idx, &(x, y)) in coords.iter().enumerate() {
             assert!(
-                x >= -2 && x <= 2,
+                (-2..=2).contains(&x),
                 "Координата X фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
                 shape_idx,
                 block_idx,
                 x
             );
             assert!(
-                y >= -2 && y <= 2,
+                (-2..=2).contains(&y),
                 "Координата Y фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
                 shape_idx,
                 block_idx,
