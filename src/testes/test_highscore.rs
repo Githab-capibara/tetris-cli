@@ -8,7 +8,7 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты системы рекордов.
 
-use crate::highscore::{SaveData, Leaderboard, LeaderboardEntry};
+use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: SaveData
@@ -44,7 +44,10 @@ fn test_save_data_assert_hs_valid() {
     let save = SaveData::from_value(5000);
 
     let result = save.assert_hs();
-    assert_eq!(result, 5000, "assert_hs() должен вернуть 5000 для валидного рекорда");
+    assert_eq!(
+        result, 5000,
+        "assert_hs() должен вернуть 5000 для валидного рекорда"
+    );
 }
 
 /// Тест 4: Проверка Clone для SaveData
@@ -56,7 +59,11 @@ fn test_save_data_clone() {
     let cloned = original.clone();
 
     // Проверяем через публичный метод assert_hs()
-    assert_eq!(original.assert_hs(), cloned.assert_hs(), "Клонированный рекорд должен совпадать");
+    assert_eq!(
+        original.assert_hs(),
+        cloned.assert_hs(),
+        "Клонированный рекорд должен совпадать"
+    );
 }
 
 /// Тест 5: Проверка SaveData с разными значениями
@@ -65,11 +72,16 @@ fn test_save_data_clone() {
 #[test]
 fn test_save_data_different_values() {
     let values = [0, 100, 500, 1000, 5000, 10000, 99999];
-    
+
     for &value in values.iter() {
         let save = SaveData::from_value(value);
-        assert_eq!(save.assert_hs(), value,
-                  "assert_hs() должен вернуть {} для рекорда {}", value, value);
+        assert_eq!(
+            save.assert_hs(),
+            value,
+            "assert_hs() должен вернуть {} для рекорда {}",
+            value,
+            value
+        );
     }
 }
 
@@ -83,8 +95,11 @@ fn test_save_data_different_values() {
 #[test]
 fn test_leaderboard_empty() {
     let leaderboard = Leaderboard::default();
-    
-    assert!(leaderboard.is_empty(), "Новая таблица лидеров должна быть пустой");
+
+    assert!(
+        leaderboard.is_empty(),
+        "Новая таблица лидеров должна быть пустой"
+    );
     assert_eq!(leaderboard.len(), 0, "Длина пустой таблицы должна быть 0");
 }
 
@@ -94,9 +109,9 @@ fn test_leaderboard_empty() {
 #[test]
 fn test_leaderboard_add_score() {
     let mut leaderboard = Leaderboard::default();
-    
+
     let added = leaderboard.add_score("Player1".to_string(), 1000);
-    
+
     assert!(added, "Добавление первого рекорда должно быть успешным");
     assert_eq!(leaderboard.len(), 1, "Таблица должна содержать 1 запись");
 }
@@ -107,11 +122,11 @@ fn test_leaderboard_add_score() {
 #[test]
 fn test_leaderboard_add_multiple_scores() {
     let mut leaderboard = Leaderboard::default();
-    
+
     leaderboard.add_score("Player1".to_string(), 1000);
     leaderboard.add_score("Player2".to_string(), 2000);
     leaderboard.add_score("Player3".to_string(), 1500);
-    
+
     assert_eq!(leaderboard.len(), 3, "Таблица должна содержать 3 записи");
 }
 
@@ -121,19 +136,26 @@ fn test_leaderboard_add_multiple_scores() {
 #[test]
 fn test_leaderboard_max_size() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Добавляем 7 рекордов
     for i in 0..7 {
         leaderboard.add_score(format!("Player{}", i), (i + 1) * 100);
     }
-    
+
     // Таблица должна содержать только 5 лучших
-    assert_eq!(leaderboard.len(), 5, "Таблица должна содержать максимум 5 записей");
-    
+    assert_eq!(
+        leaderboard.len(),
+        5,
+        "Таблица должна содержать максимум 5 записей"
+    );
+
     // Проверяем, что остались только лучшие рекорды
     let entries = leaderboard.get_entries();
     for entry in entries {
-        assert!(entry.score >= 300, "В таблице должны остаться рекорды от 300 и выше");
+        assert!(
+            entry.score >= 300,
+            "В таблице должны остаться рекорды от 300 и выше"
+        );
     }
 }
 
@@ -143,16 +165,16 @@ fn test_leaderboard_max_size() {
 #[test]
 fn test_leaderboard_sorting() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Добавляем рекорды в случайном порядке
     leaderboard.add_score("Player3".to_string(), 300);
     leaderboard.add_score("Player1".to_string(), 1000);
     leaderboard.add_score("Player5".to_string(), 500);
     leaderboard.add_score("Player2".to_string(), 2000);
     leaderboard.add_score("Player4".to_string(), 100);
-    
+
     let entries = leaderboard.get_entries();
-    
+
     // Проверяем порядок по убыванию
     assert_eq!(entries[0].score, 2000, "Первый рекорд должен быть 2000");
     assert_eq!(entries[1].score, 1000, "Второй рекорд должен быть 1000");
@@ -172,9 +194,12 @@ fn test_leaderboard_sorting() {
 fn test_leaderboard_entry_hash() {
     let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
     let entry2 = LeaderboardEntry::new("Player2".to_string(), 1000);
-    
+
     // Хэши должны быть разными из-за разной соли
-    assert_ne!(entry1.hash, entry2.hash, "Хэши должны отличаться из-за разной соли");
+    assert_ne!(
+        entry1.hash, entry2.hash,
+        "Хэши должны отличаться из-за разной соли"
+    );
     assert!(!entry1.hash.is_empty(), "Хэш не должен быть пустым");
     assert!(!entry2.hash.is_empty(), "Хэш не должен быть пустым");
 }
@@ -188,7 +213,10 @@ fn test_leaderboard_entry_salt_unique() {
     let entry2 = LeaderboardEntry::new("Player".to_string(), 1000);
 
     // Даже с одинаковыми данными хэши должны быть разными из-за разной соли
-    assert_ne!(entry1.hash, entry2.hash, "Хэши должны отличаться из-за разной соли");
+    assert_ne!(
+        entry1.hash, entry2.hash,
+        "Хэши должны отличаться из-за разной соли"
+    );
 }
 
 /// Тест 13: Проверка хэширования разных значений
@@ -198,9 +226,12 @@ fn test_leaderboard_entry_salt_unique() {
 fn test_hash_different_values() {
     let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
     let entry2 = LeaderboardEntry::new("Player".to_string(), 2000);
-    
+
     // Хэши должны быть разными из-за разных очков
-    assert_ne!(entry1.hash, entry2.hash, "Хэши должны отличаться для разных очков");
+    assert_ne!(
+        entry1.hash, entry2.hash,
+        "Хэши должны отличаться для разных очков"
+    );
 }
 
 // ============================================================================
@@ -213,8 +244,11 @@ fn test_hash_different_values() {
 #[test]
 fn test_leaderboard_entry_validation() {
     let entry = LeaderboardEntry::new("Player".to_string(), 1000);
-    
-    assert!(entry.is_valid(), "Валидная запись должна проходить проверку");
+
+    assert!(
+        entry.is_valid(),
+        "Валидная запись должна проходить проверку"
+    );
 }
 
 /// Тест 15: Проверка get_best_score
@@ -223,17 +257,33 @@ fn test_leaderboard_entry_validation() {
 #[test]
 fn test_leaderboard_get_best_score() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Пустая таблица
-    assert_eq!(leaderboard.get_best_score(), 0, "Лучший рекорд пустой таблицы должен быть 0");
-    
+    assert_eq!(
+        leaderboard.get_best_score(),
+        0,
+        "Лучший рекорд пустой таблицы должен быть 0"
+    );
+
     // Добавляем рекорды
     leaderboard.add_score("Player1".to_string(), 1000);
-    assert_eq!(leaderboard.get_best_score(), 1000, "Лучший рекорд должен быть 1000");
-    
+    assert_eq!(
+        leaderboard.get_best_score(),
+        1000,
+        "Лучший рекорд должен быть 1000"
+    );
+
     leaderboard.add_score("Player2".to_string(), 2000);
-    assert_eq!(leaderboard.get_best_score(), 2000, "Лучший рекорд должен быть 2000");
-    
+    assert_eq!(
+        leaderboard.get_best_score(),
+        2000,
+        "Лучший рекорд должен быть 2000"
+    );
+
     leaderboard.add_score("Player3".to_string(), 500);
-    assert_eq!(leaderboard.get_best_score(), 2000, "Лучший рекорд должен остаться 2000");
+    assert_eq!(
+        leaderboard.get_best_score(),
+        2000,
+        "Лучший рекорд должен остаться 2000"
+    );
 }

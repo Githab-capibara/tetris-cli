@@ -91,8 +91,8 @@ impl ControlsConfig {
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
-        let json = serde_json::to_string_pretty(self)
-            .map_err(|e| io::Error::other(e.to_string()))?;
+        let json =
+            serde_json::to_string_pretty(self).map_err(|e| io::Error::other(e.to_string()))?;
         fs::write(path, json)?;
         Ok(())
     }
@@ -298,7 +298,10 @@ mod controls_tests {
         assert!(save_result.is_ok(), "Сохранение должно быть успешным");
 
         // Проверяем, что файл существует
-        assert!(Path::new(test_path).exists(), "Файл конфигурации должен существовать");
+        assert!(
+            Path::new(test_path).exists(),
+            "Файл конфигурации должен существовать"
+        );
 
         // Загружаем конфигурацию
         let loaded_config = ControlsConfig::load_from_file(test_path);
@@ -325,7 +328,10 @@ mod controls_tests {
     fn test_controls_config_validation() {
         // Тест 1: Валидная конфигурация по умолчанию
         let valid_config = ControlsConfig::default_config();
-        assert!(valid_config.validate(), "Конфигурация по умолчанию должна быть валидной");
+        assert!(
+            valid_config.validate(),
+            "Конфигурация по умолчанию должна быть валидной"
+        );
 
         // Тест 2: Конфигурация с дубликатами (move_left == move_right)
         let duplicate_config = ControlsConfig::custom(
@@ -338,18 +344,16 @@ mod controls_tests {
         );
 
         // Тест 3: Конфигурация с нулевым значением
-        let zero_key_config = ControlsConfig::custom(
-            0, b'd', b's', b'w', b'q', b'e', b'c', b'p', 127,
-        );
+        let zero_key_config =
+            ControlsConfig::custom(0, b'd', b's', b'w', b'q', b'e', b'c', b'p', 127);
         assert!(
             !zero_key_config.validate(),
             "Конфигурация с нулевой клавишей должна быть невалидной"
         );
 
         // Тест 4: Кастомная валидная конфигурация
-        let custom_valid = ControlsConfig::custom(
-            b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9',
-        );
+        let custom_valid =
+            ControlsConfig::custom(b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9');
         assert!(
             custom_valid.validate(),
             "Кастомная конфигурация без дубликатов должна быть валидной"

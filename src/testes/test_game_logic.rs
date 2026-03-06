@@ -10,14 +10,13 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
-use crate::game::{GameState, GameMode, Dir};
+use crate::game::{Dir, GameMode, GameState};
 use crate::game::{
-    INITIAL_FALL_SPD, SPD_INC, ROW_SCORE_INC,
-    PIECE_SCORE_INC, SOFT_DROP_POINTS, HARD_DROP_POINTS, COMBO_BONUS,
-    LINES_PER_LEVEL, SPRINT_LINES,
+    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC,
+    ROW_SCORE_INC, SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
-use crate::tetromino::{Tetromino, ShapeType};
-use crate::io::{GRID_WIDTH, GRID_HEIGHT};
+use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::tetromino::{ShapeType, Tetromino};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
@@ -29,10 +28,14 @@ use crate::io::{GRID_WIDTH, GRID_HEIGHT};
 #[test]
 fn test_game_state_creation() {
     let state = GameState::new();
-    
+
     assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(state.get_lines_cleared(), 0, "Начальное количество линий должно быть 0");
+    assert_eq!(
+        state.get_lines_cleared(),
+        0,
+        "Начальное количество линий должно быть 0"
+    );
 }
 
 /// Тест 2: Проверка начальной позиции фигуры
@@ -42,14 +45,18 @@ fn test_game_state_creation() {
 fn test_game_state_initial_piece_position() {
     let state = GameState::new();
     let curr_shape = state.get_curr_shape();
-    
+
     // Начальная позиция X должна быть по центру (4.0)
-    assert!((curr_shape.pos.0 - 4.0).abs() < f32::EPSILON, 
-            "Начальная позиция X должна быть 4.0 (центр)");
-    
+    assert!(
+        (curr_shape.pos.0 - 4.0).abs() < f32::EPSILON,
+        "Начальная позиция X должна быть 4.0 (центр)"
+    );
+
     // Начальная позиция Y должна быть 0.0 (верх поля)
-    assert!((curr_shape.pos.1 - 0.0).abs() < f32::EPSILON,
-            "Начальная позиция Y должна быть 0.0");
+    assert!(
+        (curr_shape.pos.1 - 0.0).abs() < f32::EPSILON,
+        "Начальная позиция Y должна быть 0.0"
+    );
 }
 
 /// Тест 3: Проверка наличия следующей фигуры
@@ -59,10 +66,12 @@ fn test_game_state_initial_piece_position() {
 fn test_game_state_next_shape_exists() {
     let state = GameState::new();
     let next_shape = state.get_next_shape();
-    
+
     // Проверяем, что тип фигуры соответствует цвету
-    assert_eq!(next_shape.shape as usize, next_shape.fg,
-               "Индекс цвета должен соответствовать типу фигуры");
+    assert_eq!(
+        next_shape.shape as usize, next_shape.fg,
+        "Индекс цвета должен соответствовать типу фигуры"
+    );
 }
 
 /// Тест 4: Проверка пустого игрового поля при создании
@@ -75,8 +84,7 @@ fn test_game_state_empty_field() {
 
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(*cell, -1,
-                      "Клетка [{},{}] должна быть пустой (-1)", y, x);
+            assert_eq!(*cell, -1, "Клетка [{},{}] должна быть пустой (-1)", y, x);
         }
     }
 }
@@ -88,10 +96,13 @@ fn test_game_state_empty_field() {
 fn test_game_state_initial_fall_speed() {
     let state = GameState::new();
     let fall_spd = state.get_fall_spd();
-    
-    assert!((fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
-            "Начальная скорость должна быть {:.2}, получено {:.2}", 
-            INITIAL_FALL_SPD, fall_spd);
+
+    assert!(
+        (fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
+        "Начальная скорость должна быть {:.2}, получено {:.2}",
+        INITIAL_FALL_SPD,
+        fall_spd
+    );
 }
 
 /// Тест 6: Проверка режима игры по умолчанию
@@ -100,9 +111,12 @@ fn test_game_state_initial_fall_speed() {
 #[test]
 fn test_game_state_default_mode() {
     let state = GameState::new();
-    
-    assert_eq!(state.get_mode(), GameMode::Classic,
-               "Режим по умолчанию должен быть Classic");
+
+    assert_eq!(
+        state.get_mode(),
+        GameMode::Classic,
+        "Режим по умолчанию должен быть Classic"
+    );
 }
 
 // ============================================================================
@@ -115,17 +129,19 @@ fn test_game_state_default_mode() {
 #[test]
 fn test_collision_left_boundary() {
     let mut state = GameState::new();
-    
+
     // Перемещаем фигуру к левой границе
     for _ in 0..10 {
         if state.can_move_curr_shape(Dir::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
-    
+
     // Дальнейшее движение влево должно быть заблокировано
-    assert!(!state.can_move_curr_shape(Dir::Left),
-            "Движение влево за границу должно быть заблокировано");
+    assert!(
+        !state.can_move_curr_shape(Dir::Left),
+        "Движение влево за границу должно быть заблокировано"
+    );
 }
 
 /// Тест 8: Проверка столкновения с правой границей
@@ -134,17 +150,19 @@ fn test_collision_left_boundary() {
 #[test]
 fn test_collision_right_boundary() {
     let mut state = GameState::new();
-    
+
     // Перемещаем фигуру к правой границе
     for _ in 0..10 {
         if state.can_move_curr_shape(Dir::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
-    
+
     // Дальнейшее движение вправо должно быть заблокировано
-    assert!(!state.can_move_curr_shape(Dir::Right),
-            "Движение вправо за границу должно быть заблокировано");
+    assert!(
+        !state.can_move_curr_shape(Dir::Right),
+        "Движение вправо за границу должно быть заблокировано"
+    );
 }
 
 /// Тест 9: Проверка столкновения с полом
@@ -153,19 +171,23 @@ fn test_collision_right_boundary() {
 #[test]
 fn test_collision_floor() {
     let mut state = GameState::new();
-    
+
     // Опускаем фигуру вниз до упора
     while state.can_move_curr_shape(Dir::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
-    
+
     // Дальнейшее движение вниз должно быть заблокировано
-    assert!(!state.can_move_curr_shape(Dir::Down),
-            "Движение вниз за границу пола должно быть заблокировано");
-    
+    assert!(
+        !state.can_move_curr_shape(Dir::Down),
+        "Движение вниз за границу пола должно быть заблокировано"
+    );
+
     // Проверяем, что фигура не вышла за пределы поля
-    assert!(state.get_curr_shape_mut().pos.1 < GRID_HEIGHT as f32,
-            "Фигура не должна выходить за пределы поля по Y");
+    assert!(
+        state.get_curr_shape_mut().pos.1 < GRID_HEIGHT as f32,
+        "Фигура не должна выходить за пределы поля по Y"
+    );
 }
 
 /// Тест 10: Проверка столкновения с зафиксированными блоками
@@ -182,8 +204,10 @@ fn test_collision_with_fixed_blocks() {
     }
 
     // Движение вниз должно быть заблокировано
-    assert!(!state.can_move_curr_shape(Dir::Down),
-            "Движение вниз на пол должно быть заблокировано");
+    assert!(
+        !state.can_move_curr_shape(Dir::Down),
+        "Движение вниз на пол должно быть заблокировано"
+    );
 }
 
 /// Тест 11: Проверка возможности движения в пустом поле
@@ -201,8 +225,10 @@ fn test_movement_in_empty_field() {
     let can_move_left = state.can_move_curr_shape(Dir::Left);
     let can_move_right = state.can_move_curr_shape(Dir::Right);
 
-    assert!(can_move_left || can_move_right,
-            "В пустом поле должно быть возможно движение хотя бы в одну сторону");
+    assert!(
+        can_move_left || can_move_right,
+        "В пустом поле должно быть возможно движение хотя бы в одну сторону"
+    );
 }
 
 /// Тест 12: Проверка границ поля для призрачной фигуры
@@ -212,12 +238,15 @@ fn test_movement_in_empty_field() {
 fn test_ghost_piece_boundary() {
     let state = GameState::new();
     let ghost_shape = state.get_curr_shape().clone();
-    
+
     // Призрачная фигура должна использовать ту же логику столкновений
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
-    
+
     // В начале игры призрачная фигура должна иметь возможность движения вниз
-    assert!(can_move_down, "Призрачная фигура должна иметь возможность падения");
+    assert!(
+        can_move_down,
+        "Призрачная фигура должна иметь возможность падения"
+    );
 }
 
 // ============================================================================
@@ -235,14 +264,22 @@ fn test_tetromino_rotate_clockwise() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
     // Вращение по часовой: (x,y) -> (-y,x)
     tetromino.rotate(Dir::Right);
-    
+
     // После вращения: (0,-1), (0,0), (0,1), (-1,0)
-    assert_eq!(tetromino.coords[0], (0, -1), "Первый блок должен повернуться");
-    assert_eq!(tetromino.coords[1], (0, 0), "Центральный блок должен остаться на месте");
+    assert_eq!(
+        tetromino.coords[0],
+        (0, -1),
+        "Первый блок должен повернуться"
+    );
+    assert_eq!(
+        tetromino.coords[1],
+        (0, 0),
+        "Центральный блок должен остаться на месте"
+    );
 }
 
 /// Тест 14: Проверка вращения фигуры T против часовой стрелки
@@ -256,12 +293,16 @@ fn test_tetromino_rotate_counter_clockwise() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Вращение против часовой: (x,y) -> (y,-x)
     tetromino.rotate(Dir::Left);
-    
+
     // После вращения: (0,1), (0,0), (0,-1), (1,0)
-    assert_eq!(tetromino.coords[3], (1, 0), "Верхний блок должен переместиться вправо");
+    assert_eq!(
+        tetromino.coords[3],
+        (1, 0),
+        "Верхний блок должен переместиться вправо"
+    );
 }
 
 /// Тест 15: Проверка, что квадрат (O) не вращается
@@ -275,18 +316,22 @@ fn test_tetromino_o_no_rotate() {
         coords: [(0, 0), (1, 0), (0, 1), (1, 1)],
         fg: 5,
     };
-    
+
     let original_coords = tetromino.coords;
-    
+
     // Вращение по часовой
     tetromino.rotate(Dir::Right);
-    assert_eq!(tetromino.coords, original_coords,
-               "Квадрат не должен вращаться по часовой");
-    
+    assert_eq!(
+        tetromino.coords, original_coords,
+        "Квадрат не должен вращаться по часовой"
+    );
+
     // Вращение против часовой
     tetromino.rotate(Dir::Left);
-    assert_eq!(tetromino.coords, original_coords,
-               "Квадрат не должен вращаться против часовой");
+    assert_eq!(
+        tetromino.coords, original_coords,
+        "Квадрат не должен вращаться против часовой"
+    );
 }
 
 /// Тест 16: Проверка четырёх вращений (полный цикл)
@@ -300,16 +345,18 @@ fn test_tetromino_full_rotation_cycle() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     let original_coords = tetromino.coords;
-    
+
     // 4 вращения по часовой должны вернуть к исходным координатам
     for _ in 0..4 {
         tetromino.rotate(Dir::Right);
     }
-    
-    assert_eq!(tetromino.coords, original_coords,
-               "После 4 вращений фигура должна вернуться в исходное состояние");
+
+    assert_eq!(
+        tetromino.coords, original_coords,
+        "После 4 вращений фигура должна вернуться в исходное состояние"
+    );
 }
 
 /// Тест 17: Проверка вращения всех типов фигур
@@ -318,10 +365,15 @@ fn test_tetromino_full_rotation_cycle() {
 #[test]
 fn test_all_tetromino_rotate() {
     let shapes = [
-        ShapeType::T, ShapeType::L, ShapeType::J,
-        ShapeType::S, ShapeType::Z, ShapeType::O, ShapeType::I,
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::O,
+        ShapeType::I,
     ];
-    
+
     for shape_type in shapes.iter() {
         let mut tetromino = Tetromino {
             pos: (4.0, 0.0),
@@ -329,10 +381,10 @@ fn test_all_tetromino_rotate() {
             coords: crate::tetromino::SHAPE_COORDS[*shape_type as usize],
             fg: *shape_type as usize,
         };
-        
+
         let original_coords = tetromino.coords;
         tetromino.rotate(Dir::Right);
-        
+
         // Все фигуры кроме O должны изменить координаты
         if *shape_type != ShapeType::O {
             // Проверяем, что вращение произошло (координаты изменились)
@@ -340,8 +392,10 @@ fn test_all_tetromino_rotate() {
             // поэтому просто проверяем, что метод не паникует
         } else {
             // Квадрат не должен измениться
-            assert_eq!(tetromino.coords, original_coords,
-                      "Квадрат (O) не должен вращаться");
+            assert_eq!(
+                tetromino.coords, original_coords,
+                "Квадрат (O) не должен вращаться"
+            );
         }
     }
 }
@@ -363,7 +417,10 @@ fn test_piece_score_constant() {
 /// Проверяет, что Soft Drop даёт 1 очко за ячейку.
 #[test]
 fn test_soft_drop_points_constant() {
-    assert_eq!(SOFT_DROP_POINTS, 1, "Очки за Soft Drop должны быть 1 за ячейку");
+    assert_eq!(
+        SOFT_DROP_POINTS, 1,
+        "Очки за Soft Drop должны быть 1 за ячейку"
+    );
 }
 
 /// Тест 20: Проверка константы очков за Hard Drop
@@ -371,7 +428,10 @@ fn test_soft_drop_points_constant() {
 /// Проверяет, что Hard Drop даёт 2 очка за ячейку.
 #[test]
 fn test_hard_drop_points_constant() {
-    assert_eq!(HARD_DROP_POINTS, 2, "Очки за Hard Drop должны быть 2 за ячейку");
+    assert_eq!(
+        HARD_DROP_POINTS, 2,
+        "Очки за Hard Drop должны быть 2 за ячейку"
+    );
 }
 
 /// Тест 21: Проверка расчёта очков за линии
@@ -446,9 +506,14 @@ fn test_level_calculation_from_lines() {
 #[test]
 fn test_speed_increase_constant() {
     // SPD_INC = 0.05, проверяем что это положительное число меньше 1
-    assert!(SPD_INC > 0.0 && SPD_INC < 1.0, "Прирост скорости должен быть положительным и меньше 1");
-    assert!((SPD_INC - 0.05).abs() < f32::EPSILON,
-            "Прирост скорости должен быть 0.05");
+    assert!(
+        SPD_INC > 0.0 && SPD_INC < 1.0,
+        "Прирост скорости должен быть положительным и меньше 1"
+    );
+    assert!(
+        (SPD_INC - 0.05).abs() < f32::EPSILON,
+        "Прирост скорости должен быть 0.05"
+    );
 }
 
 /// Тест 26: Проверка расчёта скорости от уровня
@@ -457,15 +522,21 @@ fn test_speed_increase_constant() {
 #[test]
 fn test_speed_calculation_from_level() {
     let initial = INITIAL_FALL_SPD;
-    
+
     // После 1 линии
     let after_one = initial + SPD_INC * 1.0;
-    assert!(after_one > initial, "Скорость должна увеличиться после 1 линии");
-    
+    assert!(
+        after_one > initial,
+        "Скорость должна увеличиться после 1 линии"
+    );
+
     // После 5 линий
     let after_five = initial + SPD_INC * 5.0;
-    assert!(after_five > after_one, "Скорость должна расти с количеством линий");
-    
+    assert!(
+        after_five > after_one,
+        "Скорость должна расти с количеством линий"
+    );
+
     // После 10 линий (новый уровень)
     let after_ten = initial + SPD_INC * 10.0;
     assert!(after_ten > after_five, "Скорость должна продолжать расти");
@@ -481,9 +552,12 @@ fn test_speed_calculation_from_level() {
 #[test]
 fn test_sprint_mode_creation() {
     let state = GameState::new_sprint();
-    
-    assert_eq!(state.get_mode(), GameMode::Sprint,
-               "Режим должен быть Sprint");
+
+    assert_eq!(
+        state.get_mode(),
+        GameMode::Sprint,
+        "Режим должен быть Sprint"
+    );
 }
 
 /// Тест 28: Проверка константы линий для спринта
@@ -500,20 +574,20 @@ fn test_sprint_lines_constant() {
 #[test]
 fn test_sprint_timer() {
     let mut state = GameState::new_sprint();
-    
+
     // Запускаем таймер
     state.start_timer();
-    
+
     // Небольшая задержка для проверки работы таймера
     std::thread::sleep(std::time::Duration::from_millis(100));
-    
+
     // Получаем прошедшее время
     let stats = state.get_stats();
     let elapsed = stats.get_elapsed_time();
-    
+
     // Проверяем, что время больше 0
     assert!(elapsed > 0.0, "Время должно течь после запуска таймера");
-    
+
     // Проверяем, что время меньше 1 секунды (так как спали 100мс)
     assert!(elapsed < 1.0, "Время должно быть меньше 1 секунды");
 }
@@ -526,16 +600,25 @@ fn test_game_stats_in_different_modes() {
     // Классический режим
     let classic_state = GameState::new();
     let classic_stats = classic_state.get_stats();
-    assert_eq!(classic_stats.total_pieces(), 1,
-               "В начале игры должна быть 1 фигура");
-    
+    assert_eq!(
+        classic_stats.total_pieces(),
+        1,
+        "В начале игры должна быть 1 фигура"
+    );
+
     // Режим спринт
     let sprint_state = GameState::new_sprint();
     let sprint_stats = sprint_state.get_stats();
-    assert_eq!(sprint_stats.total_pieces(), 1,
-               "В начале спринта должна быть 1 фигура");
-    
+    assert_eq!(
+        sprint_stats.total_pieces(),
+        1,
+        "В начале спринта должна быть 1 фигура"
+    );
+
     // Проверяем, что режимы разные
-    assert_ne!(classic_state.get_mode(), sprint_state.get_mode(),
-               "Режимы Classic и Sprint должны отличаться");
+    assert_ne!(
+        classic_state.get_mode(),
+        sprint_state.get_mode(),
+        "Режимы Classic и Sprint должны отличаться"
+    );
 }

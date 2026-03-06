@@ -594,8 +594,8 @@ pub use controls::ControlsConfig;
 mod testes {
     pub mod test_controls;
     pub mod test_game_logic;
-    pub mod test_tetromino;
     pub mod test_highscore;
-    pub mod test_io;
     pub mod test_integration;
+    pub mod test_io;
+    pub mod test_tetromino;
 }

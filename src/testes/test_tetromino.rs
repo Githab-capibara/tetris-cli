@@ -9,8 +9,8 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты фигур.
 
-use crate::tetromino::{Tetromino, ShapeType, BagGenerator, SHAPE_COORDS, SHAPE_COLORS};
 use crate::game::Dir;
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-7: Создание каждой фигуры
@@ -27,10 +27,10 @@ fn test_tetromino_t_creation() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::T, "Фигура должна быть типа T");
     assert_eq!(tetromino.fg, 0, "Индекс цвета должен быть 0");
-    
+
     // Проверяем координаты: (-1,0), (0,0), (1,0), (0,1)
     assert_eq!(tetromino.coords[0], (-1, 0));
     assert_eq!(tetromino.coords[1], (0, 0));
@@ -49,10 +49,10 @@ fn test_tetromino_l_creation() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::L, "Фигура должна быть типа L");
     assert_eq!(tetromino.fg, 1, "Индекс цвета должен быть 1");
-    
+
     // Проверяем координаты: (-1,-1), (0,-1), (0,0), (0,1)
     assert_eq!(tetromino.coords[0], (-1, -1));
     assert_eq!(tetromino.coords[3], (0, 1));
@@ -69,10 +69,10 @@ fn test_tetromino_j_creation() {
         coords: SHAPE_COORDS[2],
         fg: 2,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::J, "Фигура должна быть типа J");
     assert_eq!(tetromino.fg, 2, "Индекс цвета должен быть 2");
-    
+
     // Проверяем координаты: (1,-1), (0,-1), (0,0), (0,1)
     assert_eq!(tetromino.coords[0], (1, -1));
     assert_eq!(tetromino.coords[1], (0, -1));
@@ -89,10 +89,10 @@ fn test_tetromino_s_creation() {
         coords: SHAPE_COORDS[3],
         fg: 3,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::S, "Фигура должна быть типа S");
     assert_eq!(tetromino.fg, 3, "Индекс цвета должен быть 3");
-    
+
     // Проверяем координаты: (0,-1), (0,0), (1,0), (1,1)
     assert_eq!(tetromino.coords[0], (0, -1));
     assert_eq!(tetromino.coords[3], (1, 1));
@@ -109,10 +109,10 @@ fn test_tetromino_z_creation() {
         coords: SHAPE_COORDS[4],
         fg: 4,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::Z, "Фигура должна быть типа Z");
     assert_eq!(tetromino.fg, 4, "Индекс цвета должен быть 4");
-    
+
     // Проверяем координаты: (0,-1), (0,0), (-1,0), (-1,1)
     assert_eq!(tetromino.coords[0], (0, -1));
     assert_eq!(tetromino.coords[3], (-1, 1));
@@ -129,10 +129,10 @@ fn test_tetromino_o_creation() {
         coords: SHAPE_COORDS[5],
         fg: 5,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::O, "Фигура должна быть типа O");
     assert_eq!(tetromino.fg, 5, "Индекс цвета должен быть 5");
-    
+
     // Проверяем координаты: (0,0), (1,0), (0,1), (1,1)
     assert_eq!(tetromino.coords[0], (0, 0));
     assert_eq!(tetromino.coords[1], (1, 0));
@@ -151,10 +151,10 @@ fn test_tetromino_i_creation() {
         coords: SHAPE_COORDS[6],
         fg: 6,
     };
-    
+
     assert_eq!(tetromino.shape, ShapeType::I, "Фигура должна быть типа I");
     assert_eq!(tetromino.fg, 6, "Индекс цвета должен быть 6");
-    
+
     // Проверяем координаты: (0,-1), (0,0), (0,1), (0,2)
     assert_eq!(tetromino.coords[0], (0, -1));
     assert_eq!(tetromino.coords[1], (0, 0));
@@ -177,18 +177,24 @@ fn test_tetromino_t_rotation() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     let original_coords = t.coords;
-    
+
     // Вращение по часовой
     t.rotate(Dir::Right);
-    assert_ne!(t.coords, original_coords, "Координаты должны измениться после вращения");
-    
+    assert_ne!(
+        t.coords, original_coords,
+        "Координаты должны измениться после вращения"
+    );
+
     // 4 вращения должны вернуть к исходному состоянию
     for _ in 0..3 {
         t.rotate(Dir::Right);
     }
-    assert_eq!(t.coords, original_coords, "После 4 вращений фигура должна вернуться в исходное состояние");
+    assert_eq!(
+        t.coords, original_coords,
+        "После 4 вращений фигура должна вернуться в исходное состояние"
+    );
 }
 
 /// Тест 9: Проверка вращения фигуры L
@@ -202,13 +208,13 @@ fn test_tetromino_l_rotation() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     let original_coords = t.coords;
-    
+
     // Вращение по часовой
     t.rotate(Dir::Right);
     assert_ne!(t.coords, original_coords, "L-фигура должна вращаться");
-    
+
     // 4 вращения возвращают к исходному состоянию
     for _ in 0..3 {
         t.rotate(Dir::Right);
@@ -227,7 +233,7 @@ fn test_tetromino_j_rotation() {
         coords: SHAPE_COORDS[2],
         fg: 2,
     };
-    
+
     let original_coords = t.coords;
     t.rotate(Dir::Right);
     assert_ne!(t.coords, original_coords, "J-фигура должна вращаться");
@@ -244,7 +250,7 @@ fn test_tetromino_s_rotation() {
         coords: SHAPE_COORDS[3],
         fg: 3,
     };
-    
+
     let original_coords = t.coords;
     t.rotate(Dir::Right);
     assert_ne!(t.coords, original_coords, "S-фигура должна вращаться");
@@ -261,7 +267,7 @@ fn test_tetromino_z_rotation() {
         coords: SHAPE_COORDS[4],
         fg: 4,
     };
-    
+
     let original_coords = t.coords;
     t.rotate(Dir::Right);
     assert_ne!(t.coords, original_coords, "Z-фигура должна вращаться");
@@ -278,16 +284,22 @@ fn test_tetromino_o_no_rotation() {
         coords: SHAPE_COORDS[5],
         fg: 5,
     };
-    
+
     let original_coords = t.coords;
-    
+
     // Вращение по часовой
     t.rotate(Dir::Right);
-    assert_eq!(t.coords, original_coords, "O-фигура не должна вращаться по часовой");
-    
+    assert_eq!(
+        t.coords, original_coords,
+        "O-фигура не должна вращаться по часовой"
+    );
+
     // Вращение против часовой
     t.rotate(Dir::Left);
-    assert_eq!(t.coords, original_coords, "O-фигура не должна вращаться против часовой");
+    assert_eq!(
+        t.coords, original_coords,
+        "O-фигура не должна вращаться против часовой"
+    );
 }
 
 /// Тест 14: Проверка вращения фигуры I
@@ -301,17 +313,20 @@ fn test_tetromino_i_rotation() {
         coords: SHAPE_COORDS[6],
         fg: 6,
     };
-    
+
     let original_coords = t.coords;
-    
+
     // I-фигура вращается из вертикальной в горизонтальную
     t.rotate(Dir::Right);
     assert_ne!(t.coords, original_coords, "I-фигура должна вращаться");
-    
+
     // Проверяем, что после вращения линия стала горизонтальной
     // Исходная: (0,-1), (0,0), (0,1), (0,2) - вертикальная
     // После вращения: (1,0), (0,0), (-1,0), (-2,0) - горизонтальная
-    assert_eq!(t.coords[0].1, 0, "После вращения все блоки должны быть на одной строке");
+    assert_eq!(
+        t.coords[0].1, 0,
+        "После вращения все блоки должны быть на одной строке"
+    );
 }
 
 // ============================================================================
@@ -333,10 +348,15 @@ fn test_shape_colors_count() {
 fn test_shape_color_index_match() {
     // Создаём фигуры всех типов и проверяем соответствие
     let shapes = [
-        ShapeType::T, ShapeType::L, ShapeType::J,
-        ShapeType::S, ShapeType::Z, ShapeType::O, ShapeType::I,
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::O,
+        ShapeType::I,
     ];
-    
+
     for (index, &shape) in shapes.iter().enumerate() {
         let t = Tetromino {
             pos: (4.0, 0.0),
@@ -344,9 +364,13 @@ fn test_shape_color_index_match() {
             coords: SHAPE_COORDS[index],
             fg: index,
         };
-        
+
         // Проверяем, что индекс цвета совпадает с индексом фигуры
-        assert_eq!(t.fg, index, "Индекс цвета должен совпадать с индексом фигуры для {:?}", shape);
+        assert_eq!(
+            t.fg, index,
+            "Индекс цвета должен совпадать с индексом фигуры для {:?}",
+            shape
+        );
     }
 }
 
@@ -357,16 +381,21 @@ fn test_shape_color_index_match() {
 fn test_random_shape_distribution() {
     // Генерируем 700 фигур и проверяем распределение
     let mut counts = [0; 7];
-    
+
     for _ in 0..700 {
         let t = Tetromino::select();
         counts[t.fg] += 1;
     }
-    
+
     // Проверяем, что все типы встретились хотя бы 50 раз
     // (при равномерном распределении ожидается ~100 на тип)
     for (i, &count) in counts.iter().enumerate() {
-        assert!(count >= 50, "Фигура типа {} должна встретиться хотя бы 50 раз (встретилась {} раз)", i, count);
+        assert!(
+            count >= 50,
+            "Фигура типа {} должна встретиться хотя бы 50 раз (встретилась {} раз)",
+            i,
+            count
+        );
     }
 }
 
@@ -376,14 +405,20 @@ fn test_random_shape_distribution() {
 #[test]
 fn test_tetromino_select_creation() {
     let t = Tetromino::select();
-    
+
     // Проверяем начальную позицию
-    assert!((t.pos.0 - 4.0).abs() < f32::EPSILON, "Начальная позиция X должна быть 4.0");
-    assert!((t.pos.1 - 0.0).abs() < f32::EPSILON, "Начальная позиция Y должна быть 0.0");
-    
+    assert!(
+        (t.pos.0 - 4.0).abs() < f32::EPSILON,
+        "Начальная позиция X должна быть 4.0"
+    );
+    assert!(
+        (t.pos.1 - 0.0).abs() < f32::EPSILON,
+        "Начальная позиция Y должна быть 0.0"
+    );
+
     // Проверяем, что тип фигуры валиден
     assert!(t.fg < 7, "Индекс цвета должен быть меньше 7");
-    
+
     // Проверяем, что у фигуры 4 блока
     assert_eq!(t.coords.len(), 4, "У фигуры должно быть 4 блока");
 }
@@ -411,11 +446,11 @@ fn test_bag_generator_creation() {
 #[test]
 fn test_bag_generator_next_shape() {
     let mut bag = BagGenerator::new();
-    
+
     // Получаем 7 фигур
     for _ in 0..7 {
         let shape = bag.next_shape();
-        
+
         // Проверяем, что тип фигуры валиден
         assert!((shape as usize) < 7, "Индекс фигуры должен быть меньше 7");
     }
@@ -427,15 +462,15 @@ fn test_bag_generator_next_shape() {
 #[test]
 fn test_bag_system_all_seven_types() {
     let mut bag = BagGenerator::new();
-    
+
     // Получаем 7 фигур и собираем их типы
     let mut found_shapes = [false; 7];
-    
+
     for _ in 0..7 {
         let shape = bag.next_shape();
         found_shapes[shape as usize] = true;
     }
-    
+
     // Проверяем, что все 7 типов встретились
     for (i, &found) in found_shapes.iter().enumerate() {
         assert!(found, "Фигура типа {:?} должна быть в мешке", i);
@@ -457,7 +492,10 @@ fn test_bag_refill() {
 
     // Проверяем, что генератор продолжает работать (новый мешок создан)
     let shape = bag.next_shape();
-    assert!((shape as usize) < 7, "Генератор должен продолжать выдавать фигуры");
+    assert!(
+        (shape as usize) < 7,
+        "Генератор должен продолжать выдавать фигуры"
+    );
 }
 
 // ============================================================================
@@ -471,12 +509,20 @@ fn test_bag_refill() {
 fn test_shape_coords_bounds() {
     for (shape_idx, coords) in SHAPE_COORDS.iter().enumerate() {
         for (block_idx, &(x, y)) in coords.iter().enumerate() {
-            assert!(x >= -2 && x <= 2,
-                   "Координата X фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
-                   shape_idx, block_idx, x);
-            assert!(y >= -2 && y <= 2,
-                   "Координата Y фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
-                   shape_idx, block_idx, y);
+            assert!(
+                x >= -2 && x <= 2,
+                "Координата X фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
+                shape_idx,
+                block_idx,
+                x
+            );
+            assert!(
+                y >= -2 && y <= 2,
+                "Координата Y фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
+                shape_idx,
+                block_idx,
+                y
+            );
         }
     }
 }
@@ -487,8 +533,13 @@ fn test_shape_coords_bounds() {
 #[test]
 fn test_each_shape_has_four_blocks() {
     for (shape_idx, coords) in SHAPE_COORDS.iter().enumerate() {
-        assert_eq!(coords.len(), 4,
-                  "Фигура {} должна иметь 4 блока, имеет {}", shape_idx, coords.len());
+        assert_eq!(
+            coords.len(),
+            4,
+            "Фигура {} должна иметь 4 блока, имеет {}",
+            shape_idx,
+            coords.len()
+        );
     }
 }
 
@@ -501,9 +552,11 @@ fn test_shape_blocks_unique() {
         // Проверяем каждую пару блоков на уникальность
         for i in 0..coords.len() {
             for j in (i + 1)..coords.len() {
-                assert_ne!(coords[i], coords[j],
-                          "Фигура {} имеет дублирующиеся блоки под индексами {} и {}",
-                          shape_idx, i, j);
+                assert_ne!(
+                    coords[i], coords[j],
+                    "Фигура {} имеет дублирующиеся блоки под индексами {} и {}",
+                    shape_idx, i, j
+                );
             }
         }
     }
