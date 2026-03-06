@@ -665,15 +665,23 @@ impl GameState {
         }
 
         // Удаление заполненных линий и сдвиг верхних строк вниз
-        // Обработка снизу вверх для корректного сдвига
-        for (shift_count, &row) in rows_to_remove.iter().rev().enumerate() {
-            // Сдвиг всех строк выше на (shift_count + 1) вниз
-            for y in (0..row).rev() {
-                self.blocks[y + shift_count + 1] = self.blocks[y];
+        // Создаём временный массив для новых блоков (заполнен -1 по умолчанию)
+        let mut new_blocks = [[-1; GRID_WIDTH]; GRID_HEIGHT];
+        let mut write_idx = GRID_HEIGHT - 1;
+
+        // Копируем незаполненные строки снизу вверх
+        for read_idx in (0..GRID_HEIGHT).rev() {
+            // Пропускаем строки которые нужно удалить
+            if !rows_to_remove.contains(&read_idx) {
+                new_blocks[write_idx] = self.blocks[read_idx];
+                if write_idx > 0 {
+                    write_idx -= 1;
+                }
             }
-            // Очистка верхней строки
-            self.blocks[shift_count] = [-1; GRID_WIDTH];
         }
+        // Верхние строки уже заполнены -1 по умолчанию
+
+        self.blocks = new_blocks;
 
         // Очистка анимации
         self.animating_rows.clear();
@@ -785,7 +793,7 @@ impl GameState {
                     .duration_since(UNIX_EPOCH)
                     .unwrap()
                     .subsec_millis();
-                if (millis / 50) % 2 == 0 {
+                if ((millis / 50) % 2).is_multiple_of(2) {
                     cnv.draw_strs(
                         &["░░"],
                         (x as u16, y as u16),
@@ -1243,13 +1251,14 @@ mod game_tests {
         
         // Проверяем начальную скорость падения
         assert!((initial_fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON, "Начальная скорость должна быть INITIAL_FALL_SPD");
-        
+
         // При Soft Drop скорость не меняется, но фигура двигается каждый кадр
         // Проверяем, что скорость положительная
         assert!(state.fall_spd > 0.0, "Скорость падения должна быть положительной");
-        
+
         // Проверяем константу увеличения скорости за уровень
-        assert!(SPD_INC > 0.0, "Прирост скорости за уровень должен быть положительным");
+        // SPD_INC = 0.05, что больше 0
+        assert!(SPD_INC > 0.0 && SPD_INC < 1.0, "Прирост скорости за уровень должен быть положительным и меньше 1");
     }
 
     /// Тест 6: Проверка начисления 1 очка за ячейку при Soft Drop
@@ -1365,25 +1374,25 @@ mod game_tests {
     fn test_combo_bonus_calculation() {
         // Проверяем константу бонуса
         assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
-        
+
         // Комбо 1: бонус 0 (первое удаление без бонуса)
-        let combo_1_bonus = COMBO_BONUS * (1 - 1);
+        let combo_1_bonus = COMBO_BONUS * 0;
         assert_eq!(combo_1_bonus, 0, "Бонус за первое комбо должен быть 0");
-        
+
         // Комбо 2: бонус 50
-        let combo_2_bonus = COMBO_BONUS * (2 - 1);
+        let combo_2_bonus = COMBO_BONUS * 1;
         assert_eq!(combo_2_bonus, 50, "Бонус за второе комбо должен быть 50");
-        
+
         // Комбо 3: бонус 100
-        let combo_3_bonus = COMBO_BONUS * (3 - 1);
+        let combo_3_bonus = COMBO_BONUS * 2;
         assert_eq!(combo_3_bonus, 100, "Бонус за третье комбо должен быть 100");
-        
+
         // Комбо 5: бонус 200
-        let combo_5_bonus = COMBO_BONUS * (5 - 1);
+        let combo_5_bonus = COMBO_BONUS * 4;
         assert_eq!(combo_5_bonus, 200, "Бонус за пятое комбо должен быть 200");
-        
+
         // Комбо 10: бонус 450
-        let combo_10_bonus = COMBO_BONUS * (10 - 1);
+        let combo_10_bonus = COMBO_BONUS * 9;
         assert_eq!(combo_10_bonus, 450, "Бонус за десятое комбо должен быть 450");
     }
 
