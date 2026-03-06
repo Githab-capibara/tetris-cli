@@ -8,9 +8,7 @@
 //! Все тесты независимы и проверяют отдельные аспекты работы с терминалом.
 
 use crate::io::{
-    Canvas, KeyReader,
-    SHAPE_STR, SHAPE_WIDTH, GRID_WIDTH, GRID_HEIGHT,
-    DISP_WIDTH, DISP_HEIGHT,
+    Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH,
 };
 
 // ============================================================================
@@ -51,7 +49,11 @@ fn test_canvas_creation() {
 fn test_shape_str_constant() {
     assert_eq!(SHAPE_STR, "██", "SHAPE_STR должен быть '██'");
     // Символы Unicode занимают 3 байта каждый в UTF-8
-    assert_eq!(SHAPE_STR.len(), 6, "Длина SHAPE_STR должна быть 6 байт (2 символа UTF-8 по 3 байта)");
+    assert_eq!(
+        SHAPE_STR.len(),
+        6,
+        "Длина SHAPE_STR должна быть 6 байт (2 символа UTF-8 по 3 байта)"
+    );
 }
 
 /// Тест 3: Проверка константы SHAPE_WIDTH
@@ -60,7 +62,11 @@ fn test_shape_str_constant() {
 #[test]
 fn test_shape_width_constant() {
     assert_eq!(SHAPE_WIDTH, 2, "SHAPE_WIDTH должен быть 2 символа");
-    assert_eq!(SHAPE_WIDTH * GRID_WIDTH, 20, "Полная ширина поля должна быть 20 символов");
+    assert_eq!(
+        SHAPE_WIDTH * GRID_WIDTH,
+        20,
+        "Полная ширина поля должна быть 20 символов"
+    );
 }
 
 /// Тест 4: Проверка расчёта DISP_WIDTH
@@ -70,8 +76,11 @@ fn test_shape_width_constant() {
 fn test_disp_width_calculation() {
     // Формула: (SHAPE_WIDTH * GRID_WIDTH) + 2 (границы)
     let expected_width = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
-    assert_eq!(DISP_WIDTH, expected_width,
-              "DISP_WIDTH должен быть (SHAPE_WIDTH * GRID_WIDTH) + 2 = {}", expected_width);
+    assert_eq!(
+        DISP_WIDTH, expected_width,
+        "DISP_WIDTH должен быть (SHAPE_WIDTH * GRID_WIDTH) + 2 = {}",
+        expected_width
+    );
     assert_eq!(DISP_WIDTH, 22, "DISP_WIDTH должен быть 22");
 }
 
@@ -85,7 +94,7 @@ fn test_disp_width_calculation() {
 #[test]
 fn test_key_reader_creation() {
     let reader = KeyReader::new();
-    
+
     // KeyReader создан успешно
     // Проверяем, что он содержит async_stdin
     // (не можем проверить внутреннее состояние, но можем убедиться что не паникует)
@@ -98,15 +107,18 @@ fn test_key_reader_creation() {
 #[test]
 fn test_key_reader_get_key_no_input() {
     let mut reader = KeyReader::new();
-    
+
     // В тестовой среде маловероятно что есть нажатия клавиш
     // get_key() должен вернуть 0 или код клавиши
     let key = reader.get_key();
-    
+
     // В нормальной ситуации должен вернуть 0 (нет нажатий)
     // или код клавиши если что-то нажато
     // НеAssertим конкретное значение, так как зависит от среды
-    assert!(key == 0 || key > 0, "get_key() должен вернуть 0 или код клавиши");
+    assert!(
+        key == 0 || key > 0,
+        "get_key() должен вернуть 0 или код клавиши"
+    );
 }
 
 /// Тест 7: Проверка Default для KeyReader
@@ -116,7 +128,7 @@ fn test_key_reader_get_key_no_input() {
 fn test_key_reader_default() {
     let reader_default = KeyReader::default();
     let reader_new = KeyReader::new();
-    
+
     // Оба должны быть созданы успешно
     drop(reader_default);
     drop(reader_new);
@@ -133,7 +145,11 @@ fn test_key_reader_default() {
 fn test_field_dimensions() {
     assert_eq!(GRID_WIDTH, 10, "GRID_WIDTH должен быть 10 блоков");
     assert_eq!(GRID_HEIGHT, 20, "GRID_HEIGHT должен быть 20 блоков");
-    assert_eq!(GRID_WIDTH * GRID_HEIGHT, 200, "Общее количество клеток должно быть 200");
+    assert_eq!(
+        GRID_WIDTH * GRID_HEIGHT,
+        200,
+        "Общее количество клеток должно быть 200"
+    );
 }
 
 /// Тест 9: Проверка расчёта DISP_HEIGHT
@@ -143,8 +159,11 @@ fn test_field_dimensions() {
 fn test_disp_height_calculation() {
     // Формула: GRID_HEIGHT + 5 (заголовки и границы)
     let expected_height = GRID_HEIGHT as u16 + 5;
-    assert_eq!(DISP_HEIGHT, expected_height,
-              "DISP_HEIGHT должен быть GRID_HEIGHT + 5 = {}", expected_height);
+    assert_eq!(
+        DISP_HEIGHT, expected_height,
+        "DISP_HEIGHT должен быть GRID_HEIGHT + 5 = {}",
+        expected_height
+    );
     assert_eq!(DISP_HEIGHT, 25, "DISP_HEIGHT должен быть 25");
 }
 
@@ -156,12 +175,21 @@ fn test_terminal_minimum_size() {
     // Минимальный размер терминала должен быть не меньше DISP_WIDTH x DISP_HEIGHT
     let min_width = DISP_WIDTH;
     let min_height = DISP_HEIGHT;
-    
-    assert!(min_width >= 22, "Минимальная ширина должна быть не менее 22");
-    assert!(min_height >= 25, "Минимальная высота должна быть не менее 25");
-    
+
+    assert!(
+        min_width >= 22,
+        "Минимальная ширина должна быть не менее 22"
+    );
+    assert!(
+        min_height >= 25,
+        "Минимальная высота должна быть не менее 25"
+    );
+
     // Проверяем соотношение сторон
     let aspect_ratio = min_width as f32 / min_height as f32;
-    assert!(aspect_ratio > 0.5 && aspect_ratio < 2.0,
-           "Соотношение сторон должно быть разумным (0.5-2.0), получено {}", aspect_ratio);
+    assert!(
+        aspect_ratio > 0.5 && aspect_ratio < 2.0,
+        "Соотношение сторон должно быть разумным (0.5-2.0), получено {}",
+        aspect_ratio
+    );
 }

@@ -82,7 +82,7 @@ impl BagGenerator {
             let j = rng.gen_range(0..=i);
             self.bag.swap(i, j);
         }
-        
+
         self.index = 0;
     }
 
@@ -705,7 +705,7 @@ mod tests {
     fn test_game_stats_add_piece() {
         use crate::game::GameStats;
         let mut stats = GameStats::new();
-        
+
         stats.add_piece(ShapeType::T);
         stats.add_piece(ShapeType::L);
         stats.add_piece(ShapeType::J);
@@ -713,7 +713,7 @@ mod tests {
         stats.add_piece(ShapeType::Z);
         stats.add_piece(ShapeType::O);
         stats.add_piece(ShapeType::I);
-        
+
         assert_eq!(stats.t_pieces, 1);
         assert_eq!(stats.l_pieces, 1);
         assert_eq!(stats.j_pieces, 1);
@@ -729,7 +729,7 @@ mod tests {
     fn test_game_stats_total_pieces() {
         use crate::game::GameStats;
         let mut stats = GameStats::new();
-        
+
         // Добавляем 10 фигур T и 5 фигур I
         for _ in 0..10 {
             stats.add_piece(ShapeType::T);
@@ -737,7 +737,7 @@ mod tests {
         for _ in 0..5 {
             stats.add_piece(ShapeType::I);
         }
-        
+
         assert_eq!(stats.t_pieces, 10);
         assert_eq!(stats.i_pieces, 5);
         assert_eq!(stats.total_pieces(), 15);
@@ -748,21 +748,21 @@ mod tests {
     fn test_game_stats_update_max_combo() {
         use crate::game::GameStats;
         let mut stats = GameStats::new();
-        
+
         // Начальное значение
         assert_eq!(stats.max_combo, 0);
-        
+
         // Обновляем комбо
         stats.update_max_combo(1);
         assert_eq!(stats.max_combo, 1);
-        
+
         stats.update_max_combo(3);
         assert_eq!(stats.max_combo, 3);
-        
+
         // Меньшее значение не должно обновлять
         stats.update_max_combo(2);
         assert_eq!(stats.max_combo, 3);
-        
+
         // Tetris (4 линии)
         stats.update_max_combo(4);
         assert_eq!(stats.max_combo, 4);
@@ -782,23 +782,23 @@ mod tests {
     fn test_hold_first_time() {
         use crate::game::GameState;
         let mut state = GameState::new();
-        
+
         // Запоминаем текущую и следующую фигуры
         let initial_shape = state.get_curr_shape().shape;
         let next_shape = state.get_next_shape().shape;
-        
+
         // Удерживаем фигуру
         state.hold_shape();
-        
+
         // Текущая фигура должна измениться на следующую
         assert_eq!(state.get_curr_shape().shape, next_shape);
-        
+
         // Удержанная фигура должна быть установлена
         assert!(state.get_held_shape().is_some());
-        
+
         // Удержание должно быть запрещено
         assert!(!state.can_hold());
-        
+
         // Удержанная фигура должна быть той, что была изначально
         assert_eq!(state.get_held_shape().unwrap().shape, initial_shape);
     }
@@ -808,18 +808,18 @@ mod tests {
     fn test_hold_swap() {
         use crate::game::GameState;
         let mut state = GameState::new();
-        
+
         // Первое удержание
         state.hold_shape();
         let held_shape = state.get_held_shape().unwrap().shape;
         let current_after_hold = state.get_curr_shape().shape;
-        
+
         // Второе удержание (обмен)
         state.hold_shape();
-        
+
         // Текущая фигура должна стать той, что была удержана
         assert_eq!(state.get_curr_shape().shape, held_shape);
-        
+
         // Удержанная фигура должна стать той, что была текущей
         assert_eq!(state.get_held_shape().unwrap().shape, current_after_hold);
     }
@@ -829,15 +829,15 @@ mod tests {
     fn test_hold_cannot_hold_twice() {
         use crate::game::GameState;
         let mut state = GameState::new();
-        
+
         // Первое удержание
         state.hold_shape();
         let _shape_after_first = state.get_curr_shape().shape;
-        
+
         // Попытка второго удержания (должна быть проигнорирована логикой игры)
         // Флаг can_hold уже false, поэтому hold_shape не должен вызываться
         assert!(!state.can_hold());
-        
+
         // Позиция фигуры должна быть сброшена
         assert_eq!(state.get_curr_shape().pos, (4.0, 0.0));
     }
@@ -847,15 +847,15 @@ mod tests {
     fn test_hold_reset_after_new_turn() {
         use crate::game::GameState;
         let mut state = GameState::new();
-        
+
         // Удерживаем фигуру
         state.hold_shape();
         assert!(!state.can_hold());
-        
+
         // Имитируем окончание хода (в реальной игре это делает update())
         // can_hold приватное поле, поэтому используем метод hold_shape() снова
         // В реальной игре can_hold сбрасывается в update()
-        
+
         // Для теста просто проверяем, что флаг работает
         assert!(!state.can_hold());
     }
@@ -874,7 +874,7 @@ mod tests {
     fn test_sprint_mode_creation() {
         use crate::game::{GameMode, GameState};
         let state = GameState::new_sprint();
-        
+
         assert_eq!(state.get_mode(), GameMode::Sprint);
         assert_eq!(state.get_lines_cleared(), 0);
         assert_eq!(state.get_level(), 1);
@@ -893,15 +893,15 @@ mod tests {
         use crate::game::GameState;
         use std::thread::sleep;
         use std::time::Duration;
-        
+
         let mut state = GameState::new_sprint();
         state.start_timer();
-        
+
         // Ждём немного
         sleep(Duration::from_millis(100));
-        
+
         let elapsed = state.get_stats().get_elapsed_time();
-        
+
         // Время должно быть больше 0
         assert!(elapsed > 0.0);
         // Время должно быть меньше 1 секунды (с запасом)
@@ -912,10 +912,10 @@ mod tests {
     #[test]
     fn test_sprint_progress() {
         use crate::game::{GameMode, GameState, SPRINT_LINES};
-        
+
         let state = GameState::new_sprint();
         assert_eq!(state.get_mode(), GameMode::Sprint);
-        
+
         // Прогресс должен быть 0/40 в начале
         assert!(state.get_lines_cleared() < SPRINT_LINES);
     }
@@ -934,7 +934,7 @@ mod tests {
     fn test_classic_mode_default() {
         use crate::game::{GameMode, GameState};
         let state = GameState::new();
-        
+
         assert_eq!(state.get_mode(), GameMode::Classic);
     }
 
@@ -942,10 +942,10 @@ mod tests {
     #[test]
     fn test_get_mode() {
         use crate::game::{GameMode, GameState};
-        
+
         let classic_state = GameState::new();
         assert_eq!(classic_state.get_mode(), GameMode::Classic);
-        
+
         let sprint_state = GameState::new_sprint();
         assert_eq!(sprint_state.get_mode(), GameMode::Sprint);
     }
@@ -954,10 +954,10 @@ mod tests {
     #[test]
     fn test_get_stats() {
         use crate::game::GameState;
-        
+
         let state = GameState::new();
         let stats = state.get_stats();
-        
+
         assert_eq!(stats.total_pieces(), 1); // Начальная фигура уже посчитана
     }
 
@@ -967,23 +967,23 @@ mod tests {
         use crate::game::GameState;
         use std::thread::sleep;
         use std::time::Duration;
-        
+
         let mut state = GameState::new();
-        
+
         // До запуска время 0
         assert_eq!(state.get_stats().get_elapsed_time(), 0.0);
-        
+
         state.start_timer();
         sleep(Duration::from_millis(50));
-        
+
         // После запуска время > 0
         let elapsed_before = state.get_stats().get_elapsed_time();
         assert!(elapsed_before > 0.0);
-        
+
         // stop_timer требует &mut, поэтому используем геттер времени
         sleep(Duration::from_millis(50));
         let elapsed_after = state.get_stats().get_elapsed_time();
-        
+
         // Время должно продолжать идти (так как не вызывали stop_timer)
         assert!(elapsed_after >= elapsed_before);
     }
@@ -1001,12 +1001,12 @@ mod tests {
     #[test]
     fn test_stats_in_game_state() {
         use crate::game::GameState;
-        
+
         let state = GameState::new();
-        
+
         // Статистика должна содержать хотя бы 1 фигуру (начальную)
         assert!(state.get_stats().total_pieces() >= 1);
-        
+
         // Максимальное комбо должно быть 0 в начале
         assert_eq!(state.get_stats().max_combo, 0);
     }
@@ -1024,12 +1024,12 @@ mod tests {
     #[test]
     fn test_held_shape_initialization() {
         use crate::game::GameState;
-        
+
         let state = GameState::new();
-        
+
         // В начале игры удержанной фигуры нет
         assert!(state.get_held_shape().is_none());
-        
+
         // can_hold должен быть true
         assert!(state.can_hold());
     }
@@ -1066,24 +1066,45 @@ mod tests {
     fn test_bag_contains_all_shapes() {
         let mut bag = BagGenerator::new();
         bag.fill_bag();
-        
+
         // Проверяем, что мешок содержит 7 фигур
         assert_eq!(bag.bag.len(), 7, "Мешок должен содержать 7 фигур");
-        
+
         // Проверяем наличие каждой фигуры
-        assert!(bag.bag.contains(&ShapeType::T), "Мешок должен содержать фигуру T");
-        assert!(bag.bag.contains(&ShapeType::L), "Мешок должен содержать фигуру L");
-        assert!(bag.bag.contains(&ShapeType::J), "Мешок должен содержать фигуру J");
-        assert!(bag.bag.contains(&ShapeType::S), "Мешок должен содержать фигуру S");
-        assert!(bag.bag.contains(&ShapeType::Z), "Мешок должен содержать фигуру Z");
-        assert!(bag.bag.contains(&ShapeType::O), "Мешок должен содержать фигуру O");
-        assert!(bag.bag.contains(&ShapeType::I), "Мешок должен содержать фигуру I");
-        
+        assert!(
+            bag.bag.contains(&ShapeType::T),
+            "Мешок должен содержать фигуру T"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::L),
+            "Мешок должен содержать фигуру L"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::J),
+            "Мешок должен содержать фигуру J"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::S),
+            "Мешок должен содержать фигуру S"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::Z),
+            "Мешок должен содержать фигуру Z"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::O),
+            "Мешок должен содержать фигуру O"
+        );
+        assert!(
+            bag.bag.contains(&ShapeType::I),
+            "Мешок должен содержать фигуру I"
+        );
+
         // Проверяем, что каждая фигура встречается ровно один раз
         let t_count = bag.bag.iter().filter(|&&s| s == ShapeType::T).count();
         let l_count = bag.bag.iter().filter(|&&s| s == ShapeType::L).count();
         let i_count = bag.bag.iter().filter(|&&s| s == ShapeType::I).count();
-        
+
         assert_eq!(t_count, 1, "Фигура T должна встречаться ровно 1 раз");
         assert_eq!(l_count, 1, "Фигура L должна встречаться ровно 1 раз");
         assert_eq!(i_count, 1, "Фигура I должна встречаться ровно 1 раз");
@@ -1096,25 +1117,28 @@ mod tests {
     #[test]
     fn test_bag_shuffle_randomness() {
         let mut bag = BagGenerator::new();
-        
+
         // Заполняем мешок несколько раз и проверяем разнообразие порядков
         let mut unique_orders = Vec::new();
         let iterations = 10;
-        
+
         for _ in 0..iterations {
             bag.fill_bag();
             let order: Vec<ShapeType> = bag.bag.clone();
-            
+
             // Добавляем порядок, если он ещё не встречался
             if !unique_orders.contains(&order) {
                 unique_orders.push(order);
             }
         }
-        
+
         // Ожидаем, что большинство порядков будут уникальными
         // Из-за случайности может быть совпадение, но маловероятно
-        assert!(unique_orders.len() >= 5, "Должно быть как минимум 5 уникальных порядков из 10 попыток");
-        
+        assert!(
+            unique_orders.len() >= 5,
+            "Должно быть как минимум 5 уникальных порядков из 10 попыток"
+        );
+
         // Проверяем, что каждый порядок содержит все 7 фигур
         for order in &unique_orders {
             assert_eq!(order.len(), 7, "Каждый порядок должен содержать 7 фигур");
@@ -1130,30 +1154,41 @@ mod tests {
     #[test]
     fn test_bag_refill_after_empty() {
         let mut bag = BagGenerator::new();
-        
+
         // Получаем все 7 фигур из первого мешка
         let mut first_bag_shapes = Vec::new();
         for _ in 0..7 {
             first_bag_shapes.push(bag.next_shape());
         }
-        
+
         // Проверяем, что первый мешок содержал все 7 фигур
         assert!(first_bag_shapes.contains(&ShapeType::T));
         assert!(first_bag_shapes.contains(&ShapeType::I));
-        
+
         // Индекс должен указывать на конец мешка
         assert_eq!(bag.index, 7, "Индекс должен быть 7 после получения 7 фигур");
-        
+
         // Получаем следующую фигуру - должен заполниться новый мешок
         let next_shape = bag.next_shape();
-        
+
         // Индекс должен сброситься на 1 (после заполнения нового мешка)
-        assert_eq!(bag.index, 1, "Индекс должен быть 1 после заполнения нового мешка");
-        
+        assert_eq!(
+            bag.index, 1,
+            "Индекс должен быть 1 после заполнения нового мешка"
+        );
+
         // Новая фигура должна быть валидной
-        assert!(matches!(next_shape, ShapeType::T | ShapeType::L | ShapeType::J | 
-                         ShapeType::S | ShapeType::Z | ShapeType::O | ShapeType::I));
-        
+        assert!(matches!(
+            next_shape,
+            ShapeType::T
+                | ShapeType::L
+                | ShapeType::J
+                | ShapeType::S
+                | ShapeType::Z
+                | ShapeType::O
+                | ShapeType::I
+        ));
+
         // Проверяем, что в новом мешке тоже 7 фигур
         assert_eq!(bag.bag.len(), 7, "Новый мешок должен содержать 7 фигур");
     }
@@ -1165,23 +1200,24 @@ mod tests {
     #[test]
     fn test_bag_uniform_distribution() {
         let mut bag = BagGenerator::new();
-        
+
         // Генерируем 700 фигур (100 полных мешков)
         let total_shapes = 700;
         let mut shape_counts = [0; 7];
-        
+
         for _ in 0..total_shapes {
             let shape = bag.next_shape();
             shape_counts[shape as usize] += 1;
         }
-        
+
         // В системе 7-bag каждая фигура встречается ровно 100 раз за 100 мешков
         let expected_per_shape = total_shapes / 7;
-        
+
         // Проверяем, что каждая фигура встретилась ожидаемое количество раз
         for (shape_index, &count) in shape_counts.iter().enumerate() {
             assert_eq!(
-                count, expected_per_shape,
+                count,
+                expected_per_shape,
                 "Фигура {:?} должна встречаться {} раз, но встретилась {} раз",
                 match shape_index {
                     0 => "T",
@@ -1197,7 +1233,7 @@ mod tests {
                 count
             );
         }
-        
+
         // Проверяем, что все фигуры встретились одинаковое количество раз
         for i in 1..shape_counts.len() {
             assert_eq!(
