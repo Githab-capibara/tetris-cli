@@ -1,7 +1,5 @@
 //! Основной игровой цикл.
 //!
-//! Автор: Dylan Turner
-//!
 //! Этот модуль содержит основную игровую логику Tetris CLI.
 //! Реализует игровой цикл, обработку ввода, отрисовку и систему очков.
 //!
@@ -17,6 +15,7 @@
 //! - Анимация очистки линий
 //! - Расширенная статистика игры
 //! - Режим "спринт" (40 линий на время)
+//! - Режим "марафон" (150 линий с нарастающей сложностью)
 
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
@@ -412,6 +411,8 @@ pub struct GameState {
     is_hard_dropping: bool,
     /// Количество ячеек, пройденных при Soft Drop.
     soft_drop_distance: u32,
+    /// Генератор фигур по системе 7-bag.
+    bag: crate::tetromino::BagGenerator,
 }
 
 /// Состояние завершения обновления.
@@ -466,6 +467,7 @@ impl GameState {
             animating_rows: Vec::new(),
             is_hard_dropping: false,
             soft_drop_distance: 0,
+            bag,
         }
     }
 
@@ -497,6 +499,7 @@ impl GameState {
             animating_rows: Vec::new(),
             is_hard_dropping: false,
             soft_drop_distance: 0,
+            bag,
         }
     }
 
@@ -528,6 +531,7 @@ impl GameState {
             animating_rows: Vec::new(),
             is_hard_dropping: false,
             soft_drop_distance: 0,
+            bag,
         }
     }
 
@@ -724,10 +728,9 @@ impl GameState {
             // Сброс таймера и переход к следующей фигуре
             self.land_timer = LAND_TIME_DELAY_S;
 
-            // Используем Bag Generator для следующей фигуры
-            let mut bag = crate::tetromino::BagGenerator::new();
+            // Переход к следующей фигуре из Bag Generator
             self.curr_shape = self.next_shape;
-            self.next_shape = Tetromino::from_bag(&mut bag);
+            self.next_shape = Tetromino::from_bag(&mut self.bag);
             self.can_hold = true; // Разрешаем удержание в новом ходу
 
             // Обновление статистики для новой фигуры
@@ -988,6 +991,18 @@ impl GameState {
         self.draw_ghost_shape(cnv);
 
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
+        // Получаем время один раз для всех блоков фигуры (оптимизация)
+        let show_solid = if self.is_hard_dropping {
+            use std::time::{SystemTime, UNIX_EPOCH};
+            let millis = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Время не может быть отрицательным")
+                .subsec_millis();
+            (millis / 50).is_multiple_of(2)
+        } else {
+            true // Без Hard Drop всегда рисуем сплошным
+        };
+
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
@@ -996,33 +1011,19 @@ impl GameState {
             let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
-            // Анимация Hard Drop: мигание фигуры
-            if self.is_hard_dropping {
-                // Чередование видимости для эффекта мигания (50 мс на кадр)
-                // Используем Instant для более точного тайминга
-                use std::time::{SystemTime, UNIX_EPOCH};
-                let millis = SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .expect("Время не может быть отрицательным")
-                    .subsec_millis();
-                // Мигание: каждые 50 мс меняем символ (полный блок/полупрозрачный)
-                let show_solid = (millis / 50).is_multiple_of(2);
-                let shape_symbol = if show_solid { SHAPE_STR } else { "░░" };
-                cnv.draw_strs(
-                    &[shape_symbol],
-                    (x as u16, y as u16),
-                    SHAPE_COLORS[self.curr_shape.fg],
-                    &Reset,
-                );
+            // Выбор символа для отрисовки
+            let shape_symbol = if self.is_hard_dropping && !show_solid {
+                "░░" // Полупрозрачный блок для мигания
             } else {
-                // Обычная отрисовка без мигания
-                cnv.draw_strs(
-                    &[SHAPE_STR],
-                    (x as u16, y as u16),
-                    SHAPE_COLORS[self.curr_shape.fg],
-                    &Reset,
-                );
-            }
+                SHAPE_STR // Полный блок
+            };
+
+            cnv.draw_strs(
+                &[shape_symbol],
+                (x as u16, y as u16),
+                SHAPE_COLORS[self.curr_shape.fg],
+                &Reset,
+            );
         }
 
         // Отрисовка следующей фигуры (предпросмотр)
