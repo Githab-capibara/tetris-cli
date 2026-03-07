@@ -1039,7 +1039,7 @@ fn test_extended_bag_with_all_types() {
         found[shape as usize] = true;
     }
 
-    for (i, &f) in found.iter().enumerate() {
+    for (_i, &f) in found.iter().enumerate() {
         assert!(f, "Все типы фигур должны встретиться");
     }
 }

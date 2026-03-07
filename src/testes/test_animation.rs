@@ -175,7 +175,7 @@ fn test_animation_hard_drop_marathon_mode() {
 /// Тест 11: Проверка что animating_rows пуст по умолчанию
 #[test]
 fn test_animation_animating_rows_empty() {
-    let state = GameState::new();
+    let _state = GameState::new();
     // animating_rows - приватное поле
     assert!(true); // Тест компиляции
 }
@@ -183,7 +183,7 @@ fn test_animation_animating_rows_empty() {
 /// Тест 12: Проверка что очистка линий работает
 #[test]
 fn test_animation_line_clear_works() {
-    let state = GameState::new();
+    let _state = GameState::new();
     // check_rows - приватный метод
     assert!(true); // Тест компиляции
 }
