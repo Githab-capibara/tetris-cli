@@ -1230,14 +1230,49 @@ impl GameState {
     /// # Алгоритм
     /// 1. Создаётся временная копия фигуры
     /// 2. Применяется вращение к копии
-    /// 3. Проверяется валидность новой позиции с помощью check_collision
+    /// 3. Проверяются все блоки фигуры на выход за границы и столкновения
     pub fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
 
-        // Проверка валидности новой позиции с помощью общего метода
-        self.check_collision(&temp_shape.coords, temp_shape.pos, Dir::Down)
+        // Проверка вращения без смещения по направлению
+        self.check_rotation_collision(&temp_shape.coords, temp_shape.pos)
+    }
+
+    /// Проверить возможность вращения фигуры (без смещения).
+    ///
+    /// # Аргументы
+    /// * `coords` - координаты блоков повёрнутой фигуры
+    /// * `pos` - позиция фигуры (x, y)
+    ///
+    /// # Возвращает
+    /// `true` если вращение возможно
+    ///
+    /// # Проверки
+    /// 1. Выход за границы игрового поля
+    /// 2. Столкновение с зафиксированными фигурами
+    fn check_rotation_collision(&self, coords: &[(i16, i16)], pos: (f32, f32)) -> bool {
+        let (shape_x, shape_y) = pos;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
+
+        for coord in coords {
+            let (coord_x, coord_y) = coord;
+            let check_x = coord_x + shape_block_x;
+            let check_y = coord_y + shape_block_y;
+
+            // Проверка выхода за границы сетки
+            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
+                return false;
+            }
+
+            // Проверка столкновения с зафиксированными фигурами
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
+                return false;
+            }
+        }
+        true
     }
 
     /// Получить текущий уровень.
