@@ -598,5 +598,6 @@ mod testes {
     pub mod test_highscore;
     pub mod test_integration;
     pub mod test_io;
+    pub mod test_physics;
     pub mod test_tetromino;
 }

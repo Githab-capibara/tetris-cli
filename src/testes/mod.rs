@@ -8,8 +8,9 @@
 //! - `test_io` - тесты ввода/вывода (10 тестов)
 //! - `test_integration` - интеграционные тесты (20 тестов)
 //! - `test_achievements` - тесты системы достижений (20 тестов)
+//! - `test_physics` - тесты физической механики (20 тестов)
 //!
-//! Итого: 140 тестов
+//! Итого: 160 тестов
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -18,3 +19,4 @@ pub mod test_tetromino;
 pub mod test_highscore;
 pub mod test_io;
 pub mod test_integration;
+pub mod test_physics;
