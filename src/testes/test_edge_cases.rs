@@ -155,7 +155,7 @@ fn test_edge_cases_bag_7000_shapes() {
         counts[shape as usize] += 1;
     }
 
-    for (i, &count) in counts.iter().enumerate() {
+    for (_i, &count) in counts.iter().enumerate() {
         assert_eq!(count, 1000);
     }
 }
@@ -278,7 +278,7 @@ fn test_edge_cases_all_seven_in_bag() {
         found[shape as usize] = true;
     }
 
-    for (i, &f) in found.iter().enumerate() {
+    for (_i, &f) in found.iter().enumerate() {
         assert!(f);
     }
 }

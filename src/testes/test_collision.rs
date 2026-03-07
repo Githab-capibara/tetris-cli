@@ -9,7 +9,7 @@
 
 use crate::game::{Dir, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
+use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-15: Столкновения со стенами

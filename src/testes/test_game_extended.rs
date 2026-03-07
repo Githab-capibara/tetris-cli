@@ -11,7 +11,7 @@
 
 use crate::game::{Dir, GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-20: Расширенное движение фигур
@@ -1304,7 +1304,7 @@ fn test_extended_bag_700_shapes() {
 /// Тест 66: Проверка создания Bag Generator
 #[test]
 fn test_extended_bag_creation() {
-    let bag = BagGenerator::new();
+    let _bag = BagGenerator::new();
     // Просто проверяем что создан успешно
     assert!(true);
 }
@@ -1608,7 +1608,7 @@ fn test_extended_game_can_hold() {
 #[test]
 fn test_extended_draw_ghost_shape_exists() {
     // Тест просто проверяет что метод существует и компилируется
-    let mut state = GameState::new();
+    let state = GameState::new();
     let ghost_shape = state.get_curr_shape().clone();
     let can_move = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
     let _ = can_move;
