@@ -311,14 +311,19 @@ impl GameStats {
     ///
     /// # Возвращает
     /// Вектор новых полученных достижений
-    pub fn check_achievements(&mut self, lines: u32, level: u32, mode: GameMode) -> Vec<Achievement> {
+    pub fn check_achievements(
+        &mut self,
+        lines: u32,
+        level: u32,
+        mode: GameMode,
+    ) -> Vec<Achievement> {
         let mut new_achievements = Vec::new();
 
         // Достижение за Tetris (4 линии одновременно)
         if lines == 4 {
             // Увеличиваем счётчик Tetris каждый раз
             self.tetris_count += 1;
-            
+
             // Добавляем достижение только если его ещё нет
             if !self.achievements.iter().any(|a| a.name == "🏆 TETRIS!") {
                 new_achievements.push(Achievement::first_tetris());
@@ -326,8 +331,7 @@ impl GameStats {
         }
 
         // Достижения за комбо
-        if self.combo_counter >= 5
-            && !self.achievements.iter().any(|a| a.name.starts_with("🔥"))
+        if self.combo_counter >= 5 && !self.achievements.iter().any(|a| a.name.starts_with("🔥"))
         {
             new_achievements.push(Achievement::combo_master(self.combo_counter));
         }

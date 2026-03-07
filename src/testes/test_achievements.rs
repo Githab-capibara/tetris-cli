@@ -24,7 +24,10 @@ fn test_achievement_creation() {
     let achievement = Achievement::new("Тестовое", "Описание теста", 100);
 
     assert_eq!(achievement.name, "Тестовое", "Название должно совпадать");
-    assert_eq!(achievement.description, "Описание теста", "Описание должно совпадать");
+    assert_eq!(
+        achievement.description, "Описание теста",
+        "Описание должно совпадать"
+    );
     assert_eq!(achievement.points, 100, "Очки должны совпадать");
 }
 
@@ -36,7 +39,10 @@ fn test_achievement_clone() {
     let original = Achievement::new("Оригинал", "Описание оригинала", 200);
     let cloned = original.clone();
 
-    assert_eq!(original.name, cloned.name, "Название должно совпадать при клонировании");
+    assert_eq!(
+        original.name, cloned.name,
+        "Название должно совпадать при клонировании"
+    );
     assert_eq!(
         original.description, cloned.description,
         "Описание должно совпадать при клонировании"
@@ -74,7 +80,10 @@ fn test_achievement_partial_eq() {
     let achievement2 = Achievement::new("Тест", "Описание", 100);
     let achievement3 = Achievement::new("Тест", "Другое", 100);
 
-    assert_eq!(achievement1, achievement2, "Одинаковые достижения должны быть равны");
+    assert_eq!(
+        achievement1, achievement2,
+        "Одинаковые достижения должны быть равны"
+    );
     assert_ne!(
         achievement1, achievement3,
         "Достижения с разным описанием не должны быть равны"
@@ -116,9 +125,15 @@ fn test_combo_master_achievement() {
         achievement_5.description.contains("5"),
         "Описание должно содержать номер комбо"
     );
-    assert_eq!(achievement_5.points, 250, "Очки за комбо x5 должны быть 250");
+    assert_eq!(
+        achievement_5.points, 250,
+        "Очки за комбо x5 должны быть 250"
+    );
 
-    assert_eq!(achievement_10.points, 500, "Очки за комбо x10 должны быть 500");
+    assert_eq!(
+        achievement_10.points, 500,
+        "Очки за комбо x10 должны быть 500"
+    );
 }
 
 /// Тест 7: Проверка достижения "Спринтер"
@@ -143,7 +158,10 @@ fn test_sprinter_achievement() {
 fn test_marathoner_achievement() {
     let achievement = Achievement::marathoner();
 
-    assert_eq!(achievement.name, "🏃 Марафонец", "Название должно совпадать");
+    assert_eq!(
+        achievement.name, "🏃 Марафонец",
+        "Название должно совпадать"
+    );
     assert_eq!(
         achievement.description, "Завершите режим марафон",
         "Описание должно совпадать"
@@ -159,14 +177,23 @@ fn test_veteran_achievement() {
     let achievement_5 = Achievement::veteran(5);
     let achievement_10 = Achievement::veteran(10);
 
-    assert_eq!(achievement_5.name, "⭐ Ветеран", "Название должно совпадать");
+    assert_eq!(
+        achievement_5.name, "⭐ Ветеран",
+        "Название должно совпадать"
+    );
     assert!(
         achievement_5.description.contains("5"),
         "Описание должно содержать номер уровня"
     );
-    assert_eq!(achievement_5.points, 500, "Очки за уровень 5 должны быть 500");
+    assert_eq!(
+        achievement_5.points, 500,
+        "Очки за уровень 5 должны быть 500"
+    );
 
-    assert_eq!(achievement_10.points, 1000, "Очки за уровень 10 должны быть 1000");
+    assert_eq!(
+        achievement_10.points, 1000,
+        "Очки за уровень 10 должны быть 1000"
+    );
 }
 
 // ============================================================================
@@ -184,7 +211,10 @@ fn test_check_achievements_tetris() {
     let achievements = stats.check_achievements(4, 1, GameMode::Classic);
 
     assert_eq!(achievements.len(), 1, "Должно быть получено 1 достижение");
-    assert_eq!(achievements[0].name, "🏆 TETRIS!", "Достижение должно быть за Tetris");
+    assert_eq!(
+        achievements[0].name, "🏆 TETRIS!",
+        "Достижение должно быть за Tetris"
+    );
     assert_eq!(stats.tetris_count, 1, "Счётчик Tetris должен быть 1");
 }
 
@@ -197,11 +227,19 @@ fn test_check_achievements_tetris_once() {
 
     // Первое получение
     let achievements1 = stats.check_achievements(4, 1, GameMode::Classic);
-    assert_eq!(achievements1.len(), 1, "Первое достижение должно быть выдано");
+    assert_eq!(
+        achievements1.len(),
+        1,
+        "Первое достижение должно быть выдано"
+    );
 
     // Повторное получение (не должно выдать достижение)
     let achievements2 = stats.check_achievements(4, 1, GameMode::Classic);
-    assert_eq!(achievements2.len(), 0, "Повторное достижение не должно выдаваться");
+    assert_eq!(
+        achievements2.len(),
+        0,
+        "Повторное достижение не должно выдаваться"
+    );
     assert_eq!(stats.tetris_count, 2, "Счётчик Tetris должен увеличиться");
 }
 
@@ -233,7 +271,10 @@ fn test_check_achievements_sprint() {
     let achievements = stats.check_achievements(1, 1, GameMode::Sprint);
 
     assert_eq!(achievements.len(), 1, "Должно быть получено 1 достижение");
-    assert_eq!(achievements[0].name, "⚡ Спринтер", "Достижение должно быть за спринт");
+    assert_eq!(
+        achievements[0].name, "⚡ Спринтер",
+        "Достижение должно быть за спринт"
+    );
 }
 
 /// Тест 14: Проверка получения достижения за марафон
@@ -308,8 +349,14 @@ fn test_check_achievements_level() {
     let achievements = stats.check_achievements(1, 5, GameMode::Classic);
 
     assert_eq!(achievements.len(), 1, "Должно быть получено 1 достижение");
-    assert_eq!(achievements[0].name, "⭐ Ветеран", "Достижение должно быть за уровень");
-    assert_eq!(achievements[0].points, 500, "Очки за уровень 5 должны быть 500");
+    assert_eq!(
+        achievements[0].name, "⭐ Ветеран",
+        "Достижение должно быть за уровень"
+    );
+    assert_eq!(
+        achievements[0].points, 500,
+        "Очки за уровень 5 должны быть 500"
+    );
 }
 
 // ============================================================================
@@ -325,11 +372,8 @@ fn test_performance_achievement_creation() {
 
     // Создаём 1000 достижений
     for i in 0..1000 {
-        let _achievement = Achievement::new(
-            &format!("Достижение {}", i),
-            &format!("Описание {}", i),
-            i,
-        );
+        let _achievement =
+            Achievement::new(&format!("Достижение {}", i), &format!("Описание {}", i), i);
     }
 
     let duration = start.elapsed();
