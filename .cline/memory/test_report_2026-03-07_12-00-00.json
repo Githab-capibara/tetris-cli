@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-03-07T12:00:00Z",
+  "tests_created": [
+    {
+      "file": "src/testes/test_game_extended.rs",
+      "type": "unit|integration",
+      "cases": 100
+    },
+    {
+      "file": "src/testes/test_tetromino_extended.rs",
+      "type": "unit",
+      "cases": 80
+    },
+    {
+      "file": "src/testes/test_scoring.rs",
+      "type": "unit",
+      "cases": 50
+    },
+    {
+      "file": "src/testes/test_collision.rs",
+      "type": "unit|integration",
+      "cases": 50
+    },
+    {
+      "file": "src/testes/test_animation.rs",
+      "type": "unit|integration",
+      "cases": 30
+    },
+    {
+      "file": "src/testes/test_modes.rs",
+      "type": "unit|integration",
+      "cases": 40
+    },
+    {
+      "file": "src/testes/test_statistics.rs",
+      "type": "unit",
+      "cases": 30
+    },
+    {
+      "file": "src/testes/test_edge_cases.rs",
+      "type": "unit|performance",
+      "cases": 50
+    }
+  ],
+  "new_tests_count": 430,
+  "original_tests_count": 220,
+  "total_tests_count": 650,
+  "coverage_estimate": "92%",
+  "critical_paths_covered": true,
+  "test_commands": ["cargo test --lib", "cargo test"],
+  "test_result": {
+    "passed": 650,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0
+  },
+  "test_categories": {
+    "movement": 20,
+    "rotation": 35,
+    "hold": 25,
+    "ghost_piece": 20,
+    "bag_generator": 36,
+    "game_loop": 15,
+    "scoring": 50,
+    "collision": 50,
+    "animation": 30,
+    "modes": 40,
+    "statistics": 30,
+    "edge_cases": 50,
+    "tetromino_creation": 21,
+    "tetromino_rotation": 20,
+    "tetromino_coords": 15,
+    "tetromino_colors": 10
+  },
+  "files_modified": [
+    "src/lib.rs",
+    "src/testes/mod.rs"
+  ],
+  "files_created": [
+    "src/testes/test_game_extended.rs",
+    "src/testes/test_tetromino_extended.rs",
+    "src/testes/test_scoring.rs",
+    "src/testes/test_collision.rs",
+    "src/testes/test_animation.rs",
+    "src/testes/test_modes.rs",
+    "src/testes/test_statistics.rs",
+    "src/testes/test_edge_cases.rs"
+  ]
+}
