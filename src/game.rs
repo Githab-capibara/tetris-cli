@@ -119,13 +119,15 @@ pub const LINES_PER_LEVEL: u32 = 10;
 /// Количество линий для режима спринт.
 pub const SPRINT_LINES: u32 = 40;
 
-/// Количество линий для режима марафон.
+/// Количество линий для режима марафон (заготовка для будущего режима).
+#[allow(dead_code)]
 pub const MARATHON_LINES: u32 = 150;
 
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
 
-/// Символ для отрисовки призрачной фигуры (полупрозрачный блок).
+/// Символ для отрисовки призрачной фигуры (заготовка для будущей функциональности).
+#[allow(dead_code)]
 pub const GHOST_SHAPE_STR: &str = "░░";
 
 /// Направление движения/вращения.
@@ -182,16 +184,20 @@ pub struct GameStats {
     pub start_time: Option<Instant>,
     /// Время окончания игры.
     pub end_time: Option<Instant>,
-    /// Полученные достижения.
+    /// Полученные достижения (заготовка для будущей системы достижений).
+    #[allow(dead_code)]
     pub achievements: Vec<Achievement>,
-    /// Количество Tetris (4 линии одновременно).
+    /// Количество Tetris (4 линии одновременно) (заготовка для будущей статистики).
+    #[allow(dead_code)]
     pub tetris_count: u32,
-    /// Общее количество удалённых линий.
+    /// Общее количество удалённых линий (заготовка для будущей статистики).
+    #[allow(dead_code)]
     pub total_lines: u32,
 }
 
-/// Достижение в игре.
+/// Достижение в игре (заготовка для будущей системы достижений).
 #[derive(Clone, Debug, PartialEq)]
+#[allow(dead_code)]
 pub struct Achievement {
     /// Название достижения.
     pub name: String,
@@ -201,6 +207,7 @@ pub struct Achievement {
     pub points: u32,
 }
 
+#[allow(dead_code)]
 impl Achievement {
     /// Создать новое достижение.
     pub fn new(name: &str, description: &str, points: u32) -> Self {
@@ -301,7 +308,7 @@ impl GameStats {
         self.end_time = Some(Instant::now());
     }
 
-    /// Проверить и добавить достижения.
+    /// Проверить и добавить достижения (заготовка для будущей системы достижений).
     ///
     /// # Аргументы
     /// * `lines` — количество удалённых линий в текущем ходе
@@ -310,6 +317,7 @@ impl GameStats {
     ///
     /// # Возвращает
     /// Вектор новых полученных достижений
+    #[allow(dead_code)]
     pub fn check_achievements(
         &mut self,
         lines: u32,
