@@ -592,6 +592,7 @@ pub use controls::ControlsConfig;
 
 #[cfg(test)]
 mod testes {
+    // Оригинальные тесты (160 тестов)
     pub mod test_achievements;
     pub mod test_controls;
     pub mod test_game_logic;
@@ -600,4 +601,14 @@ mod testes {
     pub mod test_io;
     pub mod test_physics;
     pub mod test_tetromino;
+
+    // Новые расширенные тесты (530 тестов)
+    pub mod test_game_extended;
+    pub mod test_tetromino_extended;
+    pub mod test_scoring;
+    pub mod test_collision;
+    pub mod test_animation;
+    pub mod test_modes;
+    pub mod test_statistics;
+    pub mod test_edge_cases;
 }
