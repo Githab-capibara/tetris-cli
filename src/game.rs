@@ -433,6 +433,8 @@ enum UpdateEndState {
     Continue,
     /// Пауза.
     Pause,
+    /// Победа (завершение режима спринт/марафон).
+    Won,
 }
 
 impl Default for GameState {
@@ -599,6 +601,14 @@ impl GameState {
                         sleep(Duration::from_millis(interval_ms));
                     }
                 }
+                UpdateEndState::Won => {
+                    // Победа в режиме спринт/марафон
+                    cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
+                    cnv.flush();
+                    // Пауза перед возвратом в меню
+                    sleep(Duration::from_millis(1500));
+                    break;
+                }
             }
             // Отрисовка текущего кадра
             self.draw(cnv, hs_disp);
@@ -743,6 +753,20 @@ impl GameState {
 
             // Обновление статистики для новой фигуры
             self.stats.add_piece(self.curr_shape.shape);
+
+            // Проверка окончания режима спринт
+            // Спринт завершается при достижении 40 линий
+            if self.mode == GameMode::Sprint && self.lines_cleared >= SPRINT_LINES {
+                self.stats.stop_timer();
+                return UpdateEndState::Won;
+            }
+
+            // Проверка окончания режима марафон
+            // Марафон завершается при достижении 150 линий
+            if self.mode == GameMode::Marathon && self.lines_cleared >= MARATHON_LINES {
+                self.stats.stop_timer();
+                return UpdateEndState::Won;
+            }
         }
 
         UpdateEndState::Continue
@@ -927,12 +951,6 @@ impl GameState {
             // Дополнительный бонус 1000 очков сверх базовых 800
             if num_filled_rows == 4 {
                 self.score += 1000; // Бонус за Tetris
-            }
-
-            // Проверка окончания режима спринт
-            // Спринт завершается при достижении 40 линий
-            if self.mode == GameMode::Sprint && self.lines_cleared >= SPRINT_LINES {
-                self.stats.stop_timer();
             }
         }
 
