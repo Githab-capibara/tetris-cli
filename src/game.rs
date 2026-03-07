@@ -777,9 +777,8 @@ impl GameState {
             // Если удержанной фигуры не было — сохраняем текущую
             self.held_shape = Some(current_shape);
             self.curr_shape = self.next_shape;
-            // Используем Bag Generator для следующей фигуры
-            let mut bag = crate::tetromino::BagGenerator::new();
-            self.next_shape = Tetromino::from_bag(&mut bag);
+            // Используем существующий Bag Generator для следующей фигуры
+            self.next_shape = Tetromino::from_bag(&mut self.bag);
         }
 
         // Сбрасываем позицию и запрещаем повторное удержание в этом ходу
@@ -992,15 +991,20 @@ impl GameState {
 
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         // Получаем время один раз для всех блоков фигуры (оптимизация)
-        let show_solid = if self.is_hard_dropping {
+        let shape_symbol = if self.is_hard_dropping {
             use std::time::{SystemTime, UNIX_EPOCH};
             let millis = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .expect("Время не может быть отрицательным")
                 .subsec_millis();
-            (millis / 50).is_multiple_of(2)
+            // Мигание: чередуем символы каждые 50 мс
+            if (millis / 50).is_multiple_of(2) {
+                SHAPE_STR
+            } else {
+                "░░"
+            }
         } else {
-            true // Без Hard Drop всегда рисуем сплошным
+            SHAPE_STR // Без Hard Drop всегда рисуем сплошным
         };
 
         let (shape_x, shape_y) = self.curr_shape.pos;
@@ -1010,13 +1014,6 @@ impl GameState {
             let (coord_x, coord_y) = coord;
             let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
-
-            // Выбор символа для отрисовки
-            let shape_symbol = if self.is_hard_dropping && !show_solid {
-                "░░" // Полупрозрачный блок для мигания
-            } else {
-                SHAPE_STR // Полный блок
-            };
 
             cnv.draw_strs(
                 &[shape_symbol],
