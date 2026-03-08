@@ -1415,6 +1415,7 @@ impl GameState {
     }
 
     /// Остановить таймер игры.
+    #[allow(dead_code)]
     pub fn stop_timer(&mut self) {
         self.stats.stop_timer();
     }
