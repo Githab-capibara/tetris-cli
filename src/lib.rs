@@ -611,4 +611,10 @@ mod testes {
     pub mod test_modes;
     pub mod test_statistics;
     pub mod test_edge_cases;
+
+    // Стресс-тесты и граничные случаи (20 тестов)
+    pub mod test_edge_cases_stress;
+
+    // Интеграционные тесты режимов (20 тестов)
+    pub mod test_modes_integration;
 }

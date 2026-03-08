@@ -17,8 +17,9 @@
 //! - `test_modes` - тесты режимов игры (40 тестов)
 //! - `test_statistics` - тесты статистики (30 тестов)
 //! - `test_edge_cases` - тесты граничных случаев (50 тестов)
+//! - `test_edge_cases_stress` - стресс-тесты и граничные значения (20 тестов)
 //!
-//! Итого: 690 тестов
+//! Итого: 730 тестов
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -38,3 +39,9 @@ pub mod test_animation;
 pub mod test_modes;
 pub mod test_statistics;
 pub mod test_edge_cases;
+
+// Стресс-тесты и граничные случаи (20 тестов)
+pub mod test_edge_cases_stress;
+
+// Интеграционные тесты режимов (20 тестов)
+pub mod test_modes_integration;
