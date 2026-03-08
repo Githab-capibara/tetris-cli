@@ -27,12 +27,18 @@ fn test_t_piece_basic_properties() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     assert_eq!(t.shape, ShapeType::T, "Тип фигуры должен быть T");
     assert_eq!(t.fg, 0, "Индекс цвета должен быть 0");
     assert_eq!(t.coords.len(), 4, "У фигуры должно быть 4 блока");
-    assert!((t.pos.0 - 4.0).abs() < f32::EPSILON, "Позиция X должна быть 4.0");
-    assert!((t.pos.1 - 0.0).abs() < f32::EPSILON, "Позиция Y должна быть 0.0");
+    assert!(
+        (t.pos.0 - 4.0).abs() < f32::EPSILON,
+        "Позиция X должна быть 4.0"
+    );
+    assert!(
+        (t.pos.1 - 0.0).abs() < f32::EPSILON,
+        "Позиция Y должна быть 0.0"
+    );
 }
 
 /// Тест 2: L-фигура - базовые свойства
@@ -44,7 +50,7 @@ fn test_l_piece_basic_properties() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     assert_eq!(t.shape, ShapeType::L, "Тип фигуры должен быть L");
     assert_eq!(t.fg, 1, "Индекс цвета должен быть 1");
     assert_eq!(t.coords.len(), 4, "У фигуры должно быть 4 блока");
@@ -59,7 +65,7 @@ fn test_j_piece_basic_properties() {
         coords: SHAPE_COORDS[2],
         fg: 2,
     };
-    
+
     assert_eq!(t.shape, ShapeType::J, "Тип фигуры должен быть J");
     assert_eq!(t.fg, 2, "Индекс цвета должен быть 2");
 }
@@ -73,7 +79,7 @@ fn test_s_piece_basic_properties() {
         coords: SHAPE_COORDS[3],
         fg: 3,
     };
-    
+
     assert_eq!(t.shape, ShapeType::S, "Тип фигуры должен быть S");
     assert_eq!(t.fg, 3, "Индекс цвета должен быть 3");
 }
@@ -87,7 +93,7 @@ fn test_z_piece_basic_properties() {
         coords: SHAPE_COORDS[4],
         fg: 4,
     };
-    
+
     assert_eq!(t.shape, ShapeType::Z, "Тип фигуры должен быть Z");
     assert_eq!(t.fg, 4, "Индекс цвета должен быть 4");
 }
@@ -101,7 +107,7 @@ fn test_o_piece_basic_properties() {
         coords: SHAPE_COORDS[5],
         fg: 5,
     };
-    
+
     assert_eq!(t.shape, ShapeType::O, "Тип фигуры должен быть O");
     assert_eq!(t.fg, 5, "Индекс цвета должен быть 5");
 }
@@ -115,7 +121,7 @@ fn test_i_piece_basic_properties() {
         coords: SHAPE_COORDS[6],
         fg: 6,
     };
-    
+
     assert_eq!(t.shape, ShapeType::I, "Тип фигуры должен быть I");
     assert_eq!(t.fg, 6, "Индекс цвета должен быть 6");
 }
@@ -129,7 +135,7 @@ fn test_t_piece_shape_structure() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     // T-фигура: три блока в ряд с одним блоком сверху по центру
     // Координаты: (-1,0), (0,0), (1,0), (0,1)
     assert_eq!(t.coords[0], (-1, 0), "Первый блок T-фигуры");
@@ -147,7 +153,7 @@ fn test_l_piece_shape_structure() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     // L-фигура: три блока в ряд с одним блоком снизу справа
     assert_eq!(t.coords[0], (-1, -1), "Левый верхний блок L-фигуры");
     assert_eq!(t.coords[3], (0, 1), "Нижний блок L-фигуры");
@@ -162,7 +168,7 @@ fn test_j_piece_shape_structure() {
         coords: SHAPE_COORDS[2],
         fg: 2,
     };
-    
+
     // J-фигура: зеркальная L - блок снизу слева
     assert_eq!(t.coords[0], (1, -1), "Правый верхний блок J-фигуры");
     assert_eq!(t.coords[1], (0, -1), "Центральный верхний блок J-фигуры");
@@ -177,7 +183,7 @@ fn test_s_piece_shape_structure() {
         coords: SHAPE_COORDS[3],
         fg: 3,
     };
-    
+
     // S-фигура: два блока в ряд со сдвигом вправо
     assert_eq!(t.coords[0], (0, -1), "Верхний левый блок S-фигуры");
     assert_eq!(t.coords[3], (1, 1), "Нижний правый блок S-фигуры");
@@ -192,7 +198,7 @@ fn test_z_piece_shape_structure() {
         coords: SHAPE_COORDS[4],
         fg: 4,
     };
-    
+
     // Z-фигура: зеркальная S - сдвиг влево
     assert_eq!(t.coords[0], (0, -1), "Верхний блок Z-фигуры");
     assert_eq!(t.coords[3], (-1, 1), "Нижний левый блок Z-фигуры");
@@ -207,7 +213,7 @@ fn test_o_piece_shape_structure() {
         coords: SHAPE_COORDS[5],
         fg: 5,
     };
-    
+
     // O-фигура: квадрат 2x2
     assert_eq!(t.coords[0], (0, 0), "Левый верхний блок O-фигуры");
     assert_eq!(t.coords[1], (1, 0), "Правый верхний блок O-фигуры");
@@ -224,7 +230,7 @@ fn test_i_piece_shape_structure() {
         coords: SHAPE_COORDS[6],
         fg: 6,
     };
-    
+
     // I-фигура: четыре блока в вертикальный ряд
     assert_eq!(t.coords[0], (0, -1), "Верхний блок I-фигуры");
     assert_eq!(t.coords[1], (0, 0), "Второй блок I-фигуры");
@@ -240,11 +246,7 @@ fn test_i_piece_shape_structure() {
 #[test]
 fn test_all_pieces_have_four_blocks() {
     for (i, coords) in SHAPE_COORDS.iter().enumerate() {
-        assert_eq!(
-            coords.len(), 4,
-            "Фигура {} должна иметь 4 блока",
-            i
-        );
+        assert_eq!(coords.len(), 4, "Фигура {} должна иметь 4 блока", i);
     }
 }
 
@@ -256,12 +258,16 @@ fn test_all_coords_in_valid_range() {
             assert!(
                 x >= -2 && x <= 2,
                 "X координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
-                shape_idx, block_idx, x
+                shape_idx,
+                block_idx,
+                x
             );
             assert!(
                 y >= -2 && y <= 2,
                 "Y координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
-                shape_idx, block_idx, y
+                shape_idx,
+                block_idx,
+                y
             );
         }
     }
@@ -271,7 +277,7 @@ fn test_all_coords_in_valid_range() {
 #[test]
 fn test_t_piece_coords_unique() {
     let coords = SHAPE_COORDS[0];
-    
+
     // Проверяем, что все координаты уникальны
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
@@ -288,13 +294,10 @@ fn test_t_piece_coords_unique() {
 #[test]
 fn test_l_piece_coords_unique() {
     let coords = SHAPE_COORDS[1];
-    
+
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
-            assert_ne!(
-                coords[i], coords[j],
-                "L-фигура имеет дублирующиеся блоки"
-            );
+            assert_ne!(coords[i], coords[j], "L-фигура имеет дублирующиеся блоки");
         }
     }
 }
@@ -303,7 +306,7 @@ fn test_l_piece_coords_unique() {
 #[test]
 fn test_j_piece_coords_unique() {
     let coords = SHAPE_COORDS[2];
-    
+
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
             assert_ne!(coords[i], coords[j]);
@@ -315,7 +318,7 @@ fn test_j_piece_coords_unique() {
 #[test]
 fn test_s_piece_coords_unique() {
     let coords = SHAPE_COORDS[3];
-    
+
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
             assert_ne!(coords[i], coords[j]);
@@ -327,7 +330,7 @@ fn test_s_piece_coords_unique() {
 #[test]
 fn test_z_piece_coords_unique() {
     let coords = SHAPE_COORDS[4];
-    
+
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
             assert_ne!(coords[i], coords[j]);
@@ -339,7 +342,7 @@ fn test_z_piece_coords_unique() {
 #[test]
 fn test_i_piece_coords_unique() {
     let coords = SHAPE_COORDS[6];
-    
+
     for i in 0..coords.len() {
         for j in (i + 1)..coords.len() {
             assert_ne!(coords[i], coords[j]);
@@ -354,10 +357,7 @@ fn test_i_piece_coords_unique() {
 /// Тест 23: Количество цветов соответствует количеству фигур
 #[test]
 fn test_colors_count_matches_pieces_count() {
-    assert_eq!(
-        SHAPE_COLORS.len(), 7,
-        "Должно быть 7 цветов для 7 фигур"
-    );
+    assert_eq!(SHAPE_COLORS.len(), 7, "Должно быть 7 цветов для 7 фигур");
 }
 
 /// Тест 24: T-фигура имеет правильный цвет (Magenta)
@@ -369,7 +369,7 @@ fn test_t_piece_color() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     assert_eq!(t.fg, 0, "T-фигура должна иметь индекс цвета 0 (Magenta)");
 }
 
@@ -382,7 +382,7 @@ fn test_l_piece_color() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     assert_eq!(t.fg, 1, "L-фигура должна иметь индекс цвета 1 (Yellow)");
 }
 
@@ -395,7 +395,7 @@ fn test_j_piece_color() {
         coords: SHAPE_COORDS[2],
         fg: 2,
     };
-    
+
     assert_eq!(t.fg, 2, "J-фигура должна иметь индекс цвета 2 (Blue)");
 }
 
@@ -408,7 +408,7 @@ fn test_s_piece_color() {
         coords: SHAPE_COORDS[3],
         fg: 3,
     };
-    
+
     assert_eq!(t.fg, 3, "S-фигура должна иметь индекс цвета 3 (Green)");
 }
 
@@ -421,7 +421,7 @@ fn test_z_piece_color() {
         coords: SHAPE_COORDS[4],
         fg: 4,
     };
-    
+
     assert_eq!(t.fg, 4, "Z-фигура должна иметь индекс цвета 4 (LightRed)");
 }
 
@@ -438,7 +438,7 @@ fn test_initial_position_x_is_center() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     assert!(
         (t.pos.0 - 4.0).abs() < f32::EPSILON,
         "Начальная позиция X должна быть 4.0 (центр)"
@@ -454,7 +454,7 @@ fn test_initial_position_y_is_top() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     assert!(
         (t.pos.1 - 0.0).abs() < f32::EPSILON,
         "Начальная позиция Y должна быть 0.0"
@@ -473,7 +473,7 @@ fn test_all_pieces_spawn_at_center() {
         ShapeType::O,
         ShapeType::I,
     ];
-    
+
     for shape in shapes.iter() {
         let t = Tetromino {
             pos: (4.0, 0.0),
@@ -481,7 +481,7 @@ fn test_all_pieces_spawn_at_center() {
             coords: SHAPE_COORDS[*shape as usize],
             fg: *shape as usize,
         };
-        
+
         assert!(
             (t.pos.0 - 4.0).abs() < f32::EPSILON,
             "{:?} фигура должна появляться в центре по X",
@@ -504,7 +504,7 @@ fn test_position_unchanged_on_creation() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     // Проверяем, что позиция точно равна ожидаемой
     assert_eq!(t.pos, (4.0, 0.0), "Позиция должна быть (4.0, 0.0)");
 }
@@ -518,7 +518,7 @@ fn test_position_after_move_left() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     t.pos.0 -= 1.0;
     assert!(
         (t.pos.0 - 3.0).abs() < f32::EPSILON,
@@ -535,7 +535,7 @@ fn test_position_after_move_right() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     t.pos.0 += 1.0;
     assert!(
         (t.pos.0 - 5.0).abs() < f32::EPSILON,
@@ -556,14 +556,15 @@ fn test_t_piece_after_one_clockwise_rotation() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     t.rotate(Dir::Right);
-    
+
     // После вращения по часовой: (x,y) -> (-y,x)
     // Исходные: (-1,0), (0,0), (1,0), (0,1)
     // После: (0,-1), (0,0), (0,1), (-1,0)
     assert_eq!(
-        t.coords[1], (0, 0),
+        t.coords[1],
+        (0, 0),
         "Центральный блок должен остаться на месте"
     );
 }
@@ -577,10 +578,10 @@ fn test_t_piece_after_two_rotations() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     t.rotate(Dir::Right);
     t.rotate(Dir::Right);
-    
+
     // После 2 вращений фигура перевёрнута
     assert_ne!(
         t.coords, SHAPE_COORDS[0],
@@ -597,11 +598,11 @@ fn test_t_piece_after_three_rotations() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     for _ in 0..3 {
         t.rotate(Dir::Right);
     }
-    
+
     // 3 вращения по часовой = 1 против часовой
     assert_ne!(
         t.coords, SHAPE_COORDS[0],
@@ -618,11 +619,11 @@ fn test_t_piece_after_four_rotations() {
         coords: SHAPE_COORDS[0],
         fg: 0,
     };
-    
+
     for _ in 0..4 {
         t.rotate(Dir::Right);
     }
-    
+
     assert_eq!(
         t.coords, SHAPE_COORDS[0],
         "После 4 вращений фигура должна вернуться к исходным координатам"
@@ -638,10 +639,10 @@ fn test_l_piece_after_rotation() {
         coords: SHAPE_COORDS[1],
         fg: 1,
     };
-    
+
     let original_coords = t.coords;
     t.rotate(Dir::Right);
-    
+
     assert_ne!(
         t.coords, original_coords,
         "L-фигура должна изменить координаты после вращения"
@@ -657,16 +658,17 @@ fn test_i_piece_after_rotation_vertical_to_horizontal() {
         coords: SHAPE_COORDS[6],
         fg: 6,
     };
-    
+
     // Исходная I-фигура вертикальная: (0,-1), (0,0), (0,1), (0,2)
     assert_eq!(t.coords[0].0, 0, "Исходно I-фигура вертикальна (x=0)");
-    
+
     t.rotate(Dir::Right);
-    
+
     // После вращения I-фигура становится горизонтальной
     // Все блоки должны быть на одной строке (y=0 для центрального блока)
     assert_eq!(
-        t.coords[1], (0, 0),
+        t.coords[1],
+        (0, 0),
         "Центральный блок I-фигуры должен остаться на месте"
     );
 }

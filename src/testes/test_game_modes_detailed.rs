@@ -20,7 +20,7 @@ use crate::game::{LINES_PER_LEVEL, MARATHON_LINES, SPRINT_LINES};
 #[test]
 fn test_classic_mode_creation() {
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Classic,
@@ -32,7 +32,7 @@ fn test_classic_mode_creation() {
 #[test]
 fn test_classic_mode_initial_score() {
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_score(),
         0,
@@ -44,7 +44,7 @@ fn test_classic_mode_initial_score() {
 #[test]
 fn test_classic_mode_initial_level() {
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_level(),
         1,
@@ -56,7 +56,7 @@ fn test_classic_mode_initial_level() {
 #[test]
 fn test_classic_mode_initial_lines() {
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_lines_cleared(),
         0,
@@ -71,7 +71,7 @@ fn test_classic_mode_level_progression() {
     let level_0_lines = 0 / LINES_PER_LEVEL + 1;
     let level_10_lines = 10 / LINES_PER_LEVEL + 1;
     let level_20_lines = 20 / LINES_PER_LEVEL + 1;
-    
+
     assert_eq!(level_0_lines, 1, "0 линий = уровень 1");
     assert_eq!(level_10_lines, 2, "10 линий = уровень 2");
     assert_eq!(level_20_lines, 3, "20 линий = уровень 3");
@@ -83,7 +83,7 @@ fn test_classic_mode_play_until_loss() {
     // Classic режим не имеет ограничения по линиям
     // Игра продолжается до проигрыша
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Classic,
@@ -96,7 +96,7 @@ fn test_classic_mode_play_until_loss() {
 fn test_classic_mode_score_saved() {
     // В Classic режиме счёт сохраняется в таблицу лидеров
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Classic,
@@ -109,15 +109,12 @@ fn test_classic_mode_score_saved() {
 fn test_classic_mode_fall_speed() {
     let state = GameState::new();
     let fall_spd = state.get_fall_spd();
-    
+
     assert!(
         fall_spd > 0.0,
         "Скорость падения в Classic должна быть положительной"
     );
-    assert!(
-        fall_spd < 10.0,
-        "Скорость падения должна быть разумной"
-    );
+    assert!(fall_spd < 10.0, "Скорость падения должна быть разумной");
 }
 
 /// Тест 9: Classic режим - увеличение сложности
@@ -125,11 +122,11 @@ fn test_classic_mode_fall_speed() {
 fn test_classic_mode_difficulty_increase() {
     // С увеличением уровня скорость должна расти
     let initial_speed = 0.9; // INITIAL_FALL_SPD
-    let speed_inc = 0.05;    // SPD_INC
-    
+    let speed_inc = 0.05; // SPD_INC
+
     let speed_level_1 = initial_speed;
     let speed_level_5 = initial_speed + speed_inc * 4.0;
-    
+
     assert!(
         speed_level_5 > speed_level_1,
         "Скорость должна расти с уровнем"
@@ -140,7 +137,7 @@ fn test_classic_mode_difficulty_increase() {
 #[test]
 fn test_classic_mode_basic_mechanics() {
     let state = GameState::new();
-    
+
     // Проверяем, что все базовые механики работают
     assert!(state.get_curr_shape().pos.0 >= 0.0, "Фигура в поле");
     assert!(state.get_curr_shape().pos.1 >= 0.0, "Фигура в поле");
@@ -154,7 +151,7 @@ fn test_classic_mode_basic_mechanics() {
 #[test]
 fn test_sprint_mode_creation() {
     let state = GameState::new_sprint();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Sprint,
@@ -165,17 +162,14 @@ fn test_sprint_mode_creation() {
 /// Тест 12: Sprint режим - цель 40 линий
 #[test]
 fn test_sprint_mode_goal() {
-    assert_eq!(
-        SPRINT_LINES, 40,
-        "Цель Sprint режима должна быть 40 линий"
-    );
+    assert_eq!(SPRINT_LINES, 40, "Цель Sprint режима должна быть 40 линий");
 }
 
 /// Тест 13: Sprint режим - начальный счёт 0
 #[test]
 fn test_sprint_mode_initial_score() {
     let state = GameState::new_sprint();
-    
+
     assert_eq!(
         state.get_score(),
         0,
@@ -187,7 +181,7 @@ fn test_sprint_mode_initial_score() {
 #[test]
 fn test_sprint_mode_initial_level() {
     let state = GameState::new_sprint();
-    
+
     assert_eq!(
         state.get_level(),
         1,
@@ -199,25 +193,22 @@ fn test_sprint_mode_initial_level() {
 #[test]
 fn test_sprint_mode_timer() {
     let mut state = GameState::new_sprint();
-    
+
     // Запускаем таймер
     state.start_timer();
-    
+
     // Проверяем, что таймер работает
     let stats = state.get_stats();
     let elapsed = stats.get_elapsed_time();
-    
-    assert!(
-        elapsed >= 0.0,
-        "Время должно быть неотрицательным"
-    );
+
+    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
 }
 
 /// Тест 16: Sprint режим - время до завершения
 #[test]
 fn test_sprint_mode_time_to_complete() {
     let state = GameState::new_sprint();
-    
+
     // Sprint режим должен измерять время
     assert_eq!(
         state.get_mode(),
@@ -230,10 +221,7 @@ fn test_sprint_mode_time_to_complete() {
 #[test]
 fn test_sprint_mode_win_at_40_lines() {
     // Проверяем константу цели
-    assert_eq!(
-        SPRINT_LINES, 40,
-        "Победа в Sprint при 40 линиях"
-    );
+    assert_eq!(SPRINT_LINES, 40, "Победа в Sprint при 40 линиях");
 }
 
 /// Тест 18: Sprint режим - скорость падения
@@ -241,7 +229,7 @@ fn test_sprint_mode_win_at_40_lines() {
 fn test_sprint_mode_fall_speed() {
     let state = GameState::new_sprint();
     let fall_spd = state.get_fall_spd();
-    
+
     assert!(
         fall_spd > 0.0,
         "Скорость падения в Sprint должна быть положительной"
@@ -253,7 +241,7 @@ fn test_sprint_mode_fall_speed() {
 fn test_sprint_mode_score_not_saved() {
     // В Sprint режиме счёт обычно не сохраняется в таблицу лидеров
     let state = GameState::new_sprint();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Sprint,
@@ -265,7 +253,7 @@ fn test_sprint_mode_score_not_saved() {
 #[test]
 fn test_sprint_mode_basic_mechanics() {
     let state = GameState::new_sprint();
-    
+
     assert!(state.get_curr_shape().pos.0 >= 0.0, "Фигура в поле");
     assert!(state.get_curr_shape().pos.1 >= 0.0, "Фигура в поле");
 }
@@ -278,7 +266,7 @@ fn test_sprint_mode_basic_mechanics() {
 #[test]
 fn test_marathon_mode_creation() {
     let state = GameState::new_marathon();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Marathon,
@@ -299,7 +287,7 @@ fn test_marathon_mode_goal() {
 #[test]
 fn test_marathon_mode_initial_score() {
     let state = GameState::new_marathon();
-    
+
     assert_eq!(
         state.get_score(),
         0,
@@ -311,7 +299,7 @@ fn test_marathon_mode_initial_score() {
 #[test]
 fn test_marathon_mode_initial_level() {
     let state = GameState::new_marathon();
-    
+
     assert_eq!(
         state.get_level(),
         1,
@@ -324,7 +312,7 @@ fn test_marathon_mode_initial_level() {
 fn test_marathon_mode_difficulty_progression() {
     // Marathon имеет более сложную прогрессию
     let state = GameState::new_marathon();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Marathon,
@@ -347,7 +335,7 @@ fn test_marathon_mode_game_length() {
 fn test_marathon_mode_score_saved() {
     // Marathon сохраняет рекорд
     let state = GameState::new_marathon();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Marathon,
@@ -360,7 +348,7 @@ fn test_marathon_mode_score_saved() {
 fn test_marathon_mode_fall_speed() {
     let state = GameState::new_marathon();
     let fall_spd = state.get_fall_spd();
-    
+
     assert!(
         fall_spd > 0.0,
         "Скорость падения в Marathon должна быть положительной"
@@ -370,17 +358,14 @@ fn test_marathon_mode_fall_speed() {
 /// Тест 29: Marathon режим - победа при 150 линиях
 #[test]
 fn test_marathon_mode_win_at_150_lines() {
-    assert_eq!(
-        MARATHON_LINES, 150,
-        "Победа в Marathon при 150 линиях"
-    );
+    assert_eq!(MARATHON_LINES, 150, "Победа в Marathon при 150 линиях");
 }
 
 /// Тест 30: Marathon режим - базовая механика
 #[test]
 fn test_marathon_mode_basic_mechanics() {
     let state = GameState::new_marathon();
-    
+
     assert!(state.get_curr_shape().pos.0 >= 0.0, "Фигура в поле");
     assert!(state.get_curr_shape().pos.1 >= 0.0, "Фигура в поле");
 }
@@ -394,7 +379,7 @@ fn test_marathon_mode_basic_mechanics() {
 fn test_mode_switch_classic_to_sprint() {
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
-    
+
     assert_ne!(
         classic.get_mode(),
         sprint.get_mode(),
@@ -407,7 +392,7 @@ fn test_mode_switch_classic_to_sprint() {
 fn test_mode_switch_classic_to_marathon() {
     let classic = GameState::new();
     let marathon = GameState::new_marathon();
-    
+
     assert_ne!(
         classic.get_mode(),
         marathon.get_mode(),
@@ -420,7 +405,7 @@ fn test_mode_switch_classic_to_marathon() {
 fn test_mode_switch_sprint_to_marathon() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
-    
+
     assert_ne!(
         sprint.get_mode(),
         marathon.get_mode(),
@@ -434,7 +419,7 @@ fn test_all_modes_have_different_goals() {
     // Classic: игра до проигрыша
     // Sprint: 40 линий
     // Marathon: 150 линий
-    
+
     assert!(
         SPRINT_LINES < MARATHON_LINES,
         "Sprint должен быть короче Marathon"
@@ -447,7 +432,7 @@ fn test_modes_have_different_settings() {
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
-    
+
     // Все режимы должны быть инициализированы
     assert_eq!(classic.get_mode(), GameMode::Classic);
     assert_eq!(sprint.get_mode(), GameMode::Sprint);
@@ -463,7 +448,7 @@ fn test_modes_have_different_settings() {
 fn test_classic_mode_no_win_condition() {
     // Classic режим продолжается до проигрыша
     let state = GameState::new();
-    
+
     assert_eq!(
         state.get_mode(),
         GameMode::Classic,
@@ -475,10 +460,7 @@ fn test_classic_mode_no_win_condition() {
 #[test]
 fn test_sprint_mode_win_condition() {
     // Sprint завершается при достижении 40 линий
-    assert_eq!(
-        SPRINT_LINES, 40,
-        "Sprint режим завершается при 40 линиях"
-    );
+    assert_eq!(SPRINT_LINES, 40, "Sprint режим завершается при 40 линиях");
 }
 
 /// Тест 38: Marathon режим - победа при 150 линиях

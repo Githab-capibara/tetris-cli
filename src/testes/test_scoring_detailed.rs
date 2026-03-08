@@ -53,11 +53,8 @@ fn test_piece_score_with_fall() {
     let base = PIECE_SCORE_INC;
     let fall_bonus = INITIAL_FALL_SPD * 50.0;
     let total = base + fall_bonus as u64;
-    
-    assert!(
-        total > base,
-        "Очки с падением должны быть больше базовых"
-    );
+
+    assert!(total > base, "Очки с падением должны быть больше базовых");
 }
 
 /// Тест 5: Минимальные очки за фигуру
@@ -124,7 +121,7 @@ fn test_exponential_growth_for_lines() {
     let score_2 = ROW_SCORE_INC * 2;
     let score_3 = ROW_SCORE_INC * 4;
     let score_4 = ROW_SCORE_INC * 8;
-    
+
     assert!(score_2 > score_1, "2 линии > 1 линии");
     assert!(score_3 > score_2, "3 линии > 2 линии");
     assert!(score_4 > score_3, "4 линии > 3 линии");
@@ -135,12 +132,12 @@ fn test_exponential_growth_for_lines() {
 fn test_line_score_progression() {
     // Проверяем прогрессию: 100, 200, 400, 800
     let scores = [
-        ROW_SCORE_INC,           // 1 линия
-        ROW_SCORE_INC * 2,       // 2 линии
-        ROW_SCORE_INC * 4,       // 3 линии
-        ROW_SCORE_INC * 8,       // 4 линии
+        ROW_SCORE_INC,     // 1 линия
+        ROW_SCORE_INC * 2, // 2 линии
+        ROW_SCORE_INC * 4, // 3 линии
+        ROW_SCORE_INC * 8, // 4 линии
     ];
-    
+
     for i in 1..scores.len() {
         assert!(
             scores[i] > scores[i - 1],
@@ -155,7 +152,7 @@ fn test_multiple_lines_bonus() {
     // Бонус за 2 линии
     let bonus_2 = ROW_SCORE_INC * 2 - ROW_SCORE_INC;
     assert_eq!(bonus_2, 100, "Бонус за 2 линии должен быть 100");
-    
+
     // Бонус за 3 линии
     let bonus_3 = ROW_SCORE_INC * 4 - ROW_SCORE_INC;
     assert_eq!(bonus_3, 300, "Бонус за 3 линии должен быть 300");
@@ -176,10 +173,7 @@ fn test_maximum_line_score() {
 /// Тест 15: Базовый бонус за комбо
 #[test]
 fn test_base_combo_bonus() {
-    assert_eq!(
-        COMBO_BONUS, 50,
-        "Базовый бонус за комбо должен быть 50"
-    );
+    assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
 }
 
 /// Тест 16: Бонус за первое комбо
@@ -212,7 +206,7 @@ fn test_combo_bonus_growth() {
     let bonus_1 = COMBO_BONUS * 1;
     let bonus_3 = COMBO_BONUS * 3;
     let bonus_5 = COMBO_BONUS * 5;
-    
+
     assert!(bonus_3 > bonus_1, "Комбо 3 > Комбо 1");
     assert!(bonus_5 > bonus_3, "Комбо 5 > Комбо 3");
 }
@@ -223,7 +217,7 @@ fn test_combo_bonus_linear_growth() {
     // Проверяем линейность: разница между соседними комбо постоянна
     let diff_1_2 = COMBO_BONUS * 2 - COMBO_BONUS * 1;
     let diff_2_3 = COMBO_BONUS * 3 - COMBO_BONUS * 2;
-    
+
     assert_eq!(
         diff_1_2, diff_2_3,
         "Разница между комбо должна быть постоянной"
@@ -269,7 +263,7 @@ fn test_level_progression() {
     let level_0 = 0 / LINES_PER_LEVEL + 1;
     let level_10 = 10 / LINES_PER_LEVEL + 1;
     let level_20 = 20 / LINES_PER_LEVEL + 1;
-    
+
     assert!(level_10 > level_0, "Уровень 10 > Уровень 0");
     assert!(level_20 > level_10, "Уровень 20 > Уровень 10");
 }
@@ -277,10 +271,7 @@ fn test_level_progression() {
 /// Тест 26: Константа линий на уровень
 #[test]
 fn test_lines_per_level_constant() {
-    assert_eq!(
-        LINES_PER_LEVEL, 10,
-        "Для повышения уровня нужно 10 линий"
-    );
+    assert_eq!(LINES_PER_LEVEL, 10, "Для повышения уровня нужно 10 линий");
 }
 
 // ============================================================================
@@ -323,7 +314,7 @@ fn test_soft_drop_linear_growth() {
     let points_1 = SOFT_DROP_POINTS * 1;
     let points_5 = SOFT_DROP_POINTS * 5;
     let points_10 = SOFT_DROP_POINTS * 10;
-    
+
     assert!(points_5 > points_1, "5 ячеек > 1 ячейка");
     assert!(points_10 > points_5, "10 ячеек > 5 ячеек");
 }
@@ -383,7 +374,7 @@ fn test_hard_drop_twenty_cells() {
 fn test_hard_drop_more_profitable() {
     let soft_10 = SOFT_DROP_POINTS * 10;
     let hard_10 = HARD_DROP_POINTS * 10;
-    
+
     assert!(
         hard_10 > soft_10,
         "Hard drop должен давать больше очков (hard={}, soft={})",
@@ -407,9 +398,9 @@ fn test_tetris_bonus_for_four_lines() {
 /// Тест 40: Tetris бонус больше чем 3 линии
 #[test]
 fn test_tetris_bonus_more_than_three_lines() {
-    let three_lines = ROW_SCORE_INC * 4;  // 400
-    let tetris = ROW_SCORE_INC * 8;        // 800
-    
+    let three_lines = ROW_SCORE_INC * 4; // 400
+    let tetris = ROW_SCORE_INC * 8; // 800
+
     assert!(
         tetris > three_lines,
         "Tetris должен давать больше очков чем 3 линии (Tetris={}, 3 линии={})",

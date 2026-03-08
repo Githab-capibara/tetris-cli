@@ -570,8 +570,8 @@ mod tests {
     #[test]
     fn test_level_calculation() {
         // Уровень 1: 0-9 линий
-        assert_eq!(0 + 1, 1);
-        assert_eq!((9 / 10) + 1, 1);
+        assert_eq!(1, 1);
+        assert_eq!(1, 1);
         // Уровень 2: 10-19 линий
         assert_eq!((10 / 10) + 1, 2);
         assert_eq!((19 / 10) + 1, 2);

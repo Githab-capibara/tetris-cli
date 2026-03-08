@@ -8,9 +8,7 @@
 //!
 //! Все тесты проверяют корректность системы ввода-вывода.
 
-use crate::io::{
-    DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH,
-};
+use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Тесты констант размеров
@@ -19,10 +17,7 @@ use crate::io::{
 /// Тест 1: GRID_WIDTH равен 10
 #[test]
 fn test_grid_width_constant() {
-    assert_eq!(
-        GRID_WIDTH, 10,
-        "Ширина игрового поля должна быть 10 блоков"
-    );
+    assert_eq!(GRID_WIDTH, 10, "Ширина игрового поля должна быть 10 блоков");
 }
 
 /// Тест 2: GRID_HEIGHT равен 20
@@ -37,10 +32,7 @@ fn test_grid_height_constant() {
 /// Тест 3: SHAPE_WIDTH равен 2
 #[test]
 fn test_shape_width_constant() {
-    assert_eq!(
-        SHAPE_WIDTH, 2,
-        "Ширина фигуры должна быть 2 символа"
-    );
+    assert_eq!(SHAPE_WIDTH, 2, "Ширина фигуры должна быть 2 символа");
 }
 
 /// Тест 4: DISP_WIDTH вычисляется корректно
@@ -85,7 +77,7 @@ fn test_field_dimensions_classic() {
     // Классический тетрис: 10x20
     assert_eq!(GRID_WIDTH, 10);
     assert_eq!(GRID_HEIGHT, 20);
-    
+
     // Соотношение сторон 1:2
     assert_eq!(GRID_HEIGHT, GRID_WIDTH * 2);
 }
@@ -93,19 +85,13 @@ fn test_field_dimensions_classic() {
 /// Тест 8: DISP_WIDTH положительный
 #[test]
 fn test_disp_width_positive() {
-    assert!(
-        DISP_WIDTH > 0,
-        "Ширина дисплея должна быть положительной"
-    );
+    assert!(DISP_WIDTH > 0, "Ширина дисплея должна быть положительной");
 }
 
 /// Тест 9: DISP_HEIGHT положительный
 #[test]
 fn test_disp_height_positive() {
-    assert!(
-        DISP_HEIGHT > 0,
-        "Высота дисплея должна быть положительной"
-    );
+    assert!(DISP_HEIGHT > 0, "Высота дисплея должна быть положительной");
 }
 
 /// Тест 10: SHAPE_WIDTH соответствует отрисовке
@@ -123,7 +109,10 @@ fn test_shape_width_matches_rendering() {
 #[test]
 fn test_keyreader_constants() {
     // Проверяем, что константы для ввода корректны
-    assert!(DISP_WIDTH >= GRID_WIDTH as u16, "DISP_WIDTH должен вмещать GRID_WIDTH");
+    assert!(
+        DISP_WIDTH >= GRID_WIDTH as u16,
+        "DISP_WIDTH должен вмещать GRID_WIDTH"
+    );
 }
 
 /// Тест 12: Минимальный размер для игры
@@ -132,7 +121,7 @@ fn test_minimum_size_for_game() {
     // Минимальный размер терминала для игры
     let min_width = DISP_WIDTH;
     let min_height = DISP_HEIGHT;
-    
+
     assert!(min_width >= 22, "Минимальная ширина должна быть >= 22");
     assert!(min_height >= 25, "Минимальная высота должна быть >= 25");
 }
@@ -174,7 +163,10 @@ fn test_size_ratios() {
 fn test_minimum_terminal_width() {
     // Минимальная ширина для отображения игры
     let min_width = DISP_WIDTH;
-    assert!(min_width >= 22, "Минимальная ширина терминала должна быть >= 22");
+    assert!(
+        min_width >= 22,
+        "Минимальная ширина терминала должна быть >= 22"
+    );
 }
 
 /// Тест 17: Минимальная высота терминала
@@ -182,7 +174,10 @@ fn test_minimum_terminal_width() {
 fn test_minimum_terminal_height() {
     // Минимальная высота для отображения игры
     let min_height = DISP_HEIGHT;
-    assert!(min_height >= 25, "Минимальная высота терминала должна быть >= 25");
+    assert!(
+        min_height >= 25,
+        "Минимальная высота терминала должна быть >= 25"
+    );
 }
 
 /// Тест 18: Размер поля соответствует классическому тетрису
@@ -198,7 +193,10 @@ fn test_field_size_classic_tetris() {
 fn test_extra_space_for_ui() {
     // Проверяем, что есть место для интерфейса
     let ui_height = DISP_HEIGHT - GRID_HEIGHT as u16;
-    assert!(ui_height >= 5, "Должно быть место для UI (счёт, уровень, линии)");
+    assert!(
+        ui_height >= 5,
+        "Должно быть место для UI (счёт, уровень, линии)"
+    );
 }
 
 /// Тест 20: Общий размер дисплея
@@ -207,7 +205,13 @@ fn test_total_display_size() {
     // Общая площадь дисплея
     let total_area = DISP_WIDTH * DISP_HEIGHT;
     let field_area = (GRID_WIDTH as u16 * SHAPE_WIDTH as u16) * GRID_HEIGHT as u16;
-    
-    assert!(total_area > field_area, "Общая площадь должна быть больше площади поля");
-    assert!(total_area >= 550, "Общая площадь должна быть >= 550 символов");
+
+    assert!(
+        total_area > field_area,
+        "Общая площадь должна быть больше площади поля"
+    );
+    assert!(
+        total_area >= 550,
+        "Общая площадь должна быть >= 550 символов"
+    );
 }
