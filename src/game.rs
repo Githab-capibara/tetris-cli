@@ -17,7 +17,9 @@
 //! - Режим "спринт" (40 линий на время)
 //! - Режим "марафон" (150 линий с нарастающей сложностью)
 
-use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH};
+use crate::io::{
+    Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
+};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use std::{
     thread::sleep,
@@ -645,8 +647,8 @@ impl GameState {
         self.is_hard_dropping = false;
 
         match key {
-            KEY_BACKSPACE => return UpdateEndState::Quit,   // Backspace — выход в меню
-            b'p' => return UpdateEndState::Pause, // p — пауза
+            KEY_BACKSPACE => return UpdateEndState::Quit, // Backspace — выход в меню
+            b'p' => return UpdateEndState::Pause,         // p — пауза
             b'a' => {
                 // Перемещение влево
                 if self.can_move_curr_shape(Dir::Left) {
@@ -867,16 +869,9 @@ impl GameState {
         let mut remove_count = 0;
 
         // Поиск заполненных линий (проверяем каждую строку)
-        for y in 0..GRID_HEIGHT {
-            let mut row_full = true;
-            // Проверяем все клетки в строке
-            for x in 0..GRID_WIDTH {
-                if self.blocks[y][x] == -1 {
-                    // Найдена пустая клетка — строка не заполнена
-                    row_full = false;
-                    break;
-                }
-            }
+        for (y, row) in self.blocks.iter().enumerate() {
+            // Проверяем, что все клетки в строке заполнены (нет пустых -1)
+            let row_full = row.iter().take(GRID_WIDTH).all(|&cell| cell != -1);
             // Если строка заполнена полностью, отмечаем её для удаления
             if row_full {
                 rows_to_remove[y] = true;
@@ -890,9 +885,7 @@ impl GameState {
 
         if remove_count > 0 {
             // Анимация мигания перед удалением (сохраняем индексы строк)
-            self.animating_rows = (0..GRID_HEIGHT)
-                .filter(|&y| rows_to_remove[y])
-                .collect();
+            self.animating_rows = (0..GRID_HEIGHT).filter(|&y| rows_to_remove[y]).collect();
 
             // Воспроизведение звукового сигнала (терминальный bell)
             // Символ \x07 воспроизводит звук в терминале

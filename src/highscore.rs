@@ -16,7 +16,6 @@
 //! - `LeaderboardEntry` - запись в таблице лидеров
 //! - `Leaderboard` - таблица лидеров (топ-5)
 
-use blake3;
 use confy::{load, store};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
