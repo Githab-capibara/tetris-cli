@@ -23,7 +23,11 @@ fn test_animation_hard_drop_default_false() {
     }
 
     // После падения флаг должен быть сброшен в update()
-    assert!(true); // Тест компиляции
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола"
+    );
 }
 
 /// Тест 2: Проверка что Hard Drop устанавливает флаг
@@ -123,7 +127,7 @@ fn test_animation_hard_drop_no_panic() {
     }
 
     // Не должно вызывать панику
-    assert!(true);
+    // Тест компиляции - проверяет что код работает
 }
 
 /// Тест 8: Проверка что Hard Drop работает в разных позициях X
@@ -177,7 +181,7 @@ fn test_animation_hard_drop_marathon_mode() {
 fn test_animation_animating_rows_empty() {
     let _state = GameState::new();
     // animating_rows - приватное поле
-    assert!(true); // Тест компиляции
+    // Тест компиляции - проверяет что GameState создан корректно
 }
 
 /// Тест 12: Проверка что очистка линий работает
@@ -185,7 +189,7 @@ fn test_animation_animating_rows_empty() {
 fn test_animation_line_clear_works() {
     let _state = GameState::new();
     // check_rows - приватный метод
-    assert!(true); // Тест компиляции
+    // Тест компиляции - проверяет что GameState создан корректно
 }
 
 /// Тест 13: Проверка что анимация не вызывает паники
@@ -198,8 +202,11 @@ fn test_animation_no_panic() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    // Не должно вызывать панику
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола"
+    );
 }
 
 /// Тест 14: Проверка что анимация работает с разными фигурами
@@ -227,7 +234,12 @@ fn test_animation_different_shapes() {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
 
-        assert!(true);
+        // Проверяем что фигура достигла пола
+        assert!(
+            !state.can_move_curr_shape(crate::game::Dir::Down),
+            "Фигура {:?} должна достигнуть пола",
+            shape
+        );
     }
 }
 
@@ -240,7 +252,11 @@ fn test_animation_classic_mode() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола в Classic режиме"
+    );
 }
 
 /// Тест 16: Проверка что анимация работает в Sprint режиме
@@ -252,7 +268,11 @@ fn test_animation_sprint_mode() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола в Sprint режиме"
+    );
 }
 
 /// Тест 17: Проверка что анимация работает в Marathon режиме
@@ -264,7 +284,11 @@ fn test_animation_marathon_mode() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола в Marathon режиме"
+    );
 }
 
 /// Тест 18: Проверка что анимация не влияет на статистику
@@ -292,7 +316,11 @@ fn test_animation_after_hold() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола после удержания"
+    );
 }
 
 /// Тест 20: Проверка что анимация работает после вращения
@@ -308,7 +336,11 @@ fn test_animation_after_rotation() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    assert!(true);
+    // Проверяем что фигура достигла пола
+    assert!(
+        !state.can_move_curr_shape(crate::game::Dir::Down),
+        "Фигура должна достигнуть пола после вращения"
+    );
 }
 
 // ============================================================================

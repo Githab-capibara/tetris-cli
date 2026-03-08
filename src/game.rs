@@ -1752,7 +1752,7 @@ mod game_tests {
         assert_eq!(combo_1_bonus, 0, "Бонус за первое комбо должен быть 0");
 
         // Комбо 2: бонус 50
-        let combo_2_bonus = COMBO_BONUS * 1;
+        let combo_2_bonus = COMBO_BONUS;
         assert_eq!(combo_2_bonus, 50, "Бонус за второе комбо должен быть 50");
 
         // Комбо 3: бонус 100

@@ -619,14 +619,14 @@ mod testes {
     pub mod test_modes_integration;
 
     // Новые детальные тесты (375 тестов)
+    pub mod test_bag_system;
+    pub mod test_controls_detailed;
+    pub mod test_game_modes_detailed;
     pub mod test_game_movement;
     pub mod test_game_rotation;
-    pub mod test_tetromino_shapes;
-    pub mod test_bag_system;
-    pub mod test_scoring_detailed;
-    pub mod test_game_modes_detailed;
     pub mod test_highscore_detailed;
-    pub mod test_controls_detailed;
-    pub mod test_io_detailed;
     pub mod test_integration_extended;
+    pub mod test_io_detailed;
+    pub mod test_scoring_detailed;
+    pub mod test_tetromino_shapes;
 }
