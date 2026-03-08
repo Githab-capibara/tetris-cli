@@ -437,10 +437,7 @@ fn test_extended_x_axis_boundaries() {
     let max_x = state2.get_curr_shape().pos.0;
 
     // Проверяем что min_x < max_x
-    assert!(
-        min_x < max_x,
-        "Левая граница должна быть меньше правой"
-    );
+    assert!(min_x < max_x, "Левая граница должна быть меньше правой");
 }
 
 // ============================================================================
@@ -465,7 +462,8 @@ fn test_extended_t_piece_full_rotation() {
     }
 
     assert_eq!(
-        state.get_curr_shape().coords, original_coords,
+        state.get_curr_shape().coords,
+        original_coords,
         "После 4 вращений фигура должна вернуться в исходное состояние"
     );
 }
@@ -562,7 +560,8 @@ fn test_extended_o_piece_no_rotation() {
     }
 
     assert_eq!(
-        state.get_curr_shape().coords, original_coords,
+        state.get_curr_shape().coords,
+        original_coords,
         "O-фигура не должна вращаться"
     );
 }
@@ -599,7 +598,8 @@ fn test_extended_counter_clockwise_rotation() {
     }
 
     assert_eq!(
-        state.get_curr_shape().coords, original_coords,
+        state.get_curr_shape().coords,
+        original_coords,
         "После 4 вращений против часовой фигура должна вернуться в исходное состояние"
     );
 }
@@ -625,7 +625,8 @@ fn test_extended_alternating_rotation() {
 
     // После 2 пар вращений фигура должна вернуться в исходное состояние
     assert_eq!(
-        state.get_curr_shape().coords, original_coords,
+        state.get_curr_shape().coords,
+        original_coords,
         "После чередования вращений фигура должна вернуться в исходное состояние"
     );
 }
@@ -646,7 +647,7 @@ fn test_extended_rotation_at_left_boundary() {
     // Поэтому просто проверяем, что код работает без паники
     let _can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
     let _can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
-    
+
     // Тест проходит, если код не паникует
 }
 
@@ -666,7 +667,7 @@ fn test_extended_rotation_at_right_boundary() {
     // Поэтому просто проверяем, что код работает без паники
     let _can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
     let _can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
-    
+
     // Тест проходит, если код не паникует
 }
 
@@ -683,8 +684,8 @@ fn test_extended_rotation_after_drop() {
     }
 
     // Вращение должно оставаться возможным
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right)
-        || state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate =
+        state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
 
     // Вращение должно быть возможно (если фигура не застряла)
     let _ = can_rotate;
@@ -710,13 +711,9 @@ fn test_extended_all_shapes_rotation_in_center() {
 
         // В центре поля вращение должно быть возможно (кроме O)
         if shape != ShapeType::O {
-            let can_rotate = state.can_rotate_curr_shape(Dir::Right)
-                || state.can_rotate_curr_shape(Dir::Left);
-            assert!(
-                can_rotate,
-                "{:?} фигура должна вращаться в центре",
-                shape
-            );
+            let can_rotate =
+                state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
+            assert!(can_rotate, "{:?} фигура должна вращаться в центре", shape);
         }
     }
 }
@@ -1390,7 +1387,11 @@ fn test_extended_bag_two_bags() {
     // Оба мешка должны содержать все 7 фигур
     for i in 0..7 {
         assert!(first_bag[i], "Первый мешок должен содержать фигуру {:?}", i);
-        assert!(second_bag[i], "Второй мешок должен содержать фигуру {:?}", i);
+        assert!(
+            second_bag[i],
+            "Второй мешок должен содержать фигуру {:?}",
+            i
+        );
     }
 }
 
@@ -1580,7 +1581,10 @@ fn test_extended_game_held_shape() {
     let state = GameState::new();
     let held = state.get_held_shape();
 
-    assert!(held.is_none(), "В начале игры удержанная фигура должна быть None");
+    assert!(
+        held.is_none(),
+        "В начале игры удержанная фигура должна быть None"
+    );
 }
 
 /// Тест 89: Проверка что GameState может быть создан многократно

@@ -721,11 +721,11 @@ impl GameState {
                 let block_y = coord_y + shape_block_y;
                 block_y <= 1
             });
-            
+
             if lost {
                 return UpdateEndState::Lost;
             }
-            
+
             // Фиксация фигуры и начисление очков
             self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
 

@@ -25,13 +25,19 @@ fn test_scoring_piece_score_constant() {
 /// Тест 2: Проверка что PIECE_SCORE_INC положительное
 #[test]
 fn test_scoring_piece_score_positive() {
-    assert!(PIECE_SCORE_INC > 0, "Очки за фигуру должны быть положительными");
+    assert!(
+        PIECE_SCORE_INC > 0,
+        "Очки за фигуру должны быть положительными"
+    );
 }
 
 /// Тест 3: Проверка что PIECE_SCORE_INC меньше 1000
 #[test]
 fn test_scoring_piece_score_reasonable() {
-    assert!(PIECE_SCORE_INC < 1000, "Очки за фигуру должны быть меньше 1000");
+    assert!(
+        PIECE_SCORE_INC < 1000,
+        "Очки за фигуру должны быть меньше 1000"
+    );
 }
 
 /// Тест 4: Проверка константы PIECE_SCORE_FALL_MULT
@@ -46,13 +52,19 @@ fn test_scoring_piece_fall_mult_constant() {
 /// Тест 5: Проверка что PIECE_SCORE_FALL_MULT положительный
 #[test]
 fn test_scoring_piece_fall_mult_positive() {
-    assert!(PIECE_SCORE_FALL_MULT > 0.0, "Множитель за падение должен быть положительным");
+    assert!(
+        PIECE_SCORE_FALL_MULT > 0.0,
+        "Множитель за падение должен быть положительным"
+    );
 }
 
 /// Тест 6: Проверка что PIECE_SCORE_FALL_MULT меньше 100
 #[test]
 fn test_scoring_piece_fall_mult_reasonable() {
-    assert!(PIECE_SCORE_FALL_MULT < 100.0, "Множитель за падение должен быть меньше 100");
+    assert!(
+        PIECE_SCORE_FALL_MULT < 100.0,
+        "Множитель за падение должен быть меньше 100"
+    );
 }
 
 /// Тест 7: Проверка расчёта очков за фигуру с падением
@@ -62,7 +74,10 @@ fn test_scoring_piece_with_fall() {
     let fall_bonus = 1.0 * PIECE_SCORE_FALL_MULT;
     let total = base + fall_bonus as u64;
 
-    assert_eq!(total, 150, "Очки за фигуру с падением на 1 блок должны быть 150");
+    assert_eq!(
+        total, 150,
+        "Очки за фигуру с падением на 1 блок должны быть 150"
+    );
 }
 
 /// Тест 8: Проверка что очки за фигуру положительные
@@ -70,13 +85,20 @@ fn test_scoring_piece_with_fall() {
 fn test_scoring_piece_positive() {
     // PIECE_SCORE_INC имеет тип u64, поэтому всегда >= 0
     // Проверяем что значение положительное
-    assert!(PIECE_SCORE_INC > 0, "Очки за фигуру должны быть положительными");
+    assert!(
+        PIECE_SCORE_INC > 0,
+        "Очки за фигуру должны быть положительными"
+    );
 }
 
 /// Тест 9: Проверка что PIECE_SCORE_INC делится на 10
 #[test]
 fn test_scoring_piece_divisible_by_10() {
-    assert_eq!(PIECE_SCORE_INC % 10, 0, "Очки за фигуру должны делиться на 10");
+    assert_eq!(
+        PIECE_SCORE_INC % 10,
+        0,
+        "Очки за фигуру должны делиться на 10"
+    );
 }
 
 /// Тест 10: Проверка что PIECE_SCORE_INC равно 100
@@ -139,7 +161,10 @@ fn test_scoring_lines_exponential() {
 /// Тест 17: Проверка что ROW_SCORE_INC положительное
 #[test]
 fn test_scoring_row_score_positive() {
-    assert!(ROW_SCORE_INC > 0, "Очки за линию должны быть положительными");
+    assert!(
+        ROW_SCORE_INC > 0,
+        "Очки за линию должны быть положительными"
+    );
 }
 
 /// Тест 18: Проверка что ROW_SCORE_INC делится на 10
@@ -154,7 +179,10 @@ fn test_scoring_four_vs_one_plus_one() {
     let four_lines = ROW_SCORE_INC * (1 << 3);
     let four_singles = ROW_SCORE_INC * (1 << 0) * 4;
 
-    assert!(four_lines > four_singles, "4 линии одновременно должны давать больше очков");
+    assert!(
+        four_lines > four_singles,
+        "4 линии одновременно должны давать больше очков"
+    );
 }
 
 /// Тест 20: Проверка что очки за линии не переполняются
@@ -163,7 +191,10 @@ fn test_scoring_lines_no_overflow() {
     let max_lines = 4;
     let max_score = ROW_SCORE_INC * (1 << (max_lines - 1));
 
-    assert!(max_score < u64::MAX, "Очки за линии не должны переполняться");
+    assert!(
+        max_score < u64::MAX,
+        "Очки за линии не должны переполняться"
+    );
 }
 
 // ============================================================================
@@ -230,8 +261,14 @@ fn test_scoring_combo_linear_growth() {
     let bonus_3 = COMBO_BONUS * 2;
     let bonus_4 = COMBO_BONUS * 3;
 
-    assert!(bonus_3 > bonus_2, "Бонус за комбо x3 должен быть больше чем x2");
-    assert!(bonus_4 > bonus_3, "Бонус за комбо x4 должен быть больше чем x3");
+    assert!(
+        bonus_3 > bonus_2,
+        "Бонус за комбо x3 должен быть больше чем x2"
+    );
+    assert!(
+        bonus_4 > bonus_3,
+        "Бонус за комбо x4 должен быть больше чем x3"
+    );
 }
 
 /// Тест 30: Проверка что бонус за комбо не переполняется
@@ -240,7 +277,10 @@ fn test_scoring_combo_no_overflow() {
     let max_combo = 100;
     let max_bonus = COMBO_BONUS * (max_combo - 1);
 
-    assert!(max_bonus < u64::MAX, "Бонус за комбо не должен переполняться");
+    assert!(
+        max_bonus < u64::MAX,
+        "Бонус за комбо не должен переполняться"
+    );
 }
 
 // ============================================================================
@@ -250,13 +290,19 @@ fn test_scoring_combo_no_overflow() {
 /// Тест 31: Проверка константы SOFT_DROP_POINTS
 #[test]
 fn test_scoring_soft_drop_constant() {
-    assert_eq!(SOFT_DROP_POINTS, 1, "Очки за Soft Drop должны быть 1 за ячейку");
+    assert_eq!(
+        SOFT_DROP_POINTS, 1,
+        "Очки за Soft Drop должны быть 1 за ячейку"
+    );
 }
 
 /// Тест 32: Проверка что SOFT_DROP_POINTS положительное
 #[test]
 fn test_scoring_soft_drop_positive() {
-    assert!(SOFT_DROP_POINTS > 0, "Очки за Soft Drop должны быть положительными");
+    assert!(
+        SOFT_DROP_POINTS > 0,
+        "Очки за Soft Drop должны быть положительными"
+    );
 }
 
 /// Тест 33: Проверка очков за Soft Drop на 5 ячеек
@@ -283,13 +329,19 @@ fn test_scoring_soft_drop_20_cells() {
 /// Тест 36: Проверка константы HARD_DROP_POINTS
 #[test]
 fn test_scoring_hard_drop_constant() {
-    assert_eq!(HARD_DROP_POINTS, 2, "Очки за Hard Drop должны быть 2 за ячейку");
+    assert_eq!(
+        HARD_DROP_POINTS, 2,
+        "Очки за Hard Drop должны быть 2 за ячейку"
+    );
 }
 
 /// Тест 37: Проверка что HARD_DROP_POINTS больше SOFT_DROP_POINTS
 #[test]
 fn test_scoring_hard_drop_greater_than_soft() {
-    assert!(HARD_DROP_POINTS > SOFT_DROP_POINTS, "Hard Drop должен давать больше очков чем Soft Drop");
+    assert!(
+        HARD_DROP_POINTS > SOFT_DROP_POINTS,
+        "Hard Drop должен давать больше очков чем Soft Drop"
+    );
 }
 
 /// Тест 38: Проверка очков за Hard Drop на 5 ячеек
@@ -326,7 +378,10 @@ fn test_scoring_lines_per_level_constant() {
 /// Тест 42: Проверка что LINES_PER_LEVEL положительное
 #[test]
 fn test_scoring_lines_per_level_positive() {
-    assert!(LINES_PER_LEVEL > 0, "LINES_PER_LEVEL должно быть положительным");
+    assert!(
+        LINES_PER_LEVEL > 0,
+        "LINES_PER_LEVEL должно быть положительным"
+    );
 }
 
 /// Тест 43: Проверка константы INITIAL_FALL_SPD
@@ -341,7 +396,10 @@ fn test_scoring_initial_fall_speed() {
 /// Тест 44: Проверка что INITIAL_FALL_SPD положительная
 #[test]
 fn test_scoring_initial_fall_speed_positive() {
-    assert!(INITIAL_FALL_SPD > 0.0, "Начальная скорость должна быть положительной");
+    assert!(
+        INITIAL_FALL_SPD > 0.0,
+        "Начальная скорость должна быть положительной"
+    );
 }
 
 /// Тест 45: Проверка константы SPD_INC
@@ -363,7 +421,10 @@ fn test_scoring_speed_increment_positive() {
 #[test]
 fn test_scoring_speed_after_10_lines() {
     let speed = INITIAL_FALL_SPD + SPD_INC * 10.0;
-    assert!(speed > INITIAL_FALL_SPD, "Скорость должна увеличиться после 10 линий");
+    assert!(
+        speed > INITIAL_FALL_SPD,
+        "Скорость должна увеличиться после 10 линий"
+    );
 }
 
 /// Тест 48: Проверка расчёта скорости после 20 линий
@@ -371,13 +432,19 @@ fn test_scoring_speed_after_10_lines() {
 fn test_scoring_speed_after_20_lines() {
     let speed_10 = INITIAL_FALL_SPD + SPD_INC * 10.0;
     let speed_20 = INITIAL_FALL_SPD + SPD_INC * 20.0;
-    assert!(speed_20 > speed_10, "Скорость должна расти с количеством линий");
+    assert!(
+        speed_20 > speed_10,
+        "Скорость должна расти с количеством линий"
+    );
 }
 
 /// Тест 49: Проверка что скорость не отрицательная
 #[test]
 fn test_scoring_speed_non_negative() {
-    assert!(INITIAL_FALL_SPD >= 0.0, "Скорость не должна быть отрицательной");
+    assert!(
+        INITIAL_FALL_SPD >= 0.0,
+        "Скорость не должна быть отрицательной"
+    );
 }
 
 /// Тест 50: Проверка что скорость растёт линейно
