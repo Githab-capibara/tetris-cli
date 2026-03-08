@@ -18,8 +18,18 @@
 //! - `test_statistics` - тесты статистики (30 тестов)
 //! - `test_edge_cases` - тесты граничных случаев (50 тестов)
 //! - `test_edge_cases_stress` - стресс-тесты и граничные значения (20 тестов)
+//! - `test_game_movement` - тесты движения фигур (50 тестов)
+//! - `test_game_rotation` - тесты вращения фигур (50 тестов)
+//! - `test_tetromino_shapes` - тесты форм фигур (40 тестов)
+//! - `test_bag_system` - тесты Bag Generator (30 тестов)
+//! - `test_scoring_detailed` - детальные тесты очков (40 тестов)
+//! - `test_game_modes_detailed` - детальные тесты режимов (40 тестов)
+//! - `test_highscore_detailed` - детальные тесты рекордов (30 тестов)
+//! - `test_controls_detailed` - детальные тесты управления (25 тестов)
+//! - `test_io_detailed` - детальные тесты ввода-вывода (20 тестов)
+//! - `test_integration_extended` - расширенные интеграционные тесты (50 тестов)
 //!
-//! Итого: 730 тестов
+//! Итого: 1105 тестов
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -45,3 +55,15 @@ pub mod test_edge_cases_stress;
 
 // Интеграционные тесты режимов (20 тестов)
 pub mod test_modes_integration;
+
+// Новые детальные тесты (375 тестов)
+pub mod test_game_movement;
+pub mod test_game_rotation;
+pub mod test_tetromino_shapes;
+pub mod test_bag_system;
+pub mod test_scoring_detailed;
+pub mod test_game_modes_detailed;
+pub mod test_highscore_detailed;
+pub mod test_controls_detailed;
+pub mod test_io_detailed;
+pub mod test_integration_extended;
