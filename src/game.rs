@@ -687,10 +687,14 @@ impl GameState {
             }
             b's' => {
                 // Soft Drop: ускоренное падение при зажатии
+                // Проверяем, что перемещение произошло фактически
+                let prev_y = self.curr_shape.pos.1;
                 if self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
-                    // Считаем расстояние для очков
-                    self.soft_drop_distance += 1;
+                    // Считаем расстояние для очков только при фактическом перемещении
+                    if (self.curr_shape.pos.1 - prev_y) > 0.0 {
+                        self.soft_drop_distance += 1;
+                    }
                 }
             }
             b'c' | b'C' => {
@@ -709,10 +713,19 @@ impl GameState {
         } else if self.land_timer > 0.0 {
             // Таймер задержки перед фиксацией (даёт время на перемещение)
             self.land_timer -= delta_time_ms as f64 / 1000.0;
-        } else if self.curr_shape.pos.1 <= 1.0 {
-            // Фигура застряла вверху — проигрыш
-            return UpdateEndState::Lost;
         } else {
+            // Проверка проигрыша: проверяем конкретные координаты блоков фигуры
+            // Если любой блок фигуры находится в верхней части поля (y <= 1)
+            let shape_block_y = self.curr_shape.pos.1 as i16;
+            let lost = self.curr_shape.coords.iter().any(|&(_, coord_y)| {
+                let block_y = coord_y + shape_block_y;
+                block_y <= 1
+            });
+            
+            if lost {
+                return UpdateEndState::Lost;
+            }
+            
             // Фиксация фигуры и начисление очков
             self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
 
@@ -1018,11 +1031,12 @@ impl GameState {
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         // Получаем время один раз для всех блоков фигуры (оптимизация)
         let shape_symbol = if self.is_hard_dropping {
-            use std::time::{SystemTime, UNIX_EPOCH};
-            let millis = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Время не может быть отрицательным")
-                .subsec_millis();
+            // Используем unwrap() вместо expect() для избежания паники
+            // Время берётся от UNIX_EPOCH, отрицательные значения невозможны
+            let millis = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or(Duration::ZERO)
+                .as_millis() as u16;
             // Мигание: чередуем символы каждые 50 мс
             if (millis / 50).is_multiple_of(2) {
                 SHAPE_STR
@@ -1068,6 +1082,8 @@ impl GameState {
     /// Показывает, где приземлится текущая фигура, если отпустить её.
     fn draw_ghost_shape(&mut self, cnv: &mut Canvas) {
         // Копирование текущей фигуры для расчёта точки приземления
+        // Примечание: Tetromino реализует Copy, поэтому clone не вызывается
+        // Это эффективная операция копирования 4 координат + позиции
         let mut ghost_shape = self.curr_shape;
 
         // Опустить фигуру до упора

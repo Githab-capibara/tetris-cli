@@ -38,11 +38,17 @@ use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Y
 /// 2. Мешок перемешивается алгоритмом Fisher-Yates
 /// 3. Фигуры берутся из мешка по очереди
 /// 4. Когда мешок пуст, создаётся новый
+///
+/// ## Оптимизация:
+/// rng кэшируется в структуре для избежания повторного создания thread_rng()
+/// при каждом заполнении мешка.
 pub struct BagGenerator {
     /// Текущий мешок с фигурами.
     bag: Vec<ShapeType>,
     /// Индекс текущей фигуры в мешке.
     index: usize,
+    /// Кэшированный генератор случайных чисел.
+    rng: rand::rngs::ThreadRng,
 }
 
 impl BagGenerator {
@@ -51,6 +57,7 @@ impl BagGenerator {
         Self {
             bag: Vec::new(),
             index: 0,
+            rng: rand::thread_rng(),
         }
     }
 
@@ -73,11 +80,10 @@ impl BagGenerator {
         ];
 
         // Алгоритм Fisher-Yates для перемешивания
-        use rand::thread_rng;
-        let mut rng = thread_rng();
+        // Используем кэшированный rng вместо создания нового thread_rng()
         for i in (1..self.bag.len()).rev() {
             // Генерируем случайный индекс от 0 до i
-            let j = rng.gen_range(0..=i);
+            let j = self.rng.gen_range(0..=i);
             self.bag.swap(i, j);
         }
 

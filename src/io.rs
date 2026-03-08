@@ -115,13 +115,28 @@ impl Canvas {
     /// 3. Перемещает курсор в (1, 1)
     /// 4. Скрывает курсор
     pub fn new() -> Self {
-        let mut out = stdout()
-            .into_raw_mode()
-            .expect("Не удалось перейти в raw-режим терминала");
-        write!(out, "{}{}", All, Goto(1, 1)).expect("Не удалось очистить экран");
-        out.flush().expect("Не удалось выполнить flush буфера");
+        let mut out = match stdout().into_raw_mode() {
+            Ok(term) => term,
+            Err(e) => {
+                eprintln!("Ошибка: не удалось перейти в raw-режим терминала: {}", e);
+                std::process::exit(1);
+            }
+        };
+        
+        if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
+            eprintln!("Ошибка: не удалось очистить экран: {}", e);
+            std::process::exit(1);
+        }
+        
+        if let Err(e) = out.flush() {
+            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+            std::process::exit(1);
+        }
 
-        write!(out, "{}", Hide).expect("Не удалось скрыть курсор");
+        if let Err(e) = write!(out, "{}", Hide) {
+            eprintln!("Ошибка: не удалось скрыть курсор: {}", e);
+            std::process::exit(1);
+        }
 
         Self { out }
     }
@@ -137,8 +152,13 @@ impl Canvas {
     /// Обязательно вызывайте этот метод перед завершением программы,
     /// чтобы вернуть терминал в нормальное состояние.
     pub fn reset(&mut self) {
-        write!(self.out, "{}\r\n", Show).expect("Не удалось показать курсор");
-        self.out.flush().expect("Не удалось выполнить flush буфера");
+        if let Err(e) = write!(self.out, "{}\r\n", Show) {
+            eprintln!("Ошибка: не удалось показать курсор: {}", e);
+            return;
+        }
+        if let Err(e) = self.out.flush() {
+            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+        }
     }
 
     /// Отрисовать строки (статические).
@@ -154,7 +174,7 @@ impl Canvas {
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
-            write!(
+            if let Err(e) = write!(
                 self.out,
                 "{}{}{}{}{}{}",
                 Goto(x, y),
@@ -163,8 +183,10 @@ impl Canvas {
                 line,
                 Fg(Reset),
                 Bg(Reset)
-            )
-            .expect("Не удалось отрисовать строку");
+            ) {
+                eprintln!("Ошибка отрисовки строки: {}", e);
+                return;
+            }
             y += 1;
         }
     }
@@ -188,7 +210,7 @@ impl Canvas {
     /// ```
     pub fn draw_string(&mut self, text: &str, pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, y) = pos;
-        write!(
+        if let Err(e) = write!(
             self.out,
             "{}{}{}{}{}{}",
             Goto(x, y),
@@ -197,8 +219,9 @@ impl Canvas {
             text,
             Fg(Reset),
             Bg(Reset)
-        )
-        .expect("Не удалось отрисовать строку");
+        ) {
+            eprintln!("Ошибка отрисовки строки: {}", e);
+        }
     }
 
     /// Обновить вывод (flush).
@@ -207,10 +230,12 @@ impl Canvas {
     /// Вызывайте этот метод после всех операций отрисовки,
     /// чтобы изменения появились на экране.
     ///
-    /// # Паника
-    /// Паникует, если не удалось выполнить flush буфера
+    /// # Примечания
+    /// При ошибке выводит сообщение в stderr
     pub fn flush(&mut self) {
-        self.out.flush().expect("Не удалось выполнить flush буфера");
+        if let Err(e) = self.out.flush() {
+            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+        }
     }
 }
 
