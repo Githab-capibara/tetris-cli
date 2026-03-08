@@ -603,14 +603,14 @@ mod testes {
     pub mod test_tetromino;
 
     // Новые расширенные тесты (530 тестов)
-    pub mod test_game_extended;
-    pub mod test_tetromino_extended;
-    pub mod test_scoring;
-    pub mod test_collision;
     pub mod test_animation;
-    pub mod test_modes;
-    pub mod test_statistics;
+    pub mod test_collision;
     pub mod test_edge_cases;
+    pub mod test_game_extended;
+    pub mod test_modes;
+    pub mod test_scoring;
+    pub mod test_statistics;
+    pub mod test_tetromino_extended;
 
     // Стресс-тесты и граничные случаи (20 тестов)
     pub mod test_edge_cases_stress;

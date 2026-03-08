@@ -458,7 +458,14 @@ fn test_extended_i_rotate_ccw() {
 /// Тест 31: Проверка что 4 вращения по часовой возвращают к исходному состоянию
 #[test]
 fn test_extended_four_cw_rotations_return() {
-    let shapes = [ShapeType::T, ShapeType::L, ShapeType::J, ShapeType::S, ShapeType::Z, ShapeType::I];
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::I,
+    ];
 
     for &shape in shapes.iter() {
         let mut t = Tetromino {
@@ -473,14 +480,25 @@ fn test_extended_four_cw_rotations_return() {
             t.rotate(Dir::Right);
         }
 
-        assert_eq!(t.coords, original, "{:?} должна вернуться в исходное состояние", shape);
+        assert_eq!(
+            t.coords, original,
+            "{:?} должна вернуться в исходное состояние",
+            shape
+        );
     }
 }
 
 /// Тест 32: Проверка что 4 вращения против часовой возвращают к исходному состоянию
 #[test]
 fn test_extended_four_ccw_rotations_return() {
-    let shapes = [ShapeType::T, ShapeType::L, ShapeType::J, ShapeType::S, ShapeType::Z, ShapeType::I];
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::I,
+    ];
 
     for &shape in shapes.iter() {
         let mut t = Tetromino {
@@ -495,7 +513,11 @@ fn test_extended_four_ccw_rotations_return() {
             t.rotate(Dir::Left);
         }
 
-        assert_eq!(t.coords, original, "{:?} должна вернуться в исходное состояние", shape);
+        assert_eq!(
+            t.coords, original,
+            "{:?} должна вернуться в исходное состояние",
+            shape
+        );
     }
 }
 
@@ -623,8 +645,14 @@ fn test_extended_i_unique_blocks() {
 fn test_extended_t_coords_in_range() {
     let coords = SHAPE_COORDS[0];
     for &(x, y) in coords.iter() {
-        assert!((-2..=2).contains(&x), "X координата T должна быть в [-2, 2]");
-        assert!((-2..=2).contains(&y), "Y координата T должна быть в [-2, 2]");
+        assert!(
+            (-2..=2).contains(&x),
+            "X координата T должна быть в [-2, 2]"
+        );
+        assert!(
+            (-2..=2).contains(&y),
+            "Y координата T должна быть в [-2, 2]"
+        );
     }
 }
 
@@ -763,7 +791,7 @@ fn test_extended_fg_matches_shape() {
             6 => ShapeType::I,
             _ => unreachable!(),
         };
-        
+
         let t = Tetromino {
             pos: (4.0, 0.0),
             shape,
@@ -919,7 +947,10 @@ fn test_extended_bag_performance_100k() {
     }
 
     let duration = start.elapsed();
-    assert!(duration.as_secs_f64() < 5.0, "100000 фигур должны сгенерироваться меньше чем за 5 секунд");
+    assert!(
+        duration.as_secs_f64() < 5.0,
+        "100000 фигур должны сгенерироваться меньше чем за 5 секунд"
+    );
 }
 
 /// Тест 72: Проверка что BagGenerator можно использовать многократно

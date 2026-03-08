@@ -262,7 +262,10 @@ fn test_collision_not_beyond_right_boundary() {
     }
 
     let x = state.get_curr_shape().pos.0;
-    assert!(x < GRID_WIDTH as f32, "Фигура не должна выходить за правую границу");
+    assert!(
+        x < GRID_WIDTH as f32,
+        "Фигура не должна выходить за правую границу"
+    );
 }
 
 // ============================================================================
@@ -309,7 +312,10 @@ fn test_collision_not_through_floor() {
     }
 
     let y = state.get_curr_shape().pos.1;
-    assert!(y < GRID_HEIGHT as f32, "Фигура не должна проходить сквозь пол");
+    assert!(
+        y < GRID_HEIGHT as f32,
+        "Фигура не должна проходить сквозь пол"
+    );
 }
 
 /// Тест 19: Проверка столкновения с полом для T-фигуры
@@ -500,8 +506,8 @@ fn test_collision_rotation_with_piece_nearby() {
     }
 
     // Вращение должно быть возможно
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right)
-        || state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate =
+        state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
     let _ = can_rotate;
 }
 
@@ -679,8 +685,8 @@ fn test_collision_rotation_in_center() {
     let mut state = GameState::new();
 
     // В центре поля вращение должно быть возможно
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right)
-        || state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate =
+        state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
 
     assert!(can_rotate, "В центре поля вращение должно быть возможно");
 }
@@ -749,7 +755,10 @@ fn test_collision_ghost_piece() {
     let ghost = state.get_curr_shape().clone();
 
     let can_move = state.can_move_ghost_shape(&ghost, Dir::Down);
-    assert!(can_move, "Призрачная фигура должна иметь возможность падения");
+    assert!(
+        can_move,
+        "Призрачная фигура должна иметь возможность падения"
+    );
 }
 
 /// Тест 49: Проверка что столкновение не выходит за границы массива

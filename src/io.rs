@@ -122,12 +122,12 @@ impl Canvas {
                 std::process::exit(1);
             }
         };
-        
+
         if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
             eprintln!("Ошибка: не удалось очистить экран: {}", e);
             std::process::exit(1);
         }
-        
+
         if let Err(e) = out.flush() {
             eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
             std::process::exit(1);

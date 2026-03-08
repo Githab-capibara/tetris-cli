@@ -16,12 +16,12 @@ use crate::game::GameState;
 fn test_animation_hard_drop_default_false() {
     // is_hard_dropping - приватное поле, проверяем через поведение
     let mut state = GameState::new();
-    
+
     // Симулируем Hard Drop
     while state.can_move_curr_shape(crate::game::Dir::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
-    
+
     // После падения флаг должен быть сброшен в update()
     assert!(true); // Тест компиляции
 }
@@ -35,7 +35,7 @@ fn test_animation_hard_drop_sets_flag() {
     while state.can_move_curr_shape(crate::game::Dir::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
-    
+
     // Флаг устанавливается в update() при нажатии W
     // Проверяем что фигура упала
     assert!(!state.can_move_curr_shape(crate::game::Dir::Down));
