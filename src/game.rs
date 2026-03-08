@@ -17,7 +17,7 @@
 //! - Режим "спринт" (40 линий на время)
 //! - Режим "марафон" (150 линий с нарастающей сложностью)
 
-use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::io::{Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use std::{
     thread::sleep,
@@ -592,7 +592,7 @@ impl GameState {
                         let key = inp.get_key();
                         if key == b'p' {
                             break;
-                        } else if key == 127 {
+                        } else if key == KEY_BACKSPACE {
                             // Backspace во время паузы — выход в меню
                             cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
                             return 0;
@@ -645,7 +645,7 @@ impl GameState {
         self.is_hard_dropping = false;
 
         match key {
-            127 => return UpdateEndState::Quit,   // Backspace — выход в меню
+            KEY_BACKSPACE => return UpdateEndState::Quit,   // Backspace — выход в меню
             b'p' => return UpdateEndState::Pause, // p — пауза
             b'a' => {
                 // Перемещение влево
@@ -862,8 +862,9 @@ impl GameState {
         // ШАГ 1: ПОИСК ЗАПОЛНЕННЫХ ЛИНИЙ
         // ====================================================================
 
-        // Вектор для хранения индексов заполненных линий
-        let mut rows_to_remove = Vec::new();
+        // Булев массив для отметки заполненных линий (O(1) доступ вместо O(n) contains)
+        let mut rows_to_remove = [false; GRID_HEIGHT];
+        let mut remove_count = 0;
 
         // Поиск заполненных линий (проверяем каждую строку)
         for y in 0..GRID_HEIGHT {
@@ -876,45 +877,43 @@ impl GameState {
                     break;
                 }
             }
-            // Если строка заполнена полностью, добавляем в список на удаление
+            // Если строка заполнена полностью, отмечаем её для удаления
             if row_full {
-                rows_to_remove.push(y);
+                rows_to_remove[y] = true;
+                remove_count += 1;
             }
         }
-
-        // Получаем количество удалённых линий
-        let num_filled_rows = rows_to_remove.len() as u32;
 
         // ====================================================================
         // ШАГ 2: ПОДГОТОВКА К УДАЛЕНИЮ (анимация и звук)
         // ====================================================================
 
-        if num_filled_rows > 0 {
+        if remove_count > 0 {
             // Анимация мигания перед удалением (сохраняем индексы строк)
-            self.animating_rows = rows_to_remove.clone();
+            self.animating_rows = (0..GRID_HEIGHT)
+                .filter(|&y| rows_to_remove[y])
+                .collect();
 
             // Воспроизведение звукового сигнала (терминальный bell)
             // Символ \x07 воспроизводит звук в терминале
             print!("{}", BELL);
 
             // Обновление статистики (максимальное комбо)
-            self.stats.update_max_combo(num_filled_rows);
+            self.stats.update_max_combo(remove_count);
         }
 
         // ====================================================================
         // ШАГ 3: УДАЛЕНИЕ ЛИНИЙ И СДВИГ
         // ====================================================================
 
-        // Создаём временный массив для новых блоков (заполнен -1 по умолчанию)
-        // -1 означает пустую клетку
+        // Копируем незаполненные строки снизу вверх
+        // Это эффективный алгоритм сдвига: O(n) вместо O(n²)
         let mut new_blocks = [[-1; GRID_WIDTH]; GRID_HEIGHT];
         let mut write_idx = GRID_HEIGHT - 1;
 
-        // Копируем незаполненные строки снизу вверх
-        // Это эффективный алгоритм сдвига: O(n) вместо O(n²)
         for read_idx in (0..GRID_HEIGHT).rev() {
-            // Пропускаем строки, которые нужно удалить
-            if !rows_to_remove.contains(&read_idx) {
+            // Пропускаем строки, которые нужно удалить (O(1) проверка)
+            if !rows_to_remove[read_idx] {
                 // Копируем строку на новую позицию
                 new_blocks[write_idx] = self.blocks[read_idx];
                 // Используем saturating_sub для безопасного вычитания
@@ -934,9 +933,9 @@ impl GameState {
         // ШАГ 4: ОБНОВЛЕНИЕ СЧЁТА, УРОВНЯ И СКОРОСТИ
         // ====================================================================
 
-        if num_filled_rows > 0 {
+        if remove_count > 0 {
             // Обновление количества удалённых линий
-            self.lines_cleared += num_filled_rows;
+            self.lines_cleared += remove_count;
 
             // Проверка повышения уровня (каждые 10 линий)
             // Формула: уровень = (линии / 10) + 1
@@ -950,7 +949,7 @@ impl GameState {
 
             // Увеличение скорости игры
             // Каждая удалённая линия увеличивает скорость на 0.05
-            self.fall_spd += SPD_INC * num_filled_rows as f32;
+            self.fall_spd += SPD_INC * remove_count as f32;
 
             // Начисление очков за линии с экспоненциальным бонусом
             // Формула: 100 × 2^(линии-1)
@@ -958,17 +957,17 @@ impl GameState {
             // 2 линии: 100 × 2¹ = 200
             // 3 линии: 100 × 2² = 400
             // 4 линии: 100 × 2³ = 800
-            self.score += ROW_SCORE_INC * (1 << (num_filled_rows - 1));
+            self.score += ROW_SCORE_INC * (1 << (remove_count - 1));
 
             // Бонус за Tetris (4 линии одновременно)
             // Дополнительный бонус 1000 очков сверх базовых 800
-            if num_filled_rows == 4 {
+            if remove_count == 4 {
                 self.score += 1000; // Бонус за Tetris
             }
         }
 
         // Возврат количества удалённых линий
-        num_filled_rows
+        remove_count
     }
 
     /// Отрисовать текущее состояние игры.
@@ -1029,14 +1028,14 @@ impl GameState {
         self.draw_ghost_shape(cnv);
 
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
-        // Получаем время один раз для всех блоков фигуры (оптимизация)
+        // Кэшируем время один раз для всех блоков фигуры (оптимизация)
         let shape_symbol = if self.is_hard_dropping {
-            // Используем unwrap() вместо expect() для избежания паники
+            // Используем saturating_duration_since() для безопасного вычитания времени
             // Время берётся от UNIX_EPOCH, отрицательные значения невозможны
             let millis = std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or(Duration::ZERO)
-                .as_millis() as u16;
+                .map(|d| d.as_millis() as u16)
+                .unwrap_or(0);
             // Мигание: чередуем символы каждые 50 мс
             if (millis / 50).is_multiple_of(2) {
                 SHAPE_STR

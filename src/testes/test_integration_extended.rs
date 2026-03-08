@@ -177,7 +177,8 @@ fn test_gamestate_can_save_score() {
 
     // Проверяем, что сохранение прошло без ошибок
     let loaded = SaveData::load_config();
-    assert!(loaded.assert_hs() >= 0, "Рекорд должен загрузиться");
+    // u64 всегда >= 0, проверяем что рекорд загрузился корректно
+    assert_eq!(loaded.assert_hs(), score, "Рекорд должен загрузиться");
 }
 
 /// Тест 12: Leaderboard добавляет рекорд из игры
@@ -201,7 +202,8 @@ fn test_savedata_loads_score() {
     let loaded = SaveData::load_config();
     let score = loaded.assert_hs();
 
-    assert!(score >= 0, "Рекорд должен загрузиться");
+    // u64 всегда >= 0, проверяем что рекорд загрузился корректно
+    assert_eq!(score, 5000, "Рекорд должен загрузиться");
 }
 
 /// Тест 14: Leaderboard валидирует записи
@@ -414,13 +416,14 @@ fn test_quit_game() {
     let state = GameState::new();
 
     // Проверяем, что игра может быть завершена
-    assert!(state.get_score() >= 0, "Счёт должен быть неотрицательным");
+    // u64 всегда >= 0, проверяем что счёт корректный
+    assert_eq!(state.get_score(), 0, "Счёт должен быть 0 в начале игры");
 }
 
 /// Тест 28: Hold фигура
 #[test]
 fn test_hold_piece() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что hold доступен
     let can_hold = state.can_hold();
