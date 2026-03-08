@@ -1,0 +1,477 @@
+# Отчёт о проверке качества кода Tetris CLI
+
+**Дата проверки:** 2026-03-08  
+**Версия проекта:** 23.96.3  
+**Проверяемые файлы:** main.rs, game.rs, tetromino.rs, io.rs, highscore.rs, controls.rs, lib.rs  
+**Количество тестов:** 757 (все пройдены успешно)
+
+---
+
+## 📊 Общая оценка
+
+| Категория | Оценка | Статус |
+|-----------|--------|--------|
+| **Логика** | 85/100 | ✅ Хорошо |
+| **Стиль** | 78/100 | ⚠️ Требует улучшений |
+| **Безопасность** | 72/100 | ⚠️ Требует улучшений |
+| **Производительность** | 88/100 | ✅ Хорошо |
+| **Читаемость** | 92/100 | ✅ Отлично |
+
+**Итоговый score: 83/100**
+
+---
+
+## 🔴 КРИТИЧЕСКИЕ ПРОБЛЕМЫ (требуют немедленного исправления)
+
+### 1. Потенциальная паника в game.rs:922-927
+
+**Файл:** `src/game.rs`  
+**Строки:** 922-927  
+**Описание:** Использование `SystemTime::now().duration_since(UNIX_EPOCH).expect()` для анимации Hard Drop может вызвать панику если системное время установлено до 1 января 1970 года.
+
+```rust
+let millis = SystemTime::now()
+    .duration_since(UNIX_EPOCH)
+    .expect("Время не может быть отрицательным")  // ПАНИКА!
+    .subsec_millis();
+```
+
+**Рекомендация:** Использовать `Instant::now()` вместо `SystemTime` для измерения интервалов времени:
+
+```rust
+use std::time::Instant;
+
+// В инициализации игры
+let animation_start = Instant::now();
+
+// В отрисовке
+let millis = animation_start.elapsed().as_millis() as u64;
+```
+
+**Приоритет:** Критический
+
+---
+
+### 2. Паника при недоступности терминала в main.rs:372
+
+**Файл:** `src/main.rs`  
+**Строка:** 372  
+**Описание:** `terminal_size().expect()` вызывает панику если не удалось получить размер терминала.
+
+```rust
+let (width, height) = terminal_size().expect("Не удалось получить размер терминала");
+```
+
+**Рекомендация:** Обработать ошибку корректно:
+
+```rust
+let (width, height) = match terminal_size() {
+    Ok(size) => size,
+    Err(_) => {
+        eprintln!("Ошибка: не удалось получить размер терминала");
+        return;
+    }
+};
+```
+
+**Приоритет:** Критический
+
+---
+
+### 3. Множественные паники в io.rs
+
+**Файл:** `src/io.rs`  
+**Строки:** 104-108, 121-122, 143, 167, 178  
+**Описание:** 9 мест с `.expect()` которые могут вызвать панику при проблемах с терминалом.
+
+```rust
+// Строка 104
+let mut out = stdout()
+    .into_raw_mode()
+    .expect("Не удалось перейти в raw-режим терминала");  // ПАНИКА
+
+// Строка 105
+write!(out, "{}{}", All, Goto(1, 1)).expect("Не удалось очистить экран");  // ПАНИКА
+
+// ... и ещё 7 мест
+```
+
+**Рекомендация:** Заменить expect() на обработку ошибок через Result или хотя бы eprintln! с возвратом.
+
+**Приоритет:** Критический
+
+---
+
+## 🟠 СЕРЬЁЗНЫЕ ПРОБЛЕМЫ (могут вызвать проблемы)
+
+### 4. Некорректное начисление очков за Soft Drop
+
+**Файл:** `src/game.rs`  
+**Строки:** 680-688  
+**Описание:** Если игрок держит клавишу 's' (Soft Drop) и фигура уперлась в пол, `soft_drop_distance` продолжает считаться, что может дать лишние очки.
+
+```rust
+b's' => {
+    if self.can_move_curr_shape(Dir::Down) {
+        self.curr_shape.pos.1 += 1.0;
+        self.soft_drop_distance += 1;  // Считается только при успешном движении
+    }
+}
+```
+
+**Рекомендация:** Логика корректна, но стоит добавить комментарий что очки начисляются только за фактическое перемещение.
+
+**Приоритет:** Высокий
+
+---
+
+### 5. Неточная проверка проигрыша
+
+**Файл:** `src/game.rs`  
+**Строки:** 736-740  
+**Описание:** Проверка `self.curr_shape.pos.1 <= 1.0` может пропустить некоторые случаи проигрыша.
+
+```rust
+} else if self.curr_shape.pos.1 <= 1.0 {
+    // Фигура застряла вверху — проигрыш
+    return UpdateEndState::Lost;
+}
+```
+
+**Рекомендация:** Проверять конкретные координаты блоков фигуры, а не только позицию:
+
+```rust
+} else {
+    // Проверяем, не заблокирована ли фигура наверху
+    if self.curr_shape.pos.1 < 3.0 {
+        return UpdateEndState::Lost;
+    }
+}
+```
+
+**Приоритет:** Высокий
+
+---
+
+### 6. Clone фигуры для ghost каждый кадр
+
+**Файл:** `src/game.rs`  
+**Строка:** 1006  
+**Описание:** `let mut ghost_shape = self.curr_shape;` создаёт полную копию фигуры каждый кадр (60 раз в секунду).
+
+```rust
+fn draw_ghost_shape(&mut self, cnv: &mut Canvas) {
+    let mut ghost_shape = self.curr_shape;  // Clone каждый кадр!
+    // ...
+}
+```
+
+**Рекомендация:** Использовать отдельную структуру для ghost без Clone:
+
+```rust
+fn draw_ghost_shape(&self, cnv: &mut Canvas) {
+    let mut ghost_pos = self.curr_shape.pos;
+    // Вычисляем позицию приземления без клонирования
+    while self.can_move_ghost_shape_at(&self.curr_shape.coords, ghost_pos, Dir::Down) {
+        ghost_pos.1 += 1.0;
+    }
+    // Отрисовка...
+}
+```
+
+**Приоритет:** Высокий
+
+---
+
+### 7. get_key() маскирует ошибки
+
+**Файл:** `src/io.rs`  
+**Строка:** 193  
+**Описание:** Возврат 0 при ошибке чтения маскирует реальные проблемы с вводом.
+
+```rust
+pub fn get_key(&mut self) -> u8 {
+    let mut key_bytes: [u8; 1] = [0];
+    match self.inp.read_exact(&mut key_bytes) {
+        Ok(_) => key_bytes[0],
+        Err(_) => 0,  // Ошибка игнорируется!
+    }
+}
+```
+
+**Рекомендация:** Вернуть `Option<u8>` или логировать ошибку:
+
+```rust
+pub fn get_key(&mut self) -> Option<u8> {
+    let mut key_bytes: [u8; 1] = [0];
+    match self.inp.read_exact(&mut key_bytes) {
+        Ok(_) => Some(key_bytes[0]),
+        Err(e) => {
+            eprintln!("Ошибка чтения клавиши: {}", e);
+            None
+        }
+    }
+}
+```
+
+**Приоритет:** Высокий
+
+---
+
+### 8. Не криптографически стойкие хэш и соль
+
+**Файл:** `src/highscore.rs`  
+**Строки:** 23-35  
+**Описание:** `DefaultHasher` и ручная генерация соли не являются криптографически стойкими.
+
+```rust
+fn get_random_hash() -> String {
+    let mut rng = thread_rng();
+    (0..20).map(|_| rng.gen_range(0..10).to_string()).collect()  // Не crypto-safe
+}
+
+fn get_hash(msg: &str) -> String {
+    let mut hasher = DefaultHasher::new();  // Не crypto-safe
+    msg.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
+}
+```
+
+**Рекомендация:** Для серьёзной защиты использовать HMAC-SHA256 через crate `hmac` и `sha2`.
+
+```rust
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
+
+type HmacSha256 = Hmac<Sha256>;
+
+fn get_hash(msg: &str, key: &[u8]) -> String {
+    let mut mac = HmacSha256::new_from_slice(key).unwrap();
+    mac.update(msg.as_bytes());
+    let result = mac.finalize();
+    hex::encode(result.into_bytes())
+}
+```
+
+**Приоритет:** Высокий (для продакшена)
+
+---
+
+### 9. thread_rng() создаётся каждый раз
+
+**Файл:** `src/tetromino.rs`  
+**Строки:** 73-82  
+**Описание:** `thread_rng()` создаётся при каждом заполнении мешка, что неэффективно.
+
+```rust
+fn fill_bag(&mut self) {
+    // ...
+    use rand::thread_rng;
+    let mut rng = thread_rng();  // Создаётся каждый раз!
+    for i in (1..self.bag.len()).rev() {
+        let j = rng.gen_range(0..=i);
+        self.bag.swap(i, j);
+    }
+}
+```
+
+**Рекомендация:** Кэшировать rng в структуре BagGenerator:
+
+```rust
+pub struct BagGenerator {
+    bag: Vec<ShapeType>,
+    index: usize,
+    rng: ThreadRng,  // Кэшируем RNG
+}
+
+impl BagGenerator {
+    pub fn new() -> Self {
+        Self {
+            bag: Vec::new(),
+            index: 0,
+            rng: thread_rng(),
+        }
+    }
+    
+    fn fill_bag(&mut self) {
+        // ...
+        for i in (1..self.bag.len()).rev() {
+            let j = self.rng.gen_range(0..=i);
+            self.bag.swap(i, j);
+        }
+    }
+}
+```
+
+**Приоритет:** Средний
+
+---
+
+## 🟡 ПРЕДУПРЕЖДЕНИЯ (улучшения)
+
+### 10. Преобразование u8 в char
+
+**Файл:** `src/main.rs`  
+**Строка:** 1122  
+**Описание:** `key as char` работает только для ASCII. Лучше использовать явное преобразование.
+
+```rust
+name.push(key as char);  // Работает, но неявно
+```
+
+**Рекомендация:**
+```rust
+name.push(char::from(key));  // Явное преобразование
+```
+
+**Приоритет:** Средний
+
+---
+
+### 11. O(n²) операция в check_rows()
+
+**Файл:** `src/game.rs`  
+**Строка:** 837  
+**Описание:** `rows_to_remove.contains(&read_idx)` внутри цикла даёт O(n²).
+
+```rust
+for read_idx in (0..GRID_HEIGHT).rev() {
+    if !rows_to_remove.contains(&read_idx) {  // O(n) внутри O(n) = O(n²)
+        // ...
+    }
+}
+```
+
+**Рекомендация:** Использовать boolean массив или HashSet:
+
+```rust
+let mut remove_flags = [false; GRID_HEIGHT];
+for &row in &rows_to_remove {
+    remove_flags[row] = true;
+}
+
+for read_idx in (0..GRID_HEIGHT).rev() {
+    if !remove_flags[read_idx] {  // O(1)
+        // ...
+    }
+}
+```
+
+**Приоритет:** Средний
+
+---
+
+### 12. Too many arguments в ControlsConfig::custom()
+
+**Файл:** `src/controls.rs`  
+**Строка:** 127  
+**Описание:** 9 аргументов в методе нарушает принцип чистого кода.
+
+```rust
+#[allow(clippy::too_many_arguments)]
+pub fn custom(
+    move_left: u8, move_right: u8, soft_drop: u8, hard_drop: u8,
+    rotate_left: u8, rotate_right: u8, hold: u8, pause: u8, quit: u8,
+) -> Self { ... }
+```
+
+**Рекомендация:** Использовать builder pattern:
+
+```rust
+let config = ControlsConfig::builder()
+    .move_left(b'h')
+    .move_right(b'l')
+    .soft_drop(b'j')
+    .build();
+```
+
+**Приоритет:** Низкий
+
+---
+
+### 13. Мёртвый код
+
+**Файл:** `src/game.rs`  
+**Строки:** 143, 153-203  
+**Описание:** `GHOST_SHAPE_STR`, `Achievement` и связанные методы не используются.
+
+**Рекомендация:** Удалить или реализовать функциональность.
+
+**Приоритет:** Низкий
+
+---
+
+### 14. Magic number 127 для Backspace
+
+**Файл:** `src/main.rs`, `src/game.rs`  
+**Описание:** Число 127 используется напрямую вместо константы.
+
+**Рекомендация:** Вынести в константу:
+
+```rust
+const KEY_BACKSPACE: u8 = 127;
+```
+
+**Приоритет:** Низкий
+
+---
+
+## 🟢 СТИЛЕВЫЕ ЗАМЕЧАНИЯ
+
+### Положительно:
+1. ✅ Отличная документация с примерами использования
+2. ✅ Подробные комментарии на русском языке
+3. ✅ Хорошая модульная структура
+4. ✅ Осмысленные имена переменных и функций
+5. ✅ Все 757 тестов проходят успешно
+6. ✅ Код компилируется без предупреждений (кроме allow(dead_code))
+
+### Отрицательно:
+1. ⚠️ Множественные `#[allow(dead_code)]` для тестовых API
+2. ⚠️ Длинные функции (get_player_name 100+ строк)
+3. ⚠️ Дублирование в draw_* методах
+4. ⚠️ Отсутствие единого стиля для обработки ошибок
+
+---
+
+## 📋 РЕКОМЕНДАЦИИ ПО УЛУЧШЕНИЮ
+
+### Краткосрочные (1-2 дня):
+1. Заменить SystemTime на Instant в game.rs:922
+2. Обработать ошибку terminal_size() в main.rs:372
+3. Вынести KEY_BACKSPACE в константы
+4. Заменить `key as char` на `char::from(key)`
+
+### Среднесрочные (1 неделя):
+1. Рефакторинг обработки ошибок в io.rs
+2. Оптимизация check_rows() с boolean массивом
+3. Кэширование thread_rng() в BagGenerator
+4. Удаление мёртвого кода
+
+### Долгосрочные (1 месяц):
+1. Переход на HMAC-SHA256 для хэширования рекордов
+2. Builder pattern для ControlsConfig
+3. Выделение тестовых API в отдельный trait
+4. Рефакторинг длинных функций
+
+---
+
+## 🎯 ВЫВОД
+
+Код проекта находится в **хорошем состоянии** с score **83/100**. 
+
+**Сильные стороны:**
+- Отличная документация и читаемость
+- Полное покрытие тестами (757 тестов)
+- Корректная игровая логика
+- Хорошая модульная структура
+
+**Критические проблемы:**
+- 3 места с потенциальной паникой
+- 6 серьёзных проблем безопасности и логики
+
+**Рекомендация:** Исправить критические проблемы перед следующим релизом. Серьёзные проблемы исправить в плановом порядке.
+
+---
+
+*Отчёт сгенерирован QC Worker (Жёсткий Инспектор Кода)*

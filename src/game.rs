@@ -1397,6 +1397,33 @@ impl GameState {
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
+
+    /// Увеличить количество линий (для тестов).
+    #[allow(dead_code)]
+    pub fn increment_lines_cleared(&mut self) {
+        self.lines_cleared += 1;
+        self.stats.total_lines += 1;
+        // Пересчитываем уровень и скорость
+        self.level = (self.lines_cleared / 10) + 1;
+        self.fall_spd = INITIAL_FALL_SPD + SPD_INC * (self.level - 1) as f32;
+    }
+
+    /// Добавить очки без проверки (для тестов).
+    #[allow(dead_code)]
+    pub fn add_score_no_check(&mut self, points: u64) {
+        self.score += points;
+    }
+
+    /// Остановить таймер игры.
+    pub fn stop_timer(&mut self) {
+        self.stats.stop_timer();
+    }
+
+    /// Получить изменяемую статистику (для тестов).
+    #[allow(dead_code)]
+    pub fn get_stats_mut(&mut self) -> &mut GameStats {
+        &mut self.stats
+    }
 }
 
 #[cfg(test)]
