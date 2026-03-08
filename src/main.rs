@@ -121,7 +121,7 @@ mod tetromino;
 // Импортируем конкретные типы из модулей для удобного использования
 use crate::game::{GameMode, GameState, FPS};
 use crate::highscore::{Leaderboard, SaveData};
-use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
+use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH, KEY_BACKSPACE};
 
 // Импортируем стандартные библиотеки для работы со временем
 use std::{
@@ -616,9 +616,8 @@ fn main() {
             // ===========================================================
             // ВЫХОД ИЗ ПРИЛОЖЕНИЯ (Backspace)
             // ===========================================================
-            127 => {
-                // Код 127 соответствует клавише Backspace
-                // Прерывание главного цикла меню
+            KEY_BACKSPACE => {
+                // Клавиша Backspace — прерывание главного цикла меню
                 break;
             }
 
@@ -768,7 +767,7 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
             // Символы новой строки (\n или \r) означают завершение ввода
             // Прерываем цикл и возвращаем имя
             break;
-        } else if key == 127 {
+        } else if key == KEY_BACKSPACE {
             // ===========================================================
             // BACKSPACE — УДАЛЕНИЕ СИМВОЛА / ОТМЕНА
             // ===========================================================
