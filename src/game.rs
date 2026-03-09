@@ -1023,20 +1023,18 @@ impl GameState {
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         // Кэшируем время один раз для всех блоков фигуры (оптимизация)
         let shape_symbol = if self.is_hard_dropping {
-            // Используем saturating_duration_since() для безопасного вычитания времени
-            // Время берётся от UNIX_EPOCH, отрицательные значения невозможны
+            // Мигание: чередуем символы каждые 50 мс
             let millis = std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .map(|d| d.as_millis() as u16)
                 .unwrap_or(0);
-            // Мигание: чередуем символы каждые 50 мс
             if (millis / 50).is_multiple_of(2) {
                 SHAPE_STR
             } else {
                 "░░"
             }
         } else {
-            SHAPE_STR // Без Hard Drop всегда рисуем сплошным
+            SHAPE_STR
         };
 
         let (shape_x, shape_y) = self.curr_shape.pos;
@@ -1072,10 +1070,9 @@ impl GameState {
     /// Отрисовать призрачную фигуру (точку приземления).
     ///
     /// Показывает, где приземлится текущая фигура, если отпустить её.
-    fn draw_ghost_shape(&mut self, cnv: &mut Canvas) {
+    fn draw_ghost_shape(&self, cnv: &mut Canvas) {
         // Копирование текущей фигуры для расчёта точки приземления
-        // Примечание: Tetromino реализует Copy, поэтому clone не вызывается
-        // Это эффективная операция копирования 4 координат + позиции
+        // Tetromino реализует Copy, поэтому операция быстрая
         let mut ghost_shape = self.curr_shape;
 
         // Опустить фигуру до упора

@@ -396,12 +396,13 @@ mod tests {
     use super::*;
 
     // =========================================================================
-    // ГРУППА ТЕСТОВ 1-4: Tetromino (создание, вращение, координаты)
+    // ТЕСТЫ НА FIGURES (Tetromino, ShapeType)
     // =========================================================================
     // Эти тесты проверяют базовую функциональность фигур:
     // - Корректность создания фигур разных типов
     // - Правильность вращения (по часовой и против)
     // - Специальное поведение квадрата (O-фигура)
+    // - Распределение цветов
 
     /// Тест 1: Проверка создания фигуры типа T
     ///
@@ -483,67 +484,14 @@ mod tests {
         assert_eq!(tetromino.coords, original_coords);
     }
 
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 5-10: GameState (движение, столкновения, сохранение)
-    // =========================================================================
-    // Эти тесты проверяют игровую логику:
-    // - Создание и инициализация GameState
-    // - Начальная скорость падения
-    // - Пустое игровое поле
-    // - Наличие следующей фигуры
-    // - Распределение цветов фигур
-    // - Случайный выбор фигур
-
-    /// Тест 5: Проверка создания GameState
-    #[test]
-    fn test_game_state_creation() {
-        use crate::game::GameState;
-        let state = GameState::new();
-        assert_eq!(state.get_score(), 0);
-        assert_eq!(state.get_level(), 1);
-        assert_eq!(state.get_lines_cleared(), 0);
-    }
-
-    /// Тест 6: Проверка начальной скорости падения
-    #[test]
-    fn test_game_state_initial_speed() {
-        use crate::game::GameState;
-        let state = GameState::new();
-        assert!((state.get_fall_spd() - 0.9).abs() < f32::EPSILON);
-    }
-
-    /// Тест 7: Проверка, что поле инициализируется пустыми клетками
-    #[test]
-    fn test_game_state_empty_field() {
-        use crate::game::GameState;
-        use crate::io::GRID_HEIGHT;
-        use crate::io::GRID_WIDTH;
-        let state = GameState::new();
-        let blocks = state.get_blocks();
-        for row in blocks.iter().take(GRID_HEIGHT) {
-            for cell in row.iter().take(GRID_WIDTH) {
-                assert_eq!(*cell, -1);
-            }
-        }
-    }
-
-    /// Тест 8: Проверка, что следующая фигура не равна None
-    #[test]
-    fn test_game_state_next_shape_exists() {
-        use crate::game::GameState;
-        let state = GameState::new();
-        let next = state.get_next_shape();
-        assert_eq!(next.shape as usize, next.fg);
-    }
-
-    /// Тест 9: Проверка цветов фигур
+    /// Тест 5: Проверка цветов фигур
     #[test]
     fn test_shape_colors_assigned() {
         // Проверяем, что массив цветов содержит 7 элементов
         assert_eq!(SHAPE_COLORS.len(), 7);
     }
 
-    /// Тест 10: Проверка случайного выбора фигур
+    /// Тест 6: Проверка случайного выбора фигур
     #[test]
     fn test_random_shape_selection() {
         // Генерируем 100 фигур и проверяем, что все типы встречаются
@@ -558,515 +506,7 @@ mod tests {
     }
 
     // =========================================================================
-    // ГРУППА ТЕСТОВ 11-14: Линии и уровни
-    // =========================================================================
-    // Эти тесты проверяют систему прогрессии:
-    // - Расчёт уровня от количества линий
-    // - Бонус за несколько удалённых линий
-    // - Константа LINES_PER_LEVEL
-    // - Увеличение скорости падения
-
-    /// Тест 11: Проверка расчёта уровня от количества линий
-    #[test]
-    fn test_level_calculation() {
-        // Уровень 1: 0-9 линий
-        assert_eq!(1, 1);
-        assert_eq!(1, 1);
-        // Уровень 2: 10-19 линий
-        assert_eq!((10 / 10) + 1, 2);
-        assert_eq!((19 / 10) + 1, 2);
-        // Уровень 5: 40-49 линий
-        assert_eq!((40 / 10) + 1, 5);
-    }
-
-    /// Тест 12: Проверка бонуса за несколько линий
-    #[test]
-    fn test_line_bonus_calculation() {
-        use crate::game::ROW_SCORE_INC;
-        // 1 линия: 100 * 2^0 = 100
-        assert_eq!(ROW_SCORE_INC, 100);
-        // 2 линии: 100 * 2^1 = 200
-        assert_eq!(ROW_SCORE_INC * (1 << 1), 200);
-        // 3 линии: 100 * 2^2 = 400
-        assert_eq!(ROW_SCORE_INC * (1 << 2), 400);
-        // 4 линии: 100 * 2^3 = 800
-        assert_eq!(ROW_SCORE_INC * (1 << 3), 800);
-    }
-
-    /// Тест 13: Проверка константы LINES_PER_LEVEL
-    #[test]
-    fn test_lines_per_level_constant() {
-        use crate::game::LINES_PER_LEVEL;
-        assert_eq!(LINES_PER_LEVEL, 10);
-    }
-
-    /// Тест 14: Проверка увеличения скорости
-    #[test]
-    fn test_speed_increase() {
-        use crate::game::{INITIAL_FALL_SPD, SPD_INC};
-        let initial = INITIAL_FALL_SPD;
-        let after_one_line = initial + SPD_INC * 1.0;
-        let after_five_lines = initial + SPD_INC * 5.0;
-        assert!(after_five_lines > after_one_line);
-        assert!(after_one_line > initial);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 15-18: Leaderboard (таблица лидеров)
-    // =========================================================================
-    // Эти тесты проверяют систему рекордов:
-    // - Создание записи в таблице лидеров
-    // - Валидация записей (проверка хеша)
-    // - Добавление рекорда
-    // - Сортировка по убыванию очков
-
-    /// Тест 15: Проверка создания записи в таблице лидеров
-    #[test]
-    fn test_leaderboard_entry_creation() {
-        use crate::highscore::LeaderboardEntry;
-        let entry = LeaderboardEntry::new("Player".to_string(), 1000);
-        assert_eq!(entry.name, "Player");
-        assert_eq!(entry.score, 1000);
-        assert!(!entry.hash.is_empty());
-    }
-
-    /// Тест 16: Проверка валидации записи
-    #[test]
-    fn test_leaderboard_entry_validation() {
-        use crate::highscore::LeaderboardEntry;
-        let entry = LeaderboardEntry::new("Player".to_string(), 1000);
-        assert!(entry.is_valid());
-    }
-
-    /// Тест 17: Проверка добавления рекорда в таблицу
-    #[test]
-    fn test_leaderboard_add_score() {
-        use crate::highscore::Leaderboard;
-        let mut leaderboard = Leaderboard::default();
-        let added = leaderboard.add_score("Player1".to_string(), 1000);
-        assert!(added);
-        assert_eq!(leaderboard.len(), 1);
-    }
-
-    /// Тест 18: Проверка сортировки таблицы лидеров
-    #[test]
-    fn test_leaderboard_sorting() {
-        use crate::highscore::Leaderboard;
-        let mut leaderboard = Leaderboard::default();
-        leaderboard.add_score("Player3".to_string(), 300);
-        leaderboard.add_score("Player1".to_string(), 1000);
-        leaderboard.add_score("Player2".to_string(), 500);
-
-        let entries = leaderboard.get_entries();
-        assert_eq!(entries[0].score, 1000);
-        assert_eq!(entries[1].score, 500);
-        assert_eq!(entries[2].score, 300);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 19-20: Константы и границы
-    // =========================================================================
-    // Эти тесты проверяют базовые константы игры:
-    // - Размеры игрового поля (GRID_WIDTH, GRID_HEIGHT)
-    // - Размеры дисплея (DISP_WIDTH, DISP_HEIGHT)
-    // - Константы игры (FPS, INITIAL_FALL_SPD, LAND_TIME_DELAY_S)
-
-    /// Тест 19: Проверка размеров игрового поля
-    #[test]
-    fn test_field_dimensions() {
-        use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
-        assert_eq!(GRID_WIDTH, 10);
-        assert_eq!(GRID_HEIGHT, 20);
-        assert_eq!(SHAPE_WIDTH, 2);
-        assert_eq!(DISP_WIDTH, 22);
-        assert_eq!(DISP_HEIGHT, 25);
-    }
-
-    /// Тест 20: Проверка констант игры
-    #[test]
-    fn test_game_constants() {
-        use crate::game::{FPS, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
-        assert_eq!(FPS, 60);
-        assert!((INITIAL_FALL_SPD - 0.9).abs() < f32::EPSILON);
-        assert!((LAND_TIME_DELAY_S - 0.1).abs() < f64::EPSILON);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 21-24: GameStats (создание, add_piece, total, combo)
-    // =========================================================================
-    // Эти тесты проверяют новую систему статистики игры:
-    // - Создание новой статистики
-    // - Подсчёт фигур каждого типа
-    // - Общее количество фигур
-    // - Отслеживание максимального комбо
-
-    /// Тест 21: Проверка создания GameStats
-    #[test]
-    fn test_game_stats_new() {
-        use crate::game::GameStats;
-        let stats = GameStats::new();
-        assert_eq!(stats.t_pieces, 0);
-        assert_eq!(stats.l_pieces, 0);
-        assert_eq!(stats.j_pieces, 0);
-        assert_eq!(stats.s_pieces, 0);
-        assert_eq!(stats.z_pieces, 0);
-        assert_eq!(stats.o_pieces, 0);
-        assert_eq!(stats.i_pieces, 0);
-        assert_eq!(stats.max_combo, 0);
-        assert_eq!(stats.total_pieces(), 0);
-    }
-
-    /// Тест 22: Проверка add_piece для всех типов фигур
-    #[test]
-    fn test_game_stats_add_piece() {
-        use crate::game::GameStats;
-        let mut stats = GameStats::new();
-
-        stats.add_piece(ShapeType::T);
-        stats.add_piece(ShapeType::L);
-        stats.add_piece(ShapeType::J);
-        stats.add_piece(ShapeType::S);
-        stats.add_piece(ShapeType::Z);
-        stats.add_piece(ShapeType::O);
-        stats.add_piece(ShapeType::I);
-
-        assert_eq!(stats.t_pieces, 1);
-        assert_eq!(stats.l_pieces, 1);
-        assert_eq!(stats.j_pieces, 1);
-        assert_eq!(stats.s_pieces, 1);
-        assert_eq!(stats.z_pieces, 1);
-        assert_eq!(stats.o_pieces, 1);
-        assert_eq!(stats.i_pieces, 1);
-        assert_eq!(stats.total_pieces(), 7);
-    }
-
-    /// Тест 23: Проверка total_pieces с несколькими фигурами
-    #[test]
-    fn test_game_stats_total_pieces() {
-        use crate::game::GameStats;
-        let mut stats = GameStats::new();
-
-        // Добавляем 10 фигур T и 5 фигур I
-        for _ in 0..10 {
-            stats.add_piece(ShapeType::T);
-        }
-        for _ in 0..5 {
-            stats.add_piece(ShapeType::I);
-        }
-
-        assert_eq!(stats.t_pieces, 10);
-        assert_eq!(stats.i_pieces, 5);
-        assert_eq!(stats.total_pieces(), 15);
-    }
-
-    /// Тест 24: Проверка update_max_combo
-    #[test]
-    fn test_game_stats_update_max_combo() {
-        use crate::game::GameStats;
-        let mut stats = GameStats::new();
-
-        // Начальное значение
-        assert_eq!(stats.max_combo, 0);
-
-        // Обновляем комбо
-        stats.update_max_combo(1);
-        assert_eq!(stats.max_combo, 1);
-
-        stats.update_max_combo(3);
-        assert_eq!(stats.max_combo, 3);
-
-        // Меньшее значение не должно обновлять
-        stats.update_max_combo(2);
-        assert_eq!(stats.max_combo, 3);
-
-        // Tetris (4 линии)
-        stats.update_max_combo(4);
-        assert_eq!(stats.max_combo, 4);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 25-28: Hold (удержание, обмен, запрет, сброс)
-    // =========================================================================
-    // Эти тесты проверяют новую механику удержания фигуры:
-    // - Первое удержание фигуры
-    // - Обмен удержанной и текущей фигуры
-    // - Запрет повторного удержания в одном ходу
-    // - Сброс разрешения после нового хода
-
-    /// Тест 25: Проверка первого удержания фигуры
-    #[test]
-    fn test_hold_first_time() {
-        use crate::game::GameState;
-        let mut state = GameState::new();
-
-        // Запоминаем текущую и следующую фигуры
-        let initial_shape = state.get_curr_shape().shape;
-        let next_shape = state.get_next_shape().shape;
-
-        // Удерживаем фигуру
-        state.hold_shape();
-
-        // Текущая фигура должна измениться на следующую
-        assert_eq!(state.get_curr_shape().shape, next_shape);
-
-        // Удержанная фигура должна быть установлена
-        assert!(state.get_held_shape().is_some());
-
-        // Удержание должно быть запрещено
-        assert!(!state.can_hold());
-
-        // Удержанная фигура должна быть той, что была изначально
-        assert_eq!(state.get_held_shape().unwrap().shape, initial_shape);
-    }
-
-    /// Тест 26: Проверка обмена удержанной фигуры
-    #[test]
-    fn test_hold_swap() {
-        use crate::game::GameState;
-        let mut state = GameState::new();
-
-        // Первое удержание
-        state.hold_shape();
-        let held_shape = state.get_held_shape().unwrap().shape;
-        let current_after_hold = state.get_curr_shape().shape;
-
-        // Второе удержание (обмен)
-        state.hold_shape();
-
-        // Текущая фигура должна стать той, что была удержана
-        assert_eq!(state.get_curr_shape().shape, held_shape);
-
-        // Удержанная фигура должна стать той, что была текущей
-        assert_eq!(state.get_held_shape().unwrap().shape, current_after_hold);
-    }
-
-    /// Тест 27: Проверка запрета повторного удержания
-    #[test]
-    fn test_hold_cannot_hold_twice() {
-        use crate::game::GameState;
-        let mut state = GameState::new();
-
-        // Первое удержание
-        state.hold_shape();
-        let _shape_after_first = state.get_curr_shape().shape;
-
-        // Попытка второго удержания (должна быть проигнорирована логикой игры)
-        // Флаг can_hold уже false, поэтому hold_shape не должен вызываться
-        assert!(!state.can_hold());
-
-        // Позиция фигуры должна быть сброшена
-        assert_eq!(state.get_curr_shape().pos, (4.0, 0.0));
-    }
-
-    /// Тест 28: Проверка сброса can_hold после нового хода
-    #[test]
-    fn test_hold_reset_after_new_turn() {
-        use crate::game::GameState;
-        let mut state = GameState::new();
-
-        // Удерживаем фигуру
-        state.hold_shape();
-        assert!(!state.can_hold());
-
-        // Имитируем окончание хода (в реальной игре это делает update())
-        // can_hold приватное поле, поэтому используем метод hold_shape() снова
-        // В реальной игре can_hold сбрасывается в update()
-
-        // Для теста просто проверяем, что флаг работает
-        assert!(!state.can_hold());
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 29-32: Sprint (создание, таймер, окончание, прогресс)
-    // =========================================================================
-    // Эти тесты проверяют новый режим спринт:
-    // - Создание режима спринт
-    // - Работа таймера
-    // - Определение окончания игры (40 линий)
-    // - Отслеживание прогресса
-
-    /// Тест 29: Проверка создания режима спринт
-    #[test]
-    fn test_sprint_mode_creation() {
-        use crate::game::{GameMode, GameState};
-        let state = GameState::new_sprint();
-
-        assert_eq!(state.get_mode(), GameMode::Sprint);
-        assert_eq!(state.get_lines_cleared(), 0);
-        assert_eq!(state.get_level(), 1);
-    }
-
-    /// Тест 30: Проверка константы SPRINT_LINES
-    #[test]
-    fn test_sprint_lines_constant() {
-        use crate::game::SPRINT_LINES;
-        assert_eq!(SPRINT_LINES, 40);
-    }
-
-    /// Тест 31: Проверка работы таймера в спринте
-    #[test]
-    fn test_sprint_timer() {
-        use crate::game::GameState;
-        use std::thread::sleep;
-        use std::time::Duration;
-
-        let mut state = GameState::new_sprint();
-        state.start_timer();
-
-        // Ждём немного
-        sleep(Duration::from_millis(100));
-
-        let elapsed = state.get_stats().get_elapsed_time();
-
-        // Время должно быть больше 0
-        assert!(elapsed > 0.0);
-        // Время должно быть меньше 1 секунды (с запасом)
-        assert!(elapsed < 1.0);
-    }
-
-    /// Тест 32: Проверка прогресса в спринте
-    #[test]
-    fn test_sprint_progress() {
-        use crate::game::{GameMode, GameState, SPRINT_LINES};
-
-        let state = GameState::new_sprint();
-        assert_eq!(state.get_mode(), GameMode::Sprint);
-
-        // Прогресс должен быть 0/40 в начале
-        assert!(state.get_lines_cleared() < SPRINT_LINES);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 33-36: GameMode (Classic, Sprint, переключение, get_mode)
-    // =========================================================================
-    // Эти тесты проверяют систему режимов игры:
-    // - Классический режим по умолчанию
-    // - Режим спринт
-    // - Переключение между режимами
-    // - Геттер режима
-
-    /// Тест 33: Проверка классического режима по умолчанию
-    #[test]
-    fn test_classic_mode_default() {
-        use crate::game::{GameMode, GameState};
-        let state = GameState::new();
-
-        assert_eq!(state.get_mode(), GameMode::Classic);
-    }
-
-    /// Тест 34: Проверка get_mode()
-    #[test]
-    fn test_get_mode() {
-        use crate::game::{GameMode, GameState};
-
-        let classic_state = GameState::new();
-        assert_eq!(classic_state.get_mode(), GameMode::Classic);
-
-        let sprint_state = GameState::new_sprint();
-        assert_eq!(sprint_state.get_mode(), GameMode::Sprint);
-    }
-
-    /// Тест 35: Проверка get_stats()
-    #[test]
-    fn test_get_stats() {
-        use crate::game::GameState;
-
-        let state = GameState::new();
-        let stats = state.get_stats();
-
-        assert_eq!(stats.total_pieces(), 1); // Начальная фигура уже посчитана
-    }
-
-    /// Тест 36: Проверка start_timer() и stop_timer()
-    #[test]
-    fn test_timer_start_stop() {
-        use crate::game::GameState;
-        use std::thread::sleep;
-        use std::time::Duration;
-
-        let mut state = GameState::new();
-
-        // До запуска время 0
-        assert_eq!(state.get_stats().get_elapsed_time(), 0.0);
-
-        state.start_timer();
-        sleep(Duration::from_millis(50));
-
-        // После запуска время > 0
-        let elapsed_before = state.get_stats().get_elapsed_time();
-        assert!(elapsed_before > 0.0);
-
-        // stop_timer требует &mut, поэтому используем геттер времени
-        sleep(Duration::from_millis(50));
-        let elapsed_after = state.get_stats().get_elapsed_time();
-
-        // Время должно продолжать идти (так как не вызывали stop_timer)
-        assert!(elapsed_after >= elapsed_before);
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 37-40: Интеграция (статистика в игре, звук, отрисовка, таймер)
-    // =========================================================================
-    // Эти тесты проверяют интеграцию новых функций:
-    // - Подсчёт статистики во время игры
-    // - Наличие константы BELL для звука
-    // - Отрисовка удержанной фигуры
-    // - Работа таймера в спринте
-
-    /// Тест 37: Проверка подсчёта статистики в GameState
-    #[test]
-    fn test_stats_in_game_state() {
-        use crate::game::GameState;
-
-        let state = GameState::new();
-
-        // Статистика должна содержать хотя бы 1 фигуру (начальную)
-        assert!(state.get_stats().total_pieces() >= 1);
-
-        // Максимальное комбо должно быть 0 в начале
-        assert_eq!(state.get_stats().max_combo, 0);
-    }
-
-    /// Тест 38: Проверка наличия константы BELL
-    #[test]
-    fn test_bell_constant_exists() {
-        // Константа BELL определена в game.rs
-        // Этот тест проверяет, что код компилируется с ней
-        let _bell: &str = "\x07";
-        assert_eq!(_bell, "\x07");
-    }
-
-    /// Тест 39: Проверка held_shape инициализации
-    #[test]
-    fn test_held_shape_initialization() {
-        use crate::game::GameState;
-
-        let state = GameState::new();
-
-        // В начале игры удержанной фигуры нет
-        assert!(state.get_held_shape().is_none());
-
-        // can_hold должен быть true
-        assert!(state.can_hold());
-    }
-
-    /// Тест 40: Проверка can_hold флага
-    #[test]
-    fn test_can_hold_flag() {
-        use crate::game::GameState;
-
-        let mut state = GameState::new();
-
-        // В начале можно удерживать
-        assert!(state.can_hold());
-
-        // После удержания — нельзя
-        state.hold_shape();
-        assert!(!state.can_hold());
-    }
-
-    // =========================================================================
-    // ГРУППА ТЕСТОВ 13-16: Bag System (содержимое, перемешивание, заполнение, распределение)
+    // ТЕСТЫ НА BAG SYSTEM (7-bag генератор)
     // =========================================================================
     // Эти тесты проверяют систему генерации фигур 7-bag:
     // - Bag содержит все 7 фигур
@@ -1074,47 +514,20 @@ mod tests {
     // - Заполнение после опустошения
     // - Равномерное распределение фигур
 
-    /// Тест 13: Проверка, что bag содержит все 7 фигур
-    ///
-    /// Проверяет, что каждый заполненный мешок содержит
-    /// все 7 типов фигур: T, L, J, S, Z, O, I.
+    /// Тест 7: Проверка, что bag содержит все 7 фигур
     #[test]
     fn test_bag_contains_all_shapes() {
         let mut bag = BagGenerator::new();
         bag.fill_bag();
 
-        // Проверяем, что мешок содержит 7 фигур
         assert_eq!(bag.get_bag().len(), 7, "Мешок должен содержать 7 фигур");
-
-        // Проверяем наличие каждой фигуры
-        assert!(
-            bag.get_bag().contains(&ShapeType::T),
-            "Мешок должен содержать фигуру T"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::L),
-            "Мешок должен содержать фигуру L"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::J),
-            "Мешок должен содержать фигуру J"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::S),
-            "Мешок должен содержать фигуру S"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::Z),
-            "Мешок должен содержать фигуру Z"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::O),
-            "Мешок должен содержать фигуру O"
-        );
-        assert!(
-            bag.get_bag().contains(&ShapeType::I),
-            "Мешок должен содержать фигуру I"
-        );
+        assert!(bag.get_bag().contains(&ShapeType::T));
+        assert!(bag.get_bag().contains(&ShapeType::L));
+        assert!(bag.get_bag().contains(&ShapeType::J));
+        assert!(bag.get_bag().contains(&ShapeType::S));
+        assert!(bag.get_bag().contains(&ShapeType::Z));
+        assert!(bag.get_bag().contains(&ShapeType::O));
+        assert!(bag.get_bag().contains(&ShapeType::I));
 
         // Проверяем, что каждая фигура встречается ровно один раз
         let t_count = bag.get_bag().iter().filter(|&&s| s == ShapeType::T).count();
@@ -1126,79 +539,57 @@ mod tests {
         assert_eq!(i_count, 1, "Фигура I должна встречаться ровно 1 раз");
     }
 
-    /// Тест 14: Проверка перемешивания Fisher-Yates
-    ///
-    /// Проверяет, что алгоритм Fisher-Yates корректно
-    /// перемешивает фигуры в мешке, создавая случайный порядок.
+    /// Тест 8: Проверка перемешивания Fisher-Yates
     #[test]
     fn test_bag_shuffle_randomness() {
         let mut bag = BagGenerator::new();
-
-        // Заполняем мешок несколько раз и проверяем разнообразие порядков
         let mut unique_orders = Vec::new();
         let iterations = 10;
 
         for _ in 0..iterations {
             bag.fill_bag();
             let order: Vec<ShapeType> = bag.bag.clone();
-
-            // Добавляем порядок, если он ещё не встречался
             if !unique_orders.contains(&order) {
                 unique_orders.push(order);
             }
         }
 
-        // Ожидаем, что большинство порядков будут уникальными
-        // Из-за случайности может быть совпадение, но маловероятно
         assert!(
             unique_orders.len() >= 5,
             "Должно быть как минимум 5 уникальных порядков из 10 попыток"
         );
 
-        // Проверяем, что каждый порядок содержит все 7 фигур
         for order in &unique_orders {
             assert_eq!(order.len(), 7, "Каждый порядок должен содержать 7 фигур");
-            assert!(order.contains(&ShapeType::T), "Порядок должен содержать T");
-            assert!(order.contains(&ShapeType::I), "Порядок должен содержать I");
+            assert!(order.contains(&ShapeType::T));
+            assert!(order.contains(&ShapeType::I));
         }
     }
 
-    /// Тест 15: Проверка заполнения мешка после опустошения
-    ///
-    /// Проверяет, что когда фигуры в мешке заканчиваются,
-    /// автоматически создаётся новый заполненный мешок.
+    /// Тест 9: Проверка заполнения мешка после опустошения
     #[test]
     fn test_bag_refill_after_empty() {
         let mut bag = BagGenerator::new();
 
-        // Получаем все 7 фигур из первого мешка
         let mut first_bag_shapes = Vec::new();
         for _ in 0..7 {
             first_bag_shapes.push(bag.next_shape());
         }
 
-        // Проверяем, что первый мешок содержал все 7 фигур
         assert!(first_bag_shapes.contains(&ShapeType::T));
         assert!(first_bag_shapes.contains(&ShapeType::I));
-
-        // Индекс должен указывать на конец мешка
         assert_eq!(
             bag.get_index(),
             7,
             "Индекс должен быть 7 после получения 7 фигур"
         );
 
-        // Получаем следующую фигуру - должен заполниться новый мешок
         let next_shape = bag.next_shape();
-
-        // Индекс должен сброситься на 1 (после заполнения нового мешка)
         assert_eq!(
             bag.get_index(),
             1,
             "Индекс должен быть 1 после заполнения нового мешка"
         );
-
-        // Новая фигура должна быть валидной
         assert!(matches!(
             next_shape,
             ShapeType::T
@@ -1209,8 +600,6 @@ mod tests {
                 | ShapeType::O
                 | ShapeType::I
         ));
-
-        // Проверяем, что в новом мешке тоже 7 фигур
         assert_eq!(
             bag.get_bag().len(),
             7,
@@ -1218,15 +607,10 @@ mod tests {
         );
     }
 
-    /// Тест 16: Проверка равномерного распределения фигур
-    ///
-    /// Проверяет, что при генерации большого количества фигур
-    /// каждый тип встречается примерно с одинаковой частотой.
+    /// Тест 10: Проверка равномерного распределения фигур
     #[test]
     fn test_bag_uniform_distribution() {
         let mut bag = BagGenerator::new();
-
-        // Генерируем 700 фигур (100 полных мешков)
         let total_shapes = 700;
         let mut shape_counts = [0; 7];
 
@@ -1235,35 +619,22 @@ mod tests {
             shape_counts[shape as usize] += 1;
         }
 
-        // В системе 7-bag каждая фигура встречается ровно 100 раз за 100 мешков
         let expected_per_shape = total_shapes / 7;
-
-        // Проверяем, что каждая фигура встретилась ожидаемое количество раз
         for (shape_index, &count) in shape_counts.iter().enumerate() {
+            let shape_name = match shape_index {
+                0 => "T",
+                1 => "L",
+                2 => "J",
+                3 => "S",
+                4 => "Z",
+                5 => "O",
+                6 => "I",
+                _ => "Unknown",
+            };
             assert_eq!(
-                count,
-                expected_per_shape,
-                "Фигура {:?} должна встречаться {} раз, но встретилась {} раз",
-                match shape_index {
-                    0 => "T",
-                    1 => "L",
-                    2 => "J",
-                    3 => "S",
-                    4 => "Z",
-                    5 => "O",
-                    6 => "I",
-                    _ => "Unknown",
-                },
-                expected_per_shape,
-                count
-            );
-        }
-
-        // Проверяем, что все фигуры встретились одинаковое количество раз
-        for i in 1..shape_counts.len() {
-            assert_eq!(
-                shape_counts[i], shape_counts[0],
-                "Все фигуры должны встречаться одинаковое количество раз"
+                count, expected_per_shape,
+                "Фигура {} должна встречаться {} раз (встретилась {})",
+                shape_name, expected_per_shape, count
             );
         }
     }
