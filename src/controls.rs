@@ -9,6 +9,7 @@
 //! - `tests` - модульные тесты (4 теста)
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 
@@ -136,26 +137,7 @@ impl ControlsConfig {
     /// assert!(config.validate());
     /// ```
     pub fn validate(&self) -> bool {
-        // Проверка диапазона значений (1-255)
-        let all_in_range = [
-            self.move_left,
-            self.move_right,
-            self.soft_drop,
-            self.hard_drop,
-            self.rotate_left,
-            self.rotate_right,
-            self.hold,
-            self.pause,
-            self.quit,
-        ]
-        .iter()
-        .all(|&key| key > 0);
-
-        if !all_in_range {
-            return false;
-        }
-
-        // Проверка на дубликаты
+        // Сбор всех клавиш в массив для проверки
         let keys = [
             self.move_left,
             self.move_right,
@@ -168,12 +150,16 @@ impl ControlsConfig {
             self.quit,
         ];
 
-        // Проверяем, что все клавиши уникальны
-        for i in 0..keys.len() {
-            for j in (i + 1)..keys.len() {
-                if keys[i] == keys[j] {
-                    return false;
-                }
+        // Проверка диапазона значений (1-255) и дубликатов за один проход O(n)
+        let mut seen = HashSet::with_capacity(keys.len());
+        for &key in &keys {
+            // Проверка: клавиша должна быть > 0
+            if key == 0 {
+                return false;
+            }
+            // Проверка на дубликаты
+            if !seen.insert(key) {
+                return false; // Дубликат найден
             }
         }
 
