@@ -358,7 +358,7 @@ fn test_extended_movement_with_rotation() {
     }
 
     // Тест просто проверяет что код не паникует
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 18: Проверка движения для всех 7 типов фигур
@@ -612,14 +612,10 @@ fn test_extended_alternating_rotation() {
 
     // Чередование: часовая, против, часовая, против
     for i in 0..4 {
-        if i % 2 == 0 {
-            if state.can_rotate_curr_shape(Dir::Right) {
-                state.get_curr_shape_mut().rotate(Dir::Right);
-            }
-        } else {
-            if state.can_rotate_curr_shape(Dir::Left) {
-                state.get_curr_shape_mut().rotate(Dir::Left);
-            }
+        if i % 2 == 0 && state.can_rotate_curr_shape(Dir::Right) {
+            state.get_curr_shape_mut().rotate(Dir::Right);
+        } else if i % 2 == 1 && state.can_rotate_curr_shape(Dir::Left) {
+            state.get_curr_shape_mut().rotate(Dir::Left);
         }
     }
 
@@ -903,7 +899,7 @@ fn test_extended_hold_with_rotation() {
     }
 
     // Тест просто проверяет что код работает
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 43: Проверка удержания с последующим движением
@@ -920,7 +916,7 @@ fn test_extended_hold_with_movement() {
     }
 
     // Тест просто проверяет что код работает
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 44: Проверка что удержанная фигура сохраняет тип
@@ -1015,7 +1011,7 @@ fn test_extended_hold_with_rotation_and_movement() {
     }
 
     // Тест просто проверяет что код работает
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 50: Проверка что удержание не влияет на следующую фигуру
@@ -1029,7 +1025,7 @@ fn test_extended_hold_does_not_affect_next() {
     // Следующая фигура должна измениться (стать той что была текущей)
     // или новой из bag
     let _ = next_before; // Тест просто проверяет что код работает
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 // ============================================================================
@@ -1040,7 +1036,7 @@ fn test_extended_hold_does_not_affect_next() {
 #[test]
 fn test_extended_ghost_piece_same_type() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
 
     assert_eq!(
         ghost_shape.shape,
@@ -1053,7 +1049,7 @@ fn test_extended_ghost_piece_same_type() {
 #[test]
 fn test_extended_ghost_piece_same_coords() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
 
     assert_eq!(
         ghost_shape.coords,
@@ -1066,7 +1062,7 @@ fn test_extended_ghost_piece_same_coords() {
 #[test]
 fn test_extended_ghost_piece_move_down() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
 
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
@@ -1086,7 +1082,7 @@ fn test_extended_ghost_piece_on_floor() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
     assert!(
@@ -1113,7 +1109,7 @@ fn test_extended_ghost_piece_all_shapes() {
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
-        let ghost_shape = state.get_curr_shape().clone();
+        let ghost_shape = state.get_curr_shape();
         let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
         assert!(
@@ -1134,7 +1130,7 @@ fn test_extended_ghost_piece_after_left_move() {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
     assert!(
@@ -1153,7 +1149,7 @@ fn test_extended_ghost_piece_after_right_move() {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
 
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
     assert!(
@@ -1172,7 +1168,7 @@ fn test_extended_ghost_piece_after_rotation() {
         state.get_curr_shape_mut().rotate(Dir::Right);
     }
 
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
     // После вращения призрачная фигура должна всё ещё иметь возможность падения
@@ -1187,7 +1183,7 @@ fn test_extended_ghost_piece_different_y_positions() {
     // Тестируем на разных высотах
     for y in &[0, 5, 10, 15] {
         state.get_curr_shape_mut().pos.1 = *y as f32;
-        let ghost_shape = state.get_curr_shape().clone();
+        let ghost_shape = state.get_curr_shape();
         let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
 
         // На разных высотах призрачная фигура должна иметь возможность падения
@@ -1199,7 +1195,7 @@ fn test_extended_ghost_piece_different_y_positions() {
 #[test]
 fn test_extended_ghost_piece_collision_logic() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
 
     // Проверяем все направления
     let can_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
@@ -1303,7 +1299,7 @@ fn test_extended_bag_700_shapes() {
 fn test_extended_bag_creation() {
     let _bag = BagGenerator::new();
     // Просто проверяем что создан успешно
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 67: Проверка Default для Bag Generator
@@ -1343,7 +1339,7 @@ fn test_extended_bag_different_shapes() {
     let shapes = bag.next_shape();
     let _ = shapes;
     // Просто проверяем что код работает
-    assert!(true);
+    // assert!(true); удалено по рекомендации clippy
 }
 
 /// Тест 70: Проверка Bag Generator на честность
@@ -1613,7 +1609,7 @@ fn test_extended_game_can_hold() {
 fn test_extended_draw_ghost_shape_exists() {
     // Тест просто проверяет что метод существует и компилируется
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
     let can_move = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
     let _ = can_move;
 }
@@ -1647,7 +1643,7 @@ fn test_extended_draw_sprint_timer_exists() {
 #[test]
 fn test_extended_ghost_draw_coords() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = state.get_curr_shape();
 
     // Проверяем что координаты призрачной фигуры совпадают с текущей
     assert_eq!(ghost_shape.pos, state.get_curr_shape().pos);
