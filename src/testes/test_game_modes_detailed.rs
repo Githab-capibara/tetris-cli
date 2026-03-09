@@ -68,7 +68,7 @@ fn test_classic_mode_initial_lines() {
 #[test]
 fn test_classic_mode_level_progression() {
     // Проверяем формулу расчёта уровня
-    let level_0_lines = 0 / LINES_PER_LEVEL + 1;
+    let level_0_lines = 1;
     let level_10_lines = 10 / LINES_PER_LEVEL + 1;
     let level_20_lines = 20 / LINES_PER_LEVEL + 1;
 

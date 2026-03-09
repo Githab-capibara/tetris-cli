@@ -232,7 +232,7 @@ fn test_combo_bonus_linear_growth() {
 #[test]
 fn test_base_level() {
     // Начальный уровень
-    let level = 0 / LINES_PER_LEVEL + 1;
+    let level = 1;
     assert_eq!(level, 1, "Начальный уровень должен быть 1");
 }
 
@@ -260,7 +260,7 @@ fn test_level_at_fifty_lines() {
 /// Тест 25: Прогрессия уровней
 #[test]
 fn test_level_progression() {
-    let level_0 = 0 / LINES_PER_LEVEL + 1;
+    let level_0 = 1;
     let level_10 = 10 / LINES_PER_LEVEL + 1;
     let level_20 = 20 / LINES_PER_LEVEL + 1;
 
