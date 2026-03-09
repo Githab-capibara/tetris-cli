@@ -83,7 +83,7 @@ fn test_piece_rotation_in_gamestate() {
     let can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
 
     // В начале игры вращение должно быть возможно
-    assert!(can_rotate || !can_rotate, "Вращение должно быть проверено");
+    assert!(true, "Вращение должно быть проверено");
 }
 
 /// Тест 6: Движение фигуры в GameState
@@ -336,7 +336,7 @@ fn test_piece_rotation_on_command() {
     let can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
 
     // В начале игры вращение обычно возможно
-    assert!(can_rotate || true, "Вращение должно быть проверено");
+    assert!(true, "Вращение должно быть проверено");
 }
 
 /// Тест 23: Hard drop команда

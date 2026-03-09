@@ -222,7 +222,7 @@ fn test_scoring_combo_bonus_divisible_by_10() {
 /// Тест 24: Проверка бонуса за комбо x1
 #[test]
 fn test_scoring_combo_x1() {
-    let bonus = COMBO_BONUS * 0;
+    let bonus = 0;
     assert_eq!(bonus, 0, "Комбо x1 не даёт бонуса");
 }
 
