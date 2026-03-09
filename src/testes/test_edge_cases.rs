@@ -21,9 +21,9 @@ fn test_edge_cases_empty_field() {
     let state = GameState::new();
     let blocks = state.get_blocks();
 
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            assert_eq!(blocks[y][x], -1);
+    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
+        for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
+            assert_eq!(cell, -1, "Клетка [{},{}] должна быть пустой", y, x);
         }
     }
 }
@@ -155,7 +155,7 @@ fn test_edge_cases_bag_7000_shapes() {
         counts[shape as usize] += 1;
     }
 
-    for (_i, &count) in counts.iter().enumerate() {
+    for &count in counts.iter() {
         assert_eq!(count, 1000);
     }
 }
@@ -172,7 +172,7 @@ fn test_edge_cases_rotate_100_times() {
     }
 
     // Должно вернуться в исходное состояние (4 вращения = полный цикл)
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 16: Проверка удержания 10 раз (должно работать только первое)
@@ -197,7 +197,7 @@ fn test_edge_cases_create_1000_states() {
     for _ in 0..1000 {
         let _state = GameState::new();
     }
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 18: Проверка создания 1000 Tetromino
@@ -206,7 +206,7 @@ fn test_edge_cases_create_1000_tetromino() {
     for _ in 0..1000 {
         let _t = Tetromino::select();
     }
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 19: Проверка BagGenerator на 10000 фигур
@@ -219,7 +219,7 @@ fn test_edge_cases_bag_10000_shapes() {
         assert!((shape as usize) < 7);
     }
 
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 20: Проверка что скорость не превышает разумные пределы
@@ -278,7 +278,7 @@ fn test_edge_cases_all_seven_in_bag() {
         found[shape as usize] = true;
     }
 
-    for (_i, &f) in found.iter().enumerate() {
+    for &f in found.iter() {
         assert!(f);
     }
 }
@@ -405,7 +405,7 @@ fn test_edge_cases_bag_100k_no_panic() {
         let _ = bag.next_shape();
     }
 
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 34: Проверка что hold не паникует при повторном вызове
@@ -436,7 +436,7 @@ fn test_edge_cases_o_rotation_no_panic() {
 fn test_edge_cases_get_blocks_no_panic() {
     let state = GameState::new();
     let _blocks = state.get_blocks();
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 37: Проверка что get_stats не паникует
@@ -444,7 +444,7 @@ fn test_edge_cases_get_blocks_no_panic() {
 fn test_edge_cases_get_stats_no_panic() {
     let state = GameState::new();
     let _stats = state.get_stats();
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 38: Проверка что get_next_shape не паникует
@@ -452,7 +452,7 @@ fn test_edge_cases_get_stats_no_panic() {
 fn test_edge_cases_get_next_shape_no_panic() {
     let state = GameState::new();
     let _next = state.get_next_shape();
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 39: Проверка что get_curr_shape не паникует
@@ -460,7 +460,7 @@ fn test_edge_cases_get_next_shape_no_panic() {
 fn test_edge_cases_get_curr_shape_no_panic() {
     let state = GameState::new();
     let _curr = state.get_curr_shape();
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 40: Проверка что get_held_shape не паникует
@@ -468,7 +468,7 @@ fn test_edge_cases_get_curr_shape_no_panic() {
 fn test_edge_cases_get_held_shape_no_panic() {
     let state = GameState::new();
     let _held = state.get_held_shape();
-    assert!(true);
+    // Тест успешно завершён, если код достиг этой строки
 }
 
 // ============================================================================

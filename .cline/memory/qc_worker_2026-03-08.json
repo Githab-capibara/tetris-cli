@@ -3,188 +3,119 @@
   "score": 72,
   "critical_issues": [
     {
-      "type": "logic",
-      "file": "src/game.rs",
-      "line": "897-901",
-      "description": "В методе check_rows() используется неэффективный алгоритм удаления линий. После копирования строк в new_blocks, верхние строки остаются заполненными -1, но это работает корректно. Однако алгоритм можно оптимизировать.",
-      "fix_suggestion": "Алгоритм работает корректно, но можно использовать Vec::retain() или более идиоматичный подход для удаления строк"
+      "type": "security",
+      "file": "src/highscore.rs",
+      "line": "55-60",
+      "description": "Используется DefaultHasher для хеширования рекордов. DefaultHasher не является криптографически стойким и предназначен только для внутренних структур данных. Это позволяет злоумышленнику легко подделывать рекорды, подобрав коллизию хеша.",
+      "fix_suggestion": "Заменить DefaultHasher на криптографическую хеш-функцию, например SHA-256 (crate 'sha2') или BLAKE3 (crate 'blake3'). Пример: использовать blake3::hash() для вычисления хеша."
     },
     {
       "type": "logic",
       "file": "src/game.rs",
-      "line": "1056-1067",
-      "description": "В draw_ghost_shape() используется копирование Tetromino через присваивание. Хотя Tetromino реализует Copy, это может вводить в заблуждение. Комментарий утверждает 'clone не вызывается', но это неочевидно.",
-      "fix_suggestion": "Использовать явное копирование: let ghost_shape = self.curr_shape; // Tetromino: Copy"
+      "line": "950-970",
+      "description": "В функции check_rows() используется неэффективный алгоритм удаления линий. rows_to_remove.contains(&read_idx) имеет сложность O(n) и вызывается в цикле, что даёт общую сложность O(n²). При большом поле это может вызвать заметные задержки.",
+      "fix_suggestion": "Использовать HashSet для rows_to_remove для проверки за O(1), или переписать алгоритм на использование двух указателей (read/write) без проверки contains()."
+    },
+    {
+      "type": "logic",
+      "file": "src/io.rs",
+      "line": "175-180",
+      "description": "Функция get_key() возвращает 0 при любой ошибке чтения, скрывая реальные проблемы (например, EOF, broken pipe). Это затрудняет отладку и может привести к некорректной обработке ввода.",
+      "fix_suggestion": "Вернуть Result<u8, io::Error> или использовать Option<u8> для явного указания на возможность отсутствия ввода. Логировать ошибки через eprintln! перед возвратом 0."
     },
     {
       "type": "security",
-      "file": "src/highscore.rs",
-      "line": "12-15",
-      "description": "Используется DefaultHasher для хеширования рекордов. DefaultHasher НЕ является криптографически стойким и уязвим для коллизий. Защита от подделки слабая.",
-      "fix_suggestion": "Использовать криптографическую хеш-функцию (SHA-256 через sha2 crate или BLAKE3 через blake3 crate)"
+      "file": "src/io.rs",
+      "line": "95-130",
+      "description": "Отсутствует обработка паник для сброса терминала из raw-режима. Если программа паникует во время игры, терминал останется в raw-режиме, что сделает его непригодным для использования.",
+      "fix_suggestion": "Использовать std::panic::catch_unwind или установить panic hook через std::panic::set_hook() для сброса терминала перед паникой. Альтернативно, использовать RAII-паттерн с Drop для Canvas."
     }
   ],
   "minor_issues": [
     {
       "type": "style",
       "file": "src/game.rs",
-      "line": "1596-1599",
-      "description": "Clippy: assert!(true) на константах будет оптимизирован компилятором. SPD_INC > 0.0 && SPD_INC < 1.0 всегда true.",
-      "fix_suggestion": "Удалить этот assert или использовать debug_assert!() для отладочных проверок"
+      "line": "850-1050",
+      "description": "Функция check_rows() имеет размер более 200 строк и выполняет множество различных задач (поиск линий, анимация, звук, удаление, начисление очков). Это нарушает принцип единственной ответственности (SRP).",
+      "fix_suggestion": "Разделить функцию на меньшие: find_filled_rows(), animate_row_removal(), remove_rows(), update_score_for_lines()."
+    },
+    {
+      "type": "performance",
+      "file": "src/game.rs",
+      "line": "1050-1060",
+      "description": "В функции draw() вызов SystemTime::now() происходит каждый кадр для анимации Hard Drop. Это системный вызов, который может быть медленным при частом выполнении (60 раз в секунду).",
+      "fix_suggestion": "Кэшировать время в GameState и обновлять его раз в кадр в update(), использовать Instant::now() вместо SystemTime::now() для интервалов."
     },
     {
       "type": "style",
       "file": "src/game.rs",
-      "line": "1755",
-      "description": "Clippy: операция умножения на 1 не имеет эффекта (COMBO_BONUS * 1).",
-      "fix_suggestion": "Заменить на COMBO_BONUS без умножения"
+      "line": "1055",
+      "description": "Используется unwrap() для обработки результата duration_since(). Хотя комментарий утверждает, что отрицательные значения невозможны, это всё равно потенциальная паника.",
+      "fix_suggestion": "Использовать unwrap_or(Duration::ZERO) уже сделано, но лучше использовать saturating_duration_since() для явной обработки."
     },
     {
       "type": "style",
-      "file": "src/tetromino.rs",
-      "line": "573-574",
-      "description": "Clippy: операции 0 + 1 и (9 / 10) + 1 не имеют эффекта в тестах уровня.",
-      "fix_suggestion": "Заменить на прямые значения 1"
+      "file": "src/main.rs",
+      "line": "764-800",
+      "description": "В функции get_player_name() используется магическое число 127 для Backspace. Хотя это ASCII-код, лучше использовать именованную константу.",
+      "fix_suggestion": "Добавить константу const KEY_BACKSPACE: u8 = 127; в начало файла или модуль констант."
     },
     {
       "type": "style",
-      "file": "src/testes/test_bag_system.rs",
-      "line": "178-182",
-      "description": "Clippy: неиспользуемые переменные bag и run. Переменная bag объявлена как mut, но не изменяется.",
-      "fix_suggestion": "Префиксировать переменные подчёркиванием: _bag, _run или удалить если не нужны"
-    },
-    {
-      "type": "style",
-      "file": "src/testes/test_game_movement.rs",
-      "line": "825",
-      "description": "Clippy: неиспользуемая переменная initial_x.",
-      "fix_suggestion": "Префиксировать: let _initial_x = ..."
-    },
-    {
-      "type": "style",
-      "file": "src/testes/test_game_rotation.rs",
-      "line": "936",
-      "description": "Clippy: неиспользуемая переменная coords_after_right.",
-      "fix_suggestion": "Префиксировать: let _coords_after_right = ..."
+      "file": "src/testes/test_animation.rs",
+      "line": "354-425",
+      "description": "Множественные вызовы .clone() на типе Tetromino, который реализует Copy. Clippy предупреждает об этом (clippy::clone_on_copy).",
+      "fix_suggestion": "Заменить .clone() на разыменование *: let ghost = *state.get_curr_shape(); или использовать копирование напрямую."
     },
     {
       "type": "style",
       "file": "src/testes/test_integration_extended.rs",
       "line": "423",
-      "description": "Clippy: переменная state объявлена как mut, но не изменяется.",
+      "description": "Переменная объявлена как mut, но не изменяется. Clippy предупреждение (unused_mut).",
       "fix_suggestion": "Убрать mut: let state = GameState::new();"
     },
     {
       "type": "style",
       "file": "src/testes/test_achievements.rs",
       "line": "336",
-      "description": "Clippy: использование len() >= 1 вместо is_empty().",
-      "fix_suggestion": "Заменить на !achievements.is_empty()"
+      "description": "Используется assertions len() >= 1 вместо более идиоматичного !is_empty(). Clippy предупреждение (clippy::len_zero).",
+      "fix_suggestion": "Заменить на: assert!(!achievements.is_empty(), ...);"
     },
     {
       "type": "style",
       "file": "src/testes/test_game_logic.rs",
-      "line": "240, 421, 453",
-      "description": "Clippy: clone() на типе Tetromino который реализует Copy.",
-      "fix_suggestion": "Использовать разыменование: *state.get_curr_shape()"
+      "line": "464,467,491",
+      "description": "Identity operations в assert_eq! (COMBO_BONUS * 1, 0 + 1). Clippy предупреждение (clippy::identity_op).",
+      "fix_suggestion": "Убрать лишние операции: assert_eq!(COMBO_BONUS, 50, ...); assert_eq!(1, 1, ...);"
     },
     {
-      "type": "style",
-      "file": "src/testes/test_animation.rs",
-      "line": "26, 126, 180, 188",
-      "description": "Clippy: assert!(true) всегда истинно и будет оптимизировано.",
-      "fix_suggestion": "Заменить на реальные проверки или удалить тесты-заглушки"
+      "type": "readability",
+      "file": "src/game.rs",
+      "line": "1-50",
+      "description": "Смешение языков в комментариях: некоторые комментарии на русском, некоторые на английском. Например, константы названы на английском (INITIAL_FALL_SPD), но комментарии к ним на русском.",
+      "fix_suggestion": "Унифицировать язык комментариев. Рекомендуется русский для согласованности с документацией проекта."
+    },
+    {
+      "type": "readability",
+      "file": "src/lib.rs",
+      "line": "280-320",
+      "description": "Модуль testes содержит дублирующиеся тестовые модули: test_edge_cases и test_edge_cases_stress, test_integration и test_integration_extended. Это создаёт путаницу.",
+      "fix_suggestion": "Объединить дублирующиеся модули или явно документировать разницу между ними."
+    },
+    {
+      "type": "performance",
+      "file": "src/game.rs",
+      "line": "920-930",
+      "description": "В функции hold_shape() создаётся копия current_shape, хотя можно использовать swap для обмена с held_shape.",
+      "fix_suggestion": "Использовать std::mem::swap для более эффективного обмена: std::mem::swap(&mut self.curr_shape, &mut self.held_shape);"
     },
     {
       "type": "logic",
       "file": "src/game.rs",
-      "line": "730-745",
-      "description": "В update() проверка проигрыша использует блок фигуры с y <= 1. Это может быть слишком строго - некоторые фигуры могут иметь блоки выше центра.",
-      "fix_suggestion": "Проверять конкретные координаты каждого блока фигуры после приземления"
-    },
-    {
-      "type": "style",
-      "file": "src/main.rs",
-      "line": "1-1132",
-      "description": "Файл main.rs содержит 1132 строки, что превышает рекомендуемый лимит в 500 строк. Функция main() очень длинная.",
-      "fix_suggestion": "Вынести логику меню в отдельный модуль menu.rs, разбить main() на подфункции"
-    },
-    {
-      "type": "style",
-      "file": "src/game.rs",
-      "line": "1-1832",
-      "description": "Файл game.rs содержит 1832 строки - это очень большой файл. Метод play() и update() слишком длинные.",
-      "fix_suggestion": "Разделить на модули: game/state.rs, game/loop.rs, game/physics.rs, game/scoring.rs"
-    },
-    {
-      "type": "style",
-      "file": "src/tetromino.rs",
-      "line": "1-1271",
-      "description": "Файл tetromino.rs содержит 1271 строку, включая 40 тестов внутри модуля. Тесты смешаны с кодом.",
-      "fix_suggestion": "Вынести тесты в отдельные файлы в src/testes/, оставить только юнит-тесты в #[cfg(test)]"
-    },
-    {
-      "type": "logic",
-      "file": "src/io.rs",
-      "line": "283-290",
-      "description": "KeyReader::get_key() возвращает 0 при ошибке чтения, что может маскировать реальные проблемы с вводом.",
-      "fix_suggestion": "Возвращать Option<u8> или Result<u8, Error> для явной обработки ошибок"
-    },
-    {
-      "type": "style",
-      "file": "src/highscore.rs",
-      "line": "1-319",
-      "description": "В модуле highscore.rs смешаны SaveData, LeaderboardEntry, Leaderboard и ControlsConfig. Последняя относится к модулю controls.",
-      "fix_suggestion": "Убрать упоминание ControlsConfig из документации highscore.rs"
-    },
-    {
-      "type": "logic",
-      "file": "src/game.rs",
-      "line": "1020-1028",
-      "description": "Анимация Hard Drop использует SystemTime::now() для мигания. Это создаёт зависимость от системного времени и может быть некорректным.",
-      "fix_suggestion": "Использовать Instant::now() и frames для детерминированной анимации"
-    },
-    {
-      "type": "style",
-      "file": "src/main.rs",
-      "line": "570-650",
-      "description": "Функция main() содержит более 200 строк кода с вложенными match и циклами. Нарушает принцип единственной ответственности.",
-      "fix_suggestion": "Вынести: load_save_data(), check_terminal_size(), init_io(), menu_loop(), handle_game_end()"
-    },
-    {
-      "type": "logic",
-      "file": "src/game.rs",
-      "line": "650-680",
-      "description": "Метод hold_shape() меняет curr_shape и next_shape, но не проверяет можно ли вообще удерживать фигуру. Проверка делается в update().",
-      "fix_suggestion": "Добавить проверку can_hold внутри hold_shape() или вернуть Result"
-    },
-    {
-      "type": "style",
-      "file": "src/controls.rs",
-      "line": "1-412",
-      "description": "Модуль controls.rs не используется в основном коде игры. Конфигурация управления не применяется в game.rs или main.rs.",
-      "fix_suggestion": "Интегрировать ControlsConfig в игру или удалить неиспользуемый код"
-    },
-    {
-      "type": "logic",
-      "file": "src/game.rs",
-      "line": "1180-1200",
-      "description": "Метод check_collision() не проверяет отрицательные Y координаты корректно. Блоки выше поля (y < 0) не проверяются на столкновения.",
-      "fix_suggestion": "Добавить проверку check_y < 0 для полного обнаружения столкновений"
+      "line": "850-860",
+      "description": "В функции hold_shape() после обмена фигуры позиция сбрасывается на (4.0, 0.0), но не проверяется возможность размещения новой фигуры в этой позиции. Это может привести к немедленному проигрышу.",
+      "fix_suggestion": "Добавить проверку can_move_curr_shape() после сброса позиции. Если позиция недоступна, сдвинуть фигуру вверх или завершить игру."
     }
   ],
-  "verdict": "Код проекта tetris-cli находится в рабочем состоянии (компилируется, все 87 тестов проходят), но имеет ряд проблем:\n\n**Критические проблемы (3):**\n1. DefaultHasher в highscore.rs не является криптографически стойким - защита рекордов слабая\n2. Неэффективный алгоритм удаления линий в check_rows()\n3. Проверка проигрыша может быть некорректной для некоторых позиций фигур\n\n**Серьёзные проблемы (19):**\n- 20 предупреждений Clippy (неиспользуемые переменные, избыточные операции, clone на Copy типах)\n- Файлы чрезмерного размера: main.rs (1132 строк), game.rs (1832 строк), tetromino.rs (1271 строк)\n- Функция main() >200 строк с высокой цикломатической сложностью\n- Модуль controls.rs не интегрирован в основной код\n- Анимация Hard Drop использует SystemTime вместо Instant\n- get_key() возвращает 0 при ошибке вместо Option/Result\n\n**Статистика проекта:**\n- Всего строк кода: 22,370 (включая тесты)\n- Основной код: ~5,900 строк\n- Тесты: ~16,470 строк (34 тестовых файла)\n- Файлов: 40 (.rs файлы)\n- Функций/методов: ~150+\n- Тестов: 87 (все проходят)\n- Doc-тестов: 31 (все проходят)\n\n**Рекомендации по приоритетам:**\n1. Исправить security issue с DefaultHasher (заменить на SHA-256)\n2. Устранить все предупреждения Clippy\n3. Рефакторинг: разбить большие файлы на модули\n4. Интегрировать controls.rs или удалить\n5. Улучшить обработку ошибок в io.rs\n6. Оптимизировать check_rows() алгоритм",
-  "statistics": {
-    "total_lines": 22370,
-    "main_code_lines": 5902,
-    "test_lines": 16468,
-    "files_count": 40,
-    "functions_count": 150,
-    "tests_count": 87,
-    "doc_tests_count": 31,
-    "clippy_warnings": 20,
-    "fmt_issues": 0,
-    "build_status": "success",
-    "test_status": "all_passed"
-  }
+  "verdict": "Код проекта tetris-cli имеет хорошее качество документации и структуры, но содержит критические проблемы безопасности и несколько логических ошибок.\n\nКРИТИЧЕСКИЕ ПРОБЛЕМЫ:\n1. DefaultHasher в highscore.rs не обеспечивает защиту от подделки рекордов\n2. Неэффективный алгоритм удаления линий O(n²) в check_rows()\n3. Скрытие ошибок ввода в get_key()\n4. Отсутствие обработки паник для сброса терминала\n\nМИНОРНЫЕ ПРОБЛЕМЫ:\n- Нарушение принципа единственной ответственности в check_rows()\n- Неоптимальные вызовы SystemTime::now() в цикле отрисовки\n- Множественные предупреждения Clippy в тестах (clone на Copy типах, unused_mut)\n- Смешение языков в комментариях\n- Дублирующиеся тестовые модули\n\nРЕКОМЕНДАЦИИ:\n1. Заменить DefaultHasher на BLAKE3 или SHA-256\n2. Оптимизировать алгоритм удаления линий\n3. Добавить panic hook для сброса терминала\n4. Исправить все предупреждения Clippy\n5. Рефакторить большие функции\n6. Унифицировать язык комментариев\n\nОценка: 72/100 (fail из-за критических уязвимостей безопасности)"
 }
