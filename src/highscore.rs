@@ -90,7 +90,13 @@ impl SaveData {
     /// # Возвращает
     /// SaveData по умолчанию при ошибке загрузки
     pub fn load_config() -> Self {
-        load(APP_NAME).unwrap_or_default()
+        match load(APP_NAME) {
+            Ok(data) => data,
+            Err(e) => {
+                eprintln!("Предупреждение: не удалось загрузить конфигурацию рекордов: {}. Используется значение по умолчанию.", e);
+                Self::default()
+            }
+        }
     }
 
     /// Создать SaveData из значения рекорда.
@@ -218,7 +224,13 @@ impl Leaderboard {
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
     pub fn load() -> Self {
-        load(&format!("{}_leaderboard", APP_NAME)).unwrap_or_default()
+        match load(&format!("{}_leaderboard", APP_NAME)) {
+            Ok(leaderboard) => leaderboard,
+            Err(e) => {
+                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {}. Используется пустая таблица.", e);
+                Self::default()
+            }
+        }
     }
 
     /// Сохранить таблицу лидеров в файл конфигурации.

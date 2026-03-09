@@ -418,7 +418,7 @@ fn test_hold_reset_after_new_turn() {
 #[test]
 fn test_ghost_piece_position() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
@@ -450,7 +450,7 @@ fn test_ghost_piece_floor_detection() {
     }
 
     // Создаём призрачную фигуру на той же позиции
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура не должна иметь возможность движения вниз
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);

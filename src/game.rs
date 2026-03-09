@@ -1024,10 +1024,9 @@ impl GameState {
         // Кэшируем время один раз для всех блоков фигуры (оптимизация)
         let shape_symbol = if self.is_hard_dropping {
             // Мигание: чередуем символы каждые 50 мс
-            let millis = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_millis() as u16)
-                .unwrap_or(0);
+            // Используем время от начала игры для анимации
+            let animation_time = self.stats.get_elapsed_time();
+            let millis = (animation_time * 1000.0) as u16;
             if (millis / 50).is_multiple_of(2) {
                 SHAPE_STR
             } else {
@@ -1306,48 +1305,54 @@ impl GameState {
 
     /// Получить текущий уровень.
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_level(&self) -> u32 {
         self.level
     }
 
     /// Получить количество удалённых линий.
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 
     /// Получить следующую фигуру.
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_next_shape(&self) -> &Tetromino {
         &self.next_shape
     }
 
     /// Получить текущий счёт.
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_score(&self) -> u64 {
         self.score
     }
 
     /// Получить скорость падения.
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_fall_spd(&self) -> f32 {
         self.fall_spd
     }
 
     /// Получить игровое поле (для тестов).
     #[allow(dead_code)]
+    #[cfg(test)]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
 
     /// Получить статистику игры.
-    #[allow(dead_code)]
+    #[must_use]
     pub fn get_stats(&self) -> &GameStats {
         &self.stats
     }
 
     /// Получить режим игры.
-    #[allow(dead_code)]
+    #[must_use]
     pub fn get_mode(&self) -> GameMode {
         self.mode
     }
@@ -1582,10 +1587,8 @@ mod game_tests {
 
         // Проверяем константу увеличения скорости за уровень
         // SPD_INC = 0.05, что больше 0
-        assert!(
-            SPD_INC > 0.0 && SPD_INC < 1.0,
-            "Прирост скорости за уровень должен быть положительным и меньше 1"
-        );
+        // Проверка константы времени компиляции
+        const _: () = assert!(SPD_INC > 0.0 && SPD_INC < 1.0, "Прирост скорости за уровень должен быть положительным и меньше 1");
     }
 
     /// Тест 6: Проверка начисления 1 очка за ячейку при Soft Drop

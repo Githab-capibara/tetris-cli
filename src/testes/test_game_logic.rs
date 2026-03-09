@@ -237,7 +237,7 @@ fn test_movement_in_empty_field() {
 #[test]
 fn test_ghost_piece_boundary() {
     let state = GameState::new();
-    let ghost_shape = state.get_curr_shape().clone();
+    let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
     let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
@@ -461,10 +461,10 @@ fn test_combo_bonus_constant() {
 
     // Проверяем формулу расчёта бонуса
     // Комбо 1: 50 * 0 = 0
-    assert_eq!(COMBO_BONUS * 1, 50, "Бонус за первое комбо должен быть 50");
+    assert_eq!(COMBO_BONUS, 50, "Бонус за первое комбо должен быть 50");
 
     // Комбо 2: 50 * 1 = 50
-    assert_eq!(COMBO_BONUS * 1, 50, "Бонус за второе комбо должен быть 50");
+    assert_eq!(COMBO_BONUS, 50, "Бонус за второе комбо должен быть 50");
 
     // Комбо 5: 50 * 4 = 200
     assert_eq!(COMBO_BONUS * 4, 200, "Бонус за пятое комбо должен быть 200");
@@ -488,7 +488,7 @@ fn test_lines_per_level_constant() {
 #[test]
 fn test_level_calculation_from_lines() {
     // Уровень 1: 0-9 линий
-    assert_eq!(0 + 1, 1, "0 линий = уровень 1");
+    assert_eq!(1, 1, "0 линий = уровень 1");
     assert_eq!((9 / LINES_PER_LEVEL) + 1, 1, "9 линий = уровень 1");
 
     // Уровень 2: 10-19 линий
@@ -506,10 +506,8 @@ fn test_level_calculation_from_lines() {
 #[test]
 fn test_speed_increase_constant() {
     // SPD_INC = 0.05, проверяем что это положительное число меньше 1
-    assert!(
-        SPD_INC > 0.0 && SPD_INC < 1.0,
-        "Прирост скорости должен быть положительным и меньше 1"
-    );
+    // Проверка константы времени компиляции
+    const _: () = assert!(SPD_INC > 0.0 && SPD_INC < 1.0, "Прирост скорости должен быть положительным и меньше 1");
     assert!(
         (SPD_INC - 0.05).abs() < f32::EPSILON,
         "Прирост скорости должен быть 0.05"

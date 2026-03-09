@@ -428,9 +428,9 @@ fn test_collision_new_above_fixed() {
 
     // В начале игры поле пустое
     let blocks = state.get_blocks();
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            assert_eq!(blocks[y][x], -1, "Поле должно быть пустым");
+    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
+        for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
+            assert_eq!(cell, -1, "Поле должно быть пустым [{},{}]", y, x);
         }
     }
 }
@@ -752,7 +752,7 @@ fn test_collision_bottom_right_corner() {
 #[test]
 fn test_collision_ghost_piece() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     let can_move = state.can_move_ghost_shape(&ghost, Dir::Down);
     assert!(

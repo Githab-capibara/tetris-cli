@@ -333,7 +333,7 @@ fn test_multiple_achievements_at_once() {
 
     // Должно быть 2 достижения: Tetris и Комбо (спринт уже был в total_lines)
     assert!(
-        achievements.len() >= 1,
+        !achievements.is_empty(),
         "Должно быть получено хотя бы 1 достижение"
     );
 }

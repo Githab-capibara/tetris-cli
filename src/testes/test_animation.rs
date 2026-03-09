@@ -351,7 +351,7 @@ fn test_animation_after_rotation() {
 #[test]
 fn test_animation_ghost_same_x() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     assert_eq!(ghost.pos.0, state.get_curr_shape().pos.0);
 }
@@ -360,7 +360,7 @@ fn test_animation_ghost_same_x() {
 #[test]
 fn test_animation_ghost_same_y() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     assert_eq!(ghost.pos.1, state.get_curr_shape().pos.1);
 }
@@ -369,7 +369,7 @@ fn test_animation_ghost_same_y() {
 #[test]
 fn test_animation_ghost_same_coords() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     assert_eq!(ghost.coords, state.get_curr_shape().coords);
 }
@@ -378,7 +378,7 @@ fn test_animation_ghost_same_coords() {
 #[test]
 fn test_animation_ghost_same_type() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     assert_eq!(ghost.shape, state.get_curr_shape().shape);
 }
@@ -387,7 +387,7 @@ fn test_animation_ghost_same_type() {
 #[test]
 fn test_animation_ghost_same_color() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     assert_eq!(ghost.fg, state.get_curr_shape().fg);
 }
@@ -396,7 +396,7 @@ fn test_animation_ghost_same_color() {
 #[test]
 fn test_animation_can_move_ghost_shape() {
     let state = GameState::new();
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
 
     let can_move = state.can_move_ghost_shape(&ghost, crate::game::Dir::Down);
     assert!(can_move);
@@ -422,7 +422,7 @@ fn test_animation_ghost_all_shapes() {
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
-        let ghost = state.get_curr_shape().clone();
+        let ghost = *state.get_curr_shape();
         let can_move = state.can_move_ghost_shape(&ghost, crate::game::Dir::Down);
 
         assert!(can_move);
@@ -439,7 +439,7 @@ fn test_animation_ghost_after_movement() {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
     let can_move = state.can_move_ghost_shape(&ghost, crate::game::Dir::Down);
 
     assert!(can_move);
@@ -455,7 +455,7 @@ fn test_animation_ghost_after_rotation() {
         state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
     }
 
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
     let can_move = state.can_move_ghost_shape(&ghost, crate::game::Dir::Down);
 
     assert!(can_move);
@@ -471,7 +471,7 @@ fn test_animation_ghost_on_floor() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let ghost = state.get_curr_shape().clone();
+    let ghost = *state.get_curr_shape();
     let can_move = state.can_move_ghost_shape(&ghost, crate::game::Dir::Down);
 
     assert!(!can_move);

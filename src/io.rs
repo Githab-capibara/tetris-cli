@@ -141,22 +141,34 @@ impl Canvas {
             Ok(term) => term,
             Err(e) => {
                 eprintln!("Ошибка: не удалось перейти в raw-режим терминала: {}", e);
+                // Явный сброс терминала перед выходом
+                let _ = write!(stdout(), "{}", Show);
+                let _ = stdout().flush();
                 std::process::exit(1);
             }
         };
 
         if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
             eprintln!("Ошибка: не удалось очистить экран: {}", e);
+            // Явный сброс терминала перед выходом
+            let _ = write!(out, "{}", Show);
+            let _ = out.flush();
             std::process::exit(1);
         }
 
         if let Err(e) = out.flush() {
             eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+            // Явный сброс терминала перед выходом
+            let _ = write!(out, "{}", Show);
+            let _ = out.flush();
             std::process::exit(1);
         }
 
         if let Err(e) = write!(out, "{}", Hide) {
             eprintln!("Ошибка: не удалось скрыть курсор: {}", e);
+            // Явный сброс терминала перед выходом
+            let _ = write!(out, "{}", Show);
+            let _ = out.flush();
             std::process::exit(1);
         }
 
