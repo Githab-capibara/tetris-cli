@@ -276,6 +276,7 @@ impl Canvas {
 /// Читатель нажатий клавиш в асинхронном режиме.
 ///
 /// Использует async_stdin для неблокирующего чтения клавиатуры.
+/// Поддерживает обработку ESC-последовательностей для специальных клавиш.
 ///
 /// ## Пример использования
 /// ```
@@ -329,13 +330,97 @@ impl KeyReader {
     ///
     /// # Примечания
     /// - Возвращает 0, если клавиша не была нажата
-    /// - Для специальных клавиш (стрелки, Backspace) могут возвращаться
-    ///   последовательности байтов
+    /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности
+    ///   (обычно 27 = ESC). Для полной обработки нужно использовать get_key_extended().
     pub fn get_key(&mut self) -> u8 {
         let mut key_bytes: [u8; 1] = [0];
         match self.inp.read_exact(&mut key_bytes) {
             Ok(_) => key_bytes[0],
             Err(_) => 0,
         }
+    }
+
+    /// Получить код нажатой клавиши с обработкой ESC-последовательностей.
+    ///
+    /// # Возвращает
+    /// - ASCII код клавиши (a-z, 0-9, и т.д.)
+    /// - Специальные коды:
+    ///   - 27 (ESC) - клавиша Escape
+    ///   - 256-259 - стрелки (Up, Down, Left, Right)
+    ///   - 260 - Home
+    ///   - 261 - End
+    ///   - 0 - ошибка или нет нажатий
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::io::KeyReader;
+    ///
+    /// let mut reader = KeyReader::new();
+    /// let key = reader.get_key_extended();
+    ///
+    /// match key {
+    ///     256 => println!("Стрелка вверх"),
+    ///     257 => println!("Стрелка вниз"),
+    ///     b'q' => println!("Выход"),
+    ///     _ => {}
+    /// }
+    /// ```
+    #[allow(dead_code)]
+    pub fn get_key_extended(&mut self) -> u16 {
+        let mut buffer = [0u8; 3];
+        
+        // Читаем первый байт
+        match self.inp.read_exact(&mut buffer[0..1]) {
+            Ok(_) => {}
+            Err(_) => return 0,
+        }
+        
+        // Если это ESC, читаем последовательность
+        if buffer[0] == 27 {
+            // Пытаемся прочитать второй байт (неблокирующе)
+            let mut second_byte = [0u8; 1];
+            match self.inp.read_exact(&mut second_byte) {
+                Ok(_) => {
+                    buffer[1] = second_byte[0];
+                    
+                    // Если второй байт '[' или 'O', читаем третий
+                    if buffer[1] == b'[' || buffer[1] == b'O' {
+                        let mut third_byte = [0u8; 1];
+                        match self.inp.read_exact(&mut third_byte) {
+                            Ok(_) => buffer[2] = third_byte[0],
+                            Err(_) => return 27, // Только ESC
+                        }
+                    }
+                    
+                    // Обрабатываем ESC-последовательности
+                    match buffer[1] {
+                        b'[' => {
+                            match buffer[2] {
+                                b'A' => return 256, // Стрелка вверх
+                                b'B' => return 257, // Стрелка вниз
+                                b'C' => return 258, // Стрелка вправо
+                                b'D' => return 259, // Стрелка влево
+                                b'H' => return 260, // Home
+                                b'F' => return 261, // End
+                                _ => return 27, // Неизвестная последовательность
+                            }
+                        }
+                        b'O' => {
+                            match buffer[2] {
+                                b'A' => return 256, // Стрелка вверх (альтернативная)
+                                b'B' => return 257, // Стрелка вниз (альтернативная)
+                                b'C' => return 258, // Стрелка вправо (альтернативная)
+                                b'D' => return 259, // Стрелка влево (альтернативная)
+                                _ => return 27,
+                            }
+                        }
+                        _ => return 27,
+                    }
+                }
+                Err(_) => return 27, // Только ESC
+            }
+        }
+        
+        buffer[0] as u16
     }
 }

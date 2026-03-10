@@ -737,9 +737,6 @@ impl GameState {
                 self.soft_drop_distance = 0;
             }
 
-            // Обновление статистики
-            self.stats.add_piece(self.curr_shape.shape);
-
             // Сохранение фигуры в сетке поля
             self.save_tetromino();
             // Проверка и удаление заполненных линий с передачей комбо

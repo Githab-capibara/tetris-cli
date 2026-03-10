@@ -235,6 +235,9 @@ pub enum ShapeType {
 
 /// Распределение для случайного выбора фигуры.
 ///
+/// **УСТАРЕВШЕЕ**: Используйте BagGenerator для честной генерации фигур.
+/// Этот метод оставлен только для обратной совместимости и тестов.
+///
 /// Реализует равномерное распределение: каждая из 7 фигур
 /// выбирается с вероятностью 1/7 (~14.28%).
 ///
@@ -243,7 +246,7 @@ pub enum ShapeType {
 /// use rand::{random, Rng};
 /// use tetris_cli::tetromino::ShapeType;
 ///
-/// let shape: ShapeType = random(); // Случайная фигура
+/// let shape: ShapeType = random(); // Случайная фигура (не рекомендуется)
 /// ```
 impl Distribution<ShapeType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ShapeType {
@@ -255,7 +258,8 @@ impl Distribution<ShapeType> for Standard {
             4 => ShapeType::Z,
             5 => ShapeType::O,
             6 => ShapeType::I,
-            _ => unreachable!("Неверный диапазон фигуры"),
+            // Достижимо только при повреждении rng
+            _ => ShapeType::T,
         }
     }
 }

@@ -501,63 +501,22 @@ fn main() {
             // ===========================================================
             b'\n' | b'\r' => {
                 // Создаём новое состояние игры для классического режима
-                // GameState::new() инициализирует:
-                // - score: 0, level: 1, lines_cleared: 0
-                // - curr_shape, next_shape из Bag Generator
-                // - held_shape: None, can_hold: true
-                // - blocks: пустое поле (-1)
-                // - mode: GameMode::Classic
-                let mut state = GameState::new();
+                let state = GameState::new();
 
-                // Запуск таймера игры
-                // start_timer() сохраняет Instant::now() в stats.start_time
-                state.start_timer();
+                // Запуск игрового режима с сохранением в таблицу лидеров
+                let new_score = run_game_mode(
+                    &mut cnv,
+                    &mut inp,
+                    &hs_str,
+                    state,
+                    true, // Сохранять в таблицу лидеров
+                    &mut leaderboard,
+                );
 
-                // Запуск игрового цикла
-                // play() работает до проигрыша или выхода (Backspace)
-                // Возвращает финальный счёт (0 если вышел досрочно)
-                let new_score = state.play(&mut cnv, &mut inp, hs_str.as_str());
-
-                // Отображение статистики после завершения игры
-                // show_game_stats() показывает:
-                // - Время игры, уровень, линии
-                // - Количество фигур каждого типа
-                // - Максимальное комбо
-                show_game_stats(&mut cnv, &mut inp, &state);
-
-                // Сохранение рекорда если игрок набрал очки
-                if new_score > 0 {
-                    // =======================================================
-                    // ДОБАВЛЕНИЕ В ТАБЛИЦУ ЛИДЕРОВ
-                    // =======================================================
-
-                    // Запрос имени игрока для таблицы лидеров
-                    // get_player_name() отображает поле ввода и ждёт Enter
-                    let name = get_player_name(&mut cnv, &mut inp);
-
-                    // Если имя не пустое (игрок не отменил ввод)
-                    if !name.is_empty() {
-                        // Добавление рекорда в таблицу лидеров
-                        // add_score() возвращает true если рекорд вошёл в топ-5
-                        leaderboard.add_score(name, new_score);
-
-                        // Сохранение обновлённой таблицы в файл конфигурации
-                        leaderboard.save();
-                    }
-
-                    // =======================================================
-                    // СОХРАНЕНИЕ ЛУЧШЕГО РЕКОРДА
-                    // =======================================================
-
-                    // Проверка: новый рекорд лучше текущего?
-                    if new_score > high_score {
-                        // Обновление лучшего рекорда
-                        high_score = new_score;
-
-                        // Сохранение рекорда в отдельный файл конфигурации
-                        // SaveData::save_value() создаёт SaveData с хэшем и солью
-                        SaveData::save_value(high_score);
-                    }
+                // Сохранение лучшего рекорда
+                if new_score > high_score {
+                    high_score = new_score;
+                    SaveData::save_value(high_score);
                 }
             }
 
@@ -566,20 +525,17 @@ fn main() {
             // ===========================================================
             b'r' => {
                 // Создаём состояние игры для режима спринт
-                // GameState::new_sprint() аналогично new(), но:
-                // - mode: GameMode::Sprint
-                // - цель: очистить 40 линий как можно быстрее
-                let mut state = GameState::new_sprint();
+                let state = GameState::new_sprint();
 
-                // Запуск таймера для отслеживания времени прохождения
-                state.start_timer();
-
-                // Запуск игрового цикла
-                // В режиме спринт play() завершается при достижении 40 линий
-                state.play(&mut cnv, &mut inp, hs_str.as_str());
-
-                // Отображение статистики после завершения игры
-                show_game_stats(&mut cnv, &mut inp, &state);
+                // Запуск игрового режима без сохранения в таблицу лидеров
+                run_game_mode(
+                    &mut cnv,
+                    &mut inp,
+                    &hs_str,
+                    state,
+                    false, // Не сохранять в таблицу лидеров
+                    &mut leaderboard,
+                );
             }
 
             // ===========================================================
@@ -587,21 +543,23 @@ fn main() {
             // ===========================================================
             b'm' => {
                 // Создаём состояние игры для режима марафон
-                // GameState::new_marathon() аналогично new(), но:
-                // - mode: GameMode::Marathon
-                // - цель: очистить 150 линий
-                // - сложность растёт быстрее (каждые 5 линий)
-                let mut state = GameState::new_marathon();
+                let state = GameState::new_marathon();
 
-                // Запуск таймера для отслеживания времени прохождения
-                state.start_timer();
+                // Запуск игрового режима с сохранением в таблицу лидеров
+                let new_score = run_game_mode(
+                    &mut cnv,
+                    &mut inp,
+                    &hs_str,
+                    state,
+                    true, // Сохранять в таблицу лидеров
+                    &mut leaderboard,
+                );
 
-                // Запуск игрового цикла
-                // В режиме марафон play() завершается при достижении 150 линий
-                state.play(&mut cnv, &mut inp, hs_str.as_str());
-
-                // Отображение статистики после завершения игры
-                show_game_stats(&mut cnv, &mut inp, &state);
+                // Сохранение лучшего рекорда
+                if new_score > high_score {
+                    high_score = new_score;
+                    SaveData::save_value(high_score);
+                }
             }
 
             // ===========================================================
@@ -646,6 +604,53 @@ fn main() {
 // ============================================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================================
+
+/// Запустить игровой режим и обработать результат.
+///
+/// # Аргументы
+/// * `cnv` - канвас для отрисовки
+/// * `inp` - читатель нажатий клавиш
+/// * `hs_str` - строка рекорда для отображения
+/// * `state` - состояние игры
+/// * `save_to_leaderboard` - сохранять ли в таблицу лидеров (true для классики)
+/// * `leaderboard` - таблица лидеров (изменяемая)
+///
+/// # Возвращает
+/// Финальный счёт игрока
+#[allow(dead_code)]
+fn run_game_mode(
+    cnv: &mut Canvas,
+    inp: &mut KeyReader,
+    hs_str: &str,
+    mut state: GameState,
+    save_to_leaderboard: bool,
+    leaderboard: &mut Leaderboard,
+) -> u64 {
+    // Запуск таймера
+    state.start_timer();
+
+    // Запуск игрового цикла
+    let new_score = state.play(cnv, inp, hs_str);
+
+    // Отображение статистики после завершения игры
+    show_game_stats(cnv, inp, &state);
+
+    // Сохранение рекорда если игрок набрал очки
+    if new_score > 0 && save_to_leaderboard {
+        // Запрос имени игрока для таблицы лидеров
+        let name = get_player_name(cnv, inp);
+
+        // Если имя не пустое (игрок не отменил ввод)
+        if !name.is_empty() {
+            // Добавление рекорда в таблицу лидеров
+            leaderboard.add_score(name, new_score);
+            // Сохранение обновлённой таблицы в файл конфигурации
+            leaderboard.save();
+        }
+    }
+
+    new_score
+}
 
 /// Запрос имени игрока после завершения игры.
 ///
