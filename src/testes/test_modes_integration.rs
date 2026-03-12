@@ -219,9 +219,9 @@ fn test_modes_integration_ghost_piece_in_all_modes() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
-    let ghost_classic = classic.get_curr_shape().clone();
-    let ghost_sprint = sprint.get_curr_shape().clone();
-    let ghost_marathon = marathon.get_curr_shape().clone();
+    let ghost_classic = *classic.get_curr_shape();
+    let ghost_sprint = *sprint.get_curr_shape();
+    let ghost_marathon = *marathon.get_curr_shape();
 
     assert!(
         classic.can_move_ghost_shape(&ghost_classic, Dir::Down),

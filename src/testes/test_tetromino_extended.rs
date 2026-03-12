@@ -780,8 +780,8 @@ fn test_extended_i_color_index() {
 #[test]
 fn test_extended_fg_matches_shape() {
     // Проверяем соответствие для всех 7 фигур
-    for i in 0..7 {
-        let shape = match i {
+    for (i, &shape) in SHAPE_COORDS.iter().enumerate() {
+        let shape_type = match i {
             0 => ShapeType::T,
             1 => ShapeType::L,
             2 => ShapeType::J,
@@ -794,8 +794,8 @@ fn test_extended_fg_matches_shape() {
 
         let t = Tetromino {
             pos: (4.0, 0.0),
-            shape,
-            coords: SHAPE_COORDS[i],
+            shape: shape_type,
+            coords: shape,
             fg: i,
         };
         assert_eq!(t.fg, t.shape as usize);
@@ -975,8 +975,8 @@ fn test_extended_bag_no_panic_many_calls() {
         let _ = bag.next_shape();
     }
 
-    // Тест прошёл если не было паники
-    assert!(true);
+    // Тест прошёл если не было паники - проверяем что индекс в допустимом диапазоне
+    assert!(bag.get_index() <= 7, "Индекс мешка должен быть в допустимых пределах");
 }
 
 /// Тест 74: Проверка что BagGenerator выдаёт фигуры в случайном порядке
@@ -1070,7 +1070,7 @@ fn test_extended_bag_with_all_types() {
         found[shape as usize] = true;
     }
 
-    for (_i, &f) in found.iter().enumerate() {
+    for &f in found.iter() {
         assert!(f, "Все типы фигур должны встретиться");
     }
 }

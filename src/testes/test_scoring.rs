@@ -229,7 +229,7 @@ fn test_scoring_combo_x1() {
 /// Тест 25: Проверка бонуса за комбо x2
 #[test]
 fn test_scoring_combo_x2() {
-    let bonus = COMBO_BONUS * 1;
+    let bonus = COMBO_BONUS;
     assert_eq!(bonus, 50, "Комбо x2 даёт 50 бонуса");
 }
 

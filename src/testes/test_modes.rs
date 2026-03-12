@@ -7,6 +7,7 @@
 
 use crate::game::{GameMode, GameState};
 use crate::game::{MARATHON_LINES, SPRINT_LINES};
+use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Classic режим
@@ -313,9 +314,9 @@ fn test_modes_marathon_empty_field() {
     let state = GameState::new_marathon();
     let blocks = state.get_blocks();
 
-    for y in 0..20 {
-        for x in 0..10 {
-            assert_eq!(blocks[y][x], -1);
+    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
+        for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
+            assert_eq!(cell, -1, "Клетка [{},{}] должна быть пустой", x, y);
         }
     }
 }

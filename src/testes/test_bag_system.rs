@@ -125,7 +125,7 @@ fn test_no_preference_in_distribution() {
     // T и I должны встречаться примерно одинаково часто
     // Допускаем отклонение до 30%
     let diff = (t_count as i32 - i_count as i32).abs();
-    let expected = 100; // 700 / 7 = 100
+    let expected: i32 = 100; // 700 / 7 = 100
 
     assert!(
         diff < expected / 2,
@@ -175,16 +175,15 @@ fn test_fisher_yates_creates_different_sequences() {
 /// Тест 8: Fisher-Yates гарантирует случайность
 #[test]
 fn test_fisher_yates_guarantees_randomness() {
-    let _bag = BagGenerator::new();
     let mut first_positions = [0; 7];
 
     // Запускаем 70 раз и смотрим, где появляется T
     for _run in 0..70 {
         let mut local_bag = BagGenerator::new();
-        for pos in 0..7 {
+        for pos in &mut first_positions {
             let shape = local_bag.next_shape();
             if shape == ShapeType::T {
-                first_positions[pos] += 1;
+                *pos += 1;
                 break;
             }
         }
@@ -542,7 +541,7 @@ fn test_t_piece_distribution_statistics() {
     // Ожидаем ~100 T-фигур (700/7)
     // Допускаем отклонение до 20%
     assert!(
-        t_count >= 70 && t_count <= 130,
+        (70..=130).contains(&t_count),
         "T-фигур должно быть около 100 (получено {})",
         t_count
     );
@@ -561,7 +560,7 @@ fn test_i_piece_distribution_statistics() {
     }
 
     assert!(
-        i_count >= 70 && i_count <= 130,
+        (70..=130).contains(&i_count),
         "I-фигур должно быть около 100 (получено {})",
         i_count
     );
@@ -580,7 +579,7 @@ fn test_o_piece_distribution_statistics() {
     }
 
     assert!(
-        o_count >= 70 && o_count <= 130,
+        (70..=130).contains(&o_count),
         "O-фигур должно быть около 100 (получено {})",
         o_count
     );
@@ -622,12 +621,12 @@ fn test_distribution_variance() {
     }
 
     // Вычисляем среднее
-    let expected = 100; // 700 / 7
+    let expected: i32 = 100; // 700 / 7
 
     // Вычисляем дисперсию
     let variance: f32 = counts
         .iter()
-        .map(|&c| ((c as i32 - expected as i32).pow(2)) as f32)
+        .map(|&c| ((c as i32 - expected).pow(2)) as f32)
         .sum::<f32>()
         / 7.0;
 
