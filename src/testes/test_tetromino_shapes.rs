@@ -256,14 +256,14 @@ fn test_all_coords_in_valid_range() {
     for (shape_idx, coords) in SHAPE_COORDS.iter().enumerate() {
         for (block_idx, &(x, y)) in coords.iter().enumerate() {
             assert!(
-                x >= -2 && x <= 2,
+                (-2..=2).contains(&x),
                 "X координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
                 shape_idx,
                 block_idx,
                 x
             );
             assert!(
-                y >= -2 && y <= 2,
+                (-2..=2).contains(&y),
                 "Y координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
                 shape_idx,
                 block_idx,

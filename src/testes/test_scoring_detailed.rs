@@ -179,8 +179,8 @@ fn test_base_combo_bonus() {
 /// Тест 16: Бонус за первое комбо
 #[test]
 fn test_first_combo_bonus() {
-    // Комбо 1: 50 * 1 = 50 (или 0 в зависимости от реализации)
-    let bonus = COMBO_BONUS * 1;
+    // Комбо 1: 50 * 1 = 50
+    let bonus = COMBO_BONUS;
     assert!(bonus >= 50, "Бонус за первое комбо должен быть >= 50");
 }
 
@@ -215,8 +215,8 @@ fn test_combo_bonus_growth() {
 #[test]
 fn test_combo_bonus_linear_growth() {
     // Проверяем линейность: разница между соседними комбо постоянна
-    let diff_1_2 = COMBO_BONUS * 2 - COMBO_BONUS * 1;
-    let diff_2_3 = COMBO_BONUS * 3 - COMBO_BONUS * 2;
+    let diff_1_2 = COMBO_BONUS;
+    let diff_2_3 = COMBO_BONUS;
 
     assert_eq!(
         diff_1_2, diff_2_3,
@@ -290,7 +290,7 @@ fn test_base_soft_drop_points() {
 /// Тест 28: Очки за soft drop на 1 ячейку
 #[test]
 fn test_soft_drop_one_cell() {
-    let points = SOFT_DROP_POINTS * 1;
+    let points = SOFT_DROP_POINTS;
     assert_eq!(points, 1, "Очки за 1 ячейку soft drop должны быть 1");
 }
 
@@ -311,7 +311,7 @@ fn test_soft_drop_ten_cells() {
 /// Тест 31: Линейный рост soft drop очков
 #[test]
 fn test_soft_drop_linear_growth() {
-    let points_1 = SOFT_DROP_POINTS * 1;
+    let points_1 = SOFT_DROP_POINTS;
     let points_5 = SOFT_DROP_POINTS * 5;
     let points_10 = SOFT_DROP_POINTS * 10;
 
@@ -344,7 +344,7 @@ fn test_base_hard_drop_points() {
 /// Тест 34: Очки за hard drop на 1 ячейку
 #[test]
 fn test_hard_drop_one_cell() {
-    let points = HARD_DROP_POINTS * 1;
+    let points = HARD_DROP_POINTS;
     assert_eq!(points, 2, "Очки за 1 ячейку hard drop должны быть 2");
 }
 
