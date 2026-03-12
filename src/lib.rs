@@ -510,9 +510,10 @@ pub mod highscore;
 /// canvas.flush();
 ///
 /// // Чтение клавиши
-/// let key = reader.get_key();
-/// if key == b'q' {
-///     println!("Выход из игры");
+/// if let Some(key) = reader.get_key() {
+///     if key == b'q' {
+///         println!("Выход из игры");
+///     }
 /// }
 ///
 /// // Сброс терминала после игры

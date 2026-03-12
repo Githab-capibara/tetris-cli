@@ -89,16 +89,16 @@ fn test_key_reader_creation() {
 
 /// Тест 6: Проверка get_key() без нажатий
 ///
-/// Проверяет, что get_key() возвращает 0 когда нет нажатий.
+/// Проверяет, что get_key() возвращает None когда нет нажатий.
 #[test]
 fn test_key_reader_get_key_no_input() {
     let mut reader = KeyReader::new();
 
     // В тестовой среде маловероятно что есть нажатия клавиш
-    // get_key() должен вернуть 0 или код клавиши
+    // get_key() должен вернуть None или Some(key)
     let key = reader.get_key();
 
-    // get_key() возвращает u8 (0-255)
+    // get_key() теперь возвращает Option<u8>
     // Проверяем что метод работает без паники
     let _ = key;
 }

@@ -592,12 +592,14 @@ impl GameState {
                     // Ожидание повторного нажатия 'p' для снятия с паузы
                     loop {
                         let key = inp.get_key();
-                        if key == b'p' {
-                            break;
-                        } else if key == KEY_BACKSPACE {
-                            // Backspace во время паузы — выход в меню
-                            cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
-                            return 0;
+                        match key {
+                            Some(b'p') => break,
+                            Some(KEY_BACKSPACE) => {
+                                // Backspace во время паузы — выход в меню
+                                cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
+                                return 0;
+                            }
+                            Some(_) | None => {}
                         }
                         cnv.draw_strs(&PAUSE, (7, 13), BORDER_COLOR, &Reset);
                         sleep(Duration::from_millis(interval_ms));
@@ -647,33 +649,33 @@ impl GameState {
         self.is_hard_dropping = false;
 
         match key {
-            KEY_BACKSPACE => return UpdateEndState::Quit, // Backspace — выход в меню
-            b'p' => return UpdateEndState::Pause,         // p — пауза
-            b'a' => {
+            Some(KEY_BACKSPACE) => return UpdateEndState::Quit, // Backspace — выход в меню
+            Some(b'p') => return UpdateEndState::Pause,         // p — пауза
+            Some(b'a') => {
                 // Перемещение влево
                 if self.can_move_curr_shape(Dir::Left) {
                     self.curr_shape.pos.0 -= 1.0;
                 }
             }
-            b'd' => {
+            Some(b'd') => {
                 // Перемещение вправо
                 if self.can_move_curr_shape(Dir::Right) {
                     self.curr_shape.pos.0 += 1.0;
                 }
             }
-            b'q' => {
+            Some(b'q') => {
                 // Вращение против часовой стрелки
                 if self.can_rotate_curr_shape(Dir::Left) {
                     self.curr_shape.rotate(Dir::Left);
                 }
             }
-            b'e' => {
+            Some(b'e') => {
                 // Вращение по часовой стрелке
                 if self.can_rotate_curr_shape(Dir::Right) {
                     self.curr_shape.rotate(Dir::Right);
                 }
             }
-            b'w' => {
+            Some(b'w') => {
                 // Hard Drop: мгновенное падение с бонусными очками
                 let start_y = self.curr_shape.pos.1;
                 while self.can_move_curr_shape(Dir::Down) {
@@ -687,7 +689,7 @@ impl GameState {
                 // Устанавливаем флаг для анимации
                 self.is_hard_dropping = true;
             }
-            b's' => {
+            Some(b's') => {
                 // Soft Drop: ускоренное падение при зажатии
                 // Проверяем, что перемещение произошло фактически
                 let prev_y = self.curr_shape.pos.1;
@@ -699,13 +701,13 @@ impl GameState {
                     }
                 }
             }
-            b'c' | b'C' => {
+            Some(b'c' | b'C') => {
                 // Удержание фигуры (можно использовать один раз за ход)
                 if self.can_hold {
                     self.hold_shape();
                 }
             }
-            _ => {}
+            Some(_) | None => {}
         }
 
         // Обработка падения фигуры
@@ -896,25 +898,28 @@ impl GameState {
         // ШАГ 3: УДАЛЕНИЕ ЛИНИЙ И СДВИГ
         // ====================================================================
 
-        // Копируем незаполненные строки снизу вверх
-        // Это эффективный алгоритм сдвига: O(n) вместо O(n²)
-        let mut new_blocks = [[-1; GRID_WIDTH]; GRID_HEIGHT];
-        let mut write_idx = GRID_HEIGHT - 1;
+        // Сдвиг строк вниз inplace без создания нового массива
+        // Алгоритм: перемещаем каждую строку вниз на количество удалённых строк выше неё
+        // Это эффективнее чем создание нового массива: избегаем heap-аллокации
 
-        for read_idx in (0..GRID_HEIGHT).rev() {
-            // Пропускаем строки, которые нужно удалить (O(1) проверка)
-            if !rows_to_remove[read_idx] {
-                // Копируем строку на новую позицию
-                new_blocks[write_idx] = self.blocks[read_idx];
-                // Используем saturating_sub для безопасного вычитания
-                // (защита от переполнения при вычитании)
-                write_idx = write_idx.saturating_sub(1);
+        // Подсчитываем количество строк для удаления снизу вверх
+        let mut rows_removed_below = 0;
+
+        for y in (0..GRID_HEIGHT).rev() {
+            if rows_to_remove[y] {
+                // Эта строка будет удалена
+                rows_removed_below += 1;
+            } else if rows_removed_below > 0 {
+                // Перемещаем строку вниз на rows_removed_below позиций
+                // Используем swap для избежания копирования
+                self.blocks[y + rows_removed_below] = self.blocks[y];
             }
         }
-        // Верхние строки уже заполнены -1 по умолчанию (пустые)
 
-        // Заменяем старое поле на новое
-        self.blocks = new_blocks;
+        // Заполняем верхние строки пустыми значениями (-1)
+        for y in 0..rows_removed_below {
+            self.blocks[y] = [-1; GRID_WIDTH];
+        }
 
         // Очистка анимации (строки удалены)
         self.animating_rows.clear();
@@ -990,6 +995,7 @@ impl GameState {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда и текущего счёта
+        // Форматирование с фиксированной шириной для выравнивания
         let score_str = format!("{:10}", self.score);
         let level_str = format!("{:10}", self.level);
         let lines_str = format!("{:10}", self.lines_cleared);
