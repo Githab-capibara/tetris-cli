@@ -283,10 +283,10 @@ impl Canvas {
 /// use tetris_cli::io::KeyReader;
 ///
 /// let mut reader = KeyReader::new();
-/// let key = reader.get_key();
-///
-/// if key == b'q' {
-///     println!("Нажата клавиша Q");
+/// if let Some(key) = reader.get_key() {
+///     if key == b'q' {
+///         println!("Нажата клавиша Q");
+///     }
 /// }
 /// ```
 pub struct KeyReader {
@@ -312,31 +312,31 @@ impl KeyReader {
     /// Получить код нажатой клавиши.
     ///
     /// # Возвращает
-    /// Код нажатой клавиши (u8) или 0 при ошибке чтения
+    /// - `Some(u8)` — код нажатой клавиши
+    /// - `None` — при ошибке чтения или если клавиша не была нажата
     ///
     /// # Пример
     /// ```
     /// use tetris_cli::io::KeyReader;
     ///
     /// let mut reader = KeyReader::new();
-    /// let key = reader.get_key();
-    ///
-    /// match key {
-    ///     b'q' => println!("Выход"),
-    ///     b'p' => println!("Пауза"),
-    ///     _ => {}
+    /// if let Some(key) = reader.get_key() {
+    ///     match key {
+    ///         b'q' => println!("Выход"),
+    ///         b'p' => println!("Пауза"),
+    ///         _ => {}
+    ///     }
     /// }
     /// ```
     ///
     /// # Примечания
-    /// - Возвращает 0, если клавиша не была нажата
     /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности
     ///   (обычно 27 = ESC). Для полной обработки нужно использовать get_key_extended().
-    pub fn get_key(&mut self) -> u8 {
+    pub fn get_key(&mut self) -> Option<u8> {
         let mut key_bytes: [u8; 1] = [0];
         match self.inp.read_exact(&mut key_bytes) {
-            Ok(_) => key_bytes[0],
-            Err(_) => 0,
+            Ok(_) => Some(key_bytes[0]),
+            Err(_) => None,
         }
     }
 

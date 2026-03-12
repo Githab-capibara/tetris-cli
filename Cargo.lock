@@ -293,6 +293,7 @@ version = "23.96.3"
 dependencies = [
  "blake3",
  "confy",
+ "getrandom",
  "rand",
  "serde",
  "serde_json",
