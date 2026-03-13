@@ -47,6 +47,28 @@ pub const SHAPE_STR: &str = "██";
 /// Используется в главном меню и во время игры для выхода в меню.
 pub const KEY_BACKSPACE: u8 = 127;
 
+/// Код клавиши Enter (перевод строки).
+pub const KEY_ENTER: u8 = b'\n';
+
+/// Код клавиши Enter (возврат каретки).
+pub const KEY_ENTER_CR: u8 = b'\r';
+
+/// Специальные коды клавиш для стрелок (возвращаются get_key_extended()).
+///
+/// Эти коды используются при обработке ESC-последовательностей:
+/// - Стрелка вверх: 256
+/// - Стрелка вниз: 257
+/// - Стрелка вправо: 258
+/// - Стрелка влево: 259
+/// - Home: 260
+/// - End: 261
+pub const KEY_ARROW_UP: u16 = 256;
+pub const KEY_ARROW_DOWN: u16 = 257;
+pub const KEY_ARROW_RIGHT: u16 = 258;
+pub const KEY_ARROW_LEFT: u16 = 259;
+pub const KEY_HOME: u16 = 260;
+pub const KEY_END: u16 = 261;
+
 /// Ширина блока в символах.
 ///
 /// Соответствует длине SHAPE_STR.
@@ -396,21 +418,21 @@ impl KeyReader {
                     match buffer[1] {
                         b'[' => {
                             match buffer[2] {
-                                b'A' => return 256, // Стрелка вверх
-                                b'B' => return 257, // Стрелка вниз
-                                b'C' => return 258, // Стрелка вправо
-                                b'D' => return 259, // Стрелка влево
-                                b'H' => return 260, // Home
-                                b'F' => return 261, // End
-                                _ => return 27,     // Неизвестная последовательность
+                                b'A' => return KEY_ARROW_UP,    // Стрелка вверх
+                                b'B' => return KEY_ARROW_DOWN,  // Стрелка вниз
+                                b'C' => return KEY_ARROW_RIGHT, // Стрелка вправо
+                                b'D' => return KEY_ARROW_LEFT,  // Стрелка влево
+                                b'H' => return KEY_HOME,        // Home
+                                b'F' => return KEY_END,         // End
+                                _ => return 27,                 // Неизвестная последовательность
                             }
                         }
                         b'O' => {
                             match buffer[2] {
-                                b'A' => return 256, // Стрелка вверх (альтернативная)
-                                b'B' => return 257, // Стрелка вниз (альтернативная)
-                                b'C' => return 258, // Стрелка вправо (альтернативная)
-                                b'D' => return 259, // Стрелка влево (альтернативная)
+                                b'A' => return KEY_ARROW_UP,    // Стрелка вверх (альтернативная)
+                                b'B' => return KEY_ARROW_DOWN,  // Стрелка вниз (альтернативная)
+                                b'C' => return KEY_ARROW_RIGHT, // Стрелка вправо (альтернативная)
+                                b'D' => return KEY_ARROW_LEFT,  // Стрелка влево (альтернативная)
                                 _ => return 27,
                             }
                         }

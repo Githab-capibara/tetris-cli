@@ -128,10 +128,6 @@ pub const MARATHON_LINES: u32 = 150;
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
 
-/// Символ для отрисовки призрачной фигуры (заготовка для будущей функциональности).
-#[allow(dead_code)]
-pub const GHOST_SHAPE_STR: &str = "░░";
-
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
 pub enum Dir {
@@ -796,12 +792,12 @@ impl GameState {
         let shape_block_y = shape_y as i16;
         for coord in self.curr_shape.coords {
             let (coord_x, coord_y) = coord;
-            let x = (coord_x + shape_block_x) as usize;
-            let y = (coord_y + shape_block_y) as usize;
+            let x = coord_x + shape_block_x;
+            let y = coord_y + shape_block_y;
 
-            // Проверка границ перед записью
-            if y < GRID_HEIGHT && x < GRID_WIDTH {
-                self.blocks[y][x] = self.curr_shape.fg as i8;
+            // Проверка границ перед записью (защита от паники при отрицательных координатах)
+            if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
+                self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
     }
@@ -911,7 +907,8 @@ impl GameState {
                 rows_removed_below += 1;
             } else if rows_removed_below > 0 {
                 // Перемещаем строку вниз на rows_removed_below позиций
-                // Используем swap для избежания копирования
+                // Проверка безопасности: индекс не должен выходить за границы
+                debug_assert!(y + rows_removed_below < GRID_HEIGHT);
                 self.blocks[y + rows_removed_below] = self.blocks[y];
             }
         }
@@ -1086,8 +1083,13 @@ impl GameState {
         let mut ghost_shape = self.curr_shape;
 
         // Опустить фигуру до упора
-        while self.can_move_ghost_shape(&ghost_shape, Dir::Down) {
+        // Защита от бесконечного цикла: максимальное количество итераций равно высоте поля
+        let max_iterations = GRID_HEIGHT;
+        let mut iterations = 0;
+        
+        while self.can_move_ghost_shape(&ghost_shape, Dir::Down) && iterations < max_iterations {
             ghost_shape.pos.1 += 1.0;
+            iterations += 1;
         }
 
         // Отрисовка призрачной фигуры (полупрозрачная)
@@ -1215,6 +1217,9 @@ impl GameState {
             }
 
             // Проверка выхода за границы сетки
+            // Боковые границы: x < 0 или x >= GRID_WIDTH
+            // Нижняя граница: y >= GRID_HEIGHT
+            // Верхняя граница (y < 0) НЕ проверяется - фигуры могут появляться выше поля
             if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
                 return false;
             }
@@ -1383,12 +1388,6 @@ impl GameState {
     #[allow(dead_code)]
     pub fn can_hold(&self) -> bool {
         self.can_hold
-    }
-
-    /// Получить количество линий (для тестов).
-    #[allow(dead_code)]
-    pub fn get_lines_cleared_public(&self) -> u32 {
-        self.lines_cleared
     }
 
     /// Получить текущую фигуру (для тестов).
