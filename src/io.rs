@@ -48,9 +48,11 @@ pub const SHAPE_STR: &str = "██";
 pub const KEY_BACKSPACE: u8 = 127;
 
 /// Код клавиши Enter (перевод строки).
+#[allow(dead_code)]
 pub const KEY_ENTER: u8 = b'\n';
 
 /// Код клавиши Enter (возврат каретки).
+#[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
 
 /// Специальные коды клавиш для стрелок (возвращаются get_key_extended()).
