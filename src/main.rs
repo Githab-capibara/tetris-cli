@@ -617,7 +617,6 @@ fn main() {
 ///
 /// # Возвращает
 /// Финальный счёт игрока
-#[allow(dead_code)]
 fn run_game_mode(
     cnv: &mut Canvas,
     inp: &mut KeyReader,
