@@ -368,13 +368,13 @@ impl KeyReader {
     #[allow(dead_code)]
     pub fn get_key_extended(&mut self) -> u16 {
         let mut buffer = [0u8; 3];
-        
+
         // Читаем первый байт
         match self.inp.read_exact(&mut buffer[0..1]) {
             Ok(_) => {}
             Err(_) => return 0,
         }
-        
+
         // Если это ESC, читаем последовательность
         if buffer[0] == 27 {
             // Пытаемся прочитать второй байт (неблокирующе)
@@ -382,7 +382,7 @@ impl KeyReader {
             match self.inp.read_exact(&mut second_byte) {
                 Ok(_) => {
                     buffer[1] = second_byte[0];
-                    
+
                     // Если второй байт '[' или 'O', читаем третий
                     if buffer[1] == b'[' || buffer[1] == b'O' {
                         let mut third_byte = [0u8; 1];
@@ -391,7 +391,7 @@ impl KeyReader {
                             Err(_) => return 27, // Только ESC
                         }
                     }
-                    
+
                     // Обрабатываем ESC-последовательности
                     match buffer[1] {
                         b'[' => {
@@ -402,7 +402,7 @@ impl KeyReader {
                                 b'D' => return 259, // Стрелка влево
                                 b'H' => return 260, // Home
                                 b'F' => return 261, // End
-                                _ => return 27, // Неизвестная последовательность
+                                _ => return 27,     // Неизвестная последовательность
                             }
                         }
                         b'O' => {
@@ -420,7 +420,7 @@ impl KeyReader {
                 Err(_) => return 27, // Только ESC
             }
         }
-        
+
         buffer[0] as u16
     }
 }
