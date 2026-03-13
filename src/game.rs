@@ -1320,35 +1320,30 @@ impl GameState {
     }
 
     /// Получить текущий уровень.
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_level(&self) -> u32 {
         self.level
     }
 
     /// Получить количество удалённых линий.
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 
     /// Получить следующую фигуру.
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_next_shape(&self) -> &Tetromino {
         &self.next_shape
     }
 
     /// Получить текущий счёт.
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_score(&self) -> u64 {
         self.score
     }
 
     /// Получить скорость падения.
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_fall_spd(&self) -> f32 {
         self.fall_spd
