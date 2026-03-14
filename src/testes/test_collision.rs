@@ -514,7 +514,7 @@ fn test_collision_rotation_with_piece_nearby() {
 /// Тест 32: Проверка что столкновение работает для всех направлений
 #[test]
 fn test_collision_all_directions() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем все направления
     let down = state.can_move_curr_shape(Dir::Down);
@@ -544,7 +544,7 @@ fn test_collision_triggers_correctly() {
 /// Тест 34: Проверка что столкновение не срабатывает рано
 #[test]
 fn test_collision_not_early() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В центре поля столкновений быть не должно
     let can_down = state.can_move_curr_shape(Dir::Down);
@@ -623,7 +623,7 @@ fn test_collision_rotation_blocked_floor() {
 /// Тест 39: Проверка что can_rotate_curr_shape использует check_collision
 #[test]
 fn test_collision_rotation_uses_check() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем что метод работает
     let can_rotate = state.can_rotate_curr_shape(Dir::Right);
@@ -682,7 +682,7 @@ fn test_collision_rotation_no_panic() {
 /// Тест 44: Проверка что вращение работает в центре поля
 #[test]
 fn test_collision_rotation_in_center() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В центре поля вращение должно быть возможно
     let can_rotate =

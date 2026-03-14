@@ -521,7 +521,7 @@ fn test_edge_cases_performance_rotation_100k() {
 /// Тест 44: Проверка производительности движения (100000)
 #[test]
 fn test_edge_cases_performance_movement_100k() {
-    let mut state = GameState::new();
+    let state = GameState::new();
     let start = std::time::Instant::now();
 
     for _ in 0..100000 {
@@ -535,7 +535,7 @@ fn test_edge_cases_performance_movement_100k() {
 /// Тест 45: Проверка производительности проверки столкновений (100000)
 #[test]
 fn test_edge_cases_performance_collision_100k() {
-    let mut state = GameState::new();
+    let state = GameState::new();
     let start = std::time::Instant::now();
 
     for _ in 0..100000 {

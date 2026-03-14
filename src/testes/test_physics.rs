@@ -220,7 +220,7 @@ fn test_collision_with_fixed_pieces() {
 /// Проверяет, что в пустом поле фигура может двигаться свободно.
 #[test]
 fn test_collisions_in_empty_field() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры движение вниз должно быть возможно
     assert!(
