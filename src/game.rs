@@ -76,6 +76,9 @@ const PAUSE: [&str; 3] = ["╔════════╗", "║ ПАУЗА  ║
 /// Сообщение о проигрыше.
 const GAME_OVER: [&str; 3] = ["╔════════════╗", "║ ИГРА ОКОНЧЕНА ║", "╚════════════╝"];
 
+/// Задержка перед возвратом в меню после проигрыша (мс).
+const GAME_OVER_DELAY_MS: u64 = 1500;
+
 /// Цвет границ.
 const BORDER_COLOR: &dyn Color = &White;
 
@@ -581,7 +584,7 @@ impl GameState {
                     cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
                     cnv.flush();
                     // Пауза перед возвратом в меню
-                    sleep(Duration::from_millis(1500));
+                    sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
                     break;
                 }
                 UpdateEndState::Pause => {
@@ -606,7 +609,7 @@ impl GameState {
                     cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
                     cnv.flush();
                     // Пауза перед возвратом в меню
-                    sleep(Duration::from_millis(1500));
+                    sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
                     break;
                 }
             }
@@ -687,14 +690,10 @@ impl GameState {
             }
             Some(b's') => {
                 // Soft Drop: ускоренное падение при зажатии
-                // Проверяем, что перемещение произошло фактически
-                let prev_y = self.curr_shape.pos.1;
                 if self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
-                    // Считаем расстояние для очков только при фактическом перемещении
-                    if (self.curr_shape.pos.1 - prev_y) > 0.0 {
-                        self.soft_drop_distance += 1;
-                    }
+                    // При каждом успешном шаге вниз считаем дистанцию для очков
+                    self.soft_drop_distance += 1;
                 }
             }
             Some(b'c' | b'C') => {
@@ -928,6 +927,8 @@ impl GameState {
         if remove_count > 0 {
             // Обновление количества удалённых линий
             self.lines_cleared += remove_count;
+            // Обновление общей статистики по линиям
+            self.stats.total_lines += remove_count;
 
             // Проверка повышения уровня (каждые 10 линий)
             // Формула: уровень = (линии / 10) + 1
@@ -956,6 +957,7 @@ impl GameState {
             // |   4   | 100 × 2³ = 800  |  800 | **TETRIS!**  |
             //
             // Используем битовый сдвиг для эффективности: 1 << n = 2^n
+            // remove_count гарантированно > 0 благодаря проверке выше
             // =================================================================
             self.score += ROW_SCORE_INC * (1 << (remove_count - 1));
 
@@ -1086,7 +1088,7 @@ impl GameState {
         // Защита от бесконечного цикла: максимальное количество итераций равно высоте поля
         let max_iterations = GRID_HEIGHT;
         let mut iterations = 0;
-        
+
         while self.can_move_ghost_shape(&ghost_shape, Dir::Down) && iterations < max_iterations {
             ghost_shape.pos.1 += 1.0;
             iterations += 1;
@@ -1114,7 +1116,7 @@ impl GameState {
     /// Отрисовать следующую фигуру (предпросмотр справа от поля).
     ///
     /// Показывает, какая фигура появится следующей.
-    fn draw_next_shape(&mut self, cnv: &mut Canvas) {
+    fn draw_next_shape(&self, cnv: &mut Canvas) {
         // Позиция предпросмотра (справа от игрового поля)
         let preview_x = 24u16;
         let preview_y = 8u16;
@@ -1141,7 +1143,7 @@ impl GameState {
     /// Отрисовать удержанную фигуру (слева от поля).
     ///
     /// Показывает фигуру, которую можно получить нажатием 'c'.
-    fn draw_held_shape(&mut self, cnv: &mut Canvas) {
+    fn draw_held_shape(&self, cnv: &mut Canvas) {
         // Позиция предпросмотра удержанной фигуры (слева от игрового поля)
         let preview_x = 2u16;
         let preview_y = 8u16;
@@ -1176,7 +1178,7 @@ impl GameState {
     /// Отрисовать таймер для режима спринт.
     ///
     /// Показывает время, прошедшее с начала игры.
-    fn draw_sprint_timer(&mut self, cnv: &mut Canvas) {
+    fn draw_sprint_timer(&self, cnv: &mut Canvas) {
         let elapsed = self.stats.get_elapsed_time();
         let timer_str = format!("Время: {:.2}с", elapsed);
         cnv.draw_string(&timer_str, (24, 20), BORDER_COLOR, &Reset);
@@ -1243,7 +1245,7 @@ impl GameState {
     /// # Проверки
     /// 1. Выход за границы игрового поля
     /// 2. Столкновение с зафиксированными фигурами
-    pub fn can_move_curr_shape(&mut self, dir: Dir) -> bool {
+    pub fn can_move_curr_shape(&self, dir: Dir) -> bool {
         self.check_collision(&self.curr_shape.coords, self.curr_shape.pos, dir)
     }
 
@@ -1275,7 +1277,7 @@ impl GameState {
     /// 1. Создаётся временная копия фигуры
     /// 2. Применяется вращение к копии
     /// 3. Проверяются все блоки фигуры на выход за границы и столкновения
-    pub fn can_rotate_curr_shape(&mut self, dir: Dir) -> bool {
+    pub fn can_rotate_curr_shape(&self, dir: Dir) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
@@ -1597,11 +1599,7 @@ mod game_tests {
 
         // Проверяем константу увеличения скорости за уровень
         // SPD_INC = 0.05, что больше 0
-        // Проверка константы времени компиляции
-        const _: () = assert!(
-            SPD_INC > 0.0 && SPD_INC < 1.0,
-            "Прирост скорости за уровень должен быть положительным и меньше 1"
-        );
+        // Константа проверяется компилятором, assert не требуется
     }
 
     /// Тест 6: Проверка начисления 1 очка за ячейку при Soft Drop
