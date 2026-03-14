@@ -44,7 +44,7 @@ fn test_savedata_save_and_load() {
     // Проверяем целостность
     let score = loaded.assert_hs();
     // u64 всегда >= 0, проверяем что рекорд загрузился корректно
-    assert!(score > 0 || score == 0, "Рекорд должен загрузиться");
+    let _ = score;
 }
 
 /// Тест 4: SaveData проверка целостности

@@ -626,7 +626,7 @@ fn test_distribution_variance() {
     // Вычисляем дисперсию
     let variance: f32 = counts
         .iter()
-        .map(|&c| ((c as i32 - expected).pow(2)) as f32)
+        .map(|&c| ((c - expected).pow(2)) as f32)
         .sum::<f32>()
         / 7.0;
 

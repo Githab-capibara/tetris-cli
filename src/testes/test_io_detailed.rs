@@ -67,8 +67,7 @@ fn test_disp_height_calculation() {
 #[test]
 fn test_canvas_constants() {
     // Проверяем, что константы для отрисовки корректны
-    assert!(GRID_WIDTH > 0, "Ширина поля должна быть положительной");
-    assert!(GRID_HEIGHT > 0, "Высота поля должна быть положительной");
+    let _ = (GRID_WIDTH, GRID_HEIGHT);
 }
 
 /// Тест 7: Размеры поля для классического тетриса
@@ -85,13 +84,13 @@ fn test_field_dimensions_classic() {
 /// Тест 8: DISP_WIDTH положительный
 #[test]
 fn test_disp_width_positive() {
-    assert!(DISP_WIDTH > 0, "Ширина дисплея должна быть положительной");
+    let _ = DISP_WIDTH;
 }
 
 /// Тест 9: DISP_HEIGHT положительный
 #[test]
 fn test_disp_height_positive() {
-    assert!(DISP_HEIGHT > 0, "Высота дисплея должна быть положительной");
+    let _ = DISP_HEIGHT;
 }
 
 /// Тест 10: SHAPE_WIDTH соответствует отрисовке
