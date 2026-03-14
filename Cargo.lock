@@ -289,7 +289,7 @@ dependencies = [
 
 [[package]]
 name = "tetris-cli"
-version = "23.96.3"
+version = "23.96.4"
 dependencies = [
  "blake3",
  "confy",
