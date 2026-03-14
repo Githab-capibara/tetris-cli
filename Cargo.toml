@@ -1,6 +1,6 @@
 [package]
 name = "tetris-cli"
-version = "23.96.3"
+version = "23.96.4"
 edition = "2021"
 description = "Классическая игра Тетрис для терминала Linux/Unix"
 license = "GPL-3.0"
