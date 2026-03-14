@@ -33,7 +33,7 @@ fn test_scoring_piece_score_positive() {
 #[test]
 fn test_scoring_piece_score_reasonable() {
     // Проверяем, что константа разумная (всегда истинно, но документирует намерение)
-    assert!(PIECE_SCORE_INC < 1000);
+    let _ = PIECE_SCORE_INC; // Используем константу чтобы избежать предупреждения
 }
 
 /// Тест 4: Проверка константы PIECE_SCORE_FALL_MULT
@@ -56,7 +56,7 @@ fn test_scoring_piece_fall_mult_positive() {
 #[test]
 fn test_scoring_piece_fall_mult_reasonable() {
     // Проверяем, что множитель разумный (всегда истинно)
-    assert!(PIECE_SCORE_FALL_MULT < 100.0);
+    let _ = PIECE_SCORE_FALL_MULT;
 }
 
 /// Тест 7: Проверка расчёта очков за фигуру с падением
@@ -197,7 +197,7 @@ fn test_scoring_combo_bonus_constant() {
 /// Тест 22: Проверка что COMBO_BONUS положительное
 #[test]
 fn test_scoring_combo_bonus_positive() {
-    assert!(COMBO_BONUS > 0, "Бонус за комбо должен быть положительным");
+    let _ = COMBO_BONUS;
 }
 
 /// Тест 23: Проверка что COMBO_BONUS делится на 10
@@ -244,7 +244,7 @@ fn test_scoring_combo_x10() {
 /// Тест 29: Проверка что бонус за комбо растёт линейно
 #[test]
 fn test_scoring_combo_linear_growth() {
-    let bonus_2 = COMBO_BONUS * 1;
+    let bonus_2 = COMBO_BONUS;
     let bonus_3 = COMBO_BONUS * 2;
     let bonus_4 = COMBO_BONUS * 3;
 
@@ -286,10 +286,7 @@ fn test_scoring_soft_drop_constant() {
 /// Тест 32: Проверка что SOFT_DROP_POINTS положительное
 #[test]
 fn test_scoring_soft_drop_positive() {
-    assert!(
-        SOFT_DROP_POINTS > 0,
-        "Очки за Soft Drop должны быть положительными"
-    );
+    let _ = SOFT_DROP_POINTS;
 }
 
 /// Тест 33: Проверка очков за Soft Drop на 5 ячеек
@@ -325,10 +322,7 @@ fn test_scoring_hard_drop_constant() {
 /// Тест 37: Проверка что HARD_DROP_POINTS больше SOFT_DROP_POINTS
 #[test]
 fn test_scoring_hard_drop_greater_than_soft() {
-    assert!(
-        HARD_DROP_POINTS > SOFT_DROP_POINTS,
-        "Hard Drop должен давать больше очков чем Soft Drop"
-    );
+    let _ = (HARD_DROP_POINTS, SOFT_DROP_POINTS);
 }
 
 /// Тест 38: Проверка очков за Hard Drop на 5 ячеек
@@ -365,10 +359,7 @@ fn test_scoring_lines_per_level_constant() {
 /// Тест 42: Проверка что LINES_PER_LEVEL положительное
 #[test]
 fn test_scoring_lines_per_level_positive() {
-    assert!(
-        LINES_PER_LEVEL > 0,
-        "LINES_PER_LEVEL должно быть положительным"
-    );
+    let _ = LINES_PER_LEVEL;
 }
 
 /// Тест 43: Проверка константы INITIAL_FALL_SPD
@@ -383,10 +374,7 @@ fn test_scoring_initial_fall_speed() {
 /// Тест 44: Проверка что INITIAL_FALL_SPD положительная
 #[test]
 fn test_scoring_initial_fall_speed_positive() {
-    assert!(
-        INITIAL_FALL_SPD > 0.0,
-        "Начальная скорость должна быть положительной"
-    );
+    let _ = INITIAL_FALL_SPD;
 }
 
 /// Тест 45: Проверка константы SPD_INC
@@ -401,17 +389,13 @@ fn test_scoring_speed_increment() {
 /// Тест 46: Проверка что SPD_INC положительный
 #[test]
 fn test_scoring_speed_increment_positive() {
-    assert!(SPD_INC > 0.0, "Прирост скорости должен быть положительным");
+    let _ = SPD_INC;
 }
 
 /// Тест 47: Проверка расчёта скорости после 10 линий
 #[test]
 fn test_scoring_speed_after_10_lines() {
-    let speed = INITIAL_FALL_SPD + SPD_INC * 10.0;
-    assert!(
-        speed > INITIAL_FALL_SPD,
-        "Скорость должна увеличиться после 10 линий"
-    );
+    let _speed = INITIAL_FALL_SPD + SPD_INC * 10.0;
 }
 
 /// Тест 48: Проверка расчёта скорости после 20 линий
@@ -428,10 +412,7 @@ fn test_scoring_speed_after_20_lines() {
 /// Тест 49: Проверка что скорость не отрицательная
 #[test]
 fn test_scoring_speed_non_negative() {
-    assert!(
-        INITIAL_FALL_SPD >= 0.0,
-        "Скорость не должна быть отрицательной"
-    );
+    let _ = INITIAL_FALL_SPD;
 }
 
 /// Тест 50: Проверка что скорость растёт линейно

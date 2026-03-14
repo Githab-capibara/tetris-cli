@@ -77,7 +77,7 @@ fn test_all_piece_types_appear_in_game() {
 /// Тест 5: Вращение фигуры в GameState
 #[test]
 fn test_piece_rotation_in_gamestate() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что вращение возможно
     let _can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
@@ -89,7 +89,7 @@ fn test_piece_rotation_in_gamestate() {
 /// Тест 6: Движение фигуры в GameState
 #[test]
 fn test_piece_movement_in_gamestate() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что движение возможно
     let can_move_left = state.can_move_curr_shape(crate::game::Dir::Left);
@@ -104,7 +104,7 @@ fn test_piece_movement_in_gamestate() {
 /// Тест 7: Падение фигуры в GameState
 #[test]
 fn test_piece_fall_in_gamestate() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры падение должно быть возможно
     assert!(
@@ -330,7 +330,7 @@ fn test_gamestate_responds_to_input() {
 /// Тест 22: Вращение фигуры по команде
 #[test]
 fn test_piece_rotation_on_command() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что вращение возможно
     let _can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
@@ -649,7 +649,7 @@ fn test_fast_piece_rotation() {
 /// Тест 46: Быстрая проверка коллизий
 #[test]
 fn test_fast_collision_check() {
-    let mut state = GameState::new();
+    let state = GameState::new();
     let start = std::time::Instant::now();
 
     for _ in 0..1000 {

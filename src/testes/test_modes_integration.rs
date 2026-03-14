@@ -185,9 +185,9 @@ fn test_modes_integration_rotation_in_all_modes() {
 fn test_modes_integration_movement_in_all_modes() {
     use crate::game::Dir;
 
-    let mut classic = GameState::new();
-    let mut sprint = GameState::new_sprint();
-    let mut marathon = GameState::new_marathon();
+    let classic = GameState::new();
+    let sprint = GameState::new_sprint();
+    let marathon = GameState::new_marathon();
 
     // Classic
     assert!(

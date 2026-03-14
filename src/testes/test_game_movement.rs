@@ -442,7 +442,7 @@ fn test_movement_in_corner() {
 fn test_move_above_fixed_piece() {
     // Этот тест требует симуляции зафиксированной фигуры
     // В текущей реализации проверяем базовую возможность движения
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры поле пустое, движение возможно
     let can_move = state.can_move_curr_shape(Dir::Left) || state.can_move_curr_shape(Dir::Right);
@@ -452,7 +452,7 @@ fn test_move_above_fixed_piece() {
 /// Тест 26: Блокировка движения препятствием слева
 #[test]
 fn test_movement_blocked_by_obstacle_left() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что в пустом поле движение возможно
     // (реальные препятствия требуют модификации поля)
@@ -469,7 +469,7 @@ fn test_movement_blocked_by_obstacle_left() {
 /// Тест 27: Блокировка движения препятствием справа
 #[test]
 fn test_movement_blocked_by_obstacle_right() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В пустом поле движение должно быть возможным
     assert!(
@@ -533,7 +533,7 @@ fn test_obstacle_avoidance_right() {
 /// Тест 31: Движение между двумя препятствиями
 #[test]
 fn test_move_between_obstacles() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры препятствий нет
     // Проверяем базовую механику движения
@@ -569,7 +569,7 @@ fn test_collision_check_on_down_movement() {
 /// Проверяет, что фигура может падать вниз.
 #[test]
 fn test_soft_drop_basic() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры падение возможно
     assert!(
@@ -635,7 +635,7 @@ fn test_soft_drop_continuous_movement() {
 #[test]
 fn test_soft_drop_different_pieces() {
     // Проверяем, что все фигуры могут падать
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры любая фигура должна падать
     assert!(
@@ -873,7 +873,7 @@ fn test_rotation_at_wall_and_movement() {
 /// Проверяет, что новая фигура после hold может двигаться.
 #[test]
 fn test_movement_after_hold() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что фигура может двигаться до hold
     let can_move_before =
@@ -890,7 +890,7 @@ fn test_movement_after_hold() {
 /// Тест 50: Движение новой фигуры после hold
 #[test]
 fn test_new_piece_movement_after_hold() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // В начале игры новая фигура должна иметь возможность движения
     let can_move_left = state.can_move_curr_shape(Dir::Left);
