@@ -142,7 +142,7 @@ fn test_piece_drop_to_floor() {
 /// Проверяет, что вращение работает в контексте GameState.
 #[test]
 fn test_rotation_in_game_context() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем возможность вращения
     let can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
@@ -329,7 +329,7 @@ fn test_all_shapes_in_game() {
 /// Проверяет, что вращение учитывает столкновения.
 #[test]
 fn test_rotation_collision_interaction() {
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что can_rotate_curr_shape использует check_collision
     let can_rotate = state.can_rotate_curr_shape(Dir::Right);
@@ -391,7 +391,7 @@ fn test_performance_bag_generator() {
 /// Проверяет, что проверка столкновений происходит быстро.
 #[test]
 fn test_performance_collision_detection() {
-    let mut state = GameState::new();
+    let state = GameState::new();
     let start = std::time::Instant::now();
 
     // Выполняем 10000 проверок столкновений

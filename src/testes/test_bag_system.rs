@@ -109,8 +109,8 @@ fn test_all_piece_types_available() {
 #[test]
 fn test_no_preference_in_distribution() {
     let mut bag = BagGenerator::new();
-    let mut t_count = 0;
-    let mut i_count = 0;
+    let mut t_count: i32 = 0;
+    let mut i_count: i32 = 0;
 
     // Получаем 700 фигур
     for _ in 0..700 {
@@ -124,8 +124,8 @@ fn test_no_preference_in_distribution() {
 
     // T и I должны встречаться примерно одинаково часто
     // Допускаем отклонение до 30%
-    let diff = (t_count as i32 - i_count as i32).abs();
-    let expected: i32 = 100; // 700 / 7 = 100
+    let diff = (t_count - i_count).unsigned_abs();
+    let expected: u32 = 100; // 700 / 7 = 100
 
     assert!(
         diff < expected / 2,
