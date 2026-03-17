@@ -122,6 +122,7 @@ mod tetromino;
 use crate::game::{GameMode, GameState, FPS};
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH, KEY_BACKSPACE};
+use tetris_cli::FRAME_DELAY_MS;
 
 // Импортируем стандартные библиотеки для работы со временем
 use std::{
@@ -241,12 +242,6 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
 /// - Совместимость с termion::color::Color
 const MENU_COLOR: &dyn Color = &White;
 
-/// Задержка между кадрами для поддержания 60 FPS (в миллисекундах).
-///
-/// Вычисляется как 1000 / 60 ≈ 16.67 мс.
-/// Используется в main.rs и game.rs для поддержания стабильного FPS.
-/// Экспортируется из lib.rs как FRAME_DELAY_MS.
-const FRAME_DELAY_MS: u64 = 16;
 
 /// Меню таблицы лидеров.
 ///

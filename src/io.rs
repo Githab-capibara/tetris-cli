@@ -358,10 +358,42 @@ impl KeyReader {
     /// # Примечания
     /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности
     ///   (обычно 27 = ESC). Для полной обработки нужно использовать get_key_extended().
+    /// - Для многобайтовых символов UTF-8 (например, русских букв) возвращает None,
+    ///   предварительно прочитав все байты символа из буфера.
     pub fn get_key(&mut self) -> Option<u8> {
         let mut key_bytes: [u8; 1] = [0];
         match self.inp.read_exact(&mut key_bytes) {
-            Ok(_) => Some(key_bytes[0]),
+            Ok(_) => {
+                let first_byte = key_bytes[0];
+                
+                // Проверяем, является ли это началом многобайтового символа UTF-8
+                // ASCII (0x00-0x7F) - однобайтовый символ
+                if first_byte <= 0x7F {
+                    return Some(first_byte);
+                }
+                
+                // Определяем количество байт в символе UTF-8
+                let bytes_to_read = if first_byte >= 0xC0 && first_byte <= 0xDF {
+                    1 // 2-byte sequence
+                } else if first_byte >= 0xE0 && first_byte <= 0xEF {
+                    2 // 3-byte sequence
+                } else if first_byte >= 0xF0 && first_byte <= 0xF7 {
+                    3 // 4-byte sequence
+                } else {
+                    // Неизвестный байт, возвращаем None
+                    return None;
+                };
+                
+                // Читаем остальные байты символа UTF-8
+                let mut remaining = [0u8; 3];
+                if self.inp.read_exact(&mut remaining[..bytes_to_read]).is_err() {
+                    return None;
+                }
+                
+                // Для многобайтовых символов возвращаем None
+                // (они не являются управляющими клавишами для игры)
+                None
+            }
             Err(_) => None,
         }
     }
