@@ -147,8 +147,9 @@ mod tests {
         let long_name = "ОченьДлинноеИмяКотороеДолжноБытьОбрезаноДоДвадцатиСимволов";
         let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
 
+        // Проверяем, что имя обрезано до 20 символов (не байт!)
         assert_eq!(
-            entry.name.len(),
+            entry.name.chars().count(),
             20,
             "Имя должно быть обрезано до 20 символов"
         );

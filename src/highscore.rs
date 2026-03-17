@@ -29,8 +29,8 @@ pub fn get_random_hash() -> String {
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
                                // Используем криптографически стойкий генератор
     rand::thread_rng().fill_bytes(&mut bytes);
-    // Конвертируем в hex строку
-    bytes.iter().map(|&b| format!("{:x}", b)).collect()
+    // Конвертируем в hex строку с ведущими нулями (гарантирует 64 символа)
+    bytes.iter().map(|&b| format!("{:02x}", b)).collect()
 }
 
 /// Получить хэш строки в шестнадцатеричном формате.
@@ -192,10 +192,18 @@ impl LeaderboardEntry {
         } else {
             // Обрезаем пробелы и ограничиваем длину имени до 20 символов
             let trimmed = name.trim();
-            if trimmed.len() > 20 {
-                trimmed[..20].to_string()
+            // Валидация символов - разрешены только буквы, цифры, '_', '-', ' ', '.'
+            let validated: String = trimmed
+                .chars()
+                .filter(|&c| is_valid_name_char(c))
+                .take(20)
+                .collect();
+            
+            // Если после фильтрации имя пустое, используем "Anonymous"
+            if validated.is_empty() {
+                "Anonymous".to_string()
             } else {
-                trimmed.to_string()
+                validated
             }
         };
 
@@ -228,6 +236,23 @@ impl LeaderboardEntry {
         self.hash == test_hash
     }
 }
+
+/// Проверить допустимость символа имени.
+///
+/// Разрешены только:
+/// - Буквы (a-z, A-Z, включая кириллицу и другие Unicode буквы)
+/// - Цифры (0-9)
+/// - Специальные символы: '_', '-', ' ', '.'
+///
+/// # Аргументы
+/// * `c` - символ для проверки
+///
+/// # Возвращает
+/// `true` если символ допустим
+fn is_valid_name_char(c: char) -> bool {
+    c.is_alphanumeric() || c == '_' || c == '-' || c == ' ' || c == '.'
+}
+
 
 impl Leaderboard {
     /// Загрузить таблицу лидеров из файла конфигурации.
