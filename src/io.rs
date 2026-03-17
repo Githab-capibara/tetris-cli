@@ -143,6 +143,18 @@ impl Default for Canvas {
 }
 
 impl Canvas {
+    /// Вспомогательная функция для сброса терминала при ошибке и выхода.
+    ///
+    /// # Аргументы
+    /// * `message` - сообщение об ошибке
+    fn exit_with_terminal_reset(message: &str) -> ! {
+        eprintln!("{}", message);
+        let mut stdout = stdout();
+        let _ = write!(stdout, "{}", Show);
+        let _ = stdout.flush();
+        std::process::exit(1);
+    }
+
     /// Создать новый канвас и подготовить терминал.
     ///
     /// # Возвращает
@@ -164,36 +176,32 @@ impl Canvas {
         let mut out = match stdout().into_raw_mode() {
             Ok(term) => term,
             Err(e) => {
-                eprintln!("Ошибка: не удалось перейти в raw-режим терминала: {}", e);
-                // Явный сброс терминала перед выходом
-                let _ = write!(stdout(), "{}", Show);
-                let _ = stdout().flush();
-                std::process::exit(1);
+                Self::exit_with_terminal_reset(&format!(
+                    "Ошибка: не удалось перейти в raw-режим терминала: {}",
+                    e
+                ));
             }
         };
 
         if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
-            eprintln!("Ошибка: не удалось очистить экран: {}", e);
-            // Явный сброс терминала перед выходом
-            let _ = write!(out, "{}", Show);
-            let _ = out.flush();
-            std::process::exit(1);
+            Self::exit_with_terminal_reset(&format!(
+                "Ошибка: не удалось очистить экран: {}",
+                e
+            ));
         }
 
         if let Err(e) = out.flush() {
-            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
-            // Явный сброс терминала перед выходом
-            let _ = write!(out, "{}", Show);
-            let _ = out.flush();
-            std::process::exit(1);
+            Self::exit_with_terminal_reset(&format!(
+                "Ошибка: не удалось выполнить flush буфера: {}",
+                e
+            ));
         }
 
         if let Err(e) = write!(out, "{}", Hide) {
-            eprintln!("Ошибка: не удалось скрыть курсор: {}", e);
-            // Явный сброс терминала перед выходом
-            let _ = write!(out, "{}", Show);
-            let _ = out.flush();
-            std::process::exit(1);
+            Self::exit_with_terminal_reset(&format!(
+                "Ошибка: не удалось скрыть курсор: {}",
+                e
+            ));
         }
 
         Self { out }
