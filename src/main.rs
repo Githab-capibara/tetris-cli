@@ -241,11 +241,12 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
 /// - Совместимость с termion::color::Color
 const MENU_COLOR: &dyn Color = &White;
 
-/// Задержка между опросами ввода для предотвращения высокой нагрузки на CPU.
+/// Задержка между кадрами для поддержания 60 FPS (в миллисекундах).
 ///
-/// Значение 16 мс выбрано для соответствия 60 FPS (1000 / 60 ≈ 16.67 мс).
-/// Это обеспечивает плавный отклик интерфейса при минимальной нагрузке на процессор.
-const INPUT_POLL_DELAY_MS: u64 = 16;
+/// Вычисляется как 1000 / 60 ≈ 16.67 мс.
+/// Используется в main.rs и game.rs для поддержания стабильного FPS.
+/// Экспортируется из lib.rs как FRAME_DELAY_MS.
+const FRAME_DELAY_MS: u64 = 16;
 
 /// Меню таблицы лидеров.
 ///
@@ -849,7 +850,8 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
         // Небольшая задержка для экономии ресурсов процессора
         // Без этого цикл работал бы на 100% CPU, постоянно опрашивая клавиатуру
         // 16 мс = ~60 опросов в секунду — достаточно для отзывчивости
-        sleep(Duration::from_millis(INPUT_POLL_DELAY_MS));
+        // Используется общая константа FRAME_DELAY_MS из lib.rs
+        sleep(Duration::from_millis(FRAME_DELAY_MS));
     }
 
     // ========================================================================
@@ -989,7 +991,8 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
 
         // Задержка для предотвращения высокой нагрузки на CPU
         // 16 мс = ~60 опросов в секунду
-        sleep(Duration::from_millis(INPUT_POLL_DELAY_MS));
+        // Используется общая константа FRAME_DELAY_MS из lib.rs
+        sleep(Duration::from_millis(FRAME_DELAY_MS));
     }
     // После нажатия клавиши функция завершается, управление возвращается в main()
 }
@@ -1146,7 +1149,8 @@ fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
 
         // Задержка для предотвращения высокой нагрузки на CPU
         // 16 мс = ~60 опросов в секунду — достаточно для отзывчивости
-        sleep(Duration::from_millis(INPUT_POLL_DELAY_MS));
+        // Используется общая константа FRAME_DELAY_MS из lib.rs
+        sleep(Duration::from_millis(FRAME_DELAY_MS));
     }
     // После нажатия клавиши функция завершается, управление возвращается в main()
 }
