@@ -23,10 +23,7 @@
 //! | I | Линия | Голубой | Четыре блока в вертикальный ряд |
 
 use crate::game::Dir;
-use rand::{
-    distributions::{Distribution, Standard},
-    random, Rng,
-};
+use rand::Rng;
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
 /// Генератор фигур по системе 7-bag.
@@ -233,37 +230,6 @@ pub enum ShapeType {
     I,
 }
 
-/// Распределение для случайного выбора фигуры.
-///
-/// **УСТАРЕВШЕЕ**: Используйте BagGenerator для честной генерации фигур.
-/// Этот метод оставлен только для обратной совместимости и тестов.
-///
-/// Реализует равномерное распределение: каждая из 7 фигур
-/// выбирается с вероятностью 1/7 (~14.28%).
-///
-/// ## Пример использования
-/// ```
-/// use rand::{random, Rng};
-/// use tetris_cli::tetromino::ShapeType;
-///
-/// let shape: ShapeType = random(); // Случайная фигура (не рекомендуется)
-/// ```
-impl Distribution<ShapeType> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ShapeType {
-        match rng.gen_range(0..7) {
-            0 => ShapeType::T,
-            1 => ShapeType::L,
-            2 => ShapeType::J,
-            3 => ShapeType::S,
-            4 => ShapeType::Z,
-            5 => ShapeType::O,
-            6 => ShapeType::I,
-            // Достижимо только при повреждении rng
-            _ => ShapeType::T,
-        }
-    }
-}
-
 /// Тетромино — падающая фигура.
 ///
 /// Содержит всю информацию о фигуре: тип, позицию, координаты блоков и цвет.
@@ -323,7 +289,16 @@ impl Tetromino {
     /// ```
     #[allow(dead_code)]
     pub fn select() -> Self {
-        let shape = random();
+        let shape = match rand::thread_rng().gen_range(0..7) {
+            0 => ShapeType::T,
+            1 => ShapeType::L,
+            2 => ShapeType::J,
+            3 => ShapeType::S,
+            4 => ShapeType::Z,
+            5 => ShapeType::O,
+            6 => ShapeType::I,
+            _ => ShapeType::T,
+        };
         Self {
             pos: (4.0, 0.0), // Начальная позиция по центру
             shape,

@@ -318,6 +318,7 @@ dependencies = [
  "serde",
  "serde_json",
  "termion",
+ "u256",
 ]
 
 [[package]]
@@ -348,6 +349,12 @@ checksum = "f4f7f0dd8d50a853a531c426359045b1998f04219d88799810762cd4ad314234"
 dependencies = [
  "serde",
 ]
+
+[[package]]
+name = "u256"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "525b9343eaa3c244a4af0fc3c93725f6e6804d250a7a316461780c28fafcba08"
 
 [[package]]
 name = "unicode-ident"
