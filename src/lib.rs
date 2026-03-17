@@ -641,6 +641,14 @@ mod testes {
     pub mod test_io_detailed;
     pub mod test_scoring_detailed;
     pub mod test_tetromino_shapes;
+
+    // Тесты исправленных проблем (18 тестов)
+    pub mod test_controls_path_validation;
+    pub mod test_game_bounds_check;
+    pub mod test_game_wall_kick;
+    pub mod test_highscore_integrity;
+    pub mod test_highscore_rate_limiting;
+    pub mod test_highscore_u256_fix;
 }
 
 #[cfg(test)]
