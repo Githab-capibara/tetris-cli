@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs;
 use std::io;
+use std::path::Path;
 
 /// Конфигурация управления игрой.
 ///
@@ -92,6 +93,25 @@ impl ControlsConfig {
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
+        // Валидация пути: запрет абсолютных путей и path traversal
+        let path_obj = Path::new(path);
+
+        // Запрет абсолютных путей вне директории приложения
+        if path_obj.is_absolute() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Абсолютные пути не разрешены",
+            ));
+        }
+
+        // Запрет path traversal (..)
+        if path.contains("..") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Path traversal не разрешён",
+            ));
+        }
+
         let json =
             serde_json::to_string_pretty(self).map_err(|e| io::Error::other(e.to_string()))?;
         fs::write(path, json)?;
@@ -114,6 +134,25 @@ impl ControlsConfig {
     /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
     /// ```
     pub fn load_from_file(path: &str) -> io::Result<Self> {
+        // Валидация пути: запрет абсолютных путей и path traversal
+        let path_obj = Path::new(path);
+
+        // Запрет абсолютных путей вне директории приложения
+        if path_obj.is_absolute() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Абсолютные пути не разрешены",
+            ));
+        }
+
+        // Запрет path traversal (..)
+        if path.contains("..") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Path traversal не разрешён",
+            ));
+        }
+
         let json = fs::read_to_string(path)?;
         serde_json::from_str(&json)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
