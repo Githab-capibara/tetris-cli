@@ -631,3 +631,7 @@ mod testes {
     pub mod test_scoring_detailed;
     pub mod test_tetromino_shapes;
 }
+
+#[cfg(test)]
+/// Тесты для исправленных проблем (критические баги, оптимизации).
+pub mod test_fixes;

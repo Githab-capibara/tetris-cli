@@ -24,10 +24,11 @@ use serde::{Deserialize, Serialize};
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку вида "a3f7b2c1d4e5f678901234567890123456789012345678901234567890123456"
-fn get_random_hash() -> String {
+pub fn get_random_hash() -> String {
+    use rand::RngCore;
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-                               // Используем криптографически стойкий генератор случайных чисел
-    getrandom::getrandom(&mut bytes).expect("Не удалось сгенерировать случайные байты");
+                               // Используем криптографически стойкий генератор
+    rand::thread_rng().fill_bytes(&mut bytes);
     // Конвертируем в hex строку
     bytes.iter().map(|&b| format!("{:x}", b)).collect()
 }
@@ -185,12 +186,25 @@ impl LeaderboardEntry {
     /// assert_eq!(entry.score, 1000);
     /// ```
     pub fn new(name: String, score: u64) -> Self {
+        // Валидация имени - заменяем пустые имена на "Anonymous"
+        let valid_name = if name.trim().is_empty() {
+            "Anonymous".to_string()
+        } else {
+            // Обрезаем пробелы и ограничиваем длину имени до 20 символов
+            let trimmed = name.trim();
+            if trimmed.len() > 20 {
+                trimmed[..20].to_string()
+            } else {
+                trimmed.to_string()
+            }
+        };
+
         let salt = get_random_hash();
-        let salt_and_score = format!("{}{}{}", salt, name, score);
+        let salt_and_score = format!("{}{}{}", salt, valid_name, score);
         let hash = get_hash(&salt_and_score);
 
         Self {
-            name,
+            name: valid_name,
             score,
             salt,
             hash,
