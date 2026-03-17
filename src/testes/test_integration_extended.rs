@@ -169,7 +169,10 @@ fn test_curr_and_next_shapes_different() {
 /// Тест 11: GameState может сохранять рекорд
 #[test]
 fn test_gamestate_can_save_score() {
-    let state = GameState::new();
+    // Создаём состояние игры и добавляем очки
+    let mut state = GameState::new();
+    state.add_score_no_check(500); // Добавляем очки для теста
+
     let score = state.get_score();
 
     // Сохраняем рекорд
@@ -177,8 +180,12 @@ fn test_gamestate_can_save_score() {
 
     // Проверяем, что сохранение прошло без ошибок
     let loaded = SaveData::load_config();
-    // u64 всегда >= 0, проверяем что рекорд загрузился корректно
-    assert_eq!(loaded.assert_hs(), score, "Рекорд должен загрузиться");
+    // Проверяем что рекорд загрузился корректно (с учётом защиты от подделки)
+    let loaded_score = loaded.assert_hs();
+    assert_eq!(
+        loaded_score, score,
+        "Рекорд должен загрузиться и быть валидным"
+    );
 }
 
 /// Тест 12: Leaderboard добавляет рекорд из игры

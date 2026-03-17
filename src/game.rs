@@ -131,6 +131,9 @@ pub const MARATHON_LINES: u32 = 150;
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
 
+/// Интервал анимации мигания Hard Drop в миллисекундах.
+pub const HARD_DROP_ANIM_INTERVAL_MS: u16 = 50;
+
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
 pub enum Dir {
@@ -494,6 +497,7 @@ impl GameState {
         let next_shape = Tetromino::from_bag(&mut bag);
         let mut stats = GameStats::new();
         stats.add_piece(curr_shape.shape);
+        stats.start_timer();
         Self {
             score: 0,
             level: 1,
@@ -526,6 +530,7 @@ impl GameState {
         let next_shape = Tetromino::from_bag(&mut bag);
         let mut stats = GameStats::new();
         stats.add_piece(curr_shape.shape);
+        stats.start_timer();
         Self {
             score: 0,
             level: 1,
@@ -1033,11 +1038,11 @@ impl GameState {
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         // Кэшируем время один раз для всех блоков фигуры (оптимизация)
         let shape_symbol = if self.is_hard_dropping {
-            // Мигание: чередуем символы каждые 50 мс
+            // Мигание: чередуем символы каждые HARD_DROP_ANIM_INTERVAL_MS мс
             // Используем время от начала игры для анимации
             let animation_time = self.stats.get_elapsed_time();
             let millis = (animation_time * 1000.0) as u16;
-            if (millis / 50).is_multiple_of(2) {
+            if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(2) {
                 SHAPE_STR
             } else {
                 "░░"
@@ -1376,6 +1381,7 @@ impl GameState {
     }
 
     /// Начать отсчёт времени игры.
+    #[allow(dead_code)]
     pub fn start_timer(&mut self) {
         self.stats.start_timer();
     }

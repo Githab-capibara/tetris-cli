@@ -625,9 +625,6 @@ fn run_game_mode(
     save_to_leaderboard: bool,
     leaderboard: &mut Leaderboard,
 ) -> u64 {
-    // Запуск таймера
-    state.start_timer();
-
     // Запуск игрового цикла
     let new_score = state.play(cnv, inp, hs_str);
 
