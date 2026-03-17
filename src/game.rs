@@ -87,6 +87,22 @@ const BORDER_COLOR: &dyn Color = &White;
 /// Учитывает заголовки (Счёт, Рекорд, Уровень, Линии) и верхнюю границу.
 const SHAPE_DRAW_OFFSET: i16 = 5;
 
+/// Смещение отрисовки фигур по горизонтали (для предпросмотра).
+const DRAW_OFFSET_X: i16 = 2;
+
+/// Таблица смещений для wall kick (Super Rotation System - упрощённая).
+/// Используется при вращении фигур рядом со стенами.
+const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
+    (-1, 0),  // Влево на 1
+    (1, 0),   // Вправо на 1
+    (-2, 0),  // Влево на 2
+    (2, 0),   // Вправо на 2
+    (0, -1),  // Вверх на 1 (для случаев у пола)
+    (-1, -1), // Влево и вверх
+    (1, -1),  // Вправо и вверх
+    (0, 1),   // Вниз на 1 (для случаев у потолка)
+];
+
 /// Начальная скорость падения.
 ///
 /// Измеряется в блоках за секунду.
@@ -569,6 +585,7 @@ impl GameState {
         loop {
             // Поддержание стабильного FPS - расчёт дельты времени
             let now = Instant::now();
+            // Безопасное преобразование: subsec_millis() возвращает u32 (0-999)
             let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
             if delta_time_ms < interval_ms {
                 // Сон для экономии CPU и поддержания стабильного FPS
@@ -668,16 +685,12 @@ impl GameState {
                 }
             }
             Some(b'q') => {
-                // Вращение против часовой стрелки
-                if self.can_rotate_curr_shape(Dir::Left) {
-                    self.curr_shape.rotate(Dir::Left);
-                }
+                // Вращение против часовой стрелки со wall kick
+                self.rotate_with_wall_kick(Dir::Left);
             }
             Some(b'e') => {
-                // Вращение по часовой стрелке
-                if self.can_rotate_curr_shape(Dir::Right) {
-                    self.curr_shape.rotate(Dir::Right);
-                }
+                // Вращение по часовой стрелке со wall kick
+                self.rotate_with_wall_kick(Dir::Right);
             }
             Some(b'w') => {
                 // Hard Drop: мгновенное падение с бонусными очками
@@ -685,7 +698,8 @@ impl GameState {
                 while self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
                 }
-                let drop_distance = (self.curr_shape.pos.1 - start_y) as u64;
+                // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
+                let drop_distance = (self.curr_shape.pos.1 - start_y).max(0.0) as u64;
                 // Бонусные очки: 2 за каждую ячейку высоты
                 self.score += drop_distance * HARD_DROP_POINTS;
                 // Фиксируем таймер для немедленного приземления
@@ -713,6 +727,7 @@ impl GameState {
         // Обработка падения фигуры
         if self.can_move_curr_shape(Dir::Down) {
             // Плавное падение с учётом скорости и времени
+            // Безопасное преобразование: delta_time_ms всегда положительное
             self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / 1_000.0);
         } else if self.land_timer > 0.0 {
             // Таймер задержки перед фиксацией (даёт время на перемещение)
@@ -792,6 +807,7 @@ impl GameState {
     /// и записывает цвет фигуры в соответствующие клетки.
     fn save_tetromino(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
+        // Безопасное преобразование координат: позиция фигуры всегда в пределах поля
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
         for coord in self.curr_shape.coords {
@@ -801,6 +817,9 @@ impl GameState {
 
             // Проверка границ перед записью (защита от паники при отрицательных координатах)
             if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
+                // Debug assertion для проверки безопасности cast в usize
+                debug_assert!(y >= 0 && (y as usize) < GRID_HEIGHT);
+                debug_assert!(x >= 0 && (x as usize) < GRID_WIDTH);
                 self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
@@ -1131,7 +1150,7 @@ impl GameState {
         // Отрисовка блоков следующей фигуры
         for coord in self.next_shape.coords {
             let (coord_x, coord_y) = coord;
-            let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16 + 2;
+            let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16 + DRAW_OFFSET_X;
             let y = preview_y as i16 + coord_y + 1;
 
             if x >= 0 && y >= 0 {
@@ -1159,7 +1178,7 @@ impl GameState {
             // Отрисовка блоков удержанной фигуры
             for coord in held.coords {
                 let (coord_x, coord_y) = coord;
-                let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16;
+                let x = preview_x as i16 + coord_x * SHAPE_WIDTH as i16 + DRAW_OFFSET_X;
                 let y = preview_y as i16 + coord_y + 1;
 
                 if x >= 0 && y >= 0 {
@@ -1289,6 +1308,49 @@ impl GameState {
 
         // Проверка вращения без смещения по направлению
         self.check_rotation_collision(&temp_shape.coords, temp_shape.pos)
+    }
+
+    /// Попытаться вратить фигуру со смещением (базовый wall kick).
+    ///
+    /// Если прямое вращение невозможно, пробует различные смещения из таблицы WALL_KICK_OFFSETS:
+    /// - Влево/вправо на 1-2 клетки
+    /// - Вверх/вниз на 1 клетку
+    /// - Комбинированные смещения
+    ///
+    /// # Аргументы
+    /// * `dir` - направление вращения (Left или Right)
+    ///
+    /// # Возвращает
+    /// `true` если вращение (возможно со смещением) успешно
+    pub fn rotate_with_wall_kick(&mut self, dir: Dir) -> bool {
+        // Сначала пробуем прямое вращение
+        if self.can_rotate_curr_shape(dir) {
+            self.curr_shape.rotate(dir);
+            return true;
+        }
+
+        // Используем таблицу смещений для wall kick
+        for (offset_x, offset_y) in WALL_KICK_OFFSETS {
+            // Создаём временную копию фигуры
+            let mut temp_shape = self.curr_shape;
+            temp_shape.pos.0 += offset_x as f32;
+            temp_shape.pos.1 += offset_y as f32;
+
+            // Пробуем вращение
+            temp_shape.rotate(dir);
+
+            // Проверяем, возможно ли вращение со смещением
+            if self.check_rotation_collision(&temp_shape.coords, temp_shape.pos) {
+                // Вращение со смещением возможно - применяем
+                self.curr_shape.pos.0 += offset_x as f32;
+                self.curr_shape.pos.1 += offset_y as f32;
+                self.curr_shape.rotate(dir);
+                return true;
+            }
+        }
+
+        // Ни одно смещение не помогло
+        false
     }
 
     /// Проверить возможность вращения фигуры (без смещения).

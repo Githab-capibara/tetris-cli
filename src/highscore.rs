@@ -13,6 +13,7 @@
 
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
+use std::time::{Duration, Instant};
 
 // ===========================================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -23,7 +24,7 @@ use serde::{Deserialize, Serialize};
 /// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
-/// Возвращает строку вида "a3f7b2c1d4e5f678901234567890123456789012345678901234567890123456"
+/// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
 pub fn get_random_hash() -> String {
     use rand::rngs::OsRng;
     use rand::RngCore;
@@ -32,8 +33,11 @@ pub fn get_random_hash() -> String {
                                // Используем криптографически стойкий генератор случайных чисел ОС.
     OsRng.fill_bytes(&mut bytes);
 
-    // Конвертируем в hex строку с ведущими нулями (гарантирует 64 символа)
-    bytes.iter().map(|&b| format!("{:02x}", b)).collect()
+    // Конвертируем в hex строку (гарантирует ровно 64 символа)
+    bytes
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>()
 }
 
 /// Получить хэш строки в шестнадцатеричном формате.
@@ -83,18 +87,34 @@ pub struct LeaderboardEntry {
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
+    /// Время последней записи для rate limiting.
+    #[serde(skip)]
+    last_write_time: Option<Instant>,
+    /// Задержка между записями (rate limiting).
+    #[serde(skip)]
+    write_cooldown: Duration,
 }
 
 impl SaveData {
     /// Загрузить конфигурацию из файла.
     ///
     /// # Возвращает
-    /// SaveData по умолчанию при ошибке загрузки
+    /// SaveData по умолчанию при ошибке загрузки или при обнаружении подделки
     pub fn load_config() -> Self {
-        match load(APP_NAME) {
-            Ok(data) => data,
+        match load::<Self>(APP_NAME) {
+            Ok(data) => {
+                // Дополнительная проверка целостности
+                if data.assert_hs() == 0 && data.high_score != 0 {
+                    eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
+                    return Self::default();
+                }
+                data
+            }
             Err(e) => {
-                eprintln!("Предупреждение: не удалось загрузить конфигурацию рекордов: {}. Используется значение по умолчанию.", e);
+                eprintln!(
+                    "Ошибка загрузки конфигурации: {}. Используется значение по умолчанию.",
+                    e
+                );
                 Self::default()
             }
         }
@@ -317,13 +337,16 @@ impl Leaderboard {
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
     pub fn load() -> Self {
-        match load(&format!("{}_leaderboard", APP_NAME)) {
+        let mut leaderboard: Self = match load(&format!("{}_leaderboard", APP_NAME)) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
                 eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {}. Используется пустая таблица.", e);
                 Self::default()
             }
-        }
+        };
+        // Инициализация rate limiting при загрузке
+        leaderboard.write_cooldown = Duration::from_secs(5);
+        leaderboard
     }
 
     /// Сохранить таблицу лидеров в файл конфигурации.
@@ -341,8 +364,15 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
-    /// `false` если рекорд недостаточно высок
+    /// `false` если рекорд недостаточно высок или срабатывает rate limiting
     pub fn add_score(&mut self, name: String, score: u64) -> bool {
+        // Rate limiting: не чаще 1 записи в 5 секунд
+        if let Some(last_time) = self.last_write_time {
+            if last_time.elapsed() < self.write_cooldown {
+                return false;
+            }
+        }
+
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный рекорд
@@ -363,6 +393,9 @@ impl Leaderboard {
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
             self.entries.truncate(MAX_LEADERBOARD_SIZE);
         }
+
+        // Обновление времени последней записи
+        self.last_write_time = Some(Instant::now());
 
         true
     }
