@@ -184,10 +184,7 @@ impl Canvas {
         };
 
         if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
-            Self::exit_with_terminal_reset(&format!(
-                "Ошибка: не удалось очистить экран: {}",
-                e
-            ));
+            Self::exit_with_terminal_reset(&format!("Ошибка: не удалось очистить экран: {}", e));
         }
 
         if let Err(e) = out.flush() {
@@ -198,10 +195,7 @@ impl Canvas {
         }
 
         if let Err(e) = write!(out, "{}", Hide) {
-            Self::exit_with_terminal_reset(&format!(
-                "Ошибка: не удалось скрыть курсор: {}",
-                e
-            ));
+            Self::exit_with_terminal_reset(&format!("Ошибка: не удалось скрыть курсор: {}", e));
         }
 
         Self { out }

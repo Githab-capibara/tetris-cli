@@ -25,10 +25,13 @@ use serde::{Deserialize, Serialize};
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку вида "a3f7b2c1d4e5f678901234567890123456789012345678901234567890123456"
 pub fn get_random_hash() -> String {
+    use rand::rngs::OsRng;
     use rand::RngCore;
+
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-                               // Используем криптографически стойкий генератор
-    rand::thread_rng().fill_bytes(&mut bytes);
+                               // Используем криптографически стойкий генератор случайных чисел ОС.
+    OsRng.fill_bytes(&mut bytes);
+
     // Конвертируем в hex строку с ведущими нулями (гарантирует 64 символа)
     bytes.iter().map(|&b| format!("{:02x}", b)).collect()
 }
@@ -168,6 +171,32 @@ impl Default for SaveData {
     }
 }
 
+/// Санитизировать имя игрока для таблицы лидеров.
+///
+/// Правила:
+/// - trim
+/// - разрешены только буквы/цифры и символы: '_', '-', ' ', '.'
+/// - максимум 20 символов
+/// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
+fn sanitize_player_name(name: &str) -> String {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return "Anonymous".to_string();
+    }
+
+    let validated: String = trimmed
+        .chars()
+        .filter(|&c| is_valid_name_char(c))
+        .take(20)
+        .collect();
+
+    if validated.is_empty() {
+        "Anonymous".to_string()
+    } else {
+        validated
+    }
+}
+
 impl LeaderboardEntry {
     /// Создать новую запись в таблице лидеров.
     ///
@@ -186,26 +215,7 @@ impl LeaderboardEntry {
     /// assert_eq!(entry.score, 1000);
     /// ```
     pub fn new(name: String, score: u64) -> Self {
-        // Валидация имени - заменяем пустые имена на "Anonymous"
-        let valid_name = if name.trim().is_empty() {
-            "Anonymous".to_string()
-        } else {
-            // Обрезаем пробелы и ограничиваем длину имени до 20 символов
-            let trimmed = name.trim();
-            // Валидация символов - разрешены только буквы, цифры, '_', '-', ' ', '.'
-            let validated: String = trimmed
-                .chars()
-                .filter(|&c| is_valid_name_char(c))
-                .take(20)
-                .collect();
-            
-            // Если после фильтрации имя пустое, используем "Anonymous"
-            if validated.is_empty() {
-                "Anonymous".to_string()
-            } else {
-                validated
-            }
-        };
+        let valid_name = sanitize_player_name(&name);
 
         let salt = get_random_hash();
         let salt_and_score = format!("{}{}{}", salt, valid_name, score);
@@ -253,6 +263,53 @@ fn is_valid_name_char(c: char) -> bool {
     c.is_alphanumeric() || c == '_' || c == '-' || c == ' ' || c == '.'
 }
 
+#[cfg(test)]
+mod sanitize_tests {
+    use super::*;
+
+    #[test]
+    fn test_sanitize_player_name_empty_to_anonymous() {
+        assert_eq!(sanitize_player_name(""), "Anonymous");
+        assert_eq!(sanitize_player_name("   \t\n"), "Anonymous");
+    }
+
+    #[test]
+    fn test_sanitize_player_name_filters_invalid_chars_and_fallback() {
+        // Все символы невалидны -> fallback
+        assert_eq!(sanitize_player_name("@@@###"), "Anonymous");
+
+        // Смешанное имя -> остаются только разрешённые
+        assert_eq!(sanitize_player_name("Pl@yer!_1"), "Plyer_1");
+    }
+
+    #[test]
+    fn test_sanitize_player_name_truncates_to_20_chars() {
+        let name = "abcdefghijklmnopqrstuvwxyz";
+        let sanitized = sanitize_player_name(name);
+        assert_eq!(sanitized.chars().count(), 20);
+        assert_eq!(sanitized, "abcdefghijklmnopqrst");
+    }
+
+    #[test]
+    fn test_get_random_hash_length_and_hex() {
+        let hash = get_random_hash();
+        assert_eq!(hash.len(), 64);
+        assert!(hash.chars().all(|c| c.is_ascii_hexdigit()));
+    }
+
+    #[test]
+    fn test_get_random_hash_uniqueness_smoke() {
+        let a = get_random_hash();
+        let b = get_random_hash();
+        assert_ne!(a, b, "Две соли подряд не должны совпадать (smoke test)");
+    }
+
+    #[test]
+    fn test_get_random_hash_is_lowercase_hex() {
+        let hash = get_random_hash();
+        assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
+    }
+}
 
 impl Leaderboard {
     /// Загрузить таблицу лидеров из файла конфигурации.
