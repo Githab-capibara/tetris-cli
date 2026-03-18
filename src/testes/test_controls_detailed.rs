@@ -238,7 +238,7 @@ fn test_load_config_from_file() {
     assert!(loaded.is_ok(), "Загрузка должна быть успешной");
     assert_eq!(
         original.move_left,
-        loaded.unwrap().move_left,
+        loaded.expect("Загрузка должна быть успешной").move_left,
         "Загруженная конфигурация должна совпадать"
     );
 
@@ -257,7 +257,7 @@ fn test_save_load_full_cycle() {
     let _ = original.save_to_file(test_path);
 
     // Загружаем
-    let loaded = ControlsConfig::load_from_file(test_path).unwrap();
+    let loaded = ControlsConfig::load_from_file(test_path).expect("Загрузка должна быть успешной");
 
     // Сравниваем
     assert_eq!(original, loaded, "Конфигурации должны совпадать");
@@ -289,8 +289,10 @@ fn test_save_different_configs() {
     let _ = config1.save_to_file(test_path1);
     let _ = config2.save_to_file(test_path2);
 
-    let loaded1 = ControlsConfig::load_from_file(test_path1).unwrap();
-    let loaded2 = ControlsConfig::load_from_file(test_path2).unwrap();
+    let loaded1 = ControlsConfig::load_from_file(test_path1)
+        .expect("Загрузка конфигурации 1 должна быть успешной");
+    let loaded2 = ControlsConfig::load_from_file(test_path2)
+        .expect("Загрузка конфигурации 2 должна быть успешной");
 
     assert_ne!(
         loaded1.move_left, loaded2.move_left,

@@ -214,7 +214,7 @@ fn test_edge_cases_create_1000_tetromino() {
 fn test_edge_cases_bag_10000_shapes() {
     let mut bag = BagGenerator::new();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let shape = bag.next_shape();
         assert!((shape as usize) < 7);
     }
@@ -401,7 +401,7 @@ fn test_edge_cases_movement_at_floor_no_panic() {
 fn test_edge_cases_bag_100k_no_panic() {
     let mut bag = BagGenerator::new();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _ = bag.next_shape();
     }
 
@@ -480,7 +480,7 @@ fn test_edge_cases_get_held_shape_no_panic() {
 fn test_edge_cases_performance_create_10k_states() {
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _state = GameState::new();
     }
 
@@ -494,7 +494,7 @@ fn test_edge_cases_performance_bag_100k() {
     let mut bag = BagGenerator::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _ = bag.next_shape();
     }
 
@@ -508,7 +508,7 @@ fn test_edge_cases_performance_rotation_100k() {
     let mut state = GameState::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         if state.can_rotate_curr_shape(crate::game::Dir::Right) {
             state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
         }
@@ -524,7 +524,7 @@ fn test_edge_cases_performance_movement_100k() {
     let state = GameState::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _ = state.can_move_curr_shape(crate::game::Dir::Down);
     }
 
@@ -538,7 +538,7 @@ fn test_edge_cases_performance_collision_100k() {
     let state = GameState::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _ = state.can_move_curr_shape(crate::game::Dir::Down);
         let _ = state.can_move_curr_shape(crate::game::Dir::Left);
         let _ = state.can_move_curr_shape(crate::game::Dir::Right);
@@ -553,7 +553,7 @@ fn test_edge_cases_performance_collision_100k() {
 fn test_edge_cases_performance_hold_10k() {
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let mut state = GameState::new();
         state.hold_shape();
     }
@@ -568,7 +568,7 @@ fn test_edge_cases_performance_get_blocks_10k() {
     let state = GameState::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _blocks = state.get_blocks();
     }
 
@@ -582,7 +582,7 @@ fn test_edge_cases_performance_get_stats_10k() {
     let state = GameState::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _stats = state.get_stats();
     }
 
@@ -595,7 +595,7 @@ fn test_edge_cases_performance_get_stats_10k() {
 fn test_edge_cases_performance_select_100k() {
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _t = Tetromino::select();
     }
 
@@ -608,7 +608,7 @@ fn test_edge_cases_performance_select_100k() {
 fn test_edge_cases_performance_bag_new_10k() {
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _bag = BagGenerator::new();
     }
 

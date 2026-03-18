@@ -54,7 +54,7 @@ fn test_edge_cases_max_score() {
     let mut state = GameState::new();
 
     // Симулируем большой счёт (1 000 000 очков)
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         state.add_score_no_check(100);
     }
 
@@ -122,14 +122,14 @@ fn test_edge_cases_bag_70000_shapes() {
     let mut bag = BagGenerator::new();
     let mut counts = [0; 7];
 
-    // Генерируем 70000 фигур (10000 полных мешков)
-    for _ in 0..70000 {
+    // Генерируем 70_000 фигур (10_000 полных мешков)
+    for _ in 0..70_000 {
         let shape = bag.next_shape();
         counts[shape as usize] += 1;
     }
 
-    // Каждая фигура должна встретиться ровно 10000 раз
-    let expected = 10000;
+    // Каждая фигура должна встретиться ровно 10_000 раз
+    let expected = 10_000;
     for (i, &count) in counts.iter().enumerate() {
         assert_eq!(
             count, expected,
@@ -175,7 +175,7 @@ fn test_stress_rapid_rotation() {
     let mut state = GameState::new();
 
     // 10000 вращений
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         if state.can_rotate_curr_shape(crate::game::Dir::Right) {
             state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
         }
@@ -213,7 +213,7 @@ fn test_stress_create_10000_states() {
     let start = std::time::Instant::now();
 
     // Создаём 10000 состояний
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _state = GameState::new();
     }
 
@@ -381,7 +381,7 @@ fn test_long_bag_100000_shapes() {
     let mut counts = [0; 7];
 
     // Генерируем 100000 фигур
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let shape = bag.next_shape();
         counts[shape as usize] += 1;
     }

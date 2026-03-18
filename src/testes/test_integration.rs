@@ -373,7 +373,7 @@ fn test_performance_bag_generator() {
     let start = std::time::Instant::now();
 
     // Генерируем 10000 фигур
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _shape = bag.next_shape();
     }
 
@@ -395,7 +395,7 @@ fn test_performance_collision_detection() {
     let start = std::time::Instant::now();
 
     // Выполняем 10000 проверок столкновений
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _ = state.can_move_curr_shape(Dir::Down);
         let _ = state.can_move_curr_shape(Dir::Left);
         let _ = state.can_move_curr_shape(Dir::Right);
@@ -419,7 +419,7 @@ fn test_performance_rotation() {
     let start = std::time::Instant::now();
 
     // Выполняем 10000 вращений
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         tetromino.rotate(Dir::Right);
     }
 
@@ -463,7 +463,7 @@ fn test_performance_controls_validation() {
     let start = std::time::Instant::now();
 
     // Выполняем 10000 валидаций
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _ = config.validate();
     }
 

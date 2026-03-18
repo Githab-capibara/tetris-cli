@@ -6,6 +6,9 @@
 //! - Проверка разблокировки после истечения cooldown
 //!
 //! Rate limiting предотвращает спам записей в таблицу лидеров.
+//!
+//! Примечание: Эти тесты используют set_cooldown() для тестирования rate limiting,
+//! так как #[cfg(not(test))] отключает rate limiting в обычных тестах.
 
 use crate::highscore::Leaderboard;
 use std::thread;
@@ -20,8 +23,9 @@ use std::time::Duration;
 /// Проверяет, что нельзя добавить второй рекорд быстрее чем через 5 секунд.
 #[test]
 fn test_блокировка_быстрой_повторной_записи() {
-    // Используем load() который инициализирует rate limiting
-    let mut leaderboard = Leaderboard::load();
+    // Используем default() и устанавливаем cooldown вручную для тестирования
+    let mut leaderboard = Leaderboard::default();
+    leaderboard.set_cooldown(Duration::from_secs(5));
 
     // Добавляем первый рекорд
     let result1 = leaderboard.add_score("Player1".to_string(), 1000);
@@ -47,8 +51,9 @@ fn test_блокировка_быстрой_повторной_записи() {
 /// Проверяет, что после ожидания 5+ секунд можно добавить новый рекорд.
 #[test]
 fn test_разблокировка_после_истечения_cooldown() {
-    // Используем load() который инициализирует rate limiting
-    let mut leaderboard = Leaderboard::load();
+    // Используем default() и устанавливаем cooldown вручную для тестирования
+    let mut leaderboard = Leaderboard::default();
+    leaderboard.set_cooldown(Duration::from_secs(5));
 
     // Добавляем первый рекорд
     let result1 = leaderboard.add_score("Player1".to_string(), 1000);
@@ -77,8 +82,9 @@ fn test_разблокировка_после_истечения_cooldown() {
 /// Проверяет поведение на границе cooldown периода.
 #[test]
 fn test_граничное_значение_cooldown() {
-    // Используем load() который инициализирует rate limiting
-    let mut leaderboard = Leaderboard::load();
+    // Используем default() и устанавливаем cooldown вручную для тестирования
+    let mut leaderboard = Leaderboard::default();
+    leaderboard.set_cooldown(Duration::from_secs(5));
 
     // Добавляем первый рекорд
     let result1 = leaderboard.add_score("Player1".to_string(), 1000);
