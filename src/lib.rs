@@ -140,7 +140,7 @@
 //! // Получение записей
 //! let entries = leaderboard.get_entries();
 //! for entry in entries {
-//!     println!("{}: {}", entry.name, entry.score);
+//!     println!("{}: {}", entry.name(), entry.score());
 //! }
 //! ```
 //!
@@ -649,6 +649,9 @@ mod testes {
     pub mod test_highscore_integrity;
     pub mod test_highscore_rate_limiting;
     pub mod test_highscore_u256_fix;
+
+    // Тесты верификации всех исправлений аудита (27 тестов)
+    pub mod test_fixes_verification;
 }
 
 #[cfg(test)]
