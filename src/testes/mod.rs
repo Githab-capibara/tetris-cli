@@ -81,3 +81,6 @@ pub mod test_game_wall_kick;
 pub mod test_highscore_integrity;
 pub mod test_highscore_rate_limiting;
 pub mod test_highscore_u256_fix;
+
+// Тесты верификации всех исправлений аудита (27 тестов)
+pub mod test_fixes_verification;
