@@ -255,7 +255,7 @@ mod unreadable_literals_tests {
         );
 
         // Проверяем правильность суммы (формула арифметической прогрессии)
-        let expected_sum = (iterations as u64) * (iterations as u64 - 1) / 2;
+        let expected_sum = iterations * (iterations - 1) / 2;
         assert_eq!(sum, expected_sum, "Sum must be correct");
     }
 
@@ -632,27 +632,27 @@ mod debug_assert_tests {
     #[test]
     fn test_rendering_without_debug_assert() {
         // Создаём тестовое поле
-        let mut blocks: Vec<Vec<i8>> = vec![vec![0; GRID_WIDTH as usize]; GRID_HEIGHT as usize];
+        let mut blocks: Vec<Vec<i8>> = vec![vec![0; GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем поле тестовыми значениями
-        for y in 0..GRID_HEIGHT as usize {
-            for x in 0..GRID_WIDTH as usize {
+        for y in 0..GRID_HEIGHT {
+            for x in 0..GRID_WIDTH {
                 blocks[y][x] = ((x + y) % 10) as i8;
             }
         }
 
         // Проверяем что поле заполнено корректно
-        assert_eq!(blocks.len(), GRID_HEIGHT as usize, "Grid height must match");
+        assert_eq!(blocks.len(), GRID_HEIGHT, "Grid height must match");
         assert_eq!(
             blocks[0].len(),
-            GRID_WIDTH as usize,
+            GRID_WIDTH,
             "Grid width must match"
         );
 
         // Проверяем что значения в пределах допустимого диапазона
         for row in &blocks {
             for &cell in row {
-                assert!(cell >= 0 && cell <= 9, "Cell value must be between 0 and 9");
+                assert!((0..=9).contains(&cell), "Cell value must be between 0 and 9");
             }
         }
     }
@@ -715,15 +715,15 @@ mod debug_assert_tests {
         use std::time::Instant;
 
         // Создаём поле
-        let mut blocks: Vec<Vec<i8>> = vec![vec![0; GRID_WIDTH as usize]; GRID_HEIGHT as usize];
+        let mut blocks: Vec<Vec<i8>> = vec![vec![0; GRID_WIDTH]; GRID_HEIGHT];
 
         // Стресс-тест: 10_000 операций записи
         let iterations = 10_000;
         let start = Instant::now();
 
         for i in 0..iterations {
-            let x = (i % GRID_WIDTH as usize) as i16;
-            let y = ((i / GRID_WIDTH as usize) % GRID_HEIGHT as usize) as i16;
+            let x = (i % GRID_WIDTH) as i16;
+            let y = ((i / GRID_WIDTH) % GRID_HEIGHT) as i16;
 
             // Проверка границ перед записью (как в game.rs)
             if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
