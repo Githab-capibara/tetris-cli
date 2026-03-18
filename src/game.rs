@@ -699,9 +699,18 @@ impl GameState {
                     self.curr_shape.pos.1 += 1.0;
                 }
                 // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
-                let drop_distance = (self.curr_shape.pos.1 - start_y).max(0.0) as u64;
+                // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
+                let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
+                    .max(0.0)
+                    .min(u16::MAX as f32);
+                let drop_distance = if drop_distance_f32.is_finite() {
+                    drop_distance_f32 as u64
+                } else {
+                    0 // Защита от NaN/infinity
+                };
                 // Бонусные очки: 2 за каждую ячейку высоты
-                self.score += drop_distance * HARD_DROP_POINTS;
+                // Используем saturating_add для защиты от переполнения
+                self.score = self.score.saturating_add(drop_distance * HARD_DROP_POINTS);
                 // Фиксируем таймер для немедленного приземления
                 self.land_timer = 0.0;
                 // Устанавливаем флаг для анимации
@@ -712,7 +721,8 @@ impl GameState {
                 if self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
                     // При каждом успешном шаге вниз считаем дистанцию для очков
-                    self.soft_drop_distance += 1;
+                    // Используем saturating_add для защиты от переполнения
+                    self.soft_drop_distance = self.soft_drop_distance.saturating_add(1);
                 }
             }
             Some(b'c' | b'C') => {
@@ -746,11 +756,17 @@ impl GameState {
             }
 
             // Фиксация фигуры и начисление очков
-            self.score += PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64;
+            // Используем saturating_add для защиты от переполнения
+            self.score = self
+                .score
+                .saturating_add(PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64);
 
             // Начисление очков за Soft Drop: 1 очко за ячейку
             if self.soft_drop_distance > 0 {
-                self.score += (self.soft_drop_distance as u64) * SOFT_DROP_POINTS;
+                // Используем saturating_add для защиты от переполнения
+                self.score = self
+                    .score
+                    .saturating_add((self.soft_drop_distance as u64) * SOFT_DROP_POINTS);
                 self.soft_drop_distance = 0;
             }
 
@@ -764,8 +780,11 @@ impl GameState {
                 // Удаление линий — увеличиваем комбо
                 self.stats.combo_counter += 1;
                 // Бонус за комбо: 50 × (комбо - 1)
+                // Используем saturating_add для защиты от переполнения
                 if self.stats.combo_counter > 1 {
-                    self.score += COMBO_BONUS * (self.stats.combo_counter - 1) as u64;
+                    self.score = self
+                        .score
+                        .saturating_add(COMBO_BONUS * (self.stats.combo_counter - 1) as u64);
                 }
             } else {
                 // Нет удаления — сбрасываем комбо
@@ -817,9 +836,6 @@ impl GameState {
 
             // Проверка границ перед записью (защита от паники при отрицательных координатах)
             if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
-                // Debug assertion для проверки безопасности cast в usize
-                debug_assert!(y >= 0 && (y as usize) < GRID_HEIGHT);
-                debug_assert!(x >= 0 && (x as usize) < GRID_WIDTH);
                 self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
@@ -961,7 +977,8 @@ impl GameState {
                 self.level = new_level;
                 // Бонус за повышение уровня: 500 × (номер уровня - 1)
                 // Уровень 2: 500, Уровень 3: 1000, Уровень 11: 5000
-                self.score += 500 * (new_level - 1) as u64;
+                // Используем saturating_add для защиты от переполнения
+                self.score = self.score.saturating_add(500 * (new_level - 1) as u64);
             }
 
             // Увеличение скорости игры
@@ -983,12 +1000,16 @@ impl GameState {
             // Используем битовый сдвиг для эффективности: 1 << n = 2^n
             // remove_count гарантированно > 0 благодаря проверке выше
             // =================================================================
-            self.score += ROW_SCORE_INC * (1 << (remove_count - 1));
+            // Используем saturating_add для защиты от переполнения
+            self.score = self
+                .score
+                .saturating_add(ROW_SCORE_INC * (1 << (remove_count - 1)));
 
             // Бонус за Tetris (4 линии одновременно)
             // Дополнительный бонус 1000 очков сверх базовых 800
             if remove_count == 4 {
-                self.score += 1000; // Бонус за Tetris
+                // Используем saturating_add для защиты от переполнения
+                self.score = self.score.saturating_add(1000); // Бонус за Tetris
             }
         }
 
@@ -1078,12 +1099,15 @@ impl GameState {
             let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + 2;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET;
 
-            cnv.draw_strs(
-                &[shape_symbol],
-                (x as u16, y as u16),
-                SHAPE_COLORS[self.curr_shape.fg],
-                &Reset,
-            );
+            // Проверка границ перед отрисовкой для защиты от паники
+            if x >= 0 && y >= 0 {
+                cnv.draw_strs(
+                    &[shape_symbol],
+                    (x as u16, y as u16),
+                    SHAPE_COLORS[self.curr_shape.fg],
+                    &Reset,
+                );
+            }
         }
 
         // Отрисовка следующей фигуры (предпросмотр)
@@ -1483,9 +1507,10 @@ impl GameState {
     }
 
     /// Добавить очки без проверки (для тестов).
+    /// Использует saturating_add для защиты от переполнения
     #[allow(dead_code)]
     pub fn add_score_no_check(&mut self, points: u64) {
-        self.score += points;
+        self.score = self.score.saturating_add(points);
     }
 
     /// Остановить таймер игры.
@@ -1819,25 +1844,37 @@ mod game_tests {
 
         // Комбо 1: бонус 0 (первое удаление без бонуса)
         // Используем явное приведение для подавления предупреждения clippy
-        let combo_1_bonus: u64 = 0;
-        assert_eq!(combo_1_bonus, 0, "Бонус за первое комбо должен быть 0");
+        let combo_bonus_level_1: u64 = 0;
+        assert_eq!(
+            combo_bonus_level_1, 0,
+            "Бонус за первое комбо должен быть 0"
+        );
 
         // Комбо 2: бонус 50
-        let combo_2_bonus = COMBO_BONUS;
-        assert_eq!(combo_2_bonus, 50, "Бонус за второе комбо должен быть 50");
+        let combo_bonus_level_2 = COMBO_BONUS;
+        assert_eq!(
+            combo_bonus_level_2, 50,
+            "Бонус за второе комбо должен быть 50"
+        );
 
         // Комбо 3: бонус 100
-        let combo_3_bonus = COMBO_BONUS * 2;
-        assert_eq!(combo_3_bonus, 100, "Бонус за третье комбо должен быть 100");
+        let combo_bonus_level_3 = COMBO_BONUS * 2;
+        assert_eq!(
+            combo_bonus_level_3, 100,
+            "Бонус за третье комбо должен быть 100"
+        );
 
         // Комбо 5: бонус 200
-        let combo_5_bonus = COMBO_BONUS * 4;
-        assert_eq!(combo_5_bonus, 200, "Бонус за пятое комбо должен быть 200");
+        let combo_bonus_level_5 = COMBO_BONUS * 4;
+        assert_eq!(
+            combo_bonus_level_5, 200,
+            "Бонус за пятое комбо должен быть 200"
+        );
 
         // Комбо 10: бонус 450
-        let combo_10_bonus = COMBO_BONUS * 9;
+        let combo_bonus_level_10 = COMBO_BONUS * 9;
         assert_eq!(
-            combo_10_bonus, 450,
+            combo_bonus_level_10, 450,
             "Бонус за десятое комбо должен быть 450"
         );
     }

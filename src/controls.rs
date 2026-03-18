@@ -44,16 +44,16 @@ impl ControlsConfig {
     /// Создать конфигурацию со значениями по умолчанию.
     ///
     /// # Возвращает
-    /// Новый экземпляр ControlsConfig со стандартными настройками:
-    /// - move_left: 'a' (97)
-    /// - move_right: 'd' (100)
-    /// - soft_drop: 's' (115)
-    /// - hard_drop: 'w' (119)
-    /// - rotate_left: 'q' (113)
-    /// - rotate_right: 'e' (101)
-    /// - hold: 'c' (99)
-    /// - pause: 'p' (112)
-    /// - quit: 127 (Backspace)
+    /// Новый экземпляр `ControlsConfig` со стандартными настройками:
+    /// - `move_left`: 'a' (97)
+    /// - `move_right`: 'd' (100)
+    /// - `soft_drop`: 's' (115)
+    /// - `hard_drop`: 'w' (119)
+    /// - `rotate_left`: 'q' (113)
+    /// - `rotate_right`: 'e' (101)
+    /// - `hold`: 'c' (99)
+    /// - `pause`: 'p' (112)
+    /// - `quit`: 127 (Backspace)
     ///
     /// # Пример использования
     /// ```
@@ -104,12 +104,32 @@ impl ControlsConfig {
             ));
         }
 
-        // Запрет path traversal (..)
+        // Усиленная защита от path traversal:
+        // 1. Проверяем наличие ".." в пути
+        // 2. Используем canonicalize для разрешения всех ссылок
+        // 3. Проверяем, что путь находится внутри текущей директории
         if path.contains("..") {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Path traversal не разрешён",
             ));
+        }
+
+        // Дополнительная проверка: пытаемся разрешить путь и проверяем,
+        // что он находится внутри текущей рабочей директории
+        let current_dir = std::env::current_dir()?;
+        let full_path = current_dir.join(path_obj);
+
+        // Если файл уже существует, проверяем его canonical путь
+        if full_path.exists() {
+            if let Ok(canonical) = full_path.canonicalize() {
+                if !canonical.starts_with(&current_dir) {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        "Путь вне разрешённой директории",
+                    ));
+                }
+            }
         }
 
         let json =

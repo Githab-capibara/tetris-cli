@@ -776,7 +776,10 @@ fn test_extended_first_hold() {
 
     // Удержанная фигура должна совпадать с начальной
     assert_eq!(
-        state.get_held_shape().unwrap().shape,
+        state
+            .get_held_shape()
+            .expect("Удержанная фигура должна существовать")
+            .shape,
         initial_shape,
         "Удержанная фигура должна совпадать с начальной"
     );
@@ -816,7 +819,10 @@ fn test_extended_hold_swap() {
 
     // Удержанная фигура должна быть начальной
     assert_eq!(
-        state.get_held_shape().unwrap().shape,
+        state
+            .get_held_shape()
+            .expect("Удержанная фигура должна существовать")
+            .shape,
         initial_shape,
         "Удержанная фигура должна быть начальной"
     );
@@ -927,7 +933,9 @@ fn test_extended_held_shape_preserves_type() {
 
     state.hold_shape();
 
-    let held_shape = state.get_held_shape().unwrap();
+    let held_shape = state
+        .get_held_shape()
+        .expect("Удержанная фигура должна существовать");
     assert_eq!(
         held_shape.shape, initial_shape,
         "Удержанная фигура должна сохранять тип"
@@ -942,7 +950,9 @@ fn test_extended_held_shape_preserves_coords() {
 
     state.hold_shape();
 
-    let held_shape = state.get_held_shape().unwrap();
+    let held_shape = state
+        .get_held_shape()
+        .expect("Удержанная фигура должна существовать");
     assert_eq!(
         held_shape.coords, initial_coords,
         "Удержанная фигура должна сохранять координаты"
@@ -1414,7 +1424,7 @@ fn test_extended_bag_performance() {
     let mut bag = BagGenerator::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _ = bag.next_shape();
     }
 
@@ -1663,7 +1673,9 @@ fn test_extended_held_draw_coords() {
     let mut state = GameState::new();
     state.hold_shape();
 
-    let held = state.get_held_shape().unwrap();
+    let held = state
+        .get_held_shape()
+        .expect("Удержанная фигура должна существовать");
     assert_eq!(held.pos, (4.0, 0.0));
 }
 

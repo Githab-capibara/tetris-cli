@@ -320,7 +320,9 @@ fn test_controls_save_to_file() {
     );
 
     // Проверяем, что файл не пустой
-    let file_size = fs::metadata(test_path).unwrap().len();
+    let file_size = fs::metadata(test_path)
+        .expect("Метаданные файла должны быть доступны")
+        .len();
     assert!(file_size > 0, "Файл конфигурации не должен быть пустым");
 
     // Очищаем тестовый файл
@@ -346,7 +348,7 @@ fn test_controls_load_from_file() {
         loaded_result.err()
     );
 
-    let loaded_config = loaded_result.unwrap();
+    let loaded_config = loaded_result.expect("Загрузка должна быть успешной");
     assert_eq!(
         original_config, loaded_config,
         "Загруженная конфигурация должна совпадать с оригиналом"

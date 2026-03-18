@@ -153,7 +153,7 @@ fn test_leaderboard_max_size() {
     let entries = leaderboard.get_entries();
     for entry in entries {
         assert!(
-            entry.score >= 300,
+            entry.score() >= 300,
             "В таблице должны остаться рекорды от 300 и выше"
         );
     }
@@ -176,11 +176,11 @@ fn test_leaderboard_sorting() {
     let entries = leaderboard.get_entries();
 
     // Проверяем порядок по убыванию
-    assert_eq!(entries[0].score, 2000, "Первый рекорд должен быть 2000");
-    assert_eq!(entries[1].score, 1000, "Второй рекорд должен быть 1000");
-    assert_eq!(entries[2].score, 500, "Третий рекорд должен быть 500");
-    assert_eq!(entries[3].score, 300, "Четвёртый рекорд должен быть 300");
-    assert_eq!(entries[4].score, 100, "Пятый рекорд должен быть 100");
+    assert_eq!(entries[0].score(), 2000, "Первый рекорд должен быть 2000");
+    assert_eq!(entries[1].score(), 1000, "Второй рекорд должен быть 1000");
+    assert_eq!(entries[2].score(), 500, "Третий рекорд должен быть 500");
+    assert_eq!(entries[3].score(), 300, "Четвёртый рекорд должен быть 300");
+    assert_eq!(entries[4].score(), 100, "Пятый рекорд должен быть 100");
 }
 
 // ============================================================================
@@ -197,11 +197,12 @@ fn test_leaderboard_entry_hash() {
 
     // Хэши должны быть разными из-за разной соли
     assert_ne!(
-        entry1.hash, entry2.hash,
+        entry1.hash(),
+        entry2.hash(),
         "Хэши должны отличаться из-за разной соли"
     );
-    assert!(!entry1.hash.is_empty(), "Хэш не должен быть пустым");
-    assert!(!entry2.hash.is_empty(), "Хэш не должен быть пустым");
+    assert!(!entry1.hash().is_empty(), "Хэш не должен быть пустым");
+    assert!(!entry2.hash().is_empty(), "Хэш не должен быть пустым");
 }
 
 /// Тест 12: Проверка уникальности соли
@@ -214,7 +215,8 @@ fn test_leaderboard_entry_salt_unique() {
 
     // Даже с одинаковыми данными хэши должны быть разными из-за разной соли
     assert_ne!(
-        entry1.hash, entry2.hash,
+        entry1.hash(),
+        entry2.hash(),
         "Хэши должны отличаться из-за разной соли"
     );
 }
@@ -229,7 +231,8 @@ fn test_hash_different_values() {
 
     // Хэши должны быть разными из-за разных очков
     assert_ne!(
-        entry1.hash, entry2.hash,
+        entry1.hash(),
+        entry2.hash(),
         "Хэши должны отличаться для разных очков"
     );
 }

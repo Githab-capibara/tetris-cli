@@ -352,7 +352,10 @@ fn test_hold_swap_mechanism() {
 
     // Удержанная фигура должна быть той, что была изначально
     assert_eq!(
-        state.get_held_shape().unwrap().shape,
+        state
+            .get_held_shape()
+            .expect("Удержанная фигура должна существовать")
+            .shape,
         initial_shape,
         "Удержанная фигура должна быть начальной фигурой"
     );

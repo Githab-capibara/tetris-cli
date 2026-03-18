@@ -281,9 +281,9 @@ fn test_leaderboard_sorts_scores() {
 
     let entries = leaderboard.get_entries();
 
-    assert_eq!(entries[0].score, 300, "Первый должен быть лучшим");
-    assert_eq!(entries[1].score, 200, "Второй должен быть средним");
-    assert_eq!(entries[2].score, 100, "Третий должен быть худшим");
+    assert_eq!(entries[0].score(), 300, "Первый должен быть лучшим");
+    assert_eq!(entries[1].score(), 200, "Второй должен быть средним");
+    assert_eq!(entries[2].score(), 100, "Третий должен быть худшим");
 }
 
 /// Тест 19: SaveData защита от подделки
@@ -642,7 +642,7 @@ fn test_fast_piece_rotation() {
 
     let start = std::time::Instant::now();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         t.rotate(crate::game::Dir::Right);
     }
 

@@ -72,18 +72,35 @@ pub struct SaveData {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
-    pub name: String,
+    name: String,
     /// Значение рекорда.
-    pub score: u64,
+    score: u64,
     /// Соль для хэша (защита от подделки).
     salt: String,
     /// Хэш записи с солью.
-    pub hash: String,
+    hash: String,
+}
+
+impl LeaderboardEntry {
+    /// Получить имя игрока.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Получить значение рекорда.
+    pub fn score(&self) -> u64 {
+        self.score
+    }
+
+    /// Получить хэш записи.
+    pub fn hash(&self) -> &str {
+        &self.hash
+    }
 }
 
 /// Таблица лидеров - коллекция из топ-5 рекордов.
 /// Сохраняется в конфигурационном файле и защищена от подделки.
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
@@ -93,6 +110,16 @@ pub struct Leaderboard {
     /// Задержка между записями (rate limiting).
     #[serde(skip)]
     write_cooldown: Duration,
+}
+
+impl Default for Leaderboard {
+    fn default() -> Self {
+        Self {
+            entries: Vec::new(),
+            last_write_time: None,
+            write_cooldown: Duration::from_secs(0), // По умолчанию rate limiting отключён
+        }
+    }
 }
 
 impl SaveData {
@@ -231,8 +258,8 @@ impl LeaderboardEntry {
     /// ```
     /// use tetris_cli::highscore::LeaderboardEntry;
     /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
-    /// assert_eq!(entry.name, "Player");
-    /// assert_eq!(entry.score, 1000);
+    /// assert_eq!(entry.name(), "Player");
+    /// assert_eq!(entry.score(), 1000);
     /// ```
     pub fn new(name: String, score: u64) -> Self {
         let valid_name = sanitize_player_name(&name);
@@ -281,54 +308,6 @@ impl LeaderboardEntry {
 /// `true` если символ допустим
 fn is_valid_name_char(c: char) -> bool {
     c.is_alphanumeric() || c == '_' || c == '-' || c == ' ' || c == '.'
-}
-
-#[cfg(test)]
-mod sanitize_tests {
-    use super::*;
-
-    #[test]
-    fn test_sanitize_player_name_empty_to_anonymous() {
-        assert_eq!(sanitize_player_name(""), "Anonymous");
-        assert_eq!(sanitize_player_name("   \t\n"), "Anonymous");
-    }
-
-    #[test]
-    fn test_sanitize_player_name_filters_invalid_chars_and_fallback() {
-        // Все символы невалидны -> fallback
-        assert_eq!(sanitize_player_name("@@@###"), "Anonymous");
-
-        // Смешанное имя -> остаются только разрешённые
-        assert_eq!(sanitize_player_name("Pl@yer!_1"), "Plyer_1");
-    }
-
-    #[test]
-    fn test_sanitize_player_name_truncates_to_20_chars() {
-        let name = "abcdefghijklmnopqrstuvwxyz";
-        let sanitized = sanitize_player_name(name);
-        assert_eq!(sanitized.chars().count(), 20);
-        assert_eq!(sanitized, "abcdefghijklmnopqrst");
-    }
-
-    #[test]
-    fn test_get_random_hash_length_and_hex() {
-        let hash = get_random_hash();
-        assert_eq!(hash.len(), 64);
-        assert!(hash.chars().all(|c| c.is_ascii_hexdigit()));
-    }
-
-    #[test]
-    fn test_get_random_hash_uniqueness_smoke() {
-        let a = get_random_hash();
-        let b = get_random_hash();
-        assert_ne!(a, b, "Две соли подряд не должны совпадать (smoke test)");
-    }
-
-    #[test]
-    fn test_get_random_hash_is_lowercase_hex() {
-        let hash = get_random_hash();
-        assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
-    }
 }
 
 impl Leaderboard {
@@ -446,5 +425,71 @@ impl Leaderboard {
     #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
+    }
+
+    /// Установить задержку rate limiting.
+    ///
+    /// # Аргументы
+    /// * `cooldown` - новая задержка между записями
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::highscore::Leaderboard;
+    /// use std::time::Duration;
+    ///
+    /// let mut leaderboard = Leaderboard::default();
+    /// leaderboard.set_cooldown(Duration::from_secs(0)); // Отключить для тестов
+    /// ```
+    #[cfg(test)]
+    pub fn set_cooldown(&mut self, cooldown: Duration) {
+        self.write_cooldown = cooldown;
+    }
+}
+
+#[cfg(test)]
+mod sanitize_tests {
+    use super::*;
+
+    #[test]
+    fn test_sanitize_player_name_empty_to_anonymous() {
+        assert_eq!(sanitize_player_name(""), "Anonymous");
+        assert_eq!(sanitize_player_name("   \t\n"), "Anonymous");
+    }
+
+    #[test]
+    fn test_sanitize_player_name_filters_invalid_chars_and_fallback() {
+        // Все символы невалидны -> fallback
+        assert_eq!(sanitize_player_name("@@@###"), "Anonymous");
+
+        // Смешанное имя -> остаются только разрешённые
+        assert_eq!(sanitize_player_name("Pl@yer!_1"), "Plyer_1");
+    }
+
+    #[test]
+    fn test_sanitize_player_name_truncates_to_20_chars() {
+        let name = "abcdefghijklmnopqrstuvwxyz";
+        let sanitized = sanitize_player_name(name);
+        assert_eq!(sanitized.chars().count(), 20);
+        assert_eq!(sanitized, "abcdefghijklmnopqrst");
+    }
+
+    #[test]
+    fn test_get_random_hash_length_and_hex() {
+        let hash = get_random_hash();
+        assert_eq!(hash.len(), 64);
+        assert!(hash.chars().all(|c| c.is_ascii_hexdigit()));
+    }
+
+    #[test]
+    fn test_get_random_hash_uniqueness_smoke() {
+        let a = get_random_hash();
+        let b = get_random_hash();
+        assert_ne!(a, b, "Две соли подряд не должны совпадать (smoke test)");
+    }
+
+    #[test]
+    fn test_get_random_hash_is_lowercase_hex() {
+        let hash = get_random_hash();
+        assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
     }
 }

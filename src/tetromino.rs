@@ -365,7 +365,11 @@ impl Tetromino {
             match dir {
                 Dir::Left => self.coords[i] = (y, -x), // Поворот против часовой
                 Dir::Right => self.coords[i] = (-y, x), // Поворот по часовой
-                Dir::Down => {}                        // Не используется
+                Dir::Down => {
+                    // Dir::Down не используется для вращения фигур
+                    // Оставляем координаты без изменений
+                    debug_assert!(false, "Dir::Down не ожидается в rotate()");
+                }
             }
         }
     }

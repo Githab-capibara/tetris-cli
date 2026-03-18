@@ -93,11 +93,12 @@ fn test_использование_соли_в_записях() {
     let entry2 = LeaderboardEntry::new("Player".to_string(), 5000);
 
     // Очки должны совпадать
-    assert_eq!(entry1.score, entry2.score, "Очки должны совпадать");
+    assert_eq!(entry1.score(), entry2.score(), "Очки должны совпадать");
 
     // Но хеши должны быть разными из-за разной соли
     assert_ne!(
-        entry1.hash, entry2.hash,
+        entry1.hash(),
+        entry2.hash(),
         "Хеши должны быть разными из-за уникальной соли"
     );
 

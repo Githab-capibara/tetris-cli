@@ -942,7 +942,7 @@ fn test_extended_bag_performance_100k() {
     let mut bag = BagGenerator::new();
     let start = std::time::Instant::now();
 
-    for _ in 0..100000 {
+    for _ in 0..100_000 {
         let _ = bag.next_shape();
     }
 
@@ -971,7 +971,7 @@ fn test_extended_bag_reusable() {
 fn test_extended_bag_no_panic_many_calls() {
     let mut bag = BagGenerator::new();
 
-    for _ in 0..10000 {
+    for _ in 0..10_000 {
         let _ = bag.next_shape();
     }
 

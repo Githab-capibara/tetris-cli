@@ -242,7 +242,6 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
 /// - Совместимость с termion::color::Color
 const MENU_COLOR: &dyn Color = &White;
 
-
 /// Меню таблицы лидеров.
 ///
 /// Отображается при нажатии клавиши 'l' в главном меню.
@@ -735,7 +734,8 @@ fn run_game_mode(
 /// # Возвращает
 /// `true` если символ допустим, `false` в противном случае
 fn is_valid_name_char(c: char) -> bool {
-    c.is_alphanumeric() || c == '_' || c == '-' || c == ' '
+    // Используем ASCII alphanumeric для защиты от Unicode символов и эмодзи
+    c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ' '
 }
 
 fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
@@ -946,9 +946,9 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
     for (i, entry) in entries.iter().enumerate() {
         // Форматирование строки записи:
         // - i + 1: номер позиции (1-5)
-        // - entry.name: имя игрока (выравнивание 10 символов)
-        // - entry.score: количество очков
-        let line = format!("{}. {:10} {}", i + 1, entry.name, entry.score);
+        // - entry.name(): имя игрока (выравнивание 10 символов)
+        // - entry.score(): количество очков
+        let line = format!("{}. {:10} {}", i + 1, entry.name(), entry.score());
 
         // Отрисовка строки на позиции:
         // - X: 3 (отступ от левой границы рамки)

@@ -365,31 +365,37 @@ impl KeyReader {
         match self.inp.read_exact(&mut key_bytes) {
             Ok(_) => {
                 let first_byte = key_bytes[0];
-                
+
                 // Проверяем, является ли это началом многобайтового символа UTF-8
                 // ASCII (0x00-0x7F) - однобайтовый символ
                 if first_byte <= 0x7F {
                     return Some(first_byte);
                 }
-                
+
                 // Определяем количество байт в символе UTF-8
-                let bytes_to_read = if first_byte >= 0xC0 && first_byte <= 0xDF {
+                // Используем корректные диапазоны: 0xC0 и 0xC1 - невалидны (переполнение),
+                // 0xF5-0xF7 - невалидны (максимум 0xF4 для UTF-8)
+                let bytes_to_read = if (0xC2..=0xDF).contains(&first_byte) {
                     1 // 2-byte sequence
-                } else if first_byte >= 0xE0 && first_byte <= 0xEF {
+                } else if (0xE0..=0xEF).contains(&first_byte) {
                     2 // 3-byte sequence
-                } else if first_byte >= 0xF0 && first_byte <= 0xF7 {
+                } else if (0xF0..=0xF4).contains(&first_byte) {
                     3 // 4-byte sequence
                 } else {
-                    // Неизвестный байт, возвращаем None
+                    // Невалидный байт (0xC0, 0xC1, 0xF5-0xFF)
                     return None;
                 };
-                
+
                 // Читаем остальные байты символа UTF-8
                 let mut remaining = [0u8; 3];
-                if self.inp.read_exact(&mut remaining[..bytes_to_read]).is_err() {
+                if self
+                    .inp
+                    .read_exact(&mut remaining[..bytes_to_read])
+                    .is_err()
+                {
                     return None;
                 }
-                
+
                 // Для многобайтовых символов возвращаем None
                 // (они не являются управляющими клавишами для игры)
                 None
@@ -417,20 +423,21 @@ impl KeyReader {
     /// let key = reader.get_key_extended();
     ///
     /// match key {
-    ///     256 => println!("Стрелка вверх"),
-    ///     257 => println!("Стрелка вниз"),
-    ///     113 => println!("Выход"), // 'q' = 113
+    ///     Some(256) => println!("Стрелка вверх"),
+    ///     Some(257) => println!("Стрелка вниз"),
+    ///     Some(113) => println!("Выход"), // 'q' = 113
+    ///     None => println!("Ошибка чтения"),
     ///     _ => {}
     /// }
     /// ```
     #[allow(dead_code)]
-    pub fn get_key_extended(&mut self) -> u16 {
+    pub fn get_key_extended(&mut self) -> Option<u16> {
         let mut buffer = [0u8; 3];
 
         // Читаем первый байт
         match self.inp.read_exact(&mut buffer[0..1]) {
             Ok(_) => {}
-            Err(_) => return 0,
+            Err(_) => return None,
         }
 
         // Если это ESC, читаем последовательность
@@ -446,7 +453,7 @@ impl KeyReader {
                         let mut third_byte = [0u8; 1];
                         match self.inp.read_exact(&mut third_byte) {
                             Ok(_) => buffer[2] = third_byte[0],
-                            Err(_) => return 27, // Только ESC
+                            Err(_) => return Some(27), // Только ESC
                         }
                     }
 
@@ -454,31 +461,31 @@ impl KeyReader {
                     match buffer[1] {
                         b'[' => {
                             match buffer[2] {
-                                b'A' => return KEY_ARROW_UP,    // Стрелка вверх
-                                b'B' => return KEY_ARROW_DOWN,  // Стрелка вниз
-                                b'C' => return KEY_ARROW_RIGHT, // Стрелка вправо
-                                b'D' => return KEY_ARROW_LEFT,  // Стрелка влево
-                                b'H' => return KEY_HOME,        // Home
-                                b'F' => return KEY_END,         // End
-                                _ => return 27,                 // Неизвестная последовательность
+                                b'A' => return Some(KEY_ARROW_UP),    // Стрелка вверх
+                                b'B' => return Some(KEY_ARROW_DOWN),  // Стрелка вниз
+                                b'C' => return Some(KEY_ARROW_RIGHT), // Стрелка вправо
+                                b'D' => return Some(KEY_ARROW_LEFT),  // Стрелка влево
+                                b'H' => return Some(KEY_HOME),        // Home
+                                b'F' => return Some(KEY_END),         // End
+                                _ => return Some(27), // Неизвестная последовательность
                             }
                         }
                         b'O' => {
                             match buffer[2] {
-                                b'A' => return KEY_ARROW_UP,    // Стрелка вверх (альтернативная)
-                                b'B' => return KEY_ARROW_DOWN,  // Стрелка вниз (альтернативная)
-                                b'C' => return KEY_ARROW_RIGHT, // Стрелка вправо (альтернативная)
-                                b'D' => return KEY_ARROW_LEFT,  // Стрелка влево (альтернативная)
-                                _ => return 27,
+                                b'A' => return Some(KEY_ARROW_UP), // Стрелка вверх (альтернативная)
+                                b'B' => return Some(KEY_ARROW_DOWN), // Стрелка вниз (альтернативная)
+                                b'C' => return Some(KEY_ARROW_RIGHT), // Стрелка вправо (альтернативная)
+                                b'D' => return Some(KEY_ARROW_LEFT), // Стрелка влево (альтернативная)
+                                _ => return Some(27),
                             }
                         }
-                        _ => return 27,
+                        _ => return Some(27),
                     }
                 }
-                Err(_) => return 27, // Только ESC
+                Err(_) => return Some(27), // Только ESC
             }
         }
 
-        buffer[0] as u16
+        Some(buffer[0] as u16)
     }
 }
