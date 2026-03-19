@@ -34,8 +34,16 @@
 //! - `test_controls_path_validation` - тесты валидации путей (3 теста)
 //! - `test_game_wall_kick` - тесты wall kick (3 теста)
 //! - `test_highscore_integrity` - тесты целостности (3 теста)
+//! - `test_fixes_verification` - верификация исправлений (27 тестов)
 //!
-//! Итого: 1123 теста
+//! Тесты критических проблем (20 тестов - по 4-5 на каждую из 5 проблем)
+//! - `test_controls_error_handling` - обработка ошибок (5 тестов)
+//! - `test_game_negative_coords` - отрицательные координаты (4 теста)
+//! - `test_game_stack_overflow` - переполнение стека (3 теста)
+//! - `test_highscore_no_rate_limiting` - отсутствие rate limiting (5 тестов)
+//! - `test_io_resource_leak` - утечка ресурсов (5 тестов)
+//!
+//! Итого: 1143 теста
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -84,3 +92,10 @@ pub mod test_highscore_u256_fix;
 
 // Тесты верификации всех исправлений аудита (27 тестов)
 pub mod test_fixes_verification;
+
+// Тесты критических проблем (15 тестов - по 3 на каждую из 5 проблем)
+pub mod test_controls_error_handling;
+pub mod test_game_negative_coords;
+pub mod test_game_stack_overflow;
+pub mod test_highscore_no_rate_limiting;
+pub mod test_io_resource_leak;

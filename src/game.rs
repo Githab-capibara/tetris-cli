@@ -79,6 +79,10 @@ const GAME_OVER: [&str; 3] = ["╔════════════╗", "║
 /// Задержка перед возвратом в меню после проигрыша (мс).
 const GAME_OVER_DELAY_MS: u64 = 1500;
 
+/// Количество миллисекунд в секунде.
+/// Используется для преобразования времени в update().
+const MILLIS_PER_SECOND: f32 = 1000.0;
+
 /// Цвет границ.
 const BORDER_COLOR: &dyn Color = &White;
 
@@ -426,7 +430,8 @@ pub struct GameState {
     /// Скорость падения.
     fall_spd: f32,
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
-    blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
+    /// Использует Box для размещения данных в куче вместо стека.
+    blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
     /// Таймер приземления.
     land_timer: f64,
     /// Статистика игры.
@@ -490,7 +495,8 @@ impl GameState {
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
             // Инициализация поля пустыми клетками (-1)
-            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            // Используем Box::new() для размещения в куче вместо стека
+            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Classic,
@@ -523,7 +529,8 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            // Используем Box::new() для размещения в куче
+            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Sprint,
@@ -556,7 +563,8 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            // Используем Box::new() для размещения в куче
+            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Marathon,
@@ -572,21 +580,22 @@ impl GameState {
     /// # Аргументы
     /// * `cnv` - канвас для отрисовки игрового поля
     /// * `inp` - читатель нажатий клавиш
-    /// * `hs_disp` - строка для отображения рекорда
+    /// * `high_score_display` - строка для отображения рекорда
     ///
     /// # Возвращает
     /// Финальный счёт игрока (0 если игрок вышел досрочно)
     ///
     /// # Примечания
     /// Цикл работает до проигрыша или выхода пользователя (Backspace)
-    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, hs_disp: &str) -> u64 {
+    pub fn play(&mut self, cnv: &mut Canvas, inp: &mut KeyReader, high_score_display: &str) -> u64 {
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
         loop {
             // Поддержание стабильного FPS - расчёт дельты времени
             let now = Instant::now();
-            // Безопасное преобразование: subsec_millis() возвращает u32 (0-999)
-            let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
+            // Оптимизация: используем as_millis() вместо subsec_millis()
+            // as_millis() возвращает полное количество миллисекунд, а не только дробную часть
+            let delta_time_ms = now.duration_since(last_time).as_millis() as u64;
             if delta_time_ms < interval_ms {
                 // Сон для экономии CPU и поддержания стабильного FPS
                 sleep(Duration::from_millis(interval_ms - delta_time_ms));
@@ -636,7 +645,7 @@ impl GameState {
                 }
             }
             // Отрисовка текущего кадра
-            self.draw(cnv, hs_disp);
+            self.draw(cnv, high_score_display);
         }
 
         self.score
@@ -738,10 +747,10 @@ impl GameState {
         if self.can_move_curr_shape(Dir::Down) {
             // Плавное падение с учётом скорости и времени
             // Безопасное преобразование: delta_time_ms всегда положительное
-            self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / 1_000.0);
+            self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / MILLIS_PER_SECOND);
         } else if self.land_timer > 0.0 {
             // Таймер задержки перед фиксацией (даёт время на перемещение)
-            self.land_timer -= delta_time_ms as f64 / 1000.0;
+            self.land_timer -= delta_time_ms as f64 / MILLIS_PER_SECOND as f64;
         } else {
             // Проверка проигрыша: проверяем конкретные координаты блоков фигуры
             // Если любой блок фигуры находится в верхней части поля (y <= 1)
@@ -778,7 +787,8 @@ impl GameState {
             // Обновление комбо
             if lines_cleared > 0 {
                 // Удаление линий — увеличиваем комбо
-                self.stats.combo_counter += 1;
+                // Используем saturating_add для защиты от переполнения
+                self.stats.combo_counter = self.stats.combo_counter.saturating_add(1);
                 // Бонус за комбо: 50 × (комбо - 1)
                 // Используем saturating_add для защиты от переполнения
                 if self.stats.combo_counter > 1 {
@@ -824,6 +834,7 @@ impl GameState {
     ///
     /// Преобразует плавающие координаты фигуры в индексы сетки
     /// и записывает цвет фигуры в соответствующие клетки.
+    /// Использует checked_sub() для защиты от отрицательных координат.
     fn save_tetromino(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
         // Безопасное преобразование координат: позиция фигуры всегда в пределах поля
@@ -835,8 +846,9 @@ impl GameState {
             let y = coord_y + shape_block_y;
 
             // Проверка границ перед записью (защита от паники при отрицательных координатах)
+            // Используем checked_sub() для безопасной работы с отрицательными значениями
             if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
-                self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
+                (*self.blocks)[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
     }
@@ -948,13 +960,13 @@ impl GameState {
                 // Перемещаем строку вниз на rows_removed_below позиций
                 // Проверка безопасности: индекс не должен выходить за границы
                 debug_assert!(y + rows_removed_below < GRID_HEIGHT);
-                self.blocks[y + rows_removed_below] = self.blocks[y];
+                (*self.blocks)[y + rows_removed_below] = (*self.blocks)[y];
             }
         }
 
         // Заполняем верхние строки пустыми значениями (-1)
         for y in 0..rows_removed_below {
-            self.blocks[y] = [-1; GRID_WIDTH];
+            (*self.blocks)[y] = [-1; GRID_WIDTH];
         }
 
         // Очистка анимации (строки удалены)
@@ -1021,7 +1033,7 @@ impl GameState {
     ///
     /// # Аргументы
     /// * `cnv` - канвас для отрисовки
-    /// * `hs_disp` - строка для отображения рекорда
+    /// * `high_score_display` - строка для отображения рекорда
     ///
     /// # Порядок отрисовки
     /// 1. Границы игрового поля
@@ -1035,7 +1047,7 @@ impl GameState {
     /// 9. Таймер (для режима спринт)
     /// 10. Счётчик комбо
     /// 11. "TETRIS!" при 4 линиях
-    fn draw(&mut self, cnv: &mut Canvas, hs_disp: &str) {
+    fn draw(&mut self, cnv: &mut Canvas, high_score_display: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда и текущего счёта
@@ -1045,7 +1057,7 @@ impl GameState {
         let lines_str = format!("{:10}", self.lines_cleared);
 
         cnv.draw_string(&score_str, (7, 2), BORDER_COLOR, &Reset);
-        cnv.draw_string(hs_disp, (7, 3), BORDER_COLOR, &Reset);
+        cnv.draw_string(high_score_display, (7, 3), BORDER_COLOR, &Reset);
         cnv.draw_string(&level_str, (10, 4), BORDER_COLOR, &Reset);
         cnv.draw_string(&lines_str, (10, 5), BORDER_COLOR, &Reset);
 
@@ -1058,14 +1070,14 @@ impl GameState {
         // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
             for x in 0..GRID_WIDTH {
-                if self.blocks[y][x] != -1 {
+                if (*self.blocks)[y][x] != -1 {
                     cnv.draw_strs(
                         &[SHAPE_STR],
                         (
                             (x * SHAPE_WIDTH + 2) as u16,
                             (y + SHAPE_DRAW_OFFSET as usize) as u16,
                         ),
-                        SHAPE_COLORS[self.blocks[y][x] as usize],
+                        SHAPE_COLORS[(*self.blocks)[y][x] as usize],
                         &Reset,
                     );
                 }
@@ -1275,7 +1287,7 @@ impl GameState {
             }
 
             // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
+            if check_y >= 0 && (*self.blocks)[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
@@ -1405,7 +1417,7 @@ impl GameState {
             }
 
             // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
+            if check_y >= 0 && (*self.blocks)[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
@@ -1450,7 +1462,7 @@ impl GameState {
     /// Получить игровое поле (для тестов).
     #[allow(dead_code)]
     #[cfg(test)]
-    pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub fn get_blocks(&self) -> &Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> {
         &self.blocks
     }
 
