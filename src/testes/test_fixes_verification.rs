@@ -18,7 +18,6 @@
 #[cfg(test)]
 mod rate_limiting_tests {
     use crate::highscore::Leaderboard;
-    use std::time::Duration;
 
     /// Тест 1: Проверка что rate limiting работает в production (не в тестах)
     ///
@@ -74,36 +73,29 @@ mod rate_limiting_tests {
         }
     }
 
-    /// Тест 3: Проверка cooldown после явной установки
+    /// Тест 3: Проверка что rate limiting полностью удалён
     ///
-    /// Проверяет, что после явной установки cooldown через set_cooldown()
-    /// rate limiting начинает работать корректно.
+    /// Проверяет, что метод set_cooldown больше не существует
+    /// и rate limiting полностью удалён из кода.
     #[test]
-    fn test_cooldown_after_explicit_set() {
+    fn test_rate_limiting_removed() {
         let mut leaderboard = Leaderboard::default();
 
-        // Явно устанавливаем cooldown 1 секунду для быстрого теста
-        leaderboard.set_cooldown(Duration::from_secs(1));
+        // Rate limiting удалён - можно добавлять рекорды без задержек
+        // Метод set_cooldown больше не существует
+        
+        // Добавляем несколько рекордов подряд без задержек
+        for i in 0..10 {
+            let result = leaderboard.add_score(format!("Player{}", i), 1000 + i * 100);
+            assert!(
+                result || leaderboard.len() == 5,
+                "Record {} must be added (no rate limiting)",
+                i
+            );
+        }
 
-        // Добавляем первый рекорд
-        let result1 = leaderboard.add_score("Player1".to_string(), 1000);
-        assert!(result1, "First record must be added");
-
-        // Пытаемся добавить второй рекорд сразу - должен быть заблокирован
-        let result2 = leaderboard.add_score("Player2".to_string(), 2000);
-        assert!(!result2, "Second record must be blocked by cooldown");
-
-        // Проверяем что только одна запись в таблице
-        assert_eq!(leaderboard.len(), 1, "Must have only 1 entry");
-
-        // Ждём истечения cooldown (1.1 секунды)
-        std::thread::sleep(Duration::from_millis(1100));
-
-        // Теперь должно пройти
-        let result3 = leaderboard.add_score("Player3".to_string(), 3000);
-        assert!(result3, "Third record must be added after cooldown expires");
-
-        assert_eq!(leaderboard.len(), 2, "Must have 2 entries");
+        // Проверяем что таблица содержит топ-5
+        assert_eq!(leaderboard.len(), 5, "Leaderboard must contain top-5 entries");
     }
 }
 

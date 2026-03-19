@@ -647,11 +647,17 @@ mod testes {
     pub mod test_game_bounds_check;
     pub mod test_game_wall_kick;
     pub mod test_highscore_integrity;
-    pub mod test_highscore_rate_limiting;
     pub mod test_highscore_u256_fix;
 
     // Тесты верификации всех исправлений аудита (27 тестов)
     pub mod test_fixes_verification;
+
+    // Тесты критических проблем (20 тестов)
+    pub mod test_controls_error_handling;
+    pub mod test_game_negative_coords;
+    pub mod test_game_stack_overflow;
+    pub mod test_highscore_no_rate_limiting;
+    pub mod test_io_resource_leak;
 }
 
 #[cfg(test)]

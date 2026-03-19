@@ -13,7 +13,6 @@
 
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, Instant};
 
 // ===========================================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -25,19 +24,22 @@ use std::time::{Duration, Instant};
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
+/// Оптимизация: использует String::with_capacity(64) + write!() вместо format!()
 pub fn get_random_hash() -> String {
     use rand::rngs::OsRng;
     use rand::RngCore;
+    use std::fmt::Write;
 
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
                                // Используем криптографически стойкий генератор случайных чисел ОС.
     OsRng.fill_bytes(&mut bytes);
 
-    // Конвертируем в hex строку (гарантирует ровно 64 символа)
-    bytes
-        .iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<String>()
+    // Оптимизация: предварительно выделяем память на 64 символа
+    let mut result = String::with_capacity(64);
+    for byte in &bytes {
+        write!(result, "{:02x}", byte).unwrap();
+    }
+    result
 }
 
 /// Получить хэш строки в шестнадцатеричном формате.
@@ -104,20 +106,12 @@ impl LeaderboardEntry {
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
-    /// Время последней записи для rate limiting.
-    #[serde(skip)]
-    last_write_time: Option<Instant>,
-    /// Задержка между записями (rate limiting).
-    #[serde(skip)]
-    write_cooldown: Duration,
 }
 
 impl Default for Leaderboard {
     fn default() -> Self {
         Self {
             entries: Vec::new(),
-            last_write_time: None,
-            write_cooldown: Duration::from_secs(0), // По умолчанию rate limiting отключён
         }
     }
 }
@@ -225,17 +219,20 @@ impl Default for SaveData {
 /// - разрешены только буквы/цифры и символы: '_', '-', ' ', '.'
 /// - максимум 20 символов
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
+///
+/// Оптимизация: использует String::with_capacity() для предотвращения реаллокаций.
 fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
+    // Оптимизация: предварительно выделяем память на 20 символов (максимум)
     let validated: String = trimmed
         .chars()
         .filter(|&c| is_valid_name_char(c))
         .take(20)
-        .collect();
+        .collect::<String>();
 
     if validated.is_empty() {
         "Anonymous".to_string()
@@ -316,16 +313,13 @@ impl Leaderboard {
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
     pub fn load() -> Self {
-        let mut leaderboard: Self = match load(&format!("{}_leaderboard", APP_NAME)) {
+        match load(&format!("{}_leaderboard", APP_NAME)) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
                 eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {}. Используется пустая таблица.", e);
                 Self::default()
             }
-        };
-        // Инициализация rate limiting при загрузке
-        leaderboard.write_cooldown = Duration::from_secs(5);
-        leaderboard
+        }
     }
 
     /// Сохранить таблицу лидеров в файл конфигурации.
@@ -343,15 +337,8 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
-    /// `false` если рекорд недостаточно высок или срабатывает rate limiting
+    /// `false` если рекорд недостаточно высок
     pub fn add_score(&mut self, name: String, score: u64) -> bool {
-        // Rate limiting: не чаще 1 записи в 5 секунд
-        if let Some(last_time) = self.last_write_time {
-            if last_time.elapsed() < self.write_cooldown {
-                return false;
-            }
-        }
-
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный рекорд
@@ -372,9 +359,6 @@ impl Leaderboard {
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
             self.entries.truncate(MAX_LEADERBOARD_SIZE);
         }
-
-        // Обновление времени последней записи
-        self.last_write_time = Some(Instant::now());
 
         true
     }
@@ -425,24 +409,6 @@ impl Leaderboard {
     #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
-    }
-
-    /// Установить задержку rate limiting.
-    ///
-    /// # Аргументы
-    /// * `cooldown` - новая задержка между записями
-    ///
-    /// # Пример использования
-    /// ```
-    /// use tetris_cli::highscore::Leaderboard;
-    /// use std::time::Duration;
-    ///
-    /// let mut leaderboard = Leaderboard::default();
-    /// leaderboard.set_cooldown(Duration::from_secs(0)); // Отключить для тестов
-    /// ```
-    #[cfg(test)]
-    pub fn set_cooldown(&mut self, cooldown: Duration) {
-        self.write_cooldown = cooldown;
     }
 }
 

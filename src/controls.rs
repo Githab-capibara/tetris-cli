@@ -288,7 +288,6 @@ impl Default for ControlsConfig {
 #[cfg(test)]
 mod controls_tests {
     use super::*;
-    use std::fs;
     use std::path::Path;
 
     // =========================================================================
@@ -325,8 +324,9 @@ mod controls_tests {
     /// Проверяет полный цикл: создание -> сохранение -> загрузка -> сравнение.
     /// Использует временный файл для тестирования.
     #[test]
-    fn test_controls_config_save_load() {
-        let test_path = "test_controls_config.json";
+    fn test_controls_config_save_load() -> std::io::Result<()> {
+        // Используем относительный путь в текущей директории
+        let test_path = "test_controls_config_temp.json";
 
         // Создаём кастомную конфигурацию
         let original_config = ControlsConfig::custom(
@@ -342,8 +342,7 @@ mod controls_tests {
         );
 
         // Сохраняем конфигурацию
-        let save_result = original_config.save_to_file(test_path);
-        assert!(save_result.is_ok(), "Сохранение должно быть успешным");
+        original_config.save_to_file(test_path)?;
 
         // Проверяем, что файл существует
         assert!(
@@ -352,18 +351,18 @@ mod controls_tests {
         );
 
         // Загружаем конфигурацию
-        let loaded_config = ControlsConfig::load_from_file(test_path);
-        assert!(loaded_config.is_ok(), "Загрузка должна быть успешной");
+        let loaded_config = ControlsConfig::load_from_file(test_path)?;
 
         // Сравниваем оригинал с загруженным
         assert_eq!(
-            original_config,
-            loaded_config.unwrap(),
+            original_config, loaded_config,
             "Загруженная конфигурация должна совпадать с оригиналом"
         );
 
         // Очищаем тестовый файл
         let _ = fs::remove_file(test_path);
+
+        Ok(())
     }
 
     /// Тест 19: Проверка валидации клавиш
