@@ -159,17 +159,11 @@ fn test_быстрое_добавление_в_реальном_времени()
 
     // 11-я запись должна быть отклонена
     let result_11 = leaderboard.add_score("FastPlayer11".to_string(), 1011);
-    assert!(
-        !result_11,
-        "Рекорд 11 должен быть отклонён (rate limiting)"
-    );
+    assert!(!result_11, "Рекорд 11 должен быть отклонён (rate limiting)");
 
     // 12-я запись тоже должна быть отклонена
     let result_12 = leaderboard.add_score("FastPlayer12".to_string(), 1012);
-    assert!(
-        !result_12,
-        "Рекорд 12 должен быть отклонён (rate limiting)"
-    );
+    assert!(!result_12, "Рекорд 12 должен быть отклонён (rate limiting)");
 
     assert!(true, "Rate limiting корректно блокирует лишние записи");
 }

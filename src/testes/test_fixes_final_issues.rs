@@ -1,6 +1,6 @@
 //! Тесты для исправлений проблем 21-26.
 
-use crate::game::{GameState, GameMode};
+use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, LeaderboardEntry};
 use std::time::Instant;
 

@@ -175,6 +175,10 @@ pub const BELL: &str = "\x07";
 /// Интервал анимации мигания Hard Drop в миллисекундах.
 pub const HARD_DROP_ANIM_INTERVAL_MS: u16 = 50;
 
+/// Количество кадров для пропуска при анимации.
+/// Используется для мигания фигур (каждый второй кадр).
+pub const ANIMATION_FRAME_SKIP: u16 = 2;
+
 /// Направление движения/вращения.
 #[derive(PartialEq, Clone, Copy)]
 pub enum Dir {
@@ -711,6 +715,7 @@ impl GameState {
     /// - handle_input() - обработка ввода
     /// - handle_falling() - обработка падения
     /// - handle_landing() - обработка приземления
+    ///
     /// Это улучшит читаемость и упростит тестирование.
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
@@ -804,8 +809,14 @@ impl GameState {
 
             // Фиксация фигуры и начисление очков
             // Исправление: добавлена защита от переполнения при расчёте очков за падение
-            let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT).max(0.0).min(u64::MAX as f32);
-            let fall_bonus_u64 = if fall_bonus.is_finite() { fall_bonus as u64 } else { 0 };
+            let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT)
+                .max(0.0)
+                .min(u64::MAX as f32);
+            let fall_bonus_u64 = if fall_bonus.is_finite() {
+                fall_bonus as u64
+            } else {
+                0
+            };
             self.score = self.score.saturating_add(PIECE_SCORE_INC + fall_bonus_u64);
 
             // Начисление очков за Soft Drop: 1 очко за ячейку
@@ -867,10 +878,27 @@ impl GameState {
 
     /// Сохранить данные текущей фигуры в сетке после приземления.
     ///
+    /// Сохраняет текущую фигуру в игровом поле.
+    ///
     /// Преобразует плавающие координаты фигуры в индексы сетки
     /// и записывает цвет фигуры в соответствующие клетки.
     /// Использует checked_sub() для защиты от отрицательных координат.
-    fn save_tetromino(&mut self) {
+    ///
+    /// # Видимость
+    /// Метод является публичным для использования в бенчмарках.
+    pub fn save_tetromino(&mut self) {
+        self.save_tetromino_impl();
+    }
+
+    /// Внутренняя реализация сохранения фигуры.
+    /// Вынесена отдельно для использования в бенчмарках и тестах.
+    #[cfg(test)]
+    pub fn save_tetromino_for_bench(&mut self) {
+        self.save_tetromino_impl();
+    }
+
+    /// Внутренняя реализация сохранения фигуры.
+    fn save_tetromino_impl(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
         // Безопасное преобразование координат: позиция фигуры всегда в пределах поля
         let shape_block_x = shape_x as i16;
@@ -947,6 +975,7 @@ impl GameState {
     /// - animate_rows_clear() - анимация удаления
     /// - remove_rows_and_shift() - удаление и сдвиг
     /// - update_score_and_level() - обновление очков и уровня
+    ///
     /// Это улучшит читаемость и упростит тестирование.
     fn check_rows(&mut self) -> u32 {
         // ====================================================================
@@ -1119,7 +1148,8 @@ impl GameState {
         // Оптимизация: используем битовую маску для проверки анимации строк
         let animation_time = self.stats.get_elapsed_time();
         let millis = (animation_time * 1000.0) as u16;
-        let show_animation = (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(2);
+        let show_animation =
+            (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP);
 
         for y in 0..GRID_HEIGHT {
             // Проверяем, является ли эта строка частью анимации
@@ -1153,7 +1183,7 @@ impl GameState {
         let shape_display_char = if self.is_hard_dropping {
             // Мигание: чередуем символы каждые HARD_DROP_ANIM_INTERVAL_MS мс
             // Используем время от начала игры для анимации
-            if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(2) {
+            if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP) {
                 SHAPE_STR
             } else {
                 "░░"
@@ -1419,7 +1449,15 @@ impl GameState {
     ///
     /// # Возвращает
     /// `true` если вращение (возможно со смещением) успешно
+    ///
+    /// # Паника
+    /// Паникует, если передано направление `Dir::Down`, так как оно не используется для вращения.
     pub fn rotate_with_wall_kick(&mut self, dir: Dir) -> bool {
+        // Dir::Down не используется для вращения
+        if matches!(dir, Dir::Down) {
+            panic!("Dir::Down не используется для вращения");
+        }
+
         // Сначала пробуем прямое вращение
         if self.can_rotate_curr_shape(dir) {
             self.curr_shape.rotate(dir);
@@ -1474,7 +1512,11 @@ impl GameState {
 
             // Проверка выхода за границы сетки (все 4 направления)
             // Важно: проверяем ДО конвертации в usize для предотвращения переполнения
-            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y < 0 || check_y >= GRID_HEIGHT as i16 {
+            if check_x < 0
+                || check_x >= GRID_WIDTH as i16
+                || check_y < 0
+                || check_y >= GRID_HEIGHT as i16
+            {
                 return false;
             }
 
@@ -1558,6 +1600,25 @@ impl GameState {
     }
 
     /// Получить игровое поле для бенчмарков.
+    ///
+    /// # Возвращает
+    /// Ссылку на двумерный массив игрового поля размером [`GRID_WIDTH`]×[`GRID_HEIGHT`].
+    ///
+    /// # Назначение
+    /// Метод предназначен для использования в бенчмарках и тестах производительности.
+    /// Позволяет получить прямой доступ к внутреннему состоянию поля для измерения
+    /// производительности операций отрисовки и проверки столкновений.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// use tetris_cli::game::GameState;
+    ///
+    /// let state = GameState::new();
+    /// let blocks = state.get_blocks_for_bench();
+    ///
+    /// // Доступ к клетке поля
+    /// let cell = blocks[0][0];
+    /// ```
     #[doc(hidden)]
     #[must_use]
     pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {

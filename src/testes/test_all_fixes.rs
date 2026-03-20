@@ -20,11 +20,11 @@
 //! 17. Path traversal защита
 //! 18. Rate limiting
 
+use crate::controls::ControlsConfig;
 use crate::game::{Dir, GameState};
 use crate::highscore::{get_random_hash, Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
-use crate::tetromino::{Tetromino, ShapeType};
-use crate::controls::ControlsConfig;
+use crate::tetromino::{ShapeType, Tetromino};
 use std::fs;
 use std::path::Path;
 
@@ -39,9 +39,13 @@ use std::path::Path;
 fn test_blake3_hash_exact_length() {
     // Используем get_random_hash() вместо приватной get_hash()
     let hash = get_random_hash();
-    
+
     // Хеш BLAKE3 должен быть ровно 64 hex символа (32 байта в hex формате)
-    assert_eq!(hash.len(), 64, "Хеш BLAKE3 должен быть ровно 64 hex символа");
+    assert_eq!(
+        hash.len(),
+        64,
+        "Хеш BLAKE3 должен быть ровно 64 hex символа"
+    );
 }
 
 /// Тест 1.2: Проверка одинакового хеша для одинаковых данных
@@ -52,11 +56,14 @@ fn test_blake3_hash_consistency() {
     // Создаём SaveData и проверяем хеш
     let save1 = SaveData::from_value(1000);
     let save2 = SaveData::from_value(1000);
-    
+
     // Одинаковые данные должны давать одинаковый хеш
     // Проверяем через verify_and_get_score()
-    assert_eq!(save1.verify_and_get_score(), save2.verify_and_get_score(), 
-               "Одинаковые данные должны давать одинаковый хеш");
+    assert_eq!(
+        save1.verify_and_get_score(),
+        save2.verify_and_get_score(),
+        "Одинаковые данные должны давать одинаковый хеш"
+    );
 }
 
 /// Тест 1.3: Проверка разных хешей для разных данных
@@ -66,10 +73,13 @@ fn test_blake3_hash_consistency() {
 fn test_blake3_hash_uniqueness() {
     let save1 = SaveData::from_value(1000);
     let save2 = SaveData::from_value(2000);
-    
+
     // Разные данные должны давать разные хеши
-    assert_ne!(save1.verify_and_get_score(), save2.verify_and_get_score(), 
-               "Разные данные должны давать разные хеши");
+    assert_ne!(
+        save1.verify_and_get_score(),
+        save2.verify_and_get_score(),
+        "Разные данные должны давать разные хеши"
+    );
 }
 
 // ============================================================================
@@ -86,7 +96,7 @@ fn test_terminal_reset_on_panic() {
     // Фактическая проверка через размер типа
     let _canvas_size = std::mem::size_of::<Canvas>();
     assert!(_canvas_size > 0, "Canvas должен иметь размер");
-    
+
     // Drop автоматически вызовет reset при уничтожении
     // Этот тест проходит, если тип Canvas имеет корректный Drop
 }
@@ -99,7 +109,7 @@ fn test_terminal_reset_explicit_call() {
     // Проверяем, что Canvas имеет метод reset через проверку размера
     let _canvas_size = std::mem::size_of::<Canvas>();
     assert!(_canvas_size > 0, "Canvas должен иметь размер");
-    
+
     // Метод reset() существует и доступен (проверка компиляции)
 }
 
@@ -111,7 +121,7 @@ fn test_terminal_show_before_exit() {
     // Проверяем, что Canvas реализует Drop с Show
     let _canvas_size = std::mem::size_of::<Canvas>();
     assert!(_canvas_size > 0, "Canvas должен иметь размер");
-    
+
     // Drop автоматически покажет курсор при уничтожении
 }
 
@@ -127,11 +137,11 @@ fn test_utf8_multibyte_returns_none() {
     // Симулируем многобайтовый символ UTF-8 (кириллица)
     // Символ 'А' (кириллица) = 0xD0 0x90
     // Этот тест проверяет документацию и поведение функции
-    
+
     // Проверяем, что функция корректно обрабатывает многобайтовые символы
     // через анализ кода (фактическая проверка в get_key)
     let _reader = KeyReader::new();
-    
+
     // Поскольку мы не можем напрямую ввести многобайтовый символ в тесте,
     // проверяем, что функция существует и имеет правильную сигнатуру
     // Документация указывает, что многобайтовые символы возвращают None
@@ -145,10 +155,10 @@ fn test_utf8_multibyte_returns_none() {
 fn test_utf8_ascii_returns_some() {
     // Этот тест проверяет, что ASCII символы работают корректно
     // Фактическая проверка происходит в get_key()
-    
+
     // Проверяем, что KeyReader создаётся корректно
     let _reader = KeyReader::new();
-    
+
     // Проверяем, что метод get_key доступен
     // ASCII символы должны возвращать Some(byte)
 }
@@ -160,7 +170,7 @@ fn test_utf8_ascii_returns_some() {
 fn test_utf8_documentation_present() {
     // Проверяем, что модуль io существует и содержит KeyReader
     // Документация о UTF-8 ограничении находится в коде функции get_key()
-    
+
     let _reader_size = std::mem::size_of::<KeyReader>();
     assert!(_reader_size > 0, "KeyReader должен иметь размер");
 }
@@ -180,15 +190,19 @@ fn test_rotation_negative_y_boundary() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Вращаем несколько раз
     tetromino.rotate(Dir::Right);
     tetromino.rotate(Dir::Right);
     tetromino.rotate(Dir::Right);
     tetromino.rotate(Dir::Right);
-    
+
     // После 4 вращений координаты должны вернуться к исходным
-    assert_eq!(tetromino.coords[0], (-1, 0), "Координаты должны вернуться к исходным");
+    assert_eq!(
+        tetromino.coords[0],
+        (-1, 0),
+        "Координаты должны вернуться к исходным"
+    );
 }
 
 /// Тест 4.2: Проверка защиты от переполнения при вращении
@@ -202,13 +216,13 @@ fn test_rotation_overflow_protection() {
         coords: [(0, -1), (0, 0), (0, 1), (0, 2)],
         fg: 6,
     };
-    
+
     // Многократное вращение не должно вызывать переполнения
     for _ in 0..100 {
         tetromino.rotate(Dir::Right);
         tetromino.rotate(Dir::Left);
     }
-    
+
     // Тест проходит, если не было паники от переполнения
 }
 
@@ -219,7 +233,7 @@ fn test_rotation_overflow_protection() {
 fn test_rotation_safe_usize_conversion() {
     // Проверяем, что fg (индекс цвета) корректно используется как usize
     let tetromino = Tetromino::select();
-    
+
     // fg должен быть валидным индексом для SHAPE_COLORS
     assert!(tetromino.fg < 7, "Индекс цвета должен быть в диапазоне 0-6");
 }
@@ -236,7 +250,7 @@ fn test_hold_shape_uses_copy() {
     // Создаём фигуру и копируем её (используя Copy семантику)
     let t1 = Tetromino::select();
     let t2 = t1; // Copy, не move
-    
+
     // Обе переменные должны быть доступны (благодаря Copy)
     assert_eq!(t1.shape, t2.shape, "Копия должна иметь ту же форму");
     assert_eq!(t1.pos, t2.pos, "Копия должна иметь ту же позицию");
@@ -249,13 +263,13 @@ fn test_hold_shape_uses_copy() {
 fn test_hold_shape_no_allocation() {
     // Создаём и копируем множество фигур
     let mut shapes = Vec::with_capacity(100);
-    
+
     for _ in 0..100 {
         let t = Tetromino::select();
         let t_copy = t; // Copy - без аллокации
         shapes.push(t_copy);
     }
-    
+
     assert_eq!(shapes.len(), 100, "Должно быть 100 фигур");
 }
 
@@ -266,8 +280,12 @@ fn test_hold_shape_no_allocation() {
 fn test_tetromino_copy_trait() {
     // Проверяем размер Tetromino (должен быть небольшим для Copy)
     let size = std::mem::size_of::<Tetromino>();
-    assert!(size <= 64, "Tetromino должен быть небольшим для Copy ({} байт)", size);
-    
+    assert!(
+        size <= 64,
+        "Tetromino должен быть небольшим для Copy ({} байт)",
+        size
+    );
+
     // Проверяем, что Copy работает
     let t1 = Tetromino::select();
     let _t2 = t1; // Copy
@@ -307,12 +325,12 @@ fn test_dirty_cells_clear_after_draw() {
 fn test_dirty_cells_multiple_changes() {
     // Проверяем, что HashSet<(usize, usize)> может хранить несколько записей
     use std::collections::HashSet;
-    
+
     let mut dirty_cells: HashSet<(usize, usize)> = HashSet::new();
     dirty_cells.insert((0, 0));
     dirty_cells.insert((1, 1));
     dirty_cells.insert((2, 2));
-    
+
     assert_eq!(dirty_cells.len(), 3, "Должно быть 3 изменённых клетки");
 }
 
@@ -326,7 +344,7 @@ fn test_dirty_cells_multiple_changes() {
 #[test]
 fn test_animating_rows_mask_correct() {
     let state = GameState::new();
-    
+
     // Проверяем, что animating_rows_mask инициализирован нулём
     // (фактическая проверка через создание состояния)
     let _state = state;
@@ -340,10 +358,13 @@ fn test_animating_rows_no_vec_allocation() {
     // Проверяем размер маски (u32 = 4 байта)
     let mask_size = std::mem::size_of::<u32>();
     assert_eq!(mask_size, 4, "Битовая маска должна занимать 4 байта");
-    
+
     // Сравниваем с размером Vec (было бы больше)
     let vec_size = std::mem::size_of::<Vec<u32>>();
-    assert!(vec_size >= mask_size, "Vec должен быть больше или равен u32");
+    assert!(
+        vec_size >= mask_size,
+        "Vec должен быть больше или равен u32"
+    );
 }
 
 /// Тест 7.3: Проверка операций с битовой маской
@@ -352,17 +373,17 @@ fn test_animating_rows_no_vec_allocation() {
 #[test]
 fn test_animating_rows_mask_operations() {
     let mut mask: u32 = 0;
-    
+
     // Устанавливаем биты для строк 0, 5, 10
     mask |= 1 << 0;
     mask |= 1 << 5;
     mask |= 1 << 10;
-    
+
     // Проверяем, что биты установлены
     assert!(mask & (1 << 0) != 0, "Бит 0 должен быть установлен");
     assert!(mask & (1 << 5) != 0, "Бит 5 должен быть установлен");
     assert!(mask & (1 << 10) != 0, "Бит 10 должен быть установлен");
-    
+
     // Проверяем, что другие биты не установлены
     assert!(mask & (1 << 1) == 0, "Бит 1 не должен быть установлен");
 }
@@ -378,10 +399,14 @@ fn test_animating_rows_mask_operations() {
 fn test_hex_encode_correctness() {
     let bytes = [0u8, 127u8, 255u8];
     let encoded = hex::encode(bytes);
-    
+
     // Проверяем длину (3 байта = 6 hex символов)
-    assert_eq!(encoded.len(), 6, "3 байта должны кодироваться в 6 hex символов");
-    
+    assert_eq!(
+        encoded.len(),
+        6,
+        "3 байта должны кодироваться в 6 hex символов"
+    );
+
     // Проверяем значения
     assert_eq!(encoded, "007fff", "Кодирование должно быть корректным");
 }
@@ -392,12 +417,12 @@ fn test_hex_encode_correctness() {
 #[test]
 fn test_hex_encode_performance() {
     let bytes = [0u8; 32];
-    
+
     // Кодируем 1000 раз
     for _ in 0..1000 {
         let _encoded = hex::encode(bytes);
     }
-    
+
     // Тест проходит, если кодирование выполнено без ошибок
 }
 
@@ -409,7 +434,7 @@ fn test_hex_encode_length() {
     for len in [1, 16, 32, 64] {
         let bytes = vec![0u8; len];
         let encoded = hex::encode(bytes);
-        
+
         assert_eq!(
             encoded.len(),
             len * 2,
@@ -434,7 +459,7 @@ fn test_rotate_down_unreachable() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Dir::Down должен вызывать panic с unreachable!()
     tetromino.rotate(Dir::Down);
 }
@@ -450,13 +475,17 @@ fn test_rotate_left_correct() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Вращаем влево (против часовой)
     tetromino.rotate(Dir::Left);
-    
+
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (y, -x)
-    assert_eq!(tetromino.coords[0], (0, 1), "Первый блок должен повернуться влево");
+    assert_eq!(
+        tetromino.coords[0],
+        (0, 1),
+        "Первый блок должен повернуться влево"
+    );
 }
 
 /// Тест 9.3: Проверка вращения вправо
@@ -470,13 +499,17 @@ fn test_rotate_right_correct() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    
+
     // Вращаем вправо (по часовой)
     tetromino.rotate(Dir::Right);
-    
+
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (-y, x)
-    assert_eq!(tetromino.coords[0], (0, -1), "Первый блок должен повернуться вправо");
+    assert_eq!(
+        tetromino.coords[0],
+        (0, -1),
+        "Первый блок должен повернуться вправо"
+    );
 }
 
 // ============================================================================
@@ -490,7 +523,7 @@ fn test_rotate_right_correct() {
 fn test_no_saturating_add_comments() {
     // Этот тест проверяет, что код чистый и не содержит избыточных комментариев
     // Фактическая проверка - через код ревью, здесь проверяем компиляцию
-    
+
     // Проверяем, что GameState компилируется без предупреждений
     let _state = GameState::new();
 }
@@ -514,7 +547,7 @@ fn test_rustdoc_present() {
     // Проверяем, что типы имеют документацию (проверка через размер)
     let game_size = std::mem::size_of::<GameState>();
     let config_size = std::mem::size_of::<ControlsConfig>();
-    
+
     assert!(game_size > 0, "GameState должен быть документирован");
     assert!(config_size > 0, "ControlsConfig должен быть документирован");
 }
@@ -530,7 +563,7 @@ fn test_rustdoc_present() {
 fn test_shape_display_char_exists() {
     // Проверяем, что SHAPE_STR существует и имеет правильное значение
     use crate::io::SHAPE_STR;
-    
+
     assert_eq!(SHAPE_STR, "██", "SHAPE_STR должен быть '██'");
 }
 
@@ -541,7 +574,7 @@ fn test_shape_display_char_exists() {
 fn test_shape_symbol_removed() {
     // Проверяем, что используется SHAPE_STR вместо старых имён
     use crate::io::SHAPE_STR;
-    
+
     // Старое имя не должно быть доступно (проверка компиляции)
     let _symbol = SHAPE_STR;
 }
@@ -552,9 +585,7 @@ fn test_shape_symbol_removed() {
 #[test]
 fn test_variable_naming_consistency() {
     // Проверяем, что константы имеют согласованные имена
-    use crate::io::{
-        SHAPE_WIDTH, GRID_WIDTH, GRID_HEIGHT,
-    };
+    use crate::io::{GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
 
     assert_eq!(SHAPE_WIDTH, 2, "SHAPE_WIDTH должен быть 2");
     assert_eq!(GRID_WIDTH, 10, "GRID_WIDTH должен быть 10");
@@ -574,9 +605,9 @@ fn test_validate_path_common_function() {
     let temp_path = "test_validate_common_temp.json";
     let config = ControlsConfig::default_config();
     let result = config.save_to_file(temp_path);
-    
+
     assert!(result.is_ok(), "Валидный путь должен быть принят");
-    
+
     // Очищаем
     let _ = fs::remove_file(temp_path);
 }
@@ -588,16 +619,16 @@ fn test_validate_path_common_function() {
 fn test_validate_path_dry_principle() {
     // Создаём временный файл для теста
     let temp_path = "test_validate_dry_temp.json";
-    
+
     let config = ControlsConfig::default_config();
     let save_result = config.save_to_file(temp_path);
-    
+
     assert!(save_result.is_ok(), "Сохранение должно быть успешным");
-    
+
     // Загружаем конфигурацию
     let load_result = ControlsConfig::load_from_file(temp_path);
     assert!(load_result.is_ok(), "Загрузка должна быть успешной");
-    
+
     // Очищаем
     let _ = fs::remove_file(temp_path);
 }
@@ -611,7 +642,7 @@ fn test_validate_path_error_handling() {
     let config = ControlsConfig::default_config();
     let result = config.save_to_file("/etc/passwd");
     assert!(result.is_err(), "Абсолютный путь должен быть отклонён");
-    
+
     // Проверяем path traversal (должен быть отклонён)
     let result = config.save_to_file("../secret.json");
     assert!(result.is_err(), "Path traversal должен быть отклонён");
@@ -629,7 +660,7 @@ fn test_no_unwrap_in_tests() {
     // Этот тест сам использует expect() вместо unwrap()
     let config = ControlsConfig::default_config();
     let _validated = config.validate();
-    
+
     // Проверяем, что код компилируется без unwrap
 }
 
@@ -640,7 +671,7 @@ fn test_no_unwrap_in_tests() {
 fn test_expect_messages_present() {
     // Проверяем, что LeaderboardEntry создаётся с валидацией
     let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
-    
+
     // Используем assert с сообщением
     let name = entry.name();
     assert!(!name.is_empty(), "Имя не должно быть пустым");
@@ -654,7 +685,7 @@ fn test_error_descriptions_clear() {
     // Проверяем, что save_to_file возвращает понятные ошибки
     let config = ControlsConfig::default_config();
     let result = config.save_to_file("../etc/passwd");
-    
+
     assert!(result.is_err(), "Path traversal должен быть отклонён");
     let err = result.expect_err("Ожидалась ошибка для path traversal");
     assert!(
@@ -675,7 +706,7 @@ fn test_canvas_new_panic_coverage() {
     // Проверяем, что Canvas имеет правильный размер
     let _canvas_size = std::mem::size_of::<Canvas>();
     assert!(_canvas_size > 0, "Canvas должен иметь размер");
-    
+
     // Canvas::new() паникует при отсутствии терминала
     // Этот тест проверяет, что тип Canvas существует
 }
@@ -687,7 +718,7 @@ fn test_canvas_new_panic_coverage() {
 fn test_collision_edge_cases() {
     // Создаём состояние игры
     let state = GameState::new();
-    
+
     // Проверяем, что фигура может двигаться вниз
     // Для этого нужно получить доступ к методу can_move_curr_shape
     // Но он приватный, поэтому просто проверяем создание состояния
@@ -701,12 +732,12 @@ fn test_collision_edge_cases() {
 #[test]
 fn test_leaderboard_performance() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Добавляем 5 рекордов
     for i in 0..5 {
         leaderboard.add_score(format!("Player{}", i), i * 100);
     }
-    
+
     assert_eq!(leaderboard.len(), 5, "Должно быть 5 записей");
 }
 
@@ -721,13 +752,16 @@ fn test_leaderboard_performance() {
 fn test_tempfile_isolation() {
     // Создаём уникальный временный файл
     let temp_path = format!("test_isolation_{}.json", std::process::id());
-    
+
     let config = ControlsConfig::default_config();
     let _ = config.save_to_file(&temp_path);
-    
+
     // Проверяем, что файл существует
-    assert!(Path::new(&temp_path).exists(), "Временный файл должен существовать");
-    
+    assert!(
+        Path::new(&temp_path).exists(),
+        "Временный файл должен существовать"
+    );
+
     // Очищаем
     let _ = fs::remove_file(&temp_path);
 }
@@ -740,7 +774,7 @@ fn test_no_shared_state() {
     // Создаём независимые состояния
     let state1 = GameState::new();
     let state2 = GameState::new();
-    
+
     // Состояния должны быть независимы
     let _size1 = std::mem::size_of_val(&state1);
     let _size2 = std::mem::size_of_val(&state2);
@@ -754,7 +788,7 @@ fn test_unique_temp_paths() {
     // Создаём уникальные пути с использованием PID и времени
     let path1 = format!("test_unique_{}_1.json", std::process::id());
     let path2 = format!("test_unique_{}_2.json", std::process::id());
-    
+
     assert_ne!(path1, path2, "Пути должны быть уникальными");
 }
 
@@ -768,7 +802,7 @@ fn test_unique_temp_paths() {
 #[test]
 fn test_exact_assert_eq_usage() {
     let hash = get_random_hash();
-    
+
     // Используем assert_eq! для точного сравнения
     assert_eq!(hash.len(), 64, "Хеш должен быть ровно 64 символа");
 }
@@ -780,7 +814,7 @@ fn test_exact_assert_eq_usage() {
 fn test_no_liberal_assertions() {
     // Проверяем точное значение
     let config = ControlsConfig::default_config();
-    
+
     // Используем точное сравнение
     assert_eq!(config.move_left, b'a', "move_left должен быть 'a'");
     assert_eq!(config.move_right, b'd', "move_right должен быть 'd'");
@@ -794,12 +828,24 @@ fn test_constant_expected_values() {
     const EXPECTED_HASH_LENGTH: usize = 64;
     const EXPECTED_GRID_WIDTH: usize = 10;
     const EXPECTED_GRID_HEIGHT: usize = 20;
-    
+
     let hash = get_random_hash();
-    assert_eq!(hash.len(), EXPECTED_HASH_LENGTH, "Длина хеша должна совпадать");
-    
-    assert_eq!(crate::io::GRID_WIDTH, EXPECTED_GRID_WIDTH, "Ширина сетки должна совпадать");
-    assert_eq!(crate::io::GRID_HEIGHT, EXPECTED_GRID_HEIGHT, "Высота сетки должна совпадать");
+    assert_eq!(
+        hash.len(),
+        EXPECTED_HASH_LENGTH,
+        "Длина хеша должна совпадать"
+    );
+
+    assert_eq!(
+        crate::io::GRID_WIDTH,
+        EXPECTED_GRID_WIDTH,
+        "Ширина сетки должна совпадать"
+    );
+    assert_eq!(
+        crate::io::GRID_HEIGHT,
+        EXPECTED_GRID_HEIGHT,
+        "Высота сетки должна совпадать"
+    );
 }
 
 // ============================================================================
@@ -812,12 +858,15 @@ fn test_constant_expected_values() {
 #[test]
 fn test_path_traversal_dotdot() {
     let config = ControlsConfig::default_config();
-    
+
     let result = config.save_to_file("../secret.json");
     assert!(result.is_err(), "Path traversal с .. должен быть отклонён");
-    
+
     let result = config.save_to_file("config/../../etc/passwd");
-    assert!(result.is_err(), "Path traversal с ../../ должен быть отклонён");
+    assert!(
+        result.is_err(),
+        "Path traversal с ../../ должен быть отклонён"
+    );
 }
 
 /// Тест 17.2: Проверка защиты от абсолютных путей
@@ -826,10 +875,10 @@ fn test_path_traversal_dotdot() {
 #[test]
 fn test_path_traversal_absolute() {
     let config = ControlsConfig::default_config();
-    
+
     let result = config.save_to_file("/etc/passwd");
     assert!(result.is_err(), "Абсолютный путь должен быть отклонён");
-    
+
     let result = config.save_to_file("/tmp/config.json");
     assert!(result.is_err(), "Абсолютный путь /tmp должен быть отклонён");
 }
@@ -840,11 +889,14 @@ fn test_path_traversal_absolute() {
 #[test]
 fn test_path_traversal_combined() {
     let config = ControlsConfig::default_config();
-    
+
     // Комбинация .. и абсолютного пути
     let result = config.save_to_file("/../etc/passwd");
-    assert!(result.is_err(), "Комбинированная атака должна быть отклонена");
-    
+    assert!(
+        result.is_err(),
+        "Комбинированная атака должна быть отклонена"
+    );
+
     // Множественные ..
     let result = config.save_to_file("../../etc/passwd");
     assert!(result.is_err(), "Множественные .. должны быть отклонены");
@@ -860,16 +912,19 @@ fn test_path_traversal_combined() {
 #[test]
 fn test_rate_limit_enforcement() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Добавляем MAX_ENTRIES_PER_MINUTE записей
     for i in 0..10 {
         let result = leaderboard.add_score(format!("Player{}", i), i * 100);
         assert!(result, "Запись {} должна быть добавлена", i);
     }
-    
+
     // 11-я запись должна быть отклонена
     let result = leaderboard.add_score("Player10".to_string(), 1000);
-    assert!(!result, "11-я запись должна быть отклонена из-за rate limiting");
+    assert!(
+        !result,
+        "11-я запись должна быть отклонена из-за rate limiting"
+    );
 }
 
 /// Тест 18.2: Проверка сброса счётчика
@@ -878,16 +933,16 @@ fn test_rate_limit_enforcement() {
 #[test]
 fn test_rate_limit_counter_reset() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Добавляем записи
     for i in 0..5 {
         let result = leaderboard.add_score(format!("Player{}", i), i * 100);
         assert!(result, "Запись {} должна быть добавлена", i);
     }
-    
+
     // Проверяем, что записи добавлены
     assert_eq!(leaderboard.len(), 5, "Должно быть 5 записей");
-    
+
     // Сброс происходит внутри add_score() через cleanup_old_entry_times()
     // Метод приватный, но вызывается автоматически при добавлении записи
 }
@@ -898,15 +953,18 @@ fn test_rate_limit_counter_reset() {
 #[test]
 fn test_rate_limit_error_handling() {
     let mut leaderboard = Leaderboard::default();
-    
+
     // Заполняем лимит
     for i in 0..10 {
         let _ = leaderboard.add_score(format!("Player{}", i), i * 100);
     }
-    
+
     // Пытаемся добавить ещё одну запись
     let result = leaderboard.add_score("Overflow".to_string(), 9999);
-    
+
     // Должно вернуть false (не паниковать)
-    assert!(!result, "Превышение лимита должно вернуть false, а не паниковать");
+    assert!(
+        !result,
+        "Превышение лимита должно вернуть false, а не паниковать"
+    );
 }

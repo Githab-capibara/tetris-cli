@@ -143,7 +143,7 @@ fn test_piece_drop_to_floor() {
 #[test]
 fn test_rotation_in_game_context() {
     let mut state = GameState::new();
-    
+
     // Устанавливаем фигуру в центр поля для корректного вращения
     state.get_curr_shape_mut().pos = (5.0, 10.0);
 

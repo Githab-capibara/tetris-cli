@@ -9,7 +9,7 @@ use std::io;
 fn test_absolute_paths_rejected() {
     let config = ControlsConfig::default_config();
     let result = config.save_to_file("/etc/passwd");
-    
+
     assert!(result.is_err(), "Абсолютные пути должны быть запрещены");
     assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidInput);
 }
@@ -19,7 +19,7 @@ fn test_absolute_paths_rejected() {
 fn test_path_traversal_dotdot_rejected() {
     let config = ControlsConfig::default_config();
     let result = config.save_to_file("../config.json");
-    
+
     assert!(result.is_err(), "Path traversal должен быть запрещён");
     assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidInput);
 }
@@ -29,13 +29,13 @@ fn test_path_traversal_dotdot_rejected() {
 fn test_symlink_handling() {
     let config = ControlsConfig::default_config();
     let test_file = "test_config_real.json";
-    
+
     let save_result = config.save_to_file(test_file);
     assert!(save_result.is_ok());
-    
+
     let load_result = ControlsConfig::load_from_file(test_file);
     assert!(load_result.is_ok());
-    
+
     let _ = fs::remove_file(test_file);
 }
 
@@ -44,13 +44,13 @@ fn test_symlink_handling() {
 fn test_relative_paths_accepted() {
     let config = ControlsConfig::default_config();
     let test_path = "test_relative_config.json";
-    
+
     let save_result = config.save_to_file(test_path);
     assert!(save_result.is_ok());
-    
+
     let load_result = ControlsConfig::load_from_file(test_path);
     assert!(load_result.is_ok());
-    
+
     let _ = fs::remove_file(test_path);
 }
 
@@ -60,15 +60,15 @@ fn test_nested_directories_handling() {
     let config = ControlsConfig::default_config();
     let test_dir = "test_config_dir";
     let test_path = "test_config_dir/config.json";
-    
+
     let _ = fs::create_dir(test_dir);
     let save_result = config.save_to_file(test_path);
-    
+
     if save_result.is_ok() {
         let load_result = ControlsConfig::load_from_file(test_path);
         assert!(load_result.is_ok());
     }
-    
+
     let _ = fs::remove_file(test_path);
     let _ = fs::remove_dir(test_dir);
 }

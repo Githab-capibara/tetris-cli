@@ -23,7 +23,7 @@ fn test_rotation_negative_y_handling() {
 fn test_rotation_in_corner() {
     let state = GameState::new();
     let blocks = state.get_blocks();
-    
+
     // Проверяем что поле имеет правильный размер
     assert_eq!(blocks.len(), 20);
     assert_eq!(blocks[0].len(), 10);
@@ -41,5 +41,6 @@ fn test_wall_kick_at_wall() {
 fn test_rotation_stays_within_bounds() {
     let state = GameState::new();
     // Проверяем что начальное состояние корректно
-    assert!(state.get_score() >= 0);
+    // u64 всегда >= 0, поэтому просто проверяем тип значения
+    let _score: u64 = state.get_score();
 }

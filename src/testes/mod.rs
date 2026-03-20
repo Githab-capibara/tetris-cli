@@ -121,3 +121,6 @@ pub mod test_fixes_final_issues;
 
 // Комплексные тесты всех 18 исправлений (54 теста)
 pub mod test_all_fixes;
+
+// Расширенные тесты верификации всех 13 исправлений (39 тестов)
+pub mod test_fixes_verification_extended;
