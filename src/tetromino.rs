@@ -364,16 +364,17 @@ impl Tetromino {
             return;
         }
 
+        // Dir::Down не используется для вращения фигур - ранний возврат
+        if dir == Dir::Down {
+            return;
+        }
+
         for i in 0..4 {
             let (x, y) = self.coords[i];
             match dir {
                 Dir::Left => self.coords[i] = (y, -x), // Поворот против часовой
                 Dir::Right => self.coords[i] = (-y, x), // Поворот по часовой
-                Dir::Down => {
-                    // Dir::Down не используется для вращения фигур
-                    // Оставляем координаты без изменений
-                    debug_assert!(false, "Dir::Down не ожидается в rotate()");
-                }
+                Dir::Down => unreachable!("Dir::Down обработан выше"),
             }
         }
     }
