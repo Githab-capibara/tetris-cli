@@ -148,6 +148,10 @@ pub const SPRINT_LINES: u32 = 40;
 #[allow(dead_code)]
 pub const MARATHON_LINES: u32 = 150;
 
+/// Порог проигрыша: если блок фигуры находится на этой высоте или выше - игра окончена.
+/// Соответствует верхней части игрового поля (y <= 1).
+pub const LOSE_THRESHOLD_Y: i16 = 1;
+
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
 
@@ -753,11 +757,11 @@ impl GameState {
             self.land_timer -= delta_time_ms as f64 / MILLIS_PER_SECOND as f64;
         } else {
             // Проверка проигрыша: проверяем конкретные координаты блоков фигуры
-            // Если любой блок фигуры находится в верхней части поля (y <= 1)
+            // Если любой блок фигуры находится в верхней части поля (y <= LOSE_THRESHOLD_Y)
             let shape_block_y = self.curr_shape.pos.1 as i16;
             let lost = self.curr_shape.coords.iter().any(|&(_, coord_y)| {
                 let block_y = coord_y + shape_block_y;
-                block_y <= 1
+                block_y <= LOSE_THRESHOLD_Y
             });
 
             if lost {
@@ -959,7 +963,7 @@ impl GameState {
             } else if rows_removed_below > 0 {
                 // Перемещаем строку вниз на rows_removed_below позиций
                 // Проверка безопасности: индекс не должен выходить за границы
-                debug_assert!(y + rows_removed_below < GRID_HEIGHT);
+                assert!(y + rows_removed_below < GRID_HEIGHT);
                 (*self.blocks)[y + rows_removed_below] = (*self.blocks)[y];
             }
         }
@@ -1462,7 +1466,7 @@ impl GameState {
     /// Получить игровое поле (для тестов).
     #[allow(dead_code)]
     #[cfg(test)]
-    pub fn get_blocks(&self) -> &Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> {
+    pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
 
@@ -1502,13 +1506,34 @@ impl GameState {
         &self.curr_shape
     }
 
-    /// Получить изменяемую текущую фигуру (для тестов).
+    /// Получить изменяемую текущую фигуру.
+    ///
+    /// # Возвращает
+    /// Mutable ссылку на текущую фигуру для модификации
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::GameState;
+    /// let mut state = GameState::new();
+    /// let shape = state.get_curr_shape_mut();
+    /// // Можно изменить позицию фигуры
+    /// shape.pos.1 += 1.0;
+    /// ```
     #[allow(dead_code)]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
 
-    /// Увеличить количество линий (для тестов).
+    /// Увеличить количество очищенных линий.
+    ///
+    /// Используется в тестах для проверки логики повышения уровня
+    /// и увеличения скорости игры.
+    ///
+    /// # Эффекты
+    /// - Увеличивает `lines_cleared` на 1
+    /// - Увеличивает `total_lines` в статистике на 1
+    /// - Пересчитывает уровень: `level = (lines_cleared / 10) + 1`
+    /// - Пересчитывает скорость: `fall_spd = INITIAL_FALL_SPD + SPD_INC * (level - 1)`
     #[allow(dead_code)]
     pub fn increment_lines_cleared(&mut self) {
         self.lines_cleared += 1;
@@ -1518,8 +1543,21 @@ impl GameState {
         self.fall_spd = INITIAL_FALL_SPD + SPD_INC * (self.level - 1) as f32;
     }
 
-    /// Добавить очки без проверки (для тестов).
-    /// Использует saturating_add для защиты от переполнения
+    /// Добавить очки без проверки.
+    ///
+    /// Используется в тестах для начисления произвольного количества очков.
+    /// Использует `saturating_add` для защиты от переполнения.
+    ///
+    /// # Аргументы
+    /// * `points` - количество очков для добавления
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::GameState;
+    /// let mut state = GameState::new();
+    /// state.add_score_no_check(1000);
+    /// // score будет увеличено на 1000
+    /// ```
     #[allow(dead_code)]
     pub fn add_score_no_check(&mut self, points: u64) {
         self.score = self.score.saturating_add(points);

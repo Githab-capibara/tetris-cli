@@ -658,6 +658,9 @@ mod testes {
     pub mod test_game_stack_overflow;
     pub mod test_highscore_no_rate_limiting;
     pub mod test_io_resource_leak;
+
+    // Комплексные тесты для всех 12 исправленных проблем (36 тестов)
+    pub mod test_fixes_comprehensive;
 }
 
 #[cfg(test)]
