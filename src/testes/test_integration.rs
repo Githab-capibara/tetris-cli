@@ -287,7 +287,11 @@ fn test_game_stats_game_state_interaction() {
 fn test_save_data_leaderboard_interaction() {
     // Создаём SaveData
     let save = SaveData::from_value(3000);
-    assert_eq!(save.assert_hs(), 3000, "SaveData должен хранить 3000");
+    assert_eq!(
+        save.verify_and_get_score(),
+        Some(3000),
+        "SaveData должен хранить 3000"
+    );
 
     // Создаём Leaderboard
     let mut leaderboard = Leaderboard::default();

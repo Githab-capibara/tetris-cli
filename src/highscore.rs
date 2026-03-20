@@ -42,6 +42,7 @@ pub fn generate_salt() -> String {
 /// # Устарело
 /// Используйте [`generate_salt()`] вместо этой функции.
 #[deprecated(since = "2.1.0", note = "Используйте generate_salt()")]
+#[allow(dead_code)]
 pub fn get_random_hash() -> String {
     generate_salt()
 }
@@ -110,7 +111,7 @@ impl LeaderboardEntry {
     ///
     /// # Примечания
     /// Метод используется в тестах для проверки уникальности хэшей.
-    #[cfg_attr(test, allow(dead_code))]
+    #[allow(dead_code)]
     pub fn hash(&self) -> &str {
         &self.hash
     }
@@ -208,6 +209,7 @@ impl SaveData {
     /// assert_eq!(save.assert_hs(), 1000);
     /// ```
     #[deprecated(since = "2.0.0", note = "Используйте verify_and_get_score()")]
+    #[allow(dead_code)]
     pub fn assert_hs(&self) -> u128 {
         self.verify_and_get_score().unwrap_or(0)
     }
@@ -531,22 +533,22 @@ mod sanitize_tests {
     }
 
     #[test]
-    fn test_get_random_hash_length_and_hex() {
-        let hash = get_random_hash();
+    fn test_generate_salt_length_and_hex() {
+        let hash = generate_salt();
         assert_eq!(hash.len(), 64);
         assert!(hash.chars().all(|c| c.is_ascii_hexdigit()));
     }
 
     #[test]
-    fn test_get_random_hash_uniqueness_smoke() {
-        let a = get_random_hash();
-        let b = get_random_hash();
+    fn test_generate_salt_uniqueness_smoke() {
+        let a = generate_salt();
+        let b = generate_salt();
         assert_ne!(a, b, "Две соли подряд не должны совпадать (smoke test)");
     }
 
     #[test]
-    fn test_get_random_hash_is_lowercase_hex() {
-        let hash = get_random_hash();
+    fn test_generate_salt_is_lowercase_hex() {
+        let hash = generate_salt();
         assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
     }
 }

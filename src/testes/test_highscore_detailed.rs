@@ -20,7 +20,11 @@ use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 fn test_savedata_creation_from_value() {
     let save = SaveData::from_value(1000);
 
-    assert_eq!(save.assert_hs(), 1000, "Рекорд должен быть 1000");
+    assert_eq!(
+        save.verify_and_get_score(),
+        Some(1000),
+        "Рекорд должен быть 1000"
+    );
     // Поля приватны, поэтому проверяем через методы
 }
 
@@ -29,7 +33,11 @@ fn test_savedata_creation_from_value() {
 fn test_savedata_default_value() {
     let save = SaveData::default();
 
-    assert_eq!(save.assert_hs(), 0, "Рекорд по умолчанию должен быть 0");
+    assert_eq!(
+        save.verify_and_get_score(),
+        Some(0),
+        "Рекорд по умолчанию должен быть 0"
+    );
 }
 
 /// Тест 3: SaveData сохранение и загрузка
@@ -42,7 +50,7 @@ fn test_savedata_save_and_load() {
     let loaded = SaveData::load_config();
 
     // Проверяем целостность
-    let score = loaded.assert_hs();
+    let score = loaded.verify_and_get_score();
     // u64 всегда >= 0, проверяем что рекорд загрузился корректно
     let _ = score;
 }
@@ -53,9 +61,13 @@ fn test_savedata_integrity_check() {
     let save = SaveData::from_value(2500);
 
     // Проверяем целостность
-    let score = save.assert_hs();
+    let score = save.verify_and_get_score();
 
-    assert_eq!(score, 2500, "Рекорд должен пройти проверку целостности");
+    assert_eq!(
+        score,
+        Some(2500),
+        "Рекорд должен пройти проверку целостности"
+    );
 }
 
 /// Тест 5: SaveData разные значения
@@ -65,9 +77,9 @@ fn test_savedata_different_values() {
     let save2 = SaveData::from_value(1000);
     let save3 = SaveData::from_value(10000);
 
-    assert_eq!(save1.assert_hs(), 100);
-    assert_eq!(save2.assert_hs(), 1000);
-    assert_eq!(save3.assert_hs(), 10000);
+    assert_eq!(save1.verify_and_get_score(), Some(100));
+    assert_eq!(save2.verify_and_get_score(), Some(1000));
+    assert_eq!(save3.verify_and_get_score(), Some(10000));
 }
 
 /// Тест 6: SaveData клонирование
@@ -77,8 +89,8 @@ fn test_savedata_clone() {
     let cloned = save.clone();
 
     assert_eq!(
-        save.assert_hs(),
-        cloned.assert_hs(),
+        save.verify_and_get_score(),
+        cloned.verify_and_get_score(),
         "Клон должен иметь тот же рекорд"
     );
 }
@@ -332,8 +344,12 @@ fn test_savedata_protection_from_fake() {
     let save = SaveData::from_value(5000);
 
     // Проверяем, что рекорд валиден
-    let score = save.assert_hs();
-    assert_eq!(score, 5000, "Валидный рекорд должен проходить проверку");
+    let score = save.verify_and_get_score();
+    assert_eq!(
+        score,
+        Some(5000),
+        "Валидный рекорд должен проходить проверку"
+    );
 }
 
 // ============================================================================

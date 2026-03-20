@@ -19,29 +19,21 @@ mod tests {
 
     /// Тест 1: Проверка генерации случайной соли
     ///
-    /// Проверяет, что функция get_random_hash() работает корректно
+    /// Проверяет, что функция generate_salt() работает корректно
     /// после исправления (использование rand::RngCore вместо getrandom).
     #[test]
     fn test_random_hash_generation() {
-        use crate::highscore::get_random_hash;
+        use crate::highscore::generate_salt;
 
-        let hash1 = get_random_hash();
-        let hash2 = get_random_hash();
+        let hash1 = generate_salt();
+        let hash2 = generate_salt();
 
-        // Хеш BLAKE3 должен быть ровно 64 hex символа (32 байта в hex формате)
-        assert_eq!(
-            hash1.len(),
-            64,
-            "Хеш BLAKE3 должен быть ровно 64 hex символа"
-        );
-        assert_eq!(
-            hash2.len(),
-            64,
-            "Хеш BLAKE3 должен быть ровно 64 hex символа"
-        );
+        // Соль должна быть ровно 64 hex символа (32 байта в hex формате)
+        assert_eq!(hash1.len(), 64, "Соль должна быть ровно 64 hex символа");
+        assert_eq!(hash2.len(), 64, "Соль должна быть ровно 64 hex символа");
 
-        // Хеши должны быть разными (очень маловероятно, что одинаковые)
-        assert_ne!(hash1, hash2, "Два хеша должны быть разными");
+        // Соли должны быть разными (очень маловероятно, что одинаковые)
+        assert_ne!(hash1, hash2, "Две соли должны быть разными");
     }
 
     /// Тест 2: Проверка целостности SaveData после исправления
@@ -50,9 +42,13 @@ mod tests {
         use crate::highscore::SaveData;
 
         let save = SaveData::from_value(5000);
-        let verified = save.assert_hs();
+        let verified = save.verify_and_get_score();
 
-        assert_eq!(verified, 5000, "Хеш должен совпадать для валидных данных");
+        assert_eq!(
+            verified,
+            Some(5000),
+            "Хеш должен совпадать для валидных данных"
+        );
     }
 
     /// Тест 3: Проверка генерации LeaderboardEntry после исправления

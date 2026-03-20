@@ -1744,12 +1744,14 @@ impl GameState {
     /// ```
     #[doc(hidden)]
     #[must_use]
+    #[cfg(feature = "bench")]
     pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
 
     /// Заполнить линию для бенчмарка check_rows().
     #[doc(hidden)]
+    #[cfg(feature = "bench")]
     pub fn fill_line_for_bench(&mut self, y: usize) {
         if y < GRID_HEIGHT {
             self.blocks[y] = [0; GRID_WIDTH]; // Заполняем цветом 0
@@ -1758,6 +1760,7 @@ impl GameState {
 
     /// Очистить линии для бенчмарка check_rows().
     #[doc(hidden)]
+    #[cfg(feature = "bench")]
     pub fn clear_lines_for_bench(&mut self) {
         let _ = self.check_rows();
     }

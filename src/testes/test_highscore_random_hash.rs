@@ -1,78 +1,78 @@
-//! Тесты оптимизации get_random_hash() (highscore.rs).
+//! Тесты оптимизации generate_salt() (highscore.rs).
 //!
 //! Этот модуль содержит 3 теста для проверки исправления:
 //! - Проверка уникальности хэшей
 //! - Проверка длины результата (64 символа)
 //! - Проверка что только hex символы
 //!
-//! Исправление: использование String::with_capacity(64) + write!() вместо format!()
+//! Исправление: использование hex::encode() для эффективного кодирования
 
-use crate::highscore::get_random_hash;
+use crate::highscore::generate_salt;
 
 // ============================================================================
-// ГРУППА ТЕСТОВ: Оптимизация get_random_hash()
+// ГРУППА ТЕСТОВ: Оптимизация generate_salt()
 // ============================================================================
 
 /// Тест 1: Проверка уникальности хэшей
 ///
-/// Проверяет, что get_random_hash() генерирует уникальные хэши.
+/// Проверяет, что generate_salt() генерирует уникальные хэши.
 #[test]
 fn test_random_hash_uniqueness() {
-    // Генерируем 100 хэшей и проверяем что они уникальны
+    // Генерируем 100 солей и проверяем что они уникальны
     let mut hashes = Vec::new();
 
     for _ in 0..100 {
-        let hash = get_random_hash();
-        assert!(!hashes.contains(&hash), "Хэш должен быть уникальным");
+        let hash = generate_salt();
+        assert!(!hashes.contains(&hash), "Соль должна быть уникальной");
         hashes.push(hash);
     }
 
-    // Проверяем что все 100 хэшей уникальны
-    assert_eq!(hashes.len(), 100, "Должно быть 100 уникальных хэшей");
+    // Проверяем что все 100 солей уникальны
+    assert_eq!(hashes.len(), 100, "Должно быть 100 уникальных солей");
 
-    // Дополнительная проверка: генерируем ещё 100 хэшей
+    // Дополнительная проверка: генерируем ещё 100 солей
     let mut more_hashes = Vec::new();
     for _ in 0..100 {
-        let hash = get_random_hash();
+        let hash = generate_salt();
         more_hashes.push(hash);
     }
 
-    // Проверяем что новые хэши тоже уникальны
+    // Проверяем что новые соли тоже уникальны
     let unique_count = more_hashes.iter().collect::<std::collections::HashSet<_>>().len();
-    assert_eq!(unique_count, 100, "Все 100 новых хэшей должны быть уникальны");
+    assert_eq!(unique_count, 100, "Все 100 новых солей должны быть уникальны");
 }
 
 /// Тест 2: Проверка длины результата (64 символа)
 ///
-/// Проверяет, что get_random_hash() возвращает строку из 64 hex символов.
+/// Проверяет, что generate_salt() возвращает строку из 64 hex символов.
 #[test]
 fn test_random_hash_length() {
-    // Генерируем несколько хэшей и проверяем длину
+    // Генерируем несколько солей и проверяем длину
     for _ in 0..10 {
-        let hash = get_random_hash();
-        assert_eq!(hash.len(), 64, "Длина хэша должна быть 64 символа");
+        let hash = generate_salt();
+        assert_eq!(hash.len(), 64, "Длина соли должна быть 64 символа");
     }
 
     // Проверяем что длина соответствует 32 байтам (64 hex символа)
-    let hash = get_random_hash();
-    assert_eq!(hash.len(), 64, "Хэш должен содержать 64 символа");
+    let hash = generate_salt();
+    assert_eq!(hash.len(), 64, "Соль должна содержать 64 символа");
 
     // 64 hex символа = 32 байта = 256 бит
     assert_eq!(
         hash.len() / 2,
         32,
-        "Хэш должен содержать 32 байта (256 бит)"
+        "Соль должна содержать 32 байта (256 бит)"
     );
 }
 
 /// Тест 3: Проверка что только hex символы
 ///
-/// Проверяет, что get_random_hash() возвращает только шестнадцатеричные символы.
+/// Проверяет, что generate_salt() возвращает только шестнадцатеричные символы.
 #[test]
 fn test_random_hash_hex_only() {
-    // Генерируем несколько хэшей и проверяем символы
+    // Генерируем несколько солей и проверяем символы
     for _ in 0..10 {
-        let hash = get_random_hash();
+        let hash = generate_salt();
 
         // Проверяем что каждый символ - hex
         for (i, c) in hash.chars().enumerate() {
@@ -88,18 +88,18 @@ fn test_random_hash_hex_only() {
         assert_eq!(
             hash,
             hash.to_lowercase(),
-            "Хэш должен быть в нижнем регистре"
+            "Соль должна быть в нижнем регистре"
         );
 
         // Проверяем что нет символов верхнего регистра
         assert!(
             !hash.chars().any(|c| c.is_ascii_uppercase()),
-            "Хэш не должен содержать заглавные буквы"
+            "Соль не должна содержать заглавные буквы"
         );
     }
 
     // Дополнительная проверка: все символы должны быть 0-9 или a-f
-    let hash = get_random_hash();
+    let hash = generate_salt();
     for c in hash.chars() {
         assert!(
             ('0'..='9').contains(&c) || ('a'..='f').contains(&c),
@@ -118,10 +118,10 @@ fn test_random_hash_performance() {
 
     let iterations = 1000;
 
-    // Замеряем время генерации хэшей
+    // Замеряем время генерации солей
     let start = Instant::now();
     for _ in 0..iterations {
-        let hash = get_random_hash();
+        let hash = generate_salt();
         assert_eq!(hash.len(), 64);
     }
     let elapsed = start.elapsed();
@@ -129,15 +129,15 @@ fn test_random_hash_performance() {
     // Проверяем что генерация работает быстро
     assert!(
         elapsed.as_millis() < 1000,
-        "Генерация {} хэшей должна занять меньше 1 секунды",
+        "Генерация {} солей должна занять меньше 1 секунды",
         iterations
     );
 
-    // Выводим среднее время на хэш
+    // Выводим среднее время на соль
     let avg_time = elapsed / iterations;
-    println!("Среднее время генерации хэша: {:?}", avg_time);
+    println!("Среднее время генерации соли: {:?}", avg_time);
 
-    // Проверяем что среднее время разумное (< 1мс на хэш)
+    // Проверяем что среднее время разумное (< 1мс на соль)
     assert!(
         avg_time.as_micros() < 1000,
         "Среднее время должно быть меньше 1мс"
@@ -146,14 +146,14 @@ fn test_random_hash_performance() {
 
 /// Тест 5: Проверка распределения символов
 ///
-/// Проверяет что хэш содержит равномерное распределение hex символов.
+/// Проверяет что соль содержит равномерное распределение hex символов.
 #[test]
 fn test_random_hash_distribution() {
-    // Генерируем много хэшей и проверяем распределение
+    // Генерируем много солей и проверяем распределение
     let mut char_counts = [0usize; 16]; // 0-9, a-f
 
     for _ in 0..100 {
-        let hash = get_random_hash();
+        let hash = generate_salt();
         for c in hash.chars() {
             let index = match c {
                 '0'..='9' => c as usize - '0' as usize,

@@ -22,7 +22,7 @@
 
 use crate::controls::ControlsConfig;
 use crate::game::{Dir, GameState};
-use crate::highscore::{get_random_hash, Leaderboard, LeaderboardEntry, SaveData};
+use crate::highscore::{generate_salt, Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
 use crate::tetromino::{ShapeType, Tetromino};
 use std::fs;
@@ -37,8 +37,8 @@ use std::path::Path;
 /// Проверяет, что хеш BLAKE3 всегда имеет длину ровно 64 шестнадцатеричных символа.
 #[test]
 fn test_blake3_hash_exact_length() {
-    // Используем get_random_hash() вместо приватной get_hash()
-    let hash = get_random_hash();
+    // Используем generate_salt() вместо приватной get_hash()
+    let hash = generate_salt();
 
     // Хеш BLAKE3 должен быть ровно 64 hex символа (32 байта в hex формате)
     assert_eq!(
@@ -801,10 +801,10 @@ fn test_unique_temp_paths() {
 /// Проверяет, что тесты используют assert_eq! для точных сравнений.
 #[test]
 fn test_exact_assert_eq_usage() {
-    let hash = get_random_hash();
+    let hash = generate_salt();
 
     // Используем assert_eq! для точного сравнения
-    assert_eq!(hash.len(), 64, "Хеш должен быть ровно 64 символа");
+    assert_eq!(hash.len(), 64, "Соль должна быть ровно 64 символа");
 }
 
 /// Тест 16.2: Проверка отсутствия либеральных утверждений
@@ -829,11 +829,11 @@ fn test_constant_expected_values() {
     const EXPECTED_GRID_WIDTH: usize = 10;
     const EXPECTED_GRID_HEIGHT: usize = 20;
 
-    let hash = get_random_hash();
+    let hash = generate_salt();
     assert_eq!(
         hash.len(),
         EXPECTED_HASH_LENGTH,
-        "Длина хеша должна совпадать"
+        "Длина соли должна совпадать"
     );
 
     assert_eq!(
