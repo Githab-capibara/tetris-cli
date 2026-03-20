@@ -42,21 +42,28 @@ mod rate_limiting_tests {
         assert_eq!(leaderboard.len(), 5, "All 5 records must be added in a row");
     }
 
-    /// Тест 2: Проверка что в тестах можно добавлять много рекордов подряд
+    /// Тест 2: Проверка что rate limiting работает (10 записей в минуту)
     ///
-    /// Стресс-тест: добавление 100 рекордов без rate limiting.
+    /// После 10 записей следующие должны возвращать false.
     #[test]
     fn test_add_many_scores_without_rate_limiting() {
         let mut leaderboard = Leaderboard::default();
 
-        // Добавляем 100 рекордов подряд
-        for i in 0..100 {
+        // Добавляем 10 рекордов подряд (лимит)
+        for i in 0..10 {
             let result = leaderboard.add_score(format!("Player{}", i), i * 100);
-            // Все должны добавиться (rate limiting отключён)
-            assert!(result, "Record {} must be added without rate limiting", i);
+            // Первые 10 должны добавиться
+            assert!(result, "Record {} must be added (within rate limit)", i);
         }
 
-        // Проверяем что таблица содержит топ-5
+        // 11-я запись должна быть отклонена из-за rate limiting
+        let result_11 = leaderboard.add_score("Player11".to_string(), 1100);
+        assert!(
+            !result_11,
+            "Record 11 must be rejected (rate limiting exceeded)"
+        );
+
+        // Проверяем что таблица содержит топ-5 из добавленных
         assert_eq!(
             leaderboard.len(),
             5,

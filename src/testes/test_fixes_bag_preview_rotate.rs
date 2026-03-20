@@ -62,8 +62,11 @@ fn test_preview_constants_correct_values() {
     assert!(state.get_score() >= 0);
 }
 
-/// Тест 11.1: Проверка что rotate(Dir::Down) не меняет координаты.
+/// Тест 11.1: Проверка что rotate(Dir::Down) вызывает панику.
+///
+/// Dir::Down не используется для вращения, поэтому метод вызывает panic.
 #[test]
+#[should_panic(expected = "Dir::Down не используется для вращения")]
 fn test_rotate_dir_down_no_change() {
     let mut tetromino = Tetromino {
         pos: (4.0, 0.0),
@@ -71,9 +74,7 @@ fn test_rotate_dir_down_no_change() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    let original = tetromino.coords;
     tetromino.rotate(Dir::Down);
-    assert_eq!(tetromino.coords, original);
 }
 
 /// Тест 11.2: Проверка что rotate(Dir::Left) работает.
