@@ -611,6 +611,7 @@ fn main() {
 ///
 /// # Возвращает
 /// Финальный счёт игрока
+/// Исправление #2: используем u128 для предотвращения переполнения
 fn run_game_mode(
     cnv: &mut Canvas,
     inp: &mut KeyReader,
@@ -618,7 +619,7 @@ fn run_game_mode(
     mut state: GameState,
     save_to_leaderboard: bool,
     leaderboard: &mut Leaderboard,
-) -> u64 {
+) -> u128 {
     // Запуск игрового цикла
     let new_score = state.play(cnv, inp, hs_str);
 

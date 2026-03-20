@@ -160,12 +160,12 @@ mod similar_names_tests {
     #[test]
     fn test_all_combo_levels_1_to_10() {
         // Проверяем каждый уровень комбо от 1 до 10
-        let combo_bonuses: Vec<(u32, u64)> = (1..=10)
+        let combo_bonuses: Vec<(u32, u128)> = (1..=10)
             .map(|level| {
                 let bonus = if level == 1 {
                     0
                 } else {
-                    COMBO_BONUS * (level - 1) as u64
+                    COMBO_BONUS * (level - 1) as u128
                 };
                 (level, bonus)
             })
@@ -176,7 +176,7 @@ mod similar_names_tests {
             let actual_bonus = if *level == 1 {
                 0
             } else {
-                COMBO_BONUS * (*level - 1) as u64
+                COMBO_BONUS * (*level - 1) as u128
             };
 
             assert_eq!(

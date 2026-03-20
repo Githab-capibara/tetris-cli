@@ -347,7 +347,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(format!("Player{}", i), i as u64 * 100);
+        leaderboard.add_score(format!("Player{}", i), (i as u64 * 100) as u128);
     }
 
     // Таблица должна содержать только топ-5
@@ -388,7 +388,7 @@ fn test_leaderboard_low_score_not_added() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{}", i), (5 - i) as u64 * 100);
+        leaderboard.add_score(format!("Player{}", i), ((5 - i) as u64 * 100) as u128);
     }
 
     // Пытаемся добавить рекорд ниже минимального
@@ -407,7 +407,7 @@ fn test_leaderboard_high_score_displaces_low() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{}", i), (5 - i) as u64 * 100);
+        leaderboard.add_score(format!("Player{}", i), ((5 - i) as u64 * 100) as u128);
     }
 
     // Добавляем высокий рекорд

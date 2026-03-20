@@ -9,7 +9,6 @@
 //! - `tests` - модульные тесты (4 теста)
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -237,18 +236,16 @@ impl ControlsConfig {
         ];
 
         // Проверка диапазона значений (1-255) и дубликатов за один проход O(n)
-        let mut seen = HashSet::with_capacity(keys.len());
+        // Оптимизация: используем массив [bool; 256] вместо HashSet для эффективности
+        let mut seen = [false; 256];
         for &key in &keys {
             // Проверка: клавиша должна быть в диапазоне 1-255
             // 0 - невалидное значение (NULL байт)
             // 255+ зарезервированы для специальных клавиш
-            if key == 0 {
-                return false;
+            if key == 0 || seen[key as usize] {
+                return false; // Дубликат найден или невалидное значение
             }
-            // Проверка на дубликаты
-            if !seen.insert(key) {
-                return false; // Дубликат найден
-            }
+            seen[key as usize] = true;
         }
 
         true

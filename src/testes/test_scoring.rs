@@ -64,7 +64,7 @@ fn test_scoring_piece_fall_mult_reasonable() {
 fn test_scoring_piece_with_fall() {
     let base = PIECE_SCORE_INC;
     let fall_bonus = 1.0 * PIECE_SCORE_FALL_MULT;
-    let total = base + fall_bonus as u64;
+    let total = base + fall_bonus as u128;
 
     assert_eq!(
         total, 150,
@@ -179,7 +179,7 @@ fn test_scoring_lines_no_overflow() {
     let max_score = ROW_SCORE_INC * (1 << (max_lines - 1));
 
     assert!(
-        max_score < u64::MAX,
+        max_score < u128::MAX,
         "Очки за линии не должны переполняться"
     );
 }
@@ -265,7 +265,7 @@ fn test_scoring_combo_no_overflow() {
     let max_bonus = COMBO_BONUS * (max_combo - 1);
 
     assert!(
-        max_bonus < u64::MAX,
+        max_bonus < u128::MAX,
         "Бонус за комбо не должен переполняться"
     );
 }

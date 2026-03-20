@@ -49,7 +49,7 @@ fn test_piece_score_with_fall() {
     // Очки за фигуру включают бонус за падение
     let base = PIECE_SCORE_INC;
     let fall_bonus = INITIAL_FALL_SPD * 50.0;
-    let total = base + fall_bonus as u64;
+    let total = base + fall_bonus as u128;
 
     assert!(total > base, "Очки с падением должны быть больше базовых");
 }
@@ -65,7 +65,7 @@ fn test_minimum_piece_score() {
 #[test]
 fn test_piece_score_constant() {
     // Проверяем, что константа не изменяется
-    const TEST_PIECE_SCORE: u64 = 100;
+    const TEST_PIECE_SCORE: u128 = 100;
     assert_eq!(
         PIECE_SCORE_INC, TEST_PIECE_SCORE,
         "Очки за фигуру должны быть константой"

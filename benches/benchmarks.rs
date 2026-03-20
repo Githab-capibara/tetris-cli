@@ -14,8 +14,9 @@
 //! Criterion генерирует HTML-отчёт в `target/criterion/report/index.html`
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use tetris_cli::game::Dir;
 use tetris_cli::game::GameState;
-use tetris_cli::tetromino::{Dir, ShapeType, Tetromino};
+use tetris_cli::tetromino::{ShapeType, Tetromino};
 
 /// Бенчмарк для check_rows().
 ///
@@ -169,7 +170,7 @@ fn bench_save_tetromino(c: &mut Criterion) {
             let mut state = GameState::new();
             // Опускаем фигуру вниз и сохраняем
             while state.can_move_curr_shape(Dir::Down) {
-                state.curr_shape.pos.1 += 1.0;
+                state.get_curr_shape_mut().pos.1 += 1.0;
             }
             state.save_tetromino();
         })
@@ -185,7 +186,7 @@ fn bench_save_tetromino(c: &mut Criterion) {
             }
             // Опускаем фигуру и сохраняем
             while state.can_move_curr_shape(Dir::Down) {
-                state.curr_shape.pos.1 += 1.0;
+                state.get_curr_shape_mut().pos.1 += 1.0;
             }
             state.save_tetromino();
         })
