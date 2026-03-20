@@ -95,6 +95,10 @@ impl LeaderboardEntry {
     }
 
     /// Получить хэш записи.
+    ///
+    /// # Примечания
+    /// Метод используется в тестах для проверки уникальности хэшей.
+    #[allow(dead_code)]
     pub fn hash(&self) -> &str {
         &self.hash
     }
@@ -102,18 +106,10 @@ impl LeaderboardEntry {
 
 /// Таблица лидеров - коллекция из топ-5 рекордов.
 /// Сохраняется в конфигурационном файле и защищена от подделки.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
-}
-
-impl Default for Leaderboard {
-    fn default() -> Self {
-        Self {
-            entries: Vec::new(),
-        }
-    }
 }
 
 impl SaveData {
