@@ -153,8 +153,8 @@ impl Canvas {
     /// Drop автоматически восстановит терминал.
     fn exit_with_terminal_reset(message: &str) -> ! {
         // Явно восстанавливаем терминал перед panic для гарантии сброса
-        let _ = write!(stdout(), "{}", Show);
-        let _ = stdout().flush();
+        write!(stdout(), "{}", Show).expect("Не удалось показать курсор");
+        stdout().flush().expect("Не удалось выполнить flush");
         // Используем panic! вместо process::exit() для корректной работы Drop
         // Drop автоматически восстановит терминал при панике
         panic!("{}", message);

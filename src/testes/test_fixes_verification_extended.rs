@@ -31,8 +31,8 @@ mod panic_unreachable_tests {
         let state = GameState::new();
 
         // Проверяем что состояние игры корректно
-        // u64 всегда >= 0, поэтому просто проверяем тип значения
-        let _score: u64 = state.get_score();
+        // u128 всегда >= 0, поэтому просто проверяем тип значения
+        let _score: u128 = state.get_score();
 
         // Проверяем что игра инициализирована
         assert!(state.get_level() >= 1, "Level must be at least 1");
@@ -64,8 +64,8 @@ mod panic_unreachable_tests {
         let state = GameState::new();
 
         // Проверяем что состояние игры корректно
-        // u64 всегда >= 0, поэтому просто проверяем тип значения
-        let _score: u64 = state.get_score();
+        // u128 всегда >= 0, поэтому просто проверяем тип значения
+        let _score: u128 = state.get_score();
 
         // Примечание: фактическая проверка panic! происходит в коде game.rs
         // где rotate_with_wall_kick использует panic!("rotate_with_wall_kick: направление Down не поддерживается")
@@ -111,7 +111,7 @@ mod expect_unwrap_tests {
         let score = entry.score();
 
         // Формируем строку для хеширования с expect()
-        let salt = format!("{:020}", entry.score() % 10000000000000000000u64);
+        let salt = format!("{:020}", entry.score() % 10000000000000000000u128);
         let mut salt_and_score = String::with_capacity(salt.len() + name.len() + 20);
 
         // expect() должен работать без паники при корректных данных

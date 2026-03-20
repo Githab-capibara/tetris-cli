@@ -59,8 +59,8 @@ fn test_hold_preview_x_constant_exists() {
 fn test_preview_constants_correct_values() {
     // Проверяем что константы существуют через использование в игре
     let state = GameState::new();
-    // u64 всегда >= 0, поэтому просто проверяем тип значения
-    let _score: u64 = state.get_score();
+    // u128 всегда >= 0, поэтому просто проверяем тип значения
+    let _score: u128 = state.get_score();
 }
 
 /// Тест 11.1: Проверка что rotate(Dir::Down) вызывает панику.
@@ -131,7 +131,7 @@ fn test_write_no_panic() {
 #[test]
 fn test_savedata_from_value_no_panic() {
     use crate::highscore::SaveData;
-    for &value in &[0u64, 100u64, 1000u64] {
+    for &value in &[0u128, 100u128, 1000u128] {
         let _ = SaveData::from_value(value);
     }
 }

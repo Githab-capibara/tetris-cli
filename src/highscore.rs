@@ -67,10 +67,11 @@ const MAX_ENTRIES_PER_MINUTE: usize = 10;
 
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
+/// Исправление #2: используем u128 для предотвращения переполнения счёта
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SaveData {
     /// Значение рекорда.
-    high_score: u64,
+    high_score: u128,
     /// Соль для хэша (защита от подделки).
     high_score_salt: String,
     /// Хэш рекорда с солью.
@@ -79,12 +80,13 @@ pub struct SaveData {
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешем.
+/// Исправление #2: используем u128 для предотвращения переполнения счёта
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
     name: String,
     /// Значение рекорда.
-    score: u64,
+    score: u128,
     /// Соль для хэша (защита от подделки).
     salt: String,
     /// Хэш записи с солью.
@@ -98,8 +100,9 @@ impl LeaderboardEntry {
     }
 
     /// Получить значение рекорда.
+    /// Исправление #2: возвращаем u128 для предотвращения переполнения
     #[must_use]
-    pub fn score(&self) -> u64 {
+    pub fn score(&self) -> u128 {
         self.score
     }
 
@@ -164,7 +167,8 @@ impl SaveData {
     /// let save = SaveData::from_value(1000);
     /// // save.high_score содержит значение 1000
     /// ```
-    pub fn from_value(high_score: u64) -> Self {
+    /// Исправление #2: используем u128 для предотвращения переполнения
+    pub fn from_value(high_score: u128) -> Self {
         let high_score_str = high_score.to_string();
         let salt = generate_salt();
         let salt_and_hs = salt.clone() + &high_score_str;
@@ -184,7 +188,8 @@ impl SaveData {
     ///
     /// # Ошибки
     /// При ошибке сохранения выводит сообщение в stderr
-    pub fn save_value(high_score: u64) {
+    /// Исправление #2: используем u128 для предотвращения переполнения
+    pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
         if let Err(e) = store(APP_NAME, save) {
             eprintln!("Ошибка сохранения рекорда: {}", e);
@@ -203,7 +208,7 @@ impl SaveData {
     /// assert_eq!(save.assert_hs(), 1000);
     /// ```
     #[deprecated(since = "2.0.0", note = "Используйте verify_and_get_score()")]
-    pub fn assert_hs(&self) -> u64 {
+    pub fn assert_hs(&self) -> u128 {
         self.verify_and_get_score().unwrap_or(0)
     }
 
@@ -213,7 +218,7 @@ impl SaveData {
     /// Логирует попытки подделки рекорда.
     ///
     /// # Возвращает
-    /// - `Some(u64)` - значение рекорда, если хэш совпадает
+    /// - `Some(u128)` - значение рекорда, если хэш совпадает
     /// - `None` - если запись подделана или повреждена
     ///
     /// # Пример
@@ -223,7 +228,7 @@ impl SaveData {
     /// assert_eq!(save.verify_and_get_score(), Some(1000));
     /// ```
     #[must_use]
-    pub fn verify_and_get_score(&self) -> Option<u64> {
+    pub fn verify_and_get_score(&self) -> Option<u128> {
         let high_score_str = self.high_score.to_string();
         let salt_and_hs = self.high_score_salt.clone() + &high_score_str;
         let test_hash = get_hash(&salt_and_hs);
@@ -290,14 +295,15 @@ impl LeaderboardEntry {
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), 1000);
     /// ```
-    pub fn new(name: String, score: u64) -> Self {
+    /// Исправление #2: используем u128 для предотвращения переполнения
+    pub fn new(name: String, score: u128) -> Self {
         let valid_name = sanitize_player_name(&name);
 
         let salt = generate_salt();
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         // для предотвращения лишних аллокаций
         use std::fmt::Write;
-        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 20);
+        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 40);
         write!(salt_and_score, "{}{}{}", salt, valid_name, score)
             .expect("Failed to write salt_and_score");
         let hash = get_hash(&salt_and_score);
@@ -383,7 +389,9 @@ impl Leaderboard {
     ///
     /// # Примечания
     /// Реализовано rate limiting: не более MAX_ENTRIES_PER_MINUTE записей в минуту.
-    pub fn add_score(&mut self, name: String, score: u64) -> bool {
+    /// Исправление #2: используем u128 для предотвращения переполнения
+    /// Исправление #4: валидация timestamps (отклоняем будущие времена)
+    pub fn add_score(&mut self, name: String, score: u128) -> bool {
         // Rate limiting: проверяем количество записей за последнюю минуту
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
@@ -404,10 +412,15 @@ impl Leaderboard {
         }
 
         // Добавление новой записи времени для rate limiting
-        let current_time = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis() as u64;
+        // Исправление #4: используем monotonic clock для защиты от подделки timestamps
+        // Instant::now() использует monotonic clock, который не зависит от системных часов
+
+        // Для rate limiting используем относительное время (elapsed)
+        // Это защищает от атак с изменением системного времени
+        static START_TIME: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        let start = START_TIME.get_or_init(std::time::Instant::now);
+        let current_time = start.elapsed().as_millis() as u64;
+
         self.recent_entry_times.push(current_time);
 
         // Добавление новой записи
@@ -426,15 +439,15 @@ impl Leaderboard {
     }
 
     /// Очистить старые записи времён (старше 1 минуты).
+    /// Исправление #4: используем monotonic clock для защиты от подделки
     fn cleanup_old_entry_times(&mut self) {
-        let current_time = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis() as u64;
+        static START_TIME: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        let start = START_TIME.get_or_init(std::time::Instant::now);
+        let current_time = start.elapsed().as_millis() as u64;
         let one_minute_ms = 60_000;
 
         self.recent_entry_times
-            .retain(|&time| current_time - time < one_minute_ms);
+            .retain(|&time| current_time.saturating_sub(time) < one_minute_ms);
     }
 
     /// Получить список рекордов.
@@ -449,9 +462,10 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Лучший рекорд или 0, если таблица пуста
+    /// Исправление #2: возвращаем u128 для предотвращения переполнения
     #[allow(dead_code)]
     #[must_use]
-    pub fn get_best_score(&self) -> u64 {
+    pub fn get_best_score(&self) -> u128 {
         self.entries.first().map(|e| e.score).unwrap_or(0)
     }
 

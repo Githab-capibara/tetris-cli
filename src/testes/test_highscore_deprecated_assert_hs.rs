@@ -85,7 +85,7 @@ fn test_deprecated_assert_hs_still_works() {
 /// Тест 5: Проверка что verify_and_get_score() работает с разными значениями.
 #[test]
 fn test_verify_and_get_score_with_different_values() {
-    let test_values = [0u64, 100u64, 1000u64, 10000u64];
+    let test_values = [0u128, 100u128, 1000u128, 10000u128];
 
     for &value in &test_values {
         let save = SaveData::from_value(value);

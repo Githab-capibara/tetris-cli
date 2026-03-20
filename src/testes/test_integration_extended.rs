@@ -183,13 +183,13 @@ fn test_gamestate_can_save_score() {
     // Проверяем что рекорд загрузился корректно (с учётом защиты от подделки)
     // Используем verify_and_get_score() вместо устаревшего assert_hs()
     let loaded_score = loaded.verify_and_get_score().unwrap_or(0);
-    
+
     // Если confy не работает, loaded_score будет 0 - пропускаем тест
     if loaded_score == 0 && score != 0 {
         eprintln!("Предупреждение: confy не работает, тест пропускается");
         return; // Пропускаем тест
     }
-    
+
     assert_eq!(
         loaded_score, score,
         "Рекорд должен загрузиться и быть валидным"

@@ -677,6 +677,9 @@ mod testes {
 
     // Расширенные тесты верификации всех 13 исправлений (39 тестов)
     pub mod test_fixes_verification_extended;
+
+    // Тесты аудита 12 исправлений (36 тестов)
+    pub mod test_fixes_audit;
 }
 
 #[cfg(test)]

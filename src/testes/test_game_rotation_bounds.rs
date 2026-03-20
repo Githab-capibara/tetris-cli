@@ -41,6 +41,6 @@ fn test_wall_kick_at_wall() {
 fn test_rotation_stays_within_bounds() {
     let state = GameState::new();
     // Проверяем что начальное состояние корректно
-    // u64 всегда >= 0, поэтому просто проверяем тип значения
-    let _score: u64 = state.get_score();
+    // u128 всегда >= 0, поэтому просто проверяем тип значения
+    let _score: u128 = state.get_score();
 }
