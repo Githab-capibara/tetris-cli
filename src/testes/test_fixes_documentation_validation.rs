@@ -2,7 +2,6 @@
 
 use crate::game::{GameState, GameMode};
 use crate::highscore::{Leaderboard, LeaderboardEntry};
-use std::time::Instant;
 
 /// Тест 13.1: Проверка что save_to_file() имеет # Errors секцию.
 #[test]
