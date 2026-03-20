@@ -682,7 +682,10 @@ fn test_collision_rotation_no_panic() {
 /// Тест 44: Проверка что вращение работает в центре поля
 #[test]
 fn test_collision_rotation_in_center() {
-    let state = GameState::new();
+    let mut state = GameState::new();
+
+    // Перемещаем фигуру в центр поля (примерно середина по Y)
+    state.get_curr_shape_mut().pos.1 = 10.0;
 
     // В центре поля вращение должно быть возможно
     let can_rotate =

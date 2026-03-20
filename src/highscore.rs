@@ -24,22 +24,17 @@ use serde::{Deserialize, Serialize};
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
-/// Оптимизация: использует String::with_capacity(64) + write!() вместо format!()
+/// Оптимизация: использует hex::encode() вместо ручного цикла
 pub fn get_random_hash() -> String {
     use rand::rngs::OsRng;
     use rand::RngCore;
-    use std::fmt::Write;
 
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
                                // Используем криптографически стойкий генератор случайных чисел ОС.
     OsRng.fill_bytes(&mut bytes);
 
-    // Оптимизация: предварительно выделяем память на 64 символа
-    let mut result = String::with_capacity(64);
-    for byte in &bytes {
-        write!(result, "{:02x}", byte).unwrap();
-    }
-    result
+    // Оптимизация: используем hex::encode() для эффективного кодирования
+    hex::encode(bytes)
 }
 
 /// Получить хэш строки в шестнадцатеричном формате.
@@ -56,6 +51,10 @@ const APP_NAME: &str = "tetris-cli";
 
 /// Максимальное количество рекордов в таблице лидеров.
 const MAX_LEADERBOARD_SIZE: usize = 5;
+
+/// Максимальное количество записей в минуту для rate limiting.
+/// Ограничивает частоту добавления рекордов для предотвращения злоупотреблений.
+const MAX_ENTRIES_PER_MINUTE: usize = 10;
 
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
@@ -111,6 +110,9 @@ impl LeaderboardEntry {
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
+    /// Время последних добавленных записей для rate limiting (в миллисекундах).
+    #[serde(default)]
+    recent_entry_times: Vec<u64>,
 }
 
 impl SaveData {
@@ -366,12 +368,18 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
-    /// `false` если рекорд недостаточно высок
+    /// `false` если рекорд недостаточно высок или превышен лимит rate limiting
     ///
     /// # Примечания
-    /// Возможна оптимизация: добавить rate limiting для предотвращения
-    /// злоупотреблений (например, не более 10 записей в минуту).
+    /// Реализовано rate limiting: не более MAX_ENTRIES_PER_MINUTE записей в минуту.
     pub fn add_score(&mut self, name: String, score: u64) -> bool {
+        // Rate limiting: проверяем количество записей за последнюю минуту
+        self.cleanup_old_entry_times();
+        if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
+            eprintln!("Предупреждение: превышен лимит добавления рекордов ({} в минуту)", MAX_ENTRIES_PER_MINUTE);
+            return false;
+        }
+
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный рекорд
@@ -380,6 +388,13 @@ impl Leaderboard {
                 return false;
             }
         }
+
+        // Добавление новой записи времени для rate limiting
+        let current_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        self.recent_entry_times.push(current_time);
 
         // Добавление новой записи
         let new_entry = LeaderboardEntry::new(name, score);
@@ -394,6 +409,17 @@ impl Leaderboard {
         }
 
         true
+    }
+
+    /// Очистить старые записи времён (старше 1 минуты).
+    fn cleanup_old_entry_times(&mut self) {
+        let current_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        let one_minute_ms = 60_000;
+
+        self.recent_entry_times.retain(|&time| current_time - time < one_minute_ms);
     }
 
     /// Получить список рекордов.

@@ -19,6 +19,72 @@ use std::path::Path;
 #[allow(dead_code)]
 const ALLOWED_CONFIG_DIR: &str = ".";
 
+/// Проверить валидность пути для конфигурации.
+///
+/// Эта функция реализует защиту от path traversal атак:
+/// 1. Запрещает абсолютные пути
+/// 2. Запрещает последовательности ".."
+/// 3. Проверяет, что путь находится внутри разрешённой директории
+///
+/// # Аргументы
+/// * `path` - путь для проверки
+///
+/// # Возвращает
+/// - `Ok(())` если путь валиден
+/// - `Err(io::Error)` если путь невалиден
+///
+/// # Пример использования
+/// ```no_run
+/// use tetris_cli::controls::validate_config_path;
+/// validate_config_path("config.json").unwrap();
+/// ```
+fn validate_config_path(path: &str) -> io::Result<()> {
+    let path_obj = Path::new(path);
+
+    // Запрет абсолютных путей
+    if path_obj.is_absolute() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Абсолютные пути не разрешены",
+        ));
+    }
+
+    // Запрет path traversal (..)
+    if path.contains("..") {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Path traversal не разрешён",
+        ));
+    }
+
+    // Дополнительная проверка: разрешаем путь и проверяем директорию
+    let current_dir = std::env::current_dir()?;
+    let full_path = current_dir.join(path_obj);
+
+    // Используем canonicalize() для разрешения всех символических ссылок
+    let canonical_path = match full_path.canonicalize() {
+        Ok(path) => path,
+        // Если файл ещё не существует, проверяем родительскую директорию
+        Err(_) => {
+            if let Some(parent) = full_path.parent() {
+                parent.canonicalize().unwrap_or_else(|_| current_dir.clone())
+            } else {
+                current_dir.clone()
+            }
+        }
+    };
+
+    // Проверяем, что путь начинается с разрешённой директории
+    if !canonical_path.starts_with(&current_dir) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Путь вне разрешённой директории",
+        ));
+    }
+
+    Ok(())
+}
+
 /// Конфигурация управления игрой.
 ///
 /// Содержит коды клавиш для всех действий в игре.
@@ -105,54 +171,8 @@ impl ControlsConfig {
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
-        // Валидация пути: запрет абсолютных путей и path traversal
-        let path_obj = Path::new(path);
-
-        // Запрет абсолютных путей вне директории приложения
-        if path_obj.is_absolute() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Абсолютные пути не разрешены",
-            ));
-        }
-
-        // Усиленная защита от path traversal:
-        // 1. Проверяем наличие ".." в пути
-        // 2. Используем canonicalize для разрешения всех ссылок
-        // 3. Проверяем, что путь находится внутри разрешённой директории
-        if path.contains("..") {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Path traversal не разрешён",
-            ));
-        }
-
-        // Дополнительная проверка: пытаемся разрешить путь и проверяем,
-        // что он находится внутри разрешённой директории
-        let current_dir = std::env::current_dir()?;
-        let full_path = current_dir.join(path_obj);
-
-        // Исправление: используем canonicalize() для разрешения всех символических ссылок
-        // Это защищает от обхода через symlink и других атак path traversal
-        let canonical_path = match full_path.canonicalize() {
-            Ok(path) => path,
-            // Если файл ещё не существует, проверяем родительскую директорию
-            Err(_) => {
-                if let Some(parent) = full_path.parent() {
-                    parent.canonicalize().unwrap_or_else(|_| current_dir.clone())
-                } else {
-                    current_dir.clone()
-                }
-            }
-        };
-
-        // Проверяем, что путь начинается с разрешённой директории
-        if !canonical_path.starts_with(&current_dir) {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Путь вне разрешённой директории",
-            ));
-        }
+        // Валидация пути с использованием общей функции
+        validate_config_path(path)?;
 
         let json =
             serde_json::to_string_pretty(self).map_err(|e| io::Error::other(e.to_string()))?;
@@ -183,24 +203,8 @@ impl ControlsConfig {
     /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
     /// ```
     pub fn load_from_file(path: &str) -> io::Result<Self> {
-        // Валидация пути: запрет абсолютных путей и path traversal
-        let path_obj = Path::new(path);
-
-        // Запрет абсолютных путей вне директории приложения
-        if path_obj.is_absolute() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Абсолютные пути не разрешены",
-            ));
-        }
-
-        // Запрет path traversal (..)
-        if path.contains("..") {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Path traversal не разрешён",
-            ));
-        }
+        // Валидация пути с использованием общей функции
+        validate_config_path(path)?;
 
         let json = fs::read_to_string(path)?;
         serde_json::from_str(&json)

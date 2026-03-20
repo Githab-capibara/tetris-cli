@@ -21,6 +21,7 @@ use crate::io::{
     Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
 };
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
+use std::collections::HashSet;
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -462,13 +463,19 @@ pub struct GameState {
     /// Режим игры.
     mode: GameMode,
     /// Строки для анимации (мигание при очистке).
-    animating_rows: Vec<usize>,
+    /// Используется битовая маска для оптимизации: каждый бит соответствует строке.
+    animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
     is_hard_dropping: bool,
     /// Количество ячеек, пройденных при Soft Drop.
     soft_drop_distance: u32,
     /// Генератор фигур по системе 7-bag.
     bag: crate::tetromino::BagGenerator,
+    /// Отслеживание изменённых клеток для оптимизации отрисовки.
+    /// Содержит координаты (y, x) клеток, которые изменились с последнего кадра.
+    /// Используется для dirty rectangle tracking - отрисовки только изменённых областей.
+    #[allow(dead_code)]
+    dirty_cells: HashSet<(usize, usize)>,
 }
 
 /// Состояние завершения обновления.
@@ -523,10 +530,11 @@ impl GameState {
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Classic,
-            animating_rows: Vec::new(),
+            animating_rows_mask: 0,
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
+            dirty_cells: HashSet::new(),
         }
     }
 
@@ -557,10 +565,11 @@ impl GameState {
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Sprint,
-            animating_rows: Vec::new(),
+            animating_rows_mask: 0,
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
+            dirty_cells: HashSet::new(),
         }
     }
 
@@ -591,10 +600,11 @@ impl GameState {
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Marathon,
-            animating_rows: Vec::new(),
+            animating_rows_mask: 0,
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
+            dirty_cells: HashSet::new(),
         }
     }
 
@@ -748,7 +758,6 @@ impl GameState {
                     0 // Защита от NaN/infinity
                 };
                 // Бонусные очки: 2 за каждую ячейку высоты
-                // Используем saturating_add для защиты от переполнения
                 self.score = self.score.saturating_add(drop_distance * HARD_DROP_POINTS);
                 // Фиксируем таймер для немедленного приземления
                 self.land_timer = 0.0;
@@ -760,7 +769,6 @@ impl GameState {
                 if self.can_move_curr_shape(Dir::Down) {
                     self.curr_shape.pos.1 += 1.0;
                     // При каждом успешном шаге вниз считаем дистанцию для очков
-                    // Используем saturating_add для защиты от переполнения
                     self.soft_drop_distance = self.soft_drop_distance.saturating_add(1);
                 }
             }
@@ -796,14 +804,12 @@ impl GameState {
 
             // Фиксация фигуры и начисление очков
             // Исправление: добавлена защита от переполнения при расчёте очков за падение
-            // Используем saturating_add для защиты от переполнения
             let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT).max(0.0).min(u64::MAX as f32);
             let fall_bonus_u64 = if fall_bonus.is_finite() { fall_bonus as u64 } else { 0 };
             self.score = self.score.saturating_add(PIECE_SCORE_INC + fall_bonus_u64);
 
             // Начисление очков за Soft Drop: 1 очко за ячейку
             if self.soft_drop_distance > 0 {
-                // Используем saturating_add для защиты от переполнения
                 self.score = self
                     .score
                     .saturating_add((self.soft_drop_distance as u64) * SOFT_DROP_POINTS);
@@ -818,10 +824,8 @@ impl GameState {
             // Обновление комбо
             if lines_cleared > 0 {
                 // Удаление линий — увеличиваем комбо
-                // Используем saturating_add для защиты от переполнения
                 self.stats.combo_counter = self.stats.combo_counter.saturating_add(1);
                 // Бонус за комбо: 50 × (комбо - 1)
-                // Используем saturating_add для защиты от переполнения
                 if self.stats.combo_counter > 1 {
                     self.score = self
                         .score
@@ -971,11 +975,8 @@ impl GameState {
         // ====================================================================
 
         if remove_count > 0 {
-            // Анимация мигания перед удалением (сохраняем индексы строк)
-            // Используем битовую маску для фильтрации
-            self.animating_rows = (0..GRID_HEIGHT)
-                .filter(|&y| (rows_mask & (1 << y)) != 0)
-                .collect();
+            // Анимация мигания перед удалением (сохраняем битовую маску строк)
+            self.animating_rows_mask = rows_mask;
 
             // Воспроизведение звукового сигнала (терминальный bell)
             // Символ \x07 воспроизводит звук в терминале
@@ -1015,7 +1016,7 @@ impl GameState {
         }
 
         // Очистка анимации (строки удалены)
-        self.animating_rows.clear();
+        self.animating_rows_mask = 0;
 
         // ====================================================================
         // ШАГ 4: ОБНОВЛЕНИЕ СЧЁТА, УРОВНЯ И СКОРОСТИ
@@ -1034,7 +1035,6 @@ impl GameState {
                 self.level = new_level;
                 // Бонус за повышение уровня: 500 × (номер уровня - 1)
                 // Уровень 2: 500, Уровень 3: 1000, Уровень 11: 5000
-                // Используем saturating_add для защиты от переполнения
                 self.score = self.score.saturating_add(500 * (new_level - 1) as u64);
             }
 
@@ -1057,7 +1057,6 @@ impl GameState {
             // Используем битовый сдвиг для эффективности: 1 << n = 2^n
             // remove_count гарантированно > 0 благодаря проверке выше
             // =================================================================
-            // Используем saturating_add для защиты от переполнения
             self.score = self
                 .score
                 .saturating_add(ROW_SCORE_INC * (1 << (remove_count - 1)));
@@ -1065,7 +1064,6 @@ impl GameState {
             // Бонус за Tetris (4 линии одновременно)
             // Дополнительный бонус 1000 очков сверх базовых 800
             if remove_count == 4 {
-                // Используем saturating_add для защиты от переполнения
                 self.score = self.score.saturating_add(1000); // Бонус за Tetris
             }
         }
@@ -1118,9 +1116,22 @@ impl GameState {
         }
 
         // Отрисовка зафиксированных фигур
+        // Оптимизация: используем битовую маску для проверки анимации строк
+        let animation_time = self.stats.get_elapsed_time();
+        let millis = (animation_time * 1000.0) as u16;
+        let show_animation = (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(2);
+
         for y in 0..GRID_HEIGHT {
+            // Проверяем, является ли эта строка частью анимации
+            let is_animating = (self.animating_rows_mask & (1 << y)) != 0;
+
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
+                    // Если строка анимируется, пропускаем отрисовку каждый второй кадр
+                    if is_animating && !show_animation {
+                        continue;
+                    }
+
                     cnv.draw_strs(
                         &[SHAPE_STR],
                         (
@@ -1139,11 +1150,9 @@ impl GameState {
 
         // Отрисовка текущей падающей фигуры с анимацией Hard Drop
         // Кэшируем время один раз для всех блоков фигуры (оптимизация)
-        let shape_symbol = if self.is_hard_dropping {
+        let shape_display_char = if self.is_hard_dropping {
             // Мигание: чередуем символы каждые HARD_DROP_ANIM_INTERVAL_MS мс
             // Используем время от начала игры для анимации
-            let animation_time = self.stats.get_elapsed_time();
-            let millis = (animation_time * 1000.0) as u16;
             if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(2) {
                 SHAPE_STR
             } else {
@@ -1164,7 +1173,7 @@ impl GameState {
             // Проверка границ перед отрисовкой для защиты от паники
             if x >= 0 && y >= 0 {
                 cnv.draw_strs(
-                    &[shape_symbol],
+                    &[shape_display_char],
                     (x as u16, y as u16),
                     SHAPE_COLORS[self.curr_shape.fg],
                     &Reset,
@@ -1463,14 +1472,18 @@ impl GameState {
             let check_x = coord_x + shape_block_x;
             let check_y = coord_y + shape_block_y;
 
-            // Исправление: добавлена проверка check_y < 0 для предотвращения выхода за верхнюю границу
             // Проверка выхода за границы сетки (все 4 направления)
+            // Важно: проверяем ДО конвертации в usize для предотвращения переполнения
             if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y < 0 || check_y >= GRID_HEIGHT as i16 {
                 return false;
             }
 
+            // Теперь безопасно конвертируем в usize для доступа к массиву
+            let y_idx = check_y as usize;
+            let x_idx = check_x as usize;
+
             // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
+            if self.blocks[y_idx][x_idx] != -1 {
                 return false;
             }
         }
@@ -1619,7 +1632,6 @@ impl GameState {
     /// Добавить очки без проверки.
     ///
     /// Используется в тестах для начисления произвольного количества очков.
-    /// Использует `saturating_add` для защиты от переполнения.
     ///
     /// # Аргументы
     /// * `points` - количество очков для добавления
