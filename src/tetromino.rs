@@ -294,6 +294,7 @@ impl Tetromino {
     /// let figure = Tetromino::select();
     /// assert_eq!(figure.pos, (4.0, 0.0)); // Начальная позиция
     /// ```
+    #[allow(dead_code)]
     pub fn select() -> Self {
         let shape = match rand::thread_rng().gen_range(0..7) {
             0 => ShapeType::T,

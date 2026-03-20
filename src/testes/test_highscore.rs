@@ -21,8 +21,12 @@ use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 fn test_save_data_from_value() {
     let save = SaveData::from_value(1000);
 
-    // Проверяем через публичный метод assert_hs()
-    assert_eq!(save.assert_hs(), 1000, "Значение рекорда должно быть 1000");
+    // Проверяем через публичный метод verify_and_get_score()
+    assert_eq!(
+        save.verify_and_get_score(),
+        Some(1000),
+        "Значение рекорда должно быть 1000"
+    );
 }
 
 /// Тест 2: Проверка SaveData по умолчанию
@@ -33,20 +37,25 @@ fn test_save_data_default() {
     let save = SaveData::default();
 
     // Проверяем, что значение по умолчанию 0
-    assert_eq!(save.assert_hs(), 0, "Рекорд по умолчанию должен быть 0");
+    assert_eq!(
+        save.verify_and_get_score(),
+        Some(0),
+        "Рекорд по умолчанию должен быть 0"
+    );
 }
 
-/// Тест 3: Проверка assert_hs с валидным рекордом
+/// Тест 3: Проверка verify_and_get_score с валидным рекордом
 ///
-/// Проверяет, что assert_hs() возвращает правильное значение для валидного рекорда.
+/// Проверяет, что verify_and_get_score() возвращает правильное значение для валидного рекорда.
 #[test]
-fn test_save_data_assert_hs_valid() {
+fn test_save_data_verify_and_get_score_valid() {
     let save = SaveData::from_value(5000);
 
-    let result = save.assert_hs();
+    let result = save.verify_and_get_score();
     assert_eq!(
-        result, 5000,
-        "assert_hs() должен вернуть 5000 для валидного рекорда"
+        result,
+        Some(5000),
+        "verify_and_get_score() должен вернуть Some(5000) для валидного рекорда"
     );
 }
 
@@ -58,10 +67,10 @@ fn test_save_data_clone() {
     let original = SaveData::from_value(2500);
     let cloned = original.clone();
 
-    // Проверяем через публичный метод assert_hs()
+    // Проверяем через публичный метод verify_and_get_score()
     assert_eq!(
-        original.assert_hs(),
-        cloned.assert_hs(),
+        original.verify_and_get_score(),
+        cloned.verify_and_get_score(),
         "Клонированный рекорд должен совпадать"
     );
 }
@@ -76,9 +85,9 @@ fn test_save_data_different_values() {
     for &value in values.iter() {
         let save = SaveData::from_value(value);
         assert_eq!(
-            save.assert_hs(),
-            value,
-            "assert_hs() должен вернуть {} для рекорда {}",
+            save.verify_and_get_score(),
+            Some(value),
+            "verify_and_get_score() должен вернуть Some({}) для рекорда {}",
             value,
             value
         );

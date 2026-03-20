@@ -52,7 +52,6 @@ fn test_utf8_chars_return_none() {
 #[test]
 fn test_utf8_limitation_comment_exists() {
     let _reader = crate::io::KeyReader::new();
-    assert!(true);
 }
 
 /// Тест 23.1: Проверка что add_score() работает.
@@ -80,7 +79,6 @@ fn test_cooldown_exists() {
 fn test_rate_limiting_comment_exists() {
     let mut leaderboard = Leaderboard::default();
     leaderboard.add_score("Test".to_string(), 100);
-    assert!(true);
 }
 
 /// Тест 24.1: Проверка что update() работает корректно.
@@ -147,7 +145,6 @@ fn test_project_compiles() {
     let _ = crate::game::FPS;
     let _ = Leaderboard::default();
     let _ = crate::controls::ControlsConfig::default_config();
-    assert!(true);
 }
 
 /// Тест 26.3: Проверка что тесты работают.

@@ -15,6 +15,10 @@ categories = ["games", "command-line-utilities"]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[features]
+# Feature для бенчмарков - используется в game.rs для методов *_for_bench
+bench = []
+
 [dependencies]
 termion = "2.0"
 rand = "0.8.4"

@@ -7,7 +7,7 @@
 //!
 //! Исправление обеспечивает корректную конвертацию 32 байт в 64 hex символа.
 
-use crate::highscore::{get_random_hash, LeaderboardEntry, SaveData};
+use crate::highscore::{generate_salt, LeaderboardEntry, SaveData};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Исправление конвертации байтов в hex
@@ -15,18 +15,18 @@ use crate::highscore::{get_random_hash, LeaderboardEntry, SaveData};
 
 /// Тест 1: Проверка корректной конвертации байтов в hex строку
 ///
-/// Проверяет, что get_random_hash() возвращает строку из ровно 64 hex символов.
+/// Проверяет, что generate_salt() возвращает строку из ровно 64 hex символов.
 /// Все символы должны быть lowercase hex digit (0-9, a-f).
 #[test]
 fn test_корректная_конвертация_байт_в_hex() {
-    // Генерируем хеш
-    let hash = get_random_hash();
+    // Генерируем соль
+    let hash = generate_salt();
 
     // Проверяем длину (32 байта * 2 hex символа = 64 символа)
     assert_eq!(
         hash.len(),
         64,
-        "Длина хеша должна быть ровно 64 символа (32 байта в hex)"
+        "Длина соли должна быть ровно 64 символа (32 байта в hex)"
     );
 
     // Проверяем что все символы - lowercase hex цифры
@@ -46,16 +46,16 @@ fn test_корректная_конвертация_байт_в_hex() {
 
 /// Тест 2: Проверка уникальности генерируемых хешей
 ///
-/// Проверяет, что каждый вызов get_random_hash() возвращает уникальное значение.
+/// Проверяет, что каждый вызов generate_salt() возвращает уникальное значение.
 /// Генерируем 100 хешей и проверяем что все они уникальны.
 #[test]
 fn test_уникальность_генерируемых_хешей() {
     const NUM_HASHES: usize = 100;
     let mut hashes = Vec::with_capacity(NUM_HASHES);
 
-    // Генерируем 100 хешей
+    // Генерируем 100 солей
     for _ in 0..NUM_HASHES {
-        let hash = get_random_hash();
+        let hash = generate_salt();
         hashes.push(hash);
     }
 
@@ -83,8 +83,8 @@ fn test_использование_соли_в_записях() {
 
     // Значения должны совпадать (оба 1000)
     assert_eq!(
-        save1.assert_hs(),
-        save2.assert_hs(),
+        save1.verify_and_get_score(),
+        save2.verify_and_get_score(),
         "Значения должны совпадать (оба 1000)"
     );
 

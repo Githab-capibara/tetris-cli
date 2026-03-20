@@ -307,8 +307,8 @@ fn test_savedata_protection() {
     let save = SaveData::from_value(10000);
 
     // Проверяем целостность
-    let score = save.assert_hs();
-    assert_eq!(score, 10000, "Рекорд должен пройти проверку");
+    let score = save.verify_and_get_score();
+    assert_eq!(score, Some(10000), "Рекорд должен пройти проверку");
 }
 
 /// Тест 20: Leaderboard максимальный размер

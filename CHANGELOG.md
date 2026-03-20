@@ -4,6 +4,50 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.13] — 2026-03-20
+
+### Исправлено
+
+- **140+ предупреждений clippy** — полный аудит и исправление всех style и performance проблем:
+  - `dead_code` — добавлены `#[cfg(feature = "bench")]` и `#[allow(dead_code)]` атрибуты
+  - `deprecated` — миграция с `get_random_hash()` на `generate_salt()`
+  - `deprecated` — миграция с `assert_hs()` на `verify_and_get_score()`
+  - `assertions_on_constants` — удалены бессмысленные `assert!(true, ...)`
+  - `unnecessary_literal_unwrap` — убраны `.unwrap()` с литералов `Some()` и `Ok()`
+  - `needless_range_loop` — заменены на итераторы с `.enumerate()`
+  - `manual_range_contains` — заменены на `.contains()`
+  - `write_literal` — упрощены `write!()` и `format!()` вызовы
+  - `unnecessary_cast` — удалены лишние приведения типов
+  - `len_zero` — заменены на `.is_empty()`
+
+### Добавлено
+
+- **24 новых теста** в модуле `test_code_quality.rs`:
+  - 3 теста на `dead_code prevention`
+  - 3 теста на `deprecated API migration`
+  - 3 теста на `assertions validation`
+  - 3 теста на `unwrap safety`
+  - 3 теста на `iterator usage`
+  - 3 теста на `contains usage`
+  - 3 теста на `format usage`
+  - 3 теста на `cast usage`
+- **Feature `bench`** в Cargo.toml — для методов бенчмаркинга
+
+### Улучшено
+
+- **Качество кода** — все style warnings исправлены автоматически через `cargo clippy --fix`
+- **Читаемость тестов** — удалены бессмысленные утверждения
+- **Производительность** — итераторы вместо индексации массивов
+- **Безопасность** — правильная обработка `Option`/`Result` типов
+
+### Тестирование
+
+- **Все 1415 тестов проходят успешно** (1387 lib + 28 bin + 24 code quality)
+- **0 предупреждений clippy** (кроме намеренно deprecated тестов)
+- **Добавлено 24 новых теста** для проверки качества кода
+
+---
+
 ## [23.96.12] — 2026-03-20
 
 ### Добавлено

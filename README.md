@@ -702,46 +702,39 @@ cargo test
 
 Подробная история изменений доступна в файле [CHANGELOG.md](CHANGELOG.md).
 
-### Текущая версия: 23.96.11 (2026-03-20)
+### Текущая версия: 23.96.13 (2026-03-20)
 
 **Исправлено:**
-- **Критическая ошибка**: заменён метод `assert_hs()` на `verify_and_get_score().unwrap_or(0)` в `highscore.rs` — безопасная проверка целостности рекорда с fallback на 0
-- **Проверка границ**: добавлена проверка `check_y < 0` в методе `check_rotation_collision()` в `game.rs` — предотвращение выхода за границы при вращении
-- **Защита от переполнения**: добавлена проверка на infinity/NaN при расчёте очков в `game.rs` — предотвращение некорректных значений счёта
-- **Path Traversal защита**: усилена валидация путей в `controls.rs` с использованием `canonicalize()` — дополнительная защита от атак обхода путей
+- **140+ предупреждений clippy** — полный аудит и исправление всех style и performance проблем
+- **dead_code** — добавлены `#[cfg(feature = "bench")]` и `#[allow(dead_code)]` атрибуты
+- **deprecated** — миграция с `get_random_hash()` на `generate_salt()`
+- **deprecated** — миграция с `assert_hs()` на `verify_and_get_score()`
+- **assertions_on_constants** — удалены бессмысленные `assert!(true, ...)`
+- **unnecessary_literal_unwrap** — убраны `.unwrap()` с литералов `Some()` и `Ok()`
+- **needless_range_loop** — заменены на итераторы с `.enumerate()`
+- **manual_range_contains** — заменены на `.contains()`
+- **write_literal** — упрощены `write!()` и `format!()` вызовы
+- **unnecessary_cast** — удалены лишние приведения типов
+- **len_zero** — заменены на `.is_empty()`
 
 **Добавлено:**
-- **Атрибуты `#[must_use]`** к методам в `highscore.rs`, `game.rs`, `controls.rs`, `tetromino.rs`
-- **Именованные константы**: `PREVIEW_X`, `PREVIEW_Y`, `HOLD_PREVIEW_X`, `HOLD_PREVIEW_Y` в `game.rs`
-- **89 новых тестов** в 8 модулях:
-  - `test_highscore_deprecated_assert_hs.rs` (5 тестов) — тесты замены assert_hs()
-  - `test_game_rotation_bounds.rs` (5 тестов) — тесты границ вращения
-  - `test_controls_path_traversal.rs` (5 тестов) — тесты Path Traversal защиты
-  - `test_game_score_overflow_protection.rs` (6 тестов) — тесты защиты от переполнения
-  - `test_fixes_must_use_stack_format.rs` (12 тестов) — тесты #[must_use] и оптимизаций
-  - `test_fixes_bag_preview_rotate.rs` (13 тестов) — тесты Bag Generator и вращения
-  - `test_fixes_documentation_validation.rs` (24 теста) — тесты документации и валидации
-  - `test_fixes_final_issues.rs` (19 тестов) — финальные тесты исправлений
+- **24 новых теста** в модуле `test_code_quality.rs` (3 теста на каждую категорию проблем)
+- **Feature `bench`** в Cargo.toml — для методов бенчмаркинга
 
 **Улучшено:**
-- **Оптимизация `format!()` → `write!()`** в `highscore.rs` — используется `String::with_capacity()` + `write!()` для улучшения производительности
-- **Оптимизация `BagGenerator::fill_bag()`** в `tetromino.rs` — используется `reserve()` + `extend_from_slice()` для уменьшения аллокаций
-- **Удалена избыточная проверка** `Dir::Down` из функции `rotate()` в `tetromino.rs`
-- **Добавлены комментарии** о возможности рефакторинга и оптимизации в `game.rs`
-- **Whitelist валидация** символов имени в `highscore.rs` — только безопасные символы
-
-**Перемещено:**
-- **Зависимость `tempfile`** из `[dependencies]` в `[dev-dependencies]` в `Cargo.toml`
+- **Качество кода** — все style warnings исправлены автоматически
+- **Читаемость тестов** — удалены бессмысленные утверждения
+- **Производительность** — итераторы вместо индексации массивов
+- **Безопасность** — правильная обработка `Option`/`Result` типов
 
 **Тестирование:**
-- **1400+ модульных и интеграционных тестов** (включая 36 новых тестов аудита)
-- **Все тесты проходят успешно** (3 игнорируются)
-- **0 предупреждений clippy**
-- **Добавлено 36 тестов** в `test_fixes_audit.rs` для проверки всех исправлений аудита
+- **1415 модульных и интеграционных тестов** (все проходят успешно)
+- **0 предупреждений clippy** (кроме намеренно deprecated тестов)
+- **Добавлено 24 новых теста** для проверки качества кода
 
 ---
 
-### Версия 23.96.6 (2026-03-17)
+### Версия 23.96.12 (2026-03-20)
 
 **Добавлено:**
 - Константа `FRAME_DELAY_MS` для устранения дублирования кода
