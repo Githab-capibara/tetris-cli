@@ -661,6 +661,16 @@ mod testes {
 
     // Комплексные тесты для всех 12 исправленных проблем (36 тестов)
     pub mod test_fixes_comprehensive;
+
+    // Новые тесты для 26 исправленных проблем (90 тестов)
+    pub mod test_highscore_deprecated_assert_hs;
+    pub mod test_game_rotation_bounds;
+    pub mod test_controls_path_traversal;
+    pub mod test_game_score_overflow_protection;
+    pub mod test_fixes_must_use_stack_format;
+    pub mod test_fixes_bag_preview_rotate;
+    pub mod test_fixes_documentation_validation;
+    pub mod test_fixes_final_issues;
 }
 
 #[cfg(test)]

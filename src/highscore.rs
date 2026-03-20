@@ -90,6 +90,7 @@ impl LeaderboardEntry {
     }
 
     /// Получить значение рекорда.
+    #[must_use]
     pub fn score(&self) -> u64 {
         self.score
     }
@@ -121,7 +122,8 @@ impl SaveData {
         match load::<Self>(APP_NAME) {
             Ok(data) => {
                 // Дополнительная проверка целостности
-                if data.assert_hs() == 0 && data.high_score != 0 {
+                // Исправление: используем verify_and_get_score() вместо deprecated assert_hs()
+                if data.verify_and_get_score().unwrap_or(0) == 0 && data.high_score != 0 {
                     eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
                     return Self::default();
                 }
@@ -209,6 +211,7 @@ impl SaveData {
     /// let save = SaveData::from_value(1000);
     /// assert_eq!(save.verify_and_get_score(), Some(1000));
     /// ```
+    #[must_use]
     pub fn verify_and_get_score(&self) -> Option<u64> {
         let high_score_str = self.high_score.to_string();
         let salt_and_hs = self.high_score_salt.clone() + &high_score_str;
@@ -280,7 +283,11 @@ impl LeaderboardEntry {
         let valid_name = sanitize_player_name(&name);
 
         let salt = get_random_hash();
-        let salt_and_score = format!("{}{}{}", salt, valid_name, score);
+        // Оптимизация: используем String::with_capacity() + write!() вместо format!()
+        // для предотвращения лишних аллокаций
+        use std::fmt::Write;
+        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 20);
+        write!(salt_and_score, "{}{}{}", salt, valid_name, score).unwrap();
         let hash = get_hash(&salt_and_score);
 
         Self {
@@ -302,8 +309,12 @@ impl LeaderboardEntry {
     /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
     /// assert!(entry.is_valid());
     /// ```
+    #[must_use]
     pub fn is_valid(&self) -> bool {
-        let salt_and_score = format!("{}{}{}", self.salt, self.name, self.score);
+        // Оптимизация: используем String::with_capacity() + write!() вместо format!()
+        use std::fmt::Write;
+        let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 20);
+        write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score).unwrap();
         let test_hash = get_hash(&salt_and_score);
         self.hash == test_hash
     }
@@ -356,6 +367,10 @@ impl Leaderboard {
     /// # Возвращает
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
     /// `false` если рекорд недостаточно высок
+    ///
+    /// # Примечания
+    /// Возможна оптимизация: добавить rate limiting для предотвращения
+    /// злоупотреблений (например, не более 10 записей в минуту).
     pub fn add_score(&mut self, name: String, score: u64) -> bool {
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
@@ -394,6 +409,7 @@ impl Leaderboard {
     /// # Возвращает
     /// Лучший рекорд или 0, если таблица пуста
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_best_score(&self) -> u64 {
         self.entries.first().map(|e| e.score).unwrap_or(0)
     }
@@ -416,6 +432,7 @@ impl Leaderboard {
     /// # Возвращает
     /// Количество записей
     #[allow(dead_code)]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.entries.len()
     }
@@ -425,6 +442,7 @@ impl Leaderboard {
     /// # Возвращает
     /// `true` если таблица пуста
     #[allow(dead_code)]
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }

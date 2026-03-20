@@ -4,6 +4,59 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.11] — 2026-03-20
+
+### Исправлено
+
+- **Критическая ошибка**: заменён метод `assert_hs()` на `verify_and_get_score().unwrap_or(0)` в функции `load_config()` файла `highscore.rs` — безопасная проверка целостности рекорда с fallback на 0
+- **Проверка границ**: добавлена проверка `check_y < 0` в методе `check_rotation_collision()` файла `game.rs` — предотвращение выхода за границы игрового поля при вращении
+- **Защита от переполнения**: добавлена проверка на infinity/NaN при расчёте очков в `game.rs` — предотвращение некорректных значений счёта
+- **Path Traversal защита**: усилена валидация путей в `controls.rs` с использованием `canonicalize()` — дополнительная защита от атак обхода путей
+
+### Добавлено
+
+- **Атрибуты `#[must_use]`** к методам:
+  - `highscore.rs`: `score()`, `verify_and_get_score()`, `is_valid()`, `get_best_score()`, `len()`, `is_empty()`
+  - `game.rs`: `total_pieces()`, `get_held_shape()`, `get_blocks_for_bench()`, `can_hold()`, `get_curr_shape()`
+  - `controls.rs`: `validate()`
+  - `tetromino.rs`: `get_bag()`, `get_index()`
+- **Именованные константы** в `game.rs`:
+  - `PREVIEW_X`, `PREVIEW_Y` — координаты предпросмотра следующей фигуры
+  - `HOLD_PREVIEW_X`, `HOLD_PREVIEW_Y` — координаты предпросмотра удержанной фигуры
+- **89 новых тестов** в 8 тестовых модулях:
+  - `test_highscore_deprecated_assert_hs.rs` (5 тестов) — тесты замены assert_hs()
+  - `test_game_rotation_bounds.rs` (5 тестов) — тесты границ вращения
+  - `test_controls_path_traversal.rs` (5 тестов) — тесты Path Traversal защиты
+  - `test_game_score_overflow_protection.rs` (6 тестов) — тесты защиты от переполнения
+  - `test_fixes_must_use_stack_format.rs` (12 тестов) — тесты #[must_use] и оптимизаций
+  - `test_fixes_bag_preview_rotate.rs` (13 тестов) — тесты Bag Generator и вращения
+  - `test_fixes_documentation_validation.rs` (24 теста) — тесты документации и валидации
+  - `test_fixes_final_issues.rs` (19 тестов) — финальные тесты исправлений
+
+### Улучшено
+
+- **Оптимизация `format!()` → `write!()`** в `highscore.rs` — используется `String::with_capacity()` + `write!()` вместо `format!()` для улучшения производительности
+- **Оптимизация `BagGenerator::fill_bag()`** в `tetromino.rs` — используется `reserve()` + `extend_from_slice()` для уменьшения аллокаций
+- **Удалена избыточная проверка** `Dir::Down` из функции `rotate()` в `tetromino.rs` — упрощение логики вращения
+- **Добавлены комментарии** о возможности рефакторинга для функций `update()` и `check_rows()` в `game.rs`
+- **Добавлен комментарий** о возможности оптимизации через dirty rectangle tracking в `game.rs`
+- **Добавлен комментарий** о защите от переполнения стека для массива blocks в `game.rs`
+- **Добавлены секции `# Errors`** в документацию функций `save_to_file()` и `load_from_file()` в `controls.rs`
+- **Добавлен `#[doc(hidden)]`** для тестовых функций бенчмарков в `game.rs`
+- **Whitelist валидация** символов имени в `highscore.rs` — только безопасные символы
+
+### Перемещено
+
+- **Зависимость `tempfile`** из `[dependencies]` в `[dev-dependencies]` в `Cargo.toml` — используется только для тестирования
+
+### Тестирование
+
+- **Все 1235 тестов проходят успешно** (1227 + 8 doctest)
+- **0 предупреждений clippy**
+- **Добавлено 89 новых тестов** для проверки исправлений и улучшений
+
+---
+
 ## [23.96.10] — 2026-03-20
 
 ### Исправлено

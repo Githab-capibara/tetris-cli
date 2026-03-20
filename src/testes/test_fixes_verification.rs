@@ -742,7 +742,7 @@ mod debug_assert_tests {
 
 #[cfg(test)]
 mod version_tests {
-    /// Тест 1: Проверка что версия в Cargo.toml = 23.96.7
+    /// Тест 1: Проверка что версия в Cargo.toml = 23.96.10
     ///
     /// Проверяет, что версия в Cargo.toml соответствует ожидаемой.
     #[test]
@@ -756,10 +756,10 @@ mod version_tests {
             .find(|line| line.starts_with("version = "))
             .unwrap();
 
-        // Проверяем что версия равна 23.96.7
+        // Проверяем что версия равна 23.96.10
         assert!(
-            version_line.contains("23.96.7"),
-            "Cargo.toml version must be 23.96.7, found: {}",
+            version_line.contains("23.96.10"),
+            "Cargo.toml version must be 23.96.10, found: {}",
             version_line
         );
     }
@@ -795,7 +795,7 @@ mod version_tests {
         );
 
         // Тест проходит если версия в Cargo.toml корректна
-        assert_eq!(expected_version, "23.96.7", "Version must be 23.96.7");
+        assert_eq!(expected_version, "23.96.10", "Version must be 23.96.10");
     }
 
     /// Тест 3: Проверка что CHANGELOG упоминает версию

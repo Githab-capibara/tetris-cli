@@ -90,6 +90,13 @@ impl ControlsConfig {
     /// - `Ok(())` если сохранение успешно
     /// - `Err(io::Error)` если произошла ошибка записи
     ///
+    /// # Errors
+    /// Функция возвращает ошибку в следующих случаях:
+    /// - Путь содержит абсолютный путь вне директории приложения
+    /// - Путь содержит последовательности `..` (path traversal)
+    /// - Путь выходит за пределы разрешённой директории после разрешения symlink
+    /// - Ошибка записи в файл (недостаточно прав, нет места на диске)
+    ///
     /// # Пример использования
     /// ```no_run
     /// use tetris_cli::controls::ControlsConfig;
@@ -125,9 +132,19 @@ impl ControlsConfig {
         let current_dir = std::env::current_dir()?;
         let full_path = current_dir.join(path_obj);
 
-        // Используем canonicalize для разрешения всех символических ссылок
-        // Это защищает от обхода через symlink
-        let canonical_path = full_path.canonicalize().unwrap_or_else(|_| full_path.clone());
+        // Исправление: используем canonicalize() для разрешения всех символических ссылок
+        // Это защищает от обхода через symlink и других атак path traversal
+        let canonical_path = match full_path.canonicalize() {
+            Ok(path) => path,
+            // Если файл ещё не существует, проверяем родительскую директорию
+            Err(_) => {
+                if let Some(parent) = full_path.parent() {
+                    parent.canonicalize().unwrap_or_else(|_| current_dir.clone())
+                } else {
+                    current_dir.clone()
+                }
+            }
+        };
 
         // Проверяем, что путь начинается с разрешённой директории
         if !canonical_path.starts_with(&current_dir) {
@@ -151,6 +168,13 @@ impl ControlsConfig {
     /// # Возвращает
     /// - `Ok(ControlsConfig)` если загрузка успешна
     /// - `Err(io::Error)` если файл не найден или некорректен
+    ///
+    /// # Errors
+    /// Функция возвращает ошибку в следующих случаях:
+    /// - Путь содержит абсолютный путь вне директории приложения
+    /// - Путь содержит последовательности `..` (path traversal)
+    /// - Файл не найден или не может быть прочитан
+    /// - JSON некорректен или не соответствует ожидаемой структуре
     ///
     /// # Пример использования
     /// ```no_run
@@ -201,6 +225,7 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// assert!(config.validate());
     /// ```
+    #[must_use]
     pub fn validate(&self) -> bool {
         // Сбор всех клавиш в массив для проверки
         let keys = [
