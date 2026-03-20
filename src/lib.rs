@@ -680,6 +680,9 @@ mod testes {
 
     // Тесты аудита 12 исправлений (36 тестов)
     pub mod test_fixes_audit;
+
+    // Тесты качества кода (24 теста - по 3 на каждую из 8 категорий)
+    pub mod test_code_quality;
 }
 
 #[cfg(test)]
