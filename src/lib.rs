@@ -671,6 +671,9 @@ mod testes {
     pub mod test_fixes_bag_preview_rotate;
     pub mod test_fixes_documentation_validation;
     pub mod test_fixes_final_issues;
+
+    // Комплексные тесты всех 18 исправлений (54 теста)
+    pub mod test_all_fixes;
 }
 
 #[cfg(test)]
