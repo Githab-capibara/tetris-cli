@@ -434,8 +434,8 @@ pub struct GameState {
     /// Скорость падения.
     fall_spd: f32,
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
-    /// Использует Box для размещения данных в куче вместо стека.
-    blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
+    /// Массив размещается на стеке (200 байт = 10×20×1 байт).
+    blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Таймер приземления.
     land_timer: f64,
     /// Статистика игры.
@@ -499,8 +499,8 @@ impl GameState {
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
             // Инициализация поля пустыми клетками (-1)
-            // Используем Box::new() для размещения в куче вместо стека
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
+            // Массив размещается на стеке (200 байт)
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Classic,
@@ -533,8 +533,8 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            // Используем Box::new() для размещения в куче
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
+            // Массив размещается на стеке (200 байт)
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Sprint,
@@ -567,8 +567,8 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            // Используем Box::new() для размещения в куче
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
+            // Массив размещается на стеке (200 байт)
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode: GameMode::Marathon,
@@ -852,7 +852,7 @@ impl GameState {
             // Проверка границ перед записью (защита от паники при отрицательных координатах)
             // Используем checked_sub() для безопасной работы с отрицательными значениями
             if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
-                (*self.blocks)[y as usize][x as usize] = self.curr_shape.fg as i8;
+                self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
     }
@@ -914,17 +914,19 @@ impl GameState {
         // ШАГ 1: ПОИСК ЗАПОЛНЕННЫХ ЛИНИЙ
         // ====================================================================
 
-        // Булев массив для отметки заполненных линий (O(1) доступ вместо O(n) contains)
-        let mut rows_to_remove = [false; GRID_HEIGHT];
+        // Оптимизация: используем битовую маску u32 вместо [bool; GRID_HEIGHT]
+        // Это экономит память (4 байта вместо 20) и ускоряет проверку
+        // Каждый бит соответствует строке: бит 0 = строка 0, бит 1 = строка 1, и т.д.
+        let mut rows_mask: u32 = 0;
         let mut remove_count = 0;
 
         // Поиск заполненных линий (проверяем каждую строку)
         for (y, row) in self.blocks.iter().enumerate() {
             // Проверяем, что все клетки в строке заполнены (нет пустых -1)
             let row_full = row.iter().take(GRID_WIDTH).all(|&cell| cell != -1);
-            // Если строка заполнена полностью, отмечаем её для удаления
+            // Если строка заполнена полностью, устанавливаем соответствующий бит
             if row_full {
-                rows_to_remove[y] = true;
+                rows_mask |= 1 << y;
                 remove_count += 1;
             }
         }
@@ -935,7 +937,10 @@ impl GameState {
 
         if remove_count > 0 {
             // Анимация мигания перед удалением (сохраняем индексы строк)
-            self.animating_rows = (0..GRID_HEIGHT).filter(|&y| rows_to_remove[y]).collect();
+            // Используем битовую маску для фильтрации
+            self.animating_rows = (0..GRID_HEIGHT)
+                .filter(|&y| (rows_mask & (1 << y)) != 0)
+                .collect();
 
             // Воспроизведение звукового сигнала (терминальный bell)
             // Символ \x07 воспроизводит звук в терминале
@@ -957,20 +962,21 @@ impl GameState {
         let mut rows_removed_below = 0;
 
         for y in (0..GRID_HEIGHT).rev() {
-            if rows_to_remove[y] {
+            // Проверяем бит вместо доступа к массиву
+            if (rows_mask & (1 << y)) != 0 {
                 // Эта строка будет удалена
                 rows_removed_below += 1;
             } else if rows_removed_below > 0 {
                 // Перемещаем строку вниз на rows_removed_below позиций
                 // Проверка безопасности: индекс не должен выходить за границы
                 assert!(y + rows_removed_below < GRID_HEIGHT);
-                (*self.blocks)[y + rows_removed_below] = (*self.blocks)[y];
+                self.blocks[y + rows_removed_below] = self.blocks[y];
             }
         }
 
         // Заполняем верхние строки пустыми значениями (-1)
         for y in 0..rows_removed_below {
-            (*self.blocks)[y] = [-1; GRID_WIDTH];
+            self.blocks[y] = [-1; GRID_WIDTH];
         }
 
         // Очистка анимации (строки удалены)
@@ -1074,14 +1080,14 @@ impl GameState {
         // Отрисовка зафиксированных фигур
         for y in 0..GRID_HEIGHT {
             for x in 0..GRID_WIDTH {
-                if (*self.blocks)[y][x] != -1 {
+                if self.blocks[y][x] != -1 {
                     cnv.draw_strs(
                         &[SHAPE_STR],
                         (
                             (x * SHAPE_WIDTH + 2) as u16,
                             (y + SHAPE_DRAW_OFFSET as usize) as u16,
                         ),
-                        SHAPE_COLORS[(*self.blocks)[y][x] as usize],
+                        SHAPE_COLORS[self.blocks[y][x] as usize],
                         &Reset,
                     );
                 }
@@ -1291,7 +1297,7 @@ impl GameState {
             }
 
             // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && (*self.blocks)[check_y as usize][check_x as usize] != -1 {
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
@@ -1421,7 +1427,7 @@ impl GameState {
             }
 
             // Проверка столкновения с зафиксированными фигурами
-            if check_y >= 0 && (*self.blocks)[check_y as usize][check_x as usize] != -1 {
+            if check_y >= 0 && self.blocks[check_y as usize][check_x as usize] != -1 {
                 return false;
             }
         }
@@ -1492,6 +1498,26 @@ impl GameState {
     #[allow(dead_code)]
     pub fn get_held_shape(&self) -> Option<Tetromino> {
         self.held_shape
+    }
+
+    /// Получить игровое поле для бенчмарков.
+    #[doc(hidden)]
+    pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &self.blocks
+    }
+
+    /// Заполнить линию для бенчмарка check_rows().
+    #[doc(hidden)]
+    pub fn fill_line_for_bench(&mut self, y: usize) {
+        if y < GRID_HEIGHT {
+            self.blocks[y] = [0; GRID_WIDTH]; // Заполняем цветом 0
+        }
+    }
+
+    /// Очистить линии для бенчмарка check_rows().
+    #[doc(hidden)]
+    pub fn clear_lines_for_bench(&mut self) {
+        let _ = self.check_rows();
     }
 
     /// Получить флаг can_hold (для тестов).

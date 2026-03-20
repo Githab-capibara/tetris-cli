@@ -170,7 +170,7 @@ fn test_обработка_ошибки_некорректного_json() -> io:
     fs::write(&test_path, "not valid json { broken")?;
 
     // Пытаемся загрузить - должна быть ошибка
-    let result = ControlsConfig::load_from_file(test_path.to_str().unwrap());
+    let result = ControlsConfig::load_from_file(test_path.to_str().expect("Путь должен быть валидным UTF-8"));
 
     // Проверяем что результат - ошибка
     assert!(

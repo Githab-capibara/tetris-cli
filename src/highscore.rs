@@ -189,15 +189,37 @@ impl SaveData {
     /// let save = SaveData::from_value(1000);
     /// assert_eq!(save.assert_hs(), 1000);
     /// ```
+    #[deprecated(since = "2.0.0", note = "Используйте verify_and_get_score()")]
     pub fn assert_hs(&self) -> u64 {
+        self.verify_and_get_score().unwrap_or(0)
+    }
+
+    /// Проверить целостность рекорда и вернуть значение.
+    ///
+    /// Возвращает Some(score) если хэш совпадает, None при подделке.
+    /// Логирует попытки подделки рекорда.
+    ///
+    /// # Возвращает
+    /// - `Some(u64)` - значение рекорда, если хэш совпадает
+    /// - `None` - если запись подделана или повреждена
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::highscore::SaveData;
+    /// let save = SaveData::from_value(1000);
+    /// assert_eq!(save.verify_and_get_score(), Some(1000));
+    /// ```
+    pub fn verify_and_get_score(&self) -> Option<u64> {
         let high_score_str = self.high_score.to_string();
         let salt_and_hs = self.high_score_salt.clone() + &high_score_str;
         let test_hash = get_hash(&salt_and_hs);
 
         if self.high_score_hash == test_hash {
-            self.high_score
+            Some(self.high_score)
         } else {
-            0
+            // Логирование попытки подделки
+            eprintln!("Предупреждение: обнаружена подделка рекорда! Хэш не совпадает.");
+            None
         }
     }
 }
