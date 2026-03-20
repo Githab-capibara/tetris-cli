@@ -14,6 +14,11 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+/// Разрешённая директория для сохранения конфигураций.
+/// Все файлы конфигурации должны сохраняться только в текущей рабочей директории.
+#[allow(dead_code)]
+const ALLOWED_CONFIG_DIR: &str = ".";
+
 /// Конфигурация управления игрой.
 ///
 /// Содержит коды клавиш для всех действий в игре.
@@ -107,7 +112,7 @@ impl ControlsConfig {
         // Усиленная защита от path traversal:
         // 1. Проверяем наличие ".." в пути
         // 2. Используем canonicalize для разрешения всех ссылок
-        // 3. Проверяем, что путь находится внутри текущей директории
+        // 3. Проверяем, что путь находится внутри разрешённой директории
         if path.contains("..") {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -116,20 +121,20 @@ impl ControlsConfig {
         }
 
         // Дополнительная проверка: пытаемся разрешить путь и проверяем,
-        // что он находится внутри текущей рабочей директории
+        // что он находится внутри разрешённой директории
         let current_dir = std::env::current_dir()?;
         let full_path = current_dir.join(path_obj);
 
-        // Если файл уже существует, проверяем его canonical путь
-        if full_path.exists() {
-            if let Ok(canonical) = full_path.canonicalize() {
-                if !canonical.starts_with(&current_dir) {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidInput,
-                        "Путь вне разрешённой директории",
-                    ));
-                }
-            }
+        // Используем canonicalize для разрешения всех символических ссылок
+        // Это защищает от обхода через symlink
+        let canonical_path = full_path.canonicalize().unwrap_or_else(|_| full_path.clone());
+
+        // Проверяем, что путь начинается с разрешённой директории
+        if !canonical_path.starts_with(&current_dir) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Путь вне разрешённой директории",
+            ));
         }
 
         let json =

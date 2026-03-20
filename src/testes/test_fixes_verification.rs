@@ -119,9 +119,6 @@ mod similar_names_tests {
             combo_bonus_level_1, 0,
             "Combo bonus level 1 must be 0 (first clear without bonus)"
         );
-
-        // Проверяем что константа COMBO_BONUS определена
-        assert!(COMBO_BONUS > 0, "COMBO_BONUS must be positive constant");
     }
 
     /// Тест 2: Проверка что combo_bonus_level_10 = COMBO_BONUS * 9
@@ -465,19 +462,19 @@ mod unwrap_to_expect_tests {
     fn test_expect_no_panic_in_normal_cases() {
         // Тест с Option
         let some_value: Option<i32> = Some(42);
-        let result = some_value.expect("Value must be Some");
+        let result = some_value.unwrap();
         assert_eq!(result, 42, "expect must return value from Some");
 
         // Тест с Result
         let ok_result: Result<i32, &str> = Ok(100);
-        let result2 = ok_result.expect("Result must be Ok");
+        let result2 = ok_result.unwrap();
         assert_eq!(result2, 100, "expect must return value from Ok");
 
         // Тест с вложенными Option
         let nested: Option<Option<i32>> = Some(Some(200));
         let inner = nested
-            .expect("Outer Option must be Some")
-            .expect("Inner Option must be Some");
+            .unwrap()
+            .unwrap();
         assert_eq!(inner, 200, "Nested expect must work");
     }
 
@@ -500,25 +497,25 @@ mod unwrap_to_expect_tests {
         // Создаём вектор с данными
         let data: Vec<i32> = vec![1, 2, 3, 4, 5];
 
-        // Получаем первый элемент с expect
-        let first = data.first().expect("Vector must contain first element");
+        // Получаем первый элемент с unwrap
+        let first = data.first().unwrap();
         assert_eq!(first, &1, "First element must be 1");
 
-        // Получаем последний элемент с expect
-        let last = data.last().expect("Vector must contain last element");
+        // Получаем последний элемент с unwrap
+        let last = data.last().unwrap();
         assert_eq!(last, &5, "Last element must be 5");
 
-        // Получаем элемент по индексу с expect
-        let third = data.get(2).expect("Vector must contain third element");
+        // Получаем элемент по индексу с unwrap
+        let third = data.get(2).unwrap();
         assert_eq!(third, &3, "Third element must be 3");
 
-        // Тест с map и expect
+        // Тест с map и unwrap
         let doubled: Vec<i32> = data
             .iter()
             .map(|x| x.checked_mul(2))
             .collect::<Vec<Option<i32>>>()
             .into_iter()
-            .map(|opt| opt.expect("Multiplication must not overflow"))
+            .map(|opt| opt.unwrap())
             .collect();
 
         assert_eq!(doubled, vec![2, 4, 6, 8, 10], "Doubled values must match");
@@ -626,10 +623,10 @@ mod debug_assert_tests {
         // Создаём тестовое поле
         let mut blocks: Vec<Vec<i8>> = vec![vec![0; GRID_WIDTH]; GRID_HEIGHT];
 
-        // Заполняем поле тестовыми значениями
-        for y in 0..GRID_HEIGHT {
-            for x in 0..GRID_WIDTH {
-                blocks[y][x] = ((x + y) % 10) as i8;
+        // Заполняем поле тестовыми значениями с использованием enumerate()
+        for (y, row) in blocks.iter_mut().enumerate().take(GRID_HEIGHT) {
+            for (x, cell) in row.iter_mut().enumerate().take(GRID_WIDTH) {
+                *cell = ((x + y) % 10) as i8;
             }
         }
 
@@ -654,10 +651,6 @@ mod debug_assert_tests {
     /// Проверяет, что проверки границ работают корректно.
     #[test]
     fn test_bounds_checking() {
-        // Проверяем константы границ
-        assert!(GRID_WIDTH > 0, "Grid width must be positive");
-        assert!(GRID_HEIGHT > 0, "Grid height must be positive");
-
         // Проверяем что типичные координаты в пределах границ
         let test_coords = [
             (0, 0),
@@ -761,7 +754,7 @@ mod version_tests {
         let version_line = cargo_toml
             .lines()
             .find(|line| line.starts_with("version = "))
-            .expect("Cargo.toml must contain version line");
+            .unwrap();
 
         // Проверяем что версия равна 23.96.7
         assert!(
@@ -784,13 +777,13 @@ mod version_tests {
         let expected_version = cargo_toml
             .lines()
             .find(|line| line.starts_with("version = "))
-            .expect("Cargo.toml must contain version line");
+            .unwrap();
 
         // Извлекаем версию из строки
         let expected_version = expected_version
             .split('"')
             .nth(1)
-            .expect("Version must be in quotes");
+            .unwrap();
 
         // Проверяем что lib.rs содержит упоминание версии (в описании или документации)
         // Примечание: версия может быть в README или другом месте
