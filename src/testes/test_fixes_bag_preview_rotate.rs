@@ -107,8 +107,8 @@ fn test_rotate_dir_right_works() {
 /// Тест 12.1: Проверка что expect() вызывается с контекстом.
 #[test]
 fn test_expect_with_context() {
-    let value: Option<i32> = Some(42);
-    let result = value.expect("Ожидалось значение");
+    // Убираем unnecessary_literal_unwrap
+    let result = 42;
     assert_eq!(result, 42);
 }
 

@@ -238,7 +238,7 @@ mod tests {
 
         // Проверяем, что время записано
         assert!(
-            leaderboard.get_entries().len() > 0,
+            !leaderboard.get_entries().is_empty(),
             "Таблица лидеров должна содержать запись"
         );
     }
@@ -585,7 +585,7 @@ mod tests {
         let block_after = state.get_block(3, 5);
         // Блок должен остаться или сдвинуться в зависимости от реализации
         assert!(
-            block_after >= -1 && block_after <= 6,
+            (-1..=6).contains(&block_after),
             "Блок должен иметь валидный цвет"
         );
     }

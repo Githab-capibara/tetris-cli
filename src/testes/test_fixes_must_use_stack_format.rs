@@ -56,7 +56,6 @@ fn test_blocks_access_no_panic() {
     let state = GameState::new();
     let blocks = state.get_blocks();
     let _cell = blocks[0][0];
-    assert!(true);
 }
 
 /// Тест 7.1: Проверка что LeaderboardEntry::new() работает корректно.
@@ -77,15 +76,15 @@ fn test_write_vs_format_efficiency() {
     let start_write = Instant::now();
     for _ in 0..iterations {
         let mut result = String::with_capacity(50);
-        write!(result, "{}", "test").unwrap();
+        write!(result, "test").unwrap();
     }
     let duration_write = start_write.elapsed();
 
     let start_format = Instant::now();
     for _ in 0..iterations {
-        let _result = format!("{}", "test");
+        let _result = format!("test");
     }
-    let duration_format = start_format.elapsed();
+    let _duration_format = start_format.elapsed();
 
     // Проверяем что write!() работает быстро (менее 1 мс на 1000 итераций)
     // Не сравниваем строго с format!() из-за нестабильности бенчмарков
