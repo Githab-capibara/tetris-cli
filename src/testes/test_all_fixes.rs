@@ -23,7 +23,7 @@
 use crate::game::{Dir, GameState};
 use crate::highscore::{get_random_hash, Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
-use crate::tetromino::{Tetromino, ShapeType, BagGenerator};
+use crate::tetromino::{Tetromino, ShapeType};
 use crate::controls::ControlsConfig;
 use std::fs;
 use std::path::Path;
@@ -553,9 +553,9 @@ fn test_shape_symbol_removed() {
 fn test_variable_naming_consistency() {
     // Проверяем, что константы имеют согласованные имена
     use crate::io::{
-        SHAPE_STR, SHAPE_WIDTH, GRID_WIDTH, GRID_HEIGHT, DISP_WIDTH, DISP_HEIGHT,
+        SHAPE_WIDTH, GRID_WIDTH, GRID_HEIGHT,
     };
-    
+
     assert_eq!(SHAPE_WIDTH, 2, "SHAPE_WIDTH должен быть 2");
     assert_eq!(GRID_WIDTH, 10, "GRID_WIDTH должен быть 10");
     assert_eq!(GRID_HEIGHT, 20, "GRID_HEIGHT должен быть 20");
