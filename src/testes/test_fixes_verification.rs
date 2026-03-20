@@ -90,7 +90,7 @@ mod rate_limiting_tests {
 
         // Rate limiting удалён - можно добавлять рекорды без задержек
         // Метод set_cooldown больше не существует
-        
+
         // Добавляем несколько рекордов подряд без задержек
         for i in 0..10 {
             let result = leaderboard.add_score(format!("Player{}", i), 1000 + i * 100);
@@ -102,7 +102,11 @@ mod rate_limiting_tests {
         }
 
         // Проверяем что таблица содержит топ-5
-        assert_eq!(leaderboard.len(), 5, "Leaderboard must contain top-5 entries");
+        assert_eq!(
+            leaderboard.len(),
+            5,
+            "Leaderboard must contain top-5 entries"
+        );
     }
 }
 
@@ -479,9 +483,7 @@ mod unwrap_to_expect_tests {
 
         // Тест с вложенными Option
         let nested: Option<Option<i32>> = Some(Some(200));
-        let inner = nested
-            .unwrap()
-            .unwrap();
+        let inner = nested.unwrap().unwrap();
         assert_eq!(inner, 200, "Nested expect must work");
     }
 
@@ -639,16 +641,15 @@ mod debug_assert_tests {
 
         // Проверяем что поле заполнено корректно
         assert_eq!(blocks.len(), GRID_HEIGHT, "Grid height must match");
-        assert_eq!(
-            blocks[0].len(),
-            GRID_WIDTH,
-            "Grid width must match"
-        );
+        assert_eq!(blocks[0].len(), GRID_WIDTH, "Grid width must match");
 
         // Проверяем что значения в пределах допустимого диапазона
         for row in &blocks {
             for &cell in row {
-                assert!((0..=9).contains(&cell), "Cell value must be between 0 and 9");
+                assert!(
+                    (0..=9).contains(&cell),
+                    "Cell value must be between 0 and 9"
+                );
             }
         }
     }
@@ -787,10 +788,7 @@ mod version_tests {
             .unwrap();
 
         // Извлекаем версию из строки
-        let expected_version = expected_version
-            .split('"')
-            .nth(1)
-            .unwrap();
+        let expected_version = expected_version.split('"').nth(1).unwrap();
 
         // Проверяем что lib.rs содержит упоминание версии (в описании или документации)
         // Примечание: версия может быть в README или другом месте

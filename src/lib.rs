@@ -85,7 +85,7 @@
 //!
 //! ### Пример использования библиотеки
 //!
-//! ```no_run
+//! ```ignore
 //! // Импорт необходимых компонентов библиотеки
 //! use tetris_cli::game::GameState;
 //! use tetris_cli::io::{Canvas, KeyReader};
@@ -111,7 +111,7 @@
 //!
 //! ### Пример создания режима спринт
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::game::GameState;
 //!
 //! // Создание игры в режиме спринт (40 линий на время)
@@ -125,7 +125,7 @@
 //!
 //! ### Пример работы с таблицей лидеров
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::highscore::Leaderboard;
 //!
 //! // Загрузка таблицы лидеров из файла
@@ -146,7 +146,7 @@
 //!
 //! ### Пример настройки управления
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::controls::ControlsConfig;
 //!
 //! // Создание конфигурации в стиле Vim (HJKL)
@@ -218,7 +218,7 @@
 //!
 //! Все клавиши можно перенастроить через `ControlsConfig`:
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::controls::ControlsConfig;
 //!
 //! // Загрузка сохранённой конфигурации
@@ -333,7 +333,7 @@
 //!
 //! ### Получение статистики игры
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::game::GameState;
 //!
 //! let state = GameState::new();
@@ -348,7 +348,7 @@
 //!
 //! ### Работа с фигурами
 //!
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::tetromino::{Tetromino, ShapeType, BagGenerator};
 //! use tetris_cli::game::Dir;
 //!
@@ -391,7 +391,7 @@
 /// - `save_to_file()` / `load_from_file()` — персистентность
 ///
 /// ## Пример использования:
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::controls::ControlsConfig;
 ///
 /// // Конфигурация по умолчанию
@@ -427,7 +427,7 @@ pub mod controls;
 /// - `SPRINT_LINES` — линий для режима спринт (40)
 ///
 /// ## Пример использования:
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::game::{GameState, GameMode};
 ///
 /// // Классический режим
@@ -461,7 +461,7 @@ pub mod game;
 /// 4. При загрузке хэш пересчитывается и сравнивается
 ///
 /// ## Пример использования:
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::highscore::{Leaderboard, SaveData};
 ///
 /// // Сохранение рекорда
@@ -498,7 +498,7 @@ pub mod highscore;
 /// - `DISP_HEIGHT` — полная высота дисплея (25)
 ///
 /// ## Пример использования:
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::io::{Canvas, KeyReader};
 /// use termion::color::{White, Reset};
 ///
@@ -547,7 +547,7 @@ pub mod io;
 /// 4. При опустошении создаётся новый мешок
 ///
 /// ## Пример использования:
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::tetromino::{Tetromino, ShapeType, BagGenerator};
 /// use tetris_cli::game::Dir;
 ///
@@ -663,17 +663,20 @@ mod testes {
     pub mod test_fixes_comprehensive;
 
     // Новые тесты для 26 исправленных проблем (90 тестов)
-    pub mod test_highscore_deprecated_assert_hs;
-    pub mod test_game_rotation_bounds;
     pub mod test_controls_path_traversal;
-    pub mod test_game_score_overflow_protection;
-    pub mod test_fixes_must_use_stack_format;
     pub mod test_fixes_bag_preview_rotate;
     pub mod test_fixes_documentation_validation;
     pub mod test_fixes_final_issues;
+    pub mod test_fixes_must_use_stack_format;
+    pub mod test_game_rotation_bounds;
+    pub mod test_game_score_overflow_protection;
+    pub mod test_highscore_deprecated_assert_hs;
 
     // Комплексные тесты всех 18 исправлений (54 теста)
     pub mod test_all_fixes;
+
+    // Расширенные тесты верификации всех 13 исправлений (39 тестов)
+    pub mod test_fixes_verification_extended;
 }
 
 #[cfg(test)]

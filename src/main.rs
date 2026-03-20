@@ -633,7 +633,10 @@ fn run_game_mode(
         // Если имя не пустое (игрок не отменил ввод)
         if !name.is_empty() {
             // Добавление рекорда в таблицу лидеров
-            leaderboard.add_score(name, new_score);
+            if !leaderboard.add_score(name.clone(), new_score) {
+                cnv.draw_string("Рекорд не сохранён (rate limit)", (1, 23), &White, &Reset);
+                cnv.flush();
+            }
             // Сохранение обновлённой таблицы в файл конфигурации
             leaderboard.save();
         }

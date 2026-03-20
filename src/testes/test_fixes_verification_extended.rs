@@ -31,16 +31,11 @@ mod panic_unreachable_tests {
         let state = GameState::new();
 
         // Проверяем что состояние игры корректно
-        assert!(
-            state.get_score() >= 0,
-            "Score must be non-negative"
-        );
+        // u64 всегда >= 0, поэтому просто проверяем тип значения
+        let _score: u64 = state.get_score();
 
         // Проверяем что игра инициализирована
-        assert!(
-            state.get_level() >= 1,
-            "Level must be at least 1"
-        );
+        assert!(state.get_level() >= 1, "Level must be at least 1");
     }
 
     /// Тест 2: Вращение с Dir::Left (успех)
@@ -51,10 +46,8 @@ mod panic_unreachable_tests {
         let state = GameState::new();
 
         // Проверяем что состояние игры корректно
-        assert!(
-            state.get_lines_cleared() >= 0,
-            "Lines cleared must be non-negative"
-        );
+        // u32 всегда >= 0, поэтому просто проверяем тип значения
+        let _lines: u32 = state.get_lines_cleared();
     }
 
     /// Тест 3: Вращение с Dir::Down (паника)
@@ -67,12 +60,13 @@ mod panic_unreachable_tests {
         // Этот тест проверяет что метод rotate_with_wall_kick существует
         // и использует panic! вместо unreachable! для Dir::Down
         // Поскольку метод приватный, мы проверяем через публичный API
-        
+
         let state = GameState::new();
-        
+
         // Проверяем что состояние игры корректно
-        assert!(state.get_score() >= 0, "Score must be non-negative");
-        
+        // u64 всегда >= 0, поэтому просто проверяем тип значения
+        let _score: u64 = state.get_score();
+
         // Примечание: фактическая проверка panic! происходит в коде game.rs
         // где rotate_with_wall_kick использует panic!("rotate_with_wall_kick: направление Down не поддерживается")
         // вместо unreachable!()
@@ -97,10 +91,7 @@ mod expect_unwrap_tests {
         let result = write!(buffer, "{}{}{}", "salt", "Player", 1000);
 
         // expect() должен вернуть Ok(()) при успешной записи
-        assert!(
-            result.is_ok(),
-            "Write operation must succeed"
-        );
+        assert!(result.is_ok(), "Write operation must succeed");
         assert_eq!(
             buffer, "saltPlayer1000",
             "Buffer must contain concatenated string"
@@ -121,9 +112,7 @@ mod expect_unwrap_tests {
 
         // Формируем строку для хеширования с expect()
         let salt = format!("{:020}", entry.score() % 10000000000000000000u64);
-        let mut salt_and_score = String::with_capacity(
-            salt.len() + name.len() + 20
-        );
+        let mut salt_and_score = String::with_capacity(salt.len() + name.len() + 20);
 
         // expect() должен работать без паники при корректных данных
         let result = write!(salt_and_score, "{}{}{}", salt, name, score);
@@ -144,7 +133,11 @@ mod expect_unwrap_tests {
 
         // Тест с LeaderboardEntry с пустым именем (будет заменено на "Anonymous")
         let entry = LeaderboardEntry::new("".to_string(), 0);
-        assert_eq!(entry.name(), "Anonymous", "Empty name must become Anonymous");
+        assert_eq!(
+            entry.name(),
+            "Anonymous",
+            "Empty name must become Anonymous"
+        );
     }
 }
 
@@ -241,9 +234,9 @@ mod utf8_documentation_tests {
             assert!(ch <= 0x7F, "Character must be ASCII (<= 0x7F)");
             // Проверяем что символ в допустимом диапазоне
             assert!(
-                (ch >= b'a' && ch <= b'z') ||
-                (ch >= b'A' && ch <= b'Z') ||
-                (ch >= b'0' && ch <= b'9'),
+                (ch >= b'a' && ch <= b'z')
+                    || (ch >= b'A' && ch <= b'Z')
+                    || (ch >= b'0' && ch <= b'9'),
                 "Character must be alphanumeric"
             );
         }
@@ -258,13 +251,22 @@ mod utf8_documentation_tests {
         let cyrillic = "абвгд";
         let bytes = cyrillic.as_bytes();
 
-        // Каждый кириллический символ - 2 байта
-        for byte in bytes {
-            // Байты UTF-8 для кириллицы: 0xD0-0xD1
-            assert!(
-                *byte >= 0xD0 || *byte <= 0xFF,
-                "Cyrillic byte must be multibyte UTF-8"
-            );
+        // Каждый кириллический символ - 2 байта в UTF-8
+        // Первый байт: 0xD0 или 0xD1, второй: 0x80-0xBF
+        for i in 0..bytes.len() {
+            if i % 2 == 0 {
+                // Первый байт символа: 0xD0 или 0xD1
+                assert!(
+                    bytes[i] == 0xD0 || bytes[i] == 0xD1,
+                    "First byte of Cyrillic must be 0xD0 or 0xD1"
+                );
+            } else {
+                // Второй байт символа: 0x80-0xBF
+                assert!(
+                    bytes[i] >= 0x80 && bytes[i] <= 0xBF,
+                    "Second byte of Cyrillic must be in range 0x80-0xBF"
+                );
+            }
         }
 
         // Проверяем что длина в байтах больше длины в символах
@@ -341,7 +343,8 @@ mod animation_frame_skip_tests {
         // Должно быть отрисовано 5 кадров из 10
         assert_eq!(
             rendered_frames, 5,
-            "Must render every {}-th frame", ANIMATION_FRAME_SKIP
+            "Must render every {}-th frame",
+            ANIMATION_FRAME_SKIP
         );
     }
 
@@ -413,7 +416,11 @@ mod allowed_config_dir_removal_tests {
 
         // Проверяем что join работает с пустым путём
         let joined = path.join("config");
-        assert_eq!(joined.to_str(), Some("config"), "Join with empty path must work");
+        assert_eq!(
+            joined.to_str(),
+            Some("config"),
+            "Join with empty path must work"
+        );
     }
 }
 
@@ -602,14 +609,8 @@ mod get_blocks_for_bench_docs_tests {
     fn test_blocks_size_20x10() {
         let blocks: Vec<Vec<i8>> = vec![vec![-1; GRID_WIDTH]; GRID_HEIGHT];
 
-        assert_eq!(
-            blocks.len(), 20,
-            "Grid height must be 20"
-        );
-        assert_eq!(
-            blocks[0].len(), 10,
-            "Grid width must be 10"
-        );
+        assert_eq!(blocks.len(), 20, "Grid height must be 20");
+        assert_eq!(blocks[0].len(), 10, "Grid width must be 10");
     }
 
     /// Тест 3: Данные корректны
@@ -719,11 +720,11 @@ mod path_validation_simplification_tests {
         let valid_path = "/home/user/.config/tetris-cli";
         let path = Path::new(valid_path);
 
-        assert!(path.is_absolute() || path.has_root(), "Path must be absolute or have root");
         assert!(
-            !path.as_os_str().is_empty(),
-            "Path must not be empty"
+            path.is_absolute() || path.has_root(),
+            "Path must be absolute or have root"
         );
+        assert!(!path.as_os_str().is_empty(), "Path must not be empty");
     }
 
     /// Тест 2: Некорректный путь
@@ -804,9 +805,6 @@ mod comment_style_tests {
 
         // Проверяем что тест имеет документацию
         let test_name = "test_documentation_generates";
-        assert!(
-            !test_name.is_empty(),
-            "Test must have name"
-        );
+        assert!(!test_name.is_empty(), "Test must have name");
     }
 }

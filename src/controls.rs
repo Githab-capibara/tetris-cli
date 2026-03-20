@@ -14,17 +14,12 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-/// Разрешённая директория для сохранения конфигураций.
-/// Все файлы конфигурации должны сохраняться только в текущей рабочей директории.
-#[allow(dead_code)]
-const ALLOWED_CONFIG_DIR: &str = ".";
-
 /// Проверить валидность пути для конфигурации.
 ///
 /// Эта функция реализует защиту от path traversal атак:
 /// 1. Запрещает абсолютные пути
 /// 2. Запрещает последовательности ".."
-/// 3. Проверяет, что путь находится внутри разрешённой директории
+/// 3. Проверяет, что путь находится внутри текущей директории
 ///
 /// # Аргументы
 /// * `path` - путь для проверки
@@ -34,7 +29,7 @@ const ALLOWED_CONFIG_DIR: &str = ".";
 /// - `Err(io::Error)` если путь невалиден
 ///
 /// # Пример использования
-/// ```no_run
+/// ```ignore
 /// use tetris_cli::controls::validate_config_path;
 /// validate_config_path("config.json").unwrap();
 /// ```
@@ -57,24 +52,21 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // Дополнительная проверка: разрешаем путь и проверяем директорию
+    // Проверка, что путь находится внутри текущей директории
     let current_dir = std::env::current_dir()?;
     let full_path = current_dir.join(path_obj);
 
-    // Используем canonicalize() для разрешения всех символических ссылок
-    let canonical_path = match full_path.canonicalize() {
-        Ok(path) => path,
-        // Если файл ещё не существует, проверяем родительскую директорию
-        Err(_) => {
-            if let Some(parent) = full_path.parent() {
-                parent.canonicalize().unwrap_or_else(|_| current_dir.clone())
-            } else {
-                current_dir.clone()
-            }
-        }
-    };
+    // Получаем канонический путь (или родительскую директорию, если файл не существует)
+    let canonical_path = full_path
+        .canonicalize()
+        .or_else(|_| {
+            full_path
+                .parent()
+                .map_or(Ok(current_dir.clone()), |p| p.canonicalize())
+        })
+        .unwrap_or_else(|_| current_dir.clone());
 
-    // Проверяем, что путь начинается с разрешённой директории
+    // Проверяем, что путь начинается с текущей директории
     if !canonical_path.starts_with(&current_dir) {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,

@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
 /// Оптимизация: использует hex::encode() вместо ручного цикла
-pub fn get_random_hash() -> String {
+pub fn generate_salt() -> String {
     use rand::rngs::OsRng;
     use rand::RngCore;
 
@@ -35,6 +35,15 @@ pub fn get_random_hash() -> String {
 
     // Оптимизация: используем hex::encode() для эффективного кодирования
     hex::encode(bytes)
+}
+
+/// Получить случайную соль (устаревшее имя).
+///
+/// # Устарело
+/// Используйте [`generate_salt()`] вместо этой функции.
+#[deprecated(since = "2.1.0", note = "Используйте generate_salt()")]
+pub fn get_random_hash() -> String {
+    generate_salt()
 }
 
 /// Получить хэш строки в шестнадцатеричном формате.
@@ -98,7 +107,7 @@ impl LeaderboardEntry {
     ///
     /// # Примечания
     /// Метод используется в тестах для проверки уникальности хэшей.
-    #[allow(dead_code)]
+    #[cfg_attr(test, allow(dead_code))]
     pub fn hash(&self) -> &str {
         &self.hash
     }
@@ -157,7 +166,7 @@ impl SaveData {
     /// ```
     pub fn from_value(high_score: u64) -> Self {
         let high_score_str = high_score.to_string();
-        let salt = get_random_hash();
+        let salt = generate_salt();
         let salt_and_hs = salt.clone() + &high_score_str;
         let hash = get_hash(&salt_and_hs);
 
@@ -284,12 +293,13 @@ impl LeaderboardEntry {
     pub fn new(name: String, score: u64) -> Self {
         let valid_name = sanitize_player_name(&name);
 
-        let salt = get_random_hash();
+        let salt = generate_salt();
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         // для предотвращения лишних аллокаций
         use std::fmt::Write;
         let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 20);
-        write!(salt_and_score, "{}{}{}", salt, valid_name, score).unwrap();
+        write!(salt_and_score, "{}{}{}", salt, valid_name, score)
+            .expect("Failed to write salt_and_score");
         let hash = get_hash(&salt_and_score);
 
         Self {
@@ -316,7 +326,8 @@ impl LeaderboardEntry {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         use std::fmt::Write;
         let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 20);
-        write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score).unwrap();
+        write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score)
+            .expect("Failed to write salt_and_score");
         let test_hash = get_hash(&salt_and_score);
         self.hash == test_hash
     }
@@ -376,7 +387,10 @@ impl Leaderboard {
         // Rate limiting: проверяем количество записей за последнюю минуту
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
-            eprintln!("Предупреждение: превышен лимит добавления рекордов ({} в минуту)", MAX_ENTRIES_PER_MINUTE);
+            eprintln!(
+                "Предупреждение: превышен лимит добавления рекордов ({} в минуту)",
+                MAX_ENTRIES_PER_MINUTE
+            );
             return false;
         }
 
@@ -419,7 +433,8 @@ impl Leaderboard {
             .as_millis() as u64;
         let one_minute_ms = 60_000;
 
-        self.recent_entry_times.retain(|&time| current_time - time < one_minute_ms);
+        self.recent_entry_times
+            .retain(|&time| current_time - time < one_minute_ms);
     }
 
     /// Получить список рекордов.

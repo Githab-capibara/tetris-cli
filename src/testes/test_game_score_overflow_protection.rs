@@ -20,7 +20,8 @@ fn test_nan_fall_spd_handling() {
 #[test]
 fn test_large_fall_spd_no_overflow() {
     let state = GameState::new();
-    assert!(state.get_score() >= 0);
+    // u64 всегда >= 0, поэтому просто проверяем тип значения
+    let _score: u64 = state.get_score();
 }
 
 /// Тест 4: Проверка saturating_add для score.

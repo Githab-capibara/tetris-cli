@@ -1,6 +1,6 @@
 //! Тесты для исправлений проблем 13-20.
 
-use crate::game::{GameState, GameMode};
+use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, LeaderboardEntry};
 
 /// Тест 13.1: Проверка что save_to_file() имеет # Errors секцию.
@@ -17,7 +17,8 @@ fn test_save_to_file_has_errors_section() {
 #[test]
 fn test_load_from_file_has_errors_section() {
     use crate::controls::ControlsConfig;
-    let result: Result<ControlsConfig, std::io::Error> = ControlsConfig::load_from_file("nonexistent.json");
+    let result: Result<ControlsConfig, std::io::Error> =
+        ControlsConfig::load_from_file("nonexistent.json");
     assert!(result.is_err());
 }
 
@@ -27,7 +28,7 @@ fn test_errors_returned_correctly() {
     use crate::controls::ControlsConfig;
     let load_result = ControlsConfig::load_from_file("nonexistent_file.json");
     assert!(load_result.is_err());
-    
+
     let config = ControlsConfig::default_config();
     let save_result = config.save_to_file("/etc/passwd");
     assert!(save_result.is_err());

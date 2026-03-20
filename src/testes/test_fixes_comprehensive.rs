@@ -1,5 +1,5 @@
 //! Комплексные тесты для проверок исправлений из аудита кода.
-//! 
+//!
 //! Этот файл содержит тесты для проверки всех 12 исправленных проблем:
 //! 1. Неиспользуемый метод `hash()` - добавлен `#[allow(dead_code)]`
 //! 2. `&Box<T>` заменён на `&T` в методе `get_blocks()`
@@ -16,9 +16,9 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::controls::ControlsConfig;
     use crate::game::{GameState, LOSE_THRESHOLD_Y};
     use crate::highscore::{Leaderboard, LeaderboardEntry};
-    use crate::controls::ControlsConfig;
     use crate::io::Canvas;
     use std::io;
 
@@ -33,16 +33,18 @@ mod tests {
     #[test]
     fn test_hash_method_exists_and_returns_string() {
         let entry = LeaderboardEntry::new("Player1".to_string(), 1000);
-        
+
         // Вызываем метод hash() - он должен существовать
         let hash = entry.hash();
-        
+
         // Проверяем, что хэш не пустой
         assert!(!hash.is_empty(), "Хэш не должен быть пустой строкой");
-        
+
         // Проверяем, что хэш состоит из hex-символов
-        assert!(hash.chars().all(|c| c.is_ascii_hexdigit()), 
-                "Хэш должен содержать только hex-символы");
+        assert!(
+            hash.chars().all(|c| c.is_ascii_hexdigit()),
+            "Хэш должен содержать только hex-символы"
+        );
     }
 
     /// Тест 1.2: Проверяем уникальность хэшей для разных записей.
@@ -51,10 +53,10 @@ mod tests {
     fn test_hash_method_unique_for_different_entries() {
         let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
         let entry2 = LeaderboardEntry::new("Player2".to_string(), 2000);
-        
+
         let hash1 = entry1.hash();
         let hash2 = entry2.hash();
-        
+
         // Хэши должны быть разными
         assert_ne!(hash1, hash2, "Разные записи должны иметь разные хэши");
     }
@@ -64,15 +66,21 @@ mod tests {
     #[test]
     fn test_hash_method_consistent_for_same_entry() {
         let entry = LeaderboardEntry::new("StablePlayer".to_string(), 5000);
-        
+
         // Вызываем метод несколько раз
         let hash1 = entry.hash();
         let hash2 = entry.hash();
         let hash3 = entry.hash();
-        
+
         // Все хэши должны быть одинаковыми
-        assert_eq!(hash1, hash2, "Хэш должен быть стабильным при повторных вызовах");
-        assert_eq!(hash2, hash3, "Хэш должен быть стабильным при повторных вызовах");
+        assert_eq!(
+            hash1, hash2,
+            "Хэш должен быть стабильным при повторных вызовах"
+        );
+        assert_eq!(
+            hash2, hash3,
+            "Хэш должен быть стабильным при повторных вызовах"
+        );
     }
 
     // =========================================================================
@@ -86,16 +94,22 @@ mod tests {
     #[test]
     fn test_get_blocks_returns_correct_type() {
         let state = GameState::new();
-        
+
         // Получаем ссылку на игровое поле
         let blocks = state.get_blocks();
-        
+
         // Проверяем, что это ссылка на массив (компиляция проходит)
         // и что мы можем работать с данными
-        assert_eq!(blocks.len(), crate::io::GRID_HEIGHT, 
-                   "Высота поля должна соответствовать константе");
-        assert_eq!(blocks[0].len(), crate::io::GRID_WIDTH, 
-                   "Ширина поля должна соответствовать константе");
+        assert_eq!(
+            blocks.len(),
+            crate::io::GRID_HEIGHT,
+            "Высота поля должна соответствовать константе"
+        );
+        assert_eq!(
+            blocks[0].len(),
+            crate::io::GRID_WIDTH,
+            "Ширина поля должна соответствовать константе"
+        );
     }
 
     /// Тест 2.2: Проверяем, что ссылка immutable.
@@ -104,14 +118,14 @@ mod tests {
     fn test_get_blocks_returns_immutable_reference() {
         let state = GameState::new();
         let blocks = state.get_blocks();
-        
+
         // Проверяем, что можем читать данные (immutable доступ)
         let _first_cell = blocks[0][0];
         let _center_cell = blocks[10][5];
-        
+
         // Эта строка не скомпилируется, если раскомментировать (проверка immutable):
         // blocks[0][0] = 5; // Ошибка: нельзя изменить через immutable ссылку
-        
+
         // Если код компилируется - тест пройден
         assert!(true, "Immutable ссылка работает корректно");
     }
@@ -122,12 +136,11 @@ mod tests {
     fn test_get_blocks_data_integrity() {
         let state = GameState::new();
         let blocks = state.get_blocks();
-        
+
         // Проверяем, что все ячейки инициализированы значением -1 (пусто)
         for (y, row) in blocks.iter().enumerate() {
             for (x, &cell) in row.iter().enumerate() {
-                assert_eq!(cell, -1, 
-                           "Ячейка [{},{}] должна быть пустой (-1)", x, y);
+                assert_eq!(cell, -1, "Ячейка [{},{}] должна быть пустой (-1)", x, y);
             }
         }
     }
@@ -143,12 +156,17 @@ mod tests {
     #[test]
     fn test_leaderboard_default_creates_empty_entries() {
         let leaderboard = Leaderboard::default();
-        
+
         // Проверяем, что таблица пуста
-        assert!(leaderboard.is_empty(), 
-                "Leaderboard по умолчанию должен быть пустым");
-        assert_eq!(leaderboard.len(), 0, 
-                   "Количество записей по умолчанию должно быть 0");
+        assert!(
+            leaderboard.is_empty(),
+            "Leaderboard по умолчанию должен быть пустым"
+        );
+        assert_eq!(
+            leaderboard.len(),
+            0,
+            "Количество записей по умолчанию должно быть 0"
+        );
     }
 
     /// Тест 3.2: Проверяем множественное создание через Default.
@@ -158,16 +176,16 @@ mod tests {
         let leaderboard1 = Leaderboard::default();
         let leaderboard2 = Leaderboard::default();
         let leaderboard3 = Leaderboard::default();
-        
+
         // Все должны быть пустыми
         assert!(leaderboard1.is_empty());
         assert!(leaderboard2.is_empty());
         assert!(leaderboard3.is_empty());
-        
+
         // Добавляем запись только в первый
         let mut lb1 = leaderboard1;
         lb1.add_score("Player".to_string(), 1000);
-        
+
         // Остальные должны остаться пустыми
         assert_eq!(lb1.len(), 1);
         assert!(leaderboard2.is_empty());
@@ -180,18 +198,20 @@ mod tests {
     fn test_leaderboard_default_clone() {
         let leaderboard = Leaderboard::default();
         let cloned = leaderboard.clone();
-        
+
         // Оба должны быть пустыми
         assert!(leaderboard.is_empty());
         assert!(cloned.is_empty());
-        
+
         // Модифицируем оригинал
         let mut lb = leaderboard;
         lb.add_score("Original".to_string(), 500);
-        
+
         // Клон должен остаться неизменным
-        assert!(cloned.is_empty(), 
-                "Клон не должен изменяться при модификации оригинала");
+        assert!(
+            cloned.is_empty(),
+            "Клон не должен изменяться при модификации оригинала"
+        );
     }
 
     // =========================================================================
@@ -217,10 +237,13 @@ mod tests {
         // Проверяем, что Canvas реализует Drop через проверку размера
         // Если бы Drop не был реализован, код бы не скомпилировался с явным drop()
         let _canvas_size = std::mem::size_of::<Canvas>();
-        
+
         // Drop автоматически вызывается при выходе из области видимости
         // Это гарантирует восстановление терминала даже при панике
-        assert!(_canvas_size > 0, "Canvas с Drop должен иметь корректный размер");
+        assert!(
+            _canvas_size > 0,
+            "Canvas с Drop должен иметь корректный размер"
+        );
     }
 
     /// Тест 4.3: Проверяем, что Canvas имеет метод reset().
@@ -230,10 +253,13 @@ mod tests {
         // Проверяем существование метода reset() через проверку размера Canvas
         // Метод reset() существует и может быть вызван
         let _canvas_size = std::mem::size_of::<Canvas>();
-        
+
         // Drop автоматически вызывает Show и flush() при выходе
         // Это гарантирует восстановление терминала
-        assert!(_canvas_size > 0, "Canvas с reset() должен иметь корректный размер");
+        assert!(
+            _canvas_size > 0,
+            "Canvas с reset() должен иметь корректный размер"
+        );
     }
 
     // =========================================================================
@@ -247,17 +273,19 @@ mod tests {
     #[test]
     fn test_save_to_file_rejects_absolute_paths() {
         let config = ControlsConfig::default_config();
-        
+
         // Пытаемся сохранить с абсолютным путём
         let result = config.save_to_file("/etc/passwd");
-        
+
         // Должна быть ошибка
-        assert!(result.is_err(), 
-                "Абсолютные пути должны быть запрещены");
-        
+        assert!(result.is_err(), "Абсолютные пути должны быть запрещены");
+
         let err = result.unwrap_err();
-        assert_eq!(err.kind(), io::ErrorKind::InvalidInput,
-                   "Ошибка должна быть InvalidInput");
+        assert_eq!(
+            err.kind(),
+            io::ErrorKind::InvalidInput,
+            "Ошибка должна быть InvalidInput"
+        );
     }
 
     /// Тест 5.2: Проверяем отклонение path traversal.
@@ -265,17 +293,19 @@ mod tests {
     #[test]
     fn test_save_to_file_rejects_path_traversal() {
         let config = ControlsConfig::default_config();
-        
+
         // Пытаемся использовать path traversal
         let result = config.save_to_file("../config.json");
-        
+
         // Должна быть ошибка
-        assert!(result.is_err(), 
-                "Path traversal должен быть запрещён");
-        
+        assert!(result.is_err(), "Path traversal должен быть запрещён");
+
         let err = result.unwrap_err();
-        assert_eq!(err.kind(), io::ErrorKind::InvalidInput,
-                   "Ошибка должна быть InvalidInput");
+        assert_eq!(
+            err.kind(),
+            io::ErrorKind::InvalidInput,
+            "Ошибка должна быть InvalidInput"
+        );
     }
 
     /// Тест 5.3: Проверяем принятие относительных путей.
@@ -284,18 +314,23 @@ mod tests {
     fn test_save_to_file_accepts_relative_paths() {
         let config = ControlsConfig::default_config();
         let test_path = "test_config_temp.json";
-        
+
         // Сохраняем с относительным путём
         let result = config.save_to_file(test_path);
-        
+
         // Должно быть успешно
-        assert!(result.is_ok(), 
-                "Относительные пути должны быть разрешены: {:?}", result);
-        
+        assert!(
+            result.is_ok(),
+            "Относительные пути должны быть разрешены: {:?}",
+            result
+        );
+
         // Проверяем, что файл существует
-        assert!(std::path::Path::new(test_path).exists(),
-                "Файл должен быть создан");
-        
+        assert!(
+            std::path::Path::new(test_path).exists(),
+            "Файл должен быть создан"
+        );
+
         // Очищаем
         let _ = std::fs::remove_file(test_path);
     }
@@ -311,7 +346,7 @@ mod tests {
     #[test]
     fn test_constants_are_positive() {
         use crate::game::FPS;
-        
+
         // Проверяем, что константа положительная
         assert!(FPS > 0, "FPS должен быть положительным");
     }
@@ -320,12 +355,12 @@ mod tests {
     /// GRID_WIDTH и GRID_HEIGHT должны быть положительными.
     #[test]
     fn test_grid_dimensions_valid() {
-        use crate::io::{GRID_WIDTH, GRID_HEIGHT};
-        
+        use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+
         // Проверяем размеры
         assert!(GRID_WIDTH > 0, "Ширина сетки должна быть положительной");
         assert!(GRID_HEIGHT > 0, "Высота сетки должна быть положительной");
-        
+
         // Проверяем стандартные размеры для тетриса
         assert_eq!(GRID_WIDTH, 10, "Стандартная ширина - 10 блоков");
         assert_eq!(GRID_HEIGHT, 20, "Стандартная высота - 20 блоков");
@@ -336,7 +371,7 @@ mod tests {
     #[test]
     fn test_combo_bonus_positive() {
         use crate::game::COMBO_BONUS;
-        
+
         // Проверяем, что бонус положительный
         assert!(COMBO_BONUS > 0, "Бонус за комбо должен быть положительным");
         assert_eq!(COMBO_BONUS, 50, "Бонус за комбо должен быть 50");
@@ -353,10 +388,10 @@ mod tests {
     #[test]
     fn test_unwrap_on_some() {
         let value: Option<i32> = Some(42);
-        
+
         // Используем unwrap() вместо expect()
         let unwrapped = value.unwrap();
-        
+
         assert_eq!(unwrapped, 42, "unwrap() должен вернуть значение");
     }
 
@@ -365,10 +400,10 @@ mod tests {
     #[test]
     fn test_unwrap_on_ok() {
         let result: Result<i32, &str> = Ok(100);
-        
+
         // Используем unwrap() вместо expect()
         let unwrapped = result.unwrap();
-        
+
         assert_eq!(unwrapped, 100, "unwrap() должен вернуть значение");
     }
 
@@ -378,7 +413,7 @@ mod tests {
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn test_unwrap_panics_on_none() {
         let value: Option<i32> = None;
-        
+
         // unwrap() на None должен паниковать
         let _ = value.unwrap();
     }
@@ -395,15 +430,14 @@ mod tests {
     fn test_enumerate_loop_correctness() {
         let data = [10, 20, 30, 40, 50];
         let mut sum = 0;
-        
+
         // Используем enumerate() для индексации
         for (index, &value) in data.iter().enumerate() {
             sum += value;
             // Проверяем, что индекс соответствует позиции
-            assert_eq!(data[index], value, 
-                       "Индекс должен соответствовать значению");
+            assert_eq!(data[index], value, "Индекс должен соответствовать значению");
         }
-        
+
         assert_eq!(sum, 150, "Сумма должна быть 150");
     }
 
@@ -412,10 +446,10 @@ mod tests {
     #[test]
     fn test_fill_function_correctness() {
         let mut array = [0; 10];
-        
+
         // Используем fill() для заполнения
         array.fill(42);
-        
+
         // Проверяем, что все элементы заполнены
         for (i, &value) in array.iter().enumerate() {
             assert_eq!(value, 42, "Элемент {} должен быть 42", i);
@@ -427,15 +461,18 @@ mod tests {
     #[test]
     fn test_iter_mut_enumerate_performance() {
         let mut data = [1, 2, 3, 4, 5];
-        
+
         // Используем iter_mut().enumerate() для модификации
         for (index, value) in data.iter_mut().enumerate() {
             *value = index as i32 * 10;
         }
-        
+
         // Проверяем результат
-        assert_eq!(data, [0, 10, 20, 30, 40], 
-                   "Массив должен быть изменён корректно");
+        assert_eq!(
+            data,
+            [0, 10, 20, 30, 40],
+            "Массив должен быть изменён корректно"
+        );
     }
 
     // =========================================================================
@@ -449,10 +486,10 @@ mod tests {
     #[test]
     fn test_get_curr_shape_mut_exists() {
         let state = GameState::new();
-        
+
         // Проверяем, что метод get_blocks() существует (компиляция)
         let _blocks = state.get_blocks();
-        
+
         // Если код компилируется - метод существует
         assert!(true, "Метод get_blocks() существует");
     }
@@ -462,14 +499,14 @@ mod tests {
     #[test]
     fn test_increment_lines_cleared_exists() {
         let state = GameState::new();
-        
+
         // Проверяем, что метод get_lines_cleared() существует
         let _lines_before = state.get_lines_cleared();
-        
+
         // Проверяем, что метод add_score() существует
         let mut mutable_state = state;
         mutable_state.add_score_no_check(100);
-        
+
         // Если код компилируется - методы существуют
         assert!(true, "Метод get_lines_cleared() существует");
     }
@@ -479,10 +516,10 @@ mod tests {
     #[test]
     fn test_add_score_no_check_exists() {
         let mut state = GameState::new();
-        
+
         // Проверяем, что метод add_score_no_check() существует
         state.add_score_no_check(500);
-        
+
         // Если код компилируется - метод существует
         assert!(true, "Метод add_score_no_check() существует");
     }
@@ -498,8 +535,7 @@ mod tests {
     #[test]
     fn test_lose_threshold_y_value() {
         // Проверяем значение константы
-        assert_eq!(LOSE_THRESHOLD_Y, 1, 
-                   "LOSE_THRESHOLD_Y должна быть равна 1");
+        assert_eq!(LOSE_THRESHOLD_Y, 1, "LOSE_THRESHOLD_Y должна быть равна 1");
     }
 
     /// Тест 10.2: Проверяем, что константа используется в игре.
@@ -508,10 +544,14 @@ mod tests {
     fn test_lose_threshold_y_used_in_game() {
         // Проверяем, что константа доступна и имеет правильное значение
         // для использования в логике игры
-        assert!(LOSE_THRESHOLD_Y > 0, 
-                "Порог проигрыша должен быть положительным");
-        assert!(LOSE_THRESHOLD_Y < crate::io::GRID_HEIGHT as i16, 
-                "Порог проигрыша должен быть в пределах поля");
+        assert!(
+            LOSE_THRESHOLD_Y > 0,
+            "Порог проигрыша должен быть положительным"
+        );
+        assert!(
+            LOSE_THRESHOLD_Y < crate::io::GRID_HEIGHT as i16,
+            "Порог проигрыша должен быть в пределах поля"
+        );
     }
 
     /// Тест 10.3: Проверяем граничное значение LOSE_THRESHOLD_Y.
@@ -520,14 +560,15 @@ mod tests {
     fn test_lose_threshold_y_boundary() {
         // LOSE_THRESHOLD_Y = 1 означает, что блоки на y <= 1 вызывают проигрыш
         // Это соответствует верхней части игрового поля
-        
+
         // Проверяем, что значение корректно для границы
-        assert_eq!(LOSE_THRESHOLD_Y, 1, 
-                   "Граничное значение должно быть 1");
-        
+        assert_eq!(LOSE_THRESHOLD_Y, 1, "Граничное значение должно быть 1");
+
         // Проверяем, что это меньше высоты поля
-        assert!(LOSE_THRESHOLD_Y < crate::io::GRID_HEIGHT as i16,
-                "Порог должен быть в пределах поля");
+        assert!(
+            LOSE_THRESHOLD_Y < crate::io::GRID_HEIGHT as i16,
+            "Порог должен быть в пределах поля"
+        );
     }
 
     // =========================================================================
@@ -553,7 +594,7 @@ mod tests {
     fn test_assert_panics_on_invalid_state() {
         // Создаём неверное состояние
         let invalid_state = false;
-        
+
         // assert должен паниковать
         assert!(invalid_state, "Проверка не удалась");
     }
@@ -564,10 +605,10 @@ mod tests {
     fn test_assert_does_not_panic_on_valid_state() {
         // Создаём верное состояние
         let valid_state = true;
-        
+
         // assert не должен паниковать
         assert!(valid_state, "Это сообщение не должно появиться");
-        
+
         // Если дошли сюда - тест пройден
         assert!(true, "assert не вызвал панику для верного состояния");
     }
@@ -598,10 +639,10 @@ mod tests {
     fn test_get_key_handles_ascii_correctly() {
         // Этот тест проверяет, что метод get_key() существует и работает
         // Реальное тестирование ввода требует терминала, поэтому проверяем тип
-        
+
         use crate::io::KeyReader;
         let _reader_size = std::mem::size_of::<KeyReader>();
-        
+
         // KeyReader должен иметь размер > 0
         assert!(_reader_size > 0, "KeyReader должен иметь корректный размер");
     }
@@ -612,12 +653,12 @@ mod tests {
     fn test_get_key_returns_none_for_multibyte() {
         // Этот тест проверяет поведение get_key() с multi-byte символами
         // В документации указано, что метод возвращает None для UTF-8
-        
+
         use crate::io::KeyReader;
-        
+
         // Проверяем, что KeyReader существует
         let _reader = KeyReader::new();
-        
+
         // Документация get_key() упоминает ограничение UTF-8
         // Если код компилируется - документация и метод существуют
         assert!(true, "KeyReader с документацией UTF-8 существует");

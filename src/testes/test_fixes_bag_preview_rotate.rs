@@ -1,8 +1,8 @@
 //! Тесты для исправлений проблем 9-12.
 
-use crate::game::{GameState, Dir};
-use crate::tetromino::{BagGenerator, Tetromino, ShapeType};
+use crate::game::{Dir, GameState};
 use crate::highscore::LeaderboardEntry;
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 
 /// Тест 9.1: Проверка что fill_bag() работает корректно.
 #[test]
@@ -59,7 +59,8 @@ fn test_hold_preview_x_constant_exists() {
 fn test_preview_constants_correct_values() {
     // Проверяем что константы существуют через использование в игре
     let state = GameState::new();
-    assert!(state.get_score() >= 0);
+    // u64 всегда >= 0, поэтому просто проверяем тип значения
+    let _score: u64 = state.get_score();
 }
 
 /// Тест 11.1: Проверка что rotate(Dir::Down) вызывает панику.

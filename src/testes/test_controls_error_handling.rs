@@ -58,9 +58,8 @@ fn test_корректная_обработка_ошибок_загрузки() 
     let test_path = "test_load_error_temp.json";
 
     // Создаём и сохраняем конфигурацию
-    let original_config = ControlsConfig::custom(
-        b'x', b'z', b'c', b'v', b'a', b's', b'd', b'f', 127,
-    );
+    let original_config =
+        ControlsConfig::custom(b'x', b'z', b'c', b'v', b'a', b's', b'd', b'f', 127);
     original_config.save_to_file(test_path)?;
 
     // Загружаем конфигурацию с использованием ? оператора
@@ -93,9 +92,8 @@ fn test_работа_с_временными_файлами() -> io::Result<()> 
     let test_path = "test_temp_files_temp.json";
 
     // Тест 1: Сохранение кастомной конфигурации
-    let custom_config = ControlsConfig::custom(
-        b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9',
-    );
+    let custom_config =
+        ControlsConfig::custom(b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9');
     custom_config.save_to_file(test_path)?;
 
     // Проверяем что файл существует
@@ -112,9 +110,7 @@ fn test_работа_с_временными_файлами() -> io::Result<()> 
     );
 
     // Тест 3: Перезапись файла с новой конфигурацией
-    let new_config = ControlsConfig::custom(
-        b'a', b'b', b'c', b'd', b'e', b'f', b'g', b'h', b'i',
-    );
+    let new_config = ControlsConfig::custom(b'a', b'b', b'c', b'd', b'e', b'f', b'g', b'h', b'i');
     new_config.save_to_file(test_path)?;
 
     let reloaded = ControlsConfig::load_from_file(test_path)?;
@@ -170,7 +166,9 @@ fn test_обработка_ошибки_некорректного_json() -> io:
     fs::write(&test_path, "not valid json { broken")?;
 
     // Пытаемся загрузить - должна быть ошибка
-    let result = ControlsConfig::load_from_file(test_path.to_str().expect("Путь должен быть валидным UTF-8"));
+    let result = ControlsConfig::load_from_file(
+        test_path.to_str().expect("Путь должен быть валидным UTF-8"),
+    );
 
     // Проверяем что результат - ошибка
     assert!(
