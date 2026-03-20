@@ -98,9 +98,9 @@ fn bench_draw_simulation(c: &mut Criterion) {
             let state = GameState::new();
             let blocks = state.get_blocks_for_bench();
 
-            // Эмуляция отрисовки - проход по всему полю
-            for y in 0..20 {
-                for x in 0..10 {
+            // Эмуляция отрисовки - проход по всему полю с использованием итераторов
+            for (y, row) in blocks.iter().enumerate().take(20) {
+                for (x, cell) in row.iter().enumerate().take(10) {
                     black_box(blocks[y][x]);
                 }
             }

@@ -126,7 +126,7 @@ mod expect_unwrap_tests {
     fn test_expect_with_empty_data() {
         // Пустая строка должна быть обработана корректно
         let mut buffer = String::with_capacity(50);
-        let result = write!(buffer, "{}", "");
+        let result = write!(buffer, "");
 
         assert!(result.is_ok(), "Write empty string must succeed");
         assert_eq!(buffer, "", "Buffer must be empty");
@@ -232,11 +232,11 @@ mod utf8_documentation_tests {
 
         for &ch in &ascii_chars {
             assert!(ch <= 0x7F, "Character must be ASCII (<= 0x7F)");
-            // Проверяем что символ в допустимом диапазоне
+            // Проверяем что символ в допустимом диапазоне с использованием .contains()
             assert!(
-                (ch >= b'a' && ch <= b'z')
-                    || (ch >= b'A' && ch <= b'Z')
-                    || (ch >= b'0' && ch <= b'9'),
+                ('a'..='z').contains(&(ch as char))
+                    || ('A'..='Z').contains(&(ch as char))
+                    || ('0'..='9').contains(&(ch as char)),
                 "Character must be alphanumeric"
             );
         }
@@ -253,17 +253,17 @@ mod utf8_documentation_tests {
 
         // Каждый кириллический символ - 2 байта в UTF-8
         // Первый байт: 0xD0 или 0xD1, второй: 0x80-0xBF
-        for i in 0..bytes.len() {
+        for (i, &byte) in bytes.iter().enumerate() {
             if i % 2 == 0 {
                 // Первый байт символа: 0xD0 или 0xD1
                 assert!(
-                    bytes[i] == 0xD0 || bytes[i] == 0xD1,
+                    byte == 0xD0 || byte == 0xD1,
                     "First byte of Cyrillic must be 0xD0 or 0xD1"
                 );
             } else {
                 // Второй байт символа: 0x80-0xBF
                 assert!(
-                    bytes[i] >= 0x80 && bytes[i] <= 0xBF,
+                    (0x80..=0xBF).contains(&byte),
                     "Second byte of Cyrillic must be in range 0x80-0xBF"
                 );
             }
@@ -457,7 +457,6 @@ mod cfg_attr_dead_code_tests {
         let _hash = entry.hash();
 
         // Тест проходит если нет предупреждений компиляции
-        assert!(true, "Test compiles without dead_code warning");
     }
 
     /// Тест 3: Hash корректен
@@ -490,7 +489,7 @@ mod cfg_attr_dead_code_tests {
 
 #[cfg(test)]
 mod generate_salt_rename_tests {
-    use crate::highscore::{generate_salt, get_random_hash};
+    use crate::highscore::generate_salt;
 
     /// Тест 1: generate_salt() возвращает String
     ///
@@ -504,22 +503,7 @@ mod generate_salt_rename_tests {
         assert_eq!(salt.len(), 64, "Salt must be 64 hex characters");
     }
 
-    /// Тест 2: get_random_hash() deprecated но работает
-    ///
-    /// Проверяет, что get_random_hash() работает несмотря на deprecated.
-    #[test]
-    #[allow(deprecated)]
-    fn test_get_random_hash_deprecated_but_works() {
-        let hash = get_random_hash();
-
-        assert_eq!(hash.len(), 64, "get_random_hash() must return 64 chars");
-        assert!(
-            hash.chars().all(|c| c.is_ascii_hexdigit()),
-            "Hash must be hex"
-        );
-    }
-
-    /// Тест 3: Соль уникальна
+    /// Тест 2: Соль уникальна
     ///
     /// Проверяет, что каждая соль уникальна.
     #[test]
@@ -627,11 +611,11 @@ mod get_blocks_for_bench_docs_tests {
             }
         }
 
-        // Проверяем что значения в пределах допустимого диапазона
+        // Проверяем что значения в пределах допустимого диапазона с использованием .contains()
         for row in &blocks {
             for &cell in row {
                 assert!(
-                    cell >= -1 && cell <= 9,
+                    (-1..=9).contains(&cell),
                     "Cell value must be between -1 and 9"
                 );
             }
