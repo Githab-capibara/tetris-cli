@@ -142,17 +142,23 @@ fn test_piece_drop_to_floor() {
 /// Проверяет, что вращение работает в контексте GameState.
 #[test]
 fn test_rotation_in_game_context() {
-    let state = GameState::new();
+    let mut state = GameState::new();
+    
+    // Устанавливаем фигуру в центр поля для корректного вращения
+    state.get_curr_shape_mut().pos = (5.0, 10.0);
 
     // Проверяем возможность вращения
     let can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
     let can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
 
-    // Хотя бы одно направление вращения должно быть доступно
-    assert!(
-        can_rotate_right || can_rotate_left,
-        "Хотя бы одно направление вращения должно быть доступно"
-    );
+    // Вращение должно быть возможно хотя бы в одном направлении
+    // (кроме O-фигуры которая не вращается)
+    if state.get_curr_shape().shape != ShapeType::O {
+        assert!(
+            can_rotate_right || can_rotate_left,
+            "Хотя бы одно направление вращения должно быть доступно"
+        );
+    }
 }
 
 // ============================================================================

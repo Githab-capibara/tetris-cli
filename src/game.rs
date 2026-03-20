@@ -94,6 +94,22 @@ const SHAPE_DRAW_OFFSET: i16 = 5;
 /// Смещение отрисовки фигур по горизонтали (для предпросмотра).
 const DRAW_OFFSET_X: i16 = 2;
 
+/// Позиция предпросмотра следующей фигуры по X (справа от поля).
+/// Используется в draw_next_shape() для отрисовки следующей фигуры.
+const PREVIEW_X: u16 = 24;
+
+/// Позиция предпросмотра следующей фигуры по Y.
+/// Используется в draw_next_shape() для отрисовки следующей фигуры.
+const PREVIEW_Y: u16 = 8;
+
+/// Позиция предпросмотра удержанной фигуры по X (слева от поля).
+/// Используется в draw_held_shape() для отрисовки удержанной фигуры.
+const HOLD_PREVIEW_X: u16 = 2;
+
+/// Позиция предпросмотра удержанной фигуры по Y.
+/// Используется в draw_held_shape() для отрисовки удержанной фигуры.
+const HOLD_PREVIEW_Y: u16 = 8;
+
 /// Таблица смещений для wall kick (Super Rotation System - упрощённая).
 /// Используется при вращении фигур рядом со стенами.
 const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
@@ -300,6 +316,7 @@ impl GameStats {
     }
 
     /// Получить общее количество использованных фигур.
+    #[must_use]
     pub fn total_pieces(&self) -> u32 {
         self.t_pieces
             + self.l_pieces
@@ -435,6 +452,8 @@ pub struct GameState {
     fall_spd: f32,
     /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
     /// Массив размещается на стеке (200 байт = 10×20×1 байт).
+    /// Защита от переполнения стека: массив занимает всего 200 байт,
+    /// что безопасно для стека (типичный размер стека - 1-8 МБ).
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Таймер приземления.
     land_timer: f64,
@@ -676,6 +695,13 @@ impl GameState {
     /// - `w` - Hard Drop (мгновенное падение с бонусом)
     /// - `s` - Soft Drop (ускоренное падение при зажатии)
     /// - `c` - удержать фигуру (Hold)
+    ///
+    /// # Рефакторинг
+    /// Функция update() (~180 строк) может быть разбита на меньшие:
+    /// - handle_input() - обработка ввода
+    /// - handle_falling() - обработка падения
+    /// - handle_landing() - обработка приземления
+    /// Это улучшит читаемость и упростит тестирование.
     fn update(&mut self, inp: &mut KeyReader, delta_time_ms: u64) -> UpdateEndState {
         let key = inp.get_key();
 
@@ -769,10 +795,11 @@ impl GameState {
             }
 
             // Фиксация фигуры и начисление очков
+            // Исправление: добавлена защита от переполнения при расчёте очков за падение
             // Используем saturating_add для защиты от переполнения
-            self.score = self
-                .score
-                .saturating_add(PIECE_SCORE_INC + (self.fall_spd * PIECE_SCORE_FALL_MULT) as u64);
+            let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT).max(0.0).min(u64::MAX as f32);
+            let fall_bonus_u64 = if fall_bonus.is_finite() { fall_bonus as u64 } else { 0 };
+            self.score = self.score.saturating_add(PIECE_SCORE_INC + fall_bonus_u64);
 
             // Начисление очков за Soft Drop: 1 очко за ячейку
             if self.soft_drop_distance > 0 {
@@ -909,6 +936,14 @@ impl GameState {
     /// - Скорость увеличивается на 0.05 (SPD_INC) за каждую линию
     /// - Воспроизводится звуковой сигнал при удалении линий
     /// - При удалении 4 линий отображается "TETRIS!" и бонус 1000 очков
+    ///
+    /// # Рефакторинг
+    /// Функция check_rows() (~130 строк) может быть разбита на меньшие:
+    /// - find_full_rows() - поиск заполненных линий
+    /// - animate_rows_clear() - анимация удаления
+    /// - remove_rows_and_shift() - удаление и сдвиг
+    /// - update_score_and_level() - обновление очков и уровня
+    /// Это улучшит читаемость и упростит тестирование.
     fn check_rows(&mut self) -> u32 {
         // ====================================================================
         // ШАГ 1: ПОИСК ЗАПОЛНЕННЫХ ЛИНИЙ
@@ -1057,6 +1092,11 @@ impl GameState {
     /// 9. Таймер (для режима спринт)
     /// 10. Счётчик комбо
     /// 11. "TETRIS!" при 4 линиях
+    ///
+    /// # Оптимизация
+    /// Возможна оптимизация через dirty rectangle tracking:
+    /// отслеживать только изменённые области и перерисовывать их.
+    /// Это уменьшит количество операций отрисовки при статичном поле.
     fn draw(&mut self, cnv: &mut Canvas, high_score_display: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
@@ -1188,8 +1228,9 @@ impl GameState {
     /// Показывает, какая фигура появится следующей.
     fn draw_next_shape(&self, cnv: &mut Canvas) {
         // Позиция предпросмотра (справа от игрового поля)
-        let preview_x = 24u16;
-        let preview_y = 8u16;
+        // Используем именованные константы PREVIEW_X и PREVIEW_Y вместо магических чисел
+        let preview_x = PREVIEW_X;
+        let preview_y = PREVIEW_Y;
 
         cnv.draw_string("След:", (preview_x, preview_y - 2), BORDER_COLOR, &Reset);
 
@@ -1215,8 +1256,9 @@ impl GameState {
     /// Показывает фигуру, которую можно получить нажатием 'c'.
     fn draw_held_shape(&self, cnv: &mut Canvas) {
         // Позиция предпросмотра удержанной фигуры (слева от игрового поля)
-        let preview_x = 2u16;
-        let preview_y = 8u16;
+        // Используем именованные константы HOLD_PREVIEW_X и HOLD_PREVIEW_Y
+        let preview_x = HOLD_PREVIEW_X;
+        let preview_y = HOLD_PREVIEW_Y;
 
         cnv.draw_string("Удерж:", (preview_x, preview_y - 2), BORDER_COLOR, &Reset);
 
@@ -1421,8 +1463,9 @@ impl GameState {
             let check_x = coord_x + shape_block_x;
             let check_y = coord_y + shape_block_y;
 
-            // Проверка выхода за границы сетки
-            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
+            // Исправление: добавлена проверка check_y < 0 для предотвращения выхода за верхнюю границу
+            // Проверка выхода за границы сетки (все 4 направления)
+            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y < 0 || check_y >= GRID_HEIGHT as i16 {
                 return false;
             }
 
@@ -1496,12 +1539,14 @@ impl GameState {
 
     /// Получить удержанную фигуру (для тестов).
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_held_shape(&self) -> Option<Tetromino> {
         self.held_shape
     }
 
     /// Получить игровое поле для бенчмарков.
     #[doc(hidden)]
+    #[must_use]
     pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
@@ -1522,12 +1567,14 @@ impl GameState {
 
     /// Получить флаг can_hold (для тестов).
     #[allow(dead_code)]
+    #[must_use]
     pub fn can_hold(&self) -> bool {
         self.can_hold
     }
 
     /// Получить текущую фигуру (для тестов).
     #[allow(dead_code)]
+    #[must_use]
     pub fn get_curr_shape(&self) -> &Tetromino {
         &self.curr_shape
     }

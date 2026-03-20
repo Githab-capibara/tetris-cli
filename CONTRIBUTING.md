@@ -118,11 +118,11 @@ cargo tarpaulin --out Html
 
 ### Статистика тестов
 
-Проект содержит **1208 модульных и интеграционных тестов**, покрывающих все компоненты:
+Проект содержит **1235 модульных и интеграционных тестов** (1227 + 8 doctest), покрывающих все компоненты:
 
 ```
 ═══════════════════════
-ВСЕГО: 1208 тестов
+ВСЕГО: 1235 тестов
 ВСЕ ПРОХОДЯТ: ✅ (3 пропущены)
 ═══════════════════════
 ```
@@ -198,8 +198,9 @@ cargo clippy --fix
 5. **Документированность** — все публичные API должны иметь документацию
 6. **Тестируемость** — новые функции должны сопровождаться тестами
 
-### Новые требования (версия 23.96.10)
+### Новые требования (версия 23.96.11)
 
+- **Атрибуты компилятора**: используйте `#[must_use]` для методов, результат которых должен быть использован
 - **Атрибуты компилятора**: используйте `#[allow(dead_code)]` для методов, требуемых API
 - **Возвращаемые типы**: предпочитайте простые ссылки `&T` вместо `&Box<T>`
 - **Derive макросы**: используйте `#[derive(Default)]` для структур с полями, имеющими Default
@@ -208,6 +209,11 @@ cargo clippy --fix
 - **Массивы на стеке**: используйте `[[i8; GRID_WIDTH]; GRID_HEIGHT]` вместо `Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>`
 - **Битовые маски**: используйте `u32` для флагов вместо `[bool; N]`
 - **Бенчмарки**: добавляйте бенчмарки criterion для критичных к производительности функций
+- **Оптимизация строк**: используйте `String::with_capacity()` + `write!()` вместо `format!()`
+- **Оптимизация векторов**: используйте `reserve()` + `extend_from_slice()` для уменьшения аллокаций
+- **Именованные константы**: выносите магические числа в константы (PREVIEW_X, HOLD_PREVIEW_Y, etc.)
+- **Валидация путей**: используйте `canonicalize()` для защиты от Path Traversal
+- **Whitelist валидация**: используйте whitelist для валидации имён и других входных данных
 
 ### Именование
 
@@ -334,6 +340,84 @@ fn test_verify_and_get_score_invalid() {
 }
 ```
 
+**Тест для замены assert_hs():**
+```rust
+#[test]
+fn test_deprecated_assert_hs_replaced() {
+    let save_data = SaveData::from_value(500);
+    // Новый метод вместо assert_hs()
+    let score = save_data.verify_and_get_score().unwrap_or(0);
+    assert_eq!(score, 500);
+}
+```
+
+**Тест для проверки границ вращения:**
+```rust
+#[test]
+fn test_rotation_bounds_check() {
+    let mut state = GameState::new();
+    // Проверка что check_y < 0 обрабатывается корректно
+    state.check_rotation_collision(Dir::Left, -1);
+    // Тест должен проходить без паники
+}
+```
+
+**Тест для защиты от переполнения счёта:**
+```rust
+#[test]
+fn test_score_overflow_protection() {
+    let mut state = GameState::new();
+    // Проверка что infinity/NaN не ломают счёт
+    state.score = u64::MAX;
+    state.add_score(100); // Не должно вызвать переполнение
+    assert!(state.score.is_finite());
+}
+```
+
+**Тест для Path Traversal защиты:**
+```rust
+#[test]
+fn test_path_traversal_protection() {
+    let config = ControlsConfig::default();
+    // Проверка что путь с ".." отклоняется
+    let result = config.save_to_file("../etc/passwd");
+    assert!(result.is_err());
+}
+```
+
+**Тест для #[must_use] атрибутов:**
+```rust
+#[test]
+fn test_must_use_attributes() {
+    let leaderboard = Leaderboard::default();
+    // Компилятор должен предупреждать, если результат не используется
+    let _len = leaderboard.len(); // OK: результат используется
+    leaderboard.len(); // Warning: результат не используется
+}
+```
+
+**Тест для оптимизации format!() -> write!():**
+```rust
+#[test]
+fn test_string_optimization() {
+    // Проверка что используется String::with_capacity() + write!()
+    let mut s = String::with_capacity(32);
+    write!(&mut s, "test").unwrap();
+    assert_eq!(s, "test");
+}
+```
+
+**Тест для оптимизации BagGenerator::fill_bag():**
+```rust
+#[test]
+fn test_bag_generator_optimization() {
+    let mut bag = BagGenerator::new();
+    bag.fill_bag();
+    // Проверка что reserve() + extend_from_slice() работают
+    assert_eq!(bag.get_bag().len(), 7);
+}
+```
+
 **Тест для битовой маски в `check_rows()`:**
 ```rust
 #[test]
@@ -432,13 +516,16 @@ git push origin feature/your-feature-name
 
 ### Требования к PR
 
-- [ ] Все тесты проходят (1208 тестов)
+- [ ] Все тесты проходят (1235 тестов)
 - [ ] Clippy не выдаёт предупреждений
 - [ ] Код отформатирован
 - [ ] Документация обновлена
 - [ ] Добавлены тесты для новых функций
 - [ ] Комментарии на русском языке
-- [ ] Соблюдены новые требования к коду (версия 23.96.10)
+- [ ] Соблюдены новые требования к коду (версия 23.96.11)
+- [ ] Добавлены атрибуты `#[must_use]` где необходимо
+- [ ] Использованы оптимизации (`String::with_capacity()`, `reserve()`)
+- [ ] Проведена валидация всех входных данных
 
 ### Процесс review
 

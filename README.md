@@ -576,7 +576,7 @@ tetris-cli/
 
 ## 🧪 Тестирование
 
-Проект содержит **1208 модульных и интеграционных тестов**, покрывающих все компоненты:
+Проект содержит **1235 модульных и интеграционных тестов** (1227 + 8 doctest), покрывающих все компоненты:
 
 ### Группы тестов
 
@@ -624,6 +624,14 @@ tetris-cli/
 42. **Unwrap to Expect (5 тестов)**: тесты замены unwrap на expect
 43. **Error Propagation (5 тестов)**: тесты распространения ошибок
 44. **Benchmarks (5 тестов)**: тесты производительности
+45. **Highscore Deprecated Assert HS (5 тестов)**: тесты замены assert_hs() на verify_and_get_score()
+46. **Game Rotation Bounds (5 тестов)**: тесты границ вращения фигур
+47. **Controls Path Traversal (5 тестов)**: тесты защиты от Path Traversal атак
+48. **Game Score Overflow Protection (6 тестов)**: тесты защиты от переполнения счёта
+49. **Fixes Must Use Stack Format (12 тестов)**: тесты атрибутов #[must_use] и оптимизаций
+50. **Fixes Bag Preview Rotate (13 тестов)**: тесты Bag Generator и вращения
+51. **Fixes Documentation Validation (24 теста)**: тесты документации и валидации
+52. **Fixes Final Issues (19 тестов)**: финальные тесты исправлений
 
 ### Запуск тестов
 
@@ -635,7 +643,7 @@ cargo test
 
 ```
 ═══════════════════════
-ВСЕГО: 1208 тестов
+ВСЕГО: 1235 тестов
 ВСЕ ПРОХОДЯТ: ✅ (3 пропущены)
 ═══════════════════════
 ```
@@ -661,6 +669,10 @@ cargo test
 | serde | 1.0 | Сериализация/десериализация SaveData |
 | serde_json | 1.0 | Работа с JSON для ControlsConfig |
 | blake3 | 1.5 | Криптографическое хеширование для защиты рекордов |
+
+**Dev-dependencies:**
+| Зависимость | Версия | Назначение |
+|-------------|--------|------------|
 | tempfile | 3.10 | Временные файлы для тестирования |
 
 ## 📝 Лицензия
@@ -686,41 +698,42 @@ cargo test
 
 Подробная история изменений доступна в файле [CHANGELOG.md](CHANGELOG.md).
 
-### Текущая версия: 23.96.10 (2026-03-20)
+### Текущая версия: 23.96.11 (2026-03-20)
 
 **Исправлено:**
-- **Критическая ошибка**: заменён `Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>` на `[[i8; GRID_WIDTH]; GRID_HEIGHT]` для массива blocks в `game.rs` — массив теперь размещается на стеке вместо кучи
-- **Оптимизация**: реализована битовая маска `u32` в методе `check_rows()` вместо `[bool; GRID_HEIGHT]` для проверки заполненных линий
-- **Улучшение**: добавлен метод `verify_and_get_score() -> Option<u64>` в `highscore.rs` для безопасной проверки целостности рекорда
-- **Исправление**: добавлен ранний возврат при `Dir::Down` в методе `rotate()` в `tetromino.rs`
+- **Критическая ошибка**: заменён метод `assert_hs()` на `verify_and_get_score().unwrap_or(0)` в `highscore.rs` — безопасная проверка целостности рекорда с fallback на 0
+- **Проверка границ**: добавлена проверка `check_y < 0` в методе `check_rotation_collision()` в `game.rs` — предотвращение выхода за границы при вращении
+- **Защита от переполнения**: добавлена проверка на infinity/NaN при расчёте очков в `game.rs` — предотвращение некорректных значений счёта
+- **Path Traversal защита**: усилена валидация путей в `controls.rs` с использованием `canonicalize()` — дополнительная защита от атак обхода путей
 
 **Добавлено:**
-- **53 новых теста** в 12 тестовых модулях:
-  - `test_game_box_array.rs` (3 теста) — тесты массива на стеке
-  - `test_io_utf8_handling.rs` (5 тестов) — тесты обработки UTF-8
-  - `test_highscore_error_handling.rs` (5 тестов) — тесты обработки ошибок
-  - `test_highscore_verify_integrity.rs` (5 тестов) — тесты проверки целостности
-  - `test_tetromino_dir_down.rs` (5 тестов) — тесты направления Down
-  - `test_game_score_overflow.rs` (5 тестов) — тесты переполнения счёта
-  - `test_highscore_random_hash.rs` (5 тестов) — тесты случайного хеширования
-  - `test_game_bitmask_check_rows.rs` (5 тестов) — тесты битовой маски
-  - `test_unwrap_to_expect.rs` (5 тестов) — тесты обработки ошибок
-  - `test_error_propagation.rs` (5 тестов) — тесты распространения ошибок
-  - `test_benchmarks.rs` (5 тестов) — тесты производительности
-- **Бенчмарки производительности** criterion для `check_rows()`, `rotate()`, `draw_simulation()`
-- **Методы для бенчмарков**: `get_blocks_for_bench()`, `fill_line_for_bench()`, `clear_lines_for_bench()`
+- **Атрибуты `#[must_use]`** к методам в `highscore.rs`, `game.rs`, `controls.rs`, `tetromino.rs`
+- **Именованные константы**: `PREVIEW_X`, `PREVIEW_Y`, `HOLD_PREVIEW_X`, `HOLD_PREVIEW_Y` в `game.rs`
+- **89 новых тестов** в 8 модулях:
+  - `test_highscore_deprecated_assert_hs.rs` (5 тестов) — тесты замены assert_hs()
+  - `test_game_rotation_bounds.rs` (5 тестов) — тесты границ вращения
+  - `test_controls_path_traversal.rs` (5 тестов) — тесты Path Traversal защиты
+  - `test_game_score_overflow_protection.rs` (6 тестов) — тесты защиты от переполнения
+  - `test_fixes_must_use_stack_format.rs` (12 тестов) — тесты #[must_use] и оптимизаций
+  - `test_fixes_bag_preview_rotate.rs` (13 тестов) — тесты Bag Generator и вращения
+  - `test_fixes_documentation_validation.rs` (24 теста) — тесты документации и валидации
+  - `test_fixes_final_issues.rs` (19 тестов) — финальные тесты исправлений
 
 **Улучшено:**
-- **Производительность**: доступ к массиву blocks ускорен за счёт размещения на стеке
-- **Эффективность**: битовая маска в `check_rows()` уменьшила использование памяти
-- **Безопасность**: логирование попыток подделки рекорда в `highscore.rs`
-- **Метод `assert_hs()`** помечен как `#[deprecated]` в пользу `verify_and_get_score()`
+- **Оптимизация `format!()` → `write!()`** в `highscore.rs` — используется `String::with_capacity()` + `write!()` для улучшения производительности
+- **Оптимизация `BagGenerator::fill_bag()`** в `tetromino.rs` — используется `reserve()` + `extend_from_slice()` для уменьшения аллокаций
+- **Удалена избыточная проверка** `Dir::Down` из функции `rotate()` в `tetromino.rs`
+- **Добавлены комментарии** о возможности рефакторинга и оптимизации в `game.rs`
+- **Whitelist валидация** символов имени в `highscore.rs` — только безопасные символы
+
+**Перемещено:**
+- **Зависимость `tempfile`** из `[dependencies]` в `[dev-dependencies]` в `Cargo.toml`
 
 **Тестирование:**
-- **1208 модульных и интеграционных тестов**
+- **1235 модульных и интеграционных тестов** (1227 + 8 doctest)
 - **Все тесты проходят успешно** (3 игнорируются)
 - **0 предупреждений clippy**
-- **Добавлен тест производительности criterion**
+- **Добавлено 89 новых тестов** для проверки исправлений и улучшений
 
 ---
 

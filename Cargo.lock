@@ -803,7 +803,7 @@ dependencies = [
 
 [[package]]
 name = "tetris-cli"
-version = "23.96.7"
+version = "23.96.10"
 dependencies = [
  "blake3",
  "confy",
