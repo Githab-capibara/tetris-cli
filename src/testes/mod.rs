@@ -139,3 +139,6 @@ pub mod test_audit_current_fixes;
 
 // Финальная верификация всех 25 исправлений (75 тестов - по 3 на каждую проблему)
 pub mod test_fixes_verification_final;
+
+// Тесты для 25 исправленных проблем (25 тестов - по 1 на каждую проблему)
+pub mod test_25_fixes;

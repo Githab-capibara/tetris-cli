@@ -30,11 +30,14 @@ fn test_edge_cases_empty_field() {
     }
 }
 
-/// Тест 2: Проверка что BagGenerator пуст при создании
+/// Тест 2: Проверка что BagGenerator инициализирован при создании
+/// Исправление #8: BagGenerator теперь инициализируется с временными данными
 #[test]
 fn test_edge_cases_bag_empty() {
     let bag = BagGenerator::new();
-    assert_eq!(bag.get_bag().len(), 0);
+    // Исправление #8: bag теперь содержит 7 фигур (временная инициализация)
+    // Фактическое заполнение происходит при первом вызове fill_bag()
+    assert_eq!(bag.get_bag().len(), 7);
 }
 
 /// Тест 3: Проверка что удержанная фигура None при создании

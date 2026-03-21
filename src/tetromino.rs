@@ -69,41 +69,45 @@ impl From<Dir> for RotationDirection {
 /// 4. Когда мешок пуст, создаётся новый
 ///
 /// ## Оптимизация:
+/// Исправление #8: используется фиксированный массив [ShapeType; 7] вместо Vec<ShapeType>
+/// для предотвращения аллокаций в куче и улучшения производительности.
 /// rng кэшируется в структуре для избежания повторного создания thread_rng()
 /// при каждом заполнении мешка.
 pub struct BagGenerator {
     /// Текущий мешок с фигурами.
-    bag: Vec<ShapeType>,
+    /// Исправление #8: фиксированный массив вместо Vec для эффективности.
+    bag: [ShapeType; 7],
     /// Индекс текущей фигуры в мешке.
     index: usize,
     /// Кэшированный генератор случайных чисел.
     rng: rand::rngs::ThreadRng,
+    /// Заполнен ли мешок в данный момент.
+    is_filled: bool,
 }
 
 impl BagGenerator {
     /// Создать новый генератор с пустым мешком.
     pub fn new() -> Self {
         Self {
-            bag: Vec::new(),
+            bag: [ShapeType::T; 7], // Временная инициализация, заполнится в fill_bag()
             index: 0,
             rng: rand::thread_rng(),
+            is_filled: false,
         }
     }
 
     /// Заполнить мешок всеми 7 типами фигур и перемешать.
     ///
     /// Использует алгоритм Fisher-Yates для равномерного перемешивания:
-    /// 1. Создаётся вектор со всеми 7 типами фигур
+    /// 1. Создаётся массив со всеми 7 типами фигур
     /// 2. Для каждой позиции i выбирается случайный индекс j от 0 до i
     /// 3. Элементы на позициях i и j меняются местами
     ///
-    /// Оптимизация: использует reserve() + extend_from_slice() вместо clear() + extend()
-    /// для повторного использования выделенной памяти и предотвращения реаллокаций.
+    /// Исправление #8: используется фиксированный массив вместо Vec
+    /// для предотвращения аллокаций в куче.
     fn fill_bag(&mut self) {
-        // Оптимизация: используем reserve() + extend_from_slice() для эффективности
-        self.bag.clear();
-        self.bag.reserve(7);
-        self.bag.extend_from_slice(&[
+        // Исправление #8: заполнение фиксированного массива
+        self.bag = [
             ShapeType::T,
             ShapeType::L,
             ShapeType::J,
@@ -111,7 +115,7 @@ impl BagGenerator {
             ShapeType::Z,
             ShapeType::O,
             ShapeType::I,
-        ]);
+        ];
 
         // Алгоритм Fisher-Yates для перемешивания
         // Используем кэшированный rng вместо создания нового thread_rng()
@@ -122,6 +126,7 @@ impl BagGenerator {
         }
 
         self.index = 0;
+        self.is_filled = true;
     }
 
     /// Получить следующую фигуру из мешка.
@@ -133,8 +138,8 @@ impl BagGenerator {
     /// - Если мешок пуст, автоматически заполняется новым набором
     /// - Гарантирует равномерное распределение фигур
     pub fn next_shape(&mut self) -> ShapeType {
-        // Если мешок пуст или фигуры закончились, заполняем новый
-        if self.index >= self.bag.len() {
+        // Если фигуры закончились, заполняем новый мешок
+        if !self.is_filled || self.index >= self.bag.len() {
             self.fill_bag();
         }
 
@@ -147,7 +152,7 @@ impl BagGenerator {
     /// Получить текущий мешок фигур (для тестов).
     #[cfg(test)]
     #[must_use]
-    pub fn get_bag(&self) -> &Vec<ShapeType> {
+    pub fn get_bag(&self) -> &[ShapeType; 7] {
         &self.bag
     }
 
@@ -624,7 +629,8 @@ mod tests {
 
         for _ in 0..iterations {
             bag.fill_bag();
-            let order: Vec<ShapeType> = bag.bag.clone();
+            // Исправление #8: конвертация массива в Vec для теста
+            let order: Vec<ShapeType> = bag.bag.to_vec();
             if !unique_orders.contains(&order) {
                 unique_orders.push(order);
             }

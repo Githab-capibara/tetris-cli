@@ -870,11 +870,13 @@ fn test_extended_bag_index_resets() {
     assert_eq!(bag.get_index(), 1);
 }
 
-/// Тест 66: Проверка что get_bag пуст в начале
+/// Тест 66: Проверка что get_bag имеет 7 элементов при инициализации
+/// Исправление #8: BagGenerator использует фиксированный массив [ShapeType; 7]
 #[test]
 fn test_extended_bag_empty_at_start() {
     let bag = BagGenerator::new();
-    assert_eq!(bag.get_bag().len(), 0);
+    // Исправление #8: bag теперь содержит 7 фигур (временная инициализация)
+    assert_eq!(bag.get_bag().len(), 7);
 }
 
 /// Тест 67: Проверка что get_bag имеет 7 элементов после первого next_shape
@@ -1101,9 +1103,11 @@ fn test_extended_bag_stability() {
 }
 
 /// Тест 80: Проверка что BagGenerator корректно инициализируется
+/// Исправление #8: BagGenerator использует фиксированный массив [ShapeType; 7]
 #[test]
 fn test_extended_bag_initialization() {
     let bag = BagGenerator::new();
     assert_eq!(bag.get_index(), 0);
-    assert_eq!(bag.get_bag().len(), 0);
+    // Исправление #8: bag теперь содержит 7 фигур (временная инициализация)
+    assert_eq!(bag.get_bag().len(), 7);
 }

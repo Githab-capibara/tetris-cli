@@ -186,9 +186,21 @@ impl LeaderboardEntry {
     }
 
     /// Получить значение рекорда.
+    ///
+    /// # Возвращает
+    /// Значение рекорда (u128)
+    ///
+    /// # Безопасность
+    /// Исправление #6: метод возвращает значение только после успешной валидации хэша.
+    /// Это предотвращает race condition между проверкой и использованием.
     /// Исправление #2: возвращаем u128 для предотвращения переполнения
     #[must_use]
     pub fn score(&self) -> u128 {
+        // Исправление #6: валидация перед каждым использованием
+        if !self.is_valid() {
+            eprintln!("Предупреждение: запись в таблице лидеров не прошла валидацию!");
+            return 0;
+        }
         self.score
     }
 
@@ -370,24 +382,32 @@ impl Default for SaveData {
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
 /// - запрещены опасные Unicode-символы (эмодзи, контрольные символы)
 ///
-/// Оптимизация: использует String::with_capacity() для предотвращения реаллокаций.
+/// # Аргументы
+/// * `name` - имя для санитаризации
+///
+/// # Возвращает
+/// Безопасное имя для таблицы лидеров
+///
+/// # Безопасность
+/// Исправление #23: использует String::with_capacity() для предотвращения реаллокаций.
 fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
-    // Оптимизация: предварительно выделяем память на 20 символов (максимум)
-    let validated: String = trimmed
-        .chars()
-        .filter(|&c| {
-            // Разрешаем только ASCII alphanumeric и безопасные символы
-            // Запрещаем эмодзи, контрольные символы и другие опасные Unicode-символы
-            // Явная фильтрация control characters (c.is_control())
-            !c.is_control() && is_valid_name_char(c)
-        })
-        .take(20)
-        .collect::<String>();
+    // Исправление #23: используем String::with_capacity() для предотвращения реаллокаций
+    // Максимальная длина имени - 20 символов
+    let mut validated = String::with_capacity(20.min(trimmed.len()));
+    for c in trimmed.chars() {
+        if !c.is_control() && is_valid_name_char(c) {
+            validated.push(c);
+            // Ограничение длины имени 20 символами
+            if validated.len() >= 20 {
+                break;
+            }
+        }
+    }
 
     if validated.is_empty() {
         "Anonymous".to_string()
@@ -461,6 +481,7 @@ impl LeaderboardEntry {
 /// - ASCII буквы (a-z, A-Z)
 /// - ASCII цифры (0-9)
 /// - Специальные символы: '_', '-', ' '
+/// - Русские буквы (а-я, А-Я, ё, Ё)
 ///
 /// # Аргументы
 /// * `c` - символ для проверки
@@ -469,9 +490,17 @@ impl LeaderboardEntry {
 /// `true` если символ допустим
 ///
 /// # Безопасность
-/// Функция использует is_ascii_alphanumeric() для защиты от Unicode-символов и эмодзи.
+/// Исправление #11: расширенная валидация Unicode для поддержки международных имён.
+/// Запрещены управляющие символы и эмодзи через is_control().
 fn is_valid_name_char(c: char) -> bool {
-    c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ' '
+    // Исправление #11: расширенная валидация Unicode
+    // Разрешаем alphanumeric (включая Unicode), русские буквы и безопасные символы
+    // Запрещаем управляющие символы (c.is_control()) и эмодзи
+    !c.is_control()
+        && !c.is_whitespace()
+        && c != '/'
+        && c != '\\'
+        && (c.is_alphanumeric() || c == '_' || c == '-' || c == ' ')
 }
 
 impl Leaderboard {

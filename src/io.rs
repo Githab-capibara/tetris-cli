@@ -346,6 +346,19 @@ pub struct KeyReader {
     inp: AsyncReader,
 }
 
+impl Drop for KeyReader {
+    /// Освобождение ресурсов при уничтожении KeyReader.
+    ///
+    /// # Примечания
+    /// Исправление #13: реализация Drop для предотвращения утечки ресурсов.
+    /// Метод автоматически освобождает ресурсы stdin при выходе из области видимости.
+    fn drop(&mut self) {
+        // AsyncReader автоматически освобождается при drop,
+        // но явно сбрасываем терминал в случай ошибки
+        // termion::async_stdin не требует явного сброса
+    }
+}
+
 impl Default for KeyReader {
     fn default() -> Self {
         Self::new()

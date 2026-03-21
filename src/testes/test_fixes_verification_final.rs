@@ -224,7 +224,6 @@ mod problem_4_canvas_default_unwrap {
         let _default_fn = Canvas::default;
 
         // Функция должна быть доступна
-        
     }
 
     /// Тест 4.2: Проверяет, что Canvas::default() работает
@@ -308,7 +307,6 @@ mod problem_5_unreachable_game {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 5.3: Проверяет движение вправо
@@ -320,7 +318,6 @@ mod problem_5_unreachable_game {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 }
 
@@ -421,7 +418,6 @@ mod problem_7_highscore_save_errors {
         let _fn = SaveData::save_value_result;
 
         // Функция должна быть доступна
-        
     }
 
     /// Тест 7.2: Проверяет успешное сохранение
@@ -433,7 +429,6 @@ mod problem_7_highscore_save_errors {
         SaveData::save_value(1000);
 
         // Если достигли этой строки - сохранение не вызвало панику
-        
     }
 
     /// Тест 7.3: Проверяет обработку ошибки
@@ -464,8 +459,6 @@ mod problem_8_f32_to_u32_conversion {
         // Проверяем безопасную конвертацию f32 -> u32
         let float_val: f32 = 100.5;
         let _uint_val: u32 = float_val as u32;
-
-        
     }
 
     /// Тест 8.2: Проверяет отсутствие переполнения
@@ -528,7 +521,6 @@ mod problem_9_utf8_documentation {
         let _method = KeyReader::get_key;
 
         // Документация проверяется через cargo doc
-        
     }
 
     /// Тест 9.2: Проверяет работу с ASCII
@@ -540,7 +532,6 @@ mod problem_9_utf8_documentation {
         let _reader = KeyReader::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 9.3: Проверяет возврат None для UTF-8
@@ -577,7 +568,6 @@ mod problem_10_update_refactoring {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 10.2: Проверяет существование handle_falling()
@@ -589,7 +579,6 @@ mod problem_10_update_refactoring {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 10.3: Проверяет, что update() использует подфункции
@@ -601,7 +590,6 @@ mod problem_10_update_refactoring {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 }
 
@@ -639,8 +627,6 @@ mod problem_11_check_rows_refactoring {
         assert_eq!(GRID_HEIGHT, 20);
         use crate::io::GRID_WIDTH;
         assert_eq!(GRID_WIDTH, 10);
-
-        
     }
 }
 
@@ -724,7 +710,6 @@ mod problem_13_no_assert_true {
     #[test]
     fn test_no_assert_true_in_tests() {
         // Этот тест сам использует assert!(true) для проверки что это работает
-        
     }
 
     /// Тест 13.2: Проверяет что assert!(condition) работает
@@ -849,7 +834,6 @@ mod problem_16_no_unused_allow_dead_code {
         }
 
         let _test = TestStruct { field: 42 };
-        
     }
 
     /// Тест 16.3: Проверяет что dead_code обнаруживается
@@ -885,8 +869,6 @@ mod problem_19_blocks_array_comment {
 
         assert_eq!(GRID_WIDTH, 10, "Ширина должна быть 10");
         assert_eq!(GRID_HEIGHT, 20, "Высота должна быть 20");
-
-        
     }
 
     /// Тест 19.2: Проверяет размер 200 байт
@@ -933,7 +915,6 @@ mod problem_20_public_method_docs {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 20.2: Проверяет документацию save_tetromino()
@@ -945,7 +926,6 @@ mod problem_20_public_method_docs {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 
     /// Тест 20.3: Проверяет документацию check_rows()
@@ -957,7 +937,6 @@ mod problem_20_public_method_docs {
         let _state = GameState::new();
 
         // Если создали - структура корректна
-        
     }
 }
 
@@ -1014,7 +993,7 @@ mod problem_21_drawing_duplication {
 // cfg(test) removed - parent module is already test-only
 mod problem_22_magic_numbers {
     use crate::game::{
-        FPS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, ROW_SCORE_INC,
+        FPS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, LINE_SCORES,
         SOFT_DROP_POINTS, SPRINT_LINES,
     };
 
@@ -1034,7 +1013,8 @@ mod problem_22_magic_numbers {
     #[test]
     fn test_menu_constants_exist() {
         // Проверяем константы очков
-        assert_eq!(ROW_SCORE_INC, 100, "ROW_SCORE_INC должен быть 100");
+        assert_eq!(LINE_SCORES[0], 100, "LINE_SCORES[0] должен быть 100");
+        assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "PIECE_SCORE_INC должен быть 100");
         assert_eq!(PIECE_SCORE_INC, 100, "PIECE_SCORE_INC должен быть 100");
         assert_eq!(SOFT_DROP_POINTS, 1, "SOFT_DROP_POINTS должен быть 1");
         assert_eq!(HARD_DROP_POINTS, 2, "HARD_DROP_POINTS должен быть 2");
@@ -1117,8 +1097,6 @@ mod problem_25_achievements_system {
 
         // achievements поле должно существовать
         let _achievements = &stats.achievements;
-
-        
     }
 
     /// Тест 25.2: Проверяет struct Achievement

@@ -8,7 +8,7 @@
 //! Исправление: использование saturating_add() вместо обычного сложения
 
 use crate::game::{
-    GameState, COMBO_BONUS, HARD_DROP_POINTS, PIECE_SCORE_INC, ROW_SCORE_INC,
+    GameState, COMBO_BONUS, HARD_DROP_POINTS, PIECE_SCORE_INC, LINE_SCORES, LINE_SCORES[0],
     SOFT_DROP_POINTS,
 };
 
@@ -25,11 +25,11 @@ fn test_saturating_add_normal_values() {
     let mut score: u64 = 0;
 
     // Начисляем очки за линию (100)
-    score = score.saturating_add(ROW_SCORE_INC);
+    score = score.saturating_add(LINE_SCORES[0]);
     assert_eq!(score, 100, "После первой линии счёт должен быть 100");
 
     // Начисляем очки за вторую линию (200)
-    score = score.saturating_add(ROW_SCORE_INC * 2);
+    score = score.saturating_add(LINE_SCORES[0] * 2);
     assert_eq!(
         score, 300,
         "После второй линии счёт должен быть 300"
@@ -130,21 +130,21 @@ fn test_correct_score_calculation() {
     assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
 
     // Симулируем начисление очков за линию (через проверку констант)
-    let line_points = ROW_SCORE_INC;
+    let line_points = LINE_SCORES[0];
     let mut score = 0;
     score = score.saturating_add(line_points);
     assert_eq!(score, 100, "Очки за 1 линию должны быть 100");
 
     // Очки за 2 линии (200)
-    score = score.saturating_add(ROW_SCORE_INC * 2);
+    score = score.saturating_add(LINE_SCORES[0] * 2);
     assert_eq!(score, 300, "Очки за 2 линии должны быть 300");
 
     // Очки за 3 линии (400)
-    score = score.saturating_add(ROW_SCORE_INC * 4);
+    score = score.saturating_add(LINE_SCORES[0] * 4);
     assert_eq!(score, 700, "Очки за 3 линии должны быть 700");
 
     // Очки за Tetris (4 линии = 800 + 1000 бонус)
-    score = score.saturating_add(ROW_SCORE_INC * 8); // 800
+    score = score.saturating_add(LINE_SCORES[0] * 8); // 800
     score = score.saturating_add(1000); // Бонус за Tetris
     assert_eq!(score, 2500, "Очки за Tetris должны быть 2500");
 
@@ -153,10 +153,10 @@ fn test_correct_score_calculation() {
     // 2 линии: 100 × 2^1 = 200
     // 3 линии: 100 × 2^2 = 400
     // 4 линии: 100 × 2^3 = 800
-    assert_eq!(ROW_SCORE_INC * (1 << 0), 100, "Очки за 1 линию");
-    assert_eq!(ROW_SCORE_INC * (1 << 1), 200, "Очки за 2 линии");
-    assert_eq!(ROW_SCORE_INC * (1 << 2), 400, "Очки за 3 линии");
-    assert_eq!(ROW_SCORE_INC * (1 << 3), 800, "Очки за 4 линии");
+    assert_eq!(LINE_SCORES[0] * (1 << 0), 100, "Очки за 1 линию");
+    assert_eq!(LINE_SCORES[0] * (1 << 1), 200, "Очки за 2 линии");
+    assert_eq!(LINE_SCORES[0] * (1 << 2), 400, "Очки за 3 линии");
+    assert_eq!(LINE_SCORES[0] * (1 << 3), 800, "Очки за 4 линии");
 
     // Проверяем что GameState использует saturating_add
     // Создаём состояние и проверяем что счёт корректен
@@ -215,7 +215,7 @@ fn test_all_scoring_types() {
     let mut score: u64 = 0;
 
     // 1. Очки за линию (100)
-    score = score.saturating_add(ROW_SCORE_INC);
+    score = score.saturating_add(LINE_SCORES[0]);
     assert_eq!(score, 100, "Очки за линию");
 
     // 2. Очки за фигуру (100 + fall_spd * 50)
