@@ -852,9 +852,10 @@ fn test_rotation_at_wall_and_movement() {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
-    // Пытаемся вращать и двигаться
+    // Используем rotate_with_wall_kick для вращения у стены
+    // Это правильный способ вращения с учётом wall kick
     if state.can_rotate_curr_shape(Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        state.rotate_with_wall_kick(Dir::Right);
     }
 
     // После вращения у стены должно быть возможно движение вправо
