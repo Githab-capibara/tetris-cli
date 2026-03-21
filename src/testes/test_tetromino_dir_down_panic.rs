@@ -8,6 +8,7 @@
 //! Исправление: rotate() теперь паникует при Dir::Down с понятным сообщением
 
 use crate::game::Dir;
+use crate::tetromino::RotationDirection;
 use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
@@ -29,7 +30,7 @@ fn test_dir_down_panic_with_message() {
     };
     
     // Вызываем rotate с Dir::Down - должно вызвать панику
-    tetromino.rotate(Dir::Down);
+    tetromino.rotate_old(Dir::Down);
 }
 
 /// Тест 2: Проверка корректного вращения Dir::Left
@@ -50,7 +51,7 @@ fn test_dir_left_rotation_correct() {
     
     // Вращаем против часовой стрелки (Dir::Left)
     // Формула: (x,y) -> (y,-x)
-    tetromino.rotate(Dir::Left);
+    tetromino.rotate_old(Dir::Left);
     
     // Проверяем первую координату: (-1,0) -> (0,1)
     assert_eq!(
@@ -85,7 +86,7 @@ fn test_dir_left_rotation_correct() {
     };
     
     for _ in 0..4 {
-        t.rotate(Dir::Left);
+        t.rotate_old(Dir::Left);
     }
     
     assert_eq!(
@@ -102,7 +103,7 @@ fn test_dir_left_rotation_correct() {
     };
     
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate(Dir::Left);
+    o_tetromino.rotate_old(Dir::Left);
     
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -128,7 +129,7 @@ fn test_dir_right_rotation_correct() {
     
     // Вращаем по часовой стрелке (Dir::Right)
     // Формула: (x,y) -> (-y,x)
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
     
     // Проверяем первую координату: (-1,0) -> (0,-1)
     assert_eq!(
@@ -163,7 +164,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     for _ in 0..4 {
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Right);
     }
     
     assert_eq!(
@@ -180,7 +181,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate(Dir::Right);
+    o_tetromino.rotate_old(Dir::Right);
     
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -196,7 +197,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     let i_original = i_tetromino.coords;
-    i_tetromino.rotate(Dir::Right);
+    i_tetromino.rotate_old(Dir::Right);
     
     // I-фигура должна измениться (вертикальная -> горизонтальная)
     assert_ne!(
@@ -232,8 +233,8 @@ fn test_left_then_right_returns_to_original() {
         let original = t.coords;
         
         // Вращаем Left затем Right
-        t.rotate(Dir::Left);
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Left);
+        t.rotate_old(Dir::Right);
         
         assert_eq!(
             t.coords, original,
@@ -242,8 +243,8 @@ fn test_left_then_right_returns_to_original() {
         );
         
         // Вращаем Right затем Left
-        t.rotate(Dir::Right);
-        t.rotate(Dir::Left);
+        t.rotate_old(Dir::Right);
+        t.rotate_old(Dir::Left);
         
         assert_eq!(
             t.coords, original,
@@ -279,6 +280,6 @@ fn test_dir_down_panic_for_all_shapes() {
         };
         
         // Должно вызвать панику для любой фигуры
-        t.rotate(Dir::Down);
+        t.rotate_old(Dir::Down);
     }
 }

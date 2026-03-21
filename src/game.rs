@@ -20,7 +20,7 @@
 use crate::io::{
     Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
 };
-use crate::tetromino::{Tetromino, SHAPE_COLORS};
+use crate::tetromino::{RotationDirection, Tetromino, SHAPE_COLORS};
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -477,8 +477,9 @@ pub struct GameState {
     can_hold: bool,
     /// Скорость падения.
     fall_spd: f32,
-    /// Сетка игрового поля (-1 = пусто, 0-6 = цвет).
-    /// Массив размещается на стеке (200 байт = 10×20×1 байт).
+    /// Двумерный массив игрового поля 10x20.
+    /// Каждый элемент хранит индекс цвета (i8), 0 = пусто.
+    /// Размер: 10 × 20 × 1 байт = 200 байт (размещается на стеке).
     /// Защита от переполнения стека: массив занимает всего 200 байт,
     /// что безопасно для стека (типичный размер стека - 1-8 МБ).
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
@@ -776,7 +777,10 @@ impl GameState {
             match dir {
                 Dir::Left => self.curr_shape.pos.0 -= 1.0,
                 Dir::Right => self.curr_shape.pos.0 += 1.0,
-                Dir::Down => unreachable!("Dir::Down не используется для движения"),
+                Dir::Down => {
+                    // Dir::Down не используется для горизонтального движения
+                    // Тихо игнорируем, чтобы избежать паники
+                }
             }
         }
     }
@@ -784,9 +788,15 @@ impl GameState {
     /// Обработка вращения фигуры.
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения
+    /// * `dir` - направление вращения (Dir::Left = против часовой, Dir::Right = по часовой)
     fn handle_rotation_input(&mut self, dir: Dir) {
-        self.rotate_with_wall_kick(dir);
+        // Преобразование Dir в RotationDirection
+        let rotation_dir = match dir {
+            Dir::Left => RotationDirection::CounterClockwise,
+            Dir::Right => RotationDirection::Clockwise,
+            Dir::Down => return, // Dir::Down не используется для вращения
+        };
+        self.rotate_with_wall_kick(rotation_dir);
     }
 
     /// Обработка Hard Drop (мгновенное падение).
@@ -797,13 +807,13 @@ impl GameState {
         }
         // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
         // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
-        // Исправление #1: используем u32::MAX вместо u16::MAX для предотвращения переполнения f32
+        // Исправление #8: используем u32 вместо u64 для предотвращения проблем с конвертацией f32
         let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
             .abs()
             .max(0.0)
             .min(u32::MAX as f32);
         let drop_distance = if drop_distance_f32.is_finite() {
-            drop_distance_f32 as u64
+            drop_distance_f32 as u32
         } else {
             0 // Защита от NaN/infinity
         };
@@ -1614,7 +1624,7 @@ impl GameState {
     /// 1. Создаётся временная копия фигуры
     /// 2. Применяется вращение к копии
     /// 3. Проверяются все блоки фигуры на выход за границы и столкновения
-    pub fn can_rotate_curr_shape(&self, dir: Dir) -> bool {
+    pub fn can_rotate_curr_shape(&self, dir: RotationDirection) -> bool {
         // Создание временной копии фигуры для проверки вращения
         let mut temp_shape = self.curr_shape;
         temp_shape.rotate(dir);
@@ -1647,19 +1657,11 @@ impl GameState {
     /// - Комбинированные смещения
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения (Left или Right)
+    /// * `dir` - направление вращения (Clockwise = по часовой, CounterClockwise = против часовой)
     ///
     /// # Возвращает
     /// `true` если вращение (возможно со смещением) успешно
-    ///
-    /// # Паника
-    /// Паникует, если передано направление `Dir::Down`, так как оно не используется для вращения.
-    pub fn rotate_with_wall_kick(&mut self, dir: Dir) -> bool {
-        // Dir::Down не используется для вращения
-        if matches!(dir, Dir::Down) {
-            panic!("Dir::Down не используется для вращения");
-        }
-
+    pub fn rotate_with_wall_kick(&mut self, dir: RotationDirection) -> bool {
         // Сначала пробуем прямое вращение
         if self.can_rotate_curr_shape(dir) {
             self.curr_shape.rotate(dir);

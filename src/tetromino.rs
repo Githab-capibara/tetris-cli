@@ -26,6 +26,37 @@ use crate::game::Dir;
 use rand::Rng;
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
+/// Направление вращения фигуры.
+///
+/// Используется для вращения тетрамино по часовой или против часовой стрелки.
+/// Отдельный enum предотвращает панику при передаче неправильного направления.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum RotationDirection {
+    /// По часовой стрелке (90° вправо)
+    Clockwise,
+    /// Против часовой стрелки (90° влево)
+    CounterClockwise,
+}
+
+impl From<Dir> for RotationDirection {
+    /// Конвертировать Dir в RotationDirection.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление движения/вращения
+    ///
+    /// # Возвращает
+    /// - `RotationDirection::Clockwise` для `Dir::Right`
+    /// - `RotationDirection::CounterClockwise` для `Dir::Left`
+    /// - `RotationDirection::Clockwise` для `Dir::Down` (по умолчанию)
+    fn from(dir: Dir) -> Self {
+        match dir {
+            Dir::Right => RotationDirection::Clockwise,
+            Dir::Left => RotationDirection::CounterClockwise,
+            Dir::Down => RotationDirection::Clockwise, // По умолчанию
+        }
+    }
+}
+
 /// Генератор фигур по системе 7-bag.
 ///
 /// Гарантирует, что каждые 7 фигур будут содержать все 7 типов.
@@ -333,25 +364,19 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `dir` - направление вращения:
-    ///   - `Dir::Left` - против часовой стрелки (90° влево)
-    ///   - `Dir::Right` - по часовой стрелке (90° вправо)
+    ///   - `RotationDirection::Clockwise` - по часовой стрелке (90° вправо)
+    ///   - `RotationDirection::CounterClockwise` - против часовой стрелки (90° влево)
     ///
     /// # Примечания
     /// - Квадрат (O) не вращается - метод возвращает управление сразу
-    /// - Dir::Down вызывает panic (не используется для вращения)
     /// - Вращение на 90 градусов вокруг центра фигуры
     /// - Используется формула поворота:
     ///   - По часовой: (x, y) -> (-y, x)
     ///   - Против часовой: (x, y) -> (y, -x)
     ///
-    /// # Паника
-    /// Метод паникует при передаче `Dir::Down` с сообщением:
-    /// "Dir::Down cannot be used for rotation"
-    ///
     /// # Пример использования
     /// ```
-    /// use tetris_cli::tetromino::{Tetromino, ShapeType};
-    /// use tetris_cli::game::Dir;
+    /// use tetris_cli::tetromino::{Tetromino, ShapeType, RotationDirection};
     ///
     /// let mut t = Tetromino {
     ///     pos: (4.0, 0.0),
@@ -359,25 +384,74 @@ impl Tetromino {
     ///     coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
     ///     fg: 0,
     /// };
-    /// t.rotate(Dir::Right); // Поворот по часовой
+    /// t.rotate(RotationDirection::Clockwise); // Поворот по часовой
     /// ```
-    pub fn rotate(&mut self, dir: Dir) {
+    pub fn rotate(&mut self, dir: RotationDirection) {
         // Квадрат не вращается
         if self.shape == ShapeType::O {
             return;
         }
 
-        // Вращение работает только с Dir::Left и Dir::Right
+        // Вращение по указанному направлению
+        for i in 0..4 {
+            let (x, y) = self.coords[i];
+            let (new_x, new_y) = match dir {
+                RotationDirection::CounterClockwise => (y, -x), // Поворот против часовой
+                RotationDirection::Clockwise => (-y, x),        // Поворот по часовой
+            };
+
+            // Проверка границ в отладочном режиме
+            // Координаты должны оставаться в пределах i16 для предотвращения переполнения
+            debug_assert!(
+                (i16::MIN / 2..=i16::MAX / 2).contains(&new_x),
+                "Координата X выходит за безопасные пределы после вращения"
+            );
+            debug_assert!(
+                (i16::MIN / 2..=i16::MAX / 2).contains(&new_y),
+                "Координата Y выходит за безопасные пределы после вращения"
+            );
+
+            self.coords[i] = (new_x, new_y);
+        }
+    }
+
+    /// Вращать фигуру в заданном направлении (устаревший метод для совместимости).
+    ///
+    /// # Аргументы
+    /// * `dir` - направление вращения:
+    ///   - `Dir::Left` - против часовой стрелки (90° влево)
+    ///   - `Dir::Right` - по часовой стрелке (90° вправо)
+    ///   - `Dir::Down` - не используется, игнорируется
+    ///
+    /// # Примечания
+    /// - Квадрат (O) не вращается - метод возвращает управление сразу
+    /// - Dir::Down игнорируется (не вызывает панику)
+    ///
+    /// # Устарело
+    /// Используйте [`Tetromino::rotate()`] с `RotationDirection` вместо этого метода.
+    #[deprecated(since = "23.96.15", note = "Используйте rotate() с RotationDirection")]
+    #[allow(dead_code)]
+    pub fn rotate_old(&mut self, dir: Dir) {
+        // Квадрат не вращается
+        if self.shape == ShapeType::O {
+            return;
+        }
+
+        // Dir::Down игнорируется
+        if dir == Dir::Down {
+            return;
+        }
+
+        // Вращение по указанному направлению
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
                 Dir::Left => (y, -x),  // Поворот против часовой
                 Dir::Right => (-y, x), // Поворот по часовой
-                Dir::Down => panic!("Dir::Down не используется для вращения"),
+                Dir::Down => return,   // Игнорируем
             };
 
             // Проверка границ в отладочном режиме
-            // Координаты должны оставаться в пределах i16 для предотвращения переполнения
             debug_assert!(
                 (i16::MIN / 2..=i16::MAX / 2).contains(&new_x),
                 "Координата X выходит за безопасные пределы после вращения"
@@ -461,7 +535,7 @@ mod tests {
         // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
         // Вращение по часовой: (x,y) -> (-y,x)
         // (-1,0) -> (0,-1), (0,0) -> (0,0), (1,0) -> (0,1), (0,1) -> (-1,0)
-        tetromino.rotate(Dir::Right);
+        tetromino.rotate(RotationDirection::Clockwise);
         assert_eq!(tetromino.coords[0], (0, -1));
         assert_eq!(tetromino.coords[1], (0, 0));
     }
@@ -479,9 +553,9 @@ mod tests {
             fg: 5,
         };
         let original_coords = tetromino.coords;
-        tetromino.rotate(Dir::Right);
+        tetromino.rotate(RotationDirection::Clockwise);
         assert_eq!(tetromino.coords, original_coords);
-        tetromino.rotate(Dir::Left);
+        tetromino.rotate(RotationDirection::CounterClockwise);
         assert_eq!(tetromino.coords, original_coords);
     }
 

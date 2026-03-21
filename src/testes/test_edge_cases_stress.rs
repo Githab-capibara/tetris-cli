@@ -11,7 +11,7 @@
 
 use crate::game::{GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Экстремальные значения
@@ -101,8 +101,10 @@ fn test_edge_cases_all_shapes_extreme() {
 
         // Проверяем вращение
         for _ in 0..4 {
-            if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-                state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+            if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+                state
+                    .get_curr_shape_mut()
+                    .rotate(RotationDirection::Clockwise);
             }
         }
 
@@ -176,8 +178,10 @@ fn test_stress_rapid_rotation() {
 
     // 10000 вращений
     for _ in 0..10_000 {
-        if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
     }
 
@@ -240,8 +244,10 @@ fn test_stress_sprint_mode_load() {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
         // Вращение
-        if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
         // Удержание (только если можно)
         if state.can_hold() {

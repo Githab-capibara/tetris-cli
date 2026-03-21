@@ -12,7 +12,7 @@
 
 use crate::game::{Dir, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::BagGenerator;
+use crate::tetromino::{BagGenerator, RotationDirection};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-4: Гравитация и падение
@@ -262,8 +262,8 @@ fn test_rotation_near_left_wall() {
     }
 
     // Проверяем, что методы вращения работают без паники
-    let _can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
-    let _can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
+    let _can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    let _can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     // Тест проходит, если код не паникует
     // Конкретные результаты зависят от типа фигуры
@@ -284,8 +284,8 @@ fn test_rotation_near_right_wall() {
     }
 
     // Вращение должно быть возможно
-    let can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
-    let can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     // Хотя бы одно направление вращения должно быть доступно
     assert!(
@@ -309,8 +309,8 @@ fn test_rotation_near_floor() {
     }
 
     // Вращение должно быть возможно
-    let can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
-    let can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     // Хотя бы одно направление вращения должно быть доступно
     assert!(

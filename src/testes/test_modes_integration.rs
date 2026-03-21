@@ -160,21 +160,22 @@ fn test_modes_integration_hold_in_all_modes() {
 #[test]
 fn test_modes_integration_rotation_in_all_modes() {
     use crate::game::Dir;
+    use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
     // Classic
-    let can_rotate_classic = classic.can_rotate_curr_shape(Dir::Right);
+    let can_rotate_classic = classic.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate_classic; // Тест просто проверяет что метод работает
 
     // Sprint
-    let can_rotate_sprint = sprint.can_rotate_curr_shape(Dir::Right);
+    let can_rotate_sprint = sprint.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate_sprint;
 
     // Marathon
-    let can_rotate_marathon = marathon.can_rotate_curr_shape(Dir::Right);
+    let can_rotate_marathon = marathon.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate_marathon;
 }
 
@@ -184,6 +185,7 @@ fn test_modes_integration_rotation_in_all_modes() {
 #[test]
 fn test_modes_integration_movement_in_all_modes() {
     use crate::game::Dir;
+    use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -214,6 +216,7 @@ fn test_modes_integration_movement_in_all_modes() {
 #[test]
 fn test_modes_integration_ghost_piece_in_all_modes() {
     use crate::game::Dir;
+    use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();

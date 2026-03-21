@@ -12,6 +12,7 @@
 #![allow(deprecated)]
 
 use crate::game::Dir;
+use crate::tetromino::RotationDirection;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================
@@ -183,7 +184,7 @@ fn test_tetromino_t_rotation() {
     let original_coords = t.coords;
 
     // Вращение по часовой
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(
         t.coords, original_coords,
         "Координаты должны измениться после вращения"
@@ -191,7 +192,7 @@ fn test_tetromino_t_rotation() {
 
     // 4 вращения должны вернуть к исходному состоянию
     for _ in 0..3 {
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Right);
     }
     assert_eq!(
         t.coords, original_coords,
@@ -214,12 +215,12 @@ fn test_tetromino_l_rotation() {
     let original_coords = t.coords;
 
     // Вращение по часовой
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(t.coords, original_coords, "L-фигура должна вращаться");
 
     // 4 вращения возвращают к исходному состоянию
     for _ in 0..3 {
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Right);
     }
     assert_eq!(t.coords, original_coords);
 }
@@ -237,7 +238,7 @@ fn test_tetromino_j_rotation() {
     };
 
     let original_coords = t.coords;
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(t.coords, original_coords, "J-фигура должна вращаться");
 }
 
@@ -254,7 +255,7 @@ fn test_tetromino_s_rotation() {
     };
 
     let original_coords = t.coords;
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(t.coords, original_coords, "S-фигура должна вращаться");
 }
 
@@ -271,7 +272,7 @@ fn test_tetromino_z_rotation() {
     };
 
     let original_coords = t.coords;
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(t.coords, original_coords, "Z-фигура должна вращаться");
 }
 
@@ -290,14 +291,14 @@ fn test_tetromino_o_no_rotation() {
     let original_coords = t.coords;
 
     // Вращение по часовой
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_eq!(
         t.coords, original_coords,
         "O-фигура не должна вращаться по часовой"
     );
 
     // Вращение против часовой
-    t.rotate(Dir::Left);
+    t.rotate_old(Dir::Left);
     assert_eq!(
         t.coords, original_coords,
         "O-фигура не должна вращаться против часовой"
@@ -319,7 +320,7 @@ fn test_tetromino_i_rotation() {
     let original_coords = t.coords;
 
     // I-фигура вращается из вертикальной в горизонтальную
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
     assert_ne!(t.coords, original_coords, "I-фигура должна вращаться");
 
     // Проверяем, что после вращения линия стала горизонтальной

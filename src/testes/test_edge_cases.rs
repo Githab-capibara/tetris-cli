@@ -11,7 +11,7 @@
 
 use crate::game::{GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Пустые значения
@@ -168,8 +168,10 @@ fn test_edge_cases_rotate_100_times() {
     let mut state = GameState::new();
 
     for _ in 0..100 {
-        if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
     }
 
@@ -246,8 +248,10 @@ fn test_edge_cases_o_no_rotate() {
 
     let original_coords = state.get_curr_shape().coords;
 
-    if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     assert_eq!(state.get_curr_shape().coords, original_coords);
@@ -262,8 +266,10 @@ fn test_edge_cases_i_rotates() {
 
     let original_coords = state.get_curr_shape().coords;
 
-    if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     assert_ne!(state.get_curr_shape().coords, original_coords);
@@ -382,7 +388,7 @@ fn test_edge_cases_rotation_at_wall_no_panic() {
     }
 
     // Вращение не должно вызывать панику
-    let _ = state.can_rotate_curr_shape(crate::game::Dir::Right);
+    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 }
 
 /// Тест 32: Проверка что движение не вызывает панику на полу
@@ -430,7 +436,7 @@ fn test_edge_cases_o_rotation_no_panic() {
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
 
     // Вращение O-фигуры не должно паниковать
-    let _ = state.can_rotate_curr_shape(crate::game::Dir::Right);
+    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 }
 
 /// Тест 36: Проверка что get_blocks не паникует
@@ -511,8 +517,10 @@ fn test_edge_cases_performance_rotation_100k() {
     let start = std::time::Instant::now();
 
     for _ in 0..100_000 {
-        if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
     }
 

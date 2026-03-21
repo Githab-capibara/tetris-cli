@@ -90,6 +90,7 @@ fn test_check_rows_benchmark_works() {
 #[test]
 fn test_rotate_benchmark_works() {
     use crate::game::Dir;
+use crate::tetromino::RotationDirection;
     use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
     use std::time::Instant;
 
@@ -103,7 +104,7 @@ fn test_rotate_benchmark_works() {
 
     // Замеряем время вращения
     let start = Instant::now();
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
     let elapsed = start.elapsed();
 
     // Проверяем что rotate() выполнился
@@ -128,8 +129,8 @@ fn test_rotate_benchmark_works() {
             coords: SHAPE_COORDS[0],
             fg: 0,
         };
-        t.rotate(Dir::Right);
-        t.rotate(Dir::Left);
+        t.rotate_old(Dir::Right);
+        t.rotate_old(Dir::Left);
     }
     let elapsed_1000 = start.elapsed();
 
@@ -159,8 +160,8 @@ fn test_rotate_benchmark_works() {
         };
 
         let start = Instant::now();
-        t.rotate(Dir::Right);
-        t.rotate(Dir::Left);
+        t.rotate_old(Dir::Right);
+        t.rotate_old(Dir::Left);
         let elapsed = start.elapsed();
 
         assert!(
@@ -245,8 +246,8 @@ fn test_benchmark_performance() {
     };
     let start = Instant::now();
     for _ in 0..iterations {
-        tetromino.rotate(Dir::Right);
-        tetromino.rotate(Dir::Left);
+        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate_old(Dir::Left);
     }
     let rotate_elapsed = start.elapsed();
 

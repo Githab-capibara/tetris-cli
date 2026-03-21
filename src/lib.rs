@@ -94,7 +94,7 @@
 //! let mut state = GameState::new();
 //!
 //! // Инициализация канваса для отрисовки в терминале
-//! let mut cnv = Canvas::new();
+//! let mut cnv = Canvas::new().expect("Не удалось создать Canvas");
 //!
 //! // Инициализация читателя нажатий клавиш
 //! let mut inp = KeyReader::new();
@@ -499,7 +499,7 @@ pub mod highscore;
 /// use tetris_cli::io::{Canvas, KeyReader};
 /// use termion::color::{White, Reset};
 ///
-/// let mut canvas = Canvas::new();
+/// let mut canvas = Canvas::new().expect("Не удалось создать Canvas");
 /// let mut reader = KeyReader::new();
 ///
 /// // Отрисовка текста
@@ -673,6 +673,9 @@ mod testes {
 
     // Тесты качества кода (24 теста - по 3 на каждую из 8 категорий)
     pub mod test_code_quality;
+
+    // Финальная верификация всех 25 исправлений (75 тестов - по 3 на каждую проблему)
+    pub mod test_fixes_verification_final;
 }
 
 #[cfg(test)]
