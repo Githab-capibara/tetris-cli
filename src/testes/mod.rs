@@ -43,7 +43,7 @@
 //! - `test_highscore_no_rate_limiting` - отсутствие rate limiting (5 тестов)
 //! - `test_io_resource_leak` - утечка ресурсов (5 тестов)
 //!
-//! Итого: 1143 теста
+//! Итого: 1456 тестов
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -133,3 +133,6 @@ pub mod test_code_quality;
 
 // Тесты предотвращения регрессии исправлений аудита (54 теста - по 3 на каждую из 18 проблем)
 pub mod test_audit_fixes_prevention;
+
+// Тесты текущего аудита (12 тестов - по 3 на каждую из 4 проблем)
+pub mod test_audit_current_fixes;
