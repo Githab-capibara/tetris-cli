@@ -267,7 +267,7 @@ fn test_tetromino_rotate_clockwise() {
 
     // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
     // Вращение по часовой: (x,y) -> (-y,x)
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
 
     // После вращения: (0,-1), (0,0), (0,1), (-1,0)
     assert_eq!(
@@ -295,7 +295,7 @@ fn test_tetromino_rotate_counter_clockwise() {
     };
 
     // Вращение против часовой: (x,y) -> (y,-x)
-    tetromino.rotate(Dir::Left);
+    tetromino.rotate_old(Dir::Left);
 
     // После вращения: (0,1), (0,0), (0,-1), (1,0)
     assert_eq!(
@@ -320,14 +320,14 @@ fn test_tetromino_o_no_rotate() {
     let original_coords = tetromino.coords;
 
     // Вращение по часовой
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
     assert_eq!(
         tetromino.coords, original_coords,
         "Квадрат не должен вращаться по часовой"
     );
 
     // Вращение против часовой
-    tetromino.rotate(Dir::Left);
+    tetromino.rotate_old(Dir::Left);
     assert_eq!(
         tetromino.coords, original_coords,
         "Квадрат не должен вращаться против часовой"
@@ -350,7 +350,7 @@ fn test_tetromino_full_rotation_cycle() {
 
     // 4 вращения по часовой должны вернуть к исходным координатам
     for _ in 0..4 {
-        tetromino.rotate(Dir::Right);
+        tetromino.rotate_old(Dir::Right);
     }
 
     assert_eq!(
@@ -383,7 +383,7 @@ fn test_all_tetromino_rotate() {
         };
 
         let original_coords = tetromino.coords;
-        tetromino.rotate(Dir::Right);
+        tetromino.rotate_old(Dir::Right);
 
         // Все фигуры кроме O должны изменить координаты
         if *shape_type != ShapeType::O {

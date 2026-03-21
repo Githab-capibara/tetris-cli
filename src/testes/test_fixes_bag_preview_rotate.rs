@@ -2,7 +2,7 @@
 
 use crate::game::{Dir, GameState};
 use crate::highscore::LeaderboardEntry;
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 
 /// Тест 9.1: Проверка что fill_bag() работает корректно.
 #[test]
@@ -63,11 +63,10 @@ fn test_preview_constants_correct_values() {
     let _score: u128 = state.get_score();
 }
 
-/// Тест 11.1: Проверка что rotate(Dir::Down) вызывает панику.
+/// Тест 11.1: Проверка что rotate(Dir::Down) игнорируется.
 ///
-/// Dir::Down не используется для вращения, поэтому метод вызывает panic.
+/// Dir::Down больше не вызывает панику, а тихо игнорируется.
 #[test]
-#[should_panic(expected = "Dir::Down не используется для вращения")]
 fn test_rotate_dir_down_no_change() {
     let mut tetromino = Tetromino {
         pos: (4.0, 0.0),
@@ -75,7 +74,18 @@ fn test_rotate_dir_down_no_change() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    tetromino.rotate(Dir::Down);
+
+    // Сохраняем исходные координаты
+    let original_coords = tetromino.coords;
+
+    // Dir::Down теперь игнорируется без паники
+    tetromino.rotate_old(Dir::Down);
+
+    // Координаты не должны измениться
+    assert_eq!(
+        tetromino.coords, original_coords,
+        "Dir::Down должен игнорироваться без изменения координат"
+    );
 }
 
 /// Тест 11.2: Проверка что rotate(Dir::Left) работает.
@@ -87,7 +97,7 @@ fn test_rotate_dir_left_works() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    tetromino.rotate(Dir::Left);
+    tetromino.rotate_old(Dir::Left);
     assert_ne!(tetromino.coords[0], (-1, 0));
 }
 
@@ -100,7 +110,7 @@ fn test_rotate_dir_right_works() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
     assert_ne!(tetromino.coords[0], (-1, 0));
 }
 

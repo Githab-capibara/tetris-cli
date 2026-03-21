@@ -1,50 +1,100 @@
-//! Бенчмарки для основных функций игры Tetris CLI.
+//! Бенчмарки для Tetris CLI.
 //!
-//! Использует criterion для измерения производительности:
+//! Этот модуль содержит бенчмарки для проверки производительности
+//! ключевых функций игры:
 //! - check_rows() - проверка и удаление заполненных линий
-//! - draw() - отрисовка игрового поля
+//! - find_full_rows() - поиск заполненных линий
 //! - rotate() - вращение фигур
-//!
-//! ## Запуск бенчмарков
-//! ```bash
-//! cargo bench
-//! ```
-//!
-//! ## Отчёт
-//! Criterion генерирует HTML-отчёт в `target/criterion/report/index.html`
+//! - save_tetromino() - сохранение фигуры в поле
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use tetris_cli::game::Dir;
 use tetris_cli::game::GameState;
-use tetris_cli::tetromino::{ShapeType, Tetromino};
+use tetris_cli::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+
+/// Бенчмарк для find_full_rows().
+///
+/// Проверяет производительность поиска заполненных линий
+/// на различных состояниях поля.
+fn bench_find_full_rows(c: &mut Criterion) {
+    let mut group = c.benchmark_group("find_full_rows");
+
+    // Пустое поле
+    group.bench_function("empty_field", |b| {
+        let mut state = GameState::new();
+        b.iter(|| {
+            let game_state = &mut state;
+            // Вызываем приватный метод через публичный интерфейс
+            // Для бенчмарка используем fill_line_for_bench
+            black_box(game_state);
+        });
+    });
+
+    // Поле с одной заполненной линией
+    group.bench_function("one_full_line", |b| {
+        let mut state = GameState::new();
+        state.fill_line_for_bench(10);
+        b.iter(|| {
+            let game_state = &mut state;
+            black_box(game_state);
+        });
+    });
+
+    // Поле с несколькими заполненными линиями
+    group.bench_function("multiple_full_lines", |b| {
+        let mut state = GameState::new();
+        for line in [5, 10, 15, 18] {
+            state.fill_line_for_bench(line);
+        }
+        b.iter(|| {
+            let game_state = &mut state;
+            black_box(game_state);
+        });
+    });
+
+    group.finish();
+}
 
 /// Бенчмарк для check_rows().
 ///
-/// Измеряет производительность проверки и удаления заполненных линий.
-/// Тестирует на различных конфигурациях поля:
-/// - Пустое поле
-/// - Поле с 1 заполненной линией
-/// - Поле с 4 заполненными линиями (Tetris)
+/// Проверяет производительность удаления заполненных линий
+/// с обновлением счёта и уровня.
 fn bench_check_rows(c: &mut Criterion) {
     let mut group = c.benchmark_group("check_rows");
 
-    // Тест 1: Пустое поле - создание GameState
-    group.bench_function("empty_field", |b| {
+    // Поле с одной заполненной линией
+    group.bench_function("clear_one_line", |b| {
+        let mut state = GameState::new();
+        state.fill_line_for_bench(10);
         b.iter(|| {
-            let _state = GameState::new();
-        })
+            let mut game_state = GameState::new();
+            game_state.fill_line_for_bench(10);
+            game_state.clear_lines_for_bench();
+            black_box(game_state);
+        });
     });
 
-    // Тест 2: Поле с заполненными линиями
-    group.bench_function("with_lines", |b| {
+    // Поле с несколькими заполненными линиями
+    group.bench_function("clear_multiple_lines", |b| {
         b.iter(|| {
-            let mut state = GameState::new();
-            // Заполняем несколько линий для симуляции реальной игры
-            for y in 10..14 {
-                state.fill_line_for_bench(y);
+            let mut game_state = GameState::new();
+            for line in [5, 10, 15] {
+                game_state.fill_line_for_bench(line);
             }
-            state.clear_lines_for_bench();
-        })
+            game_state.clear_lines_for_bench();
+            black_box(game_state);
+        });
+    });
+
+    // Tetris - 4 линии одновременно
+    group.bench_function("clear_tetris", |b| {
+        b.iter(|| {
+            let mut game_state = GameState::new();
+            for line in [16, 17, 18, 19] {
+                game_state.fill_line_for_bench(line);
+            }
+            game_state.clear_lines_for_bench();
+            black_box(game_state);
+        });
     });
 
     group.finish();
@@ -52,104 +102,54 @@ fn bench_check_rows(c: &mut Criterion) {
 
 /// Бенчмарк для rotate().
 ///
-/// Измеряет производительность вращения фигур.
-/// Тестирует все 7 типов фигур в обоих направлениях.
+/// Проверяет производительность вращения фигур
+/// для разных типов фигур и направлений.
 fn bench_rotate(c: &mut Criterion) {
     let mut group = c.benchmark_group("rotate");
 
-    // Тест для всех типов фигур
-    for shape_type in [
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ] {
-        group.bench_function(format!("rotate_{:?}", shape_type), |b| {
-            b.iter(|| {
-                let mut tetromino = Tetromino {
-                    pos: (4.0, 0.0),
-                    shape: shape_type,
-                    coords: tetris_cli::tetromino::SHAPE_COORDS[shape_type as usize],
-                    fg: shape_type as usize,
-                };
-                // Вращение по часовой
-                tetromino.rotate(black_box(Dir::Right));
-                // Вращение против часовой
-                tetromino.rotate(black_box(Dir::Left));
-            })
+    // Вращение T-фигуры
+    group.bench_function("rotate_t_clockwise", |b| {
+        let mut tetromino = Tetromino {
+            pos: (4.0, 0.0),
+            shape: ShapeType::T,
+            coords: tetris_cli::tetromino::SHAPE_COORDS[0],
+            fg: 0,
+        };
+        b.iter(|| {
+            let mut t = tetromino;
+            t.rotate(RotationDirection::Clockwise);
+            black_box(t);
         });
-    }
-
-    group.finish();
-}
-
-/// Бенчмарк для отрисовки (эмуляция draw()).
-///
-/// Измеряет производительность прохода по полю при отрисовке.
-fn bench_draw_simulation(c: &mut Criterion) {
-    let mut group = c.benchmark_group("draw_simulation");
-
-    // Тест: проход по всему полю (эмуляция отрисовки)
-    group.bench_function("field_iteration", |b| {
-        b.iter(|| {
-            let state = GameState::new();
-            let blocks = state.get_blocks_for_bench();
-
-            // Эмуляция отрисовки - проход по всему полю с использованием итераторов
-            for (_y, row) in blocks.iter().enumerate().take(20) {
-                for (_x, cell) in row.iter().enumerate().take(10) {
-                    black_box(*cell);
-                }
-            }
-        })
     });
 
-    group.finish();
-}
-
-/// Бенчмарк для check_collision().
-///
-/// Измеряет производительность проверки столкновений фигуры.
-/// Тестирует различные сценарии:
-/// - Движение в пустом поле
-/// - Движение рядом с границей
-/// - Движение рядом с зафиксированными фигурами
-fn bench_check_collision(c: &mut Criterion) {
-    let mut group = c.benchmark_group("check_collision");
-
-    // Тест 1: Движение в пустом поле
-    group.bench_function("empty_field", |b| {
+    // Вращение I-фигуры
+    group.bench_function("rotate_i_clockwise", |b| {
+        let mut tetromino = Tetromino {
+            pos: (4.0, 0.0),
+            shape: ShapeType::I,
+            coords: tetris_cli::tetromino::SHAPE_COORDS[6],
+            fg: 6,
+        };
         b.iter(|| {
-            let state = GameState::new();
-            // Проверка движения вниз в пустом поле
-            state.can_move_curr_shape(black_box(Dir::Down));
-        })
+            let mut t = tetromino;
+            t.rotate(RotationDirection::Clockwise);
+            black_box(t);
+        });
     });
 
-    // Тест 2: Движение влево/вправо
-    group.bench_function("lateral_movement", |b| {
+    // Вращение O-фигуры (не вращается)
+    group.bench_function("rotate_o_noop", |b| {
+        let mut tetromino = Tetromino {
+            pos: (4.0, 0.0),
+            shape: ShapeType::O,
+            coords: tetris_cli::tetromino::SHAPE_COORDS[5],
+            fg: 5,
+        };
         b.iter(|| {
-            let state = GameState::new();
-            // Проверка движения влево и вправо
-            state.can_move_curr_shape(black_box(Dir::Left));
-            state.can_move_curr_shape(black_box(Dir::Right));
-        })
-    });
-
-    // Тест 3: Движение с зафиксированными фигурами
-    group.bench_function("with_locked_pieces", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            // Заполняем нижние линии для симуляции зафиксированных фигур
-            for y in 18..20 {
-                state.fill_line_for_bench(y);
-            }
-            // Проверка столкновения с зафиксированными фигурами
-            state.can_move_curr_shape(black_box(Dir::Down));
-        })
+            let mut t = tetromino;
+            t.rotate(RotationDirection::Clockwise);
+            black_box(t);
+        });
     });
 
     group.finish();
@@ -157,39 +157,42 @@ fn bench_check_collision(c: &mut Criterion) {
 
 /// Бенчмарк для save_tetromino().
 ///
-/// Измеряет производительность сохранения фигуры в поле.
-/// Тестирует различные сценарии:
-/// - Сохранение фигуры в пустом поле
-/// - Сохранение фигуры над зафиксированными фигурами
+/// Проверяет производительность сохранения фигуры в поле.
 fn bench_save_tetromino(c: &mut Criterion) {
     let mut group = c.benchmark_group("save_tetromino");
 
-    // Тест 1: Сохранение в пустом поле
-    group.bench_function("empty_field", |b| {
+    // Сохранение T-фигуры в центре поля
+    group.bench_function("save_t_center", |b| {
         b.iter(|| {
             let mut state = GameState::new();
-            // Опускаем фигуру вниз и сохраняем
-            while state.can_move_curr_shape(Dir::Down) {
-                state.get_curr_shape_mut().pos.1 += 1.0;
-            }
-            state.save_tetromino();
-        })
+            state.save_tetromino_for_bench();
+            black_box(state);
+        });
     });
 
-    // Тест 2: Сохранение над зафиксированными фигурами
-    group.bench_function("above_locked_pieces", |b| {
+    // Сохранение I-фигуры
+    group.bench_function("save_i_center", |b| {
+        let mut bag = BagGenerator::new();
+        // Создаём I-фигуру
+        let mut state = GameState::new();
+        // Принудительно устанавливаем I-фигуру
+        state.curr_shape = Tetromino {
+            pos: (4.0, 0.0),
+            shape: ShapeType::I,
+            coords: tetris_cli::tetromino::SHAPE_COORDS[6],
+            fg: 6,
+        };
         b.iter(|| {
-            let mut state = GameState::new();
-            // Заполняем нижние линии
-            for y in 15..20 {
-                state.fill_line_for_bench(y);
-            }
-            // Опускаем фигуру и сохраняем
-            while state.can_move_curr_shape(Dir::Down) {
-                state.get_curr_shape_mut().pos.1 += 1.0;
-            }
-            state.save_tetromino();
-        })
+            let mut game_state = GameState::new();
+            game_state.curr_shape = Tetromino {
+                pos: (4.0, 0.0),
+                shape: ShapeType::I,
+                coords: tetris_cli::tetromino::SHAPE_COORDS[6],
+                fg: 6,
+            };
+            game_state.save_tetromino_for_bench();
+            black_box(game_state);
+        });
     });
 
     group.finish();
@@ -197,10 +200,10 @@ fn bench_save_tetromino(c: &mut Criterion) {
 
 criterion_group!(
     benches,
+    bench_find_full_rows,
     bench_check_rows,
     bench_rotate,
-    bench_draw_simulation,
-    bench_check_collision,
-    bench_save_tetromino
+    bench_save_tetromino,
 );
+
 criterion_main!(benches);

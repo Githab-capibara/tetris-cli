@@ -194,10 +194,10 @@ fn test_rotation_negative_y_boundary() {
     };
 
     // Вращаем несколько раз
-    tetromino.rotate(Dir::Right);
-    tetromino.rotate(Dir::Right);
-    tetromino.rotate(Dir::Right);
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
 
     // После 4 вращений координаты должны вернуться к исходным
     assert_eq!(
@@ -221,8 +221,8 @@ fn test_rotation_overflow_protection() {
 
     // Многократное вращение не должно вызывать переполнения
     for _ in 0..100 {
-        tetromino.rotate(Dir::Right);
-        tetromino.rotate(Dir::Left);
+        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate_old(Dir::Left);
     }
 
     // Тест проходит, если не было паники от переполнения
@@ -449,12 +449,11 @@ fn test_hex_encode_length() {
 // ПРОБЛЕМА 9: unreachable!() для Dir::Down
 // ============================================================================
 
-/// Тест 9.1: Проверка unreachable!() для Dir::Down
+/// Тест 9.1: Проверка что Dir::Down игнорируется
 ///
-/// Проверяет, что Dir::Down вызывает unreachable!() в rotate().
+/// Проверяет, что Dir::Down больше не вызывает панику, а тихо игнорируется.
 #[test]
-#[should_panic(expected = "Dir::Down не используется для вращения")]
-fn test_rotate_down_unreachable() {
+fn test_rotate_down_no_panic() {
     let mut tetromino = Tetromino {
         pos: (4.0, 0.0),
         shape: ShapeType::T,
@@ -462,8 +461,17 @@ fn test_rotate_down_unreachable() {
         fg: 0,
     };
 
-    // Dir::Down должен вызывать panic с unreachable!()
-    tetromino.rotate(Dir::Down);
+    // Сохраняем исходные координаты
+    let original_coords = tetromino.coords;
+
+    // Dir::Down теперь игнорируется без паники
+    tetromino.rotate_old(Dir::Down);
+
+    // Координаты не должны измениться
+    assert_eq!(
+        tetromino.coords, original_coords,
+        "Dir::Down должен игнорироваться без изменения координат"
+    );
 }
 
 /// Тест 9.2: Проверка вращения влево
@@ -479,7 +487,7 @@ fn test_rotate_left_correct() {
     };
 
     // Вращаем влево (против часовой)
-    tetromino.rotate(Dir::Left);
+    tetromino.rotate_old(Dir::Left);
 
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (y, -x)
@@ -503,7 +511,7 @@ fn test_rotate_right_correct() {
     };
 
     // Вращаем вправо (по часовой)
-    tetromino.rotate(Dir::Right);
+    tetromino.rotate_old(Dir::Right);
 
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (-y, x)

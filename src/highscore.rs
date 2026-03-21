@@ -282,6 +282,31 @@ impl SaveData {
         }
     }
 
+    /// Сохранить значение рекорда в файл с возвратом Result.
+    ///
+    /// # Аргументы
+    /// * `high_score` - значение рекорда для сохранения
+    ///
+    /// # Возвращает
+    /// - `Ok(())` - рекорд успешно сохранён
+    /// - `Err(ConfigError)` - ошибка при сохранении
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::highscore::SaveData;
+    /// match SaveData::save_value_result(1000) {
+    ///     Ok(()) => println!("Рекорд успешно сохранён"),
+    ///     Err(e) => eprintln!("Ошибка сохранения: {}", e),
+    /// }
+    /// ```
+    /// Исправление #2: используем u128 для предотвращения переполнения
+    #[allow(dead_code)]
+    pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
+        let save = Self::from_value(high_score);
+        store(APP_NAME, save)
+            .map_err(|e| ConfigError::IoError(format!("Ошибка сохранения рекорда: {}", e)))
+    }
+
     /// Проверить целостность рекорда и вернуть значение.
     ///
     /// # Возвращает
@@ -358,7 +383,8 @@ fn sanitize_player_name(name: &str) -> String {
         .filter(|&c| {
             // Разрешаем только ASCII alphanumeric и безопасные символы
             // Запрещаем эмодзи, контрольные символы и другие опасные Unicode-символы
-            is_valid_name_char(c)
+            // Явная фильтрация control characters (c.is_control())
+            !c.is_control() && is_valid_name_char(c)
         })
         .take(20)
         .collect::<String>();

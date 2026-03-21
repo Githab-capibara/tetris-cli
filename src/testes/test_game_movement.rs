@@ -13,6 +13,7 @@
 
 use crate::game::{Dir, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::tetromino::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-14: Движение влево/вправо для всех 7 фигур
@@ -786,8 +787,10 @@ fn test_movement_after_clockwise_rotation() {
     let mut state = GameState::new();
 
     // Вращаем по часовой
-    if state.can_rotate_curr_shape(Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
 
         // Проверяем возможность движения после вращения
         let can_move =
@@ -805,8 +808,10 @@ fn test_movement_after_counter_clockwise_rotation() {
     let mut state = GameState::new();
 
     // Вращаем против часовой
-    if state.can_rotate_curr_shape(Dir::Left) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Left);
+    if state.can_rotate_curr_shape(RotationDirection::CounterClockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::CounterClockwise);
 
         // Проверяем возможность движения
         let can_move =
@@ -826,8 +831,10 @@ fn test_movement_after_full_rotation_cycle() {
 
     // 4 вращения по часовой
     for _ in 0..4 {
-        if state.can_rotate_curr_shape(Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
     }
 
@@ -855,15 +862,15 @@ fn test_rotation_at_wall_and_movement() {
 
     // Используем rotate_with_wall_kick для вращения у стены
     // Это правильный способ вращения с учётом wall kick
-    if state.can_rotate_curr_shape(Dir::Right) {
-        state.rotate_with_wall_kick(Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state.rotate_with_wall_kick(RotationDirection::Clockwise);
     }
 
     // После вращения у стены должно быть возможно движение вправо
     // Примечание: это известный edge case - некоторые фигуры могут оставаться у стены
     let can_move_right = state.can_move_curr_shape(Dir::Right);
     assert!(
-        can_move_right || !state.can_rotate_curr_shape(Dir::Right),
+        can_move_right || !state.can_rotate_curr_shape(RotationDirection::Clockwise),
         "После вращения у стены должно быть возможно движение вправо, или вращение должно быть недоступно"
     );
 }

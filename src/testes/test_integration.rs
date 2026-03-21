@@ -13,7 +13,7 @@
 use crate::controls::ControlsConfig;
 use crate::game::{Dir, GameMode, GameState};
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Полный игровой цикл
@@ -150,8 +150,8 @@ fn test_rotation_in_game_context() {
     state.get_curr_shape_mut().pos = (5.0, 10.0);
 
     // Проверяем возможность вращения
-    let can_rotate_right = state.can_rotate_curr_shape(Dir::Right);
-    let can_rotate_left = state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     // Вращение должно быть возможно хотя бы в одном направлении
     // (кроме O-фигуры которая не вращается)
@@ -344,7 +344,7 @@ fn test_rotation_collision_interaction() {
     let state = GameState::new();
 
     // Проверяем, что can_rotate_curr_shape использует check_collision
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 
     // В пустом поле вращение должно быть возможно (если фигура не у границы)
     // Тест просто проверяет, что метод работает и возвращает результат
@@ -432,7 +432,7 @@ fn test_performance_rotation() {
 
     // Выполняем 10000 вращений
     for _ in 0..10_000 {
-        tetromino.rotate(Dir::Right);
+        tetromino.rotate_old(Dir::Right);
     }
 
     let duration = start.elapsed();

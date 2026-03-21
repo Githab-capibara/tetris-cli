@@ -13,7 +13,7 @@
 
 use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Взаимодействие game + tetromino
@@ -82,7 +82,7 @@ fn test_piece_rotation_in_gamestate() {
     let state = GameState::new();
 
     // Проверяем, что вращение возможно
-    let _can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
+    let _can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 
     // В начале игры вращение должно быть возможно
     // Тест успешно завершён, если код достиг этой строки
@@ -357,7 +357,7 @@ fn test_piece_rotation_on_command() {
     let state = GameState::new();
 
     // Проверяем, что вращение возможно
-    let _can_rotate = state.can_rotate_curr_shape(crate::game::Dir::Right);
+    let _can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 
     // В начале игры вращение обычно возможно
     // Тест успешно завершён, если код достиг этой строки
@@ -660,7 +660,7 @@ fn test_fast_piece_rotation() {
     let start = std::time::Instant::now();
 
     for _ in 0..10_000 {
-        t.rotate(crate::game::Dir::Right);
+        t.rotate(RotationDirection::Clockwise);
     }
 
     let duration = start.elapsed();
@@ -748,8 +748,10 @@ fn test_overall_system_performance() {
 
     // Вращаем фигуру
     for _ in 0..100 {
-        if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-            state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
         }
     }
 

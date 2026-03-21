@@ -6,6 +6,7 @@
 //! - Тесты анимации призрачной фигуры (10 тестов)
 
 use crate::game::GameState;
+use crate::tetromino::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Анимация Hard Drop
@@ -90,7 +91,7 @@ fn test_animation_hard_drop_blocks_down() {
 /// Тест 6: Проверка что Hard Drop работает для всех фигур
 #[test]
 fn test_animation_hard_drop_all_shapes() {
-    use crate::tetromino::{ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,
@@ -212,7 +213,7 @@ fn test_animation_no_panic() {
 /// Тест 14: Проверка что анимация работает с разными фигурами
 #[test]
 fn test_animation_different_shapes() {
-    use crate::tetromino::{ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,
@@ -328,8 +329,10 @@ fn test_animation_after_hold() {
 fn test_animation_after_rotation() {
     let mut state = GameState::new();
 
-    if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     while state.can_move_curr_shape(crate::game::Dir::Down) {
@@ -405,7 +408,7 @@ fn test_animation_can_move_ghost_shape() {
 /// Тест 27: Проверка что призрачная фигура работает для всех типов
 #[test]
 fn test_animation_ghost_all_shapes() {
-    use crate::tetromino::{ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,
@@ -451,8 +454,10 @@ fn test_animation_ghost_after_rotation() {
     let mut state = GameState::new();
 
     // Вращаем фигуру
-    if state.can_rotate_curr_shape(crate::game::Dir::Right) {
-        state.get_curr_shape_mut().rotate(crate::game::Dir::Right);
+    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     let ghost = *state.get_curr_shape();

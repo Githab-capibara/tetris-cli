@@ -10,6 +10,7 @@
 //! Все тесты проверяют отдельные аспекты свойств фигур.
 
 use crate::game::Dir;
+use crate::tetromino::RotationDirection;
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================
@@ -557,7 +558,7 @@ fn test_t_piece_after_one_clockwise_rotation() {
         fg: 0,
     };
 
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
 
     // После вращения по часовой: (x,y) -> (-y,x)
     // Исходные: (-1,0), (0,0), (1,0), (0,1)
@@ -579,8 +580,8 @@ fn test_t_piece_after_two_rotations() {
         fg: 0,
     };
 
-    t.rotate(Dir::Right);
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
+    t.rotate_old(Dir::Right);
 
     // После 2 вращений фигура перевёрнута
     assert_ne!(
@@ -600,7 +601,7 @@ fn test_t_piece_after_three_rotations() {
     };
 
     for _ in 0..3 {
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Right);
     }
 
     // 3 вращения по часовой = 1 против часовой
@@ -621,7 +622,7 @@ fn test_t_piece_after_four_rotations() {
     };
 
     for _ in 0..4 {
-        t.rotate(Dir::Right);
+        t.rotate_old(Dir::Right);
     }
 
     assert_eq!(
@@ -641,7 +642,7 @@ fn test_l_piece_after_rotation() {
     };
 
     let original_coords = t.coords;
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
 
     assert_ne!(
         t.coords, original_coords,
@@ -662,7 +663,7 @@ fn test_i_piece_after_rotation_vertical_to_horizontal() {
     // Исходная I-фигура вертикальная: (0,-1), (0,0), (0,1), (0,2)
     assert_eq!(t.coords[0].0, 0, "Исходно I-фигура вертикальна (x=0)");
 
-    t.rotate(Dir::Right);
+    t.rotate_old(Dir::Right);
 
     // После вращения I-фигура становится горизонтальной
     // Все блоки должны быть на одной строке (y=0 для центрального блока)

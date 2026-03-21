@@ -14,7 +14,7 @@
 //! ```no_run
 //! use tetris_cli::io::{Canvas, KeyReader};
 //!
-//! let mut canvas = Canvas::new();
+//! let mut canvas = Canvas::new().expect("Не удалось создать Canvas");
 //! let mut reader = KeyReader::new();
 //!
 //! // Отрисовка текста
@@ -146,13 +146,15 @@ impl From<std::io::Error> for IoError {
 /// use tetris_cli::io::Canvas;
 /// use termion::color::{White, Reset};
 ///
-/// let mut canvas = Canvas::new()?;
-/// canvas.draw_string("Текст", (1, 1), &White, &Reset);
-/// canvas.flush();
+/// fn main() -> Result<(), tetris_cli::io::IoError> {
+///     let mut canvas = Canvas::new()?;
+///     canvas.draw_string("Текст", (1, 1), &White, &Reset);
+///     canvas.flush();
 ///
-/// // После завершения игры
-/// canvas.reset();
-/// # Ok::<(), tetris_cli::io::IoError>(())
+///     // После завершения игры
+///     canvas.reset();
+///     Ok(())
+/// }
 /// ```
 pub struct Canvas {
     out: RawTerminal<Stdout>,
@@ -175,8 +177,18 @@ impl Drop for Canvas {
 }
 
 impl Default for Canvas {
+    /// Возвращает Canvas по умолчанию.
+    ///
+    /// # Panics
+    /// Паникует, если не удалось инициализировать терминал (например, если stdout не является TTY).
+    ///
+    /// # Примечания
+    /// Используется значение по умолчанию для терминала.
+    /// При ошибке инициализации выводит подробное сообщение о возможной причине.
     fn default() -> Self {
-        Self::new().expect("Не удалось инициализировать Canvas")
+        Self::new().expect(
+            "Не удалось инициализировать Canvas: проверьте, что терминал поддерживает ANSI и доступен"
+        )
     }
 }
 
@@ -279,7 +291,7 @@ impl Canvas {
     /// use tetris_cli::io::Canvas;
     /// use termion::color::{White, Reset};
     ///
-    /// let mut canvas = Canvas::new();
+    /// let mut canvas = Canvas::new().expect("Не удалось создать Canvas");
     /// canvas.draw_string("Счёт: 100", (5, 2), &White, &Reset);
     /// canvas.flush();
     /// ```
@@ -374,6 +386,11 @@ impl KeyReader {
     /// **Метод не поддерживает многобайтовые символы UTF-8** (кириллица, emoji и другие Unicode-символы).
     /// При вводе многобайтовых символов метод возвращает `None`, предварительно прочитав все байты символа.
     /// Это означает, что для локализации игры на языки с многобайтовыми символами потребуется доработка.
+    ///
+    /// ## Ограничения
+    /// - Поддерживаются только ASCII-символы и управляющие коды (0x00-0x7F)
+    /// - Многобайтовые UTF-8 символы игнорируются (возвращается None)
+    /// - Для поддержки Unicode используйте расширенную версию API
     ///
     /// # Примечания
     /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности

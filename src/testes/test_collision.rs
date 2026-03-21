@@ -9,7 +9,7 @@
 
 use crate::game::{Dir, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{ShapeType, SHAPE_COORDS};
+use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-15: Столкновения со стенами
@@ -506,8 +506,8 @@ fn test_collision_rotation_with_piece_nearby() {
     }
 
     // Вращение должно быть возможно
-    let can_rotate =
-        state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise)
+        || state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
     let _ = can_rotate;
 }
 
@@ -584,7 +584,7 @@ fn test_collision_rotation_blocked_left() {
     }
 
     // Вращение может быть заблокировано
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -601,7 +601,7 @@ fn test_collision_rotation_blocked_right() {
     }
 
     // Вращение может быть заблокировано
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -616,7 +616,7 @@ fn test_collision_rotation_blocked_floor() {
     }
 
     // Вращение всё ещё может быть возможно
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -626,7 +626,7 @@ fn test_collision_rotation_uses_check() {
     let state = GameState::new();
 
     // Проверяем что метод работает
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -637,7 +637,7 @@ fn test_collision_rotation_check_t() {
     state.get_curr_shape_mut().shape = ShapeType::T;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::T as usize];
 
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -648,7 +648,7 @@ fn test_collision_rotation_check_l() {
     state.get_curr_shape_mut().shape = ShapeType::L;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::L as usize];
 
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -659,7 +659,7 @@ fn test_collision_rotation_check_i() {
     state.get_curr_shape_mut().shape = ShapeType::I;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
 
-    let can_rotate = state.can_rotate_curr_shape(Dir::Right);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let _ = can_rotate;
 }
 
@@ -676,7 +676,7 @@ fn test_collision_rotation_no_panic() {
     }
 
     // Вращение не должно вызывать панику
-    let _ = state.can_rotate_curr_shape(Dir::Right);
+    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 }
 
 /// Тест 44: Проверка что вращение работает в центре поля
@@ -688,8 +688,8 @@ fn test_collision_rotation_in_center() {
     state.get_curr_shape_mut().pos.1 = 10.0;
 
     // В центре поля вращение должно быть возможно
-    let can_rotate =
-        state.can_rotate_curr_shape(Dir::Right) || state.can_rotate_curr_shape(Dir::Left);
+    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise)
+        || state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     assert!(can_rotate, "В центре поля вращение должно быть возможно");
 }
@@ -702,7 +702,7 @@ fn test_collision_rotation_o_piece() {
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
 
     // O-фигура не вращается, но метод не должен паниковать
-    let _ = state.can_rotate_curr_shape(Dir::Right);
+    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 }
 
 // ============================================================================
