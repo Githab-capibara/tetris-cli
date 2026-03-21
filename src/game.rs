@@ -1621,7 +1621,23 @@ impl GameState {
         temp_shape.rotate(dir);
 
         // Проверка вращения без смещения по направлению
-        self.check_rotation_collision(&temp_shape.coords, temp_shape.pos)
+        if self.check_rotation_collision(&temp_shape.coords, temp_shape.pos) {
+            return true;
+        }
+
+        // Wall kick: пробуем смещения если прямое вращение невозможно
+        for (offset_x, offset_y) in WALL_KICK_OFFSETS {
+            let mut kicked_shape = self.curr_shape;
+            kicked_shape.pos.0 += offset_x as f32;
+            kicked_shape.pos.1 += offset_y as f32;
+            kicked_shape.rotate(dir);
+
+            if self.check_rotation_collision(&kicked_shape.coords, kicked_shape.pos) {
+                return true;
+            }
+        }
+
+        false
     }
 
     /// Попытаться вратить фигуру со смещением (базовый wall kick).
