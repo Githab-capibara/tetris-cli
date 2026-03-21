@@ -146,30 +146,39 @@ pub const LAND_TIME_DELAY_S: f64 = 0.1;
 pub const SPD_INC: f32 = 0.05;
 
 /// Очки за заполненную линию.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
 pub const ROW_SCORE_INC: u128 = 100;
 
 /// Очки за фигуру.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
 pub const PIECE_SCORE_INC: u128 = 100;
 
 /// Множитель очков за падение.
 pub const PIECE_SCORE_FALL_MULT: f32 = 50.0;
 
 /// Очки за ячейку при Soft Drop.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
 pub const SOFT_DROP_POINTS: u128 = 1;
 
 /// Очки за ячейку при Hard Drop.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
 pub const HARD_DROP_POINTS: u128 = 2;
 
 /// Бонус за комбо: 50 × (номер комбо - 1).
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
 pub const COMBO_BONUS: u128 = 50;
 
 /// Количество линий для повышения уровня.
 pub const LINES_PER_LEVEL: u32 = 10;
+
+/// Ширина игрового поля в блоках.
+/// Алиас на GRID_WIDTH для лучшей читаемости кода.
+#[allow(dead_code)]
+pub const FIELD_WIDTH: usize = crate::io::GRID_WIDTH;
+
+/// Высота игрового поля в блоках.
+/// Алиас на GRID_HEIGHT для лучшей читаемости кода.
+#[allow(dead_code)]
+pub const FIELD_HEIGHT: usize = crate::io::GRID_HEIGHT;
+
+/// Смещение игрового поля по горизонтали при отрисовке.
+#[allow(dead_code)]
+pub const FIELD_OFFSET_X: usize = 5;
 
 /// Количество линий для режима спринт.
 pub const SPRINT_LINES: u32 = 40;
@@ -454,7 +463,6 @@ impl GameStats {
 /// - Режим игры
 pub struct GameState {
     /// Текущий счёт.
-    /// Исправление #2: используем u128 для предотвращения переполнения счёта
     score: u128,
     /// Текущий уровень.
     level: u32,
@@ -639,7 +647,6 @@ impl GameState {
     ///
     /// # Примечания
     /// Цикл работает до проигрыша или выхода пользователя (Backspace)
-    /// Исправление #2: возвращаем u128 для предотвращения переполнения счёта
     pub fn play(
         &mut self,
         cnv: &mut Canvas,
@@ -756,70 +763,82 @@ impl GameState {
         match key {
             Some(KEY_BACKSPACE) => return Some(UpdateEndState::Quit), // Backspace — выход в меню
             Some(b'p') => return Some(UpdateEndState::Pause),         // p — пауза
-            Some(b'a') => {
-                // Перемещение влево
-                if self.can_move_curr_shape(Dir::Left) {
-                    self.curr_shape.pos.0 -= 1.0;
-                }
-            }
-            Some(b'd') => {
-                // Перемещение вправо
-                if self.can_move_curr_shape(Dir::Right) {
-                    self.curr_shape.pos.0 += 1.0;
-                }
-            }
-            Some(b'q') => {
-                // Вращение против часовой стрелки со wall kick
-                self.rotate_with_wall_kick(Dir::Left);
-            }
-            Some(b'e') => {
-                // Вращение по часовой стрелке со wall kick
-                self.rotate_with_wall_kick(Dir::Right);
-            }
-            Some(b'w') => {
-                // Hard Drop: мгновенное падение с бонусными очками
-                let start_y = self.curr_shape.pos.1;
-                while self.can_move_curr_shape(Dir::Down) {
-                    self.curr_shape.pos.1 += 1.0;
-                }
-                // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
-                // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
-                // Исправление #1: используем u32::MAX вместо u16::MAX для предотвращения переполнения f32
-                let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
-                    .max(0.0)
-                    .min(u32::MAX as f32);
-                let drop_distance = if drop_distance_f32.is_finite() {
-                    drop_distance_f32 as u64
-                } else {
-                    0 // Защита от NaN/infinity
-                };
-                // Бонусные очки: 2 за каждую ячейку высоты
-                self.score = self
-                    .score
-                    .saturating_add((drop_distance as u128) * HARD_DROP_POINTS);
-                // Фиксируем таймер для немедленного приземления
-                self.land_timer = 0.0;
-                // Устанавливаем флаг для анимации
-                self.is_hard_dropping = true;
-            }
-            Some(b's') => {
-                // Soft Drop: ускоренное падение при зажатии
-                if self.can_move_curr_shape(Dir::Down) {
-                    self.curr_shape.pos.1 += 1.0;
-                    // При каждом успешном шаге вниз считаем дистанцию для очков
-                    self.soft_drop_distance = self.soft_drop_distance.saturating_add(1);
-                }
-            }
-            Some(b'c' | b'C') => {
-                // Удержание фигуры (можно использовать один раз за ход)
-                if self.can_hold {
-                    self.hold_shape();
-                }
-            }
+            Some(b'a') => self.handle_movement_input(Dir::Left),
+            Some(b'd') => self.handle_movement_input(Dir::Right),
+            Some(b'q') => self.handle_rotation_input(Dir::Left),
+            Some(b'e') => self.handle_rotation_input(Dir::Right),
+            Some(b'w') => self.handle_hard_drop(),
+            Some(b's') => self.handle_soft_drop(),
+            Some(b'c' | b'C') => self.handle_hold_input(),
             Some(_) | None => {}
         }
 
         None
+    }
+
+    /// Обработка движения влево/вправо.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление движения
+    fn handle_movement_input(&mut self, dir: Dir) {
+        if self.can_move_curr_shape(dir) {
+            match dir {
+                Dir::Left => self.curr_shape.pos.0 -= 1.0,
+                Dir::Right => self.curr_shape.pos.0 += 1.0,
+                Dir::Down => {} // Down не используется для движения
+            }
+        }
+    }
+
+    /// Обработка вращения фигуры.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление вращения
+    fn handle_rotation_input(&mut self, dir: Dir) {
+        self.rotate_with_wall_kick(dir);
+    }
+
+    /// Обработка Hard Drop (мгновенное падение).
+    fn handle_hard_drop(&mut self) {
+        let start_y = self.curr_shape.pos.1;
+        while self.can_move_curr_shape(Dir::Down) {
+            self.curr_shape.pos.1 += 1.0;
+        }
+        // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
+        // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
+        // Исправление #1: используем u32::MAX вместо u16::MAX для предотвращения переполнения f32
+        let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
+            .max(0.0)
+            .min(u32::MAX as f32);
+        let drop_distance = if drop_distance_f32.is_finite() {
+            drop_distance_f32 as u64
+        } else {
+            0 // Защита от NaN/infinity
+        };
+        // Бонусные очки: 2 за каждую ячейку высоты
+        self.score = self
+            .score
+            .saturating_add((drop_distance as u128) * HARD_DROP_POINTS);
+        // Фиксируем таймер для немедленного приземления
+        self.land_timer = 0.0;
+        // Устанавливаем флаг для анимации
+        self.is_hard_dropping = true;
+    }
+
+    /// Обработка Soft Drop (ускоренное падение).
+    fn handle_soft_drop(&mut self) {
+        if self.can_move_curr_shape(Dir::Down) {
+            self.curr_shape.pos.1 += 1.0;
+            // При каждом успешном шаге вниз считаем дистанцию для очков
+            self.soft_drop_distance = self.soft_drop_distance.saturating_add(1);
+        }
+    }
+
+    /// Обработка удержания фигуры (Hold).
+    fn handle_hold_input(&mut self) {
+        if self.can_hold {
+            self.hold_shape();
+        }
     }
 
     /// Обработка падения фигуры.
@@ -866,7 +885,7 @@ impl GameState {
         }
 
         // Фиксация фигуры и начисление очков
-        // Исправление #2: добавлена защита от переполнения при расчёте очков за падение
+        // Добавлена защита от переполнения при расчёте очков за падение
         // Используем u128::MAX для предотвращения переполнения f32
         let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT)
             .max(0.0)
@@ -896,7 +915,7 @@ impl GameState {
             // Удаление линий — увеличиваем комбо
             self.stats.combo_counter = self.stats.combo_counter.saturating_add(1);
             // Бонус за комбо: 50 × (комбо - 1)
-            // Исправление #2: используем u128 для предотвращения переполнения
+            // Используем u128 для предотвращения переполнения
             if self.stats.combo_counter > 1 {
                 self.score = self
                     .score
@@ -969,13 +988,6 @@ impl GameState {
     }
 
     /// Внутренняя реализация сохранения фигуры.
-    /// Вынесена отдельно для использования в бенчмарках и тестах.
-    #[cfg(test)]
-    pub fn save_tetromino_for_bench(&mut self) {
-        self.save_tetromino_impl();
-    }
-
-    /// Внутренняя реализация сохранения фигуры.
     fn save_tetromino_impl(&mut self) {
         let (shape_x, shape_y) = self.curr_shape.pos;
         // Безопасное преобразование координат: позиция фигуры всегда в пределах поля
@@ -992,6 +1004,66 @@ impl GameState {
                 self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
         }
+    }
+
+    // ========================================================================
+    // МЕТОДЫ ДЛЯ БЕНЧМАРКОВ (feature = "bench")
+    // ========================================================================
+
+    /// Заполнить указанную линию блоками для бенчмарков.
+    ///
+    /// # Аргументы
+    /// * `line` - номер линии для заполнения (0..GRID_HEIGHT)
+    ///
+    /// # Примечания
+    /// Метод доступен только при включённой фиче `bench`.
+    #[cfg(feature = "bench")]
+    #[allow(dead_code)]
+    pub fn fill_line_for_bench(&mut self, line: usize) {
+        if line < GRID_HEIGHT {
+            for x in 0..GRID_WIDTH {
+                self.blocks[line][x] = 0; // Заполняем первым цветом
+            }
+        }
+    }
+
+    /// Очистить заполненные линии для бенчмарков.
+    ///
+    /// # Примечания
+    /// Метод доступен только при включённой фиче `bench`.
+    #[cfg(feature = "bench")]
+    #[allow(dead_code)]
+    pub fn clear_lines_for_bench(&mut self) {
+        let (rows_mask, _remove_count) = self.find_full_rows();
+        if rows_mask != 0 {
+            self.remove_rows(rows_mask);
+        }
+    }
+
+    /// Получить доступ к игровому полю для бенчмарков.
+    ///
+    /// # Возвращает
+    /// Ссылку на массив блоков поля
+    ///
+    /// # Примечания
+    /// Метод доступен только при включённой фиче `bench`.
+    #[cfg(feature = "bench")]
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &self.blocks
+    }
+
+    /// Сохранить текущую фигуру в поле (для бенчмарков).
+    ///
+    /// # Примечания
+    /// Метод доступен только при включённой фиче `bench`.
+    /// Помечен как #[must_use] для предотвращения предупреждений dead_code.
+    #[cfg(feature = "bench")]
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn save_tetromino_for_bench(&mut self) {
+        self.save_tetromino_impl();
     }
 
     /// Удержать текущую фигуру и получить следующую.
@@ -1153,7 +1225,7 @@ impl GameState {
                 self.level = new_level;
                 // Бонус за повышение уровня: 500 × (номер уровня - 1)
                 // Уровень 2: 500, Уровень 3: 1000, Уровень 11: 5000
-                // Исправление #2: используем u128 для предотвращения переполнения
+                // Используем u128 для предотвращения переполнения
                 self.score = self.score.saturating_add(500 * (new_level - 1) as u128);
             }
 
@@ -1176,7 +1248,7 @@ impl GameState {
             // Используем битовый сдвиг для эффективности: 1 << n = 2^n
             // remove_count гарантированно > 0 благодаря проверке выше
             // =================================================================
-            // Исправление #2: используем u128 для предотвращения переполнения
+            // Используем u128 для предотвращения переполнения
             self.score = self
                 .score
                 .saturating_add(ROW_SCORE_INC * (1u128 << (remove_count - 1)));
@@ -1669,7 +1741,6 @@ impl GameState {
     }
 
     /// Получить текущий счёт.
-    /// Исправление #2: возвращаем u128 для предотвращения переполнения
     #[must_use]
     #[allow(dead_code)]
     pub fn get_score(&self) -> u128 {
@@ -1742,29 +1813,7 @@ impl GameState {
     /// // Доступ к клетке поля
     /// let cell = blocks[0][0];
     /// ```
-    #[doc(hidden)]
-    #[must_use]
-    #[cfg(feature = "bench")]
-    pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &self.blocks
-    }
-
-    /// Заполнить линию для бенчмарка check_rows().
-    #[doc(hidden)]
-    #[cfg(feature = "bench")]
-    pub fn fill_line_for_bench(&mut self, y: usize) {
-        if y < GRID_HEIGHT {
-            self.blocks[y] = [0; GRID_WIDTH]; // Заполняем цветом 0
-        }
-    }
-
-    /// Очистить линии для бенчмарка check_rows().
-    #[doc(hidden)]
-    #[cfg(feature = "bench")]
-    pub fn clear_lines_for_bench(&mut self) {
-        let _ = self.check_rows();
-    }
-
+    ///
     /// Получить флаг can_hold (для тестов).
     #[allow(dead_code)]
     #[must_use]
@@ -1831,7 +1880,6 @@ impl GameState {
     /// state.add_score_no_check(1000);
     /// // score будет увеличено на 1000
     /// ```
-    /// Исправление #2: используем u128 для предотвращения переполнения
     #[allow(dead_code)]
     pub fn add_score_no_check(&mut self, points: u128) {
         self.score = self.score.saturating_add(points);

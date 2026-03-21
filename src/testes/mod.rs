@@ -130,3 +130,6 @@ pub mod test_fixes_audit;
 
 // Тесты качества кода (24 теста - по 3 на каждую из 8 категорий)
 pub mod test_code_quality;
+
+// Тесты предотвращения регрессии исправлений аудита (54 теста - по 3 на каждую из 18 проблем)
+pub mod test_audit_fixes_prevention;

@@ -370,11 +370,23 @@ impl Tetromino {
         // Вращение работает только с Dir::Left и Dir::Right
         for i in 0..4 {
             let (x, y) = self.coords[i];
-            match dir {
-                Dir::Left => self.coords[i] = (y, -x), // Поворот против часовой
-                Dir::Right => self.coords[i] = (-y, x), // Поворот по часовой
+            let (new_x, new_y) = match dir {
+                Dir::Left => (y, -x),  // Поворот против часовой
+                Dir::Right => (-y, x), // Поворот по часовой
                 Dir::Down => unreachable!("Dir::Down не используется для вращения"),
+            };
+
+            // Проверка границ: координаты должны оставаться в пределах i16
+            // Это предотвращает переполнение при экстремальных значениях
+            if !(i16::MIN / 2..=i16::MAX / 2).contains(&new_x)
+                || !(i16::MIN / 2..=i16::MAX / 2).contains(&new_y)
+            {
+                // Пропускаем вращение если координаты выходят за безопасные пределы
+                // Это защищает от переполнения при последующих вращениях
+                continue;
             }
+
+            self.coords[i] = (new_x, new_y);
         }
     }
 }

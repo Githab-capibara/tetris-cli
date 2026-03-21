@@ -13,6 +13,7 @@
 
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 // ===========================================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -391,9 +392,11 @@ impl Leaderboard {
     ///
     /// # Примечания
     /// Реализовано rate limiting: не более MAX_ENTRIES_PER_MINUTE записей в минуту.
-    /// Исправление #2: используем u128 для предотвращения переполнения
-    /// Исправление #4: валидация timestamps (отклоняем будущие времена)
+    /// Используем u128 для предотвращения переполнения
+    /// Валидация timestamps (отклоняем будущие времена)
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
+        use std::time::{SystemTime, UNIX_EPOCH};
+
         // Rate limiting: проверяем количество записей за последнюю минуту
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
@@ -414,14 +417,12 @@ impl Leaderboard {
         }
 
         // Добавление новой записи времени для rate limiting
-        // Исправление #4: используем monotonic clock для защиты от подделки timestamps
-        // Instant::now() использует monotonic clock, который не зависит от системных часов
-
-        // Для rate limiting используем относительное время (elapsed)
-        // Это защищает от атак с изменением системного времени
-        static START_TIME: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
-        let start = START_TIME.get_or_init(std::time::Instant::now);
-        let current_time = start.elapsed().as_millis() as u64;
+        // Используем SystemTime::now() для защиты от подделки timestamps
+        // Получаем время в миллисекундах с UNIX epoch
+        let current_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_else(|_| Duration::from_secs(0))
+            .as_millis() as u64;
 
         self.recent_entry_times.push(current_time);
 
@@ -441,11 +442,14 @@ impl Leaderboard {
     }
 
     /// Очистить старые записи времён (старше 1 минуты).
-    /// Исправление #4: используем monotonic clock для защиты от подделки
+    /// Используем SystemTime для защиты от подделки
     fn cleanup_old_entry_times(&mut self) {
-        static START_TIME: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
-        let start = START_TIME.get_or_init(std::time::Instant::now);
-        let current_time = start.elapsed().as_millis() as u64;
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        let current_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_else(|_| Duration::from_secs(0))
+            .as_millis() as u64;
         let one_minute_ms = 60_000;
 
         self.recent_entry_times
