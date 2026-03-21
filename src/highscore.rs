@@ -139,7 +139,7 @@ impl SaveData {
             Ok(data) => {
                 // Дополнительная проверка целостности
                 // Исправление: используем verify_and_get_score() вместо deprecated assert_hs()
-                if data.verify_and_get_score().unwrap_or(0) == 0 && data.high_score != 0 {
+                if data.verify_and_get_score().is_none() && data.high_score != 0 {
                     eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
                     return Self::default();
                 }
@@ -307,8 +307,7 @@ impl LeaderboardEntry {
         // для предотвращения лишних аллокаций
         use std::fmt::Write;
         let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 40);
-        write!(salt_and_score, "{}{}{}", salt, valid_name, score)
-            .expect("Failed to write salt_and_score");
+        let _ = write!(salt_and_score, "{}{}{}", salt, valid_name, score);
         let hash = get_hash(&salt_and_score);
 
         Self {
@@ -335,8 +334,7 @@ impl LeaderboardEntry {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         use std::fmt::Write;
         let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 20);
-        write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score)
-            .expect("Failed to write salt_and_score");
+        let _ = write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score);
         let test_hash = get_hash(&salt_and_score);
         self.hash == test_hash
     }
