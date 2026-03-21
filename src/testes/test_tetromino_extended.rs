@@ -7,6 +7,8 @@
 //! - Тесты цветов (10 тестов)
 //! - Тесты Bag Generator (21 тест)
 
+#![allow(deprecated)]
+
 use crate::game::Dir;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 

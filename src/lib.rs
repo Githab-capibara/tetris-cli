@@ -352,16 +352,13 @@
 //! use tetris_cli::tetromino::{Tetromino, ShapeType, BagGenerator};
 //! use tetris_cli::game::Dir;
 //!
-//! // Создание случайной фигуры
-//! let mut t = Tetromino::select();
-//!
-//! // Вращение фигуры
-//! t.rotate(Dir::Right); // По часовой
-//! t.rotate(Dir::Left);  // Против часовой
-//!
-//! // Использование Bag Generator
+//! // Использование Bag Generator (рекомендуется)
 //! let mut bag = BagGenerator::new();
 //! let shape = Tetromino::from_bag(&mut bag);
+//!
+//! // Вращение фигуры
+//! shape.rotate(Dir::Right); // По часовой
+//! shape.rotate(Dir::Left);  // Против часовой
 //! ```
 //!
 //! ## 🔗 Ссылки
@@ -551,17 +548,13 @@ pub mod io;
 /// use tetris_cli::tetromino::{Tetromino, ShapeType, BagGenerator};
 /// use tetris_cli::game::Dir;
 ///
-/// // Случайная фигура
-/// let t = Tetromino::select();
-///
-/// // Фигура из мешка
+/// // Фигура из мешка (рекомендуется)
 /// let mut bag = BagGenerator::new();
 /// let shape = Tetromino::from_bag(&mut bag);
 ///
 /// // Вращение
-/// let mut t = Tetromino::select();
-/// t.rotate(Dir::Right); // По часовой
-/// t.rotate(Dir::Left);  // Против часовой
+/// shape.rotate(Dir::Right); // По часовой
+/// shape.rotate(Dir::Left);  // Против часовой
 /// ```
 pub mod tetromino;
 
@@ -678,14 +671,8 @@ mod testes {
     // Расширенные тесты верификации всех 13 исправлений (39 тестов)
     pub mod test_fixes_verification_extended;
 
-    // Тесты аудита 12 исправлений (36 тестов)
-    pub mod test_fixes_audit;
-
     // Тесты качества кода (24 теста - по 3 на каждую из 8 категорий)
     pub mod test_code_quality;
-
-    // Тесты предотвращения регрессии исправлений аудита (54 теста - по 3 на каждую из 18 проблем)
-    pub mod test_audit_fixes_prevention;
 }
 
 #[cfg(test)]

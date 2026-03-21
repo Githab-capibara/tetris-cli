@@ -9,6 +9,15 @@
 //! 6. contains usage - проверка .contains()
 //! 7. format usage - проверка format!()
 //! 8. cast usage - проверка cast
+//!
+//! ПРИМЕЧАНИЕ: Эти тесты намеренно используют плохие практики кода
+//! для проверки корректной работы clippy и компилятора.
+
+#![allow(clippy::assertions_on_constants)]
+#![allow(clippy::unnecessary_literal_unwrap)]
+#![allow(clippy::useless_format)]
+#![allow(clippy::manual_range_contains)]
+#![allow(clippy::manual_is_ascii_check)]
 
 // ============================================================================
 // КАТЕГОРИЯ 1: dead_code prevention

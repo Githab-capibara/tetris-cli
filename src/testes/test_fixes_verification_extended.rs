@@ -605,9 +605,9 @@ mod get_blocks_for_bench_docs_tests {
         let mut blocks: Vec<Vec<i8>> = vec![vec![-1; GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем поле тестовыми значениями
-        for y in 0..GRID_HEIGHT {
-            for x in 0..GRID_WIDTH {
-                blocks[y][x] = ((x + y) % 10) as i8;
+        for (y, row) in blocks.iter_mut().enumerate().take(GRID_HEIGHT) {
+            for (x, cell) in row.iter_mut().enumerate().take(GRID_WIDTH) {
+                *cell = ((x + y) % 10) as i8;
             }
         }
 

@@ -8,6 +8,8 @@
 //!
 //! Интеграционные тесты проверяют совместную работу модулей.
 
+#![allow(deprecated)]
+
 use crate::controls::ControlsConfig;
 use crate::game::{Dir, GameMode, GameState};
 use crate::highscore::{Leaderboard, SaveData};

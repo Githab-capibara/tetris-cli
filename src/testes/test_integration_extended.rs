@@ -9,6 +9,8 @@
 //!
 //! Все тесты проверяют взаимодействие между компонентами системы.
 
+#![allow(deprecated)]
+
 use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, SaveData};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};

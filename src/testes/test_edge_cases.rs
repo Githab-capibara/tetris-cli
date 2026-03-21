@@ -7,6 +7,8 @@
 //! - Тесты ошибок и исключений (10 тестов)
 //! - Тесты производительности (10 тестов)
 
+#![allow(deprecated)]
+
 use crate::game::{GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
