@@ -8,8 +8,8 @@
 //! - Тесты уровня и скорости (10 тестов)
 
 use crate::game::{
-    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_FALL_MULT,
-    PIECE_SCORE_INC, ROW_SCORE_INC, SOFT_DROP_POINTS, SPD_INC,
+    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES,
+    PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS, SPD_INC,
 };
 
 // ============================================================================
@@ -19,6 +19,7 @@ use crate::game::{
 /// Тест 1: Проверка константы PIECE_SCORE_INC
 #[test]
 fn test_scoring_piece_score_constant() {
+    assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "Очки за фигуру должны быть 100");
     assert_eq!(PIECE_SCORE_INC, 100, "Очки за фигуру должны быть 100");
 }
 
@@ -93,6 +94,7 @@ fn test_scoring_piece_divisible_by_10() {
 /// Тест 10: Проверка что PIECE_SCORE_INC равно 100
 #[test]
 fn test_scoring_piece_exactly_100() {
+    assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0]);
     assert_eq!(PIECE_SCORE_INC, 100);
 }
 
@@ -100,71 +102,71 @@ fn test_scoring_piece_exactly_100() {
 // ГРУППА ТЕСТОВ 11-20: Бонусы за линии
 // ============================================================================
 
-/// Тест 11: Проверка константы ROW_SCORE_INC
+/// Тест 11: Проверка константы LINE_SCORES[0]
 #[test]
 fn test_scoring_row_score_constant() {
-    assert_eq!(ROW_SCORE_INC, 100, "Базовые очки за линию должны быть 100");
+    assert_eq!(LINE_SCORES[0], 100, "Базовые очки за линию должны быть 100");
 }
 
 /// Тест 12: Проверка очков за 1 линию
 #[test]
 fn test_scoring_one_line() {
-    let score = ROW_SCORE_INC; // 1 << 0 = 1, поэтому упрощаем
+    let score = LINE_SCORES[0]; // 1 << 0 = 1, поэтому упрощаем
     assert_eq!(score, 100, "1 линия = 100 очков");
 }
 
 /// Тест 13: Проверка очков за 2 линии
 #[test]
 fn test_scoring_two_lines() {
-    let score = ROW_SCORE_INC * (1 << 1);
+    let score = LINE_SCORES[0] * (1 << 1);
     assert_eq!(score, 200, "2 линии = 200 очков");
 }
 
 /// Тест 14: Проверка очков за 3 линии
 #[test]
 fn test_scoring_three_lines() {
-    let score = ROW_SCORE_INC * (1 << 2);
+    let score = LINE_SCORES[0] * (1 << 2);
     assert_eq!(score, 400, "3 линии = 400 очков");
 }
 
 /// Тест 15: Проверка очков за 4 линии (Tetris)
 #[test]
 fn test_scoring_four_lines() {
-    let score = ROW_SCORE_INC * (1 << 3);
+    let score = LINE_SCORES[0] * (1 << 3);
     assert_eq!(score, 800, "4 линии = 800 очков (без бонуса)");
 }
 
 /// Тест 16: Проверка что очки за линии экспоненциальные
 #[test]
 fn test_scoring_lines_exponential() {
-    let one = ROW_SCORE_INC;
-    let two = ROW_SCORE_INC * 2;
-    let three = ROW_SCORE_INC * 4;
-    let four = ROW_SCORE_INC * 8;
+    let one = LINE_SCORES[0];
+    let two = LINE_SCORES[0] * 2;
+    let three = LINE_SCORES[0] * 4;
+    let four = LINE_SCORES[0] * 8;
 
     assert!(two > one, "2 линии должны давать больше очков чем 1");
     assert!(three > two, "3 линии должны давать больше очков чем 2");
     assert!(four > three, "4 линии должны давать больше очков чем 3");
 }
 
-/// Тест 17: Проверка что ROW_SCORE_INC положительное
+/// Тест 17: Проверка что LINE_SCORES[0] положительное
 #[test]
 fn test_scoring_row_score_positive() {
     // Проверяем, что константа положительная (всегда истинно)
-    let _ = ROW_SCORE_INC;
+    let _ = LINE_SCORES[0];
 }
 
-/// Тест 18: Проверка что ROW_SCORE_INC делится на 10
+/// Тест 18: Проверка что LINE_SCORES[0] делится на 10
 #[test]
 fn test_scoring_row_score_divisible_by_10() {
-    assert_eq!(ROW_SCORE_INC % 10, 0, "Очки за линию должны делиться на 10");
+    assert_eq!(LINE_SCORES[0] % 10, 0, "Очки за линию должны делиться на 10");
 }
 
 /// Тест 19: Проверка что очки за 4 линии больше чем за 1+1+1+1
 #[test]
 fn test_scoring_four_vs_one_plus_one() {
-    let four_lines = ROW_SCORE_INC * 8;
-    let four_singles = ROW_SCORE_INC * 4;
+    let four_lines = LINE_SCORES[0] * 8;
+    let four_singles = LINE_SCORES[0] * 4;
 
     assert!(
         four_lines > four_singles,
@@ -176,7 +178,7 @@ fn test_scoring_four_vs_one_plus_one() {
 #[test]
 fn test_scoring_lines_no_overflow() {
     let max_lines = 4;
-    let max_score = ROW_SCORE_INC * (1 << (max_lines - 1));
+    let max_score = LINE_SCORES[0] * (1 << (max_lines - 1));
 
     assert!(
         max_score < u128::MAX,

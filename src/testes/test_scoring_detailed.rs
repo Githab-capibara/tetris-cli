@@ -12,8 +12,8 @@
 //! Все тесты проверяют корректность начисления очков.
 
 use crate::game::{
-    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC,
-    ROW_SCORE_INC, SOFT_DROP_POINTS,
+    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, LINE_SCORES,
+    SOFT_DROP_POINTS,
 };
 
 // ============================================================================
@@ -23,6 +23,10 @@ use crate::game::{
 /// Тест 1: Базовые очки за фигуру
 #[test]
 fn test_base_piece_score() {
+    assert_eq!(
+        PIECE_SCORE_INC, LINE_SCORES[0],
+        "Базовые очки за фигуру должны быть 100"
+    );
     assert_eq!(
         PIECE_SCORE_INC, 100,
         "Базовые очки за фигуру должны быть 100"
@@ -67,6 +71,10 @@ fn test_piece_score_constant() {
     // Проверяем, что константа не изменяется
     const TEST_PIECE_SCORE: u128 = 100;
     assert_eq!(
+        PIECE_SCORE_INC, LINE_SCORES[0],
+        "Очки за фигуру должны быть константой"
+    );
+    assert_eq!(
         PIECE_SCORE_INC, TEST_PIECE_SCORE,
         "Очки за фигуру должны быть константой"
     );
@@ -80,7 +88,7 @@ fn test_piece_score_constant() {
 #[test]
 fn test_score_for_one_line() {
     // 1 линия: 100 * 2^0 = 100
-    let score = ROW_SCORE_INC;
+    let score = LINE_SCORES[0];
     assert_eq!(score, 100, "Очки за 1 линию должны быть 100");
 }
 
@@ -88,7 +96,7 @@ fn test_score_for_one_line() {
 #[test]
 fn test_score_for_two_lines() {
     // 2 линии: 100 * 2^1 = 200
-    let score = ROW_SCORE_INC * 2;
+    let score = LINE_SCORES[0] * 2;
     assert_eq!(score, 200, "Очки за 2 линии должны быть 200");
 }
 
@@ -96,7 +104,7 @@ fn test_score_for_two_lines() {
 #[test]
 fn test_score_for_three_lines() {
     // 3 линии: 100 * 2^2 = 400
-    let score = ROW_SCORE_INC * 4;
+    let score = LINE_SCORES[0] * 4;
     assert_eq!(score, 400, "Очки за 3 линии должны быть 400");
 }
 
@@ -104,17 +112,17 @@ fn test_score_for_three_lines() {
 #[test]
 fn test_score_for_four_lines_tetris() {
     // 4 линии: 100 * 2^3 = 800
-    let score = ROW_SCORE_INC * 8;
+    let score = LINE_SCORES[0] * 8;
     assert_eq!(score, 800, "Очки за 4 линии (Tetris) должны быть 800");
 }
 
 /// Тест 11: Экспоненциальный рост очков за линии
 #[test]
 fn test_exponential_growth_for_lines() {
-    let score_1 = ROW_SCORE_INC;
-    let score_2 = ROW_SCORE_INC * 2;
-    let score_3 = ROW_SCORE_INC * 4;
-    let score_4 = ROW_SCORE_INC * 8;
+    let score_1 = LINE_SCORES[0];
+    let score_2 = LINE_SCORES[0] * 2;
+    let score_3 = LINE_SCORES[0] * 4;
+    let score_4 = LINE_SCORES[0] * 8;
 
     assert!(score_2 > score_1, "2 линии > 1 линии");
     assert!(score_3 > score_2, "3 линии > 2 линии");
@@ -126,10 +134,10 @@ fn test_exponential_growth_for_lines() {
 fn test_line_score_progression() {
     // Проверяем прогрессию: 100, 200, 400, 800
     let scores = [
-        ROW_SCORE_INC,     // 1 линия
-        ROW_SCORE_INC * 2, // 2 линии
-        ROW_SCORE_INC * 4, // 3 линии
-        ROW_SCORE_INC * 8, // 4 линии
+        LINE_SCORES[0],     // 1 линия
+        LINE_SCORES[0] * 2, // 2 линии
+        LINE_SCORES[0] * 4, // 3 линии
+        LINE_SCORES[0] * 8, // 4 линии
     ];
 
     for i in 1..scores.len() {
@@ -144,11 +152,11 @@ fn test_line_score_progression() {
 #[test]
 fn test_multiple_lines_bonus() {
     // Бонус за 2 линии
-    let bonus_2 = ROW_SCORE_INC * 2 - ROW_SCORE_INC;
+    let bonus_2 = LINE_SCORES[0] * 2 - LINE_SCORES[0];
     assert_eq!(bonus_2, 100, "Бонус за 2 линии должен быть 100");
 
     // Бонус за 3 линии
-    let bonus_3 = ROW_SCORE_INC * 4 - ROW_SCORE_INC;
+    let bonus_3 = LINE_SCORES[0] * 4 - LINE_SCORES[0];
     assert_eq!(bonus_3, 300, "Бонус за 3 линии должен быть 300");
 }
 
@@ -156,7 +164,7 @@ fn test_multiple_lines_bonus() {
 #[test]
 fn test_maximum_line_score() {
     // Максимум - 4 линии (Tetris)
-    let max_score = ROW_SCORE_INC * 8;
+    let max_score = LINE_SCORES[0] * 8;
     assert_eq!(max_score, 800, "Максимальные очки за линии должны быть 800");
 }
 
@@ -382,15 +390,15 @@ fn test_hard_drop_more_profitable() {
 #[test]
 fn test_tetris_bonus_for_four_lines() {
     // Tetris (4 линии) даёт максимальный бонус
-    let tetris_score = ROW_SCORE_INC * 8;
+    let tetris_score = LINE_SCORES[0] * 8;
     assert_eq!(tetris_score, 800, "Tetris бонус должен быть 800 очков");
 }
 
 /// Тест 40: Tetris бонус больше чем 3 линии
 #[test]
 fn test_tetris_bonus_more_than_three_lines() {
-    let three_lines = ROW_SCORE_INC * 4; // 400
-    let tetris = ROW_SCORE_INC * 8; // 800
+    let three_lines = LINE_SCORES[0] * 4; // 400
+    let tetris = LINE_SCORES[0] * 8; // 800
 
     assert!(
         tetris > three_lines,

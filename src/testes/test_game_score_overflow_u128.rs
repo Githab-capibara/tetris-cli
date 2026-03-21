@@ -8,7 +8,7 @@
 //! Исправление: использование u128 и saturating_add() для предотвращения переполнения
 
 use crate::game::{
-    GameState, COMBO_BONUS, HARD_DROP_POINTS, PIECE_SCORE_INC, ROW_SCORE_INC,
+    GameState, COMBO_BONUS, HARD_DROP_POINTS, PIECE_SCORE_INC, LINE_SCORES, LINE_SCORES[0],
     SOFT_DROP_POINTS,
 };
 
@@ -75,11 +75,11 @@ fn test_score_accumulation_without_overflow() {
     let mut score: u128 = 0;
     
     // Начисляем очки за линию (100)
-    score = score.saturating_add(ROW_SCORE_INC);
+    score = score.saturating_add(LINE_SCORES[0]);
     assert_eq!(score, 100, "После первой линии счёт должен быть 100");
     
     // Начисляем очки за вторую линию (200)
-    score = score.saturating_add(ROW_SCORE_INC * 2);
+    score = score.saturating_add(LINE_SCORES[0] * 2);
     assert_eq!(
         score, 300,
         "После второй линии счёт должен быть 300"
@@ -167,8 +167,8 @@ fn test_score_at_u128_max() {
     
     // Тест 5: Проверка что константы очков совместимы с u128
     assert!(
-        ROW_SCORE_INC <= u128::MAX,
-        "ROW_SCORE_INC должен помещаться в u128"
+        LINE_SCORES[0] <= u128::MAX,
+        "LINE_SCORES[0] должен помещаться в u128"
     );
     assert!(
         PIECE_SCORE_INC <= u128::MAX,

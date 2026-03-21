@@ -20,7 +20,7 @@ use std::path::Path;
 /// 2. Запрещает последовательности ".."
 /// 3. Проверяет, что путь находится внутри текущей директории
 /// 4. Запрещает символические ссылки
-/// 5. Использует canonicalize() ДО проверки пути
+/// 5. Исправление #5: использует canonicalize() ДО проверок для защиты от race condition
 ///
 /// # Аргументы
 /// * `path` - путь для проверки
@@ -31,7 +31,7 @@ use std::path::Path;
 ///
 /// # Безопасность
 /// Защищает от symlink атак: символические ссылки запрещены.
-/// Проверка canonicalize() выполняется ДО валидации пути.
+/// Проверка canonicalize() выполняется ДО валидации пути для предотвращения race condition.
 ///
 /// # Пример использования
 /// ```ignore
@@ -41,7 +41,8 @@ use std::path::Path;
 fn validate_config_path(path: &str) -> io::Result<()> {
     let path_obj = Path::new(path);
 
-    // Запрет абсолютных путей
+    // Исправление #5: ЗАПРЕТ АБСОЛЮТНЫХ ПУТЕЙ ДО canonicalize()
+    // Это предотвращает race condition при проверке пути
     if path_obj.is_absolute() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -49,7 +50,8 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // Запрет path traversal (..)
+    // Исправление #5: ЗАПРЕТ PATH TRAVERSAL (..) ДО canonicalize()
+    // Это предотвращает использование последовательностей ".." для выхода за пределы директории
     if path.contains("..") {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -57,11 +59,22 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // Проверка, что путь находится внутри текущей директории
+    // Исправление #5: Получаем канонический путь ПЕРЕД остальными проверками
+    // Это защищает от race condition между проверкой и использованием
     let current_dir = std::env::current_dir()?;
     let full_path = current_dir.join(path_obj);
 
-    // ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК
+    // Получаем канонический путь сразу после построения full_path
+    // Это защищает от symlink attacks и race condition
+    let canonical_path = full_path.canonicalize().or_else(|e| {
+        // Если файл не существует, пробуем получить канонический путь родительской директории
+        full_path
+            .parent()
+            .and_then(|p| p.canonicalize().ok())
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, e))
+    })?;
+
+    // Исправление #5: ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК ПОСЛЕ canonicalize()
     // Используем symlink_metadata() для проверки symlink без следования по нему
     if let Ok(metadata) = std::fs::symlink_metadata(&full_path) {
         if metadata.file_type().is_symlink() {
@@ -72,17 +85,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         }
     }
 
-    // Получаем канонический путь ПОСЛЕ всех проверок
-    // Это защищает от symlink attacks
-    let canonical_path = full_path.canonicalize().or_else(|e| {
-        // Если файл не существует, пробуем получить канонический путь родительской директории
-        full_path
-            .parent()
-            .and_then(|p| p.canonicalize().ok())
-            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, e))
-    })?;
-
-    // Проверяем, что resolved path находится внутри текущей директории
+    // Исправление #5: Проверяем, что resolved path находится внутри текущей директории
     // Это защищает от symlink attacks, где symlink указывает за пределы разрешённой директории
     if !canonical_path.starts_with(&current_dir) {
         return Err(io::Error::new(

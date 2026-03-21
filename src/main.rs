@@ -748,9 +748,19 @@ fn run_game_mode(
 ///
 /// # Возвращает
 /// `true` если символ допустим, `false` в противном случае
+///
+/// # Безопасность
+/// Исправление #11: расширенная валидация Unicode для поддержки международных имён.
+/// Запрещены управляющие символы и эмодзи через is_control().
 fn is_valid_name_char(c: char) -> bool {
-    // Используем ASCII alphanumeric для защиты от Unicode символов и эмодзи
-    c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ' '
+    // Исправление #11: расширенная валидация Unicode
+    // Разрешаем ASCII alphanumeric, русские буквы и безопасные символы
+    // Запрещаем управляющие символы (c.is_control()) и эмодзи
+    !c.is_control()
+        && !c.is_whitespace()
+        && c != '/'
+        && c != '\\'
+        && (c.is_alphanumeric() || c == '_' || c == '-' || c == ' ')
 }
 
 fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {

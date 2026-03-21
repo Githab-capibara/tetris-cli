@@ -12,8 +12,8 @@
 
 use crate::game::{Dir, GameMode, GameState};
 use crate::game::{
-    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC,
-    ROW_SCORE_INC, SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
+    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, LINE_SCORES,
+    SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, Tetromino};
@@ -409,6 +409,7 @@ fn test_all_tetromino_rotate() {
 /// Проверяет значение базовых очков за размещение фигуры.
 #[test]
 fn test_piece_score_constant() {
+    assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "Очки за фигуру должны быть 100");
     assert_eq!(PIECE_SCORE_INC, 100, "Очки за фигуру должны быть 100");
 }
 
@@ -440,16 +441,16 @@ fn test_hard_drop_points_constant() {
 #[test]
 fn test_line_score_calculation() {
     // 1 линия: 100 * 2^0 = 100
-    assert_eq!(ROW_SCORE_INC, 100, "1 линия = 100 очков");
+    assert_eq!(LINE_SCORES[0], 100, "1 линия = 100 очков");
 
     // 2 линии: 100 * 2^1 = 200
-    assert_eq!(ROW_SCORE_INC * (1 << 1), 200, "2 линии = 200 очков");
+    assert_eq!(LINE_SCORES[0] * (1 << 1), 200, "2 линии = 200 очков");
 
     // 3 линии: 100 * 2^2 = 400
-    assert_eq!(ROW_SCORE_INC * (1 << 2), 400, "3 линии = 400 очков");
+    assert_eq!(LINE_SCORES[0] * (1 << 2), 400, "3 линии = 400 очков");
 
     // 4 линии: 100 * 2^3 = 800
-    assert_eq!(ROW_SCORE_INC * (1 << 3), 800, "4 линии = 800 очков");
+    assert_eq!(LINE_SCORES[0] * (1 << 3), 800, "4 линии = 800 очков");
 }
 
 /// Тест 22: Проверка константы бонуса за комбо
