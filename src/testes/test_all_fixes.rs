@@ -8,6 +8,8 @@
 //! 5. Copy вместо Clone (Tetromino)
 //! 6. Dirty rectangle tracking (dirty_cells)
 //! 7. Битовая маска строк (animating_rows_mask)
+
+#![allow(deprecated)]
 //! 8. hex::encode() (использование в get_random_hash)
 //! 9. unreachable!() для Dir::Down
 //! 10. Удаление избыточных комментариев

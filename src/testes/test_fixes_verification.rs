@@ -489,6 +489,7 @@ mod unwrap_to_expect_tests {
     /// Проверяет, что expect() паникует с ожидаемым сообщением при None/Err.
     #[test]
     #[should_panic(expected = "Value must be Some")]
+    #[allow(clippy::unnecessary_literal_unwrap)]
     fn test_expect_panics_with_correct_message() {
         let none_value: Option<i32> = None;
         // Это должно паниковать с указанным сообщением
@@ -747,7 +748,7 @@ mod debug_assert_tests {
 
 #[cfg(test)]
 mod version_tests {
-    /// Тест 1: Проверка что версия в Cargo.toml = 23.96.10
+    /// Тест 1: Проверка что версия в Cargo.toml = 23.96.14
     ///
     /// Проверяет, что версия в Cargo.toml соответствует ожидаемой.
     #[test]
@@ -761,10 +762,10 @@ mod version_tests {
             .find(|line| line.starts_with("version = "))
             .unwrap();
 
-        // Проверяем что версия равна 23.96.10
+        // Проверяем что версия равна 23.96.14
         assert!(
-            version_line.contains("23.96.10"),
-            "Cargo.toml version must be 23.96.10, found: {}",
+            version_line.contains("23.96.14"),
+            "Cargo.toml version must be 23.96.14, found: {}",
             version_line
         );
     }
@@ -797,7 +798,7 @@ mod version_tests {
         );
 
         // Тест проходит если версия в Cargo.toml корректна
-        assert_eq!(expected_version, "23.96.10", "Version must be 23.96.10");
+        assert_eq!(expected_version, "23.96.14", "Version must be 23.96.14");
     }
 
     /// Тест 3: Проверка что CHANGELOG упоминает версию

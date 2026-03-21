@@ -250,14 +250,13 @@ pub enum ShapeType {
 ///
 /// ## Пример использования
 /// ```
-/// use tetris_cli::tetromino::Tetromino;
-///
-/// // Создание случайной фигуры
-/// let tetromino = Tetromino::select();
-///
-/// // Вращение фигуры
+/// use tetris_cli::tetromino::{Tetromino, BagGenerator};
 /// use tetris_cli::game::Dir;
-/// // tetromino.rotate(Dir::Right);
+///
+/// // Создание фигуры из мешка
+/// let mut bag = BagGenerator::new();
+/// let tetromino = Tetromino::from_bag(&mut bag);
+/// assert_eq!(tetromino.pos, (4.0, 0.0)); // Начальная позиция
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct Tetromino {
@@ -284,16 +283,13 @@ pub struct Tetromino {
 impl Tetromino {
     /// Случайный выбор новой фигуры.
     ///
+    /// # Устарело
+    /// Используйте [`Tetromino::from_bag()`] вместо этой функции.
+    /// Эта функция оставлена только для обратной совместимости тестов.
+    ///
     /// # Возвращает
     /// Новый Tetromino со случайным типом и начальной позицией (4.0, 0.0)
-    ///
-    /// # Пример использования
-    /// ```
-    /// use tetris_cli::tetromino::Tetromino;
-    ///
-    /// let figure = Tetromino::select();
-    /// assert_eq!(figure.pos, (4.0, 0.0)); // Начальная позиция
-    /// ```
+    #[deprecated(since = "23.96.11", note = "Используйте Tetromino::from_bag()")]
     #[allow(dead_code)]
     pub fn select() -> Self {
         let shape = match rand::thread_rng().gen_range(0..7) {
@@ -376,15 +372,16 @@ impl Tetromino {
                 Dir::Down => unreachable!("Dir::Down не используется для вращения"),
             };
 
-            // Проверка границ: координаты должны оставаться в пределах i16
-            // Это предотвращает переполнение при экстремальных значениях
-            if !(i16::MIN / 2..=i16::MAX / 2).contains(&new_x)
-                || !(i16::MIN / 2..=i16::MAX / 2).contains(&new_y)
-            {
-                // Пропускаем вращение если координаты выходят за безопасные пределы
-                // Это защищает от переполнения при последующих вращениях
-                continue;
-            }
+            // Проверка границ в отладочном режиме
+            // Координаты должны оставаться в пределах i16 для предотвращения переполнения
+            debug_assert!(
+                (i16::MIN / 2..=i16::MAX / 2).contains(&new_x),
+                "Координата X выходит за безопасные пределы после вращения"
+            );
+            debug_assert!(
+                (i16::MIN / 2..=i16::MAX / 2).contains(&new_y),
+                "Координата Y выходит за безопасные пределы после вращения"
+            );
 
             self.coords[i] = (new_x, new_y);
         }
@@ -493,6 +490,7 @@ mod tests {
 
     /// Тест 6: Проверка случайного выбора фигур
     #[test]
+    #[allow(deprecated)]
     fn test_random_shape_selection() {
         // Генерируем 100 фигур и проверяем, что все типы встречаются
         let mut shapes_found = [false; 7];

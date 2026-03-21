@@ -776,7 +776,7 @@ impl GameState {
             match dir {
                 Dir::Left => self.curr_shape.pos.0 -= 1.0,
                 Dir::Right => self.curr_shape.pos.0 += 1.0,
-                Dir::Down => {} // Down не используется для движения
+                Dir::Down => unreachable!("Dir::Down не используется для движения"),
             }
         }
     }
@@ -799,6 +799,7 @@ impl GameState {
         // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
         // Исправление #1: используем u32::MAX вместо u16::MAX для предотвращения переполнения f32
         let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
+            .abs()
             .max(0.0)
             .min(u32::MAX as f32);
         let drop_distance = if drop_distance_f32.is_finite() {
@@ -1049,9 +1050,7 @@ impl GameState {
     ///
     /// # Примечания
     /// Метод доступен только при включённой фиче `bench`.
-    /// Помечен как #[must_use] для предотвращения предупреждений dead_code.
     #[cfg(feature = "bench")]
-    #[must_use]
     #[allow(dead_code)]
     pub fn save_tetromino_for_bench(&mut self) {
         self.save_tetromino_impl();
@@ -1172,6 +1171,12 @@ impl GameState {
         // Алгоритм: перемещаем каждую строку вниз на количество удалённых строк выше неё
         // Это эффективнее чем создание нового массива: избегаем heap-аллокации
 
+        // Проверка в отладочном режиме: rows_mask должен быть валидным
+        debug_assert!(
+            rows_mask < (1u32 << GRID_HEIGHT),
+            "rows_mask выходит за пределы поля"
+        );
+
         // Подсчитываем количество строк для удаления снизу вверх
         let mut rows_removed_below = 0;
 
@@ -1204,10 +1209,13 @@ impl GameState {
     /// * `remove_count` - количество удалённых линий
     fn update_score_and_level(&mut self, remove_count: u32) {
         if remove_count > 0 {
+            // Ограничение remove_count максимум 4 (максимум 4 линии можно удалить одновременно)
+            let capped_remove_count = remove_count.min(4);
+
             // Обновление количества удалённых линий
-            self.lines_cleared = self.lines_cleared.saturating_add(remove_count);
+            self.lines_cleared = self.lines_cleared.saturating_add(capped_remove_count);
             // Обновление общей статистики по линиям
-            self.stats.total_lines = self.stats.total_lines.saturating_add(remove_count);
+            self.stats.total_lines = self.stats.total_lines.saturating_add(capped_remove_count);
 
             // Проверка повышения уровня (каждые 10 линий)
             // Формула: уровень = (линии / 10) + 1
@@ -1222,7 +1230,7 @@ impl GameState {
 
             // Увеличение скорости игры
             // Каждая удалённая линия увеличивает скорость на 0.05
-            self.fall_spd += SPD_INC * remove_count as f32;
+            self.fall_spd += SPD_INC * capped_remove_count as f32;
 
             // =================================================================
             // НАЧИСЛЕНИЕ ОЧКОВ ЗА ЛИНИИ (экспоненциальная формула)
@@ -1242,11 +1250,11 @@ impl GameState {
             // Используем u128 для предотвращения переполнения
             self.score = self
                 .score
-                .saturating_add(ROW_SCORE_INC * (1u128 << (remove_count - 1)));
+                .saturating_add(ROW_SCORE_INC * (1u128 << (capped_remove_count - 1)));
 
             // Бонус за Tetris (4 линии одновременно)
             // Дополнительный бонус 1000 очков сверх базовых 800
-            if remove_count == 4 {
+            if capped_remove_count == 4 {
                 self.score = self.score.saturating_add(1000u128); // Бонус за Tetris
             }
         }

@@ -9,6 +9,8 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты фигур.
 
+#![allow(deprecated)]
+
 use crate::game::Dir;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
