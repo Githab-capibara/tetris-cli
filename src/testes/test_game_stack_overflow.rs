@@ -41,8 +41,8 @@ fn test_инициализация_поля_в_куче() {
 
     // Проверяем что поля инициализированы правильными размерами
     // Используем константы для проверки
-    assert!(GRID_WIDTH > 0, "GRID_WIDTH должен быть положительным");
-    assert!(GRID_HEIGHT > 0, "GRID_HEIGHT должен быть положительным");
+    const _: () = assert!(GRID_WIDTH > 0, "GRID_WIDTH должен быть положительным");
+    const _: () = assert!(GRID_HEIGHT > 0, "GRID_HEIGHT должен быть положительным");
 
     // Проверяем что get_blocks() возвращает ссылку на Box
     let blocks = game_state.get_blocks();

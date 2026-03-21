@@ -82,7 +82,7 @@ fn test_write_vs_format_efficiency() {
 
     let start_format = Instant::now();
     for _ in 0..iterations {
-        let _result = format!("test");
+        let _result = "test".to_string();
     }
     let _duration_format = start_format.elapsed();
 

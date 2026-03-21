@@ -15,10 +15,12 @@ use std::path::Path;
 
 /// Проверить валидность пути для конфигурации.
 ///
-/// Эта функция реализует защиту от path traversal атак:
+/// Эта функция реализует защиту от path traversal атак и symlink attacks:
 /// 1. Запрещает абсолютные пути
 /// 2. Запрещает последовательности ".."
 /// 3. Проверяет, что путь находится внутри текущей директории
+/// 4. Запрещает символические ссылки
+/// 5. Использует canonicalize() ДО проверки пути
 ///
 /// # Аргументы
 /// * `path` - путь для проверки
@@ -26,6 +28,10 @@ use std::path::Path;
 /// # Возвращает
 /// - `Ok(())` если путь валиден
 /// - `Err(io::Error)` если путь невалиден
+///
+/// # Безопасность
+/// Защищает от symlink атак: символические ссылки запрещены.
+/// Проверка canonicalize() выполняется ДО валидации пути.
 ///
 /// # Пример использования
 /// ```ignore
@@ -55,21 +61,33 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     let current_dir = std::env::current_dir()?;
     let full_path = current_dir.join(path_obj);
 
-    // Получаем канонический путь (или родительскую директорию, если файл не существует)
-    let canonical_path = full_path
-        .canonicalize()
-        .or_else(|_| {
-            full_path
-                .parent()
-                .map_or(Ok(current_dir.clone()), |p| p.canonicalize())
-        })
-        .unwrap_or_else(|_| current_dir.clone());
+    // ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК
+    // Используем symlink_metadata() для проверки symlink без следования по нему
+    if let Ok(metadata) = std::fs::symlink_metadata(&full_path) {
+        if metadata.file_type().is_symlink() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Символические ссылки не разрешены",
+            ));
+        }
+    }
 
-    // Проверяем, что путь начинается с текущей директории
+    // Получаем канонический путь ПОСЛЕ всех проверок
+    // Это защищает от symlink attacks
+    let canonical_path = full_path.canonicalize().or_else(|e| {
+        // Если файл не существует, пробуем получить канонический путь родительской директории
+        full_path
+            .parent()
+            .and_then(|p| p.canonicalize().ok())
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, e))
+    })?;
+
+    // Проверяем, что resolved path находится внутри текущей директории
+    // Это защищает от symlink attacks, где symlink указывает за пределы разрешённой директории
     if !canonical_path.starts_with(&current_dir) {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Путь вне разрешённой директории",
+            "Путь вне разрешённой директории (symlink attack detected)",
         ));
     }
 
@@ -220,6 +238,7 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// assert!(config.validate());
     /// ```
+    #[must_use]
     pub fn validate(&self) -> bool {
         // Сбор всех клавиш в массив для проверки
         let keys = [

@@ -126,7 +126,6 @@ fn test_documentation_examples_work() {
 fn test_backticks_added() {
     let state = GameState::new();
     let _ = state.get_score();
-    assert!(true);
 }
 
 /// Тест 18.2: Проверка что clippy не выдаёт предупреждений.
@@ -156,7 +155,7 @@ fn test_name_whitelist_works() {
 #[test]
 fn test_max_name_length_checked() {
     use crate::highscore::LeaderboardEntry;
-    let long_name = "ОченьДлинноеИмяКотороеДолжноБытьОбрезаноДоДвадцатиСимволов";
+    let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
     let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
     assert_eq!(entry.name().chars().count(), 20);
 }

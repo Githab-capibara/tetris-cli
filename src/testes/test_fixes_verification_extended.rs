@@ -86,6 +86,7 @@ mod expect_unwrap_tests {
     ///
     /// Проверяет, что expect() работает с Write без ошибок.
     #[test]
+    #[allow(clippy::write_literal)]
     fn test_expect_write_success() {
         let mut buffer = String::with_capacity(100);
         let result = write!(buffer, "{}{}{}", "salt", "Player", 1000);
@@ -232,11 +233,11 @@ mod utf8_documentation_tests {
 
         for &ch in &ascii_chars {
             assert!(ch <= 0x7F, "Character must be ASCII (<= 0x7F)");
-            // Проверяем что символ в допустимом диапазоне с использованием .contains()
+            // Проверяем что символ в допустимом диапазоне с использованием is_ascii_*
             assert!(
-                ('a'..='z').contains(&(ch as char))
-                    || ('A'..='Z').contains(&(ch as char))
-                    || ('0'..='9').contains(&(ch as char)),
+                (ch as char).is_ascii_lowercase()
+                    || (ch as char).is_ascii_uppercase()
+                    || (ch as char).is_ascii_digit(),
                 "Character must be alphanumeric"
             );
         }
