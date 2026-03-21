@@ -12,6 +12,7 @@
 //! Для генерации соли используется криптографически стойкий генератор случайных чисел (getrandom).
 
 use confy::{load, store};
+use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -66,6 +67,89 @@ const MAX_LEADERBOARD_SIZE: usize = 5;
 /// Максимальное количество записей в минуту для rate limiting.
 /// Ограничивает частоту добавления рекордов для предотвращения злоупотреблений.
 const MAX_ENTRIES_PER_MINUTE: usize = 10;
+
+/// Минимальное время между записями (cooldown) в миллисекундах.
+/// Предотвращает слишком частое добавление рекордов.
+/// В тестах отключено (cfg(test) переопределяет значение).
+#[cfg(not(test))]
+const ENTRY_COOLDOWN_MS: u64 = 100;
+
+/// В тестах cooldown отключен для возможности быстрого добавления рекордов.
+#[cfg(test)]
+const ENTRY_COOLDOWN_MS: u64 = 0;
+
+/// Ошибка операции с конфигурацией.
+#[derive(Debug)]
+#[allow(dead_code)]
+pub enum ConfigError {
+    /// Директория конфигурации недоступна для записи.
+    DirectoryNotWritable(String),
+    /// Ошибка при сохранении/загрузке через confy.
+    IoError(String),
+}
+
+impl std::fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ConfigError::DirectoryNotWritable(dir) => {
+                write!(f, "Директория конфигурации недоступна для записи: {}", dir)
+            }
+            ConfigError::IoError(msg) => write!(f, "Ошибка ввода/вывода: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for ConfigError {}
+
+/// Проверить доступность директории конфигурации для записи.
+///
+/// # Возвращает
+/// `Ok(())` если директория доступна для записи,
+/// `Err(ConfigError)` если директория недоступна
+///
+/// # Примечания
+/// Проверяет возможность создания временного файла в директории конфигурации.
+#[allow(dead_code)]
+pub fn check_config_directory_writable() -> Result<(), ConfigError> {
+    use std::fs;
+
+    // Получаем путь к директории конфигурации через directories crate
+    let proj_dirs = ProjectDirs::from("", "", APP_NAME).ok_or_else(|| {
+        ConfigError::IoError("Не удалось определить директорию конфигурации".to_string())
+    })?;
+
+    let config_dir = proj_dirs.config_dir();
+
+    // Проверяем существование директории
+    if !config_dir.exists() {
+        return Err(ConfigError::DirectoryNotWritable(format!(
+            "Директория не существует: {:?}",
+            config_dir
+        )));
+    }
+
+    // Проверяем, что это действительно директория
+    if !config_dir.is_dir() {
+        return Err(ConfigError::DirectoryNotWritable(format!(
+            "Путь не является директорией: {:?}",
+            config_dir
+        )));
+    }
+
+    // Проверяем доступность для записи, пытаясь создать временный файл
+    let test_file = config_dir.join(".tetris-cli-write-test");
+    match fs::write(&test_file, b"test") {
+        Ok(_) => {
+            // Удаляем тестовый файл
+            let _ = fs::remove_file(&test_file);
+            Ok(())
+        }
+        Err(e) => Err(ConfigError::DirectoryNotWritable(format!(
+            "Не удалось создать тестовый файл в {:?}: {}",
+            config_dir, e
+        ))),
+    }
+}
 
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
@@ -256,9 +340,10 @@ impl Default for SaveData {
 ///
 /// Правила:
 /// - trim
-/// - разрешены только буквы/цифры и символы: '_', '-', ' ', '.'
+/// - разрешены только ASCII буквы/цифры и символы: '_', '-', ' '
 /// - максимум 20 символов
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
+/// - запрещены опасные Unicode-символы (эмодзи, контрольные символы)
 ///
 /// Оптимизация: использует String::with_capacity() для предотвращения реаллокаций.
 fn sanitize_player_name(name: &str) -> String {
@@ -270,7 +355,11 @@ fn sanitize_player_name(name: &str) -> String {
     // Оптимизация: предварительно выделяем память на 20 символов (максимум)
     let validated: String = trimmed
         .chars()
-        .filter(|&c| is_valid_name_char(c))
+        .filter(|&c| {
+            // Разрешаем только ASCII alphanumeric и безопасные символы
+            // Запрещаем эмодзи, контрольные символы и другие опасные Unicode-символы
+            is_valid_name_char(c)
+        })
         .take(20)
         .collect::<String>();
 
@@ -343,17 +432,20 @@ impl LeaderboardEntry {
 /// Проверить допустимость символа имени.
 ///
 /// Разрешены только:
-/// - Буквы (a-z, A-Z, включая кириллицу и другие Unicode буквы)
-/// - Цифры (0-9)
-/// - Специальные символы: '_', '-', ' ', '.'
+/// - ASCII буквы (a-z, A-Z)
+/// - ASCII цифры (0-9)
+/// - Специальные символы: '_', '-', ' '
 ///
 /// # Аргументы
 /// * `c` - символ для проверки
 ///
 /// # Возвращает
 /// `true` если символ допустим
+///
+/// # Безопасность
+/// Функция использует is_ascii_alphanumeric() для защиты от Unicode-символов и эмодзи.
 fn is_valid_name_char(c: char) -> bool {
-    c.is_alphanumeric() || c == '_' || c == '-' || c == ' ' || c == '.'
+    c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ' '
 }
 
 impl Leaderboard {
@@ -388,10 +480,12 @@ impl Leaderboard {
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
     /// `false` если рекорд недостаточно высок или превышен лимит rate limiting
     ///
-    /// # Примечания
+    /// # Безопасность
     /// Реализовано rate limiting: не более MAX_ENTRIES_PER_MINUTE записей в минуту.
-    /// Используем u128 для предотвращения переполнения
-    /// Валидация timestamps (отклоняем будущие времена)
+    /// Используем u128 для предотвращения переполнения.
+    /// Все timestamps валидируются: отклоняются будущие времена.
+    /// При подозрительных timestamps записывается предупреждение.
+    /// Добавлена проверка cooldown: минимальное время между записями ENTRY_COOLDOWN_MS.
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
         use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -416,11 +510,46 @@ impl Leaderboard {
 
         // Добавление новой записи времени для rate limiting
         // Используем SystemTime::now() для защиты от подделки timestamps
-        // Получаем время в миллисекундах с UNIX epoch
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_else(|_| Duration::from_secs(0))
             .as_millis() as u64;
+
+        // Проверка cooldown: минимальное время между записями
+        // В тестах ENTRY_COOLDOWN_MS = 0, поэтому сравнение всегда ложно
+        #[allow(clippy::absurd_extreme_comparisons)]
+        if let Some(&last_time) = self.recent_entry_times.last() {
+            if current_time.saturating_sub(last_time) < ENTRY_COOLDOWN_MS {
+                eprintln!(
+                    "Предупреждение: слишком частое добавление рекордов (cooldown {} мс)",
+                    ENTRY_COOLDOWN_MS
+                );
+                return false;
+            }
+        }
+
+        // Валидация: отклоняем подозрительно старые или будущие timestamps
+        let five_minutes_ms = 300_000; // 5 минут в миллисекундах
+        let recent_valid_time = current_time.saturating_sub(five_minutes_ms);
+
+        // Проверяем существующие timestamps на валидность
+        let mut invalid_count = 0;
+        self.recent_entry_times.retain(|&time| {
+            // Удаляем timestamps, которые >5 минут в прошлом или в будущем
+            if time > recent_valid_time && time <= current_time {
+                true
+            } else {
+                invalid_count += 1;
+                false
+            }
+        });
+
+        if invalid_count > 0 {
+            eprintln!(
+                "Предупреждение: удалено {} невалидных timestamps (подозрение на подделку)",
+                invalid_count
+            );
+        }
 
         self.recent_entry_times.push(current_time);
 

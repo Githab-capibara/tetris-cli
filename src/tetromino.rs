@@ -344,6 +344,10 @@ impl Tetromino {
     ///   - По часовой: (x, y) -> (-y, x)
     ///   - Против часовой: (x, y) -> (y, -x)
     ///
+    /// # Паника
+    /// Метод паникует при передаче `Dir::Down` с сообщением:
+    /// "Dir::Down cannot be used for rotation"
+    ///
     /// # Пример использования
     /// ```
     /// use tetris_cli::tetromino::{Tetromino, ShapeType};
@@ -369,7 +373,7 @@ impl Tetromino {
             let (new_x, new_y) = match dir {
                 Dir::Left => (y, -x),  // Поворот против часовой
                 Dir::Right => (-y, x), // Поворот по часовой
-                Dir::Down => unreachable!("Dir::Down не используется для вращения"),
+                Dir::Down => panic!("Dir::Down не используется для вращения"),
             };
 
             // Проверка границ в отладочном режиме

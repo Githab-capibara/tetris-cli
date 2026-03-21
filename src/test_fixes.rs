@@ -148,7 +148,7 @@ mod tests {
     /// Имя длиннее 20 символов должно обрезаться.
     #[test]
     fn test_long_name_truncated() {
-        let long_name = "ОченьДлинноеИмяКотороеДолжноБытьОбрезаноДоДвадцатиСимволов";
+        let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
         let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
 
         // Проверяем, что имя обрезано до 20 символов (не байт!)

@@ -45,10 +45,6 @@ fn test_восстановление_терминала_при_панике() {
     let _was_dropped = *drop_flag.lock().unwrap();
     // В тестовой среде Drop может не вызваться из-за отсутствия терминала
     // Этот тест больше для документации поведения
-    assert!(
-        true,
-        "Тест завершён (проверка Drop в тестовой среде ограничена)"
-    );
 }
 
 /// Тест 2: Проверка работы Drop при ошибке
@@ -83,22 +79,32 @@ fn test_работа_drop_при_ошибке() {
 fn test_корректный_сброс_терминала() {
     // Создаём канвас в отдельной области видимости
     let canvas_created = panic::catch_unwind(|| {
-        let mut canvas = Canvas::new();
+        let create_result = Canvas::new();
 
-        // Проверяем что reset() вызывается без паники
-        canvas.reset();
+        // Проверяем результат создания Canvas
+        match create_result {
+            Ok(mut canvas) => {
+                // Проверяем что reset() вызывается без паники
+                canvas.reset();
 
-        // Flush после reset
-        canvas.flush();
+                // Flush после reset
+                canvas.flush();
 
-        // Возвращаем флаг успеха
-        true
+                return true;
+            }
+            Err(_) => {
+                // Ошибка создания Canvas - ожидаемо в тестовой среде
+                return false;
+            }
+        }
     });
 
     // Проверяем результат
     match canvas_created {
         Ok(success) => {
-            assert!(success, "Canvas должен быть создан и сброшен корректно");
+            if !success {
+                println!("Canvas не создан (ожидаемо в тестовой среде без терминала)");
+            }
         }
         Err(_) => {
             // Паника при создании Canvas - ожидаемо в тестовой среде

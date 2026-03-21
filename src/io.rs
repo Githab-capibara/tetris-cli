@@ -98,6 +98,43 @@ pub const DISP_WIDTH: u16 = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
 /// = 20 + 5 = 25 строк
 pub const DISP_HEIGHT: u16 = GRID_HEIGHT as u16 + 5;
 
+/// Ошибка ввода/вывода терминала.
+#[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
+pub enum IoError {
+    /// Не удалось перейти в raw-режим терминала.
+    RawMode(String),
+    /// Не удалось очистить экран.
+    Clear(String),
+    /// Не удалось скрыть/показать курсор.
+    Cursor(String),
+    /// Ошибка flush буфера.
+    Flush(String),
+    /// Ошибка отрисовки.
+    #[allow(dead_code)]
+    Draw(String),
+}
+
+impl std::fmt::Display for IoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            IoError::RawMode(msg) => write!(f, "Ошибка raw-режима: {}", msg),
+            IoError::Clear(msg) => write!(f, "Ошибка очистки экрана: {}", msg),
+            IoError::Cursor(msg) => write!(f, "Ошибка курсора: {}", msg),
+            IoError::Flush(msg) => write!(f, "Ошибка flush: {}", msg),
+            IoError::Draw(msg) => write!(f, "Ошибка отрисовки: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for IoError {}
+
+impl From<std::io::Error> for IoError {
+    fn from(err: std::io::Error) -> Self {
+        IoError::RawMode(err.to_string())
+    }
+}
+
 /// Канвас для отрисовки в терминале.
 ///
 /// Обёртка над RawTerminal для удобной отрисовки текста и графики.
@@ -109,12 +146,13 @@ pub const DISP_HEIGHT: u16 = GRID_HEIGHT as u16 + 5;
 /// use tetris_cli::io::Canvas;
 /// use termion::color::{White, Reset};
 ///
-/// let mut canvas = Canvas::new();
+/// let mut canvas = Canvas::new()?;
 /// canvas.draw_string("Текст", (1, 1), &White, &Reset);
 /// canvas.flush();
 ///
 /// // После завершения игры
 /// canvas.reset();
+/// # Ok::<(), tetris_cli::io::IoError>(())
 /// ```
 pub struct Canvas {
     out: RawTerminal<Stdout>,
@@ -138,36 +176,20 @@ impl Drop for Canvas {
 
 impl Default for Canvas {
     fn default() -> Self {
-        Self::new()
+        Self::new().expect("Не удалось инициализировать Canvas")
     }
 }
 
 impl Canvas {
-    /// Вспомогательная функция для сброса терминала при ошибке.
-    ///
-    /// # Аргументы
-    /// * `message` - сообщение об ошибке
-    ///
-    /// # Паника
-    /// Вызывает panic с сообщением об ошибке.
-    /// Drop автоматически восстановит терминал.
-    fn exit_with_terminal_reset(message: &str) -> ! {
-        // Явно восстанавливаем терминал перед panic для гарантии сброса
-        write!(stdout(), "{}", Show).expect("Не удалось показать курсор");
-        stdout().flush().expect("Не удалось выполнить flush");
-        // Используем panic! вместо process::exit() для корректной работы Drop
-        // Drop автоматически восстановит терминал при панике
-        panic!("{}", message);
-    }
-
     /// Создать новый канвас и подготовить терминал.
     ///
     /// # Возвращает
-    /// Новый экземпляр Canvas с инициализированным терминалом
+    /// - `Ok(Canvas)` - новый экземпляр Canvas с инициализированным терминалом
+    /// - `Err(IoError)` - ошибка инициализации терминала
     ///
-    /// # Паника
-    /// Паникует, если:
-    /// - Не удалось перейти в raw-режим
+    /// # Ошибки
+    /// Метод возвращает ошибку в следующих случаях:
+    /// - Не удалось перейти в raw-режим терминала
     /// - Не удалось очистить экран
     /// - Не удалось скрыть курсор
     ///
@@ -177,35 +199,21 @@ impl Canvas {
     /// 2. Очищает экран
     /// 3. Перемещает курсор в (1, 1)
     /// 4. Скрывает курсор
-    ///
-    /// NOTE: Для CLI приложения panic допустим
-    pub fn new() -> Self {
-        let mut out = match stdout().into_raw_mode() {
-            Ok(term) => term,
-            Err(e) => {
-                Self::exit_with_terminal_reset(&format!(
-                    "Ошибка: не удалось перейти в raw-режим терминала: {}",
-                    e
-                ));
-            }
-        };
+    pub fn new() -> Result<Self, IoError> {
+        let mut out = stdout().into_raw_mode().map_err(|e| {
+            IoError::RawMode(format!("не удалось перейти в raw-режим терминала: {}", e))
+        })?;
 
-        if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
-            Self::exit_with_terminal_reset(&format!("Ошибка: не удалось очистить экран: {}", e));
-        }
+        write!(out, "{}{}", All, Goto(1, 1))
+            .map_err(|e| IoError::Clear(format!("не удалось очистить экран: {}", e)))?;
 
-        if let Err(e) = out.flush() {
-            Self::exit_with_terminal_reset(&format!(
-                "Ошибка: не удалось выполнить flush буфера: {}",
-                e
-            ));
-        }
+        out.flush()
+            .map_err(|e| IoError::Flush(format!("не удалось выполнить flush буфера: {}", e)))?;
 
-        if let Err(e) = write!(out, "{}", Hide) {
-            Self::exit_with_terminal_reset(&format!("Ошибка: не удалось скрыть курсор: {}", e));
-        }
+        write!(out, "{}", Hide)
+            .map_err(|e| IoError::Cursor(format!("не удалось скрыть курсор: {}", e)))?;
 
-        Self { out }
+        Ok(Self { out })
     }
 
     /// Сбросить терминал в исходное состояние.

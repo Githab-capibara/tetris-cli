@@ -115,6 +115,7 @@ fn test_expect_with_context() {
 /// Тест 12.2: Проверка что паника содержит сообщение.
 #[test]
 #[should_panic(expected = "Ожидалось значение")]
+#[allow(clippy::unnecessary_literal_unwrap)]
 fn test_panic_contains_message() {
     let value: Option<i32> = None;
     let _ = value.expect("Ожидалось значение");

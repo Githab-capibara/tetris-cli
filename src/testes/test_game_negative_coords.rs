@@ -53,7 +53,7 @@ fn test_обработка_отрицательных_y_координат() {
             // Пустые клетки должны иметь значение -1
             if cell != -1 {
                 assert!(
-                    cell >= 0 && cell <= 6,
+                    (0..=6).contains(&cell),
                     "Значение клетки {} должно быть в диапазоне [-1, 6]",
                     cell
                 );
@@ -120,8 +120,8 @@ fn test_граничные_значения_координат() {
     let game = GameState::new();
 
     // Проверяем константы границ
-    assert!(GRID_WIDTH > 0, "GRID_WIDTH должен быть положительным");
-    assert!(GRID_HEIGHT > 0, "GRID_HEIGHT должен быть положительным");
+    const _: () = assert!(GRID_WIDTH > 0, "GRID_WIDTH должен быть положительным");
+    const _: () = assert!(GRID_HEIGHT > 0, "GRID_HEIGHT должен быть положительным");
 
     // Проверяем что размеры поля корректны
     let blocks = game.get_blocks();

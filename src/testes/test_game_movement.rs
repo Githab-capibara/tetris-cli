@@ -844,7 +844,7 @@ fn test_movement_after_full_rotation_cycle() {
 
 /// Тест 48: Вращение у стены и движение
 #[test]
-#[allow(clippy::assertions_on_result_types)]
+#[allow(clippy::assertions_on_result_states)]
 fn test_rotation_at_wall_and_movement() {
     let mut state = GameState::new();
 
