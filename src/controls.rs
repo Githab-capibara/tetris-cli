@@ -220,7 +220,6 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// assert!(config.validate());
     /// ```
-    #[must_use]
     pub fn validate(&self) -> bool {
         // Сбор всех клавиш в массив для проверки
         let keys = [

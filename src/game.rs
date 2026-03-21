@@ -21,7 +21,6 @@ use crate::io::{
     Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
 };
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
-use std::collections::HashSet;
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -498,11 +497,6 @@ pub struct GameState {
     soft_drop_distance: u32,
     /// Генератор фигур по системе 7-bag.
     bag: crate::tetromino::BagGenerator,
-    /// Отслеживание изменённых клеток для оптимизации отрисовки.
-    /// Содержит координаты (y, x) клеток, которые изменились с последнего кадра.
-    /// Используется для dirty rectangle tracking - отрисовки только изменённых областей.
-    #[allow(dead_code)]
-    dirty_cells: HashSet<(usize, usize)>,
 }
 
 /// Состояние завершения обновления.
@@ -561,7 +555,6 @@ impl GameState {
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
-            dirty_cells: HashSet::new(),
         }
     }
 
@@ -596,7 +589,6 @@ impl GameState {
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
-            dirty_cells: HashSet::new(),
         }
     }
 
@@ -631,7 +623,6 @@ impl GameState {
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
-            dirty_cells: HashSet::new(),
         }
     }
 
