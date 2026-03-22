@@ -136,6 +136,12 @@ const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
 /// Измеряется в блоках за секунду.
 pub const INITIAL_FALL_SPD: f32 = 0.9;
 
+/// Максимальная скорость падения.
+///
+/// Ограничивает максимальную скорость фигуры для предотвращения переполнения
+/// при расчёте очков за падение.
+pub const MAX_FALL_SPEED: f32 = 1000.0;
+
 /// Задержка времени приземления (секунды).
 ///
 /// Даёт игроку время на перемещение фигуры после касания.
@@ -172,6 +178,12 @@ pub const LINE_SCORES: [u128; 4] = [
     400,  // 3 линии: 100 × 2^2 = 400
     1800, // 4 линии (Tetris): 100 × 2^3 + 1000 = 1800
 ];
+
+/// Максимальное количество линий, которое можно удалить за один ход.
+///
+/// В классическом тетрисе максимально возможно удалить 4 линии одновременно (Tetris).
+/// Это константа используется для ограничения расчёта очков и предотвращения переполнения.
+pub const MAX_LINES_PER_CLEAR: u32 = 4;
 
 /// Ширина игрового поля в блоках.
 /// Алиас на GRID_WIDTH для лучшей читаемости кода.
@@ -274,7 +286,7 @@ pub struct GameStats {
 }
 
 /// Достижение в игре (заготовка для будущей системы достижений).
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct Achievement {
     /// Название достижения.
@@ -369,6 +381,14 @@ impl GameStats {
     }
 
     /// Получить время игры в секундах.
+    ///
+    /// # Стоимость вызова
+    /// Метод имеет стоимость O(1). При активной игре (end_time = None) выполняет
+    /// вызов `Instant::now()`, который является системным вызовом и может занимать
+    /// несколько наносекунд.
+    ///
+    /// # Возвращает
+    /// Прошедшее время в секундах (f64)
     #[must_use]
     pub fn get_elapsed_time(&self) -> f64 {
         match (self.start_time, self.end_time) {
@@ -788,7 +808,9 @@ impl GameState {
             .abs()
             .max(0.0)
             .min(u32::MAX as f32);
-        let drop_distance = if drop_distance_f32.is_finite() {
+        // Исправление: добавлена проверка диапазона для безопасного преобразования f32 в u32
+        let drop_distance = if drop_distance_f32.is_finite() && drop_distance_f32 <= u32::MAX as f32
+        {
             drop_distance_f32 as u32
         } else {
             0 // Защита от NaN/infinity
@@ -865,7 +887,9 @@ impl GameState {
         // Фиксация фигуры и начисление очков
         // Добавлена защита от переполнения при расчёте очков за падение
         // Используем u128::MAX для предотвращения переполнения f32
-        let fall_bonus = (self.fall_spd * PIECE_SCORE_FALL_MULT)
+        // Исправление: ограничиваем максимальную скорость падения константой MAX_FALL_SPEED
+        let limited_fall_spd = self.fall_spd.min(MAX_FALL_SPEED);
+        let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
             .max(0.0)
             .min(u32::MAX as f32);
         let fall_bonus_u128 = if fall_bonus.is_finite() {
@@ -1171,11 +1195,16 @@ impl GameState {
         // Алгоритм: перемещаем каждую строку вниз на количество удалённых строк выше неё
         // Это эффективнее чем создание нового массива: избегаем heap-аллокации
 
-        // Проверка в отладочном режиме: rows_mask должен быть валидным
-        debug_assert!(
-            rows_mask < (1u32 << GRID_HEIGHT),
-            "rows_mask выходит за пределы поля"
-        );
+        // Исправление: заменяем debug_assert! на обычную проверку для production
+        // rows_mask должен быть валидным (не выходить за пределы поля)
+        if rows_mask >= (1u32 << GRID_HEIGHT) {
+            eprintln!(
+                "Предупреждение: rows_mask ({}) выходит за пределы поля (максимум {})",
+                rows_mask,
+                (1u32 << GRID_HEIGHT) - 1
+            );
+            return;
+        }
 
         // Подсчитываем количество строк для удаления снизу вверх
         let mut rows_removed_below = 0;
@@ -1210,7 +1239,7 @@ impl GameState {
     fn update_score_and_level(&mut self, remove_count: u32) {
         if remove_count > 0 {
             // Ограничение remove_count максимум 4 (максимум 4 линии можно удалить одновременно)
-            let capped_remove_count = remove_count.min(4);
+            let capped_remove_count = remove_count.min(MAX_LINES_PER_CLEAR);
 
             // Обновление количества удалённых линий
             self.lines_cleared = self.lines_cleared.saturating_add(capped_remove_count);
@@ -1380,7 +1409,9 @@ impl GameState {
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
 
             // Проверка границ перед отрисовкой для защиты от паники
-            if x >= 0 && y >= 0 {
+            // Исправление: убрана избыточная проверка y >= 0, так как y всегда >= 0
+            // (SHAPE_DRAW_OFFSET = 5, что больше максимального отрицательного coord_y = -2)
+            if x >= 0 {
                 cnv.draw_strs(
                     &[shape_display_char],
                     (x as u16, y as u16),

@@ -148,3 +148,6 @@ pub mod test_security_fixes;
 
 // Тесты качества кода для 6 исправлений (6 тестов + 1 интеграционный)
 pub mod test_code_quality_fixes;
+
+// Тесты для всех исправленных проблем аудита (12 тестов + 1 интеграционный)
+pub mod test_audit_fixes;

@@ -79,6 +79,11 @@ const ENTRY_COOLDOWN_MS: u64 = 100;
 #[cfg(test)]
 const ENTRY_COOLDOWN_MS: u64 = 0;
 
+/// Максимальное количество цифр в строковом представлении u128.
+/// Используется для оптимизации выделения памяти при конвертации чисел в строку.
+/// u128::MAX = 340282366920938463463374607431768211455 (39 цифр)
+const U128_MAX_DIGITS: usize = 39;
+
 /// Ошибка операции с конфигурацией.
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -154,7 +159,7 @@ pub fn check_config_directory_writable() -> Result<(), ConfigError> {
 
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
+/// Использует u128 для предотвращения переполнения счёта.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SaveData {
     /// Значение рекорда.
@@ -167,7 +172,7 @@ pub struct SaveData {
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.
-/// Исправление #2: используем u128 для предотвращения переполнения счёта
+/// Использует u128 для предотвращения переполнения счёта.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
@@ -192,17 +197,17 @@ impl LeaderboardEntry {
     /// Значение рекорда (u128)
     ///
     /// # Безопасность
-    /// Исправление #6: метод возвращает значение только после успешной валидации хэша.
+    /// Метод возвращает значение только после успешной валидации хэша.
     /// Это предотвращает race condition между проверкой и использованием.
-    /// Исправление #2: возвращаем u128 для предотвращения переполнения
+    /// Возвращает u128 для предотвращения переполнения.
     #[must_use]
     pub fn score(&self) -> u128 {
-        // Исправление #6: валидация перед каждым использованием
+        // Валидация перед каждым использованием
         if !self.is_valid() {
             eprintln!("Предупреждение: запись в таблице лидеров не прошла валидацию!");
             return 0;
         }
-        // Исправление: возвращаем значение поля напрямую через self.score_value
+        // Возвращаем значение поля напрямую через self.score_value
         // чтобы избежать бесконечной рекурсии (ранее self.score вызывало сам себя)
         self.score_value
     }
@@ -283,7 +288,7 @@ impl SaveData {
     /// let save = SaveData::from_value(1000);
     /// // [`high_score`] содержит значение 1000
     /// ```
-    /// Исправление #2: используем u128 для предотвращения переполнения
+    /// Использует u128 для предотвращения переполнения.
     pub fn from_value(high_score: u128) -> Self {
         let high_score_str = high_score.to_string();
         let salt = generate_salt();
@@ -304,7 +309,7 @@ impl SaveData {
     ///
     /// # Ошибки
     /// При ошибке сохранения выводит сообщение в stderr
-    /// Исправление #2: используем u128 для предотвращения переполнения
+    /// Использует u128 для предотвращения переполнения.
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
         if let Err(e) = store(APP_NAME, save) {
@@ -329,7 +334,7 @@ impl SaveData {
     ///     Err(e) => eprintln!("Ошибка сохранения: {}", e),
     /// }
     /// ```
-    /// Исправление #2: используем u128 для предотвращения переполнения
+    /// Использует u128 для предотвращения переполнения.
     #[allow(dead_code)]
     pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
         let save = Self::from_value(high_score);
@@ -390,14 +395,14 @@ impl Default for SaveData {
 /// Безопасное имя для таблицы лидеров
 ///
 /// # Безопасность
-/// Исправление #23: использует String::with_capacity() для предотвращения реаллокаций.
+/// Использует String::with_capacity() для предотвращения реаллокаций.
 fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
-    // Исправление #23: используем String::with_capacity() для предотвращения реаллокаций
+    // Используем String::with_capacity() для предотвращения реаллокаций
     // Максимальная длина имени - 20 символов
     let mut validated = String::with_capacity(20.min(trimmed.len()));
     for c in trimmed.chars() {
@@ -434,7 +439,7 @@ impl LeaderboardEntry {
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), 1000);
     /// ```
-    /// Исправление #2: используем u128 для предотвращения переполнения
+    /// Использует u128 для предотвращения переполнения.
     pub fn new(name: String, score: u128) -> Self {
         let valid_name = sanitize_player_name(&name);
 
@@ -442,7 +447,8 @@ impl LeaderboardEntry {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         // для предотвращения лишних аллокаций
         use std::fmt::Write;
-        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 40);
+        let mut salt_and_score =
+            String::with_capacity(salt.len() + valid_name.len() + U128_MAX_DIGITS);
         let _ = write!(salt_and_score, "{}{}{}", salt, valid_name, score);
         let hash = get_hash(&salt_and_score);
 
@@ -495,10 +501,10 @@ impl LeaderboardEntry {
 /// `true` если символ допустим
 ///
 /// # Безопасность
-/// Исправление #11: расширенная валидация Unicode для поддержки международных имён.
+/// Расширенная валидация Unicode для поддержки международных имён.
 /// Запрещены управляющие символы и эмодзи через is_control().
 fn is_valid_name_char(c: char) -> bool {
-    // Исправление #11: расширенная валидация Unicode
+    // Расширенная валидация Unicode
     // Разрешаем alphanumeric (включая Unicode), русские буквы и безопасные символы
     // Запрещаем управляющие символы (c.is_control()) и эмодзи
     !c.is_control()
@@ -661,7 +667,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Лучший рекорд или 0, если таблица пуста
-    /// Исправление #2: возвращаем u128 для предотвращения переполнения
+    /// Возвращает u128 для предотвращения переполнения.
     #[allow(dead_code)]
     #[must_use]
     pub fn get_best_score(&self) -> u128 {

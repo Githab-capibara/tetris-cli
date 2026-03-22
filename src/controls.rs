@@ -45,7 +45,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     if full_path.is_absolute() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Абсолютные пути не разрешены",
+            format!("Абсолютные пути не разрешены: {:?}", path),
         ));
     }
 
@@ -53,19 +53,23 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     if path.contains("..") {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Path traversal не разрешён",
+            format!("Path traversal не разрешён: {:?}", path),
         ));
     }
 
     // Получаем текущую директорию
-    let current_dir = std::env::current_dir()?;
+    let current_dir = std::env::current_dir()
+        .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {}", e)))?;
     let joined_path = current_dir.join(full_path);
 
     // Для существующих файлов - используем canonicalize()
     // Для несуществующих (сохранение) - проверяем родительскую директорию
     let canonical_path = if joined_path.exists() {
         joined_path.canonicalize().map_err(|e| {
-            io::Error::new(io::ErrorKind::InvalidInput, format!("Неверный путь: {e}"))
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("Неверный путь {:?}: {}", path, e),
+            )
         })?
     } else {
         // Файл не существует - проверяем родительскую директорию
@@ -82,7 +86,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         if metadata.file_type().is_symlink() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Символические ссылки не разрешены",
+                format!("Символические ссылки не разрешены: {:?}", path),
             ));
         }
     }
@@ -92,7 +96,10 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     if canonical_path.strip_prefix(&current_dir).is_err() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Путь вне разрешённой директории (symlink attack detected)",
+            format!(
+                "Путь вне разрешённой директории (symlink attack detected): {:?}",
+                path
+            ),
         ));
     }
 
