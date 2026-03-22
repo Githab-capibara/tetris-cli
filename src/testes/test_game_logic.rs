@@ -16,7 +16,7 @@ use crate::game::{
     SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{ShapeType, Tetromino};
+use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
@@ -267,7 +267,7 @@ fn test_tetromino_rotate_clockwise() {
 
     // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
     // Вращение по часовой: (x,y) -> (-y,x)
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
 
     // После вращения: (0,-1), (0,0), (0,1), (-1,0)
     assert_eq!(
@@ -295,7 +295,7 @@ fn test_tetromino_rotate_counter_clockwise() {
     };
 
     // Вращение против часовой: (x,y) -> (y,-x)
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate(RotationDirection::CounterClockwise);
 
     // После вращения: (0,1), (0,0), (0,-1), (1,0)
     assert_eq!(
@@ -320,14 +320,14 @@ fn test_tetromino_o_no_rotate() {
     let original_coords = tetromino.coords;
 
     // Вращение по часовой
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
     assert_eq!(
         tetromino.coords, original_coords,
         "Квадрат не должен вращаться по часовой"
     );
 
     // Вращение против часовой
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate(RotationDirection::CounterClockwise);
     assert_eq!(
         tetromino.coords, original_coords,
         "Квадрат не должен вращаться против часовой"
@@ -350,7 +350,7 @@ fn test_tetromino_full_rotation_cycle() {
 
     // 4 вращения по часовой должны вернуть к исходным координатам
     for _ in 0..4 {
-        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate(RotationDirection::Clockwise);
     }
 
     assert_eq!(
@@ -383,7 +383,7 @@ fn test_all_tetromino_rotate() {
         };
 
         let original_coords = tetromino.coords;
-        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate(RotationDirection::Clockwise);
 
         // Все фигуры кроме O должны изменить координаты
         if *shape_type != ShapeType::O {

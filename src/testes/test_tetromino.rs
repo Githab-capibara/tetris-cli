@@ -12,7 +12,6 @@
 #![allow(deprecated)]
 
 use crate::game::Dir;
-use crate::tetromino::RotationDirection;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================

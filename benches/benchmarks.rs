@@ -1,4 +1,4 @@
-//! Бенчмарки для Tetris CLI.
+//! бенчмарки для Tetris CLI.
 //!
 //! Этот модуль содержит бенчмарки для проверки производительности
 //! ключевых функций игры:
@@ -6,10 +6,16 @@
 //! - find_full_rows() - поиск заполненных линий
 //! - rotate() - вращение фигур
 //! - save_tetromino() - сохранение фигуры в поле
+//!
+//! ## Примечание
+//! Бенчмарки доступны только при включённой фиче `bench`.
+//! Запуск: `cargo bench --features bench`
+
+#![cfg(feature = "bench")]
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use tetris_cli::game::GameState;
-use tetris_cli::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
 
 /// Бенчмарк для find_full_rows().
 ///
@@ -20,34 +26,29 @@ fn bench_find_full_rows(c: &mut Criterion) {
 
     // Пустое поле
     group.bench_function("empty_field", |b| {
-        let mut state = GameState::new();
         b.iter(|| {
-            let game_state = &mut state;
-            // Вызываем приватный метод через публичный интерфейс
-            // Для бенчмарка используем fill_line_for_bench
-            black_box(game_state);
+            let state = GameState::new();
+            black_box(state);
         });
     });
 
     // Поле с одной заполненной линией
     group.bench_function("one_full_line", |b| {
-        let mut state = GameState::new();
-        state.fill_line_for_bench(10);
         b.iter(|| {
-            let game_state = &mut state;
-            black_box(game_state);
+            let mut state = GameState::new();
+            state.fill_line_for_bench(10);
+            black_box(state);
         });
     });
 
     // Поле с несколькими заполненными линиями
     group.bench_function("multiple_full_lines", |b| {
-        let mut state = GameState::new();
-        for line in [5, 10, 15, 18] {
-            state.fill_line_for_bench(line);
-        }
         b.iter(|| {
-            let game_state = &mut state;
-            black_box(game_state);
+            let mut state = GameState::new();
+            for line in [5, 10, 15, 18] {
+                state.fill_line_for_bench(line);
+            }
+            black_box(state);
         });
     });
 
@@ -63,8 +64,6 @@ fn bench_check_rows(c: &mut Criterion) {
 
     // Поле с одной заполненной линией
     group.bench_function("clear_one_line", |b| {
-        let mut state = GameState::new();
-        state.fill_line_for_bench(10);
         b.iter(|| {
             let mut game_state = GameState::new();
             game_state.fill_line_for_bench(10);
@@ -109,7 +108,7 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение T-фигуры
     group.bench_function("rotate_t_clockwise", |b| {
-        let mut tetromino = Tetromino {
+        let tetromino = Tetromino {
             pos: (4.0, 0.0),
             shape: ShapeType::T,
             coords: tetris_cli::tetromino::SHAPE_COORDS[0],
@@ -124,7 +123,7 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение I-фигуры
     group.bench_function("rotate_i_clockwise", |b| {
-        let mut tetromino = Tetromino {
+        let tetromino = Tetromino {
             pos: (4.0, 0.0),
             shape: ShapeType::I,
             coords: tetris_cli::tetromino::SHAPE_COORDS[6],
@@ -139,7 +138,7 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение O-фигуры (не вращается)
     group.bench_function("rotate_o_noop", |b| {
-        let mut tetromino = Tetromino {
+        let tetromino = Tetromino {
             pos: (4.0, 0.0),
             shape: ShapeType::O,
             coords: tetris_cli::tetromino::SHAPE_COORDS[5],
@@ -172,24 +171,15 @@ fn bench_save_tetromino(c: &mut Criterion) {
 
     // Сохранение I-фигуры
     group.bench_function("save_i_center", |b| {
-        let mut bag = BagGenerator::new();
-        // Создаём I-фигуру
-        let mut state = GameState::new();
-        // Принудительно устанавливаем I-фигуру
-        state.curr_shape = Tetromino {
-            pos: (4.0, 0.0),
-            shape: ShapeType::I,
-            coords: tetris_cli::tetromino::SHAPE_COORDS[6],
-            fg: 6,
-        };
         b.iter(|| {
             let mut game_state = GameState::new();
-            game_state.curr_shape = Tetromino {
+            // Используем set_curr_shape_for_bench для установки I-фигуры
+            game_state.set_curr_shape_for_bench(Tetromino {
                 pos: (4.0, 0.0),
                 shape: ShapeType::I,
                 coords: tetris_cli::tetromino::SHAPE_COORDS[6],
                 fg: 6,
-            };
+            });
             game_state.save_tetromino_for_bench();
             black_box(game_state);
         });

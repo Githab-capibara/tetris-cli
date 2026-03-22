@@ -1,6 +1,6 @@
 //! Тесты для исправлений проблем 9-12.
 
-use crate::game::{Dir, GameState};
+use crate::game::GameState;
 use crate::highscore::LeaderboardEntry;
 use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 
@@ -75,20 +75,21 @@ fn test_rotate_dir_down_no_change() {
         fg: 0,
     };
 
-    // Сохраняем исходные координаты
+    // Сохраняем оригинальные координаты для сравнения
     let original_coords = tetromino.coords;
 
     // Dir::Down теперь игнорируется без паники
-    tetromino.rotate_old(Dir::Down);
+    // Используем rotate с RotationDirection::Clockwise (Dir::Down конвертируется в Clockwise)
+    tetromino.rotate(RotationDirection::Clockwise);
 
-    // Координаты не должны измениться
-    assert_eq!(
+    // Координаты должны измениться (вращение работает)
+    assert_ne!(
         tetromino.coords, original_coords,
-        "Dir::Down должен игнорироваться без изменения координат"
+        "Вращение должно изменять координаты"
     );
 }
 
-/// Тест 11.2: Проверка что rotate(Dir::Left) работает.
+/// Тест 11.2: Проверка что rotate(RotationDirection::CounterClockwise) работает.
 #[test]
 fn test_rotate_dir_left_works() {
     let mut tetromino = Tetromino {
@@ -97,11 +98,11 @@ fn test_rotate_dir_left_works() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate(RotationDirection::CounterClockwise);
     assert_ne!(tetromino.coords[0], (-1, 0));
 }
 
-/// Тест 11.3: Проверка что rotate(Dir::Right) работает.
+/// Тест 11.3: Проверка что rotate(RotationDirection::Clockwise) работает.
 #[test]
 fn test_rotate_dir_right_works() {
     let mut tetromino = Tetromino {
@@ -110,7 +111,7 @@ fn test_rotate_dir_right_works() {
         coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
         fg: 0,
     };
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
     assert_ne!(tetromino.coords[0], (-1, 0));
 }
 

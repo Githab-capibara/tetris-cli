@@ -9,9 +9,7 @@
 //!
 //! Все тесты проверяют отдельные аспекты свойств фигур.
 
-use crate::game::Dir;
-use crate::tetromino::RotationDirection;
-use crate::tetromino::{ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
+use crate::tetromino::{RotationDirection, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-14: Детальные тесты для каждой из 7 фигур
@@ -558,7 +556,7 @@ fn test_t_piece_after_one_clockwise_rotation() {
         fg: 0,
     };
 
-    t.rotate_old(Dir::Right);
+    t.rotate(RotationDirection::Clockwise);
 
     // После вращения по часовой: (x,y) -> (-y,x)
     // Исходные: (-1,0), (0,0), (1,0), (0,1)
@@ -580,8 +578,8 @@ fn test_t_piece_after_two_rotations() {
         fg: 0,
     };
 
-    t.rotate_old(Dir::Right);
-    t.rotate_old(Dir::Right);
+    t.rotate(RotationDirection::Clockwise);
+    t.rotate(RotationDirection::Clockwise);
 
     // После 2 вращений фигура перевёрнута
     assert_ne!(
@@ -601,7 +599,7 @@ fn test_t_piece_after_three_rotations() {
     };
 
     for _ in 0..3 {
-        t.rotate_old(Dir::Right);
+        t.rotate(RotationDirection::Clockwise);
     }
 
     // 3 вращения по часовой = 1 против часовой
@@ -622,7 +620,7 @@ fn test_t_piece_after_four_rotations() {
     };
 
     for _ in 0..4 {
-        t.rotate_old(Dir::Right);
+        t.rotate(RotationDirection::Clockwise);
     }
 
     assert_eq!(
@@ -642,7 +640,7 @@ fn test_l_piece_after_rotation() {
     };
 
     let original_coords = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
         t.coords, original_coords,
@@ -663,7 +661,7 @@ fn test_i_piece_after_rotation_vertical_to_horizontal() {
     // Исходная I-фигура вертикальная: (0,-1), (0,0), (0,1), (0,2)
     assert_eq!(t.coords[0].0, 0, "Исходно I-фигура вертикальна (x=0)");
 
-    t.rotate_old(Dir::Right);
+    t.rotate(RotationDirection::Clockwise);
 
     // После вращения I-фигура становится горизонтальной
     // Все блоки должны быть на одной строке (y=0 для центрального блока)
