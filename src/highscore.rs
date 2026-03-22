@@ -20,13 +20,14 @@ use std::time::Duration;
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ===========================================================================
 // Общие функции для генерации хешей и солей
-// Используются в SaveData и LeaderboardEntry
+// Используются в [`SaveData`] и [`LeaderboardEntry`]
 
 /// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
 /// Оптимизация: использует hex::encode() вместо ручного цикла
+#[must_use = "Соль должна быть использована для хеширования"]
 pub fn generate_salt() -> String {
     use rand::rngs::OsRng;
     use rand::RngCore;
@@ -43,7 +44,7 @@ pub fn generate_salt() -> String {
 ///
 /// # Устарело
 /// Используйте [`generate_salt()`] вместо этой функции.
-#[deprecated(since = "2.1.0", note = "Используйте generate_salt()")]
+#[deprecated(since = "2.1.0", note = "Используйте `generate_salt()`")]
 #[allow(dead_code)]
 pub fn get_random_hash() -> String {
     generate_salt()
@@ -236,7 +237,7 @@ impl SaveData {
         match load::<Self>(APP_NAME) {
             Ok(data) => {
                 // Дополнительная проверка целостности
-                // Исправление: используем verify_and_get_score() вместо deprecated assert_hs()
+                // Исправление: используем [`verify_and_get_score()`] вместо deprecated `assert_hs()`
                 match data.verify_and_get_score() {
                     Some(score) => {
                         // Логирование успешной загрузки
@@ -257,7 +258,7 @@ impl SaveData {
             }
             Err(e) => {
                 // Подробное логирование ошибок загрузки
-                // Используем Display trait для форматирования ошибки
+                // Используем [`Display`] trait для форматирования ошибки
                 let error_msg = format!("{}", e);
                 eprintln!(
                     "Ошибка загрузки конфигурации: {}. Используется значение по умолчанию.",
@@ -280,7 +281,7 @@ impl SaveData {
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
     /// let save = SaveData::from_value(1000);
-    /// // save.high_score содержит значение 1000
+    /// // [`high_score`] содержит значение 1000
     /// ```
     /// Исправление #2: используем u128 для предотвращения переполнения
     pub fn from_value(high_score: u128) -> Self {
@@ -540,11 +541,11 @@ impl Leaderboard {
     /// `false` если рекорд недостаточно высок или превышен лимит rate limiting
     ///
     /// # Безопасность
-    /// Реализовано rate limiting: не более MAX_ENTRIES_PER_MINUTE записей в минуту.
+    /// Реализовано rate limiting: не более [`MAX_ENTRIES_PER_MINUTE`] записей в минуту.
     /// Используем u128 для предотвращения переполнения.
     /// Все timestamps валидируются: отклоняются будущие времена.
     /// При подозрительных timestamps записывается предупреждение.
-    /// Добавлена проверка cooldown: минимальное время между записями ENTRY_COOLDOWN_MS.
+    /// Добавлена проверка cooldown: минимальное время между записями [`ENTRY_COOLDOWN_MS`].
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
         use std::time::{SystemTime, UNIX_EPOCH};
 
