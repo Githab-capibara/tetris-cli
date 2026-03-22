@@ -301,6 +301,7 @@ impl ControlsConfig {
     /// assert_eq!(config.move_left, b'h');
     /// ```
     #[must_use = "Конфигурация должна быть использована"]
+    #[allow(clippy::too_many_arguments)]
     pub const fn custom(
         move_left: u8,
         move_right: u8,
