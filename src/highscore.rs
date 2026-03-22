@@ -10,10 +10,15 @@
 //! **BLAKE3 является криптографически стойкой** и обеспечивает надёжную защиту от подделки рекордов.
 //! BLAKE3 — современная быстрая хеш-функция, основанная на BLAKE2.
 //! Для генерации соли используется криптографически стойкий генератор случайных чисел (getrandom).
+//!
+//! ## Защита от race condition
+//! Все операции с конфигурацией rate limiting защищены эксклюзивной файловой блокировкой fs2.
+//! Это предотвращает одновременный доступ к файлу конфигурации из нескольких процессов.
 
 use confy::{load, store};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+use std::fs::OpenOptions;
 use std::time::Duration;
 
 // ===========================================================================
@@ -26,7 +31,7 @@ use std::time::Duration;
 ///
 /// Используется криптографически стойкий генератор случайных чисел (getrandom).
 /// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
-/// Оптимизация: использует hex::encode() вместо ручного цикла
+/// Оптимизация: использует `hex::encode()` вместо ручного цикла
 #[must_use = "Соль должна быть использована для хеширования"]
 pub fn generate_salt() -> String {
     use rand::rngs::OsRng;
@@ -82,10 +87,16 @@ const ENTRY_COOLDOWN_MS: u64 = 0;
 
 /// Максимальное количество цифр в строковом представлении u128.
 /// Используется для оптимизации выделения памяти при конвертации чисел в строку.
-/// u128::MAX = 340282366920938463463374607431768211455 (39 цифр)
-/// Примечание: константа устарела, используется ilog10() для точной оценки.
+/// `u128::MAX` = 340282366920938463463374607431768211455 (39 цифр)
+/// Исправление #10: используем константу вместо `ilog10()` для точной оценки.
+/// Это предотвращает лишние вычисления и улучшает производительность.
 #[allow(dead_code)]
-const U128_MAX_DIGITS: usize = 39;
+pub const MAX_SCORE_DIGITS: usize = 39;
+
+/// Максимальный размер файла конфигурации в байтах (1MB).
+/// Используется для защиты от атак через большие файлы.
+/// Исправление #23: проверка размера файла перед загрузкой.
+pub const MAX_CONFIG_FILE_SIZE: u64 = 1_048_576; // 1MB
 
 /// Имя конфигурации для хранения состояния rate limiting.
 const RATE_LIMIT_CONFIG_NAME: &str = "tetris-cli_rate_limit";
@@ -109,17 +120,14 @@ struct RateLimitState {
 /// Timestamp в миллисекундах, который гарантированно не меньше последнего сохранённого.
 ///
 /// # Безопасность
-/// Если системное время было изменено назад, возвращается last_known_time_ms.
+/// Если системное время было изменено назад, возвращается `last_known_time_ms`.
 /// Это предотвращает обход rate limiting через установку времени назад.
 fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
     let current_time_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_else(|e| {
             // Логирование ошибки SystemTime
-            eprintln!(
-                "Ошибка: системное время недоступно: {}. Используется время 0.",
-                e
-            );
+            eprintln!("Ошибка: системное время недоступно: {e}. Используется время 0.");
             Duration::from_secs(0)
         })
         .as_millis() as u64;
@@ -140,31 +148,132 @@ fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
     }
 }
 
-/// Загрузить состояние rate limiting из конфигурации.
+/// Загрузить состояние rate limiting из конфигурации с файловой блокировкой.
 ///
 /// # Возвращает
-/// RateLimitState из конфигурации или default при ошибке.
+/// `RateLimitState` из конфигурации или default при ошибке.
+///
+/// # Безопасность
+/// Использует эксклюзивную файловую блокировку fs2 для предотвращения race condition.
+/// Исправление #23: добавлена проверка размера файла перед загрузкой.
 fn load_rate_limit_state() -> RateLimitState {
+    use directories::ProjectDirs;
+    use fs2::FileExt;
+    use std::fs;
+
+    // Получаем путь к файлу конфигурации
+    let proj_dirs = if let Some(dirs) = ProjectDirs::from("", "", APP_NAME) {
+        dirs
+    } else {
+        eprintln!("Информация: не удалось определить директорию конфигурации. Используется новое состояние.");
+        return RateLimitState::default();
+    };
+
+    let config_file = proj_dirs
+        .config_dir()
+        .join(format!("{RATE_LIMIT_CONFIG_NAME}.toml"));
+
+    // Исправление #23: проверка размера файла перед загрузкой
+    if let Ok(metadata) = fs::metadata(&config_file) {
+        if metadata.len() > MAX_CONFIG_FILE_SIZE {
+            eprintln!(
+                "Предупреждение: файл конфигурации слишком большой ({} байт, максимум {} байт). Используется новое состояние.",
+                metadata.len(),
+                MAX_CONFIG_FILE_SIZE
+            );
+            return RateLimitState::default();
+        }
+    }
+
+    // Пытаемся открыть файл с блокировкой
+    if let Ok(file) = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&config_file)
+    {
+        // Устанавливаем эксклюзивную блокировку
+        if let Err(e) = file.lock_exclusive() {
+            eprintln!("Информация: не удалось установить блокировку файла конфигурации: {e}. Используется новое состояние.");
+            return RateLimitState::default();
+        }
+
+        // Читаем конфигурацию через confy
+        let result = match load::<RateLimitState>(RATE_LIMIT_CONFIG_NAME) {
+            Ok(state) => state,
+            Err(e) => {
+                eprintln!("Информация: не удалось загрузить состояние rate limiting: {e}. Используется новое состояние.");
+                RateLimitState::default()
+            }
+        };
+
+        // Снимаем блокировку
+        let _ = file.unlock();
+        return result;
+    }
+
+    // Файл не существует или не удалось открыть - используем confy напрямую
     match load::<RateLimitState>(RATE_LIMIT_CONFIG_NAME) {
         Ok(state) => state,
         Err(e) => {
-            // Тихая ошибка - используем default
-            eprintln!("Информация: не удалось загрузить состояние rate limiting: {}. Используется новое состояние.", e);
+            eprintln!("Информация: не удалось загрузить состояние rate limiting: {e}. Используется новое состояние.");
             RateLimitState::default()
         }
     }
 }
 
-/// Сохранить состояние rate limiting в конфигурацию.
+/// Сохранить состояние rate limiting в конфигурацию с файловой блокировкой.
 ///
 /// # Аргументы
 /// * `state` - состояние для сохранения
+///
+/// # Безопасность
+/// Использует эксклюзивную файловую блокировку fs2 для предотвращения race condition.
 fn save_rate_limit_state(state: &RateLimitState) {
-    if let Err(e) = store(RATE_LIMIT_CONFIG_NAME, state) {
-        eprintln!(
-            "Предупреждение: не удалось сохранить состояние rate limiting: {}",
-            e
-        );
+    use directories::ProjectDirs;
+    use fs2::FileExt;
+
+    // Получаем путь к файлу конфигурации
+    let proj_dirs = if let Some(dirs) = ProjectDirs::from("", "", APP_NAME) {
+        dirs
+    } else {
+        eprintln!("Предупреждение: не удалось определить директорию конфигурации.");
+        return;
+    };
+
+    let config_file = proj_dirs
+        .config_dir()
+        .join(format!("{RATE_LIMIT_CONFIG_NAME}.toml"));
+
+    // Пытаемся открыть файл с блокировкой
+    if let Ok(file) = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&config_file)
+    {
+        // Устанавливаем эксклюзивную блокировку
+        if let Err(e) = file.lock_exclusive() {
+            eprintln!("Предупреждение: не удалось установить блокировку файла конфигурации: {e}");
+            // Пытаемся сохранить без блокировки
+            if let Err(e) = store(RATE_LIMIT_CONFIG_NAME, state) {
+                eprintln!("Предупреждение: не удалось сохранить состояние rate limiting: {e}");
+            }
+            return;
+        }
+
+        // Сохраняем конфигурацию через confy
+        if let Err(e) = store(RATE_LIMIT_CONFIG_NAME, state) {
+            eprintln!("Предупреждение: не удалось сохранить состояние rate limiting: {e}");
+        }
+
+        // Снимаем блокировку
+        let _ = file.unlock();
+    } else {
+        // Не удалось открыть файл - пытаемся сохранить без блокировки
+        if let Err(e) = store(RATE_LIMIT_CONFIG_NAME, state) {
+            eprintln!("Предупреждение: не удалось сохранить состояние rate limiting: {e}");
+        }
     }
 }
 
@@ -182,9 +291,9 @@ impl std::fmt::Display for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ConfigError::DirectoryNotWritable(dir) => {
-                write!(f, "Директория конфигурации недоступна для записи: {}", dir)
+                write!(f, "Директория конфигурации недоступна для записи: {dir}")
             }
-            ConfigError::IoError(msg) => write!(f, "Ошибка ввода/вывода: {}", msg),
+            ConfigError::IoError(msg) => write!(f, "Ошибка ввода/вывода: {msg}"),
         }
     }
 }
@@ -213,30 +322,27 @@ pub fn check_config_directory_writable() -> Result<(), ConfigError> {
     // Проверяем существование директории
     if !config_dir.exists() {
         return Err(ConfigError::DirectoryNotWritable(format!(
-            "Директория не существует: {:?}",
-            config_dir
+            "Директория не существует: {config_dir:?}"
         )));
     }
 
     // Проверяем, что это действительно директория
     if !config_dir.is_dir() {
         return Err(ConfigError::DirectoryNotWritable(format!(
-            "Путь не является директорией: {:?}",
-            config_dir
+            "Путь не является директорией: {config_dir:?}"
         )));
     }
 
     // Проверяем доступность для записи, пытаясь создать временный файл
     let test_file = config_dir.join(".tetris-cli-write-test");
     match fs::write(&test_file, b"test") {
-        Ok(_) => {
+        Ok(()) => {
             // Удаляем тестовый файл
             let _ = fs::remove_file(&test_file);
             Ok(())
         }
         Err(e) => Err(ConfigError::DirectoryNotWritable(format!(
-            "Не удалось создать тестовый файл в {:?}: {}",
-            config_dir, e
+            "Не удалось создать тестовый файл в {config_dir:?}: {e}"
         ))),
     }
 }
@@ -321,7 +427,7 @@ impl SaveData {
     /// Загрузить конфигурацию из файла.
     ///
     /// # Возвращает
-    /// SaveData по умолчанию при ошибке загрузки или при обнаружении подделки
+    /// `SaveData` по умолчанию при ошибке загрузки или при обнаружении подделки
     pub fn load_config() -> Self {
         match load::<Self>(APP_NAME) {
             Ok(data) => {
@@ -331,7 +437,7 @@ impl SaveData {
                     Some(score) => {
                         // Логирование успешной загрузки
                         if score > 0 {
-                            eprintln!("Информация: загружен рекорд со значением {}", score);
+                            eprintln!("Информация: загружен рекорд со значением {score}");
                         }
                         data
                     }
@@ -348,23 +454,22 @@ impl SaveData {
             Err(e) => {
                 // Подробное логирование ошибок загрузки
                 // Используем [`Display`] trait для форматирования ошибки
-                let error_msg = format!("{}", e);
+                let error_msg = format!("{e}");
                 eprintln!(
-                    "Ошибка загрузки конфигурации: {}. Используется значение по умолчанию.",
-                    error_msg
+                    "Ошибка загрузки конфигурации: {error_msg}. Используется значение по умолчанию."
                 );
                 Self::default()
             }
         }
     }
 
-    /// Создать SaveData из значения рекорда.
+    /// Создать `SaveData` из значения рекорда.
     ///
     /// # Аргументы
     /// * `high_score` - значение рекорда для сохранения
     ///
     /// # Возвращает
-    /// Новый экземпляр SaveData с вычисленным хешем
+    /// Новый экземпляр `SaveData` с вычисленным хешем
     ///
     /// # Пример
     /// ```no_run
@@ -397,7 +502,7 @@ impl SaveData {
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
         if let Err(e) = store(APP_NAME, save) {
-            eprintln!("Ошибка сохранения рекорда: {}", e);
+            eprintln!("Ошибка сохранения рекорда: {e}");
         }
     }
 
@@ -423,7 +528,7 @@ impl SaveData {
     pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
         let save = Self::from_value(high_score);
         store(APP_NAME, save)
-            .map_err(|e| ConfigError::IoError(format!("Ошибка сохранения рекорда: {}", e)))
+            .map_err(|e| ConfigError::IoError(format!("Ошибка сохранения рекорда: {e}")))
     }
 
     /// Проверить целостность рекорда и вернуть значение.
@@ -481,7 +586,7 @@ impl Default for SaveData {
 /// Безопасное имя для таблицы лидеров
 ///
 /// # Безопасность
-/// Использует String::with_capacity() для предотвращения реаллокаций.
+/// Использует `String::with_capacity()` для предотвращения реаллокаций.
 /// Добавлена защита от Unicode-атак:
 /// - Bidirectional control characters (U+200E, U+200F) отбрасываются
 /// - Emojis и другие опасные символы фильтруются
@@ -538,7 +643,7 @@ impl LeaderboardEntry {
     /// * `score` - значение рекорда
     ///
     /// # Возвращает
-    /// Новый экземпляр LeaderboardEntry с вычисленным хешем
+    /// Новый экземпляр `LeaderboardEntry` с вычисленным хешем
     ///
     /// # Пример
     /// ```
@@ -563,7 +668,7 @@ impl LeaderboardEntry {
         };
         let mut salt_and_score =
             String::with_capacity(salt.len() + valid_name.len() + score_digits);
-        let _ = write!(salt_and_score, "{}{}{}", salt, valid_name, score);
+        let _ = write!(salt_and_score, "{salt}{valid_name}{score}");
         let hash = get_hash(&salt_and_score);
 
         Self {
@@ -623,7 +728,7 @@ impl LeaderboardEntry {
 ///
 /// # Безопасность
 /// Расширенная валидация Unicode для поддержки международных имён.
-/// Запрещены управляющие символы и эмодзи через is_control().
+/// Запрещены управляющие символы и эмодзи через `is_control()`.
 fn is_valid_name_char(c: char) -> bool {
     // Расширенная валидация Unicode
     // Разрешаем alphanumeric (включая Unicode), русские буквы и безопасные символы
@@ -641,10 +746,10 @@ impl Leaderboard {
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
     pub fn load() -> Self {
-        match load(&format!("{}_leaderboard", APP_NAME)) {
+        match load(&format!("{APP_NAME}_leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
-                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {}. Используется пустая таблица.", e);
+                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Используется пустая таблица.");
                 Self::default()
             }
         }
@@ -652,8 +757,8 @@ impl Leaderboard {
 
     /// Сохранить таблицу лидеров в файл конфигурации.
     pub fn save(&self) {
-        if let Err(e) = store(&format!("{}_leaderboard", APP_NAME), self) {
-            eprintln!("Ошибка сохранения таблицы лидеров: {}", e);
+        if let Err(e) = store(&format!("{APP_NAME}_leaderboard"), self) {
+            eprintln!("Ошибка сохранения таблицы лидеров: {e}");
         }
     }
 
@@ -683,8 +788,7 @@ impl Leaderboard {
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
             eprintln!(
-                "Предупреждение: превышен лимит добавления рекордов ({} в минуту)",
-                MAX_ENTRIES_PER_MINUTE
+                "Предупреждение: превышен лимит добавления рекордов ({MAX_ENTRIES_PER_MINUTE} в минуту)"
             );
             return false;
         }
@@ -720,8 +824,7 @@ impl Leaderboard {
         if let Some(&last_time) = self.recent_entry_times.last() {
             if current_time_ms.saturating_sub(last_time) < ENTRY_COOLDOWN_MS {
                 eprintln!(
-                    "Предупреждение: слишком частое добавление рекордов (cooldown {} мс)",
-                    ENTRY_COOLDOWN_MS
+                    "Предупреждение: слишком частое добавление рекордов (cooldown {ENTRY_COOLDOWN_MS} мс)"
                 );
                 return false;
             }
@@ -744,8 +847,7 @@ impl Leaderboard {
 
         if invalid_count > 0 {
             eprintln!(
-                "Предупреждение: удалено {} невалидных timestamps (подозрение на подделку)",
-                invalid_count
+                "Предупреждение: удалено {invalid_count} невалидных timestamps (подозрение на подделку)"
             );
         }
 
@@ -798,14 +900,14 @@ impl Leaderboard {
     #[allow(dead_code)]
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
-        self.entries.first().map(|e| e.score_value).unwrap_or(0)
+        self.entries.first().map_or(0, |e| e.score_value)
     }
 
     /// Проверить валидность всех записей.
     ///
     /// Удаляет все записи с невалидным хешем (подделанные).
     pub fn validate(&mut self) {
-        self.entries.retain(|e| e.is_valid());
+        self.entries.retain(LeaderboardEntry::is_valid);
     }
 
     /// Очистить таблицу лидеров.

@@ -10,6 +10,23 @@
 //! ## Примечание
 //! Бенчмарки доступны только при включённой фиче `bench`.
 //! Запуск: `cargo bench --features bench`
+//!
+//! ## CI/CD интеграция
+//! Исправление #28: для запуска бенчмарков в CI/CD используйте:
+//! ```bash
+//! cargo bench --features bench -- --output-format bencher | tee results.txt
+//! ```
+//!
+//! Для сравнения результатов с предыдущими запусками используйте cargo-criterion:
+//! ```bash
+//! cargo install cargo-criterion
+//! cargo criterion --features bench
+//! ```
+//!
+//! ## Интерпретация результатов
+//! - Время выполнения указано в наносекундах (ns) или миллисекундах (ms)
+//! - "Performance has regressed" означает ухудшение производительности
+//! - "Performance has improved" означает улучшение производительности
 
 use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::GameState;
