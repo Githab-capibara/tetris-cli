@@ -28,17 +28,21 @@ fn test_controls_config_eq() {
     let config2 = ControlsConfig::default_config();
 
     // Проверяем равенство
-    assert_eq!(config1, config2, "Одинаковые конфигурации должны быть равны");
+    assert_eq!(
+        config1, config2,
+        "Одинаковые конфигурации должны быть равны"
+    );
 
     // Проверяем транзитивность Eq
-    if config1 == config2 && config2 == config1 {
-        assert!(config1 == config1, "Транзитивность Eq: config1 должен быть равен самому себе");
+    if config1 == config2 {
+        assert!(
+            config1 == config1,
+            "Транзитивность Eq: config1 должен быть равен самому себе"
+        );
     }
 
     // Проверяем что разные конфигурации не равны
-    let config3 = ControlsConfig::custom(
-        b'h', b'l', b'j', b'k', b'y', b'u', b'i', b'o', 127
-    );
+    let config3 = ControlsConfig::custom(b'h', b'l', b'j', b'k', b'y', b'u', b'i', b'o', 127);
     assert_ne!(config1, config3, "Разные конфигурации не должны быть равны");
 }
 
@@ -115,7 +119,10 @@ fn test_custom_config_must_use() {
     assert_eq!(config.quit, 127, "quit должна быть 127");
 
     // Проверяем валидность конфигурации
-    assert!(config.validate(), "Кастомная конфигурация должна быть валидной");
+    assert!(
+        config.validate(),
+        "Кастомная конфигурация должна быть валидной"
+    );
 }
 
 // ============================================================================
@@ -170,6 +177,7 @@ fn test_error_formatting() {
 /// - Не пустую строку
 /// - Длиной 64 шестнадцатеричных символа (256 бит)
 /// - Состоящую из hex-символов
+///
 /// Атрибут #[must_use] предупреждает если результат не используется.
 #[test]
 fn test_generate_salt_must_use() {
@@ -179,10 +187,7 @@ fn test_generate_salt_must_use() {
     let salt = generate_salt();
 
     // Проверяем что соль не пустая
-    assert!(
-        !salt.is_empty(),
-        "Соль не должна быть пустой строкой"
-    );
+    assert!(!salt.is_empty(), "Соль не должна быть пустой строкой");
 
     // Проверяем длину (32 байта = 64 hex символа)
     assert_eq!(
@@ -199,7 +204,8 @@ fn test_generate_salt_must_use() {
 
     // Проверяем что соль состоит из lowercase hex
     assert!(
-        salt.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()),
+        salt.chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()),
         "Соль должна быть в lowercase hex формате"
     );
 
@@ -241,8 +247,7 @@ fn test_documentation_backticks() {
     assert_eq!(entry.name(), "TestPlayer", "Имя должно совпадать");
     assert_eq!(entry.score(), 500, "Очки должны совпадать");
 
-    // Проверяем что документация корректна (тест проходит если компиляция успешна)
-    assert!(true, "Документация с backticks корректна");
+    // Документация корректна (тест проходит если компиляция успешна)
 }
 
 // ============================================================================
@@ -267,9 +272,8 @@ fn test_all_code_quality_fixes_integration() {
     assert_eq!(config.move_left, b'a');
 
     // 3. Проверяем custom() с #[must_use]
-    let custom_config = ControlsConfig::custom(
-        b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'
-    );
+    let custom_config =
+        ControlsConfig::custom(b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9');
     assert_eq!(custom_config.move_left, b'1');
 
     // 4. Проверяем форматирование
@@ -286,5 +290,4 @@ fn test_all_code_quality_fixes_integration() {
     let _entry = LeaderboardEntry::new("Player".to_string(), 200);
 
     // Все исправления работают корректно
-    assert!(true, "Все 6 исправлений качества кода работают");
 }
