@@ -37,3 +37,4 @@ criterion = "0.5"
 [[bench]]
 name = "benchmarks"
 harness = false
+required-features = ["bench"]
