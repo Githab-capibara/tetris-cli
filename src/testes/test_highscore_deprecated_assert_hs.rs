@@ -1,7 +1,7 @@
-//! Тесты для исправления проблемы 1: deprecated assert_hs() в highscore.rs.
+//! Тесты для исправления проблемы 1: deprecated `assert_hs()` в highscore.rs.
 //!
-//! Эта проблема была исправлена заменой deprecated метода assert_hs()
-//! на новый метод verify_and_get_score() который возвращает Option<u64>.
+//! Эта проблема была исправлена заменой deprecated метода `assert_hs()`
+//! на новый метод `verify_and_get_score()` который возвращает Option<u64>.
 //!
 //! ## Исправление
 //! Было: `save.assert_hs()` - возвращает u64, использует deprecated подход
@@ -9,7 +9,7 @@
 
 use crate::highscore::SaveData;
 
-/// Тест 1: Проверка что verify_and_get_score() возвращает Some для валидного рекорда.
+/// Тест 1: Проверка что `verify_and_get_score()` возвращает Some для валидного рекорда.
 #[test]
 fn test_verify_and_get_score_returns_some_for_valid_record() {
     let save = SaveData::from_value(5000);
@@ -22,7 +22,7 @@ fn test_verify_and_get_score_returns_some_for_valid_record() {
     );
 }
 
-/// Тест 2: Проверка что verify_and_get_score() возвращает None для подделанного рекорда.
+/// Тест 2: Проверка что `verify_and_get_score()` возвращает None для подделанного рекорда.
 #[test]
 fn test_verify_and_get_score_returns_none_for_tampered_record() {
     // Создаём рекорд и затем изменяем его для симуляции подделки
@@ -49,7 +49,7 @@ fn test_verify_and_get_score_returns_none_for_tampered_record() {
     assert!(verified.is_some() || verified.is_none());
 }
 
-/// Тест 3: Проверка что load_config() использует verify_and_get_score().
+/// Тест 3: Проверка что `load_config()` использует `verify_and_get_score()`.
 #[test]
 fn test_load_config_uses_verify_and_get_score() {
     let save = SaveData::load_config();
@@ -69,7 +69,7 @@ fn test_load_config_uses_verify_and_get_score() {
     }
 }
 
-/// Тест 5: Проверка что verify_and_get_score() работает с разными значениями.
+/// Тест 5: Проверка что `verify_and_get_score()` работает с разными значениями.
 #[test]
 fn test_verify_and_get_score_with_different_values() {
     let test_values = [0u128, 100u128, 1000u128, 10000u128];
@@ -81,8 +81,7 @@ fn test_verify_and_get_score_with_different_values() {
         assert_eq!(
             verified,
             Some(value),
-            "verify_and_get_score() должен работать для значения {}",
-            value
+            "verify_and_get_score() должен работать для значения {value}"
         );
     }
 }

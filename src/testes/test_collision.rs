@@ -430,7 +430,7 @@ fn test_collision_new_above_fixed() {
     let blocks = state.get_blocks();
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(cell, -1, "Поле должно быть пустым [{},{}]", y, x);
+            assert_eq!(cell, -1, "Поле должно быть пустым [{y},{x}]");
         }
     }
 }
@@ -620,7 +620,7 @@ fn test_collision_rotation_blocked_floor() {
     let _ = can_rotate;
 }
 
-/// Тест 39: Проверка что can_rotate_curr_shape использует check_collision
+/// Тест 39: Проверка что `can_rotate_curr_shape` использует `check_collision`
 #[test]
 fn test_collision_rotation_uses_check() {
     let state = GameState::new();

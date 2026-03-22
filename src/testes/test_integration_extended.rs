@@ -19,7 +19,7 @@ use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 // ГРУППА ТЕСТОВ 1-10: Взаимодействие game + tetromino
 // ============================================================================
 
-/// Тест 1: GameState использует Tetromino
+/// Тест 1: `GameState` использует Tetromino
 #[test]
 fn test_gamestate_uses_tetromino() {
     let state = GameState::new();
@@ -32,7 +32,7 @@ fn test_gamestate_uses_tetromino() {
     );
 }
 
-/// Тест 2: GameState использует BagGenerator
+/// Тест 2: `GameState` использует `BagGenerator`
 #[test]
 fn test_gamestate_uses_bag_generator() {
     let state = GameState::new();
@@ -45,7 +45,7 @@ fn test_gamestate_uses_bag_generator() {
     );
 }
 
-/// Тест 3: Tetromino из BagGenerator в GameState
+/// Тест 3: Tetromino из `BagGenerator` в `GameState`
 #[test]
 fn test_tetromino_from_bag_to_gamestate() {
     let mut bag = BagGenerator::new();
@@ -72,11 +72,11 @@ fn test_all_piece_types_appear_in_game() {
 
     // Все 7 типов должны встретиться
     for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна появиться в игре", i);
+        assert!(found, "Фигура типа {i:?} должна появиться в игре");
     }
 }
 
-/// Тест 5: Вращение фигуры в GameState
+/// Тест 5: Вращение фигуры в `GameState`
 #[test]
 fn test_piece_rotation_in_gamestate() {
     let state = GameState::new();
@@ -88,7 +88,7 @@ fn test_piece_rotation_in_gamestate() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 6: Движение фигуры в GameState
+/// Тест 6: Движение фигуры в `GameState`
 #[test]
 fn test_piece_movement_in_gamestate() {
     let state = GameState::new();
@@ -103,7 +103,7 @@ fn test_piece_movement_in_gamestate() {
     );
 }
 
-/// Тест 7: Падение фигуры в GameState
+/// Тест 7: Падение фигуры в `GameState`
 #[test]
 fn test_piece_fall_in_gamestate() {
     let state = GameState::new();
@@ -127,13 +127,13 @@ fn test_piece_stays_within_bounds() {
 
     // Проверяем, что фигура не вышла за границу
     let shape = state.get_curr_shape();
-    for &(x, _) in shape.coords.iter() {
+    for &(x, _) in &shape.coords {
         let global_x = shape.pos.0 as i16 + x;
         assert!(global_x >= 0, "Фигура не должна выходить за левую границу");
     }
 }
 
-/// Тест 9: Следующая фигура из BagGenerator
+/// Тест 9: Следующая фигура из `BagGenerator`
 #[test]
 fn test_next_shape_from_bag_generator() {
     let state = GameState::new();
@@ -168,7 +168,7 @@ fn test_curr_and_next_shapes_different() {
 // ГРУППА ТЕСТОВ 11-20: Взаимодействие game + highscore
 // ============================================================================
 
-/// Тест 11: GameState может сохранять рекорд
+/// Тест 11: `GameState` может сохранять рекорд
 #[test]
 fn test_gamestate_can_save_score() {
     // Создаём состояние игры и добавляем очки
@@ -211,7 +211,7 @@ fn test_leaderboard_adds_game_score() {
     assert_eq!(leaderboard.get_best_score(), score);
 }
 
-/// Тест 13: SaveData загружает рекорд
+/// Тест 13: `SaveData` загружает рекорд
 #[test]
 fn test_savedata_loads_score() {
     SaveData::save_value(5000);
@@ -303,7 +303,7 @@ fn test_leaderboard_sorts_scores() {
     assert_eq!(entries[2].score(), 100, "Третий должен быть худшим");
 }
 
-/// Тест 19: SaveData защита от подделки
+/// Тест 19: `SaveData` защита от подделки
 #[test]
 fn test_savedata_protection() {
     let save = SaveData::from_value(10000);
@@ -320,7 +320,7 @@ fn test_leaderboard_max_size_integration() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(format!("P{}", i), (i as u64 * 100) as u128);
+        leaderboard.add_score(format!("P{i}"), u128::from(i as u64 * 100));
     }
 
     assert_eq!(
@@ -334,7 +334,7 @@ fn test_leaderboard_max_size_integration() {
 // ГРУППА ТЕСТОВ 21-30: Взаимодействие game + controls
 // ============================================================================
 
-/// Тест 21: GameState реагирует на ввод
+/// Тест 21: `GameState` реагирует на ввод
 #[test]
 fn test_gamestate_responds_to_input() {
     let mut state = GameState::new();
@@ -582,7 +582,7 @@ fn test_game_has_timer() {
 // ГРУППА ТЕСТОВ 41-50: Тесты производительности
 // ============================================================================
 
-/// Тест 41: Быстрое создание GameState
+/// Тест 41: Быстрое создание `GameState`
 #[test]
 fn test_fast_gamestate_creation() {
     let start = std::time::Instant::now();
@@ -614,7 +614,7 @@ fn test_fast_tetromino_creation() {
     );
 }
 
-/// Тест 43: Быстрое создание BagGenerator
+/// Тест 43: Быстрое создание `BagGenerator`
 #[test]
 fn test_fast_bag_generator_creation() {
     let start = std::time::Instant::now();
@@ -630,7 +630,7 @@ fn test_fast_bag_generator_creation() {
     );
 }
 
-/// Тест 44: Быстрое получение фигур из BagGenerator
+/// Тест 44: Быстрое получение фигур из `BagGenerator`
 #[test]
 fn test_fast_bag_generator_next() {
     let mut bag = BagGenerator::new();
@@ -728,7 +728,7 @@ fn test_fast_leaderboard_add() {
     let start = std::time::Instant::now();
 
     for i in 0..100 {
-        leaderboard.add_score(format!("P{}", i), (i as u64) as u128);
+        leaderboard.add_score(format!("P{i}"), u128::from(i as u64));
     }
 
     let duration = start.elapsed();

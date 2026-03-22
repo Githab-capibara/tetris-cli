@@ -4,7 +4,7 @@ use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, LeaderboardEntry};
 use std::time::Instant;
 
-/// Тест 21.1: Проверка что draw() работает корректно.
+/// Тест 21.1: Проверка что `draw()` работает корректно.
 #[test]
 fn test_draw_works_correctly() {
     let state = GameState::new();
@@ -27,8 +27,8 @@ fn test_optimization_comment_exists() {
 fn test_all_blocks_rendered() {
     let state = GameState::new();
     let blocks = state.get_blocks();
-    for row in blocks.iter() {
-        for &cell in row.iter() {
+    for row in blocks {
+        for &cell in row {
             assert_eq!(cell, -1);
         }
     }
@@ -54,7 +54,7 @@ fn test_utf8_limitation_comment_exists() {
     let _reader = crate::io::KeyReader::new();
 }
 
-/// Тест 23.1: Проверка что add_score() работает.
+/// Тест 23.1: Проверка что `add_score()` работает.
 #[test]
 fn test_add_score_works() {
     let mut leaderboard = Leaderboard::default();
@@ -68,7 +68,7 @@ fn test_add_score_works() {
 fn test_cooldown_exists() {
     let mut leaderboard = Leaderboard::default();
     for i in 0..5 {
-        let result = leaderboard.add_score(format!("Player{}", i), 1000 * (i + 1));
+        let result = leaderboard.add_score(format!("Player{i}"), 1000 * (i + 1));
         assert!(result);
     }
     assert_eq!(leaderboard.len(), 5);
@@ -81,37 +81,37 @@ fn test_rate_limiting_comment_exists() {
     leaderboard.add_score("Test".to_string(), 100);
 }
 
-/// Тест 24.1: Проверка что update() работает корректно.
+/// Тест 24.1: Проверка что `update()` работает корректно.
 #[test]
 fn test_update_works_correctly() {
     let state = GameState::new();
     assert_eq!(state.get_mode(), GameMode::Classic);
 }
 
-/// Тест 24.2: Проверка что check_rows() работает корректно.
+/// Тест 24.2: Проверка что `check_rows()` работает корректно.
 #[test]
 fn test_check_rows_works_correctly() {
     let state = GameState::new();
     assert_eq!(state.get_lines_cleared(), 0);
 }
 
-/// Тест 24.3: Проверка что draw() работает корректно.
+/// Тест 24.3: Проверка что `draw()` работает корректно.
 #[test]
 fn test_draw_function_works() {
     let state = GameState::new();
     assert_eq!(state.get_level(), 1);
 }
 
-/// Тест 25.1: Тест для get_player_name().
+/// Тест 25.1: Тест для `get_player_name()`.
 #[test]
 fn test_player_name_input() {
     let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("".to_string(), 1000);
+    let entry2 = LeaderboardEntry::new(String::new(), 1000);
     assert_eq!(entry1.name(), "Player1");
     assert_eq!(entry2.name(), "Anonymous");
 }
 
-/// Тест 25.2: Тест для show_leaderboard().
+/// Тест 25.2: Тест для `show_leaderboard()`.
 #[test]
 fn test_show_leaderboard() {
     let mut leaderboard = Leaderboard::default();
@@ -121,7 +121,7 @@ fn test_show_leaderboard() {
     assert_eq!(entries[0].score(), 3000);
 }
 
-/// Тест 25.3: Тест для show_game_stats().
+/// Тест 25.3: Тест для `show_game_stats()`.
 #[test]
 fn test_show_game_stats() {
     let state = GameState::new();

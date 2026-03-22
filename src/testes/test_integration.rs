@@ -21,7 +21,7 @@ use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
 
 /// Тест 1: Проверка создания и инициализации игры
 ///
-/// Проверяет полный цикл создания GameState.
+/// Проверяет полный цикл создания `GameState`.
 #[test]
 fn test_full_game_initialization() {
     let state = GameState::new();
@@ -141,7 +141,7 @@ fn test_piece_drop_to_floor() {
 
 /// Тест 5: Проверка вращения в игровом контексте
 ///
-/// Проверяет, что вращение работает в контексте GameState.
+/// Проверяет, что вращение работает в контексте `GameState`.
 #[test]
 fn test_rotation_in_game_context() {
     let mut state = GameState::new();
@@ -167,9 +167,9 @@ fn test_rotation_in_game_context() {
 // ГРУППА ТЕСТОВ 6-13: Взаимодействие компонентов
 // ============================================================================
 
-/// Тест 6: Проверка взаимодействия GameState и Tetromino
+/// Тест 6: Проверка взаимодействия `GameState` и Tetromino
 ///
-/// Проверяет, что GameState корректно работает с фигурами.
+/// Проверяет, что `GameState` корректно работает с фигурами.
 #[test]
 fn test_game_state_tetromino_interaction() {
     let state = GameState::new();
@@ -188,9 +188,9 @@ fn test_game_state_tetromino_interaction() {
     );
 }
 
-/// Тест 7: Проверка взаимодействия GameState и BagGenerator
+/// Тест 7: Проверка взаимодействия `GameState` и `BagGenerator`
 ///
-/// Проверяет, что фигуры создаются через BagGenerator.
+/// Проверяет, что фигуры создаются через `BagGenerator`.
 #[test]
 fn test_game_state_bag_generator_interaction() {
     let mut bag = BagGenerator::new();
@@ -204,11 +204,11 @@ fn test_game_state_bag_generator_interaction() {
 
     // Проверяем, что все 7 типов встретились
     for (i, &found) in shapes_found.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна быть в первом мешке", i);
+        assert!(found, "Фигура типа {i:?} должна быть в первом мешке");
     }
 }
 
-/// Тест 8: Проверка взаимодействия GameState и Leaderboard
+/// Тест 8: Проверка взаимодействия `GameState` и Leaderboard
 ///
 /// Проверяет, что рекорды могут быть сохранены после игры.
 #[test]
@@ -227,7 +227,7 @@ fn test_game_state_leaderboard_interaction() {
     );
 }
 
-/// Тест 9: Проверка взаимодействия ControlsConfig и GameState
+/// Тест 9: Проверка взаимодействия `ControlsConfig` и `GameState`
 ///
 /// Проверяет, что конфигурация управления валидна для игры.
 #[test]
@@ -260,7 +260,7 @@ fn test_controls_game_state_interaction() {
     }
 }
 
-/// Тест 10: Проверка взаимодействия GameStats и GameState
+/// Тест 10: Проверка взаимодействия `GameStats` и `GameState`
 ///
 /// Проверяет, что статистика корректно собирается.
 #[test]
@@ -282,7 +282,7 @@ fn test_game_stats_game_state_interaction() {
     assert!(stats.start_time.is_none(), "Таймер не должен быть запущен");
 }
 
-/// Тест 11: Проверка взаимодействия SaveData и Leaderboard
+/// Тест 11: Проверка взаимодействия `SaveData` и Leaderboard
 ///
 /// Проверяет, что обе системы сохранения работают корректно.
 #[test]
@@ -321,7 +321,7 @@ fn test_all_shapes_in_game() {
         ShapeType::I,
     ];
 
-    for &shape_type in shapes.iter() {
+    for &shape_type in &shapes {
         // Создаём фигуру вручную
         let tetromino = Tetromino {
             pos: (4.0, 0.0),
@@ -355,9 +355,9 @@ fn test_rotation_collision_interaction() {
 // ГРУППА ТЕСТОВ 14-20: Производительность
 // ============================================================================
 
-/// Тест 14: Проверка производительности создания GameState
+/// Тест 14: Проверка производительности создания `GameState`
 ///
-/// Проверяет, что создание GameState происходит быстро.
+/// Проверяет, что создание `GameState` происходит быстро.
 #[test]
 fn test_performance_game_state_creation() {
     let start = std::time::Instant::now();
@@ -454,7 +454,7 @@ fn test_performance_leaderboard() {
 
     // Добавляем 1000 рекордов
     for i in 0..1000 {
-        leaderboard.add_score(format!("Player{}", i), i * 100);
+        leaderboard.add_score(format!("Player{i}"), i * 100);
     }
 
     let duration = start.elapsed();
@@ -466,7 +466,7 @@ fn test_performance_leaderboard() {
     );
 }
 
-/// Тест 19: Проверка производительности валидации ControlsConfig
+/// Тест 19: Проверка производительности валидации `ControlsConfig`
 ///
 /// Проверяет, что валидация конфигурации происходит быстро.
 #[test]
@@ -488,7 +488,7 @@ fn test_performance_controls_validation() {
     );
 }
 
-/// Тест 20: Проверка производительности хеширования SaveData
+/// Тест 20: Проверка производительности хеширования `SaveData`
 ///
 /// Проверяет, что создание хэшей происходит быстро.
 #[test]

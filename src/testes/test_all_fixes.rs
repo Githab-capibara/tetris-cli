@@ -3,22 +3,22 @@
 //! Этот модуль содержит 54 теста (по 3 на каждую из 18 проблем):
 //! 1. Длина хеша (BLAKE3 - ровно 64 символа)
 //! 2. Восстановление терминала (Drop, reset)
-//! 3. UTF-8 ограничение (get_key возвращает None для многобайтовых)
+//! 3. UTF-8 ограничение (`get_key` возвращает None для многобайтовых)
 //! 4. Проверка переполнения (rotation, negative Y)
 //! 5. Copy вместо Clone (Tetromino)
-//! 6. Dirty rectangle tracking (dirty_cells)
-//! 7. Битовая маска строк (animating_rows_mask)
+//! 6. Dirty rectangle tracking (`dirty_cells`)
+//! 7. Битовая маска строк (`animating_rows_mask`)
 
 #![allow(deprecated)]
-//! 8. hex::encode() (использование в get_random_hash)
-//! 9. unreachable!() для Dir::Down
+//! 8. `hex::encode()` (использование в `get_random_hash`)
+//! 9. unreachable!() для `Dir::Down`
 //! 10. Удаление избыточных комментариев
 //! 11. Переименование переменной
-//! 12. validate_config_path()
-//! 13. expect() вместо unwrap()
+//! 12. `validate_config_path()`
+//! 13. `expect()` вместо `unwrap()`
 //! 14. Покрытие критических путей
 //! 15. Изоляция тестов (tempfile)
-//! 16. Точные утверждения (assert_eq)
+//! 16. Точные утверждения (`assert_eq`)
 //! 17. Path traversal защита
 //! 18. Rate limiting
 
@@ -103,9 +103,9 @@ fn test_terminal_reset_on_panic() {
     // Этот тест проходит, если тип Canvas имеет корректный Drop
 }
 
-/// Тест 2.2: Проверка явного вызова reset()
+/// Тест 2.2: Проверка явного вызова `reset()`
 ///
-/// Проверяет, что метод reset() существует и имеет правильную сигнатуру.
+/// Проверяет, что метод `reset()` существует и имеет правильную сигнатуру.
 #[test]
 fn test_terminal_reset_explicit_call() {
     // Проверяем, что Canvas имеет метод reset через проверку размера
@@ -133,7 +133,7 @@ fn test_terminal_show_before_exit() {
 
 /// Тест 3.1: Проверка возврата None для многобайтовых символов
 ///
-/// Проверяет, что get_key() возвращает None для русских букв.
+/// Проверяет, что `get_key()` возвращает None для русских букв.
 #[test]
 fn test_utf8_multibyte_returns_none() {
     // Симулируем многобайтовый символ UTF-8 (кириллица)
@@ -284,8 +284,7 @@ fn test_tetromino_copy_trait() {
     let size = std::mem::size_of::<Tetromino>();
     assert!(
         size <= 64,
-        "Tetromino должен быть небольшим для Copy ({} байт)",
-        size
+        "Tetromino должен быть небольшим для Copy ({size} байт)"
     );
 
     // Проверяем, что Copy работает
@@ -300,7 +299,7 @@ fn test_tetromino_copy_trait() {
 
 /// Тест 6.1: Проверка отслеживания изменений клеток
 ///
-/// Проверяет, что dirty_cells отслеживает изменения.
+/// Проверяет, что `dirty_cells` отслеживает изменения.
 #[test]
 fn test_dirty_cells_tracking() {
     // Проверяем, что dirty_cells инициализирован
@@ -309,9 +308,9 @@ fn test_dirty_cells_tracking() {
     assert!(_state_size > 0, "GameState должен иметь размер");
 }
 
-/// Тест 6.2: Проверка очистки dirty_cells после отрисовки
+/// Тест 6.2: Проверка очистки `dirty_cells` после отрисовки
 ///
-/// Проверяет, что dirty_cells очищается после отрисовки.
+/// Проверяет, что `dirty_cells` очищается после отрисовки.
 #[test]
 fn test_dirty_cells_clear_after_draw() {
     // Создаём состояние игры
@@ -322,7 +321,7 @@ fn test_dirty_cells_clear_after_draw() {
 
 /// Тест 6.3: Проверка множественных изменений
 ///
-/// Проверяет, что dirty_cells может отслеживать несколько изменений.
+/// Проверяет, что `dirty_cells` может отслеживать несколько изменений.
 #[test]
 fn test_dirty_cells_multiple_changes() {
     // Проверяем, что HashSet<(usize, usize)> может хранить несколько записей
@@ -396,7 +395,7 @@ fn test_animating_rows_mask_operations() {
 
 /// Тест 8.1: Проверка корректности кодирования hex
 ///
-/// Проверяет, что hex::encode() корректно кодирует байты.
+/// Проверяет, что `hex::encode()` корректно кодирует байты.
 #[test]
 fn test_hex_encode_correctness() {
     let bytes = [0u8, 127u8, 255u8];
@@ -413,9 +412,9 @@ fn test_hex_encode_correctness() {
     assert_eq!(encoded, "007fff", "Кодирование должно быть корректным");
 }
 
-/// Тест 8.2: Проверка производительности hex::encode()
+/// Тест 8.2: Проверка производительности `hex::encode()`
 ///
-/// Проверяет, что hex::encode() работает быстро.
+/// Проверяет, что `hex::encode()` работает быстро.
 #[test]
 fn test_hex_encode_performance() {
     let bytes = [0u8; 32];
@@ -428,7 +427,7 @@ fn test_hex_encode_performance() {
     // Тест проходит, если кодирование выполнено без ошибок
 }
 
-/// Тест 8.3: Проверка длины результата hex::encode()
+/// Тест 8.3: Проверка длины результата `hex::encode()`
 ///
 /// Проверяет, что длина результата равна удвоенной длине входных данных.
 #[test]
@@ -449,9 +448,9 @@ fn test_hex_encode_length() {
 // ПРОБЛЕМА 9: unreachable!() для Dir::Down
 // ============================================================================
 
-/// Тест 9.1: Проверка что Dir::Down игнорируется
+/// Тест 9.1: Проверка что `Dir::Down` игнорируется
 ///
-/// Проверяет, что Dir::Down больше не вызывает панику, а тихо игнорируется.
+/// Проверяет, что `Dir::Down` больше не вызывает панику, а тихо игнорируется.
 #[test]
 fn test_rotate_down_no_panic() {
     let mut tetromino = Tetromino {
@@ -526,7 +525,7 @@ fn test_rotate_right_correct() {
 // ПРОБЛЕМА 10: Удаление избыточных комментариев
 // ============================================================================
 
-/// Тест 10.1: Проверка отсутствия saturating_add комментариев
+/// Тест 10.1: Проверка отсутствия `saturating_add` комментариев
 ///
 /// Проверяет, что код не содержит избыточных комментариев.
 #[test]
@@ -608,7 +607,7 @@ fn test_variable_naming_consistency() {
 
 /// Тест 12.1: Проверка общей функции валидации
 ///
-/// Проверяет, что save_to_file использует валидацию путей.
+/// Проверяет, что `save_to_file` использует валидацию путей.
 #[test]
 fn test_validate_path_common_function() {
     // Проверяем валидный путь через save_to_file
@@ -624,7 +623,7 @@ fn test_validate_path_common_function() {
 
 /// Тест 12.2: Проверка принципа DRY
 ///
-/// Проверяет, что функция используется в save_to_file и load_from_file.
+/// Проверяет, что функция используется в `save_to_file` и `load_from_file`.
 #[test]
 fn test_validate_path_dry_principle() {
     // Создаём временный файл для теста
@@ -664,7 +663,7 @@ fn test_validate_path_error_handling() {
 
 /// Тест 13.1: Проверка отсутствия unwrap в тестах
 ///
-/// Проверяет, что тесты используют expect() вместо unwrap().
+/// Проверяет, что тесты используют `expect()` вместо `unwrap()`.
 #[test]
 fn test_no_unwrap_in_tests() {
     // Этот тест сам использует expect() вместо unwrap()
@@ -674,9 +673,9 @@ fn test_no_unwrap_in_tests() {
     // Проверяем, что код компилируется без unwrap
 }
 
-/// Тест 13.2: Проверка наличия сообщений expect()
+/// Тест 13.2: Проверка наличия сообщений `expect()`
 ///
-/// Проверяет, что expect() содержит понятные сообщения.
+/// Проверяет, что `expect()` содержит понятные сообщения.
 #[test]
 fn test_expect_messages_present() {
     // Проверяем, что LeaderboardEntry создаётся с валидацией
@@ -708,9 +707,9 @@ fn test_error_descriptions_clear() {
 // ПРОБЛЕМА 14: Покрытие критических путей
 // ============================================================================
 
-/// Тест 14.1: Проверка покрытия Canvas::new() паник
+/// Тест 14.1: Проверка покрытия `Canvas::new()` паник
 ///
-/// Проверяет, что Canvas::new() может паниковать при отсутствии терминала.
+/// Проверяет, что `Canvas::new()` может паниковать при отсутствии терминала.
 #[test]
 fn test_canvas_new_panic_coverage() {
     // Проверяем, что Canvas имеет правильный размер
@@ -745,7 +744,7 @@ fn test_leaderboard_performance() {
 
     // Добавляем 5 рекордов
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{}", i), i * 100);
+        leaderboard.add_score(format!("Player{i}"), i * 100);
     }
 
     assert_eq!(leaderboard.len(), 5, "Должно быть 5 записей");
@@ -806,9 +805,9 @@ fn test_unique_temp_paths() {
 // ПРОБЛЕМА 16: Точные утверждения (assert_eq)
 // ============================================================================
 
-/// Тест 16.1: Проверка использования assert_eq!
+/// Тест 16.1: Проверка использования `assert_eq`!
 ///
-/// Проверяет, что тесты используют assert_eq! для точных сравнений.
+/// Проверяет, что тесты используют `assert_eq`! для точных сравнений.
 #[test]
 fn test_exact_assert_eq_usage() {
     let hash = generate_salt();
@@ -925,8 +924,8 @@ fn test_rate_limit_enforcement() {
 
     // Добавляем MAX_ENTRIES_PER_MINUTE записей
     for i in 0..10 {
-        let result = leaderboard.add_score(format!("Player{}", i), i * 100);
-        assert!(result, "Запись {} должна быть добавлена", i);
+        let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+        assert!(result, "Запись {i} должна быть добавлена");
     }
 
     // 11-я запись должна быть отклонена
@@ -946,8 +945,8 @@ fn test_rate_limit_counter_reset() {
 
     // Добавляем записи
     for i in 0..5 {
-        let result = leaderboard.add_score(format!("Player{}", i), i * 100);
-        assert!(result, "Запись {} должна быть добавлена", i);
+        let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+        assert!(result, "Запись {i} должна быть добавлена");
     }
 
     // Проверяем, что записи добавлены
@@ -966,7 +965,7 @@ fn test_rate_limit_error_handling() {
 
     // Заполняем лимит
     for i in 0..10 {
-        let _ = leaderboard.add_score(format!("Player{}", i), i * 100);
+        let _ = leaderboard.add_score(format!("Player{i}"), i * 100);
     }
 
     // Пытаемся добавить ещё одну запись

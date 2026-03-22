@@ -1000,7 +1000,7 @@ fn test_all_pieces_special_rotation() {
         ShapeType::I,
     ];
 
-    for shape in shapes.iter() {
+    for shape in &shapes {
         let mut t = Tetromino {
             pos: (4.0, 5.0),
             shape: *shape,
@@ -1019,8 +1019,7 @@ fn test_all_pieces_special_rotation() {
         } else {
             assert_ne!(
                 t.coords, original_coords,
-                "{:?} фигура должна вращаться",
-                shape
+                "{shape:?} фигура должна вращаться"
             );
         }
     }

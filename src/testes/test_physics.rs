@@ -79,7 +79,7 @@ fn test_piece_reaching_floor() {
 
 /// Тест 3: Проверка скорости падения
 ///
-/// Проверяет, что скорость падения соответствует INITIAL_FALL_SPD.
+/// Проверяет, что скорость падения соответствует `INITIAL_FALL_SPD`.
 #[test]
 fn test_falling_speed() {
     let state = GameState::new();
@@ -385,9 +385,9 @@ fn test_hold_double_usage_prevention() {
     );
 }
 
-/// Тест 14: Проверка сброса can_hold после нового хода
+/// Тест 14: Проверка сброса `can_hold` после нового хода
 ///
-/// Проверяет, что can_hold сбрасывается после нового хода.
+/// Проверяет, что `can_hold` сбрасывается после нового хода.
 #[test]
 fn test_hold_reset_after_new_turn() {
     let mut state = GameState::new();

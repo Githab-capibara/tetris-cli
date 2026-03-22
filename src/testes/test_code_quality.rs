@@ -1,12 +1,12 @@
 //! Тесты качества кода для проекта tetris-cli.
 //!
 //! Этот модуль содержит 24 теста (по 3 на каждую из 8 категорий):
-//! 1. dead_code prevention - проверка unused кода
+//! 1. `dead_code` prevention - проверка unused кода
 //! 2. deprecated API migration - проверка новых API
 //! 3. assertions validation - проверка assert!()
-//! 4. unwrap safety - проверка unwrap()
+//! 4. unwrap safety - проверка `unwrap()`
 //! 5. iterator usage - проверка итераторов
-//! 6. contains usage - проверка .contains()
+//! 6. contains usage - проверка .`contains()`
 //! 7. format usage - проверка format!()
 //! 8. cast usage - проверка cast
 //!
@@ -59,9 +59,9 @@ fn test_deprecated_functions_still_work() {
     // Поэтому они могут быть равны (зависит от timing)
 }
 
-/// Тест 1.3: Проверка что #[allow(dead_code)] работает корректно
+/// Тест 1.3: Проверка что #[`allow(dead_code)`] работает корректно
 ///
-/// Проверяет, что атрибут #[allow(dead_code)] подавляет предупреждения.
+/// Проверяет, что атрибут #[`allow(dead_code)`] подавляет предупреждения.
 #[test]
 #[allow(clippy::assertions_on_constants)]
 fn test_allow_dead_code_attribute_works() {
@@ -92,9 +92,9 @@ fn test_allow_dead_code_attribute_works() {
 // КАТЕГОРИЯ 2: deprecated API migration
 // ============================================================================
 
-/// Тест 2.1: generate_salt() возвращает уникальный salt
+/// Тест 2.1: `generate_salt()` возвращает уникальный salt
 ///
-/// Проверяет, что новая функция generate_salt() генерирует уникальные значения.
+/// Проверяет, что новая функция `generate_salt()` генерирует уникальные значения.
 #[test]
 fn test_generate_salt_returns_unique_salt() {
     use crate::highscore::generate_salt;
@@ -115,9 +115,9 @@ fn test_generate_salt_returns_unique_salt() {
     assert_eq!(salt3.len(), 64);
 }
 
-/// Тест 2.2: verify_and_get_score() проверяет целостность
+/// Тест 2.2: `verify_and_get_score()` проверяет целостность
 ///
-/// Проверяет, что новый API verify_and_get_score() корректно проверяет данные.
+/// Проверяет, что новый API `verify_and_get_score()` корректно проверяет данные.
 #[test]
 fn test_verify_and_get_score_checks_integrity() {
     use crate::highscore::SaveData;
@@ -133,7 +133,7 @@ fn test_verify_and_get_score_checks_integrity() {
     // Это преимущество нового API перед старым assert_hs()
 }
 
-/// Тест 2.3: generate_salt() != get_random_hash() (старый API)
+/// Тест 2.3: `generate_salt()` != `get_random_hash()` (старый API)
 ///
 /// Проверяет, что новый API отличается от старого (хотя функционально эквивалентен).
 #[test]
@@ -209,9 +209,9 @@ fn test_assert_condition_works() {
 // КАТЕГОРИЯ 4: unwrap safety
 // ============================================================================
 
-/// Тест 4.1: unwrap() на None вызывает панику
+/// Тест 4.1: `unwrap()` на None вызывает панику
 ///
-/// Проверяет, что unwrap() на None вызывает панику.
+/// Проверяет, что `unwrap()` на None вызывает панику.
 #[test]
 #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
 fn test_unwrap_on_none_panics() {
@@ -221,9 +221,9 @@ fn test_unwrap_on_none_panics() {
     let _value = none_value.unwrap();
 }
 
-/// Тест 4.2: unwrap_or_default() безопасен
+/// Тест 4.2: `unwrap_or_default()` безопасен
 ///
-/// Проверяет, что unwrap_or_default() не паникует на None.
+/// Проверяет, что `unwrap_or_default()` не паникует на None.
 #[test]
 fn test_unwrap_or_default_is_safe() {
     let none_value: Option<i32> = None;
@@ -244,9 +244,9 @@ fn test_unwrap_or_default_is_safe() {
     );
 }
 
-/// Тест 4.3: match предпочтительнее unwrap()
+/// Тест 4.3: match предпочтительнее `unwrap()`
 ///
-/// Проверяет, что match безопаснее unwrap().
+/// Проверяет, что match безопаснее `unwrap()`.
 #[test]
 fn test_match_preferred_over_unwrap() {
     let maybe_value: Option<i32> = Some(100);
@@ -271,9 +271,9 @@ fn test_match_preferred_over_unwrap() {
 // КАТЕГОРИЯ 5: iterator usage
 // ============================================================================
 
-/// Тест 5.1: enumerate() дает индекс и значение
+/// Тест 5.1: `enumerate()` дает индекс и значение
 ///
-/// Проверяет, что enumerate() предоставляет индекс и элемент.
+/// Проверяет, что `enumerate()` предоставляет индекс и элемент.
 #[test]
 #[allow(clippy::useless_vec)]
 fn test_enumerate_gives_index_and_value() {
@@ -293,9 +293,9 @@ fn test_enumerate_gives_index_and_value() {
     assert_eq!(sum, 150, "Сумма должна быть 150");
 }
 
-/// Тест 5.2: iter() безопаснее индексации
+/// Тест 5.2: `iter()` безопаснее индексации
 ///
-/// Проверяет, что iter() безопаснее прямой индексации.
+/// Проверяет, что `iter()` безопаснее прямой индексации.
 #[test]
 #[allow(clippy::useless_vec)]
 fn test_iter_safer_than_indexing() {
@@ -311,9 +311,9 @@ fn test_iter_safer_than_indexing() {
     assert_eq!(sum_index, 15, "Индексация тоже должна работать");
 }
 
-/// Тест 5.3: .take() ограничивает итерацию
+/// Тест 5.3: .`take()` ограничивает итерацию
 ///
-/// Проверяет, что .take() ограничивает количество элементов.
+/// Проверяет, что .`take()` ограничивает количество элементов.
 #[test]
 #[allow(clippy::iter_out_of_bounds)]
 fn test_take_limits_iteration() {
@@ -342,7 +342,7 @@ fn test_take_limits_iteration() {
 
 /// Тест 6.1: (0..=10).contains(&x) работает
 ///
-/// Проверяет, что Range::contains() работает корректно.
+/// Проверяет, что `Range::contains()` работает корректно.
 #[test]
 fn test_range_contains_works() {
     // Проверяем包含ение в диапазоне
@@ -361,9 +361,9 @@ fn test_range_contains_works() {
     );
 }
 
-/// Тест 6.2: .contains() читаемее чем x >= 0 && x <= 10
+/// Тест 6.2: .`contains()` читаемее чем x >= 0 && x <= 10
 ///
-/// Проверяет, что .contains() более читаем.
+/// Проверяет, что .`contains()` более читаем.
 #[test]
 #[allow(clippy::manual_range_contains)]
 fn test_contains_more_readable_than_comparison() {
@@ -385,13 +385,13 @@ fn test_contains_more_readable_than_comparison() {
     for test_x in [-1, 0, 5, 10, 11] {
         let c = (0..=10).contains(&test_x);
         let r = test_x >= 0 && test_x <= 10;
-        assert_eq!(c, r, "Для {} результаты должны совпадать", test_x);
+        assert_eq!(c, r, "Для {test_x} результаты должны совпадать");
     }
 }
 
-/// Тест 6.3: .contains() с char работает
+/// Тест 6.3: .`contains()` с char работает
 ///
-/// Проверяет, что .contains() работает с символами.
+/// Проверяет, что .`contains()` работает с символами.
 #[test]
 fn test_contains_with_char_works() {
     let vowels = ['а', 'е', 'ё', 'и', 'о', 'у', 'ы', 'э', 'ю', 'я'];
@@ -452,9 +452,9 @@ fn test_write_literal_better_than_placeholder() {
     assert_eq!(buffer1, "Hello");
 }
 
-/// Тест 7.3: .to_string() предпочтительнее для простых строк
+/// Тест 7.3: .`to_string()` предпочтительнее для простых строк
 ///
-/// Проверяет, что .to_string() лучше format!() для простых случаев.
+/// Проверяет, что .`to_string()` лучше format!() для простых случаев.
 #[test]
 #[allow(clippy::useless_format)]
 fn test_to_string_preferred_for_simple_strings() {
@@ -464,10 +464,10 @@ fn test_to_string_preferred_for_simple_strings() {
     let string1 = s.to_string();
 
     // format!() - избыточен для простого преобразования
-    let string2 = format!("{}", s);
+    let string2 = format!("{s}");
 
     // format!() без placeholder - тоже избыточен
-    let string3 = format!("{}", s);
+    let string3 = format!("{s}");
 
     // Все результаты одинаковы
     assert_eq!(
@@ -512,7 +512,7 @@ fn test_different_type_cast_necessary() {
     let value: u32 = 42;
 
     // u32 as i64 - необходим для преобразования типа
-    let casted: i64 = value as i64;
+    let casted: i64 = i64::from(value);
 
     // Тип изменился
     assert_eq!(casted, 42, "Значение должно сохраниться");
@@ -522,9 +522,9 @@ fn test_different_type_cast_necessary() {
     assert_eq!(large, 42_000_000_000, "i64 может хранить большие значения");
 }
 
-/// Тест 8.3: try_from() безопаснее as
+/// Тест 8.3: `try_from()` безопаснее as
 ///
-/// Проверяет, что try_from() безопаснее as для сужающих преобразований.
+/// Проверяет, что `try_from()` безопаснее as для сужающих преобразований.
 #[test]
 fn test_try_from_safer_than_as() {
     // as может обрезать значение без ошибки

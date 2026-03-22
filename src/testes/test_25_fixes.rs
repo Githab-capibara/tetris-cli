@@ -48,9 +48,9 @@ fn test_main_rs_integrity() {
 
 /// Тест 3: Переполнение стека (Box для blocks)
 ///
-/// Проверяет, что поле blocks в GameState использует Box для размещения
+/// Проверяет, что поле blocks в `GameState` использует Box для размещения
 /// массива в куче, а не на стеке. Это предотвращает переполнение стека
-/// при использовании большого количества структур GameState.
+/// при использовании большого количества структур `GameState`.
 #[test]
 fn test_blocks_on_heap() {
     use crate::game::GameState;
@@ -65,8 +65,7 @@ fn test_blocks_on_heap() {
     // Без Box размер был бы значительно больше из-за массива 10x20 i8
     assert!(
         state_size < 500,
-        "GameState должен использовать Box для blocks (размер {} байт слишком велик)",
-        state_size
+        "GameState должен использовать Box для blocks (размер {state_size} байт слишком велик)"
     );
 
     // Создаём несколько состояний игры для проверки, что они не переполняют стек
@@ -77,9 +76,9 @@ fn test_blocks_on_heap() {
     // Если бы blocks был на стеке, создание нескольких GameState могло бы вызвать переполнение
 }
 
-/// Тест 4: Canvas::default() с документацией
+/// Тест 4: `Canvas::default()` с документацией
 ///
-/// Проверяет, что метод Canvas::default() имеет документацию с разделом # Panics.
+/// Проверяет, что метод `Canvas::default()` имеет документацию с разделом # Panics.
 /// Это важно для пользователей API, чтобы они знали о возможной панике.
 #[test]
 fn test_canvas_default_has_panic_docs() {
@@ -186,9 +185,9 @@ fn test_no_shift_on_zero_lines() {
 // ТЕСТЫ ПРОБЛЕМ СРЕДНЕЙ КРИТИЧНОСТИ (8-15)
 // ============================================================================
 
-/// Тест 8: Фиксированный массив в BagGenerator
+/// Тест 8: Фиксированный массив в `BagGenerator`
 ///
-/// Проверяет, что BagGenerator использует фиксированный массив [ShapeType; 7]
+/// Проверяет, что `BagGenerator` использует фиксированный массив [`ShapeType`; 7]
 /// вместо Vec<ShapeType> для предотвращения аллокаций в куче.
 #[test]
 fn test_bag_generator_uses_array() {
@@ -203,8 +202,7 @@ fn test_bag_generator_uses_array() {
     // Vec добавил бы дополнительные 24 байта (pointer, length, capacity)
     assert!(
         bag_size < 200,
-        "BagGenerator должен использовать фиксированный массив (размер {} байт)",
-        bag_size
+        "BagGenerator должен использовать фиксированный массив (размер {bag_size} байт)"
     );
 
     // Проверяем, что bag работает корректно
@@ -215,12 +213,12 @@ fn test_bag_generator_uses_array() {
     assert_eq!(shapes.len(), 7, "Мешок должен содержать 7 фигур");
 }
 
-/// Тест 9: Декомпозиция update()
+/// Тест 9: Декомпозиция `update()`
 ///
-/// Проверяет, что метод update() декомпозирован на меньшие функции:
-/// - handle_input()
-/// - handle_falling()
-/// - handle_landing()
+/// Проверяет, что метод `update()` декомпозирован на меньшие функции:
+/// - `handle_input()`
+/// - `handle_falling()`
+/// - `handle_landing()`
 #[test]
 fn test_update_decomposed() {
     use crate::game::GameState;
@@ -238,9 +236,9 @@ fn test_update_decomposed() {
     // Методы handle_input, handle_falling, handle_landing должны существовать
 }
 
-/// Тест 10: rotate_old deprecated
+/// Тест 10: `rotate_old` deprecated
 ///
-/// Проверяет, что метод rotate_old() помечен как deprecated.
+/// Проверяет, что метод `rotate_old()` помечен как deprecated.
 /// Это предупреждает разработчиков об использовании устаревшего API.
 #[test]
 fn test_rotate_old_deprecated() {
@@ -309,7 +307,7 @@ fn test_unicode_name_validation() {
 
 /// Тест 12: Dirty tracking
 ///
-/// Проверяет, что существует поле animating_rows_mask для отслеживания
+/// Проверяет, что существует поле `animating_rows_mask` для отслеживания
 /// строк, требующих анимации (dirty tracking).
 #[test]
 fn test_dirty_tracking_exists() {
@@ -331,9 +329,9 @@ fn test_dirty_tracking_exists() {
     // Dirty tracking подтверждается существованием поля
 }
 
-/// Тест 13: Drop для KeyReader
+/// Тест 13: Drop для `KeyReader`
 ///
-/// Проверяет, что KeyReader реализует трейт Drop для корректного
+/// Проверяет, что `KeyReader` реализует трейт Drop для корректного
 /// освобождения ресурсов stdin при выходе из области видимости.
 #[test]
 fn test_key_reader_has_drop() {
@@ -350,10 +348,10 @@ fn test_key_reader_has_drop() {
     let _reader2 = KeyReader::new();
 }
 
-/// Тест 14: assert_hs deprecated
+/// Тест 14: `assert_hs` deprecated
 ///
-/// Проверяет, что метод assert_hs() помечен как deprecated
-/// и рекомендуется использовать verify_and_get_score().
+/// Проверяет, что метод `assert_hs()` помечен как deprecated
+/// и рекомендуется использовать `verify_and_get_score()`.
 #[test]
 fn test_assert_hs_deprecated() {
     use crate::highscore::SaveData;
@@ -426,7 +424,7 @@ fn test_lib_docs_not_excessive() {
 
 /// Тест 17: Константы вместо магических чисел
 ///
-/// Проверяет, что существует константа LINE_SCORES для очков за линии.
+/// Проверяет, что существует константа `LINE_SCORES` для очков за линии.
 /// Это заменяет магические числа и битовые сдвиги в коде.
 #[test]
 fn test_line_scores_constant() {
@@ -477,14 +475,13 @@ fn test_benchmarks_exist() {
     let bench_path = Path::new("/home/d/tetris-cli/benches/benchmarks.rs");
     assert!(
         bench_path.exists(),
-        "Файл бенчмарков должен существовать: {:?}",
-        bench_path
+        "Файл бенчмарков должен существовать: {bench_path:?}"
     );
 }
 
-/// Тест 20: snake_case именование
+/// Тест 20: `snake_case` именование
 ///
-/// Проверяет, что все функции используют snake_case именование.
+/// Проверяет, что все функции используют `snake_case` именование.
 /// Это подтверждается успешной компиляцией без предупреждений clippy.
 #[test]
 fn test_snake_case_naming() {
@@ -506,10 +503,10 @@ fn test_snake_case_naming() {
     let _ = LINE_SCORES[0];
 }
 
-/// Тест 21: #[cfg(test)] вместо #[allow(dead_code)]
+/// Тест 21: #[cfg(test)] вместо #[`allow(dead_code)`]
 ///
 /// Проверяет, что для тестовых модулей используется #[cfg(test)],
-/// а не #[allow(dead_code)] для скрытия неиспользуемого кода.
+/// а не #[`allow(dead_code)`] для скрытия неиспользуемого кода.
 #[test]
 fn test_cfg_test_attribute() {
     // #[cfg(test)] используется для условной компиляции тестов
@@ -543,9 +540,9 @@ fn test_main_functions_testable() {
     let _save = SaveData::from_value(1000);
 }
 
-/// Тест 23: String::with_capacity()
+/// Тест 23: `String::with_capacity()`
 ///
-/// Проверяет, что в sanitize_player_name используется String::with_capacity()
+/// Проверяет, что в `sanitize_player_name` используется `String::with_capacity()`
 /// для предотвращения лишних аллокаций.
 #[test]
 fn test_string_with_capacity() {
@@ -565,9 +562,9 @@ fn test_string_with_capacity() {
     // для предотвращения реаллокаций при валидации имени
 }
 
-/// Тест 24: Result из save_value
+/// Тест 24: Result из `save_value`
 ///
-/// Проверяет, что save_value_result возвращает Result для обработки ошибок.
+/// Проверяет, что `save_value_result` возвращает Result для обработки ошибок.
 /// Это позволяет корректно обрабатывать ошибки сохранения.
 #[test]
 fn test_save_value_returns_result() {
@@ -581,19 +578,16 @@ fn test_save_value_returns_result() {
     let result = SaveData::save_value_result(1000);
 
     // Результат должен быть Result
-    match result {
-        Ok(()) => {
-            // Сохранение успешно (маловероятно в тестах)
-        }
-        Err(_) => {
-            // Ошибка сохранения (ожидаемо в тестах)
-        }
+    if let Ok(()) = result {
+        // Сохранение успешно (маловероятно в тестах)
+    } else {
+        // Ошибка сохранения (ожидаемо в тестах)
     }
 }
 
 /// Тест 25: Lookup таблица для очков
 ///
-/// Проверяет, что используется LINE_SCORES lookup таблица
+/// Проверяет, что используется `LINE_SCORES` lookup таблица
 /// вместо битового сдвига для вычисления очков за линии.
 #[test]
 fn test_line_scores_lookup() {

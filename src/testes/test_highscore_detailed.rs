@@ -1,7 +1,7 @@
 //! Тесты системы рекордов в Tetris CLI.
 //!
 //! Этот модуль содержит 30 тестов для проверки системы рекордов:
-//! - Тесты SaveData (создание, сохранение, загрузка) (6 тестов)
+//! - Тесты `SaveData` (создание, сохранение, загрузка) (6 тестов)
 //! - Тесты Leaderboard (добавление, сортировка, валидация) (8 тестов)
 //! - Тесты хеширования с солью (6 тестов)
 //! - Тесты защиты от подделки (5 тестов)
@@ -15,7 +15,7 @@ use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 // ГРУППА ТЕСТОВ 1-6: SaveData (создание, сохранение, загрузка)
 // ============================================================================
 
-/// Тест 1: SaveData создание из значения
+/// Тест 1: `SaveData` создание из значения
 #[test]
 fn test_savedata_creation_from_value() {
     let save = SaveData::from_value(1000);
@@ -28,7 +28,7 @@ fn test_savedata_creation_from_value() {
     // Поля приватны, поэтому проверяем через методы
 }
 
-/// Тест 2: SaveData значение по умолчанию
+/// Тест 2: `SaveData` значение по умолчанию
 #[test]
 fn test_savedata_default_value() {
     let save = SaveData::default();
@@ -40,7 +40,7 @@ fn test_savedata_default_value() {
     );
 }
 
-/// Тест 3: SaveData сохранение и загрузка
+/// Тест 3: `SaveData` сохранение и загрузка
 #[test]
 fn test_savedata_save_and_load() {
     // Сохраняем рекорд
@@ -55,7 +55,7 @@ fn test_savedata_save_and_load() {
     let _ = score;
 }
 
-/// Тест 4: SaveData проверка целостности
+/// Тест 4: `SaveData` проверка целостности
 #[test]
 fn test_savedata_integrity_check() {
     let save = SaveData::from_value(2500);
@@ -70,7 +70,7 @@ fn test_savedata_integrity_check() {
     );
 }
 
-/// Тест 5: SaveData разные значения
+/// Тест 5: `SaveData` разные значения
 #[test]
 fn test_savedata_different_values() {
     let save1 = SaveData::from_value(100);
@@ -82,7 +82,7 @@ fn test_savedata_different_values() {
     assert_eq!(save3.verify_and_get_score(), Some(10000));
 }
 
-/// Тест 6: SaveData клонирование
+/// Тест 6: `SaveData` клонирование
 #[test]
 fn test_savedata_clone() {
     let save = SaveData::from_value(750);
@@ -338,7 +338,7 @@ fn test_valid_entry_passes_check() {
 //     assert!(!entry.is_valid(), "Подделанное имя должно обнаруживаться");
 // }
 
-/// Тест 25: SaveData защита от подделки
+/// Тест 25: `SaveData` защита от подделки
 #[test]
 fn test_savedata_protection_from_fake() {
     let save = SaveData::from_value(5000);
@@ -363,7 +363,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(format!("Player{}", i), (i as u64 * 100) as u128);
+        leaderboard.add_score(format!("Player{i}"), u128::from(i as u64 * 100));
     }
 
     // Таблица должна содержать только топ-5
@@ -404,7 +404,7 @@ fn test_leaderboard_low_score_not_added() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{}", i), ((5 - i) as u64 * 100) as u128);
+        leaderboard.add_score(format!("Player{i}"), u128::from((5 - i) as u64 * 100));
     }
 
     // Пытаемся добавить рекорд ниже минимального
@@ -423,7 +423,7 @@ fn test_leaderboard_high_score_displaces_low() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{}", i), ((5 - i) as u64 * 100) as u128);
+        leaderboard.add_score(format!("Player{i}"), u128::from((5 - i) as u64 * 100));
     }
 
     // Добавляем высокий рекорд

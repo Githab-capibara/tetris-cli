@@ -255,8 +255,7 @@ fn test_move_to_left_boundary_blocked() {
     // Дальнейшее движение влево должно быть заблокировано
     assert!(
         !state.can_move_curr_shape(Dir::Left),
-        "Движение влево за границу должно быть заблокировано после {} перемещений",
-        moves
+        "Движение влево за границу должно быть заблокировано после {moves} перемещений"
     );
 }
 
@@ -275,8 +274,7 @@ fn test_move_to_right_boundary_blocked() {
     // Дальнейшее движение вправо должно быть заблокировано
     assert!(
         !state.can_move_curr_shape(Dir::Right),
-        "Движение вправо за границу должно быть заблокировано после {} перемещений",
-        moves
+        "Движение вправо за границу должно быть заблокировано после {moves} перемещений"
     );
 }
 
@@ -309,12 +307,11 @@ fn test_piece_position_at_left_boundary() {
 
     let shape = state.get_curr_shape();
     // Проверяем, что фигура не вышла за левую границу (x >= 0)
-    for &(x, _) in shape.coords.iter() {
+    for &(x, _) in &shape.coords {
         let global_x = shape.pos.0 as i16 + x;
         assert!(
             global_x >= 0,
-            "Блок фигуры не должен выходить за левую границу (x={})",
-            global_x
+            "Блок фигуры не должен выходить за левую границу (x={global_x})"
         );
     }
 }
@@ -331,12 +328,11 @@ fn test_piece_position_at_right_boundary() {
 
     let shape = state.get_curr_shape();
     // Проверяем, что фигура не вышла за правую границу (x < GRID_WIDTH)
-    for &(x, _) in shape.coords.iter() {
+    for &(x, _) in &shape.coords {
         let global_x = shape.pos.0 as i16 + x;
         assert!(
             global_x < GRID_WIDTH as i16,
-            "Блок фигуры не должен выходить за правую границу (x={})",
-            global_x
+            "Блок фигуры не должен выходить за правую границу (x={global_x})"
         );
     }
 }
@@ -353,12 +349,11 @@ fn test_piece_position_at_bottom_boundary() {
 
     let shape = state.get_curr_shape();
     // Проверяем, что фигура не вышла за нижнюю границу (y < GRID_HEIGHT)
-    for &(_, y) in shape.coords.iter() {
+    for &(_, y) in &shape.coords {
         let global_y = shape.pos.1 as i16 + y;
         assert!(
             global_y < GRID_HEIGHT as i16,
-            "Блок фигуры не должен выходить за нижнюю границу (y={})",
-            global_y
+            "Блок фигуры не должен выходить за нижнюю границу (y={global_y})"
         );
     }
 }
@@ -654,8 +649,7 @@ fn test_soft_drop_speed() {
     let fall_spd = state.get_fall_spd();
     assert!(
         fall_spd > 0.0,
-        "Скорость падения должна быть положительной: {}",
-        fall_spd
+        "Скорость падения должна быть положительной: {fall_spd}"
     );
 }
 
@@ -711,12 +705,11 @@ fn test_hard_drop_final_position() {
 
     let shape = state.get_curr_shape();
     // Проверяем, что фигура на полу
-    for &(_, y) in shape.coords.iter() {
+    for &(_, y) in &shape.coords {
         let global_y = shape.pos.1 as i16 + y;
         assert!(
             global_y >= 0 && global_y < GRID_HEIGHT as i16,
-            "Фигура после жёсткого падения должна быть в пределах поля (y={})",
-            global_y
+            "Фигура после жёсткого падения должна быть в пределах поля (y={global_y})"
         );
     }
 }

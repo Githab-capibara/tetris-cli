@@ -370,8 +370,7 @@ fn test_shape_color_index_match() {
         // Проверяем, что индекс цвета совпадает с индексом фигуры
         assert_eq!(
             t.fg, index,
-            "Индекс цвета должен совпадать с индексом фигуры для {:?}",
-            shape
+            "Индекс цвета должен совпадать с индексом фигуры для {shape:?}"
         );
     }
 }
@@ -394,16 +393,14 @@ fn test_random_shape_distribution() {
     for (i, &count) in counts.iter().enumerate() {
         assert!(
             count >= 50,
-            "Фигура типа {} должна встретиться хотя бы 50 раз (встретилась {} раз)",
-            i,
-            count
+            "Фигура типа {i} должна встретиться хотя бы 50 раз (встретилась {count} раз)"
         );
     }
 }
 
-/// Тест 18: Проверка создания фигуры через Tetromino::select()
+/// Тест 18: Проверка создания фигуры через `Tetromino::select()`
 ///
-/// Проверяет, что select() создаёт валидную фигуру.
+/// Проверяет, что `select()` создаёт валидную фигуру.
 #[test]
 fn test_tetromino_select_creation() {
     let t = Tetromino::select();
@@ -444,7 +441,7 @@ fn test_bag_generator_creation() {
 
 /// Тест 20: Проверка получения фигур из Bag Generator
 ///
-/// Проверяет, что next_shape() возвращает валидные фигуры.
+/// Проверяет, что `next_shape()` возвращает валидные фигуры.
 #[test]
 fn test_bag_generator_next_shape() {
     let mut bag = BagGenerator::new();
@@ -475,7 +472,7 @@ fn test_bag_system_all_seven_types() {
 
     // Проверяем, что все 7 типов встретились
     for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна быть в мешке", i);
+        assert!(found, "Фигура типа {i:?} должна быть в мешке");
     }
 }
 
@@ -513,17 +510,11 @@ fn test_shape_coords_bounds() {
         for (block_idx, &(x, y)) in coords.iter().enumerate() {
             assert!(
                 (-2..=2).contains(&x),
-                "Координата X фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
-                shape_idx,
-                block_idx,
-                x
+                "Координата X фигуры {shape_idx} блока {block_idx} должна быть в диапазоне [-2, 2], получена {x}"
             );
             assert!(
                 (-2..=2).contains(&y),
-                "Координата Y фигуры {} блока {} должна быть в диапазоне [-2, 2], получена {}",
-                shape_idx,
-                block_idx,
-                y
+                "Координата Y фигуры {shape_idx} блока {block_idx} должна быть в диапазоне [-2, 2], получена {y}"
             );
         }
     }
@@ -556,8 +547,7 @@ fn test_shape_blocks_unique() {
             for j in (i + 1)..coords.len() {
                 assert_ne!(
                     coords[i], coords[j],
-                    "Фигура {} имеет дублирующиеся блоки под индексами {} и {}",
-                    shape_idx, i, j
+                    "Фигура {shape_idx} имеет дублирующиеся блоки под индексами {i} и {j}"
                 );
             }
         }

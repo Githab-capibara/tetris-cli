@@ -108,8 +108,7 @@ fn test_symlink_blocked() {
         let err = load_result.unwrap_err();
         assert!(
             err.to_string().contains("Символические ссылки") || err.to_string().contains("symlink"),
-            "Ошибка должна упоминать символические ссылки: {}",
-            err
+            "Ошибка должна упоминать символические ссылки: {err}"
         );
 
         // Удаляем symlink
@@ -143,7 +142,6 @@ fn test_path_outside_allowed_directory_blocked() {
     let err = result.unwrap_err();
     assert!(
         err.to_string().contains("Path traversal") || err.to_string().contains("не разрешён"),
-        "Ошибка должна упоминать path traversal: {}",
-        err
+        "Ошибка должна упоминать path traversal: {err}"
     );
 }

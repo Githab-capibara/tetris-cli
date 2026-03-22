@@ -376,9 +376,7 @@ fn test_hard_drop_more_profitable() {
 
     assert!(
         hard_10 > soft_10,
-        "Hard drop должен давать больше очков (hard={}, soft={})",
-        hard_10,
-        soft_10
+        "Hard drop должен давать больше очков (hard={hard_10}, soft={soft_10})"
     );
 }
 
@@ -402,8 +400,6 @@ fn test_tetris_bonus_more_than_three_lines() {
 
     assert!(
         tetris > three_lines,
-        "Tetris должен давать больше очков чем 3 линии (Tetris={}, 3 линии={})",
-        tetris,
-        three_lines
+        "Tetris должен давать больше очков чем 3 линии (Tetris={tetris}, 3 линии={three_lines})"
     );
 }

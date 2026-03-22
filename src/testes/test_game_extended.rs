@@ -376,7 +376,7 @@ fn test_extended_all_shapes_movement() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -385,8 +385,7 @@ fn test_extended_all_shapes_movement() {
         // Все фигуры должны двигаться вниз в начале игры
         assert!(
             state.can_move_curr_shape(Dir::Down),
-            "{:?} фигура должна двигаться вниз",
-            shape
+            "{shape:?} фигура должна двигаться вниз"
         );
     }
 }
@@ -843,7 +842,7 @@ fn test_extended_all_shapes_rotation_in_center() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -942,7 +941,7 @@ fn test_extended_first_hold() {
     );
 }
 
-/// Тест 37: Проверка что can_hold становится false после удержания
+/// Тест 37: Проверка что `can_hold` становится false после удержания
 #[test]
 fn test_extended_can_hold_false_after_hold() {
     let mut state = GameState::new();
@@ -1018,7 +1017,7 @@ fn test_extended_hold_all_shapes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -1027,8 +1026,7 @@ fn test_extended_hold_all_shapes() {
 
         assert!(
             state.get_held_shape().is_some(),
-            "Удержанная фигура должна быть установлена для {:?}",
-            shape
+            "Удержанная фигура должна быть установлена для {shape:?}"
         );
     }
 }
@@ -1275,7 +1273,7 @@ fn test_extended_ghost_piece_all_shapes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -1285,8 +1283,7 @@ fn test_extended_ghost_piece_all_shapes() {
 
         assert!(
             can_move_down,
-            "Призрачная фигура {:?} должна иметь возможность падения",
-            shape
+            "Призрачная фигура {shape:?} должна иметь возможность падения"
         );
     }
 }
@@ -1395,7 +1392,7 @@ fn test_extended_bag_all_seven_shapes() {
     }
 
     for (i, &f) in found.iter().enumerate() {
-        assert!(f, "Фигура {:?} должна быть в мешке", i);
+        assert!(f, "Фигура {i:?} должна быть в мешке");
     }
 }
 
@@ -1446,7 +1443,7 @@ fn test_extended_bag_70_shapes() {
 
     // Каждая фигура должна встретиться 10 раз
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 10, "Фигура {:?} должна встретиться 10 раз", i);
+        assert_eq!(count, 10, "Фигура {i:?} должна встретиться 10 раз");
     }
 }
 
@@ -1463,7 +1460,7 @@ fn test_extended_bag_700_shapes() {
 
     // Каждая фигура должна встретиться 100 раз
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 100, "Фигура {:?} должна встретиться 100 раз", i);
+        assert_eq!(count, 100, "Фигура {i:?} должна встретиться 100 раз");
     }
 }
 
@@ -1528,7 +1525,7 @@ fn test_extended_bag_fairness() {
 
     // Каждая фигура должна встретиться 1000 раз
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 1000, "Фигура {:?} должна встретиться 1000 раз", i);
+        assert_eq!(count, 1000, "Фигура {i:?} должна встретиться 1000 раз");
     }
 }
 
@@ -1555,12 +1552,8 @@ fn test_extended_bag_two_bags() {
 
     // Оба мешка должны содержать все 7 фигур
     for i in 0..7 {
-        assert!(first_bag[i], "Первый мешок должен содержать фигуру {:?}", i);
-        assert!(
-            second_bag[i],
-            "Второй мешок должен содержать фигуру {:?}",
-            i
-        );
+        assert!(first_bag[i], "Первый мешок должен содержать фигуру {i:?}");
+        assert!(second_bag[i], "Второй мешок должен содержать фигуру {i:?}");
     }
 }
 
@@ -1577,7 +1570,7 @@ fn test_extended_bag_three_bags() {
 
     // Каждая фигура должна встретиться 3 раза
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 3, "Фигура {:?} должна встретиться 3 раза", i);
+        assert_eq!(count, 3, "Фигура {i:?} должна встретиться 3 раза");
     }
 }
 
@@ -1637,7 +1630,7 @@ fn test_extended_bag_contents() {
 // ГРУППА ТЕСТОВ 76-90: Игровой цикл
 // ============================================================================
 
-/// Тест 76: Проверка создания GameState
+/// Тест 76: Проверка создания `GameState`
 #[test]
 fn test_extended_game_state_creation() {
     let state = GameState::new();
@@ -1646,21 +1639,21 @@ fn test_extended_game_state_creation() {
     assert_eq!(state.get_lines_cleared(), 0);
 }
 
-/// Тест 77: Проверка создания GameState для спринта
+/// Тест 77: Проверка создания `GameState` для спринта
 #[test]
 fn test_extended_sprint_game_state_creation() {
     let state = GameState::new_sprint();
     assert_eq!(state.get_mode(), GameMode::Sprint);
 }
 
-/// Тест 78: Проверка создания GameState для марафона
+/// Тест 78: Проверка создания `GameState` для марафона
 #[test]
 fn test_extended_marathon_game_state_creation() {
     let state = GameState::new_marathon();
     assert_eq!(state.get_mode(), GameMode::Marathon);
 }
 
-/// Тест 79: Проверка таймера в GameState
+/// Тест 79: Проверка таймера в `GameState`
 #[test]
 fn test_extended_game_timer() {
     let mut state = GameState::new();
@@ -1672,7 +1665,7 @@ fn test_extended_game_timer() {
     assert!(elapsed > 0.0);
 }
 
-/// Тест 80: Проверка статистики в GameState
+/// Тест 80: Проверка статистики в `GameState`
 #[test]
 fn test_extended_game_stats() {
     let state = GameState::new();
@@ -1682,7 +1675,7 @@ fn test_extended_game_stats() {
     assert_eq!(stats.max_combo, 0);
 }
 
-/// Тест 81: Проверка что GameState имеет текущую фигуру
+/// Тест 81: Проверка что `GameState` имеет текущую фигуру
 #[test]
 fn test_extended_game_has_curr_shape() {
     let state = GameState::new();
@@ -1692,7 +1685,7 @@ fn test_extended_game_has_curr_shape() {
     assert_eq!(curr.coords.len(), 4);
 }
 
-/// Тест 82: Проверка что GameState имеет следующую фигуру
+/// Тест 82: Проверка что `GameState` имеет следующую фигуру
 #[test]
 fn test_extended_game_has_next_shape() {
     let state = GameState::new();
@@ -1701,7 +1694,7 @@ fn test_extended_game_has_next_shape() {
     assert!((next.shape as usize) < 7);
 }
 
-/// Тест 83: Проверка что GameState имеет пустое поле
+/// Тест 83: Проверка что `GameState` имеет пустое поле
 #[test]
 fn test_extended_game_empty_field() {
     let state = GameState::new();
@@ -1709,12 +1702,12 @@ fn test_extended_game_empty_field() {
 
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(cell, -1, "Клетка [{},{}] должна быть пустой", y, x);
+            assert_eq!(cell, -1, "Клетка [{y},{x}] должна быть пустой");
         }
     }
 }
 
-/// Тест 84: Проверка скорости падения в GameState
+/// Тест 84: Проверка скорости падения в `GameState`
 #[test]
 fn test_extended_game_fall_speed() {
     let state = GameState::new();
@@ -1723,28 +1716,28 @@ fn test_extended_game_fall_speed() {
     assert!((fall_spd - 0.9).abs() < f32::EPSILON);
 }
 
-/// Тест 85: Проверка что GameState имеет режим Classic по умолчанию
+/// Тест 85: Проверка что `GameState` имеет режим Classic по умолчанию
 #[test]
 fn test_extended_game_default_mode() {
     let state = GameState::new();
     assert_eq!(state.get_mode(), GameMode::Classic);
 }
 
-/// Тест 86: Проверка что GameState можно клонировать
+/// Тест 86: Проверка что `GameState` можно клонировать
 #[test]
 fn test_extended_game_clone() {
     // GameState не реализует Clone, пропускаем тест
     // Тест оставлен для совместимости
 }
 
-/// Тест 87: Проверка что GameState имеет Default
+/// Тест 87: Проверка что `GameState` имеет Default
 #[test]
 fn test_extended_game_default() {
     let state = GameState::default();
     assert_eq!(state.get_score(), 0);
 }
 
-/// Тест 88: Проверка что GameState имеет удержанную фигуру (опционально)
+/// Тест 88: Проверка что `GameState` имеет удержанную фигуру (опционально)
 #[test]
 fn test_extended_game_held_shape() {
     let state = GameState::new();
@@ -1756,7 +1749,7 @@ fn test_extended_game_held_shape() {
     );
 }
 
-/// Тест 89: Проверка что GameState может быть создан многократно
+/// Тест 89: Проверка что `GameState` может быть создан многократно
 #[test]
 fn test_extended_game_multiple_creation() {
     for _ in 0..100 {
@@ -1765,7 +1758,7 @@ fn test_extended_game_multiple_creation() {
     // Просто проверяем что код работает
 }
 
-/// Тест 90: Проверка что GameState имеет can_hold
+/// Тест 90: Проверка что `GameState` имеет `can_hold`
 #[test]
 fn test_extended_game_can_hold() {
     let state = GameState::new();
@@ -1776,7 +1769,7 @@ fn test_extended_game_can_hold() {
 // ГРУППА ТЕСТОВ 91-100: Отрисовка
 // ============================================================================
 
-/// Тест 91: Проверка что GameState имеет метод draw_ghost_shape
+/// Тест 91: Проверка что `GameState` имеет метод `draw_ghost_shape`
 #[test]
 fn test_extended_draw_ghost_shape_exists() {
     // Тест просто проверяет что метод существует и компилируется
@@ -1786,7 +1779,7 @@ fn test_extended_draw_ghost_shape_exists() {
     let _ = can_move;
 }
 
-/// Тест 92: Проверка что GameState имеет метод draw_next_shape
+/// Тест 92: Проверка что `GameState` имеет метод `draw_next_shape`
 #[test]
 fn test_extended_draw_next_shape_exists() {
     let state = GameState::new();
@@ -1794,7 +1787,7 @@ fn test_extended_draw_next_shape_exists() {
     let _ = next;
 }
 
-/// Тест 93: Проверка что GameState имеет метод draw_held_shape
+/// Тест 93: Проверка что `GameState` имеет метод `draw_held_shape`
 #[test]
 fn test_extended_draw_held_shape_exists() {
     let state = GameState::new();
@@ -1802,7 +1795,7 @@ fn test_extended_draw_held_shape_exists() {
     let _ = held;
 }
 
-/// Тест 94: Проверка что GameState имеет метод draw_sprint_timer
+/// Тест 94: Проверка что `GameState` имеет метод `draw_sprint_timer`
 #[test]
 fn test_extended_draw_sprint_timer_exists() {
     let mut state = GameState::new_sprint();

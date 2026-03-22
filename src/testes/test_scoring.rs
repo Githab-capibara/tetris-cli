@@ -16,7 +16,7 @@ use crate::game::{
 // ГРУППА ТЕСТОВ 1-10: Базовые очки
 // ============================================================================
 
-/// Тест 1: Проверка константы PIECE_SCORE_INC
+/// Тест 1: Проверка константы `PIECE_SCORE_INC`
 #[test]
 fn test_scoring_piece_score_constant() {
     assert_eq!(
@@ -26,21 +26,21 @@ fn test_scoring_piece_score_constant() {
     assert_eq!(PIECE_SCORE_INC, 100, "Очки за фигуру должны быть 100");
 }
 
-/// Тест 2: Проверка что PIECE_SCORE_INC положительное
+/// Тест 2: Проверка что `PIECE_SCORE_INC` положительное
 #[test]
 fn test_scoring_piece_score_positive() {
     // Проверяем, что константа положительная (всегда истинно, но документирует намерение)
     let _ = PIECE_SCORE_INC; // Используем константу чтобы избежать предупреждения
 }
 
-/// Тест 3: Проверка что PIECE_SCORE_INC меньше 1000
+/// Тест 3: Проверка что `PIECE_SCORE_INC` меньше 1000
 #[test]
 fn test_scoring_piece_score_reasonable() {
     // Проверяем, что константа разумная (всегда истинно, но документирует намерение)
     let _ = PIECE_SCORE_INC; // Используем константу чтобы избежать предупреждения
 }
 
-/// Тест 4: Проверка константы PIECE_SCORE_FALL_MULT
+/// Тест 4: Проверка константы `PIECE_SCORE_FALL_MULT`
 #[test]
 fn test_scoring_piece_fall_mult_constant() {
     assert!(
@@ -49,14 +49,14 @@ fn test_scoring_piece_fall_mult_constant() {
     );
 }
 
-/// Тест 5: Проверка что PIECE_SCORE_FALL_MULT положительный
+/// Тест 5: Проверка что `PIECE_SCORE_FALL_MULT` положительный
 #[test]
 fn test_scoring_piece_fall_mult_positive() {
     // Проверяем, что множитель положительный (всегда истинно)
     let _ = PIECE_SCORE_FALL_MULT;
 }
 
-/// Тест 6: Проверка что PIECE_SCORE_FALL_MULT меньше 100
+/// Тест 6: Проверка что `PIECE_SCORE_FALL_MULT` меньше 100
 #[test]
 fn test_scoring_piece_fall_mult_reasonable() {
     // Проверяем, что множитель разумный (всегда истинно)
@@ -84,7 +84,7 @@ fn test_scoring_piece_positive() {
     let _ = PIECE_SCORE_INC;
 }
 
-/// Тест 9: Проверка что PIECE_SCORE_INC делится на 10
+/// Тест 9: Проверка что `PIECE_SCORE_INC` делится на 10
 #[test]
 fn test_scoring_piece_divisible_by_10() {
     assert_eq!(
@@ -94,7 +94,7 @@ fn test_scoring_piece_divisible_by_10() {
     );
 }
 
-/// Тест 10: Проверка что PIECE_SCORE_INC равно 100
+/// Тест 10: Проверка что `PIECE_SCORE_INC` равно 100
 #[test]
 fn test_scoring_piece_exactly_100() {
     assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0]);
@@ -105,7 +105,7 @@ fn test_scoring_piece_exactly_100() {
 // ГРУППА ТЕСТОВ 11-20: Бонусы за линии
 // ============================================================================
 
-/// Тест 11: Проверка константы LINE_SCORES[0]
+/// Тест 11: Проверка константы `LINE_SCORES`[0]
 #[test]
 fn test_scoring_row_score_constant() {
     assert_eq!(LINE_SCORES[0], 100, "Базовые очки за линию должны быть 100");
@@ -152,14 +152,14 @@ fn test_scoring_lines_exponential() {
     assert!(four > three, "4 линии должны давать больше очков чем 3");
 }
 
-/// Тест 17: Проверка что LINE_SCORES[0] положительное
+/// Тест 17: Проверка что `LINE_SCORES`[0] положительное
 #[test]
 fn test_scoring_row_score_positive() {
     // Проверяем, что константа положительная (всегда истинно)
     let _ = LINE_SCORES[0];
 }
 
-/// Тест 18: Проверка что LINE_SCORES[0] делится на 10
+/// Тест 18: Проверка что `LINE_SCORES`[0] делится на 10
 #[test]
 fn test_scoring_row_score_divisible_by_10() {
     assert_eq!(
@@ -197,19 +197,19 @@ fn test_scoring_lines_no_overflow() {
 // ГРУППА ТЕСТОВ 21-30: Комбо
 // ============================================================================
 
-/// Тест 21: Проверка константы COMBO_BONUS
+/// Тест 21: Проверка константы `COMBO_BONUS`
 #[test]
 fn test_scoring_combo_bonus_constant() {
     assert_eq!(COMBO_BONUS, 50, "Бонус за комбо должен быть 50");
 }
 
-/// Тест 22: Проверка что COMBO_BONUS положительное
+/// Тест 22: Проверка что `COMBO_BONUS` положительное
 #[test]
 fn test_scoring_combo_bonus_positive() {
     let _ = COMBO_BONUS;
 }
 
-/// Тест 23: Проверка что COMBO_BONUS делится на 10
+/// Тест 23: Проверка что `COMBO_BONUS` делится на 10
 #[test]
 fn test_scoring_combo_bonus_divisible_by_10() {
     assert_eq!(COMBO_BONUS % 10, 0, "Бонус за комбо должен делиться на 10");
@@ -283,7 +283,7 @@ fn test_scoring_combo_no_overflow() {
 // ГРУППА ТЕСТОВ 31-40: Hard Drop и Soft Drop
 // ============================================================================
 
-/// Тест 31: Проверка константы SOFT_DROP_POINTS
+/// Тест 31: Проверка константы `SOFT_DROP_POINTS`
 #[test]
 fn test_scoring_soft_drop_constant() {
     assert_eq!(
@@ -292,7 +292,7 @@ fn test_scoring_soft_drop_constant() {
     );
 }
 
-/// Тест 32: Проверка что SOFT_DROP_POINTS положительное
+/// Тест 32: Проверка что `SOFT_DROP_POINTS` положительное
 #[test]
 fn test_scoring_soft_drop_positive() {
     let _ = SOFT_DROP_POINTS;
@@ -319,7 +319,7 @@ fn test_scoring_soft_drop_20_cells() {
     assert_eq!(score, 20, "Soft Drop на 20 ячеек = 20 очков");
 }
 
-/// Тест 36: Проверка константы HARD_DROP_POINTS
+/// Тест 36: Проверка константы `HARD_DROP_POINTS`
 #[test]
 fn test_scoring_hard_drop_constant() {
     assert_eq!(
@@ -328,7 +328,7 @@ fn test_scoring_hard_drop_constant() {
     );
 }
 
-/// Тест 37: Проверка что HARD_DROP_POINTS больше SOFT_DROP_POINTS
+/// Тест 37: Проверка что `HARD_DROP_POINTS` больше `SOFT_DROP_POINTS`
 #[test]
 fn test_scoring_hard_drop_greater_than_soft() {
     let _ = (HARD_DROP_POINTS, SOFT_DROP_POINTS);
@@ -359,19 +359,19 @@ fn test_scoring_hard_drop_20_cells() {
 // ГРУППА ТЕСТОВ 41-50: Уровень и скорость
 // ============================================================================
 
-/// Тест 41: Проверка константы LINES_PER_LEVEL
+/// Тест 41: Проверка константы `LINES_PER_LEVEL`
 #[test]
 fn test_scoring_lines_per_level_constant() {
     assert_eq!(LINES_PER_LEVEL, 10, "Для повышения уровня нужно 10 линий");
 }
 
-/// Тест 42: Проверка что LINES_PER_LEVEL положительное
+/// Тест 42: Проверка что `LINES_PER_LEVEL` положительное
 #[test]
 fn test_scoring_lines_per_level_positive() {
     let _ = LINES_PER_LEVEL;
 }
 
-/// Тест 43: Проверка константы INITIAL_FALL_SPD
+/// Тест 43: Проверка константы `INITIAL_FALL_SPD`
 #[test]
 fn test_scoring_initial_fall_speed() {
     assert!(
@@ -380,13 +380,13 @@ fn test_scoring_initial_fall_speed() {
     );
 }
 
-/// Тест 44: Проверка что INITIAL_FALL_SPD положительная
+/// Тест 44: Проверка что `INITIAL_FALL_SPD` положительная
 #[test]
 fn test_scoring_initial_fall_speed_positive() {
     let _ = INITIAL_FALL_SPD;
 }
 
-/// Тест 45: Проверка константы SPD_INC
+/// Тест 45: Проверка константы `SPD_INC`
 #[test]
 fn test_scoring_speed_increment() {
     assert!(
@@ -395,7 +395,7 @@ fn test_scoring_speed_increment() {
     );
 }
 
-/// Тест 46: Проверка что SPD_INC положительный
+/// Тест 46: Проверка что `SPD_INC` положительный
 #[test]
 fn test_scoring_speed_increment_positive() {
     let _ = SPD_INC;

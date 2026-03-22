@@ -3,7 +3,7 @@
 //! Этот модуль содержит 20 тестов для проверки системы ввода-вывода:
 //! - Тесты констант размеров (5 тестов)
 //! - Тесты Canvas (создание, reset) (5 тестов)
-//! - Тесты KeyReader (5 тестов)
+//! - Тесты `KeyReader` (5 тестов)
 //! - Тесты минимального размера терминала (5 тестов)
 //!
 //! Все тесты проверяют корректность системы ввода-вывода.
@@ -14,13 +14,13 @@ use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
 // ГРУППА ТЕСТОВ 1-5: Тесты констант размеров
 // ============================================================================
 
-/// Тест 1: GRID_WIDTH равен 10
+/// Тест 1: `GRID_WIDTH` равен 10
 #[test]
 fn test_grid_width_constant() {
     assert_eq!(GRID_WIDTH, 10, "Ширина игрового поля должна быть 10 блоков");
 }
 
-/// Тест 2: GRID_HEIGHT равен 20
+/// Тест 2: `GRID_HEIGHT` равен 20
 #[test]
 fn test_grid_height_constant() {
     assert_eq!(
@@ -29,13 +29,13 @@ fn test_grid_height_constant() {
     );
 }
 
-/// Тест 3: SHAPE_WIDTH равен 2
+/// Тест 3: `SHAPE_WIDTH` равен 2
 #[test]
 fn test_shape_width_constant() {
     assert_eq!(SHAPE_WIDTH, 2, "Ширина фигуры должна быть 2 символа");
 }
 
-/// Тест 4: DISP_WIDTH вычисляется корректно
+/// Тест 4: `DISP_WIDTH` вычисляется корректно
 #[test]
 fn test_disp_width_calculation() {
     // DISP_WIDTH = (SHAPE_WIDTH * GRID_WIDTH) + 2
@@ -47,7 +47,7 @@ fn test_disp_width_calculation() {
     assert_eq!(DISP_WIDTH, 22, "DISP_WIDTH должен быть 22");
 }
 
-/// Тест 5: DISP_HEIGHT вычисляется корректно
+/// Тест 5: `DISP_HEIGHT` вычисляется корректно
 #[test]
 fn test_disp_height_calculation() {
     // DISP_HEIGHT = GRID_HEIGHT + 5
@@ -81,19 +81,19 @@ fn test_field_dimensions_classic() {
     assert_eq!(GRID_HEIGHT, GRID_WIDTH * 2);
 }
 
-/// Тест 8: DISP_WIDTH положительный
+/// Тест 8: `DISP_WIDTH` положительный
 #[test]
 fn test_disp_width_positive() {
     let _ = DISP_WIDTH;
 }
 
-/// Тест 9: DISP_HEIGHT положительный
+/// Тест 9: `DISP_HEIGHT` положительный
 #[test]
 fn test_disp_height_positive() {
     let _ = DISP_HEIGHT;
 }
 
-/// Тест 10: SHAPE_WIDTH соответствует отрисовке
+/// Тест 10: `SHAPE_WIDTH` соответствует отрисовке
 #[test]
 fn test_shape_width_matches_rendering() {
     // SHAPE_WIDTH = 2 соответствует "██"
@@ -104,7 +104,7 @@ fn test_shape_width_matches_rendering() {
 // ГРУППА ТЕСТОВ 11-15: Тесты KeyReader
 // ============================================================================
 
-/// Тест 11: KeyReader базовые константы
+/// Тест 11: `KeyReader` базовые константы
 #[test]
 fn test_keyreader_constants() {
     // Проверяем, что константы для ввода корректны
@@ -125,7 +125,7 @@ fn test_minimum_size_for_game() {
     assert!(min_height >= 25, "Минимальная высота должна быть >= 25");
 }
 
-/// Тест 13: GRID_WIDTH меньше DISP_WIDTH
+/// Тест 13: `GRID_WIDTH` меньше `DISP_WIDTH`
 #[test]
 fn test_grid_width_less_than_disp() {
     assert!(
@@ -134,7 +134,7 @@ fn test_grid_width_less_than_disp() {
     );
 }
 
-/// Тест 14: GRID_HEIGHT меньше DISP_HEIGHT
+/// Тест 14: `GRID_HEIGHT` меньше `DISP_HEIGHT`
 #[test]
 fn test_grid_height_less_than_disp_height() {
     assert!(

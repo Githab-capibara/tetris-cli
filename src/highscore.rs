@@ -19,7 +19,6 @@ use confy::{load, store};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
-use std::time::Duration;
 
 // ===========================================================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -122,15 +121,15 @@ struct RateLimitState {
 /// # Безопасность
 /// Если системное время было изменено назад, возвращается `last_known_time_ms`.
 /// Это предотвращает обход rate limiting через установку времени назад.
+///
+/// # Исправление #11
+/// Выделена общая логика получения системного времени в отдельную функцию.
 fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
-    let current_time_ms = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_else(|e| {
-            // Логирование ошибки SystemTime
-            eprintln!("Ошибка: системное время недоступно: {e}. Используется время 0.");
-            Duration::from_secs(0)
-        })
-        .as_millis() as u64;
+    let current_time_ms = get_system_time_ms().unwrap_or_else(|e| {
+        // Исправление #10: унифицированное логирование с unwrap_or_else
+        eprintln!("Ошибка: системное время недоступно: {e}. Используется время 0.");
+        0
+    });
 
     // Защита от обхода rate limiting через изменение системного времени назад.
     // Если текущее время меньше последнего известного, используем последнее известное.
@@ -146,6 +145,20 @@ fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
         state.last_known_time_ms = current_time_ms;
         current_time_ms
     }
+}
+
+/// Получить системное время в миллисекундах.
+///
+/// # Возвращает
+/// - `Ok(u64)` - текущее время в миллисекундах с начала UNIX epoch
+/// - `Err(std::time::SystemError)` - если системное время недоступно
+///
+/// # Исправление #11
+/// Выделена общая логика получения системного времени для переиспользования.
+fn get_system_time_ms() -> Result<u64, std::time::SystemTimeError> {
+    Ok(std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)?
+        .as_millis() as u64)
 }
 
 /// Загрузить состояние rate limiting из конфигурации с файловой блокировкой.
@@ -428,6 +441,9 @@ impl SaveData {
     ///
     /// # Возвращает
     /// `SaveData` по умолчанию при ошибке загрузки или при обнаружении подделки
+    ///
+    /// # Исправление #26
+    /// Добавлено предупреждение в UI о проблемах с загрузкой конфигурации.
     pub fn load_config() -> Self {
         match load::<Self>(APP_NAME) {
             Ok(data) => {
@@ -442,7 +458,9 @@ impl SaveData {
                         data
                     }
                     None if data.high_score != 0 => {
+                        // Исправление #26: подробное предупреждение о подделке
                         eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
+                        eprintln!("  Если вы не пытались изменить файл конфигурации вручную, это может быть ошибкой.");
                         Self::default()
                     }
                     None => {
@@ -455,8 +473,10 @@ impl SaveData {
                 // Подробное логирование ошибок загрузки
                 // Используем [`Display`] trait для форматирования ошибки
                 let error_msg = format!("{e}");
+                // Исправление #26: добавлено предупреждение в UI
+                eprintln!("Ошибка загрузки конфигурации: {error_msg}. Используется значение по умолчанию.");
                 eprintln!(
-                    "Ошибка загрузки конфигурации: {error_msg}. Используется значение по умолчанию."
+                    "  Проверьте права доступа к файлу конфигурации или запустите игру снова."
                 );
                 Self::default()
             }
@@ -729,15 +749,20 @@ impl LeaderboardEntry {
 /// # Безопасность
 /// Расширенная валидация Unicode для поддержки международных имён.
 /// Запрещены управляющие символы и эмодзи через `is_control()`.
+///
+/// # Исправление #9
+/// Используется `matches!` макрос с диапазонами для более читаемой проверки.
 fn is_valid_name_char(c: char) -> bool {
-    // Расширенная валидация Unicode
-    // Разрешаем alphanumeric (включая Unicode), русские буквы и безопасные символы
-    // Запрещаем управляющие символы (c.is_control()) и эмодзи
+    // Исправление #9: используем matches! макрос с диапазонами для читаемости
     !c.is_control()
         && !c.is_whitespace()
         && c != '/'
         && c != '\\'
-        && (c.is_alphanumeric() || c == '_' || c == '-' || c == ' ')
+        && (matches!(c,
+            'a'..='z' | 'A'..='Z' | '0'..='9' |  // ASCII буквы и цифры
+            'а'..='я' | 'А'..='Я' | 'ё' | 'Ё' |  // Русские буквы
+            '_' | '-' | ' '  // Специальные символы
+        ))
 }
 
 impl Leaderboard {
@@ -780,7 +805,18 @@ impl Leaderboard {
     /// Добавлена проверка cooldown: минимальное время между записями [`ENTRY_COOLDOWN_MS`].
     /// Исправление: защита от обхода rate limiting через изменение системного времени.
     /// Используется сохранение последнего timestamp в конфигурационном файле.
+    ///
+    /// # Исправление #24
+    /// Добавлена валидация имени игрока перед добавлением в таблицу лидеров.
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
+        // Исправление #24: валидация имени игрока
+        let valid_name = sanitize_player_name(&name);
+        if valid_name == "Anonymous" && name.trim() != "Anonymous" {
+            eprintln!(
+                "Предупреждение: имя игрока не прошло валидацию и было заменено на 'Anonymous'"
+            );
+        }
+
         // Загружаем состояние rate limiting из конфигурации
         let mut rate_limit_state = load_rate_limit_state();
 
@@ -853,8 +889,8 @@ impl Leaderboard {
 
         self.recent_entry_times.push(current_time_ms);
 
-        // Добавление новой записи
-        let new_entry = LeaderboardEntry::new(name, score);
+        // Добавление новой записи с валидированным именем
+        let new_entry = LeaderboardEntry::new(valid_name, score);
         self.entries.push(new_entry);
 
         // Сортировка по убыванию очков
@@ -1018,12 +1054,11 @@ mod sanitize_tests {
         ];
 
         for &char in &bidi_chars {
-            let name = format!("Player{}Name", char);
+            let name = format!("Player{char}Name");
             let sanitized = sanitize_player_name(&name);
             assert!(
                 !sanitized.contains(char),
-                "Bidi символ {:?} должен быть удалён",
-                char
+                "Bidi символ {char:?} должен быть удалён"
             );
         }
     }

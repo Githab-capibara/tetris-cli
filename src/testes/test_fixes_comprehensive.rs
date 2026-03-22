@@ -29,7 +29,7 @@ mod tests {
     // Было: метод hash() вызывал предупреждение clippy::dead_code
     // Исправление: добавлен атрибут #[allow(dead_code)]
 
-    /// Тест 1.1: Проверяем, что метод hash() существует и возвращает строку.
+    /// Тест 1.1: Проверяем, что метод `hash()` существует и возвращает строку.
     /// Метод должен возвращать ссылку на строку (хэш записи).
     #[test]
     fn test_hash_method_exists_and_returns_string() {
@@ -63,7 +63,7 @@ mod tests {
     }
 
     /// Тест 1.3: Проверяем стабильность хэша для одной записи.
-    /// Многократный вызов hash() на одной записи должен возвращать одинаковый результат.
+    /// Многократный вызов `hash()` на одной записи должен возвращать одинаковый результат.
     #[test]
     fn test_hash_method_consistent_for_same_entry() {
         let entry = LeaderboardEntry::new("StablePlayer".to_string(), 5000);
@@ -90,7 +90,7 @@ mod tests {
     // Было: метод get_blocks() возвращал &Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>
     // Исправление: метод возвращает &[[i8; GRID_WIDTH]; GRID_HEIGHT]
 
-    /// Тест 2.1: Проверяем тип возвращаемого значения get_blocks().
+    /// Тест 2.1: Проверяем тип возвращаемого значения `get_blocks()`.
     /// Метод должен возвращать ссылку на массив, а не на Box.
     #[test]
     fn test_get_blocks_returns_correct_type() {
@@ -130,7 +130,7 @@ mod tests {
         // Если код компилируется - тест пройден
     }
 
-    /// Тест 2.3: Проверяем целостность данных через get_blocks().
+    /// Тест 2.3: Проверяем целостность данных через `get_blocks()`.
     /// Данные в поле должны быть инициализированы значением -1 (пусто).
     #[test]
     fn test_get_blocks_data_integrity() {
@@ -140,7 +140,7 @@ mod tests {
         // Проверяем, что все ячейки инициализированы значением -1 (пусто)
         for (y, row) in blocks.iter().enumerate() {
             for (x, &cell) in row.iter().enumerate() {
-                assert_eq!(cell, -1, "Ячейка [{},{}] должна быть пустой (-1)", x, y);
+                assert_eq!(cell, -1, "Ячейка [{x},{y}] должна быть пустой (-1)");
             }
         }
     }
@@ -152,7 +152,7 @@ mod tests {
     // Исправление: добавлен #[derive(Default)]
 
     /// Тест 3.1: Проверяем, что Default создаёт пустой вектор entries.
-    /// Leaderboard::default() должен создавать таблицу без записей.
+    /// `Leaderboard::default()` должен создавать таблицу без записей.
     #[test]
     fn test_leaderboard_default_creates_empty_entries() {
         let leaderboard = Leaderboard::default();
@@ -170,7 +170,7 @@ mod tests {
     }
 
     /// Тест 3.2: Проверяем множественное создание через Default.
-    /// Несколько вызовов default() должны создавать независимые объекты.
+    /// Несколько вызовов `default()` должны создавать независимые объекты.
     #[test]
     fn test_leaderboard_default_multiple_times() {
         let leaderboard1 = Leaderboard::default();
@@ -220,7 +220,7 @@ mod tests {
     // Было: отсутствовал комментарий о панике в raw-режиме
     // Исправление: добавлен комментарий о корректной работе Drop при панике
 
-    /// Тест 4.1: Проверяем, что Canvas::new() существует и работает.
+    /// Тест 4.1: Проверяем, что `Canvas::new()` существует и работает.
     /// Это compile-pass тест - если код компилируется, тест пройден.
     #[test]
     fn test_canvas_new_has_comment() {
@@ -246,8 +246,8 @@ mod tests {
         );
     }
 
-    /// Тест 4.3: Проверяем, что Canvas имеет метод reset().
-    /// Метод reset() должен быть доступен для явного сброса терминала.
+    /// Тест 4.3: Проверяем, что Canvas имеет метод `reset()`.
+    /// Метод `reset()` должен быть доступен для явного сброса терминала.
     #[test]
     fn test_canvas_new_resets_terminal_on_panic() {
         // Проверяем существование метода reset() через проверку размера Canvas
@@ -269,7 +269,7 @@ mod tests {
     // Исправление: добавлена проверка на ".." и абсолютные пути
 
     /// Тест 5.1: Проверяем отклонение абсолютных путей.
-    /// save_to_file() должен отклонять абсолютные пути.
+    /// `save_to_file()` должен отклонять абсолютные пути.
     #[test]
     fn test_save_to_file_rejects_absolute_paths() {
         let config = ControlsConfig::default_config();
@@ -289,7 +289,7 @@ mod tests {
     }
 
     /// Тест 5.2: Проверяем отклонение path traversal.
-    /// save_to_file() должен отклонять пути с "..".
+    /// `save_to_file()` должен отклонять пути с "..".
     #[test]
     fn test_save_to_file_rejects_path_traversal() {
         let config = ControlsConfig::default_config();
@@ -309,7 +309,7 @@ mod tests {
     }
 
     /// Тест 5.3: Проверяем принятие относительных путей.
-    /// save_to_file() должен принимать корректные относительные пути.
+    /// `save_to_file()` должен принимать корректные относительные пути.
     #[test]
     fn test_save_to_file_accepts_relative_paths() {
         let config = ControlsConfig::default_config();
@@ -321,8 +321,7 @@ mod tests {
         // Должно быть успешно
         assert!(
             result.is_ok(),
-            "Относительные пути должны быть разрешены: {:?}",
-            result
+            "Относительные пути должны быть разрешены: {result:?}"
         );
 
         // Проверяем, что файл существует
@@ -353,7 +352,7 @@ mod tests {
     }
 
     /// Тест 6.2: Проверяем, что размеры сетки валидны.
-    /// GRID_WIDTH и GRID_HEIGHT должны быть положительными.
+    /// `GRID_WIDTH` и `GRID_HEIGHT` должны быть положительными.
     #[test]
     #[allow(clippy::assertions_on_constants)]
     fn test_grid_dimensions_valid() {
@@ -369,7 +368,7 @@ mod tests {
     }
 
     /// Тест 6.3: Проверяем, что бонус за комбо положительный.
-    /// COMBO_BONUS должен быть положительным числом.
+    /// `COMBO_BONUS` должен быть положительным числом.
     #[test]
     #[allow(clippy::assertions_on_constants)]
     fn test_combo_bonus_positive() {
@@ -386,8 +385,8 @@ mod tests {
     // Было: использование expect() в тестах
     // Исправление: заменено на unwrap() для единообразия
 
-    /// Тест 7.1: Проверяем unwrap() на Some значении.
-    /// unwrap() должен возвращать значение для Some.
+    /// Тест 7.1: Проверяем `unwrap()` на Some значении.
+    /// `unwrap()` должен возвращать значение для Some.
     #[test]
     fn test_unwrap_on_some() {
         // Используем unwrap() вместо expect() - убираем unnecessary_literal_unwrap
@@ -396,8 +395,8 @@ mod tests {
         assert_eq!(unwrapped, 42, "unwrap() должен вернуть значение");
     }
 
-    /// Тест 7.2: Проверяем unwrap() на Ok значении.
-    /// unwrap() должен возвращать значение для Ok.
+    /// Тест 7.2: Проверяем `unwrap()` на Ok значении.
+    /// `unwrap()` должен возвращать значение для Ok.
     #[test]
     fn test_unwrap_on_ok() {
         // Используем unwrap() вместо expect() - убираем unnecessary_literal_unwrap
@@ -406,8 +405,8 @@ mod tests {
         assert_eq!(unwrapped, 100, "unwrap() должен вернуть значение");
     }
 
-    /// Тест 7.3: Проверяем, что unwrap() паникует на None.
-    /// unwrap() должен вызывать panic для None.
+    /// Тест 7.3: Проверяем, что `unwrap()` паникует на None.
+    /// `unwrap()` должен вызывать panic для None.
     #[test]
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn test_unwrap_panics_on_none() {
@@ -422,8 +421,8 @@ mod tests {
     // Было: неоптимальные циклы в тестах
     // Исправление: использование enumerate() и fill()
 
-    /// Тест 8.1: Проверяем корректность enumerate() в цикле.
-    /// enumerate() должен правильно индексировать элементы.
+    /// Тест 8.1: Проверяем корректность `enumerate()` в цикле.
+    /// `enumerate()` должен правильно индексировать элементы.
     #[test]
     fn test_enumerate_loop_correctness() {
         let data = [10, 20, 30, 40, 50];
@@ -439,8 +438,8 @@ mod tests {
         assert_eq!(sum, 150, "Сумма должна быть 150");
     }
 
-    /// Тест 8.2: Проверяем корректность fill() для инициализации.
-    /// fill() должен заполнять массив значениями.
+    /// Тест 8.2: Проверяем корректность `fill()` для инициализации.
+    /// `fill()` должен заполнять массив значениями.
     #[test]
     fn test_fill_function_correctness() {
         let mut array = [0; 10];
@@ -450,11 +449,11 @@ mod tests {
 
         // Проверяем, что все элементы заполнены
         for (i, &value) in array.iter().enumerate() {
-            assert_eq!(value, 42, "Элемент {} должен быть 42", i);
+            assert_eq!(value, 42, "Элемент {i} должен быть 42");
         }
     }
 
-    /// Тест 8.3: Проверяем производительность iter_mut().enumerate().
+    /// Тест 8.3: Проверяем производительность `iter_mut().enumerate()`.
     /// Комбинация должна работать корректно для модификации.
     #[test]
     fn test_iter_mut_enumerate_performance() {
@@ -479,7 +478,7 @@ mod tests {
     // Было: отсутствовала документация для некоторых методов
     // Исправление: добавлена документация
 
-    /// Тест 9.1: Проверяем, что метод get_blocks() существует.
+    /// Тест 9.1: Проверяем, что метод `get_blocks()` существует.
     /// Метод должен быть доступен через публичный API.
     #[test]
     fn test_get_curr_shape_mut_exists() {
@@ -491,7 +490,7 @@ mod tests {
         // Если код компилируется - метод существует
     }
 
-    /// Тест 9.2: Проверяем, что метод increment_lines_cleared() существует.
+    /// Тест 9.2: Проверяем, что метод `increment_lines_cleared()` существует.
     /// Метод должен быть доступен для увеличения счётчика линий.
     #[test]
     fn test_increment_lines_cleared_exists() {
@@ -507,7 +506,7 @@ mod tests {
         // Если код компилируется - методы существуют
     }
 
-    /// Тест 9.3: Проверяем, что метод add_score_no_check() существует.
+    /// Тест 9.3: Проверяем, что метод `add_score_no_check()` существует.
     /// Метод должен добавлять очки без проверок.
     #[test]
     fn test_add_score_no_check_exists() {
@@ -566,8 +565,8 @@ mod tests {
     // Было: отсутствовал комментарий об ограничении UTF-8
     // Исправление: добавлен комментарий в документации get_key()
 
-    /// Тест 12.1: Проверяем, что get_key() существует.
-    /// Метод должен быть доступен в KeyReader.
+    /// Тест 12.1: Проверяем, что `get_key()` существует.
+    /// Метод должен быть доступен в `KeyReader`.
     #[test]
     fn test_get_key_documentation_mentions_utf8() {
         use crate::io::KeyReader;
@@ -580,7 +579,7 @@ mod tests {
     }
 
     /// Тест 12.2: Проверяем, что ASCII обрабатывается корректно.
-    /// get_key() должен возвращать Some для ASCII символов.
+    /// `get_key()` должен возвращать Some для ASCII символов.
     #[test]
     fn test_get_key_handles_ascii_correctly() {
         // Этот тест проверяет, что метод get_key() существует и работает
@@ -594,7 +593,7 @@ mod tests {
     }
 
     /// Тест 12.3: Проверяем, что multi-byte возвращают None.
-    /// get_key() должен возвращать None для multi-byte UTF-8.
+    /// `get_key()` должен возвращать None для multi-byte UTF-8.
     #[test]
     fn test_get_key_returns_none_for_multibyte() {
         // Этот тест проверяет поведение get_key() с multi-byte символами

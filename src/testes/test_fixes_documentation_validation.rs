@@ -3,7 +3,7 @@
 use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, LeaderboardEntry};
 
-/// Тест 13.1: Проверка что save_to_file() имеет # Errors секцию.
+/// Тест 13.1: Проверка что `save_to_file()` имеет # Errors секцию.
 #[test]
 fn test_save_to_file_has_errors_section() {
     use crate::controls::ControlsConfig;
@@ -13,7 +13,7 @@ fn test_save_to_file_has_errors_section() {
     let _ = std::fs::remove_file("test.json");
 }
 
-/// Тест 13.2: Проверка что load_from_file() имеет # Errors секцию.
+/// Тест 13.2: Проверка что `load_from_file()` имеет # Errors секцию.
 #[test]
 fn test_load_from_file_has_errors_section() {
     use crate::controls::ControlsConfig;
@@ -34,20 +34,20 @@ fn test_errors_returned_correctly() {
     assert!(save_result.is_err());
 }
 
-/// Тест 14.1: Проверка что get_blocks_for_bench() имеет #[doc(hidden)].
+/// Тест 14.1: Проверка что `get_blocks_for_bench()` имеет #[doc(hidden)].
 #[test]
 fn test_benchmark_functions_hidden() {
     let state = GameState::new();
     let _blocks = state.get_blocks();
 }
 
-/// Тест 14.2: Проверка что fill_line_for_bench() имеет #[doc(hidden)].
+/// Тест 14.2: Проверка что `fill_line_for_bench()` имеет #[doc(hidden)].
 #[test]
 fn test_benchmark_functions_not_in_public_api() {
     let _state = GameState::new();
 }
 
-/// Тест 14.3: Проверка что clear_lines_for_bench() имеет #[doc(hidden)].
+/// Тест 14.3: Проверка что `clear_lines_for_bench()` имеет #[doc(hidden)].
 #[test]
 fn test_benchmark_functions_doc_hidden() {
     let mut state = GameState::new();

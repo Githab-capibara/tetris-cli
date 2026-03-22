@@ -2,11 +2,11 @@
 //!
 //! Этот модуль содержит тесты для проверки всех исправленных проблем:
 //! - Path Traversal уязвимость в controls.rs
-//! - Утечка ресурсов KeyReader в io.rs
-//! - Переполнение счёта с saturating_add в game.rs
+//! - Утечка ресурсов `KeyReader` в io.rs
+//! - Переполнение счёта с `saturating_add` в game.rs
 //! - Оптимизация аллокаций в highscore.rs
 //! - Wall kick вращение в game.rs
-//! - Удаление deprecated assert_hs() в highscore.rs
+//! - Удаление deprecated `assert_hs()` в highscore.rs
 //!
 //! ## Структура тестов
 //! - 6 основных тестов - по одному на каждое исправление
@@ -64,9 +64,9 @@ fn test_path_traversal_prevention() {
 // ГРУППА ТЕСТОВ 2: Утечка ресурсов KeyReader (io.rs)
 // ============================================================================
 
-/// Тест 2: Проверка что ресурсы KeyReader освобождаются после Drop.
+/// Тест 2: Проверка что ресурсы `KeyReader` освобождаются после Drop.
 ///
-/// Проверяет, что реализация Drop для KeyReader корректно
+/// Проверяет, что реализация Drop для `KeyReader` корректно
 /// освобождает ресурсы терминала при выходе из области видимости.
 #[test]
 fn test_key_reader_resource_cleanup() {
@@ -100,7 +100,7 @@ fn test_key_reader_resource_cleanup() {
 
 /// Тест 3: Проверка что счёт не переполняется при максимальном значении.
 ///
-/// Проверяет, что используется saturating_add для предотвращения
+/// Проверяет, что используется `saturating_add` для предотвращения
 /// переполнения счёта при достижении максимального значения u128.
 #[test]
 fn test_score_saturating_add() {
@@ -145,9 +145,9 @@ fn test_score_saturating_add() {
 // ГРУППА ТЕСТОВ 4: Оптимизация аллокаций (highscore.rs)
 // ============================================================================
 
-/// Тест 4: Проверка что is_valid() не создаёт лишних аллокаций.
+/// Тест 4: Проверка что `is_valid()` не создаёт лишних аллокаций.
 ///
-/// Проверяет, что метод is_valid() использует String::with_capacity()
+/// Проверяет, что метод `is_valid()` использует `String::with_capacity()`
 /// для предотвращения лишних аллокаций памяти.
 #[test]
 fn test_highscore_allocation_optimization() {
@@ -168,18 +168,17 @@ fn test_highscore_allocation_optimization() {
     // is_valid() работает эффективно без лишних аллокаций
     let mut entries = Vec::new();
     for i in 0..100 {
-        let entry = LeaderboardEntry::new(format!("Player{}", i), i * 100);
+        let entry = LeaderboardEntry::new(format!("Player{i}"), i * 100);
         entries.push(entry);
     }
 
     // Проверяем валидность всех записей
     for (i, entry) in entries.iter().enumerate() {
-        assert!(entry.is_valid(), "Запись {} должна быть валидной", i);
+        assert!(entry.is_valid(), "Запись {i} должна быть валидной");
         assert_eq!(
             entry.score(),
             (i * 100) as u128,
-            "Счёт записи {} должен совпадать",
-            i
+            "Счёт записи {i} должен совпадать"
         );
     }
 }
@@ -190,7 +189,7 @@ fn test_highscore_allocation_optimization() {
 
 /// Тест 5: Проверка что вращение у стены работает корректно.
 ///
-/// Проверяет, что константа WALL_KICK_OFFSETS содержит правильные
+/// Проверяет, что константа `WALL_KICK_OFFSETS` содержит правильные
 /// смещения для вращения фигур рядом со стенами.
 #[test]
 fn test_wall_kick_rotation() {
@@ -279,11 +278,11 @@ fn test_wall_kick_rotation() {
 // ГРУППА ТЕСТОВ 6: Удаление deprecated assert_hs() (highscore.rs)
 // ============================================================================
 
-/// Тест 6: Проверка что метод assert_hs() больше не существует.
+/// Тест 6: Проверка что метод `assert_hs()` больше не существует.
 ///
 /// Это компиляционный тест - если код компилируется, тест проходит.
-/// Проверяет, что deprecated метод assert_hs() был удалён и заменён
-/// на verify_and_get_score().
+/// Проверяет, что deprecated метод `assert_hs()` был удалён и заменён
+/// на `verify_and_get_score()`.
 #[test]
 fn test_assert_hs_removed() {
     use crate::highscore::SaveData;

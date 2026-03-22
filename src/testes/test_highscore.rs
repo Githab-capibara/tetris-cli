@@ -1,7 +1,7 @@
 //! Тесты системы рекордов.
 //!
 //! Этот модуль содержит 15 тестов для проверки системы сохранения и таблицы лидеров:
-//! - Тесты SaveData (5 тестов)
+//! - Тесты `SaveData` (5 тестов)
 //! - Тесты Leaderboard (5 тестов)
 //! - Тесты хеширования (3 теста)
 //! - Тесты валидации (2 теста)
@@ -14,9 +14,9 @@ use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 // ГРУППА ТЕСТОВ 1-5: SaveData
 // ============================================================================
 
-/// Тест 1: Проверка создания SaveData из значения
+/// Тест 1: Проверка создания `SaveData` из значения
 ///
-/// Проверяет, что SaveData::from_value() создаёт валидный экземпляр.
+/// Проверяет, что `SaveData::from_value()` создаёт валидный экземпляр.
 #[test]
 fn test_save_data_from_value() {
     let save = SaveData::from_value(1000);
@@ -29,7 +29,7 @@ fn test_save_data_from_value() {
     );
 }
 
-/// Тест 2: Проверка SaveData по умолчанию
+/// Тест 2: Проверка `SaveData` по умолчанию
 ///
 /// Проверяет, что Default реализация создаёт рекорд со значением 0.
 #[test]
@@ -44,9 +44,9 @@ fn test_save_data_default() {
     );
 }
 
-/// Тест 3: Проверка verify_and_get_score с валидным рекордом
+/// Тест 3: Проверка `verify_and_get_score` с валидным рекордом
 ///
-/// Проверяет, что verify_and_get_score() возвращает правильное значение для валидного рекорда.
+/// Проверяет, что `verify_and_get_score()` возвращает правильное значение для валидного рекорда.
 #[test]
 fn test_save_data_verify_and_get_score_valid() {
     let save = SaveData::from_value(5000);
@@ -59,9 +59,9 @@ fn test_save_data_verify_and_get_score_valid() {
     );
 }
 
-/// Тест 4: Проверка Clone для SaveData
+/// Тест 4: Проверка Clone для `SaveData`
 ///
-/// Проверяет, что клонирование SaveData создаёт точную копию.
+/// Проверяет, что клонирование `SaveData` создаёт точную копию.
 #[test]
 fn test_save_data_clone() {
     let original = SaveData::from_value(2500);
@@ -75,21 +75,19 @@ fn test_save_data_clone() {
     );
 }
 
-/// Тест 5: Проверка SaveData с разными значениями
+/// Тест 5: Проверка `SaveData` с разными значениями
 ///
 /// Проверяет создание рекордов с различными значениями.
 #[test]
 fn test_save_data_different_values() {
     let values = [0, 100, 500, 1000, 5000, 10000, 99999];
 
-    for &value in values.iter() {
+    for &value in &values {
         let save = SaveData::from_value(value);
         assert_eq!(
             save.verify_and_get_score(),
             Some(value),
-            "verify_and_get_score() должен вернуть Some({}) для рекорда {}",
-            value,
-            value
+            "verify_and_get_score() должен вернуть Some({value}) для рекорда {value}"
         );
     }
 }
@@ -114,7 +112,7 @@ fn test_leaderboard_empty() {
 
 /// Тест 7: Проверка добавления рекорда в таблицу
 ///
-/// Проверяет, что add_score() успешно добавляет рекорд.
+/// Проверяет, что `add_score()` успешно добавляет рекорд.
 #[test]
 fn test_leaderboard_add_score() {
     let mut leaderboard = Leaderboard::default();
@@ -148,7 +146,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 7 рекордов
     for i in 0..7 {
-        leaderboard.add_score(format!("Player{}", i), (i + 1) * 100);
+        leaderboard.add_score(format!("Player{i}"), (i + 1) * 100);
     }
 
     // Таблица должна содержать только 5 лучших
@@ -196,7 +194,7 @@ fn test_leaderboard_sorting() {
 // ГРУППА ТЕСТОВ 11-13: Хеширование
 // ============================================================================
 
-/// Тест 11: Проверка создания LeaderboardEntry с хэшом
+/// Тест 11: Проверка создания `LeaderboardEntry` с хэшом
 ///
 /// Проверяет, что каждая запись имеет уникальный хэш.
 #[test]
@@ -250,9 +248,9 @@ fn test_hash_different_values() {
 // ГРУППА ТЕСТОВ 14-15: Валидация
 // ============================================================================
 
-/// Тест 14: Проверка валидации LeaderboardEntry
+/// Тест 14: Проверка валидации `LeaderboardEntry`
 ///
-/// Проверяет, что валидная запись проходит проверку is_valid().
+/// Проверяет, что валидная запись проходит проверку `is_valid()`.
 #[test]
 fn test_leaderboard_entry_validation() {
     let entry = LeaderboardEntry::new("Player".to_string(), 1000);
@@ -263,9 +261,9 @@ fn test_leaderboard_entry_validation() {
     );
 }
 
-/// Тест 15: Проверка get_best_score
+/// Тест 15: Проверка `get_best_score`
 ///
-/// Проверяет, что get_best_score() возвращает правильный рекорд.
+/// Проверяет, что `get_best_score()` возвращает правильный рекорд.
 #[test]
 fn test_leaderboard_get_best_score() {
     let mut leaderboard = Leaderboard::default();

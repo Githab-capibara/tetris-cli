@@ -39,7 +39,7 @@ fn test_first_bag_contains_all_seven_pieces() {
 
     // Проверяем, что все 7 типов встретились
     for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна быть в первом мешке", i);
+        assert!(found, "Фигура типа {i:?} должна быть в первом мешке");
     }
 }
 
@@ -57,11 +57,7 @@ fn test_uniform_distribution_first_bag() {
 
     // Каждая фигура должна встретиться ровно 1 раз
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(
-            count, 1,
-            "Фигура типа {:?} должна встретиться ровно 1 раз",
-            i
-        );
+        assert_eq!(count, 1, "Фигура типа {i:?} должна встретиться ровно 1 раз");
     }
 }
 
@@ -81,8 +77,7 @@ fn test_uniform_distribution_multiple_bags() {
     for (i, &count) in counts.iter().enumerate() {
         assert_eq!(
             count, 10,
-            "Фигура типа {:?} должна встретиться ровно 10 раз",
-            i
+            "Фигура типа {i:?} должна встретиться ровно 10 раз"
         );
     }
 }
@@ -101,7 +96,7 @@ fn test_all_piece_types_available() {
 
     // Все 7 типов должны встретиться
     for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна встретиться хотя бы раз", i);
+        assert!(found, "Фигура типа {i:?} должна встретиться хотя бы раз");
     }
 }
 
@@ -129,9 +124,7 @@ fn test_no_preference_in_distribution() {
 
     assert!(
         diff < expected / 2,
-        "T и I должны встречаться примерно одинаково часто (T={}, I={})",
-        t_count,
-        i_count
+        "T и I должны встречаться примерно одинаково часто (T={t_count}, I={i_count})"
     );
 }
 
@@ -167,8 +160,8 @@ fn test_fisher_yates_creates_different_sequences() {
     }
 
     for i in 0..7 {
-        assert!(unique1[i], "Первый мешок должен содержать фигуру {:?}", i);
-        assert!(unique2[i], "Второй мешок должен содержать фигуру {:?}", i);
+        assert!(unique1[i], "Первый мешок должен содержать фигуру {i:?}");
+        assert!(unique2[i], "Второй мешок должен содержать фигуру {i:?}");
     }
 }
 
@@ -228,8 +221,7 @@ fn test_shuffle_does_not_duplicate_pieces_in_bag() {
     for (i, &count) in counts.iter().enumerate() {
         assert_eq!(
             count, 1,
-            "Фигура типа {:?} должна быть ровно 1 раз в мешке",
-            i
+            "Фигура типа {i:?} должна быть ровно 1 раз в мешке"
         );
     }
 }
@@ -252,8 +244,7 @@ fn test_fisher_yates_algorithm_works_correctly() {
         for (i, &count) in counts.iter().enumerate() {
             assert_eq!(
                 count, 1,
-                "Мешок {} должен содержать фигуру {:?} ровно 1 раз",
-                bag_num, i
+                "Мешок {bag_num} должен содержать фигуру {i:?} ровно 1 раз"
             );
         }
     }
@@ -286,9 +277,7 @@ fn test_shuffle_randomness() {
     // Допускаем до 5% совпадений
     assert!(
         identical_bags < total_comparisons / 10,
-        "Слишком много идентичных мешков: {} из {}",
-        identical_bags,
-        total_comparisons
+        "Слишком много идентичных мешков: {identical_bags} из {total_comparisons}"
     );
 }
 
@@ -324,8 +313,7 @@ fn test_continuous_piece_generation() {
         let shape = bag.next_shape();
         assert!(
             (shape as usize) < 7,
-            "Фигура {} должна быть валидной (0-6)",
-            i
+            "Фигура {i} должна быть валидной (0-6)"
         );
     }
 }
@@ -344,7 +332,7 @@ fn test_bag_fills_automatically() {
 
     // Каждая фигура должна встретиться ровно 2 раза
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 2, "Фигура типа {:?} должна встретиться 2 раза", i);
+        assert_eq!(count, 2, "Фигура типа {i:?} должна встретиться 2 раза");
     }
 }
 
@@ -418,11 +406,7 @@ fn test_sequence_of_seven_is_unique() {
 
     // Все фигуры должны быть уникальны
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(
-            count, 1,
-            "Фигура типа {:?} должна встретиться ровно 1 раз",
-            i
-        );
+        assert_eq!(count, 1, "Фигура типа {i:?} должна встретиться ровно 1 раз");
     }
 }
 
@@ -434,7 +418,7 @@ fn test_long_sequences_correct() {
     // Получаем 140 фигур
     for i in 0..140 {
         let shape = bag.next_shape();
-        assert!((shape as usize) < 7, "Фигура {} должна быть валидной", i);
+        assert!((shape as usize) < 7, "Фигура {i} должна быть валидной");
     }
 }
 
@@ -458,8 +442,7 @@ fn test_sequence_no_patterns() {
     // Допускаем не более 15 совпадений подряд (при переходе мешков)
     assert!(
         same_count < 20,
-        "Слишком много повторений подряд: {}",
-        same_count
+        "Слишком много повторений подряд: {same_count}"
     );
 }
 
@@ -477,7 +460,7 @@ fn test_sequence_contains_all_types() {
 
     // Все 7 типов должны встретиться
     for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {:?} должна встретиться", i);
+        assert!(found, "Фигура типа {i:?} должна встретиться");
     }
 }
 
@@ -499,8 +482,7 @@ fn test_piece_alternation() {
     // Большинство фигур должны чередоваться
     assert!(
         alternations > 80,
-        "Фигуры должны чередоваться (чередований: {})",
-        alternations
+        "Фигуры должны чередоваться (чередований: {alternations})"
     );
 }
 
@@ -518,7 +500,7 @@ fn test_distribution_in_sequence() {
 
     // Каждая фигура должна встретиться ровно 100 раз
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 100, "Фигура типа {:?} должна встретиться 100 раз", i);
+        assert_eq!(count, 100, "Фигура типа {i:?} должна встретиться 100 раз");
     }
 }
 
@@ -542,8 +524,7 @@ fn test_t_piece_distribution_statistics() {
     // Допускаем отклонение до 20%
     assert!(
         (70..=130).contains(&t_count),
-        "T-фигур должно быть около 100 (получено {})",
-        t_count
+        "T-фигур должно быть около 100 (получено {t_count})"
     );
 }
 
@@ -561,8 +542,7 @@ fn test_i_piece_distribution_statistics() {
 
     assert!(
         (70..=130).contains(&i_count),
-        "I-фигур должно быть около 100 (получено {})",
-        i_count
+        "I-фигур должно быть около 100 (получено {i_count})"
     );
 }
 
@@ -580,8 +560,7 @@ fn test_o_piece_distribution_statistics() {
 
     assert!(
         (70..=130).contains(&o_count),
-        "O-фигур должно быть около 100 (получено {})",
-        o_count
+        "O-фигур должно быть около 100 (получено {o_count})"
     );
 }
 
@@ -609,9 +588,7 @@ fn test_overall_statistical_distribution() {
     // Разница между мин и макс не должна превышать 30%
     assert!(
         max_count - min_count < 50,
-        "Разница между мин и макс должна быть меньше 50 (мин={}, макс={})",
-        min_count,
-        max_count
+        "Разница между мин и макс должна быть меньше 50 (мин={min_count}, макс={max_count})"
     );
 }
 
@@ -639,8 +616,7 @@ fn test_distribution_variance() {
     // Дисперсия не должна быть слишком большой
     assert!(
         variance < 400.0,
-        "Дисперсия должна быть меньше 400 (получено {})",
-        variance
+        "Дисперсия должна быть меньше 400 (получено {variance})"
     );
 }
 
@@ -667,7 +643,6 @@ fn test_chi_square_simplified() {
     // Используем более мягкое ограничение для тестов
     assert!(
         chi_square < 20.0,
-        "Хи-квадрат должен быть меньше 20 (получено {})",
-        chi_square
+        "Хи-квадрат должен быть меньше 20 (получено {chi_square})"
     );
 }
