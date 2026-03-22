@@ -12,7 +12,7 @@ use crate::tetromino::RotationDirection;
 // ГРУППА ТЕСТОВ 1-10: Анимация Hard Drop
 // ============================================================================
 
-/// Тест 1: Проверка что is_hard_dropping false по умолчанию
+/// Тест 1: Проверка что `is_hard_dropping` false по умолчанию
 #[test]
 fn test_animation_hard_drop_default_false() {
     // is_hard_dropping - приватное поле, проверяем через поведение
@@ -103,7 +103,7 @@ fn test_animation_hard_drop_all_shapes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -177,7 +177,7 @@ fn test_animation_hard_drop_marathon_mode() {
 // ГРУППА ТЕСТОВ 11-20: Анимация очистки линий
 // ============================================================================
 
-/// Тест 11: Проверка что animating_rows пуст по умолчанию
+/// Тест 11: Проверка что `animating_rows` пуст по умолчанию
 #[test]
 fn test_animation_animating_rows_empty() {
     let _state = GameState::new();
@@ -225,7 +225,7 @@ fn test_animation_different_shapes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -238,8 +238,7 @@ fn test_animation_different_shapes() {
         // Проверяем что фигура достигла пола
         assert!(
             !state.can_move_curr_shape(crate::game::Dir::Down),
-            "Фигура {:?} должна достигнуть пола",
-            shape
+            "Фигура {shape:?} должна достигнуть пола"
         );
     }
 }
@@ -395,7 +394,7 @@ fn test_animation_ghost_same_color() {
     assert_eq!(ghost.fg, state.get_curr_shape().fg);
 }
 
-/// Тест 26: Проверка что can_move_ghost_shape работает
+/// Тест 26: Проверка что `can_move_ghost_shape` работает
 #[test]
 fn test_animation_can_move_ghost_shape() {
     let state = GameState::new();
@@ -420,7 +419,7 @@ fn test_animation_ghost_all_shapes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];

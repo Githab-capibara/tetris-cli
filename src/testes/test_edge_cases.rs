@@ -17,7 +17,7 @@ use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino, SH
 // ГРУППА ТЕСТОВ 1-10: Пустые значения
 // ============================================================================
 
-/// Тест 1: Проверка создания GameState с пустым полем
+/// Тест 1: Проверка создания `GameState` с пустым полем
 #[test]
 fn test_edge_cases_empty_field() {
     let state = GameState::new();
@@ -25,13 +25,13 @@ fn test_edge_cases_empty_field() {
 
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(cell, -1, "Клетка [{},{}] должна быть пустой", y, x);
+            assert_eq!(cell, -1, "Клетка [{y},{x}] должна быть пустой");
         }
     }
 }
 
-/// Тест 2: Проверка что BagGenerator инициализирован при создании
-/// Исправление #8: BagGenerator теперь инициализируется с временными данными
+/// Тест 2: Проверка что `BagGenerator` инициализирован при создании
+/// Исправление #8: `BagGenerator` теперь инициализируется с временными данными
 #[test]
 fn test_edge_cases_bag_empty() {
     let bag = BagGenerator::new();
@@ -55,7 +55,7 @@ fn test_edge_cases_achievements_empty() {
     assert_eq!(stats.achievements.len(), 0);
 }
 
-/// Тест 5: Проверка что start_time None при создании
+/// Тест 5: Проверка что `start_time` None при создании
 #[test]
 fn test_edge_cases_start_time_none() {
     let state = GameState::new();
@@ -63,7 +63,7 @@ fn test_edge_cases_start_time_none() {
     assert!(stats.start_time.is_none());
 }
 
-/// Тест 6: Проверка что end_time None при создании
+/// Тест 6: Проверка что `end_time` None при создании
 #[test]
 fn test_edge_cases_end_time_none() {
     let state = GameState::new();
@@ -71,7 +71,7 @@ fn test_edge_cases_end_time_none() {
     assert!(stats.end_time.is_none());
 }
 
-/// Тест 7: Проверка что combo_counter 0 при создании
+/// Тест 7: Проверка что `combo_counter` 0 при создании
 #[test]
 fn test_edge_cases_combo_counter_zero() {
     let state = GameState::new();
@@ -79,7 +79,7 @@ fn test_edge_cases_combo_counter_zero() {
     assert_eq!(stats.combo_counter, 0);
 }
 
-/// Тест 8: Проверка что max_combo 0 при создании
+/// Тест 8: Проверка что `max_combo` 0 при создании
 #[test]
 fn test_edge_cases_max_combo_zero() {
     let state = GameState::new();
@@ -87,7 +87,7 @@ fn test_edge_cases_max_combo_zero() {
     assert_eq!(stats.max_combo, 0);
 }
 
-/// Тест 9: Проверка что tetris_count 0 при создании
+/// Тест 9: Проверка что `tetris_count` 0 при создании
 #[test]
 fn test_edge_cases_tetris_count_zero() {
     let state = GameState::new();
@@ -95,7 +95,7 @@ fn test_edge_cases_tetris_count_zero() {
     assert_eq!(stats.tetris_count, 0);
 }
 
-/// Тест 10: Проверка что total_lines 0 при создании
+/// Тест 10: Проверка что `total_lines` 0 при создании
 #[test]
 fn test_edge_cases_total_lines_zero() {
     let state = GameState::new();
@@ -149,7 +149,7 @@ fn test_edge_cases_bottom_boundary() {
     assert!(y < GRID_HEIGHT as f32);
 }
 
-/// Тест 14: Проверка BagGenerator на 7000 фигур
+/// Тест 14: Проверка `BagGenerator` на 7000 фигур
 #[test]
 fn test_edge_cases_bag_7000_shapes() {
     let mut bag = BagGenerator::new();
@@ -160,7 +160,7 @@ fn test_edge_cases_bag_7000_shapes() {
         counts[shape as usize] += 1;
     }
 
-    for &count in counts.iter() {
+    for &count in &counts {
         assert_eq!(count, 1000);
     }
 }
@@ -198,7 +198,7 @@ fn test_edge_cases_hold_10_times() {
     }
 }
 
-/// Тест 17: Проверка создания 1000 GameState
+/// Тест 17: Проверка создания 1000 `GameState`
 #[test]
 fn test_edge_cases_create_1000_states() {
     for _ in 0..1000 {
@@ -216,7 +216,7 @@ fn test_edge_cases_create_1000_tetromino() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 19: Проверка BagGenerator на 10000 фигур
+/// Тест 19: Проверка `BagGenerator` на 10000 фигур
 #[test]
 fn test_edge_cases_bag_10000_shapes() {
     let mut bag = BagGenerator::new();
@@ -278,7 +278,7 @@ fn test_edge_cases_i_rotates() {
     assert_ne!(state.get_curr_shape().coords, original_coords);
 }
 
-/// Тест 23: Проверка что все 7 фигур встречаются в BagGenerator
+/// Тест 23: Проверка что все 7 фигур встречаются в `BagGenerator`
 #[test]
 fn test_edge_cases_all_seven_in_bag() {
     let mut bag = BagGenerator::new();
@@ -289,7 +289,7 @@ fn test_edge_cases_all_seven_in_bag() {
         found[shape as usize] = true;
     }
 
-    for &f in found.iter() {
+    for &f in &found {
         assert!(f);
     }
 }
@@ -317,7 +317,7 @@ fn test_edge_cases_shapes_within_bounds() {
     assert!(y >= 0.0 && y < GRID_HEIGHT as f32);
 }
 
-/// Тест 25: Проверка что can_hold сбрасывается после hold
+/// Тест 25: Проверка что `can_hold` сбрасывается после hold
 #[test]
 fn test_edge_cases_can_hold_resets() {
     let mut state = GameState::new();
@@ -407,7 +407,7 @@ fn test_edge_cases_movement_at_floor_no_panic() {
     let _ = state.can_move_curr_shape(crate::game::Dir::Down);
 }
 
-/// Тест 33: Проверка что BagGenerator не паникует при 100000 вызовах
+/// Тест 33: Проверка что `BagGenerator` не паникует при 100000 вызовах
 #[test]
 fn test_edge_cases_bag_100k_no_panic() {
     let mut bag = BagGenerator::new();
@@ -442,7 +442,7 @@ fn test_edge_cases_o_rotation_no_panic() {
     let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 }
 
-/// Тест 36: Проверка что get_blocks не паникует
+/// Тест 36: Проверка что `get_blocks` не паникует
 #[test]
 fn test_edge_cases_get_blocks_no_panic() {
     let state = GameState::new();
@@ -450,7 +450,7 @@ fn test_edge_cases_get_blocks_no_panic() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 37: Проверка что get_stats не паникует
+/// Тест 37: Проверка что `get_stats` не паникует
 #[test]
 fn test_edge_cases_get_stats_no_panic() {
     let state = GameState::new();
@@ -458,7 +458,7 @@ fn test_edge_cases_get_stats_no_panic() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 38: Проверка что get_next_shape не паникует
+/// Тест 38: Проверка что `get_next_shape` не паникует
 #[test]
 fn test_edge_cases_get_next_shape_no_panic() {
     let state = GameState::new();
@@ -466,7 +466,7 @@ fn test_edge_cases_get_next_shape_no_panic() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 39: Проверка что get_curr_shape не паникует
+/// Тест 39: Проверка что `get_curr_shape` не паникует
 #[test]
 fn test_edge_cases_get_curr_shape_no_panic() {
     let state = GameState::new();
@@ -474,7 +474,7 @@ fn test_edge_cases_get_curr_shape_no_panic() {
     // Тест успешно завершён, если код достиг этой строки
 }
 
-/// Тест 40: Проверка что get_held_shape не паникует
+/// Тест 40: Проверка что `get_held_shape` не паникует
 #[test]
 fn test_edge_cases_get_held_shape_no_panic() {
     let state = GameState::new();
@@ -486,7 +486,7 @@ fn test_edge_cases_get_held_shape_no_panic() {
 // ГРУППА ТЕСТОВ 41-50: Производительность
 // ============================================================================
 
-/// Тест 41: Проверка производительности создания GameState (10000)
+/// Тест 41: Проверка производительности создания `GameState` (10000)
 #[test]
 fn test_edge_cases_performance_create_10k_states() {
     let start = std::time::Instant::now();
@@ -499,7 +499,7 @@ fn test_edge_cases_performance_create_10k_states() {
     assert!(duration.as_secs_f64() < 5.0);
 }
 
-/// Тест 42: Проверка производительности BagGenerator (100000)
+/// Тест 42: Проверка производительности `BagGenerator` (100000)
 #[test]
 fn test_edge_cases_performance_bag_100k() {
     let mut bag = BagGenerator::new();
@@ -575,7 +575,7 @@ fn test_edge_cases_performance_hold_10k() {
     assert!(duration.as_secs_f64() < 10.0);
 }
 
-/// Тест 47: Проверка производительности get_blocks (10000)
+/// Тест 47: Проверка производительности `get_blocks` (10000)
 #[test]
 fn test_edge_cases_performance_get_blocks_10k() {
     let state = GameState::new();
@@ -589,7 +589,7 @@ fn test_edge_cases_performance_get_blocks_10k() {
     assert!(duration.as_secs_f64() < 5.0);
 }
 
-/// Тест 48: Проверка производительности get_stats (10000)
+/// Тест 48: Проверка производительности `get_stats` (10000)
 #[test]
 fn test_edge_cases_performance_get_stats_10k() {
     let state = GameState::new();
@@ -603,7 +603,7 @@ fn test_edge_cases_performance_get_stats_10k() {
     assert!(duration.as_secs_f64() < 5.0);
 }
 
-/// Тест 49: Проверка производительности Tetromino::select() (100000)
+/// Тест 49: Проверка производительности `Tetromino::select()` (100000)
 #[test]
 fn test_edge_cases_performance_select_100k() {
     let start = std::time::Instant::now();
@@ -616,7 +616,7 @@ fn test_edge_cases_performance_select_100k() {
     assert!(duration.as_secs_f64() < 5.0);
 }
 
-/// Тест 50: Проверка производительности BagGenerator::new() (10000)
+/// Тест 50: Проверка производительности `BagGenerator::new()` (10000)
 #[test]
 fn test_edge_cases_performance_bag_new_10k() {
     let start = std::time::Instant::now();

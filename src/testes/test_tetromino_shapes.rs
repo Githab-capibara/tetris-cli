@@ -245,7 +245,7 @@ fn test_i_piece_shape_structure() {
 #[test]
 fn test_all_pieces_have_four_blocks() {
     for (i, coords) in SHAPE_COORDS.iter().enumerate() {
-        assert_eq!(coords.len(), 4, "Фигура {} должна иметь 4 блока", i);
+        assert_eq!(coords.len(), 4, "Фигура {i} должна иметь 4 блока");
     }
 }
 
@@ -256,17 +256,11 @@ fn test_all_coords_in_valid_range() {
         for (block_idx, &(x, y)) in coords.iter().enumerate() {
             assert!(
                 (-2..=2).contains(&x),
-                "X координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
-                shape_idx,
-                block_idx,
-                x
+                "X координата фигуры {shape_idx} блока {block_idx} должна быть в [-2, 2], получена {x}"
             );
             assert!(
                 (-2..=2).contains(&y),
-                "Y координата фигуры {} блока {} должна быть в [-2, 2], получена {}",
-                shape_idx,
-                block_idx,
-                y
+                "Y координата фигуры {shape_idx} блока {block_idx} должна быть в [-2, 2], получена {y}"
             );
         }
     }
@@ -282,8 +276,7 @@ fn test_t_piece_coords_unique() {
         for j in (i + 1)..coords.len() {
             assert_ne!(
                 coords[i], coords[j],
-                "T-фигура имеет дублирующиеся блоки {} и {}",
-                i, j
+                "T-фигура имеет дублирующиеся блоки {i} и {j}"
             );
         }
     }
@@ -411,7 +404,7 @@ fn test_s_piece_color() {
     assert_eq!(t.fg, 3, "S-фигура должна иметь индекс цвета 3 (Green)");
 }
 
-/// Тест 28: Z-фигура имеет правильный цвет (LightRed)
+/// Тест 28: Z-фигура имеет правильный цвет (`LightRed`)
 #[test]
 fn test_z_piece_color() {
     let t = Tetromino {
@@ -473,7 +466,7 @@ fn test_all_pieces_spawn_at_center() {
         ShapeType::I,
     ];
 
-    for shape in shapes.iter() {
+    for shape in &shapes {
         let t = Tetromino {
             pos: (4.0, 0.0),
             shape: *shape,
@@ -483,13 +476,11 @@ fn test_all_pieces_spawn_at_center() {
 
         assert!(
             (t.pos.0 - 4.0).abs() < f32::EPSILON,
-            "{:?} фигура должна появляться в центре по X",
-            shape
+            "{shape:?} фигура должна появляться в центре по X"
         );
         assert!(
             (t.pos.1 - 0.0).abs() < f32::EPSILON,
-            "{:?} фигура должна появляться сверху по Y",
-            shape
+            "{shape:?} фигура должна появляться сверху по Y"
         );
     }
 }

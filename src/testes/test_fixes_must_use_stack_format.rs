@@ -5,7 +5,7 @@ use crate::highscore::LeaderboardEntry;
 use crate::tetromino::BagGenerator;
 use std::time::{Duration, Instant};
 
-/// Тест 5.1: Проверка что score() имеет #[must_use].
+/// Тест 5.1: Проверка что `score()` имеет #[`must_use`].
 #[test]
 fn test_score_has_must_use() {
     let entry = LeaderboardEntry::new("Test".to_string(), 1000);
@@ -13,7 +13,7 @@ fn test_score_has_must_use() {
     assert_eq!(score, 1000);
 }
 
-/// Тест 5.2: Проверка что verify_and_get_score() имеет #[must_use].
+/// Тест 5.2: Проверка что `verify_and_get_score()` имеет #[`must_use`].
 #[test]
 fn test_verify_and_get_score_has_must_use() {
     use crate::highscore::SaveData;
@@ -22,7 +22,7 @@ fn test_verify_and_get_score_has_must_use() {
     assert_eq!(verified, Some(5000));
 }
 
-/// Тест 5.3: Проверка что get_bag() и get_index() имеют #[must_use].
+/// Тест 5.3: Проверка что `get_bag()` и `get_index()` имеют #[`must_use`].
 #[test]
 fn test_bag_generator_methods_have_must_use() {
     let mut bag = BagGenerator::new();
@@ -34,7 +34,7 @@ fn test_bag_generator_methods_have_must_use() {
     assert!(bag.get_index() <= 7);
 }
 
-/// Тест 6.1: Проверка что GameState создаётся без переполнения стека.
+/// Тест 6.1: Проверка что `GameState` создаётся без переполнения стека.
 #[test]
 fn test_game_state_creation_no_stack_overflow() {
     let states: Vec<GameState> = (0..100).map(|_| GameState::new()).collect();
@@ -58,7 +58,7 @@ fn test_blocks_access_no_panic() {
     let _cell = blocks[0][0];
 }
 
-/// Тест 7.1: Проверка что LeaderboardEntry::new() работает корректно.
+/// Тест 7.1: Проверка что `LeaderboardEntry::new()` работает корректно.
 #[test]
 fn test_leaderboard_entry_new_efficient() {
     let entry = LeaderboardEntry::new("Player".to_string(), 1000);
@@ -102,7 +102,7 @@ fn test_hash_generation_with_write() {
     assert_eq!(hash.len(), 64);
 }
 
-/// Тест 8.1: Проверка что delta_time вычисляется корректно.
+/// Тест 8.1: Проверка что `delta_time` вычисляется корректно.
 #[test]
 fn test_delta_time_computation() {
     let start = Instant::now();

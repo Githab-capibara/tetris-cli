@@ -4,7 +4,7 @@
 //! - Тесты создания Achievement (4 теста)
 //! - Тесты конкретных достижений (5 тестов)
 //! - Тесты проверки достижений (5 тестов)
-//! - Тесты интеграции с GameStats (3 теста)
+//! - Тесты интеграции с `GameStats` (3 теста)
 //! - Тесты производительности (3 теста)
 //!
 //! Все тесты независимы и проверяют отдельные аспекты системы достижений.
@@ -16,7 +16,7 @@ use crate::game::{MARATHON_LINES, SPRINT_LINES};
 // ГРУППА ТЕСТОВ 1-4: Создание Achievement
 // ============================================================================
 
-/// Тест 1: Проверка создания Achievement через new()
+/// Тест 1: Проверка создания Achievement через `new()`
 ///
 /// Проверяет базовое создание достижения с параметрами.
 #[test]
@@ -59,7 +59,7 @@ fn test_achievement_clone() {
 #[test]
 fn test_achievement_debug() {
     let achievement = Achievement::new("Отладка", "Тест Debug", 50);
-    let debug_str = format!("{:?}", achievement);
+    let debug_str = format!("{achievement:?}");
 
     assert!(
         debug_str.contains("Отладка"),
@@ -71,10 +71,10 @@ fn test_achievement_debug() {
     );
 }
 
-/// Тест 4: Проверка PartialEq для Achievement
+/// Тест 4: Проверка `PartialEq` для Achievement
 ///
 /// Проверяет, что сравнение достижений работает корректно.
-/// Achievement не реализует PartialEq, поэтому сравниваем поля по отдельности.
+/// Achievement не реализует `PartialEq`, поэтому сравниваем поля по отдельности.
 #[test]
 fn test_achievement_partial_eq() {
     let achievement1 = Achievement::new("Тест", "Описание", 100);
@@ -132,7 +132,7 @@ fn test_combo_master_achievement() {
         "Название должно совпадать"
     );
     assert!(
-        achievement_5.description.contains("5"),
+        achievement_5.description.contains('5'),
         "Описание должно содержать номер комбо"
     );
     assert_eq!(
@@ -192,7 +192,7 @@ fn test_veteran_achievement() {
         "Название должно совпадать"
     );
     assert!(
-        achievement_5.description.contains("5"),
+        achievement_5.description.contains('5'),
         "Описание должно содержать номер уровня"
     );
     assert_eq!(
@@ -308,7 +308,7 @@ fn test_check_achievements_marathon() {
 // ГРУППА ТЕСТОВ 15-17: Интеграция с GameStats
 // ============================================================================
 
-/// Тест 15: Проверка добавления достижений в GameStats
+/// Тест 15: Проверка добавления достижений в `GameStats`
 ///
 /// Проверяет, что достижения корректно добавляются в вектор.
 #[test]
@@ -383,7 +383,7 @@ fn test_performance_achievement_creation() {
     // Создаём 1000 достижений
     for i in 0..1000 {
         let _achievement =
-            Achievement::new(&format!("Достижение {}", i), &format!("Описание {}", i), i);
+            Achievement::new(&format!("Достижение {i}"), &format!("Описание {i}"), i);
     }
 
     let duration = start.elapsed();
@@ -397,7 +397,7 @@ fn test_performance_achievement_creation() {
 
 /// Тест 19: Проверка производительности проверки достижений
 ///
-/// Проверяет, что check_achievements() работает быстро.
+/// Проверяет, что `check_achievements()` работает быстро.
 #[test]
 fn test_performance_check_achievements() {
     let mut stats = GameStats::new();
@@ -428,7 +428,7 @@ fn test_performance_many_achievements() {
     for i in 0..100 {
         stats
             .achievements
-            .push(Achievement::new(&format!("Тест {}", i), "Тест", 10));
+            .push(Achievement::new(&format!("Тест {i}"), "Тест", 10));
     }
 
     let start = std::time::Instant::now();

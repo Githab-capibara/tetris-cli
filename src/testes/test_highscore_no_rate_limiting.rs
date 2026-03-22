@@ -54,12 +54,8 @@ fn test_добавление_нескольких_рекордов_подряд(
 
     // Добавляем 10 рекордов подряд без задержек
     for i in 0..10 {
-        let result = leaderboard.add_score(format!("Player{}", i), (i + 1) * 100);
-        assert!(
-            result,
-            "Рекорд {} должен быть добавлен без rate limiting",
-            i
-        );
+        let result = leaderboard.add_score(format!("Player{i}"), (i + 1) * 100);
+        assert!(result, "Рекорд {i} должен быть добавлен без rate limiting");
     }
 
     // Проверяем время выполнения
@@ -97,12 +93,11 @@ fn test_наличие_блокировки_rate_limiting() {
 
     // Добавляем 10 рекордов подряд (лимит)
     for i in 0..10 {
-        let result = leaderboard.add_score(format!("Player{}", i), i * 10);
+        let result = leaderboard.add_score(format!("Player{i}"), i * 10);
         // Первые 10 должны добавиться
         assert!(
             result,
-            "Рекорд {} должен быть добавлен (в пределах лимита)",
-            i
+            "Рекорд {i} должен быть добавлен (в пределах лимита)"
         );
     }
 
@@ -118,11 +113,14 @@ fn test_наличие_блокировки_rate_limiting() {
 
     // Проверяем что остались только лучшие рекорды (90, 80, 70, 60, 50)
     let entries = leaderboard.get_entries();
-    let min_score = entries.iter().map(|e| e.score()).min().unwrap_or(0);
+    let min_score = entries
+        .iter()
+        .map(super::super::highscore::LeaderboardEntry::score)
+        .min()
+        .unwrap_or(0);
     assert!(
         min_score >= 50, // 5 * 10 = 50 (минимальный из топ-5: 90, 80, 70, 60, 50)
-        "Минимальный рекорд в топ-5 должен быть >= 50, получен {}",
-        min_score
+        "Минимальный рекорд в топ-5 должен быть >= 50, получен {min_score}"
     );
 
     // Проверяем что записи отсортированы по убыванию
@@ -143,11 +141,10 @@ fn test_быстрое_добавление_в_реальном_времени()
 
     // Добавляем 10 рекордов (лимит)
     for i in 0..10 {
-        let result = leaderboard.add_score(format!("FastPlayer{}", i), 1000 + i);
+        let result = leaderboard.add_score(format!("FastPlayer{i}"), 1000 + i);
         assert!(
             result,
-            "Рекорд {} должен быть добавлен (в пределах лимита)",
-            i
+            "Рекорд {i} должен быть добавлен (в пределах лимита)"
         );
     }
 
@@ -181,11 +178,10 @@ fn test_отсутствие_скрытых_задержек() {
 
     // Добавляем ещё 7 рекордов (достигаем лимита в 10)
     for i in 0..7 {
-        let result = leaderboard.add_score(format!("Player{}", i), 4000 + i);
+        let result = leaderboard.add_score(format!("Player{i}"), 4000 + i);
         assert!(
             result,
-            "Рекорд {} должен быть добавлен (в пределах лимита)",
-            i
+            "Рекорд {i} должен быть добавлен (в пределах лимита)"
         );
     }
 

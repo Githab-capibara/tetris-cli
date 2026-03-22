@@ -5,7 +5,7 @@
 //! - Предотвращение переполнения стека при инициализации
 //! - Проверка работы с большим игровым полем
 //!
-//! Исправление: использование Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> вместо [[i8; GRID_WIDTH]; GRID_HEIGHT]
+//! Исправление: использование Box<[[i8; `GRID_WIDTH`]; `GRID_HEIGHT`]> вместо [[i8; `GRID_WIDTH`]; `GRID_HEIGHT`]
 
 use crate::game::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
@@ -16,7 +16,7 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
 /// Тест 1: Проверка инициализации поля в куче
 ///
-/// Проверяет, что GameState::new() успешно создаёт игровое состояние
+/// Проверяет, что `GameState::new()` успешно создаёт игровое состояние
 /// с полем blocks, размещённым в куче через Box.
 #[test]
 fn test_инициализация_поля_в_куче() {
@@ -48,13 +48,11 @@ fn test_инициализация_поля_в_куче() {
     let blocks = game_state.get_blocks();
     assert!(
         blocks.len() == GRID_HEIGHT,
-        "Количество строк должно быть {}",
-        GRID_HEIGHT
+        "Количество строк должно быть {GRID_HEIGHT}"
     );
     assert!(
         blocks[0].len() == GRID_WIDTH,
-        "Количество столбцов должно быть {}",
-        GRID_WIDTH
+        "Количество столбцов должно быть {GRID_WIDTH}"
     );
 }
 
@@ -73,8 +71,7 @@ fn test_работа_с_большим_полем() {
         // Проверяем что состояние создано корректно
         assert!(
             state.get_level() >= 1,
-            "Состояние {} должно иметь уровень >= 1",
-            i
+            "Состояние {i} должно иметь уровень >= 1"
         );
         states.push(state);
     }
@@ -87,15 +84,11 @@ fn test_работа_с_большим_полем() {
         let blocks = state.get_blocks();
         assert!(
             blocks.len() == GRID_HEIGHT,
-            "Состояние {} должно иметь {} строк",
-            i,
-            GRID_HEIGHT
+            "Состояние {i} должно иметь {GRID_HEIGHT} строк"
         );
         assert!(
             blocks[0].len() == GRID_WIDTH,
-            "Состояние {} должно иметь {} столбцов",
-            i,
-            GRID_WIDTH
+            "Состояние {i} должно иметь {GRID_WIDTH} столбцов"
         );
     }
 }

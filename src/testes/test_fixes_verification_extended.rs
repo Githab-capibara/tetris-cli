@@ -1,17 +1,17 @@
 //! Расширенные тесты для проверки всех 13 исправлений из отчета аудита.
 //!
 //! Этот модуль содержит 39 тестов (по 3 на каждое из 13 исправлений):
-//! 1. panic!() вместо unreachable!() в rotate_with_wall_kick (game.rs)
-//! 2. expect() вместо unwrap() в highscore.rs
-//! 3. Проверка add_score() в main.rs
+//! 1. panic!() вместо unreachable!() в `rotate_with_wall_kick` (game.rs)
+//! 2. `expect()` вместо `unwrap()` в highscore.rs
+//! 3. Проверка `add_score()` в main.rs
 //! 4. Документация UTF-8 в io.rs
-//! 5. ANIMATION_FRAME_SKIP константа
-//! 6. Удаление ALLOWED_CONFIG_DIR
-//! 7. cfg_attr для dead_code
-//! 8. generate_salt() переименование
-//! 9. ignore вместо no_run
-//! 10. Документация get_blocks_for_bench()
-//! 11. Бенчмарки для check_collision, save_tetromino
+//! 5. `ANIMATION_FRAME_SKIP` константа
+//! 6. Удаление `ALLOWED_CONFIG_DIR`
+//! 7. `cfg_attr` для `dead_code`
+//! 8. `generate_salt()` переименование
+//! 9. ignore вместо `no_run`
+//! 10. Документация `get_blocks_for_bench()`
+//! 11. Бенчмарки для `check_collision`, `save_tetromino`
 //! 12. Упрощение валидации путей
 //! 13. Стиль комментариев
 
@@ -23,7 +23,7 @@
 mod panic_unreachable_tests {
     use crate::game::GameState;
 
-    /// Тест 1: Вращение с Dir::Up (успех)
+    /// Тест 1: Вращение с `Dir::Up` (успех)
     ///
     /// Проверяет, что вращение фигуры работает корректно.
     #[test]
@@ -38,7 +38,7 @@ mod panic_unreachable_tests {
         assert!(state.get_level() >= 1, "Level must be at least 1");
     }
 
-    /// Тест 2: Вращение с Dir::Left (успех)
+    /// Тест 2: Вращение с `Dir::Left` (успех)
     ///
     /// Проверяет, что вращение влево работает корректно.
     #[test]
@@ -50,10 +50,10 @@ mod panic_unreachable_tests {
         let _lines: u32 = state.get_lines_cleared();
     }
 
-    /// Тест 3: Вращение с Dir::Down (паника)
+    /// Тест 3: Вращение с `Dir::Down` (паника)
     ///
-    /// Проверяет, что вращение с Dir::Down вызывает панику.
-    /// Примечание: rotate_with_wall_kick - приватный метод, поэтому тест
+    /// Проверяет, что вращение с `Dir::Down` вызывает панику.
+    /// Примечание: `rotate_with_wall_kick` - приватный метод, поэтому тест
     /// проверяет что код содержит panic! вместо unreachable!
     #[test]
     fn test_rotate_with_wall_kick_dir_down_panics() {
@@ -84,7 +84,7 @@ mod expect_unwrap_tests {
 
     /// Тест 1: Корректная запись в Write
     ///
-    /// Проверяет, что expect() работает с Write без ошибок.
+    /// Проверяет, что `expect()` работает с Write без ошибок.
     #[test]
     #[allow(clippy::write_literal)]
     fn test_expect_write_success() {
@@ -101,7 +101,7 @@ mod expect_unwrap_tests {
 
     /// Тест 2: Проверка сообщения ошибки
     ///
-    /// Проверяет, что expect() паникует с правильным сообщением.
+    /// Проверяет, что `expect()` паникует с правильным сообщением.
     #[test]
     fn test_expect_error_message() {
         // Создаём запись с корректными данными
@@ -116,7 +116,7 @@ mod expect_unwrap_tests {
         let mut salt_and_score = String::with_capacity(salt.len() + name.len() + 20);
 
         // expect() должен работать без паники при корректных данных
-        let result = write!(salt_and_score, "{}{}{}", salt, name, score);
+        let result = write!(salt_and_score, "{salt}{name}{score}");
         assert!(result.is_ok(), "Write must succeed for valid data");
     }
 
@@ -133,7 +133,7 @@ mod expect_unwrap_tests {
         assert_eq!(buffer, "", "Buffer must be empty");
 
         // Тест с LeaderboardEntry с пустым именем (будет заменено на "Anonymous")
-        let entry = LeaderboardEntry::new("".to_string(), 0);
+        let entry = LeaderboardEntry::new(String::new(), 0);
         assert_eq!(
             entry.name(),
             "Anonymous",
@@ -152,7 +152,7 @@ mod add_score_tests {
 
     /// Тест 1: Успешное добавление рекорда
     ///
-    /// Проверяет, что add_score() возвращает true для нового рекорда.
+    /// Проверяет, что `add_score()` возвращает true для нового рекорда.
     #[test]
     fn test_add_score_success() {
         let mut leaderboard = Leaderboard::default();
@@ -175,8 +175,8 @@ mod add_score_tests {
 
         // Добавляем 10 рекордов (лимит)
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{}", i), i * 100);
-            assert!(result, "Record {} must be added (within limit)", i);
+            let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+            assert!(result, "Record {i} must be added (within limit)");
         }
 
         // 11-я запись должна быть отклонена
@@ -196,8 +196,8 @@ mod add_score_tests {
 
         // Добавляем 5 рекордов подряд
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{}", i), 5000 - i * 100);
-            assert!(result, "Record {} must be added", i);
+            let result = leaderboard.add_score(format!("Player{i}"), 5000 - i * 100);
+            assert!(result, "Record {i} must be added");
         }
 
         // Проверяем что записи отсортированы по убыванию
@@ -316,7 +316,7 @@ mod animation_frame_skip_tests {
 
     /// Тест 1: Значение константы = 2
     ///
-    /// Проверяет, что ANIMATION_FRAME_SKIP имеет значение 2.
+    /// Проверяет, что `ANIMATION_FRAME_SKIP` имеет значение 2.
     #[test]
     fn test_animation_frame_skip_value() {
         assert_eq!(
@@ -344,8 +344,7 @@ mod animation_frame_skip_tests {
         // Должно быть отрисовано 5 кадров из 10
         assert_eq!(
             rendered_frames, 5,
-            "Must render every {}-th frame",
-            ANIMATION_FRAME_SKIP
+            "Must render every {ANIMATION_FRAME_SKIP}-th frame"
         );
     }
 
@@ -359,9 +358,9 @@ mod animation_frame_skip_tests {
             let should_render = frame % ANIMATION_FRAME_SKIP == 0;
 
             if frame == 0 || frame == 2 || frame == 4 || frame == 6 {
-                assert!(should_render, "Frame {} must be rendered", frame);
+                assert!(should_render, "Frame {frame} must be rendered");
             } else if frame == 1 || frame == 3 || frame == 5 || frame == 7 {
-                assert!(!should_render, "Frame {} must be skipped", frame);
+                assert!(!should_render, "Frame {frame} must be skipped");
             }
         }
     }
@@ -377,7 +376,7 @@ mod allowed_config_dir_removal_tests {
 
     /// Тест 1: Компиляция без ошибки
     ///
-    /// Проверяет, что код компилируется без ALLOWED_CONFIG_DIR.
+    /// Проверяет, что код компилируется без `ALLOWED_CONFIG_DIR`.
     #[test]
     fn test_compiles_without_allowed_config_dir() {
         // Этот тест компилируется - значит ALLOWED_CONFIG_DIR удалён
@@ -390,7 +389,7 @@ mod allowed_config_dir_removal_tests {
 
     /// Тест 2: Валидация пути работает
     ///
-    /// Проверяет, что валидация пути работает без ALLOWED_CONFIG_DIR.
+    /// Проверяет, что валидация пути работает без `ALLOWED_CONFIG_DIR`.
     #[test]
     fn test_path_validation_works() {
         // Проверяем что путь к домашней директории работает
@@ -433,9 +432,9 @@ mod allowed_config_dir_removal_tests {
 mod cfg_attr_dead_code_tests {
     use crate::highscore::LeaderboardEntry;
 
-    /// Тест 1: Метод hash() доступен в тестах
+    /// Тест 1: Метод `hash()` доступен в тестах
     ///
-    /// Проверяет, что hash() доступен в тестах.
+    /// Проверяет, что `hash()` доступен в тестах.
     #[test]
     fn test_hash_method_available_in_tests() {
         let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
@@ -447,9 +446,9 @@ mod cfg_attr_dead_code_tests {
         assert_eq!(hash.len(), 64, "Hash must be 64 hex characters");
     }
 
-    /// Тест 2: Метод hash() не предупреждает
+    /// Тест 2: Метод `hash()` не предупреждает
     ///
-    /// Проверяет, что нет предупреждений о dead_code.
+    /// Проверяет, что нет предупреждений о `dead_code`.
     #[test]
     fn test_hash_no_dead_code_warning() {
         let entry = LeaderboardEntry::new("TestPlayer".to_string(), 2000);
@@ -492,9 +491,9 @@ mod cfg_attr_dead_code_tests {
 mod generate_salt_rename_tests {
     use crate::highscore::generate_salt;
 
-    /// Тест 1: generate_salt() возвращает String
+    /// Тест 1: `generate_salt()` возвращает String
     ///
-    /// Проверяет, что generate_salt() возвращает String.
+    /// Проверяет, что `generate_salt()` возвращает String.
     #[test]
     fn test_generate_salt_returns_string() {
         let salt = generate_salt();
@@ -576,7 +575,7 @@ mod get_blocks_for_bench_docs_tests {
 
     /// Тест 1: Метод возвращает массив
     ///
-    /// Проверяет, что get_blocks_for_bench() возвращает массив.
+    /// Проверяет, что `get_blocks_for_bench()` возвращает массив.
     #[test]
     fn test_get_blocks_for_bench_returns_array() {
         // Создаём тестовое поле
@@ -632,9 +631,9 @@ mod get_blocks_for_bench_docs_tests {
 mod benchmarks_tests {
     use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
-    /// Тест 1: bench_check_collision компилируется
+    /// Тест 1: `bench_check_collision` компилируется
     ///
-    /// Проверяет, что бенчмарк check_collision компилируется.
+    /// Проверяет, что бенчмарк `check_collision` компилируется.
     #[test]
     fn test_bench_check_collision_compiles() {
         // Создаём тестовое поле для бенчмарка
@@ -645,9 +644,9 @@ mod benchmarks_tests {
         assert_eq!(blocks[0].len(), GRID_WIDTH, "Grid must have correct width");
     }
 
-    /// Тест 2: bench_save_tetromino компилируется
+    /// Тест 2: `bench_save_tetromino` компилируется
     ///
-    /// Проверяет, что бенчмарк save_tetromino компилируется.
+    /// Проверяет, что бенчмарк `save_tetromino` компилируется.
     #[test]
     fn test_bench_save_tetromino_compiles() {
         // Создаём тестовое поле для бенчмарка

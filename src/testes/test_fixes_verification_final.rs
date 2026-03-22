@@ -5,8 +5,8 @@
 //! ## 🔴 КРИТИЧЕСКИЕ (5 проблем = 15 тестов):
 //! 1. Некорректные doctest в lib.rs
 //! 2. Некорректный doctest в io.rs
-//! 3. Паника Dir::Down для вращения
-//! 4. Unwrap() в Default для Canvas
+//! 3. Паника `Dir::Down` для вращения
+//! 4. `Unwrap()` в Default для Canvas
 //! 5. Unreachable! в game.rs
 //!
 //! ## 🟠 СРЕДНЕЙ КРИТИЧНОСТИ (7 проблем = 21 тест):
@@ -14,9 +14,9 @@
 //! 7. Обработка ошибок сохранения рекордов
 //! 8. Конвертация f32 -> u32
 //! 9. Документирование UTF-8 ограничения
-//! 10. Рефакторинг update()
-//! 11. Рефакторинг check_rows()
-//! 12. Валидация sanitize_player_name
+//! 10. Рефакторинг `update()`
+//! 11. Рефакторинг `check_rows()`
+//! 12. Валидация `sanitize_player_name`
 //!
 //! ## 🟡 НИЗКОЙ КРИТИЧНОСТИ (8 проблем = 24 теста):
 //! 13-16. Удаление бесполезных конструкций
@@ -41,7 +41,7 @@ mod problem_1_librs_doctest {
 
     /// Тест 1.1: Проверяет, что пример кода из документации компилируется
     ///
-    /// Проверяет корректность примера использования Canvas::new() из lib.rs.
+    /// Проверяет корректность примера использования `Canvas::new()` из lib.rs.
     #[test]
     fn test_canvas_new_example_compiles() {
         // Пример из документации lib.rs должен компилироваться
@@ -55,28 +55,25 @@ mod problem_1_librs_doctest {
         );
     }
 
-    /// Тест 1.2: Проверяет, что Canvas::new() возвращает Result
+    /// Тест 1.2: Проверяет, что `Canvas::new()` возвращает Result
     ///
-    /// Проверяет тип возвращаемого значения Canvas::new().
+    /// Проверяет тип возвращаемого значения `Canvas::new()`.
     #[test]
     fn test_canvas_new_returns_result() {
         // Canvas::new() должен возвращать Result<Canvas, IoError>
         let result: Result<Canvas, crate::io::IoError> = Canvas::new();
 
         // Проверяем, что это действительно Result
-        match result {
-            Ok(_) => {
-                // Canvas успешно создан (в тестовой среде)
-            }
-            Err(_) => {
-                // Ошибка инициализации терминала (ожидаемо в некоторых средах)
-            }
+        if let Ok(_) = result {
+            // Canvas успешно создан (в тестовой среде)
+        } else {
+            // Ошибка инициализации терминала (ожидаемо в некоторых средах)
         }
     }
 
-    /// Тест 1.3: Проверяет, что .expect() работает корректно
+    /// Тест 1.3: Проверяет, что .`expect()` работает корректно
     ///
-    /// Проверяет использование .expect() с Canvas::new().
+    /// Проверяет использование .`expect()` с `Canvas::new()`.
     #[test]
     fn test_canvas_expect_works() {
         // expect() должен работать с Result от Canvas::new()
@@ -98,9 +95,9 @@ mod problem_1_librs_doctest {
 mod problem_2_io_doctest {
     use crate::io::Canvas;
 
-    /// Тест 2.1: Проверяет пример из документации draw_string
+    /// Тест 2.1: Проверяет пример из документации `draw_string`
     ///
-    /// Проверяет корректность примера draw_string() из io.rs.
+    /// Проверяет корректность примера `draw_string()` из io.rs.
     #[test]
     fn test_io_draw_string_example_compiles() {
         // Пример из io.rs должен компилироваться
@@ -129,9 +126,9 @@ mod problem_2_io_doctest {
         }
     }
 
-    /// Тест 2.3: Проверяет пример с flush()
+    /// Тест 2.3: Проверяет пример с `flush()`
     ///
-    /// Проверяет корректность использования flush() из документации.
+    /// Проверяет корректность использования `flush()` из документации.
     #[test]
     fn test_canvas_flush_example() {
         // Пример flush() из документации должен работать
@@ -154,9 +151,9 @@ mod problem_2_io_doctest {
 mod problem_3_dir_down_panic {
     use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
 
-    /// Тест 3.1: Проверяет, что enum RotationDirection существует
+    /// Тест 3.1: Проверяет, что enum `RotationDirection` существует
     ///
-    /// Проверяет наличие enum RotationDirection для предотвращения паники.
+    /// Проверяет наличие enum `RotationDirection` для предотвращения паники.
     #[test]
     fn test_rotation_direction_enum_exists() {
         // RotationDirection должен существовать и иметь два варианта
@@ -214,7 +211,7 @@ mod problem_4_canvas_default_unwrap {
 
     /// Тест 4.1: Проверяет наличие документации # Panics
     ///
-    /// Проверяет, что Canvas::default() имеет документацию о панике.
+    /// Проверяет, что `Canvas::default()` имеет документацию о панике.
     #[test]
     fn test_canvas_default_has_panic_docs() {
         // Этот тест проверяет, что Canvas::default() существует
@@ -224,9 +221,9 @@ mod problem_4_canvas_default_unwrap {
         // Функция должна быть доступна
     }
 
-    /// Тест 4.2: Проверяет, что Canvas::default() работает
+    /// Тест 4.2: Проверяет, что `Canvas::default()` работает
     ///
-    /// Проверяет, что Canvas::default() не паникует в доступной среде.
+    /// Проверяет, что `Canvas::default()` не паникует в доступной среде.
     #[test]
     fn test_canvas_default_works() {
         // Canvas::default() может паниковать если терминал недоступен
@@ -267,7 +264,7 @@ mod problem_4_canvas_default_unwrap {
 mod problem_5_unreachable_game {
     use crate::game::{Dir, GameState};
 
-    /// Тест 5.1: Проверяет enum MoveDirection
+    /// Тест 5.1: Проверяет enum `MoveDirection`
     ///
     /// Проверяет, что направления движения существуют.
     #[test]
@@ -321,7 +318,7 @@ mod problem_5_unreachable_game {
 mod problem_6_error_handling_tests {
     use crate::controls::ControlsConfig;
 
-    /// Тест 6.1: Проверяет контекст в expect() для load
+    /// Тест 6.1: Проверяет контекст в `expect()` для load
     ///
     /// Проверяет, что ошибки загрузки имеют контекст.
     #[test]
@@ -343,7 +340,7 @@ mod problem_6_error_handling_tests {
         }
     }
 
-    /// Тест 6.2: Проверяет контекст в expect() для save
+    /// Тест 6.2: Проверяет контекст в `expect()` для save
     ///
     /// Проверяет, что ошибки сохранения имеют контекст.
     #[test]
@@ -398,9 +395,9 @@ mod problem_6_error_handling_tests {
 mod problem_7_highscore_save_errors {
     use crate::highscore::SaveData;
 
-    /// Тест 7.1: Проверяет, что save_value_result возвращает Result
+    /// Тест 7.1: Проверяет, что `save_value_result` возвращает Result
     ///
-    /// Проверяет наличие метода save_value_result().
+    /// Проверяет наличие метода `save_value_result()`.
     #[test]
     fn test_highscore_save_returns_result() {
         // save_value_result должен существовать и возвращать Result
@@ -422,7 +419,7 @@ mod problem_7_highscore_save_errors {
 
     /// Тест 7.3: Проверяет обработку ошибки
     ///
-    /// Проверяет, что save_value_result корректно возвращает ошибку.
+    /// Проверяет, что `save_value_result` корректно возвращает ошибку.
     #[test]
     fn test_highscore_save_error_handling() {
         // save_value_result может вернуть ошибку при проблемах с конфигом
@@ -487,8 +484,7 @@ mod problem_8_f32_to_u32_conversion {
             let converted = float as u32;
             assert_eq!(
                 converted, expected_uint,
-                "Конвертация {} должна дать {}",
-                float, expected_uint
+                "Конвертация {float} должна дать {expected_uint}"
             );
         }
     }
@@ -503,7 +499,7 @@ mod problem_9_utf8_documentation {
 
     /// Тест 9.1: Проверяет документацию о UTF-8
     ///
-    /// Проверяет, что get_key() имеет документацию об UTF-8 ограничении.
+    /// Проверяет, что `get_key()` имеет документацию об UTF-8 ограничении.
     #[test]
     fn test_get_key_has_utf8_docs() {
         // Этот тест проверяет, что метод get_key существует
@@ -548,9 +544,9 @@ mod problem_9_utf8_documentation {
 mod problem_10_update_refactoring {
     use crate::game::GameState;
 
-    /// Тест 10.1: Проверяет существование handle_input()
+    /// Тест 10.1: Проверяет существование `handle_input()`
     ///
-    /// Проверяет, что update() разбит на handle_input().
+    /// Проверяет, что `update()` разбит на `handle_input()`.
     #[test]
     fn test_handle_input_exists() {
         // GameState должен создаваться
@@ -559,9 +555,9 @@ mod problem_10_update_refactoring {
         // Если создали - структура корректна
     }
 
-    /// Тест 10.2: Проверяет существование handle_falling()
+    /// Тест 10.2: Проверяет существование `handle_falling()`
     ///
-    /// Проверяет, что update() разбит на handle_falling().
+    /// Проверяет, что `update()` разбит на `handle_falling()`.
     #[test]
     fn test_handle_falling_exists() {
         // GameState должен создаваться
@@ -570,9 +566,9 @@ mod problem_10_update_refactoring {
         // Если создали - структура корректна
     }
 
-    /// Тест 10.3: Проверяет, что update() использует подфункции
+    /// Тест 10.3: Проверяет, что `update()` использует подфункции
     ///
-    /// Проверяет, что update() делегирует подфункциям.
+    /// Проверяет, что `update()` делегирует подфункциям.
     #[test]
     fn test_update_calls_subfunctions() {
         // GameState должен создаваться
@@ -588,18 +584,18 @@ mod problem_10_update_refactoring {
 mod problem_11_check_rows_refactoring {
     use crate::io::GRID_HEIGHT;
 
-    /// Тест 11.1: Проверяет существование find_full_rows()
+    /// Тест 11.1: Проверяет существование `find_full_rows()`
     ///
-    /// Проверяет, что check_rows() использует find_full_rows().
+    /// Проверяет, что `check_rows()` использует `find_full_rows()`.
     #[test]
     fn test_find_full_rows_exists() {
         // Проверяем через константу GRID_HEIGHT
         assert_eq!(GRID_HEIGHT, 20, "Высота поля должна быть 20");
     }
 
-    /// Тест 11.2: Проверяет существование remove_rows()
+    /// Тест 11.2: Проверяет существование `remove_rows()`
     ///
-    /// Проверяет, что check_rows() использует remove_rows().
+    /// Проверяет, что `check_rows()` использует `remove_rows()`.
     #[test]
     fn test_remove_rows_exists() {
         // Проверяем константу GRID_WIDTH
@@ -609,7 +605,7 @@ mod problem_11_check_rows_refactoring {
 
     /// Тест 11.3: Проверяет использование подфункций
     ///
-    /// Проверяет, что check_rows() разбит на подфункции.
+    /// Проверяет, что `check_rows()` разбит на подфункции.
     #[test]
     fn test_check_rows_uses_subfunctions() {
         // Проверяем, что константы доступны
@@ -628,7 +624,7 @@ mod problem_12_sanitize_validation {
 
     /// Тест 12.1: Проверяет удаление control characters
     ///
-    /// Проверяет, что sanitize_player_name удаляет control characters.
+    /// Проверяет, что `sanitize_player_name` удаляет control characters.
     #[test]
     fn test_sanitize_removes_control_chars() {
         // Создаём запись с именем, содержащим control characters
@@ -644,7 +640,7 @@ mod problem_12_sanitize_validation {
 
     /// Тест 12.2: Проверяет ограничение длины
     ///
-    /// Проверяет, что sanitize_player_name ограничивает длину 20 символами.
+    /// Проверяет, что `sanitize_player_name` ограничивает длину 20 символами.
     #[test]
     fn test_sanitize_limits_length() {
         // Создаём запись с длинным именем
@@ -660,7 +656,7 @@ mod problem_12_sanitize_validation {
 
     /// Тест 12.3: Проверяет возврат "Anonymous"
     ///
-    /// Проверяет, что sanitize_player_name возвращает "Anonymous" для пустого имени.
+    /// Проверяет, что `sanitize_player_name` возвращает "Anonymous" для пустого имени.
     #[test]
     fn test_sanitize_empty_returns_anonymous() {
         // Создаём запись с пустым именем
@@ -710,9 +706,9 @@ mod problem_13_no_assert_true {
         assert!(value > 50, "Значение должно быть больше 50");
     }
 
-    /// Тест 13.3: Проверяет что assert_eq! работает
+    /// Тест 13.3: Проверяет что `assert_eq`! работает
     ///
-    /// Проверяет, что assert_eq! работает корректно.
+    /// Проверяет, что `assert_eq`! работает корректно.
     #[test]
     fn test_assert_eq_works() {
         let value: i32 = 42;
@@ -796,9 +792,9 @@ mod problem_15_no_const_assertions {
 // Проблема 16: Удаление unused #[allow(dead_code)]
 // ----------------------------------------------------------------------------
 mod problem_16_no_unused_allow_dead_code {
-    /// Тест 16.1: Проверяет отсутствие unused #[allow(dead_code)]
+    /// Тест 16.1: Проверяет отсутствие unused #[`allow(dead_code)`]
     ///
-    /// Проверяет, что #[allow(dead_code)] используется только где нужно.
+    /// Проверяет, что #[`allow(dead_code)`] используется только где нужно.
     #[test]
     fn test_no_unused_allow_dead_code() {
         // #[allow(dead_code)] должен использоваться только для действительно unused кода
@@ -812,9 +808,9 @@ mod problem_16_no_unused_allow_dead_code {
         assert_eq!(_result, 42);
     }
 
-    /// Тест 16.2: Проверяет что allow(dead_code) работает
+    /// Тест 16.2: Проверяет что `allow(dead_code)` работает
     ///
-    /// Проверяет, что #[allow(dead_code)] подавляет предупреждения.
+    /// Проверяет, что #[`allow(dead_code)`] подавляет предупреждения.
     #[test]
     fn test_allow_dead_code_works() {
         #[allow(dead_code)]
@@ -825,7 +821,7 @@ mod problem_16_no_unused_allow_dead_code {
         let _test = TestStruct { field: 42 };
     }
 
-    /// Тест 16.3: Проверяет что dead_code обнаруживается
+    /// Тест 16.3: Проверяет что `dead_code` обнаруживается
     ///
     /// Проверяет, что unused код обнаруживается без allow.
     #[test]
@@ -891,9 +887,9 @@ mod problem_19_blocks_array_comment {
 mod problem_20_public_method_docs {
     use crate::game::GameState;
 
-    /// Тест 20.1: Проверяет документацию hold_shape()
+    /// Тест 20.1: Проверяет документацию `hold_shape()`
     ///
-    /// Проверяет, что метод hold_shape() имеет документацию.
+    /// Проверяет, что метод `hold_shape()` имеет документацию.
     #[test]
     fn test_hold_shape_has_docs() {
         // Проверяем существование GameState
@@ -902,9 +898,9 @@ mod problem_20_public_method_docs {
         // Если создали - структура корректна
     }
 
-    /// Тест 20.2: Проверяет документацию save_tetromino()
+    /// Тест 20.2: Проверяет документацию `save_tetromino()`
     ///
-    /// Проверяет, что метод save_tetromino() имеет документацию.
+    /// Проверяет, что метод `save_tetromino()` имеет документацию.
     #[test]
     fn test_save_tetromino_has_docs() {
         // Проверяем существование GameState
@@ -913,9 +909,9 @@ mod problem_20_public_method_docs {
         // Если создали - структура корректна
     }
 
-    /// Тест 20.3: Проверяет документацию check_rows()
+    /// Тест 20.3: Проверяет документацию `check_rows()`
     ///
-    /// Проверяет, что метод check_rows() имеет документацию.
+    /// Проверяет, что метод `check_rows()` имеет документацию.
     #[test]
     fn test_check_rows_has_docs() {
         // Проверяем существование GameState
@@ -982,7 +978,7 @@ mod problem_22_magic_numbers {
         SOFT_DROP_POINTS, SPRINT_LINES,
     };
 
-    /// Тест 22.1: Проверяет константы NAME_INPUT_X/Y
+    /// Тест 22.1: Проверяет константы `NAME_INPUT_X/Y`
     ///
     /// Проверяет, что магические числа вынесены в константы.
     #[test]
@@ -992,7 +988,7 @@ mod problem_22_magic_numbers {
         assert_eq!(LINES_PER_LEVEL, 10, "LINES_PER_LEVEL должен быть 10");
     }
 
-    /// Тест 22.2: Проверяет константы MENU_WIDTH/HEIGHT
+    /// Тест 22.2: Проверяет константы `MENU_WIDTH/HEIGHT`
     ///
     /// Проверяет, что константы меню существуют.
     #[test]
@@ -1024,9 +1020,9 @@ mod problem_22_magic_numbers {
 // ----------------------------------------------------------------------------
 // cfg(test) removed - parent module is already test-only
 mod problem_24_benchmarks {
-    /// Тест 24.1: Проверяет бенчмарк check_rows()
+    /// Тест 24.1: Проверяет бенчмарк `check_rows()`
     ///
-    /// Проверяет, что бенчмарк для check_rows() существует.
+    /// Проверяет, что бенчмарк для `check_rows()` существует.
     #[test]
     fn test_benchmark_check_rows_exists() {
         // Бенчмарки находятся в benches/benchmarks.rs
@@ -1037,9 +1033,9 @@ mod problem_24_benchmarks {
         assert!(bench_path.exists(), "Файл бенчмарков должен существовать");
     }
 
-    /// Тест 24.2: Проверяет бенчмарк rotate()
+    /// Тест 24.2: Проверяет бенчмарк `rotate()`
     ///
-    /// Проверяет, что бенчмарк для rotate() существует.
+    /// Проверяет, что бенчмарк для `rotate()` существует.
     #[test]
     fn test_benchmark_rotate_exists() {
         // Проверяем существование директории benches
@@ -1051,9 +1047,9 @@ mod problem_24_benchmarks {
         );
     }
 
-    /// Тест 24.3: Проверяет бенчмарк save_tetromino()
+    /// Тест 24.3: Проверяет бенчмарк `save_tetromino()`
     ///
-    /// Проверяет, что бенчмарк для save_tetromino() существует.
+    /// Проверяет, что бенчмарк для `save_tetromino()` существует.
     #[test]
     fn test_benchmark_save_tetromino_exists() {
         // Проверяем содержимое файла бенчмарков
@@ -1078,7 +1074,7 @@ mod problem_25_achievements_system {
 
     /// Тест 25.1: Проверяет поле achievements
     ///
-    /// Проверяет, что поле achievements существует в GameStats.
+    /// Проверяет, что поле achievements существует в `GameStats`.
     #[test]
     fn test_achievements_field_exists() {
         let stats = GameStats::new();
@@ -1136,9 +1132,9 @@ mod problem_25_achievements_system {
 mod test_leaderboard_entry_score_no_infinite_recursion {
     use crate::highscore::LeaderboardEntry;
 
-    /// Тест проверяет что метод score() не вызывает бесконечную рекурсию
+    /// Тест проверяет что метод `score()` не вызывает бесконечную рекурсию
     ///
-    /// Создаёт LeaderboardEntry с валидным score и вызывает score() несколько раз.
+    /// Создаёт `LeaderboardEntry` с валидным score и вызывает `score()` несколько раз.
     /// Убеждается что возвращается правильное значение без паники.
     #[test]
     fn test_score_no_infinite_recursion() {
@@ -1159,9 +1155,9 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
         assert!(entry.is_valid(), "Запись должна быть валидной");
     }
 
-    /// Тест проверяет score() с разными значениями
+    /// Тест проверяет `score()` с разными значениями
     ///
-    /// Проверяет что score() работает для различных значений очков.
+    /// Проверяет что `score()` работает для различных значений очков.
     #[test]
     fn test_score_different_values() {
         let test_scores: [u128; 5] = [0, 100, 1000, 10000, u128::MAX / 2];
@@ -1172,15 +1168,14 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
 
             assert_eq!(
                 actual_score, expected_score,
-                "score() должен вернуть {} для entry со score {}",
-                expected_score, expected_score
+                "score() должен вернуть {expected_score} для entry со score {expected_score}"
             );
         }
     }
 
-    /// Тест проверяет score() после модификации записи
+    /// Тест проверяет `score()` после модификации записи
     ///
-    /// Проверяет что score() возвращает корректное значение.
+    /// Проверяет что `score()` возвращает корректное значение.
     #[test]
     fn test_score_after_entry_creation() {
         // Создаём запись
@@ -1207,7 +1202,7 @@ mod test_dir_import_in_tests {
 
     /// Тест проверяет что Dir импортирован корректно
     ///
-    /// Создаёт Tetromino и вызывает rotate_old() с Dir::Right и Dir::Left.
+    /// Создаёт Tetromino и вызывает `rotate_old()` с `Dir::Right` и `Dir::Left`.
     /// Убеждается что вращение работает.
     #[test]
     fn test_dir_import_and_rotate() {
@@ -1268,9 +1263,9 @@ mod test_dir_import_in_tests {
         }
     }
 
-    /// Тест проверяет вращение с Dir::Down (должно игнорироваться)
+    /// Тест проверяет вращение с `Dir::Down` (должно игнорироваться)
     ///
-    /// Проверяет что Dir::Down не вызывает панику при вращении.
+    /// Проверяет что `Dir::Down` не вызывает панику при вращении.
     #[test]
     fn test_dir_down_no_panic() {
         let mut tetromino = Tetromino {
@@ -1376,7 +1371,7 @@ mod test_unused_variables_fixed {
 mod test_load_config_error_handling {
     use crate::highscore::SaveData;
 
-    /// Тест проверяет улучшенную обработку ошибок в load_config()
+    /// Тест проверяет улучшенную обработку ошибок в `load_config()`
     ///
     /// Создаёт невалидную конфигурацию и проверяет что возвращается дефолтное значение.
     #[test]
@@ -1388,7 +1383,7 @@ mod test_load_config_error_handling {
         // Метод должен быть доступен (проверяется компиляцией)
     }
 
-    /// Тест проверяет что load_config() логирует ошибки
+    /// Тест проверяет что `load_config()` логирует ошибки
     ///
     /// Проверяет что при ошибке загрузки выводится лог.
     #[test]
@@ -1408,7 +1403,7 @@ mod test_load_config_error_handling {
 
     /// Тест проверяет обработку невалидного хэша
     ///
-    /// Проверяет что SaveData с невалидным хэшем обрабатывается корректно.
+    /// Проверяет что `SaveData` с невалидным хэшем обрабатывается корректно.
     #[test]
     fn test_load_config_invalid_hash_handling() {
         // Создаём SaveData с валидным хэшем
@@ -1432,9 +1427,9 @@ mod test_load_config_error_handling {
 mod test_canvas_default_no_panic {
     use crate::io::Canvas;
 
-    /// Тест проверяет что Canvas::default() не паникует
+    /// Тест проверяет что `Canvas::default()` не паникует
     ///
-    /// Вызывает Canvas::default() и убеждается что возвращается валидный Canvas или заглушка.
+    /// Вызывает `Canvas::default()` и убеждается что возвращается валидный Canvas или заглушка.
     #[test]
     fn test_canvas_default_no_panic() {
         // Canvas::default() может паниковать если терминал недоступен
@@ -1450,9 +1445,9 @@ mod test_canvas_default_no_panic {
         );
     }
 
-    /// Тест проверяет что Canvas::new() возвращает Result
+    /// Тест проверяет что `Canvas::new()` возвращает Result
     ///
-    /// Проверяет что Canvas::new() имеет правильную обработку ошибок.
+    /// Проверяет что `Canvas::new()` имеет правильную обработку ошибок.
     #[test]
     fn test_canvas_new_returns_result() {
         let result = Canvas::new();
@@ -1504,8 +1499,7 @@ mod test_f32_to_u32_conversion_safety {
             let converted = float_val as u32;
             assert_eq!(
                 converted, expected_uint,
-                "Конвертация {} должна дать {}",
-                float_val, expected_uint
+                "Конвертация {float_val} должна дать {expected_uint}"
             );
         }
     }
@@ -1575,9 +1569,9 @@ mod test_f32_to_u32_conversion_safety {
 mod test_rotate_old_to_rotate_migration {
     use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
 
-    /// Тест проверяет что rotate() работает с RotationDirection
+    /// Тест проверяет что `rotate()` работает с `RotationDirection`
     ///
-    /// Создаёт Tetromino и вызывает rotate() с RotationDirection::Clockwise и CounterClockwise.
+    /// Создаёт Tetromino и вызывает `rotate()` с `RotationDirection::Clockwise` и `CounterClockwise`.
     /// Убеждается что вращение работает корректно.
     #[test]
     fn test_rotate_with_rotation_direction() {

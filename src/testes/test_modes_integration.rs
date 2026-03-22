@@ -345,7 +345,7 @@ fn test_modes_integration_marathon_timer_works() {
 // ГРУППА ТЕСТОВ 16-20: Завершение режимов
 // ============================================================================
 
-/// Тест 16: Проверка константы SPRINT_LINES
+/// Тест 16: Проверка константы `SPRINT_LINES`
 ///
 /// Проверяет что цель спринта равна 40 линиям.
 #[test]
@@ -353,7 +353,7 @@ fn test_modes_integration_sprint_lines_constant() {
     assert_eq!(SPRINT_LINES, 40, "Цель спринта должна быть 40 линий");
 }
 
-/// Тест 17: Проверка константы MARATHON_LINES
+/// Тест 17: Проверка константы `MARATHON_LINES`
 ///
 /// Проверяет что цель марафона равна 150 линиям.
 #[test]
@@ -388,14 +388,13 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut classic = GameState::new();
         classic.get_curr_shape_mut().shape = shape;
         assert_eq!(
             classic.get_curr_shape().shape,
             shape,
-            "Classic: фигура {:?} должна быть доступна",
-            shape
+            "Classic: фигура {shape:?} должна быть доступна"
         );
 
         let mut sprint = GameState::new_sprint();
@@ -403,8 +402,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         assert_eq!(
             sprint.get_curr_shape().shape,
             shape,
-            "Sprint: фигура {:?} должна быть доступна",
-            shape
+            "Sprint: фигура {shape:?} должна быть доступна"
         );
 
         let mut marathon = GameState::new_marathon();
@@ -412,15 +410,14 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         assert_eq!(
             marathon.get_curr_shape().shape,
             shape,
-            "Marathon: фигура {:?} должна быть доступна",
-            shape
+            "Marathon: фигура {shape:?} должна быть доступна"
         );
     }
 }
 
-/// Тест 20: Проверка что can_hold сбрасывается после нового хода
+/// Тест 20: Проверка что `can_hold` сбрасывается после нового хода
 ///
-/// Проверяет механику сброса can_hold в каждом режиме.
+/// Проверяет механику сброса `can_hold` в каждом режиме.
 #[test]
 fn test_modes_integration_can_hold_reset() {
     // Classic

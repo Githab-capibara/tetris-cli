@@ -6,21 +6,21 @@
 //! ## Список исправлений
 //! 1. Бенчмарки компилируются
 //! 2. Избыточная проверка x >= 0
-//! 3. SystemTime rate limiting
+//! 3. `SystemTime` rate limiting
 //! 4. Кэширование строк
 //! 5. Точная оценка длины строки
-//! 6. Разбиение update()
+//! 6. Разбиение `update()`
 //! 7. Константы вместо магических чисел
-//! 8. Разбиение validate_config_path()
-//! 9. &str вместо to_string()
+//! 8. Разбиение `validate_config_path()`
+//! 9. &str вместо `to_string()`
 //! 10. Result vs panic
-//! 11. #[must_use] атрибуты
-//! 12. Логирование ошибок unwrap_or_else
-//! 13. Контекст в IoError
-//! 14. Логирование flush()
+//! 11. #[`must_use`] атрибуты
+//! 12. Логирование ошибок `unwrap_or_else`
+//! 13. Контекст в `IoError`
+//! 14. Логирование `flush()`
 //! 15. Документация pub методов
 //! 16. rustdoc ссылки
-//! 17. expect() вместо unwrap() в тестах
+//! 17. `expect()` вместо `unwrap()` в тестах
 
 // ============================================================================
 // ИСПРАВЛЕНИЕ 1: Бенчмарки компилируются
@@ -128,11 +128,10 @@ mod systemtime_rate_limiting_tests {
 
         // Добавляем несколько рекордов
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{}", i), 1000 + i * 100);
+            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result || !leaderboard.is_empty(),
-                "Рекорд {} должен быть добавлен или таблица должна содержать записи",
-                i
+                "Рекорд {i} должен быть добавлен или таблица должна содержать записи"
             );
         }
 
@@ -194,7 +193,7 @@ mod exact_string_length_tests {
     /// Тест 5: Проверка длины hex представления чисел
     ///
     /// Проверяет, что длина строкового представления чисел
-    /// оценивается точно через ilog10() вместо константы.
+    /// оценивается точно через `ilog10()` вместо константы.
     #[test]
     fn test_hex_length_estimation() {
         // Тестируем оценку длины через ilog10()
@@ -233,22 +232,20 @@ mod exact_string_length_tests {
 
             assert_eq!(
                 actual_len, expected_len,
-                "Число {} должно иметь {} цифр (через ilog10)",
-                value, expected_len
+                "Число {value} должно иметь {expected_len} цифр (через ilog10)"
             );
 
             // Проверяем что фактическая длина строки совпадает
             let str_len = value.to_string().len();
             assert_eq!(
                 str_len, expected_len,
-                "to_string() для {} должен иметь длину {}",
-                value, expected_len
+                "to_string() для {value} должен иметь длину {expected_len}"
             );
         }
 
         // Тест для hex представления
         let test_value: u128 = 255;
-        let hex_str = format!("{:x}", test_value);
+        let hex_str = format!("{test_value:x}");
         assert_eq!(hex_str, "ff", "255 в hex = 'ff'");
         assert_eq!(hex_str.len(), 2, "Длина hex должна быть 2");
     }
@@ -262,7 +259,7 @@ mod exact_string_length_tests {
 mod update_refactoring_tests {
     /// Тест 6: Проверка что подфункции работают корректно
     ///
-    /// Проверяет, что функции на которые была разбита update()
+    /// Проверяет, что функции на которые была разбита `update()`
     /// работают корректно и независимо.
     #[test]
     fn test_update_subfunctions_work() {
@@ -306,7 +303,7 @@ mod update_refactoring_tests {
 
 #[cfg(test)]
 mod constants_vs_magic_numbers_tests {
-    /// Тест 7: Проверка что LEVEL_BONUS_MULT используется
+    /// Тест 7: Проверка что `LEVEL_BONUS_MULT` используется
     ///
     /// Проверяет, что константы используются вместо магических чисел
     /// в расчёте очков за уровень.
@@ -332,7 +329,8 @@ mod constants_vs_magic_numbers_tests {
 
         // Проверяем что константа используется в расчётах
         // а не магические числа вроде 500, 1000, 5000
-        let calculate_level_bonus = |level: u32| -> u128 { LEVEL_BONUS_MULT * (level - 1) as u128 };
+        let calculate_level_bonus =
+            |level: u32| -> u128 { LEVEL_BONUS_MULT * u128::from(level - 1) };
 
         assert_eq!(
             calculate_level_bonus(1),
@@ -360,7 +358,7 @@ mod constants_vs_magic_numbers_tests {
 mod validate_config_path_refactoring_tests {
     /// Тест 8: Проверка подфункций валидации пути
     ///
-    /// Проверяет что каждая подфункция в validate_config_path()
+    /// Проверяет что каждая подфункция в `validate_config_path()`
     /// работает корректно и независимо через публичный API.
     #[test]
     fn test_validate_path_length() {
@@ -461,14 +459,11 @@ mod validate_config_path_refactoring_tests {
 
         // Результат может быть Ok или Err (в зависимости от прав доступа)
         // Важно что валидация пути прошла
-        match result {
-            Ok(_) => {
-                // Файл создан - удаляем его
-                let _ = std::fs::remove_file(normal_path);
-            }
-            Err(_) => {
-                // Ошибка записи - тоже нормально (нет прав доступа)
-            }
+        if let Ok(()) = result {
+            // Файл создан - удаляем его
+            let _ = std::fs::remove_file(normal_path);
+        } else {
+            // Ошибка записи - тоже нормально (нет прав доступа)
         }
     }
 }
@@ -569,9 +564,9 @@ mod result_vs_panic_tests {
 
 #[cfg(test)]
 mod must_use_attribute_tests {
-    /// Тест 11: Проверка что #[must_use] атрибуты присутствуют
+    /// Тест 11: Проверка что #[`must_use`] атрибуты присутствуют
     ///
-    /// Проверяет, что важные функции имеют атрибут #[must_use]
+    /// Проверяет, что важные функции имеют атрибут #[`must_use`]
     /// для предотвращения случайного игнорирования возвращаемых значений.
     #[test]
     fn test_must_use_attributes_present() {
@@ -617,7 +612,7 @@ mod must_use_attribute_tests {
 mod unwrap_or_else_logging_tests {
     /// Тест 12: Проверка что ошибка логируется
     ///
-    /// Проверяет, что при использовании unwrap_or_else()
+    /// Проверяет, что при использовании `unwrap_or_else()`
     /// ошибка логируется в stderr.
     #[test]
     fn test_error_is_logged_on_unwrap_or_else() {
@@ -655,7 +650,7 @@ mod unwrap_or_else_logging_tests {
 mod ioerror_context_tests {
     /// Тест 13: Проверка что ошибка содержит контекст
     ///
-    /// Проверяет, что IoError содержит подробное сообщение
+    /// Проверяет, что `IoError` содержит подробное сообщение
     /// с контекстом ошибки.
     #[test]
     fn test_ioerror_contains_context() {
@@ -670,7 +665,7 @@ mod ioerror_context_tests {
             }
             Err(e) => {
                 // Проверяем что ошибка содержит контекст
-                let error_msg = format!("{}", e);
+                let error_msg = format!("{e}");
 
                 // Сообщение должно содержать описание ошибки
                 assert!(
@@ -685,34 +680,29 @@ mod ioerror_context_tests {
                     || error_msg.contains("error")
                     || error_msg.contains("Error");
 
-                assert!(
-                    has_context,
-                    "Ошибка должна содержать контекст: {}",
-                    error_msg
-                );
+                assert!(has_context, "Ошибка должна содержать контекст: {error_msg}");
             }
         }
 
         // Тестируем создание IoError с контекстом вручную
         let raw_error = IoError::RawMode("Тестовая ошибка".to_string());
-        let error_string = format!("{}", raw_error);
+        let error_string = format!("{raw_error}");
 
         assert!(
             error_string.contains("Тестовая ошибка"),
-            "IoError должен содержать контекст: {}",
-            error_string
+            "IoError должен содержать контекст: {error_string}"
         );
 
         // Проверяем другие типы ошибок
         let clear_error = IoError::Clear("Не удалось очистить экран".to_string());
         assert!(
-            format!("{}", clear_error).contains("очистить"),
+            format!("{clear_error}").contains("очистить"),
             "IoError::Clear должен содержать контекст"
         );
 
         let flush_error = IoError::Flush("Flush failed".to_string());
         assert!(
-            format!("{}", flush_error).contains("Flush"),
+            format!("{flush_error}").contains("Flush"),
             "IoError::Flush должен содержать контекст"
         );
     }
@@ -726,7 +716,7 @@ mod ioerror_context_tests {
 mod flush_logging_tests {
     /// Тест 14: Проверка что ошибка flush логируется
     ///
-    /// Проверяет, что при ошибке flush() ошибка логируется в stderr.
+    /// Проверяет, что при ошибке `flush()` ошибка логируется в stderr.
     #[test]
     fn test_flush_error_is_logged() {
         use crate::io::Canvas;
@@ -859,10 +849,10 @@ mod rustdoc_link_tests {
 
 #[cfg(test)]
 mod expect_vs_unwrap_tests {
-    /// Тест 17: Проверка что в тестах нет unwrap()
+    /// Тест 17: Проверка что в тестах нет `unwrap()`
     ///
-    /// Проверяет, что в тестах используется expect() с понятными
-    /// сообщениями вместо unwrap().
+    /// Проверяет, что в тестах используется `expect()` с понятными
+    /// сообщениями вместо `unwrap()`.
     #[test]
     fn test_tests_use_expect_not_unwrap() {
         use crate::controls::ControlsConfig;
@@ -907,7 +897,7 @@ mod expect_vs_unwrap_tests {
         // Это улучшает сообщения об ошибках при панике
     }
 
-    /// Тест 17b: Проверка сообщений expect()
+    /// Тест 17b: Проверка сообщений `expect()`
     #[test]
     fn test_expect_messages_are_clear() {
         // Проверяем что сообщения expect() понятные
@@ -1002,7 +992,7 @@ mod integration_all_fixes_tests {
         match canvas_result {
             Ok(_) => {}
             Err(e) => {
-                assert!(!format!("{}", e).is_empty());
+                assert!(!format!("{e}").is_empty());
             }
         }
 

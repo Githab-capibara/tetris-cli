@@ -48,7 +48,7 @@ fn test_modes_classic_held_shape_none() {
     assert!(state.get_held_shape().is_none());
 }
 
-/// Тест 6: Проверка что Classic режим имеет can_hold true
+/// Тест 6: Проверка что Classic режим имеет `can_hold` true
 #[test]
 fn test_modes_classic_can_hold_true() {
     let state = GameState::new();
@@ -144,7 +144,7 @@ fn test_modes_sprint_held_shape_none() {
     assert!(state.get_held_shape().is_none());
 }
 
-/// Тест 18: Проверка что Sprint режим имеет can_hold true
+/// Тест 18: Проверка что Sprint режим имеет `can_hold` true
 #[test]
 fn test_modes_sprint_can_hold_true() {
     let state = GameState::new_sprint();
@@ -255,7 +255,7 @@ fn test_modes_marathon_held_shape_none() {
     assert!(state.get_held_shape().is_none());
 }
 
-/// Тест 32: Проверка что Marathon режим имеет can_hold true
+/// Тест 32: Проверка что Marathon режим имеет `can_hold` true
 #[test]
 fn test_modes_marathon_can_hold_true() {
     let state = GameState::new_marathon();
@@ -316,7 +316,7 @@ fn test_modes_marathon_empty_field() {
 
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(cell, -1, "Клетка [{},{}] должна быть пустой", x, y);
+            assert_eq!(cell, -1, "Клетка [{x},{y}] должна быть пустой");
         }
     }
 }

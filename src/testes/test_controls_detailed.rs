@@ -53,7 +53,7 @@ fn test_default_config_valid() {
     );
 }
 
-/// Тест 4: Default trait для ControlsConfig
+/// Тест 4: Default trait для `ControlsConfig`
 #[test]
 fn test_default_trait() {
     let config = ControlsConfig::default();

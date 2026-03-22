@@ -94,7 +94,7 @@ fn test_edge_cases_all_shapes_extreme() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
@@ -135,8 +135,7 @@ fn test_edge_cases_bag_70000_shapes() {
     for (i, &count) in counts.iter().enumerate() {
         assert_eq!(
             count, expected,
-            "Фигура {:?} должна встречаться {} раз, но встретилась {} раз",
-            i, expected, count
+            "Фигура {i:?} должна встречаться {expected} раз, но встретилась {count} раз"
         );
     }
 }
@@ -211,7 +210,7 @@ fn test_stress_frequent_hold() {
 
 /// Тест 9: Проверка создания 10000 состояний игры
 ///
-/// Проверяет производительность создания GameState.
+/// Проверяет производительность создания `GameState`.
 #[test]
 fn test_stress_create_10000_states() {
     let start = std::time::Instant::now();
@@ -275,14 +274,12 @@ fn test_min_field_size() {
     assert_eq!(
         blocks.len(),
         GRID_HEIGHT,
-        "Высота поля должна быть {}",
-        GRID_HEIGHT
+        "Высота поля должна быть {GRID_HEIGHT}"
     );
     assert_eq!(
         blocks[0].len(),
         GRID_WIDTH,
-        "Ширина поля должна быть {}",
-        GRID_WIDTH
+        "Ширина поля должна быть {GRID_WIDTH}"
     );
 }
 
@@ -356,9 +353,9 @@ fn test_long_timer_10_seconds() {
     assert!(elapsed < 1.0, "Время должно быть < 1 секунды");
 }
 
-/// Тест 17: Проверка стабильности GameState в течение 1000 итераций
+/// Тест 17: Проверка стабильности `GameState` в течение 1000 итераций
 ///
-/// Проверяет что GameState остаётся стабильным.
+/// Проверяет что `GameState` остаётся стабильным.
 #[test]
 fn test_long_stability_1000_iterations() {
     let mut state = GameState::new();
@@ -367,8 +364,7 @@ fn test_long_stability_1000_iterations() {
         // Проверяем что состояние корректно
         assert!(
             state.get_curr_shape().coords.len() == 4,
-            "Итерация {}: фигура должна иметь 4 блока",
-            i
+            "Итерация {i}: фигура должна иметь 4 блока"
         );
 
         // Двигаем фигуру
@@ -396,14 +392,10 @@ fn test_long_bag_100000_shapes() {
     let expected = 100000 / 7;
     for (i, &count) in counts.iter().enumerate() {
         // Допускаем небольшую погрешность
-        let diff = (count as i64 - expected as i64).abs();
+        let diff = (i64::from(count) - i64::from(expected)).abs();
         assert!(
             diff < 100,
-            "Фигура {:?}: ожидалось {}, получено {}, разница {}",
-            i,
-            expected,
-            count,
-            diff
+            "Фигура {i:?}: ожидалось {expected}, получено {count}, разница {diff}"
         );
     }
 }
@@ -427,7 +419,7 @@ fn test_long_memory_leak_1000_cycles() {
     }
 
     // Если тест прошёл - утечек нет
-    let _ = ();
+    let () = ();
 }
 
 /// Тест 20: Проверка всех режимов в течение длительного времени

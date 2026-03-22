@@ -585,7 +585,7 @@ mod tests {
             let t = Tetromino::select();
             shapes_found[t.fg] = true;
         }
-        for found in shapes_found.iter() {
+        for found in &shapes_found {
             assert!(*found, "Не все типы фигур были сгенерированы");
         }
     }
@@ -719,8 +719,7 @@ mod tests {
             };
             assert_eq!(
                 count, expected_per_shape,
-                "Фигура {} должна встречаться {} раз (встретилась {})",
-                shape_name, expected_per_shape, count
+                "Фигура {shape_name} должна встречаться {expected_per_shape} раз (встретилась {count})"
             );
         }
     }

@@ -22,7 +22,7 @@ use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
 // ============================================================================
 
-/// Тест 1: Проверка создания GameState
+/// Тест 1: Проверка создания `GameState`
 ///
 /// Проверяет базовую инициализацию состояния игры.
 #[test]
@@ -84,14 +84,14 @@ fn test_game_state_empty_field() {
 
     for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
         for (x, cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(*cell, -1, "Клетка [{},{}] должна быть пустой (-1)", y, x);
+            assert_eq!(*cell, -1, "Клетка [{y},{x}] должна быть пустой (-1)");
         }
     }
 }
 
 /// Тест 5: Проверка начальной скорости падения
 ///
-/// Проверяет, что скорость падения установлена в INITIAL_FALL_SPD.
+/// Проверяет, что скорость падения установлена в `INITIAL_FALL_SPD`.
 #[test]
 fn test_game_state_initial_fall_speed() {
     let state = GameState::new();
@@ -99,15 +99,13 @@ fn test_game_state_initial_fall_speed() {
 
     assert!(
         (fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
-        "Начальная скорость должна быть {:.2}, получено {:.2}",
-        INITIAL_FALL_SPD,
-        fall_spd
+        "Начальная скорость должна быть {INITIAL_FALL_SPD:.2}, получено {fall_spd:.2}"
     );
 }
 
 /// Тест 6: Проверка режима игры по умолчанию
 ///
-/// Проверяет, что GameState::new() создаёт классический режим.
+/// Проверяет, что `GameState::new()` создаёт классический режим.
 #[test]
 fn test_game_state_default_mode() {
     let state = GameState::new();
@@ -374,7 +372,7 @@ fn test_all_tetromino_rotate() {
         ShapeType::I,
     ];
 
-    for shape_type in shapes.iter() {
+    for shape_type in &shapes {
         let mut tetromino = Tetromino {
             pos: (4.0, 0.0),
             shape: *shape_type,
@@ -386,16 +384,16 @@ fn test_all_tetromino_rotate() {
         tetromino.rotate(RotationDirection::Clockwise);
 
         // Все фигуры кроме O должны изменить координаты
-        if *shape_type != ShapeType::O {
-            // Проверяем, что вращение произошло (координаты изменились)
-            // Примечание: некоторые фигуры могут совпадать после одного вращения
-            // поэтому просто проверяем, что метод не паникует
-        } else {
+        if *shape_type == ShapeType::O {
             // Квадрат не должен измениться
             assert_eq!(
                 tetromino.coords, original_coords,
                 "Квадрат (O) не должен вращаться"
             );
+        } else {
+            // Проверяем, что вращение произошло (координаты изменились)
+            // Примечание: некоторые фигуры могут совпадать после одного вращения
+            // поэтому просто проверяем, что метод не паникует
         }
     }
 }
@@ -506,7 +504,7 @@ fn test_level_calculation_from_lines() {
 
 /// Тест 25: Проверка константы увеличения скорости
 ///
-/// Проверяет, что скорость увеличивается на SPD_INC за уровень.
+/// Проверяет, что скорость увеличивается на `SPD_INC` за уровень.
 #[test]
 fn test_speed_increase_constant() {
     // SPD_INC = 0.05, проверяем что это положительное число меньше 1
@@ -553,7 +551,7 @@ fn test_speed_calculation_from_level() {
 
 /// Тест 27: Проверка создания режима спринт
 ///
-/// Проверяет, что GameState::new_sprint() создаёт режим Sprint.
+/// Проверяет, что `GameState::new_sprint()` создаёт режим Sprint.
 #[test]
 fn test_sprint_mode_creation() {
     let state = GameState::new_sprint();

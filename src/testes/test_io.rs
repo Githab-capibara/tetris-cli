@@ -2,7 +2,7 @@
 //!
 //! Этот модуль содержит 10 тестов для проверки системы ввода/вывода:
 //! - Тесты Canvas (4 теста)
-//! - Тесты KeyReader (3 теста)
+//! - Тесты `KeyReader` (3 теста)
 //! - Тесты констант (3 теста)
 //!
 //! Все тесты независимы и проверяют отдельные аспекты работы с терминалом.
@@ -17,7 +17,7 @@ use crate::io::{
 
 /// Тест 1: Проверка создания Canvas
 ///
-/// Проверяет, что Canvas::new() успешно создаёт канвас.
+/// Проверяет, что `Canvas::new()` успешно создаёт канвас.
 /// Примечание: тест может завершиться ошибкой если терминал не поддерживает raw-режим.
 /// Игнорируется в автоматических тестах так как требует реальный терминал.
 #[test]
@@ -28,7 +28,7 @@ fn test_canvas_creation() {
     // Канвас создан успешно
 }
 
-/// Тест 2: Проверка константы SHAPE_STR
+/// Тест 2: Проверка константы `SHAPE_STR`
 ///
 /// Проверяет, что символ блока имеет правильную длину.
 #[test]
@@ -42,9 +42,9 @@ fn test_shape_str_constant() {
     );
 }
 
-/// Тест 3: Проверка константы SHAPE_WIDTH
+/// Тест 3: Проверка константы `SHAPE_WIDTH`
 ///
-/// Проверяет, что ширина блока соответствует длине SHAPE_STR.
+/// Проверяет, что ширина блока соответствует длине `SHAPE_STR`.
 #[test]
 fn test_shape_width_constant() {
     assert_eq!(SHAPE_WIDTH, 2, "SHAPE_WIDTH должен быть 2 символа");
@@ -55,7 +55,7 @@ fn test_shape_width_constant() {
     );
 }
 
-/// Тест 4: Проверка расчёта DISP_WIDTH
+/// Тест 4: Проверка расчёта `DISP_WIDTH`
 ///
 /// Проверяет формулу расчёта полной ширины дисплея.
 #[test]
@@ -64,8 +64,7 @@ fn test_disp_width_calculation() {
     let expected_width = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
     assert_eq!(
         DISP_WIDTH, expected_width,
-        "DISP_WIDTH должен быть (SHAPE_WIDTH * GRID_WIDTH) + 2 = {}",
-        expected_width
+        "DISP_WIDTH должен быть (SHAPE_WIDTH * GRID_WIDTH) + 2 = {expected_width}"
     );
     assert_eq!(DISP_WIDTH, 22, "DISP_WIDTH должен быть 22");
 }
@@ -74,9 +73,9 @@ fn test_disp_width_calculation() {
 // ГРУППА ТЕСТОВ 5-7: KeyReader
 // ============================================================================
 
-/// Тест 5: Проверка создания KeyReader
+/// Тест 5: Проверка создания `KeyReader`
 ///
-/// Проверяет, что KeyReader::new() успешно создаёт читатель.
+/// Проверяет, что `KeyReader::new()` успешно создаёт читатель.
 #[test]
 fn test_key_reader_creation() {
     let reader = KeyReader::new();
@@ -87,9 +86,9 @@ fn test_key_reader_creation() {
     drop(reader); // Явно освобождаем ресурс
 }
 
-/// Тест 6: Проверка get_key() без нажатий
+/// Тест 6: Проверка `get_key()` без нажатий
 ///
-/// Проверяет, что get_key() возвращает None когда нет нажатий.
+/// Проверяет, что `get_key()` возвращает None когда нет нажатий.
 #[test]
 fn test_key_reader_get_key_no_input() {
     let mut reader = KeyReader::new();
@@ -103,7 +102,7 @@ fn test_key_reader_get_key_no_input() {
     let _ = key;
 }
 
-/// Тест 7: Проверка Default для KeyReader
+/// Тест 7: Проверка Default для `KeyReader`
 ///
 /// Проверяет, что Default реализация работает корректно.
 #[test]
@@ -122,7 +121,7 @@ fn test_key_reader_default() {
 
 /// Тест 8: Проверка размеров игрового поля
 ///
-/// Проверяет константы GRID_WIDTH и GRID_HEIGHT.
+/// Проверяет константы `GRID_WIDTH` и `GRID_HEIGHT`.
 #[test]
 fn test_field_dimensions() {
     assert_eq!(GRID_WIDTH, 10, "GRID_WIDTH должен быть 10 блоков");
@@ -134,7 +133,7 @@ fn test_field_dimensions() {
     );
 }
 
-/// Тест 9: Проверка расчёта DISP_HEIGHT
+/// Тест 9: Проверка расчёта `DISP_HEIGHT`
 ///
 /// Проверяет формулу расчёта полной высоты дисплея.
 #[test]
@@ -143,8 +142,7 @@ fn test_disp_height_calculation() {
     let expected_height = GRID_HEIGHT as u16 + 5;
     assert_eq!(
         DISP_HEIGHT, expected_height,
-        "DISP_HEIGHT должен быть GRID_HEIGHT + 5 = {}",
-        expected_height
+        "DISP_HEIGHT должен быть GRID_HEIGHT + 5 = {expected_height}"
     );
     assert_eq!(DISP_HEIGHT, 25, "DISP_HEIGHT должен быть 25");
 }
@@ -168,10 +166,9 @@ fn test_terminal_minimum_size() {
     );
 
     // Проверяем соотношение сторон
-    let aspect_ratio = min_width as f32 / min_height as f32;
+    let aspect_ratio = f32::from(min_width) / f32::from(min_height);
     assert!(
         aspect_ratio > 0.5 && aspect_ratio < 2.0,
-        "Соотношение сторон должно быть разумным (0.5-2.0), получено {}",
-        aspect_ratio
+        "Соотношение сторон должно быть разумным (0.5-2.0), получено {aspect_ratio}"
     );
 }

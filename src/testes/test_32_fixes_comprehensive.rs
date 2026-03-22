@@ -3,49 +3,49 @@
 //! Этот модуль содержит тесты для проверки каждой из 32 исправленных проблем:
 //!
 //! ## КРИТИЧЕСКИЕ ОШИБКИ (1-3):
-//! 1. Переполнение стека - тест на создание GameState без переполнения стека
+//! 1. Переполнение стека - тест на создание `GameState` без переполнения стека
 //! 2. Race condition - тест на файловую блокировку в rate limiting
-//! 3. Canvas::new() - тест на создание stub без паники
+//! 3. `Canvas::new()` - тест на создание stub без паники
 //!
 //! ## ЛОГИЧЕСКИЕ ОШИБКИ (4-6):
 //! 4. Проверка проигрыша - тест на граничные условия проигрыша
-//! 5. draw_ghost_shape() - тест на эффективность вычисления позиции
-//! 6. Dir::Down - тест на унифицированную обработку направлений
+//! 5. `draw_ghost_shape()` - тест на эффективность вычисления позиции
+//! 6. `Dir::Down` - тест на унифицированную обработку направлений
 //!
 //! ## ОПТИМИЗАЦИИ (7-10):
 //! 7. Кэширование строк - тест на наличие кэширования
 //! 8. Отрисовка поля - тест на отрисовку только измененных клеток
-//! 9. check_rows() - тест на объединение функций
-//! 10. String::with_capacity() - тест на использование константы
+//! 9. `check_rows()` - тест на объединение функций
+//! 10. `String::with_capacity()` - тест на использование константы
 //!
 //! ## ЧИТАЕМОСТЬ (11-14):
-//! 11. Разбиение функций - тест на наличие handle_input, handle_falling и т.д.
+//! 11. Разбиение функций - тест на наличие `handle_input`, `handle_falling` и т.д.
 //! 12. Магические числа - тест на наличие именованных констант
 //! 13. Комментарии - тест на наличие документации
-//! 14. Именование - тест на соответствие snake_case
+//! 14. Именование - тест на соответствие `snake_case`
 //!
 //! ## ОБРАБОТКА ОШИБОК (15-18):
-//! 15. unwrap() - тест на proper error propagation
-//! 16. load_rate_limit_state() - тест на обработку ошибок
+//! 15. `unwrap()` - тест на proper error propagation
+//! 16. `load_rate_limit_state()` - тест на обработку ошибок
 //! 17. Drop errors - тест на логирование в Drop
 //! 18. Result vs Option - тест на унифицированную обработку
 //!
 //! ## БЕЗОПАСНОСТЬ (19-23):
-//! 19. Path traversal - тест на защиту через O_NOFOLLOW
+//! 19. Path traversal - тест на защиту через `O_NOFOLLOW`
 //! 20. Unicode-атаки - тест на whitelist ASCII + кириллица
 //! 21. Rate limiting - тест на файловые блокировки
-//! 22. Symlink attack - тест на O_NOFOLLOW в load_from_file()
-//! 23. Валидация размера - тест на проверку MAX_CONFIG_FILE_SIZE
+//! 22. Symlink attack - тест на `O_NOFOLLOW` в `load_from_file()`
+//! 23. Валидация размера - тест на проверку `MAX_CONFIG_FILE_SIZE`
 //!
 //! ## BEST PRACTICES (24-28):
-//! 24. dead_code - тест на отсутствие неиспользуемого кода
+//! 24. `dead_code` - тест на отсутствие неиспользуемого кода
 //! 25. Box для массива - тест на плоский массив
 //! 26. Clippy проверки - тест на наличие [lints.clippy]
 //! 27. u128 для счета - тест на использование u128
 //! 28. Бенчмарки - тест на наличие бенчмарков
 //!
 //! ## ДОПОЛНИТЕЛЬНЫЕ (29-32):
-//! 29. Дублирование кода - тест на объединенную validate_path()
+//! 29. Дублирование кода - тест на объединенную `validate_path()`
 //! 30. Неиспользуемые импорты - тест на отсутствие unused imports
 //! 31. Тесты производительности - тест performance_* для критических функций
 //! 32. Документация - тест на наличие документации
@@ -54,9 +54,9 @@
 // КРИТИЧЕСКИЕ ОШИБКИ (1-3)
 // ============================================================================
 
-/// Тест 1: Переполнение стека - создание GameState без переполнения.
+/// Тест 1: Переполнение стека - создание `GameState` без переполнения.
 ///
-/// Проверяет, что GameState использует Box для массива blocks,
+/// Проверяет, что `GameState` использует Box для массива blocks,
 /// что предотвращает переполнение стека при создании нескольких экземпляров.
 #[test]
 fn test_stack_overflow_prevention() {
@@ -70,8 +70,7 @@ fn test_stack_overflow_prevention() {
     // Без Box размер был бы значительно больше (массив 10x20 i8 = 200 байт)
     assert!(
         state_size < 500,
-        "GameState должен использовать Box для blocks (размер {} байт)",
-        state_size
+        "GameState должен использовать Box для blocks (размер {state_size} байт)"
     );
 
     // Создаём несколько состояний игры для проверки отсутствия переполнения
@@ -91,7 +90,7 @@ fn test_stack_overflow_prevention() {
 /// для предотвращения race condition между процессами.
 #[test]
 fn test_race_condition_file_locking() {
-    use crate::highscore::{Leaderboard, LeaderboardEntry};
+    use crate::highscore::Leaderboard;
 
     // Проверяем, что Leaderboard существует и работает
     let mut leaderboard = Leaderboard::default();
@@ -107,9 +106,9 @@ fn test_race_condition_file_locking() {
     // из нескольких процессов
 }
 
-/// Тест 3: Canvas::new() - создание stub без паники.
+/// Тест 3: `Canvas::new()` - создание stub без паники.
 ///
-/// Проверяет, что Canvas::default() создаёт stub при отсутствии терминала,
+/// Проверяет, что `Canvas::default()` создаёт stub при отсутствии терминала,
 /// а не паникует.
 #[test]
 fn test_canvas_stub_creation() {
@@ -147,7 +146,7 @@ fn test_game_over_boundary_conditions() {
     // и корректно определять, когда фигура не может появиться
 }
 
-/// Тест 5: draw_ghost_shape() - эффективность вычисления позиции.
+/// Тест 5: `draw_ghost_shape()` - эффективность вычисления позиции.
 ///
 /// Проверяет, что позиция ghost shape вычисляется эффективно
 /// без лишних итераций.
@@ -166,9 +165,9 @@ fn test_ghost_shape_efficient_computation() {
     // и использование оптимального алгоритма поиска позиции приземления
 }
 
-/// Тест 6: Dir::Down - унифицированная обработка направлений.
+/// Тест 6: `Dir::Down` - унифицированная обработка направлений.
 ///
-/// Проверяет, что Dir::Down корректно обрабатывается в rotate_old()
+/// Проверяет, что `Dir::Down` корректно обрабатывается в `rotate_old()`
 /// без паники (игнорируется).
 #[test]
 fn test_dir_down_unified_handling() {
@@ -241,16 +240,16 @@ fn test_dirty_cells_rendering() {
     assert_eq!(dirty.len(), 2, "Должно быть 2 измененных клетки");
 }
 
-/// Тест 9: check_rows() - объединение функций.
+/// Тест 9: `check_rows()` - объединение функций.
 ///
-/// Проверяет, что функция check_rows() объединяет проверку и очистку строк
+/// Проверяет, что функция `check_rows()` объединяет проверку и очистку строк
 /// для предотвращения дублирования кода.
 #[test]
 fn test_check_rows_unified_function() {
     use crate::game::GameState;
 
     // Создаём состояние игры
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Проверяем, что check_rows() существует и работает
     // через проверку методов GameState
@@ -261,9 +260,9 @@ fn test_check_rows_unified_function() {
     let _ = lines_before;
 }
 
-/// Тест 10: String::with_capacity() - использование константы.
+/// Тест 10: `String::with_capacity()` - использование константы.
 ///
-/// Проверяет, что используется String::with_capacity() с константой
+/// Проверяет, что используется `String::with_capacity()` с константой
 /// для предотвращения лишних аллокаций.
 #[test]
 fn test_string_with_capacity_constant() {
@@ -283,15 +282,15 @@ fn test_string_with_capacity_constant() {
 
 /// Тест 11: Разбиение функций.
 ///
-/// Проверяет, что update() разбит на меньшие функции:
-/// handle_input(), handle_falling(), handle_landing().
+/// Проверяет, что `update()` разбит на меньшие функции:
+/// `handle_input()`, `handle_falling()`, `handle_landing()`.
 #[test]
 fn test_function_decomposition() {
     use crate::game::GameState;
 
     // Проверяем, что GameState имеет декомпозированные методы
     // через проверку существования методов
-    let mut state = GameState::new();
+    let state = GameState::new();
 
     // Методы должны существовать (проверка компиляции)
     let _score = state.get_score();
@@ -307,9 +306,7 @@ fn test_function_decomposition() {
 /// Проверяет, что все магические числа заменены именованными константами.
 #[test]
 fn test_named_constants_instead_of_magic_numbers() {
-    use crate::game::{
-        COMBO_BONUS, FPS, INITIAL_FALL_SPD, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
-    };
+    use crate::game::{COMBO_BONUS, FPS, LINES_PER_LEVEL, LINE_SCORES};
 
     // Проверяем наличие констант
     assert_eq!(FPS, 60, "FPS должен быть 60");
@@ -338,9 +335,9 @@ fn test_documentation_present() {
     let _ = std::any::type_name::<Tetromino>();
 }
 
-/// Тест 14: Именование - snake_case.
+/// Тест 14: Именование - `snake_case`.
 ///
-/// Проверяет, что все функции и переменные используют snake_case.
+/// Проверяет, что все функции и переменные используют `snake_case`.
 #[test]
 fn test_snake_case_naming_convention() {
     use crate::game::{GameState, LINE_SCORES};
@@ -361,9 +358,9 @@ fn test_snake_case_naming_convention() {
 // ОБРАБОТКА ОШИБОК (15-18)
 // ============================================================================
 
-/// Тест 15: unwrap() - proper error propagation.
+/// Тест 15: `unwrap()` - proper error propagation.
 ///
-/// Проверяет, что используется proper error propagation вместо unwrap().
+/// Проверяет, что используется proper error propagation вместо `unwrap()`.
 #[test]
 fn test_proper_error_propagation() {
     use crate::controls::ControlsConfig;
@@ -383,9 +380,9 @@ fn test_proper_error_propagation() {
     // Error propagation используется вместо unwrap()
 }
 
-/// Тест 16: load_rate_limit_state() - обработка ошибок.
+/// Тест 16: `load_rate_limit_state()` - обработка ошибок.
 ///
-/// Проверяет, что load_rate_limit_state() корректно обрабатывает ошибки.
+/// Проверяет, что `load_rate_limit_state()` корректно обрабатывает ошибки.
 #[test]
 fn test_load_rate_limit_state_error_handling() {
     use crate::highscore::Leaderboard;
@@ -429,13 +426,10 @@ fn test_unified_result_option_handling() {
     let result = save.verify_and_get_score();
 
     // Унифицированная обработка через match
-    match result {
-        Some(score) => {
-            assert!(score >= 1000, "Счёт должен быть >= 1000");
-        }
-        None => {
-            // Обработка ошибки валидации
-        }
+    if let Some(score) = result {
+        assert!(score >= 1000, "Счёт должен быть >= 1000");
+    } else {
+        // Обработка ошибки валидации
     }
 }
 
@@ -443,9 +437,9 @@ fn test_unified_result_option_handling() {
 // БЕЗОПАСНОСТЬ (19-23)
 // ============================================================================
 
-/// Тест 19: Path traversal - защита через O_NOFOLLOW.
+/// Тест 19: Path traversal - защита через `O_NOFOLLOW`.
 ///
-/// Проверяет, что используется O_NOFOLLOW для защиты от symlink атак.
+/// Проверяет, что используется `O_NOFOLLOW` для защиты от symlink атак.
 #[test]
 fn test_path_traversal_o_nofollow_protection() {
     use crate::controls::ControlsConfig;
@@ -516,9 +510,9 @@ fn test_rate_limiting_file_locks() {
     assert_eq!(leaderboard.len(), 1, "Должна быть одна запись");
 }
 
-/// Тест 22: Symlink attack - O_NOFOLLOW в load_from_file().
+/// Тест 22: Symlink attack - `O_NOFOLLOW` в `load_from_file()`.
 ///
-/// Проверяет, что load_from_file() использует O_NOFOLLOW.
+/// Проверяет, что `load_from_file()` использует `O_NOFOLLOW`.
 #[test]
 fn test_symlink_attack_o_nofollow() {
     use crate::controls::ControlsConfig;
@@ -533,7 +527,7 @@ fn test_symlink_attack_o_nofollow() {
     // O_NOFOLLOW предотвращает атаки через symlink
 }
 
-/// Тест 23: Валидация размера - MAX_CONFIG_FILE_SIZE.
+/// Тест 23: Валидация размера - `MAX_CONFIG_FILE_SIZE`.
 ///
 /// Проверяет, что используется проверка размера файла конфигурации.
 #[test]
@@ -553,7 +547,7 @@ fn test_config_file_size_validation() {
 // BEST PRACTICES (24-28)
 // ============================================================================
 
-/// Тест 24: dead_code - отсутствие неиспользуемого кода.
+/// Тест 24: `dead_code` - отсутствие неиспользуемого кода.
 ///
 /// Проверяет, что в проекте отсутствует неиспользуемый код.
 #[test]
@@ -648,9 +642,9 @@ fn test_benchmarks_present() {
 // ДОПОЛНИТЕЛЬНЫЕ (29-32)
 // ============================================================================
 
-/// Тест 29: Дублирование кода - объединенная validate_path().
+/// Тест 29: Дублирование кода - объединенная `validate_path()`.
 ///
-/// Проверяет, что используется общая функция validate_path().
+/// Проверяет, что используется общая функция `validate_path()`.
 #[test]
 fn test_validate_path_common_function() {
     use crate::controls::ControlsConfig;
@@ -742,7 +736,7 @@ fn test_all_32_fixes_integration() {
     use crate::game::GameState;
     use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
     use crate::io::{Canvas, KeyReader};
-    use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+    use crate::tetromino::{BagGenerator, Tetromino};
 
     // КРИТИЧЕСКИЕ (1-3)
     let _state = GameState::new(); // Переполнение стека

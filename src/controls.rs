@@ -112,6 +112,9 @@ struct ControlsConfigInner {
 /// # Возвращает
 /// - `Ok(())` если длина в пределах нормы
 /// - `Err(io::Error)` если путь слишком длинный
+///
+/// # Исправление #2
+/// Часть единого валидатора путей с конфигурируемыми правилами.
 fn validate_path_length(path: &str) -> io::Result<()> {
     const MAX_PATH_LENGTH: usize = 255;
 
@@ -132,6 +135,9 @@ fn validate_path_length(path: &str) -> io::Result<()> {
 /// # Возвращает
 /// - `Ok(())` если символы допустимы
 /// - `Err(io::Error)` если есть запрещённые символы
+///
+/// # Исправление #2
+/// Часть единого валидатора путей с конфигурируемыми правилами.
 fn validate_path_characters(path: &str) -> io::Result<()> {
     // Запрещаем специальные символы, которые могут быть использованы для атак
     const FORBIDDEN_CHARS: [char; 5] = ['\0', '|', '&', ';', '$'];
@@ -160,7 +166,7 @@ fn validate_no_symlinks(path: &Path) -> io::Result<()> {
         if metadata.file_type().is_symlink() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("Символические ссылки не разрешены: {path:?}"),
+                format!("Символические ссылки не разрешены: {}", path.display()),
             ));
         }
     }
@@ -183,7 +189,7 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
         path.canonicalize().map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("Неверный путь {path:?}: {e}"),
+                format!("Неверный путь {}: {}", path.display(), e),
             )
         })?
     } else {
@@ -199,7 +205,10 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
     if canonical_path.strip_prefix(current_dir).is_err() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("Путь вне разрешённой директории (symlink attack detected): {path:?}"),
+            format!(
+                "Путь вне разрешённой директории (symlink attack detected): {}",
+                path.display()
+            ),
         ));
     }
     Ok(())

@@ -6,9 +6,9 @@
 //! 3. Unreadable Literals (тесты)
 //! 4. Переполнение счёта (game.rs)
 //! 5. Doc Markdown (controls.rs)
-//! 6. unwrap() -> expect() (тесты)
-//! 7. Приватные поля LeaderboardEntry (highscore.rs)
-//! 8. Избыточные debug_assert (game.rs)
+//! 6. `unwrap()` -> `expect()` (тесты)
+//! 7. Приватные поля `LeaderboardEntry` (highscore.rs)
+//! 8. Избыточные `debug_assert` (game.rs)
 //! 9. Версия Cargo.toml
 
 // ============================================================================
@@ -30,11 +30,10 @@ mod rate_limiting_tests {
 
         // Добавляем 5 рекордов подряд без задержек
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{}", i), 1000 + i * 100);
+            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result,
-                "Record {} must be added (rate limiting disabled in tests)",
-                i
+                "Record {i} must be added (rate limiting disabled in tests)"
             );
         }
 
@@ -51,9 +50,9 @@ mod rate_limiting_tests {
 
         // Добавляем 10 рекордов подряд (лимит)
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{}", i), i * 100);
+            let result = leaderboard.add_score(format!("Player{i}"), i * 100);
             // Первые 10 должны добавиться
-            assert!(result, "Record {} must be added (within rate limit)", i);
+            assert!(result, "Record {i} must be added (within rate limit)");
         }
 
         // 11-я запись должна быть отклонена из-за rate limiting
@@ -82,7 +81,7 @@ mod rate_limiting_tests {
 
     /// Тест 3: Проверка что rate limiting полностью удалён
     ///
-    /// Проверяет, что метод set_cooldown больше не существует
+    /// Проверяет, что метод `set_cooldown` больше не существует
     /// и rate limiting полностью удалён из кода.
     #[test]
     fn test_rate_limiting_removed() {
@@ -93,11 +92,10 @@ mod rate_limiting_tests {
 
         // Добавляем несколько рекордов подряд без задержек
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{}", i), 1000 + i * 100);
+            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result || leaderboard.len() == 5,
-                "Record {} must be added (no rate limiting)",
-                i
+                "Record {i} must be added (no rate limiting)"
             );
         }
 
@@ -118,7 +116,7 @@ mod rate_limiting_tests {
 mod similar_names_tests {
     use crate::game::COMBO_BONUS;
 
-    /// Тест 1: Проверка что combo_bonus_level_1 = 0
+    /// Тест 1: Проверка что `combo_bonus_level_1` = 0
     ///
     /// Проверяет, что бонус за первое комбо (уровень 1) равен 0.
     #[test]
@@ -132,9 +130,9 @@ mod similar_names_tests {
         );
     }
 
-    /// Тест 2: Проверка что combo_bonus_level_10 = COMBO_BONUS * 9
+    /// Тест 2: Проверка что `combo_bonus_level_10` = `COMBO_BONUS` * 9
     ///
-    /// Проверяет, что бонус за 10-е комбо равен COMBO_BONUS * 9.
+    /// Проверяет, что бонус за 10-е комбо равен `COMBO_BONUS` * 9.
     #[test]
     fn test_combo_bonus_level_10_formula() {
         // Формула: бонус = COMBO_BONUS * (уровень комбо - 1)
@@ -165,7 +163,7 @@ mod similar_names_tests {
                 let bonus = if level == 1 {
                     0
                 } else {
-                    COMBO_BONUS * (level - 1) as u128
+                    COMBO_BONUS * u128::from(level - 1)
                 };
                 (level, bonus)
             })
@@ -176,13 +174,12 @@ mod similar_names_tests {
             let actual_bonus = if *level == 1 {
                 0
             } else {
-                COMBO_BONUS * (*level - 1) as u128
+                COMBO_BONUS * u128::from(*level - 1)
             };
 
             assert_eq!(
                 actual_bonus, *expected_bonus,
-                "Bonus for combo level {} must be {}",
-                level, expected_bonus
+                "Bonus for combo level {level} must be {expected_bonus}"
             );
         }
 
@@ -201,7 +198,7 @@ mod similar_names_tests {
 
 #[cfg(test)]
 mod unreadable_literals_tests {
-    /// Тест 1: Проверка что числа с подчёркиваниями работают (100_000)
+    /// Тест 1: Проверка что числа с подчёркиваниями работают (`100_000`)
     ///
     /// Проверяет, что числа с разделителями подчёркивания работают корректно.
     #[test]
@@ -250,8 +247,7 @@ mod unreadable_literals_tests {
         // Проверяем что вычисление заняло меньше 100мс
         assert!(
             elapsed.as_millis() < 100,
-            "Computation with {} iterations must take less than 100ms",
-            iterations
+            "Computation with {iterations} iterations must take less than 100ms"
         );
 
         // Проверяем правильность суммы (формула арифметической прогрессии)
@@ -259,7 +255,7 @@ mod unreadable_literals_tests {
         assert_eq!(sum, expected_sum, "Sum must be correct");
     }
 
-    /// Тест 3: Стресс-тест с 100_000 итераций
+    /// Тест 3: Стресс-тест с `100_000` итераций
     ///
     /// Проверяет стабильность работы с большим количеством итераций.
     #[test]
@@ -275,8 +271,7 @@ mod unreadable_literals_tests {
         // Проверяем что счётчик достиг нужного значения
         assert_eq!(
             counter, iterations as u64,
-            "Counter must reach {} after {} iterations",
-            iterations, iterations
+            "Counter must reach {iterations} after {iterations} iterations"
         );
 
         // Тест с умножением
@@ -296,9 +291,9 @@ mod unreadable_literals_tests {
 
 #[cfg(test)]
 mod score_overflow_tests {
-    /// Тест 1: saturating_add не переполняется на u64::MAX
+    /// Тест 1: `saturating_add` не переполняется на `u64::MAX`
     ///
-    /// Проверяет, что saturating_add корректно обрабатывает переполнение.
+    /// Проверяет, что `saturating_add` корректно обрабатывает переполнение.
     #[test]
     fn test_saturating_add_no_overflow_at_max() {
         // Максимальное значение u64
@@ -331,7 +326,7 @@ mod score_overflow_tests {
 
     /// Тест 2: Проверка что обычный счёт работает
     ///
-    /// Проверяет, что saturating_add корректно работает в нормальных случаях.
+    /// Проверяет, что `saturating_add` корректно работает в нормальных случаях.
     #[test]
     fn test_normal_score_with_saturating_add() {
         let mut score: u64 = 0;
@@ -422,7 +417,7 @@ mod doc_markdown_tests {
 
     /// Тест 2: Проверка что все поля документированы
     ///
-    /// Проверяет, что все поля ControlsConfig имеют документацию.
+    /// Проверяет, что все поля `ControlsConfig` имеют документацию.
     #[test]
     fn test_all_fields_documented() {
         let config = ControlsConfig::default_config();
@@ -448,7 +443,7 @@ mod doc_markdown_tests {
         let config = ControlsConfig::default_config();
 
         // Проверяем что Debug реализован (нужен для документации)
-        let debug_str = format!("{:?}", config);
+        let debug_str = format!("{config:?}");
         assert!(
             debug_str.contains("ControlsConfig"),
             "Debug must contain struct name"
@@ -466,9 +461,9 @@ mod doc_markdown_tests {
 
 #[cfg(test)]
 mod unwrap_to_expect_tests {
-    /// Тест 1: Проверка что expect() не паникует в нормальных случаях
+    /// Тест 1: Проверка что `expect()` не паникует в нормальных случаях
     ///
-    /// Проверяет, что expect() корректно работает с Some/Ok значениями.
+    /// Проверяет, что `expect()` корректно работает с Some/Ok значениями.
     #[test]
     fn test_expect_no_panic_in_normal_cases() {
         // Тест с Option - убираем unnecessary_literal_unwrap
@@ -484,9 +479,9 @@ mod unwrap_to_expect_tests {
         assert_eq!(inner, 200, "Nested expect must work");
     }
 
-    /// Тест 2: Проверка что expect() паникует с правильным сообщением
+    /// Тест 2: Проверка что `expect()` паникует с правильным сообщением
     ///
-    /// Проверяет, что expect() паникует с ожидаемым сообщением при None/Err.
+    /// Проверяет, что `expect()` паникует с ожидаемым сообщением при None/Err.
     #[test]
     #[should_panic(expected = "Value must be Some")]
     #[allow(clippy::unnecessary_literal_unwrap)]
@@ -496,9 +491,9 @@ mod unwrap_to_expect_tests {
         none_value.expect("Value must be Some");
     }
 
-    /// Тест 3: Интеграционный тест с несколькими expect()
+    /// Тест 3: Интеграционный тест с несколькими `expect()`
     ///
-    /// Проверяет цепочку из нескольких expect() вызовов.
+    /// Проверяет цепочку из нескольких `expect()` вызовов.
     #[test]
     fn test_integration_with_multiple_expect() {
         // Создаём вектор с данными
@@ -556,7 +551,7 @@ mod private_fields_tests {
 
     /// Тест 2: Проверка что геттеры работают
     ///
-    /// Проверяет, что публичные методы name(), score(), hash() работают корректно.
+    /// Проверяет, что публичные методы `name()`, `score()`, `hash()` работают корректно.
     #[test]
     fn test_getters_work() {
         let entry = LeaderboardEntry::new("TestPlayer".to_string(), 5000);
@@ -575,7 +570,7 @@ mod private_fields_tests {
 
     /// Тест 3: Проверка что валидация работает через геттеры
     ///
-    /// Проверяет, что is_valid() корректно проверяет целостность записи.
+    /// Проверяет, что `is_valid()` корректно проверяет целостность записи.
     #[test]
     fn test_validation_via_getters() {
         let entry = LeaderboardEntry::new("ValidPlayer".to_string(), 10000);
@@ -622,7 +617,7 @@ mod private_fields_tests {
 mod debug_assert_tests {
     use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
-    /// Тест 1: Проверка что отрисовка работает без debug_assert
+    /// Тест 1: Проверка что отрисовка работает без `debug_assert`
     ///
     /// Проверяет, что отрисовка работает корректно в release режиме.
     #[test]
@@ -667,15 +662,11 @@ mod debug_assert_tests {
         for (x, y) in &test_coords {
             assert!(
                 *x >= 0 && *x < GRID_WIDTH as i16,
-                "X coordinate {} must be in range [0, {})",
-                x,
-                GRID_WIDTH
+                "X coordinate {x} must be in range [0, {GRID_WIDTH})"
             );
             assert!(
                 *y >= 0 && *y < GRID_HEIGHT as i16,
-                "Y coordinate {} must be in range [0, {})",
-                y,
-                GRID_HEIGHT
+                "Y coordinate {y} must be in range [0, {GRID_HEIGHT})"
             );
         }
 
@@ -692,8 +683,7 @@ mod debug_assert_tests {
                 *x >= 0 && *x < GRID_WIDTH as i16 && *y >= 0 && *y < GRID_HEIGHT as i16;
             assert!(
                 !is_in_bounds,
-                "Coordinates ({}, {}) must be out of bounds",
-                x, y
+                "Coordinates ({x}, {y}) must be out of bounds"
             );
         }
     }
@@ -727,8 +717,7 @@ mod debug_assert_tests {
         // Проверяем что отрисовка заняла меньше 1 секунды
         assert!(
             elapsed.as_millis() < 1000,
-            "Rendering {} operations must take less than 1 second",
-            iterations
+            "Rendering {iterations} operations must take less than 1 second"
         );
 
         // Проверяем что поле заполнено
@@ -765,8 +754,7 @@ mod version_tests {
         // Проверяем что версия равна 23.96.14
         assert!(
             version_line.contains("23.96.14"),
-            "Cargo.toml version must be 23.96.14, found: {}",
-            version_line
+            "Cargo.toml version must be 23.96.14, found: {version_line}"
         );
     }
 

@@ -19,8 +19,8 @@ mod tests {
 
     /// Тест 1: Проверка генерации случайной соли
     ///
-    /// Проверяет, что функция generate_salt() работает корректно
-    /// после исправления (использование rand::RngCore вместо getrandom).
+    /// Проверяет, что функция `generate_salt()` работает корректно
+    /// после исправления (использование `rand::RngCore` вместо getrandom).
     #[test]
     fn test_random_hash_generation() {
         use crate::highscore::generate_salt;
@@ -36,7 +36,7 @@ mod tests {
         assert_ne!(hash1, hash2, "Две соли должны быть разными");
     }
 
-    /// Тест 2: Проверка целостности SaveData после исправления
+    /// Тест 2: Проверка целостности `SaveData` после исправления
     #[test]
     fn test_savedata_integrity_after_fix() {
         use crate::highscore::SaveData;
@@ -51,7 +51,7 @@ mod tests {
         );
     }
 
-    /// Тест 3: Проверка генерации LeaderboardEntry после исправления
+    /// Тест 3: Проверка генерации `LeaderboardEntry` после исправления
     #[test]
     fn test_leaderboard_entry_generation() {
         let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
@@ -67,7 +67,7 @@ mod tests {
 
     /// Тест 4: Проверка инициализации таймера в режиме Sprint
     ///
-    /// После создания GameState::new_sprint() таймер должен быть запущен.
+    /// После создания `GameState::new_sprint()` таймер должен быть запущен.
     #[test]
     fn test_sprint_timer_initialization() {
         let state = GameState::new_sprint();
@@ -85,7 +85,7 @@ mod tests {
 
     /// Тест 5: Проверка инициализации таймера в режиме Marathon
     ///
-    /// После создания GameState::new_marathon() таймер должен быть запущен.
+    /// После создания `GameState::new_marathon()` таймер должен быть запущен.
     #[test]
     fn test_marathon_timer_initialization() {
         let state = GameState::new_marathon();
@@ -103,7 +103,7 @@ mod tests {
 
     /// Тест 6: Проверка, что Classic режим не запускает таймер автоматически
     ///
-    /// GameState::new() не должен запускать таймер (для классического режима).
+    /// `GameState::new()` не должен запускать таймер (для классического режима).
     #[test]
     fn test_classic_no_auto_timer() {
         let state = GameState::new();
@@ -124,7 +124,7 @@ mod tests {
     /// Пустое имя должно заменяться на "Anonymous".
     #[test]
     fn test_empty_name_replaced_with_anonymous() {
-        let entry = LeaderboardEntry::new("".to_string(), 1000);
+        let entry = LeaderboardEntry::new(String::new(), 1000);
 
         assert_eq!(
             entry.name(),
@@ -163,7 +163,7 @@ mod tests {
     // ТЕСТЫ НА КОНСТАНТУ АНИМАЦИИ (game.rs)
     // =========================================================================
 
-    /// Тест 10: Проверка наличия константы HARD_DROP_ANIM_INTERVAL_MS
+    /// Тест 10: Проверка наличия константы `HARD_DROP_ANIM_INTERVAL_MS`
     #[test]
     #[allow(clippy::assertions_on_constants)]
     fn test_hard_drop_animation_constant_exists() {
@@ -211,7 +211,7 @@ mod tests {
 
     /// Тест 13: Проверка, что unused import исправлен
     ///
-    /// Этот тест проверяет, что импорт LeaderboardEntry используется,
+    /// Этот тест проверяет, что импорт `LeaderboardEntry` используется,
     /// а неиспользуемый импорт Leaderboard удалён.
     #[test]
     fn test_unused_import_fixed() {
@@ -220,9 +220,9 @@ mod tests {
         assert_eq!(_entry.name(), "Test");
     }
 
-    /// Тест 14: Проверка, что assertions_on_constants исправлен
+    /// Тест 14: Проверка, что `assertions_on_constants` исправлен
     ///
-    /// Этот тест проверяет, что атрибут #[allow(clippy::assertions_on_constants)]
+    /// Этот тест проверяет, что атрибут #[`allow(clippy::assertions_on_constants)`]
     /// добавлен корректно для теста константы.
     #[test]
     fn test_assertions_on_constants_fixed() {
@@ -233,9 +233,9 @@ mod tests {
         assert_eq!(HARD_DROP_ANIM_INTERVAL_MS, EXPECTED_VALUE);
     }
 
-    /// Тест 15: Проверка вспомогательной функции exit_with_terminal_reset
+    /// Тест 15: Проверка вспомогательной функции `exit_with_terminal_reset`
     ///
-    /// Проверяет, что функция exit_with_terminal_reset существует и имеет правильную сигнатуру.
+    /// Проверяет, что функция `exit_with_terminal_reset` существует и имеет правильную сигнатуру.
     #[test]
     fn test_canvas_helper_function_exists() {
         use crate::io::Canvas;

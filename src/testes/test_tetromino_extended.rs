@@ -16,7 +16,7 @@ use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_C
 // ГРУППА ТЕСТОВ 1-14: Создание каждой фигуры (расширенное)
 // ============================================================================
 
-/// Тест 1: Проверка создания T-фигуры через Tetromino::select()
+/// Тест 1: Проверка создания T-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_t_select_creation() {
     // Генерируем фигуры пока не получим T
@@ -31,7 +31,7 @@ fn test_extended_t_select_creation() {
     panic!("Не удалось получить T-фигуру за 100 попыток");
 }
 
-/// Тест 2: Проверка создания L-фигуры через Tetromino::select()
+/// Тест 2: Проверка создания L-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_l_select_creation() {
     for _ in 0..100 {
@@ -45,7 +45,7 @@ fn test_extended_l_select_creation() {
     panic!("Не удалось получить L-фигуру за 100 попыток");
 }
 
-/// Тест 3: Проверка создания J-фигуры через Tetromino::select()
+/// Тест 3: Проверка создания J-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_j_select_creation() {
     for _ in 0..100 {
@@ -59,7 +59,7 @@ fn test_extended_j_select_creation() {
     panic!("Не удалось получить J-фигуру за 100 попыток");
 }
 
-/// Тест 4: Проверка создания S-фигуры через Tetromino::select()
+/// Тест 4: Проверка создания S-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_s_select_creation() {
     for _ in 0..100 {
@@ -73,7 +73,7 @@ fn test_extended_s_select_creation() {
     panic!("Не удалось получить S-фигуру за 100 попыток");
 }
 
-/// Тест 5: Проверка создания Z-фигуры через Tetromino::select()
+/// Тест 5: Проверка создания Z-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_z_select_creation() {
     for _ in 0..100 {
@@ -87,7 +87,7 @@ fn test_extended_z_select_creation() {
     panic!("Не удалось получить Z-фигуру за 100 попыток");
 }
 
-/// Тест 6: Проверка создания O-фигуры через Tetromino::select()
+/// Тест 6: Проверка создания O-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_o_select_creation() {
     for _ in 0..100 {
@@ -101,7 +101,7 @@ fn test_extended_o_select_creation() {
     panic!("Не удалось получить O-фигуру за 100 попыток");
 }
 
-/// Тест 7: Проверка создания I-фигуры через Tetromino::select()
+/// Тест 7: Проверка создания I-фигуры через `Tetromino::select()`
 #[test]
 fn test_extended_i_select_creation() {
     for _ in 0..100 {
@@ -115,7 +115,7 @@ fn test_extended_i_select_creation() {
     panic!("Не удалось получить I-фигуру за 100 попыток");
 }
 
-/// Тест 8: Проверка создания T-фигуры через from_bag()
+/// Тест 8: Проверка создания T-фигуры через `from_bag()`
 #[test]
 fn test_extended_t_from_bag() {
     let mut bag = BagGenerator::new();
@@ -128,7 +128,7 @@ fn test_extended_t_from_bag() {
     }
 }
 
-/// Тест 9: Проверка создания L-фигуры через from_bag()
+/// Тест 9: Проверка создания L-фигуры через `from_bag()`
 #[test]
 fn test_extended_l_from_bag() {
     let mut bag = BagGenerator::new();
@@ -141,7 +141,7 @@ fn test_extended_l_from_bag() {
     }
 }
 
-/// Тест 10: Проверка создания J-фигуры через from_bag()
+/// Тест 10: Проверка создания J-фигуры через `from_bag()`
 #[test]
 fn test_extended_j_from_bag() {
     let mut bag = BagGenerator::new();
@@ -154,7 +154,7 @@ fn test_extended_j_from_bag() {
     }
 }
 
-/// Тест 11: Проверка создания S-фигуры через from_bag()
+/// Тест 11: Проверка создания S-фигуры через `from_bag()`
 #[test]
 fn test_extended_s_from_bag() {
     let mut bag = BagGenerator::new();
@@ -167,7 +167,7 @@ fn test_extended_s_from_bag() {
     }
 }
 
-/// Тест 12: Проверка создания Z-фигуры через from_bag()
+/// Тест 12: Проверка создания Z-фигуры через `from_bag()`
 #[test]
 fn test_extended_z_from_bag() {
     let mut bag = BagGenerator::new();
@@ -180,7 +180,7 @@ fn test_extended_z_from_bag() {
     }
 }
 
-/// Тест 13: Проверка создания O-фигуры через from_bag()
+/// Тест 13: Проверка создания O-фигуры через `from_bag()`
 #[test]
 fn test_extended_o_from_bag() {
     let mut bag = BagGenerator::new();
@@ -193,7 +193,7 @@ fn test_extended_o_from_bag() {
     }
 }
 
-/// Тест 14: Проверка создания I-фигуры через from_bag()
+/// Тест 14: Проверка создания I-фигуры через `from_bag()`
 #[test]
 fn test_extended_i_from_bag() {
     let mut bag = BagGenerator::new();
@@ -469,7 +469,7 @@ fn test_extended_four_cw_rotations_return() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut t = Tetromino {
             pos: (4.0, 0.0),
             shape,
@@ -484,8 +484,7 @@ fn test_extended_four_cw_rotations_return() {
 
         assert_eq!(
             t.coords, original,
-            "{:?} должна вернуться в исходное состояние",
-            shape
+            "{shape:?} должна вернуться в исходное состояние"
         );
     }
 }
@@ -502,7 +501,7 @@ fn test_extended_four_ccw_rotations_return() {
         ShapeType::I,
     ];
 
-    for &shape in shapes.iter() {
+    for &shape in &shapes {
         let mut t = Tetromino {
             pos: (4.0, 0.0),
             shape,
@@ -517,8 +516,7 @@ fn test_extended_four_ccw_rotations_return() {
 
         assert_eq!(
             t.coords, original,
-            "{:?} должна вернуться в исходное состояние",
-            shape
+            "{shape:?} должна вернуться в исходное состояние"
         );
     }
 }
@@ -646,7 +644,7 @@ fn test_extended_i_unique_blocks() {
 #[test]
 fn test_extended_t_coords_in_range() {
     let coords = SHAPE_COORDS[0];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!(
             (-2..=2).contains(&x),
             "X координата T должна быть в [-2, 2]"
@@ -662,7 +660,7 @@ fn test_extended_t_coords_in_range() {
 #[test]
 fn test_extended_l_coords_in_range() {
     let coords = SHAPE_COORDS[1];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -672,7 +670,7 @@ fn test_extended_l_coords_in_range() {
 #[test]
 fn test_extended_j_coords_in_range() {
     let coords = SHAPE_COORDS[2];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -682,7 +680,7 @@ fn test_extended_j_coords_in_range() {
 #[test]
 fn test_extended_s_coords_in_range() {
     let coords = SHAPE_COORDS[3];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -692,7 +690,7 @@ fn test_extended_s_coords_in_range() {
 #[test]
 fn test_extended_z_coords_in_range() {
     let coords = SHAPE_COORDS[4];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -702,7 +700,7 @@ fn test_extended_z_coords_in_range() {
 #[test]
 fn test_extended_o_coords_in_range() {
     let coords = SHAPE_COORDS[5];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -712,7 +710,7 @@ fn test_extended_o_coords_in_range() {
 #[test]
 fn test_extended_i_coords_in_range() {
     let coords = SHAPE_COORDS[6];
-    for &(x, y) in coords.iter() {
+    for &(x, y) in &coords {
         assert!((-2..=2).contains(&x));
         assert!((-2..=2).contains(&y));
     }
@@ -722,7 +720,7 @@ fn test_extended_i_coords_in_range() {
 #[test]
 fn test_extended_all_shapes_have_four_blocks() {
     for (i, coords) in SHAPE_COORDS.iter().enumerate() {
-        assert_eq!(coords.len(), 4, "Фигура {} должна иметь 4 блока", i);
+        assert_eq!(coords.len(), 4, "Фигура {i} должна иметь 4 блока");
     }
 }
 
@@ -730,7 +728,7 @@ fn test_extended_all_shapes_have_four_blocks() {
 // ГРУППА ТЕСТОВ 50-59: Цвета (расширенное)
 // ============================================================================
 
-/// Тест 50: Проверка что SHAPE_COLORS имеет 7 элементов
+/// Тест 50: Проверка что `SHAPE_COLORS` имеет 7 элементов
 #[test]
 fn test_extended_shape_colors_length() {
     assert_eq!(SHAPE_COLORS.len(), 7);
@@ -807,7 +805,7 @@ fn test_extended_fg_matches_shape() {
 /// Тест 59: Проверка что цвета не равны None
 #[test]
 fn test_extended_colors_not_none() {
-    for color in SHAPE_COLORS.iter() {
+    for color in &SHAPE_COLORS {
         // Просто проверяем что цвет существует
         let _ = *color;
     }
@@ -817,21 +815,21 @@ fn test_extended_colors_not_none() {
 // ГРУППА ТЕСТОВ 60-80: Bag Generator (расширенное)
 // ============================================================================
 
-/// Тест 60: Проверка создания BagGenerator
+/// Тест 60: Проверка создания `BagGenerator`
 #[test]
 fn test_extended_bag_creation() {
     let bag = BagGenerator::new();
     let _ = bag;
 }
 
-/// Тест 61: Проверка Default для BagGenerator
+/// Тест 61: Проверка Default для `BagGenerator`
 #[test]
 fn test_extended_bag_default() {
     let bag = BagGenerator::default();
     let _ = bag;
 }
 
-/// Тест 62: Проверка что next_shape возвращает валидную фигуру
+/// Тест 62: Проверка что `next_shape` возвращает валидную фигуру
 #[test]
 fn test_extended_bag_next_shape_valid() {
     let mut bag = BagGenerator::new();
@@ -841,14 +839,14 @@ fn test_extended_bag_next_shape_valid() {
     }
 }
 
-/// Тест 63: Проверка что get_index начинается с 0
+/// Тест 63: Проверка что `get_index` начинается с 0
 #[test]
 fn test_extended_bag_index_starts_at_zero() {
     let bag = BagGenerator::new();
     assert_eq!(bag.get_index(), 0);
 }
 
-/// Тест 64: Проверка что get_index увеличивается после next_shape
+/// Тест 64: Проверка что `get_index` увеличивается после `next_shape`
 #[test]
 fn test_extended_bag_index_increments() {
     let mut bag = BagGenerator::new();
@@ -858,7 +856,7 @@ fn test_extended_bag_index_increments() {
     }
 }
 
-/// Тест 65: Проверка что get_index сбрасывается после 7 фигур
+/// Тест 65: Проверка что `get_index` сбрасывается после 7 фигур
 #[test]
 fn test_extended_bag_index_resets() {
     let mut bag = BagGenerator::new();
@@ -869,8 +867,8 @@ fn test_extended_bag_index_resets() {
     assert_eq!(bag.get_index(), 1);
 }
 
-/// Тест 66: Проверка что get_bag имеет 7 элементов при инициализации
-/// Исправление #8: BagGenerator использует фиксированный массив [ShapeType; 7]
+/// Тест 66: Проверка что `get_bag` имеет 7 элементов при инициализации
+/// Исправление #8: `BagGenerator` использует фиксированный массив [`ShapeType`; 7]
 #[test]
 fn test_extended_bag_empty_at_start() {
     let bag = BagGenerator::new();
@@ -878,7 +876,7 @@ fn test_extended_bag_empty_at_start() {
     assert_eq!(bag.get_bag().len(), 7);
 }
 
-/// Тест 67: Проверка что get_bag имеет 7 элементов после первого next_shape
+/// Тест 67: Проверка что `get_bag` имеет 7 элементов после первого `next_shape`
 #[test]
 fn test_extended_bag_has_seven_after_first() {
     let mut bag = BagGenerator::new();
@@ -898,11 +896,11 @@ fn test_extended_bag_distribution_7000() {
     }
 
     for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 1000, "Фигура {} должна встретиться 1000 раз", i);
+        assert_eq!(count, 1000, "Фигура {i} должна встретиться 1000 раз");
     }
 }
 
-/// Тест 69: Проверка что BagGenerator выдаёт все 7 фигур в первом мешке
+/// Тест 69: Проверка что `BagGenerator` выдаёт все 7 фигур в первом мешке
 #[test]
 fn test_extended_bag_first_bag_has_all_seven() {
     let mut bag = BagGenerator::new();
@@ -914,11 +912,11 @@ fn test_extended_bag_first_bag_has_all_seven() {
     }
 
     for (i, &f) in found.iter().enumerate() {
-        assert!(f, "Фигура {} должна быть в первом мешке", i);
+        assert!(f, "Фигура {i} должна быть в первом мешке");
     }
 }
 
-/// Тест 70: Проверка что BagGenerator выдаёт все 7 фигур во втором мешке
+/// Тест 70: Проверка что `BagGenerator` выдаёт все 7 фигур во втором мешке
 #[test]
 fn test_extended_bag_second_bag_has_all_seven() {
     let mut bag = BagGenerator::new();
@@ -936,11 +934,11 @@ fn test_extended_bag_second_bag_has_all_seven() {
     }
 
     for (i, &f) in found.iter().enumerate() {
-        assert!(f, "Фигура {} должна быть во втором мешке", i);
+        assert!(f, "Фигура {i} должна быть во втором мешке");
     }
 }
 
-/// Тест 71: Проверка производительности BagGenerator на 100000 фигур
+/// Тест 71: Проверка производительности `BagGenerator` на 100000 фигур
 #[test]
 fn test_extended_bag_performance_100k() {
     let mut bag = BagGenerator::new();
@@ -957,7 +955,7 @@ fn test_extended_bag_performance_100k() {
     );
 }
 
-/// Тест 72: Проверка что BagGenerator можно использовать многократно
+/// Тест 72: Проверка что `BagGenerator` можно использовать многократно
 #[test]
 fn test_extended_bag_reusable() {
     let mut bag = BagGenerator::new();
@@ -970,7 +968,7 @@ fn test_extended_bag_reusable() {
     }
 }
 
-/// Тест 73: Проверка что BagGenerator не паникует при большом количестве вызовов
+/// Тест 73: Проверка что `BagGenerator` не паникует при большом количестве вызовов
 #[test]
 fn test_extended_bag_no_panic_many_calls() {
     let mut bag = BagGenerator::new();
@@ -986,7 +984,7 @@ fn test_extended_bag_no_panic_many_calls() {
     );
 }
 
-/// Тест 74: Проверка что BagGenerator выдаёт фигуры в случайном порядке
+/// Тест 74: Проверка что `BagGenerator` выдаёт фигуры в случайном порядке
 #[test]
 fn test_extended_bag_random_order() {
     let mut bag = BagGenerator::new();
@@ -1013,7 +1011,7 @@ fn test_extended_bag_random_order() {
     assert!(unique_count > 0, "Должны быть разные последовательности");
 }
 
-/// Тест 75: Проверка что BagGenerator корректно работает с from_bag
+/// Тест 75: Проверка что `BagGenerator` корректно работает с `from_bag`
 #[test]
 fn test_extended_bag_with_from_bag() {
     let mut bag = BagGenerator::new();
@@ -1025,7 +1023,7 @@ fn test_extended_bag_with_from_bag() {
     }
 }
 
-/// Тест 76: Проверка что BagGenerator не содержит дубликатов в мешке
+/// Тест 76: Проверка что `BagGenerator` не содержит дубликатов в мешке
 #[test]
 fn test_extended_bag_no_duplicates() {
     let mut bag = BagGenerator::new();
@@ -1045,7 +1043,7 @@ fn test_extended_bag_no_duplicates() {
     }
 }
 
-/// Тест 77: Проверка что BagGenerator корректно обрабатывает границу мешка
+/// Тест 77: Проверка что `BagGenerator` корректно обрабатывает границу мешка
 #[test]
 fn test_extended_bag_boundary() {
     let mut bag = BagGenerator::new();
@@ -1066,7 +1064,7 @@ fn test_extended_bag_boundary() {
     assert_eq!(bag.get_index(), 1);
 }
 
-/// Тест 78: Проверка что BagGenerator работает с разными типами
+/// Тест 78: Проверка что `BagGenerator` работает с разными типами
 #[test]
 fn test_extended_bag_with_all_types() {
     let mut bag = BagGenerator::new();
@@ -1077,12 +1075,12 @@ fn test_extended_bag_with_all_types() {
         found[shape as usize] = true;
     }
 
-    for &f in found.iter() {
+    for &f in &found {
         assert!(f, "Все типы фигур должны встретиться");
     }
 }
 
-/// Тест 79: Проверка что BagGenerator стабилен при многократном использовании
+/// Тест 79: Проверка что `BagGenerator` стабилен при многократном использовании
 #[test]
 fn test_extended_bag_stability() {
     let mut bag = BagGenerator::new();
@@ -1095,14 +1093,14 @@ fn test_extended_bag_stability() {
         }
 
         // Каждый мешок должен содержать все 7 фигур
-        for &count in counts.iter() {
+        for &count in &counts {
             assert_eq!(count, 1);
         }
     }
 }
 
-/// Тест 80: Проверка что BagGenerator корректно инициализируется
-/// Исправление #8: BagGenerator использует фиксированный массив [ShapeType; 7]
+/// Тест 80: Проверка что `BagGenerator` корректно инициализируется
+/// Исправление #8: `BagGenerator` использует фиксированный массив [`ShapeType`; 7]
 #[test]
 fn test_extended_bag_initialization() {
     let bag = BagGenerator::new();

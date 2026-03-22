@@ -1,4 +1,4 @@
-//! Тесты для исправления проблемы 2: проверка границ в check_rotation_collision (game.rs).
+//! Тесты для исправления проблемы 2: проверка границ в `check_rotation_collision` (game.rs).
 
 use crate::game::GameState;
 
@@ -10,7 +10,7 @@ fn test_rotation_near_ceiling_no_panic() {
     assert_eq!(state.get_score(), 0);
 }
 
-/// Тест 2: Проверка что check_y < 0 корректно обрабатывается.
+/// Тест 2: Проверка что `check_y` < 0 корректно обрабатывается.
 #[test]
 fn test_rotation_negative_y_handling() {
     let state = GameState::new();
