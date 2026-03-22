@@ -83,7 +83,90 @@ const ENTRY_COOLDOWN_MS: u64 = 0;
 /// Максимальное количество цифр в строковом представлении u128.
 /// Используется для оптимизации выделения памяти при конвертации чисел в строку.
 /// u128::MAX = 340282366920938463463374607431768211455 (39 цифр)
+/// Примечание: константа устарела, используется ilog10() для точной оценки.
+#[allow(dead_code)]
 const U128_MAX_DIGITS: usize = 39;
+
+/// Имя конфигурации для хранения состояния rate limiting.
+const RATE_LIMIT_CONFIG_NAME: &str = "tetris-cli_rate_limit";
+
+/// Состояние rate limiting для защиты от обхода через изменение системного времени.
+///
+/// Сохраняет последний известный timestamp в конфигурационном файле.
+/// При изменении системного времени назад, используется сохранённое значение.
+#[derive(Serialize, Deserialize, Clone, Default)]
+struct RateLimitState {
+    /// Последний известный timestamp в миллисекундах.
+    last_known_time_ms: u64,
+}
+
+/// Получить текущий timestamp в миллисекундах с защитой от обхода rate limiting.
+///
+/// # Аргументы
+/// * `state` - изменяемая ссылка на состояние rate limiting
+///
+/// # Возвращает
+/// Timestamp в миллисекундах, который гарантированно не меньше последнего сохранённого.
+///
+/// # Безопасность
+/// Если системное время было изменено назад, возвращается last_known_time_ms.
+/// Это предотвращает обход rate limiting через установку времени назад.
+fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
+    let current_time_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_else(|e| {
+            // Логирование ошибки SystemTime
+            eprintln!(
+                "Ошибка: системное время недоступно: {}. Используется время 0.",
+                e
+            );
+            Duration::from_secs(0)
+        })
+        .as_millis() as u64;
+
+    // Защита от обхода rate limiting через изменение системного времени назад.
+    // Если текущее время меньше последнего известного, используем последнее известное.
+    if current_time_ms < state.last_known_time_ms {
+        eprintln!(
+            "Предупреждение: обнаружено изменение системного времени назад \
+             (текущее: {}, последнее: {}). Используется последнее известное время.",
+            current_time_ms, state.last_known_time_ms
+        );
+        state.last_known_time_ms
+    } else {
+        // Обновляем last_known_time_ms только если время увеличилось
+        state.last_known_time_ms = current_time_ms;
+        current_time_ms
+    }
+}
+
+/// Загрузить состояние rate limiting из конфигурации.
+///
+/// # Возвращает
+/// RateLimitState из конфигурации или default при ошибке.
+fn load_rate_limit_state() -> RateLimitState {
+    match load::<RateLimitState>(RATE_LIMIT_CONFIG_NAME) {
+        Ok(state) => state,
+        Err(e) => {
+            // Тихая ошибка - используем default
+            eprintln!("Информация: не удалось загрузить состояние rate limiting: {}. Используется новое состояние.", e);
+            RateLimitState::default()
+        }
+    }
+}
+
+/// Сохранить состояние rate limiting в конфигурацию.
+///
+/// # Аргументы
+/// * `state` - состояние для сохранения
+fn save_rate_limit_state(state: &RateLimitState) {
+    if let Err(e) = store(RATE_LIMIT_CONFIG_NAME, state) {
+        eprintln!(
+            "Предупреждение: не удалось сохранить состояние rate limiting: {}",
+            e
+        );
+    }
+}
 
 /// Ошибка операции с конфигурацией.
 #[derive(Debug)]
@@ -470,10 +553,16 @@ impl LeaderboardEntry {
 
         let salt = generate_salt();
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
-        // для предотвращения лишних аллокаций
+        // для предотвращения лишних аллокаций.
+        // Используем точную оценку длины числа через ilog10() вместо константы U128_MAX_DIGITS.
         use std::fmt::Write;
+        let score_digits = if score > 0 {
+            score.ilog10() as usize + 1
+        } else {
+            1 // Для 0 нужна 1 цифра
+        };
         let mut salt_and_score =
-            String::with_capacity(salt.len() + valid_name.len() + U128_MAX_DIGITS);
+            String::with_capacity(salt.len() + valid_name.len() + score_digits);
         let _ = write!(salt_and_score, "{}{}{}", salt, valid_name, score);
         let hash = get_hash(&salt_and_score);
 
@@ -498,9 +587,16 @@ impl LeaderboardEntry {
     /// ```
     #[must_use]
     pub fn is_valid(&self) -> bool {
-        // Оптимизация: используем String::with_capacity() + write!() вместо format!()
+        // Оптимизация: используем String::with_capacity() + write!() вместо format!().
+        // Используем точную оценку длины числа через ilog10().
         use std::fmt::Write;
-        let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 20);
+        let score_digits = if self.score_value > 0 {
+            self.score_value.ilog10() as usize + 1
+        } else {
+            1
+        };
+        let mut salt_and_score =
+            String::with_capacity(self.salt.len() + self.name.len() + score_digits);
         let _ = write!(
             salt_and_score,
             "{}{}{}",
@@ -577,8 +673,12 @@ impl Leaderboard {
     /// Все timestamps валидируются: отклоняются будущие времена.
     /// При подозрительных timestamps записывается предупреждение.
     /// Добавлена проверка cooldown: минимальное время между записями [`ENTRY_COOLDOWN_MS`].
-    /// Исправление: используем Instant::now() вместо SystemTime для защиты от подделки.
+    /// Исправление: защита от обхода rate limiting через изменение системного времени.
+    /// Используется сохранение последнего timestamp в конфигурационном файле.
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
+        // Загружаем состояние rate limiting из конфигурации
+        let mut rate_limit_state = load_rate_limit_state();
+
         // Rate limiting: проверяем количество записей за последнюю минуту
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
@@ -603,14 +703,11 @@ impl Leaderboard {
             }
         }
 
-        // Добавление новой записи времени для rate limiting
-        // Исправление: используем elapsed() для получения времени в миллисекундах
-        // Базовое время - начало эпохи (невозможно для Instant), поэтому используем u64 timestamp
-        // Для защиты от подделки используем простой счётчик времени в миллисекундах
-        let current_time_ms = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_else(|_| Duration::from_secs(0))
-            .as_millis() as u64;
+        // Получаем текущий timestamp с защитой от обхода rate limiting
+        let current_time_ms = get_current_time_ms_protected(&mut rate_limit_state);
+
+        // Сохраняем состояние rate limiting после получения timestamp
+        save_rate_limit_state(&rate_limit_state);
 
         // Проверка на "будущее" время - защита от подделки
         // Отклоняем timestamps, которые больше текущего времени + 1 час (3600000 мс)
@@ -671,12 +768,14 @@ impl Leaderboard {
     }
 
     /// Очистить старые записи времён (старше 1 минуты).
-    /// Используем SystemTime для защиты от подделки
+    /// Используется защищённое время для предотвращения обхода rate limiting.
     fn cleanup_old_entry_times(&mut self) {
-        let current_time_ms = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_else(|_| Duration::from_secs(0))
-            .as_millis() as u64;
+        // Загружаем состояние rate limiting для получения защищённого времени
+        let mut rate_limit_state = load_rate_limit_state();
+        let current_time_ms = get_current_time_ms_protected(&mut rate_limit_state);
+        // Сохраняем состояние после использования
+        save_rate_limit_state(&rate_limit_state);
+
         let one_minute_ms = 60_000;
 
         self.recent_entry_times

@@ -168,6 +168,10 @@ pub const COMBO_BONUS: u128 = 50;
 /// Количество линий для повышения уровня.
 pub const LINES_PER_LEVEL: u32 = 10;
 
+/// Бонус за повышение уровня: 500 × (номер уровня - 1).
+/// Уровень 2: 500, Уровень 3: 1000, Уровень 11: 5000.
+pub const LEVEL_BONUS_MULT: u128 = 500;
+
 /// Lookup таблица очков за очистку линий.
 /// Исправление #25: таблица для быстрого доступа к очкам за 1-4 линии.
 /// Индекс 0 = 1 линия, индекс 1 = 2 линии, индекс 2 = 3 линии, индекс 3 = 4 линии.
@@ -527,6 +531,21 @@ pub struct GameState {
     soft_drop_distance: u32,
     /// Генератор фигур по системе 7-bag.
     bag: crate::tetromino::BagGenerator,
+    /// Кэшированная строка счёта для оптимизации отрисовки.
+    /// Обновляется только при изменении счёта.
+    cached_score_str: String,
+    /// Кэшированная строка уровня для оптимизации отрисовки.
+    /// Обновляется только при изменении уровня.
+    cached_level_str: String,
+    /// Кэшированная строка количества линий для оптимизации отрисовки.
+    /// Обновляется только при изменении lines_cleared.
+    cached_lines_str: String,
+    /// Последнее закэшированное значение счёта.
+    last_cached_score: u128,
+    /// Последнее закэшированное значение уровня.
+    last_cached_level: u32,
+    /// Последнее закэшированное значение количества линий.
+    last_cached_lines: u32,
 }
 
 /// Состояние завершения обновления.
@@ -620,6 +639,12 @@ impl GameState {
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
+            cached_score_str: "0".to_string(),
+            cached_level_str: "1".to_string(),
+            cached_lines_str: "0".to_string(),
+            last_cached_score: 0,
+            last_cached_level: 1,
+            last_cached_lines: 0,
         }
     }
 
@@ -1253,10 +1278,12 @@ impl GameState {
             let new_level = (self.lines_cleared / LINES_PER_LEVEL) + 1;
             if new_level > self.level {
                 self.level = new_level;
-                // Бонус за повышение уровня: 500 × (номер уровня - 1)
+                // Бонус за повышение уровня: LEVEL_BONUS_MULT × (номер уровня - 1)
                 // Уровень 2: 500, Уровень 3: 1000, Уровень 11: 5000
                 // Используем u128 для предотвращения переполнения
-                self.score = self.score.saturating_add(500 * (new_level - 1) as u128);
+                self.score = self
+                    .score
+                    .saturating_add(LEVEL_BONUS_MULT * (new_level - 1) as u128);
             }
 
             // Увеличение скорости игры
@@ -1283,6 +1310,30 @@ impl GameState {
                 let line_score = LINE_SCORES[(capped_remove_count - 1) as usize];
                 self.score = self.score.saturating_add(line_score);
             }
+        }
+    }
+
+    /// Обновить кэшированные строки для отрисовки.
+    ///
+    /// Кэширует строки только при изменении значений для предотвращения
+    /// лишних аллокаций format!() в каждом кадре.
+    fn update_cached_strings(&mut self) {
+        // Обновляем кэш счёта только при изменении
+        if self.score != self.last_cached_score {
+            self.cached_score_str = format!("{:10}", self.score);
+            self.last_cached_score = self.score;
+        }
+
+        // Обновляем кэш уровня только при изменении
+        if self.level != self.last_cached_level {
+            self.cached_level_str = format!("{:10}", self.level);
+            self.last_cached_level = self.level;
+        }
+
+        // Обновляем кэш линий только при изменении
+        if self.lines_cleared != self.last_cached_lines {
+            self.cached_lines_str = format!("{:10}", self.lines_cleared);
+            self.last_cached_lines = self.lines_cleared;
         }
     }
 
@@ -1337,16 +1388,15 @@ impl GameState {
     fn draw(&mut self, cnv: &mut Canvas, high_score_display: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
-        // Отрисовка рекорда и текущего счёта
-        // Форматирование с фиксированной шириной для выравнивания
-        let score_str = format!("{:10}", self.score);
-        let level_str = format!("{:10}", self.level);
-        let lines_str = format!("{:10}", self.lines_cleared);
+        // Обновляем кэшированные строки перед отрисовкой
+        self.update_cached_strings();
 
-        cnv.draw_string(&score_str, (7, 2), BORDER_COLOR, &Reset);
+        // Отрисовка рекорда и текущего счёта
+        // Используем кэшированные строки для предотвращения аллокаций
+        cnv.draw_string(&self.cached_score_str, (7, 2), BORDER_COLOR, &Reset);
         cnv.draw_string(high_score_display, (7, 3), BORDER_COLOR, &Reset);
-        cnv.draw_string(&level_str, (10, 4), BORDER_COLOR, &Reset);
-        cnv.draw_string(&lines_str, (10, 5), BORDER_COLOR, &Reset);
+        cnv.draw_string(&self.cached_level_str, (10, 4), BORDER_COLOR, &Reset);
+        cnv.draw_string(&self.cached_lines_str, (10, 5), BORDER_COLOR, &Reset);
 
         // Отрисовка счётчика комбо
         if self.stats.combo_counter > 1 {
@@ -1410,9 +1460,11 @@ impl GameState {
             let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + SHAPE_OFFSET_X;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
 
-            // Проверка границ перед отрисовкой для защиты от паники
-            // Исправление: убрана избыточная проверка y >= 0, так как y всегда >= 0
-            // (SHAPE_DRAW_OFFSET = 5, что больше максимального отрицательного coord_y = -2)
+            // Проверка границ перед отрисовкой для защиты от паники.
+            // Проверка x >= 0 необходима, так как при вращении фигуры у левой границы
+            // координата x может стать отрицательной (coord_x = -2, shape_block_x = 0).
+            // Проверка y >= 0 не требуется, так как SHAPE_DRAW_OFFSET = 5 больше
+            // максимального отрицательного coord_y = -2, поэтому y всегда >= 0.
             if x >= 0 {
                 cnv.draw_strs(
                     &[shape_display_char],

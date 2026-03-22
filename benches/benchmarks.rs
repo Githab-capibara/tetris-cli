@@ -11,18 +11,29 @@
 //! Бенчмарки доступны только при включённой фиче `bench`.
 //! Запуск: `cargo bench --features bench`
 
-#![cfg(feature = "bench")]
-
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::GameState;
 use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
+
+/// Главная функция для запуска бенчмарков.
+///
+/// Регистрирует все группы бенчмарков и запускает их.
+fn main() {
+    let mut c = Criterion::default();
+
+    // Запускаем все группы бенчмарков
+    bench_find_full_rows(&mut c);
+    bench_check_rows(&mut c);
+    bench_rotate(&mut c);
+    bench_save_tetromino(&mut c);
+}
 
 /// Бенчмарк для find_full_rows().
 ///
 /// Проверяет производительность поиска заполненных линий
 /// на различных состояниях поля.
 fn bench_find_full_rows(c: &mut Criterion) {
-    let mut group = c.benchmark_group("find_full_rows");
+    let mut group: BenchmarkGroup<'_, _> = c.benchmark_group("find_full_rows");
 
     // Пустое поле
     group.bench_function("empty_field", |b| {
@@ -187,13 +198,3 @@ fn bench_save_tetromino(c: &mut Criterion) {
 
     group.finish();
 }
-
-criterion_group!(
-    benches,
-    bench_find_full_rows,
-    bench_check_rows,
-    bench_rotate,
-    bench_save_tetromino,
-);
-
-criterion_main!(benches);

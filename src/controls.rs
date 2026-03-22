@@ -104,6 +104,113 @@ struct ControlsConfigInner {
     hmac_key: String,
 }
 
+/// Проверить максимальную длину пути.
+///
+/// # Аргументы
+/// * `path` - путь для проверки
+///
+/// # Возвращает
+/// - `Ok(())` если длина в пределах нормы
+/// - `Err(io::Error)` если путь слишком длинный
+fn validate_path_length(path: &str) -> io::Result<()> {
+    const MAX_PATH_LENGTH: usize = 255;
+
+    if path.len() > MAX_PATH_LENGTH {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!(
+                "Путь слишком длинный (максимум {} символов): {:?}",
+                MAX_PATH_LENGTH, path
+            ),
+        ));
+    }
+    Ok(())
+}
+
+/// Проверить допустимые символы в пути.
+///
+/// # Аргументы
+/// * `path` - путь для проверки
+///
+/// # Возвращает
+/// - `Ok(())` если символы допустимы
+/// - `Err(io::Error)` если есть запрещённые символы
+fn validate_path_characters(path: &str) -> io::Result<()> {
+    // Запрещаем специальные символы, которые могут быть использованы для атак
+    const FORBIDDEN_CHARS: [char; 5] = ['\0', '|', '&', ';', '$'];
+
+    if path.contains(FORBIDDEN_CHARS) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("Специальные символы не разрешены в пути: {:?}", path),
+        ));
+    }
+    Ok(())
+}
+
+/// Проверить отсутствие символических ссылок.
+///
+/// # Аргументы
+/// * `path` - путь для проверки
+///
+/// # Возвращает
+/// - `Ok(())` если symlink не обнаружен
+/// - `Err(io::Error)` если путь является symlink
+fn validate_no_symlinks(path: &Path) -> io::Result<()> {
+    // Используем symlink_metadata() для проверки symlink без следования по нему
+    // Это проверка выполняется ДО открытия файла для защиты от race condition
+    if let Ok(metadata) = std::fs::symlink_metadata(path) {
+        if metadata.file_type().is_symlink() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("Символические ссылки не разрешены: {:?}", path),
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Проверить, что путь находится внутри разрешённой директории.
+///
+/// # Аргументы
+/// * `path` - путь для проверки
+/// * `current_dir` - текущая директория
+///
+/// # Возвращает
+/// - `Ok(())` если путь внутри разрешённой директории
+/// - `Err(io::Error)` если путь вне разрешённой директории
+fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result<()> {
+    // Для существующих файлов - используем canonicalize()
+    // Для несуществующих (сохранение) - проверяем родительскую директорию
+    let canonical_path = if path.exists() {
+        path.canonicalize().map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("Неверный путь {:?}: {}", path, e),
+            )
+        })?
+    } else {
+        // Файл не существует - проверяем родительскую директорию
+        // Если родительской директории нет, используем текущую директорию
+        path.parent()
+            .and_then(|p| p.canonicalize().ok())
+            .unwrap_or_else(|| current_dir.to_path_buf())
+    };
+
+    // Проверяем, что resolved path находится внутри текущей директории
+    // Используем strip_prefix() для надёжной проверки
+    if canonical_path.strip_prefix(current_dir).is_err() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!(
+                "Путь вне разрешённой директории (symlink attack detected): {:?}",
+                path
+            ),
+        ));
+    }
+    Ok(())
+}
+
 /// Проверить валидность пути для конфигурации.
 ///
 /// Эта функция реализует защиту от path traversal атак и symlink attacks:
@@ -151,22 +258,11 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // ЗАПРЕТ СПЕЦИАЛЬНЫХ СИМВОЛОВ В ИМЕНИ ФАЙЛА
-    // Запрещаем символы, которые могут быть использованы для атак
-    if path.contains(['\0', '|', '&', ';', '$']) {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Специальные символы не разрешены в пути: {:?}", path),
-        ));
-    }
+    // Проверка длины пути
+    validate_path_length(path)?;
 
-    // ПРОВЕРКА МАКСИМАЛЬНОЙ ДЛИНЫ ПУТИ
-    if path.len() > 255 {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Путь слишком длинный (максимум 255 символов): {:?}", path),
-        ));
-    }
+    // Проверка символов в пути
+    validate_path_characters(path)?;
 
     // Получаем текущую директорию
     let current_dir = std::env::current_dir()
@@ -174,46 +270,10 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     let joined_path = current_dir.join(full_path);
 
     // ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК
-    // Используем symlink_metadata() для проверки symlink без следования по нему
-    // Это проверка выполняется ДО открытия файла для защиты от race condition
-    if let Ok(metadata) = std::fs::symlink_metadata(&joined_path) {
-        if metadata.file_type().is_symlink() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("Символические ссылки не разрешены: {:?}", path),
-            ));
-        }
-    }
+    validate_no_symlinks(&joined_path)?;
 
-    // Для существующих файлов - используем canonicalize()
-    // Для несуществующих (сохранение) - проверяем родительскую директорию
-    let canonical_path = if joined_path.exists() {
-        joined_path.canonicalize().map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("Неверный путь {:?}: {}", path, e),
-            )
-        })?
-    } else {
-        // Файл не существует - проверяем родительскую директорию
-        // Если родительской директории нет, используем текущую директорию
-        joined_path
-            .parent()
-            .and_then(|p| p.canonicalize().ok())
-            .unwrap_or_else(|| current_dir.clone())
-    };
-
-    // Проверяем, что resolved path находится внутри текущей директории
-    // Используем strip_prefix() для надёжной проверки
-    if canonical_path.strip_prefix(&current_dir).is_err() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!(
-                "Путь вне разрешённой директории (symlink attack detected): {:?}",
-                path
-            ),
-        ));
-    }
+    // Проверка, что путь внутри разрешённой директории
+    validate_path_within_directory(&joined_path, &current_dir)?;
 
     Ok(())
 }
