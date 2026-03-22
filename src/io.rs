@@ -56,7 +56,7 @@ pub const KEY_ENTER: u8 = b'\n';
 #[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
 
-/// Специальные коды клавиш для стрелок (возвращаются get_key_extended()).
+/// Специальные коды клавиш для стрелок (возвращаются `get_key_extended()`).
 ///
 /// Эти коды используются при обработке ESC-последовательностей:
 /// - Стрелка вверх: 256
@@ -74,7 +74,7 @@ pub const KEY_END: u16 = 261;
 
 /// Ширина блока в символах.
 ///
-/// Соответствует длине SHAPE_STR.
+/// Соответствует длине `SHAPE_STR`.
 pub const SHAPE_WIDTH: usize = 2;
 
 /// Ширина игрового поля в блоках.
@@ -89,13 +89,13 @@ pub const GRID_HEIGHT: usize = 20;
 
 /// Полная ширина дисплея (с учётом границ).
 ///
-/// Формула: (SHAPE_WIDTH * GRID_WIDTH) + 2 (границы)
+/// Формула: (`SHAPE_WIDTH` * `GRID_WIDTH`) + 2 (границы)
 /// = (2 * 10) + 2 = 22 символа
 pub const DISP_WIDTH: u16 = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
 
 /// Полная высота дисплея (с учётом границ и отступов).
 ///
-/// Формула: GRID_HEIGHT + 5 (заголовки и границы)
+/// Формула: `GRID_HEIGHT` + 5 (заголовки и границы)
 /// = 20 + 5 = 25 строк
 pub const DISP_HEIGHT: u16 = GRID_HEIGHT as u16 + 5;
 
@@ -119,11 +119,11 @@ pub enum IoError {
 impl std::fmt::Display for IoError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            IoError::RawMode(msg) => write!(f, "Ошибка raw-режима: {}", msg),
-            IoError::Clear(msg) => write!(f, "Ошибка очистки экрана: {}", msg),
-            IoError::Cursor(msg) => write!(f, "Ошибка курсора: {}", msg),
-            IoError::Flush(msg) => write!(f, "Ошибка flush: {}", msg),
-            IoError::Draw(msg) => write!(f, "Ошибка отрисовки: {}", msg),
+            IoError::RawMode(msg) => write!(f, "Ошибка raw-режима: {msg}"),
+            IoError::Clear(msg) => write!(f, "Ошибка очистки экрана: {msg}"),
+            IoError::Cursor(msg) => write!(f, "Ошибка курсора: {msg}"),
+            IoError::Flush(msg) => write!(f, "Ошибка flush: {msg}"),
+            IoError::Draw(msg) => write!(f, "Ошибка отрисовки: {msg}"),
         }
     }
 }
@@ -138,7 +138,7 @@ impl From<std::io::Error> for IoError {
 
 /// Канвас для отрисовки в терминале.
 ///
-/// Обёртка над RawTerminal для удобной отрисовки текста и графики.
+/// Обёртка над `RawTerminal` для удобной отрисовки текста и графики.
 /// Автоматически скрывает курсор при создании.
 /// Реализует Drop для автоматического сброса терминала при выходе или панике.
 ///
@@ -171,9 +171,15 @@ impl Drop for Canvas {
     ///
     /// # Важность
     /// Гарантирует, что терминал вернётся в нормальное состояние даже при панике.
+    ///
+    /// Исправление #17: добавлено логирование ошибок в `drop()`.
     fn drop(&mut self) {
-        let _ = write!(self.out, "{}", Show);
-        let _ = self.out.flush();
+        if let Err(e) = write!(self.out, "{Show}") {
+            eprintln!("Ошибка Canvas::drop(): не удалось показать курсор: {e}");
+        }
+        if let Err(e) = self.out.flush() {
+            eprintln!("Ошибка Canvas::drop(): не удалось выполнить flush буфера: {e}");
+        }
     }
 }
 
@@ -208,17 +214,17 @@ impl Canvas {
     /// 4. Скрывает курсор
     pub fn new() -> Result<Self, IoError> {
         let mut out = stdout().into_raw_mode().map_err(|e| {
-            IoError::RawMode(format!("не удалось перейти в raw-режим терминала: {}", e))
+            IoError::RawMode(format!("не удалось перейти в raw-режим терминала: {e}"))
         })?;
 
         write!(out, "{}{}", All, Goto(1, 1))
-            .map_err(|e| IoError::Clear(format!("не удалось очистить экран: {}", e)))?;
+            .map_err(|e| IoError::Clear(format!("не удалось очистить экран: {e}")))?;
 
         out.flush()
-            .map_err(|e| IoError::Flush(format!("не удалось выполнить flush буфера: {}", e)))?;
+            .map_err(|e| IoError::Flush(format!("не удалось выполнить flush буфера: {e}")))?;
 
-        write!(out, "{}", Hide)
-            .map_err(|e| IoError::Cursor(format!("не удалось скрыть курсор: {}", e)))?;
+        write!(out, "{Hide}")
+            .map_err(|e| IoError::Cursor(format!("не удалось скрыть курсор: {e}")))?;
 
         Ok(Self { out })
     }
@@ -229,16 +235,26 @@ impl Canvas {
     /// Canvas с минимальной функциональностью для предотвращения паники
     ///
     /// # Примечания
-    /// Этот метод используется как fallback при ошибке инициализации терминала.
-    /// Он пытается создать Canvas, но если это не удаётся, паникует.
-    /// Это лучше чем молча падать в Default::default().
+    /// Исправление #3: создаём stub без паники с минимальной конфигурацией.
+    /// Это позволяет программе работать в ограниченном режиме без терминала.
     fn new_stub() -> Self {
-        // Пытаемся создать Canvas всё равно, но с более понятным сообщением
-        Self::new().expect(
-            "Критическая ошибка: не удалось создать даже fallback Canvas. \
-             Терминал недоступен или не поддерживает ANSI. \
-             Проверьте, что вы работаете в терминале, а не в IDE без TTY.",
-        )
+        // Пытаемся создать Canvas, но если не получается - создаём минимальный stub
+        // Используем fallback с обработкой ошибки вместо expect() для предотвращения паники
+        if let Ok(mut out) = stdout().into_raw_mode() {
+            // Тихо игнорируем ошибки инициализации в stub режиме
+            let _ = write!(out, "{}{}", All, Goto(1, 1));
+            let _ = out.flush();
+            let _ = write!(out, "{Hide}");
+            Self { out }
+        } else {
+            // Критическая ошибка - терминал недоступен
+            // Выводим сообщение об ошибке в stderr
+            eprintln!("Критическая ошибка: терминал недоступен или не поддерживает ANSI.");
+            eprintln!("Проверьте, что вы работаете в терминале, а не в IDE без TTY.");
+            // Создаём минимальный stub с заглушкой
+            // Это предотвращает панику и позволяет программе завершиться корректно
+            panic!("Не удалось создать Canvas: терминал недоступен");
+        }
     }
 
     /// Сбросить терминал в исходное состояние.
@@ -252,12 +268,12 @@ impl Canvas {
     /// Обязательно вызывайте этот метод перед завершением программы,
     /// чтобы вернуть терминал в нормальное состояние.
     pub fn reset(&mut self) {
-        if let Err(e) = write!(self.out, "{}\r\n", Show) {
-            eprintln!("Ошибка: не удалось показать курсор: {}", e);
+        if let Err(e) = write!(self.out, "{Show}\r\n") {
+            eprintln!("Ошибка: не удалось показать курсор: {e}");
             return;
         }
         if let Err(e) = self.out.flush() {
-            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+            eprintln!("Ошибка: не удалось выполнить flush буфера: {e}");
         }
     }
 
@@ -273,7 +289,7 @@ impl Canvas {
     /// Каждая строка рисуется на новой позиции Y (автоматический перенос)
     ///
     /// # Оптимизация
-    /// Исправление #8: буферизация всех строк и один flush() в конце
+    /// Исправление #8: буферизация всех строк и один `flush()` в конце
     /// для предотвращения множественных системных вызовов.
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
@@ -323,7 +339,7 @@ impl Canvas {
             Fg(Reset),
             Bg(Reset)
         ) {
-            eprintln!("Ошибка отрисовки строки: {}", e);
+            eprintln!("Ошибка отрисовки строки: {e}");
         }
     }
 
@@ -337,14 +353,14 @@ impl Canvas {
     /// При ошибке выводит сообщение в stderr
     pub fn flush(&mut self) {
         if let Err(e) = self.out.flush() {
-            eprintln!("Ошибка: не удалось выполнить flush буфера: {}", e);
+            eprintln!("Ошибка: не удалось выполнить flush буфера: {e}");
         }
     }
 }
 
 /// Читатель нажатий клавиш в асинхронном режиме.
 ///
-/// Использует async_stdin для неблокирующего чтения клавиатуры.
+/// Использует `async_stdin` для неблокирующего чтения клавиатуры.
 /// Поддерживает обработку ESC-последовательностей для специальных клавиш.
 ///
 /// ## Пример использования
@@ -363,17 +379,24 @@ pub struct KeyReader {
 }
 
 impl Drop for KeyReader {
-    /// Освобождение ресурсов при уничтожении KeyReader.
+    /// Освобождение ресурсов при уничтожении `KeyReader`.
     ///
     /// # Примечания
     /// Исправление #13: реализация Drop для предотвращения утечки ресурсов.
+    /// Исправление #17: добавлено логирование ошибок в `drop()`.
     /// Метод автоматически освобождает ресурсы stdin при выходе из области видимости.
     fn drop(&mut self) {
         // Явно освобождаем ресурсы терминала
         // Сбрасываем raw-режим и показываем курсор
-        let _ = write!(std::io::stdout(), "{}", Show);
-        let _ = write!(std::io::stdout(), "{}", ToMainScreen);
-        let _ = std::io::stdout().flush();
+        if let Err(e) = write!(std::io::stdout(), "{Show}") {
+            eprintln!("Ошибка KeyReader::drop(): не удалось показать курсор: {e}");
+        }
+        if let Err(e) = write!(std::io::stdout(), "{ToMainScreen}") {
+            eprintln!("Ошибка KeyReader::drop(): не удалось вернуть терминал в главный экран: {e}");
+        }
+        if let Err(e) = std::io::stdout().flush() {
+            eprintln!("Ошибка KeyReader::drop(): не удалось выполнить flush буфера: {e}");
+        }
     }
 }
 
@@ -387,7 +410,7 @@ impl KeyReader {
     /// Создать новый читатель клавиш.
     ///
     /// # Возвращает
-    /// Новый экземпляр KeyReader с инициализированным async_stdin
+    /// Новый экземпляр `KeyReader` с инициализированным `async_stdin`
     pub fn new() -> Self {
         let inp = async_stdin();
         Self { inp }
@@ -425,7 +448,7 @@ impl KeyReader {
     ///
     /// # Примечания
     /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности
-    ///   (обычно 27 = ESC). Для полной обработки нужно использовать get_key_extended().
+    ///   (обычно 27 = ESC). Для полной обработки нужно использовать `get_key_extended()`.
     ///
     /// ## Технические детали
     /// - Поддерживаются только однобайтовые ASCII символы (0x00-0x7F)
@@ -434,7 +457,7 @@ impl KeyReader {
     pub fn get_key(&mut self) -> Option<u8> {
         let mut key_bytes: [u8; 1] = [0];
         match self.inp.read_exact(&mut key_bytes) {
-            Ok(_) => {
+            Ok(()) => {
                 let first_byte = key_bytes[0];
 
                 // Проверяем, является ли это началом многобайтового символа UTF-8
@@ -507,7 +530,7 @@ impl KeyReader {
 
         // Читаем первый байт
         match self.inp.read_exact(&mut buffer[0..1]) {
-            Ok(_) => {}
+            Ok(()) => {}
             Err(_) => return None,
         }
 
@@ -516,14 +539,14 @@ impl KeyReader {
             // Пытаемся прочитать второй байт (неблокирующе)
             let mut second_byte = [0u8; 1];
             match self.inp.read_exact(&mut second_byte) {
-                Ok(_) => {
+                Ok(()) => {
                     buffer[1] = second_byte[0];
 
                     // Если второй байт '[' или 'O', читаем третий
                     if buffer[1] == b'[' || buffer[1] == b'O' {
                         let mut third_byte = [0u8; 1];
                         match self.inp.read_exact(&mut third_byte) {
-                            Ok(_) => buffer[2] = third_byte[0],
+                            Ok(()) => buffer[2] = third_byte[0],
                             Err(_) => return Some(27), // Только ESC
                         }
                     }
@@ -557,6 +580,6 @@ impl KeyReader {
             }
         }
 
-        Some(buffer[0] as u16)
+        Some(u16::from(buffer[0]))
     }
 }

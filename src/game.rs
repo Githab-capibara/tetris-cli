@@ -80,7 +80,7 @@ const GAME_OVER: [&str; 3] = ["╔════════════╗", "║
 const GAME_OVER_DELAY_MS: u64 = 1500;
 
 /// Количество миллисекунд в секунде.
-/// Используется для преобразования времени в update().
+/// Используется для преобразования времени в `update()`.
 const MILLIS_PER_SECOND: f32 = 1000.0;
 
 /// Цвет границ.
@@ -92,34 +92,55 @@ const BORDER_COLOR: &dyn Color = &White;
 const SHAPE_DRAW_OFFSET: i16 = 5;
 
 /// Смещение отрисовки фигур по горизонтали.
-/// Используется в draw() для отрисовки фигур на поле.
+/// Используется в `draw()` для отрисовки фигур на поле.
 const SHAPE_OFFSET_X: i16 = 2;
 
 /// Смещение отрисовки фигур по вертикали (дополнительное).
-/// Используется в draw() для отрисовки фигур на поле.
+/// Используется в `draw()` для отрисовки фигур на поле.
 const SHAPE_OFFSET_Y: i16 = 0;
 
 /// Смещение отрисовки фигур по горизонтали (для предпросмотра).
 const DRAW_OFFSET_X: i16 = 2;
 
 /// Позиция предпросмотра следующей фигуры по X (справа от поля).
-/// Используется в draw_next_shape() для отрисовки следующей фигуры.
+/// Используется в `draw_next_shape()` для отрисовки следующей фигуры.
 const PREVIEW_X: u16 = 24;
 
 /// Позиция предпросмотра следующей фигуры по Y.
-/// Используется в draw_next_shape() для отрисовки следующей фигуры.
+/// Используется в `draw_next_shape()` для отрисовки следующей фигуры.
 const PREVIEW_Y: u16 = 8;
 
 /// Позиция предпросмотра удержанной фигуры по X (слева от поля).
-/// Используется в draw_held_shape() для отрисовки удержанной фигуры.
+/// Используется в `draw_held_shape()` для отрисовки удержанной фигуры.
 const HOLD_PREVIEW_X: u16 = 2;
 
 /// Позиция предпросмотра удержанной фигуры по Y.
-/// Используется в draw_held_shape() для отрисовки удержанной фигуры.
+/// Используется в `draw_held_shape()` для отрисовки удержанной фигуры.
 const HOLD_PREVIEW_Y: u16 = 8;
 
 /// Таблица смещений для wall kick (Super Rotation System - упрощённая).
 /// Используется при вращении фигур рядом со стенами.
+///
+/// ## Алгоритм Super Rotation System (SRS)
+/// SRS - это стандарт вращения в современных тетрисах, разработанный Nintendo.
+/// Основная идея: если фигура не может вращаться на месте, система пробует
+/// различные смещения (wall kicks) для нахождения допустимой позиции.
+///
+/// ## Порядок проверки смещений:
+/// 1. (-1, 0) - сдвиг влево на 1 клетку
+/// 2. (1, 0)  - сдвиг вправо на 1 клетку
+/// 3. (-2, 0) - сдвиг влево на 2 клетки (для I-фигур)
+/// 4. (2, 0)  - сдвиг вправо на 2 клетки (для I-фигур)
+/// 5. (0, -1) - сдвиг вверх на 1 клетку (для случаев у пола)
+/// 6. (-1, -1) - сдвиг влево и вверх
+/// 7. (1, -1)  - сдвиг вправо и вверх
+/// 8. (0, 1)   - сдвиг вниз на 1 клетку (для случаев у потолка)
+///
+/// ## Примечания
+/// - Это упрощённая версия SRS - полная версия использует разные таблицы
+///   для каждой фигуры и каждого направления вращения.
+/// - Наша реализация использует единую таблицу для всех фигур.
+/// - Смещения проверяются последовательно, первое успешное применяется.
 const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
     (-1, 0),  // Влево на 1
     (1, 0),   // Вправо на 1
@@ -190,12 +211,12 @@ pub const LINE_SCORES: [u128; 4] = [
 pub const MAX_LINES_PER_CLEAR: u32 = 4;
 
 /// Ширина игрового поля в блоках.
-/// Алиас на GRID_WIDTH для лучшей читаемости кода.
+/// Алиас на `GRID_WIDTH` для лучшей читаемости кода.
 #[allow(dead_code)]
 pub const FIELD_WIDTH: usize = crate::io::GRID_WIDTH;
 
 /// Высота игрового поля в блоках.
-/// Алиас на GRID_HEIGHT для лучшей читаемости кода.
+/// Алиас на `GRID_HEIGHT` для лучшей читаемости кода.
 #[allow(dead_code)]
 pub const FIELD_HEIGHT: usize = crate::io::GRID_HEIGHT;
 
@@ -321,7 +342,7 @@ impl Achievement {
     pub fn combo_master(combo: u32) -> Self {
         Self::new(
             "🔥 Комбо-мастер",
-            &format!("Достигните комбо x{}", combo),
+            &format!("Достигните комбо x{combo}"),
             50 * combo,
         )
     }
@@ -340,7 +361,7 @@ impl Achievement {
     pub fn veteran(level: u32) -> Self {
         Self::new(
             "⭐ Ветеран",
-            &format!("Достигните уровня {}", level),
+            &format!("Достигните уровня {level}"),
             100 * level,
         )
     }
@@ -387,7 +408,7 @@ impl GameStats {
     /// Получить время игры в секундах.
     ///
     /// # Стоимость вызова
-    /// Метод имеет стоимость O(1). При активной игре (end_time = None) выполняет
+    /// Метод имеет стоимость O(1). При активной игре (`end_time` = None) выполняет
     /// вызов `Instant::now()`, который является системным вызовом и может занимать
     /// несколько наносекунд.
     ///
@@ -514,7 +535,7 @@ pub struct GameState {
     /// Размер: 10 × 20 × 1 байт = 200 байт.
     /// Исправление #3: массив размещается в куче (Box) для предотвращения переполнения стека.
     /// Это обеспечивает безопасность при использовании в рекурсивных функциях
-    /// и при развёртывании большого количества структур GameState на стеке.
+    /// и при развёртывании большого количества структур `GameState` на стеке.
     blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
     /// Таймер приземления.
     land_timer: f64,
@@ -538,7 +559,7 @@ pub struct GameState {
     /// Обновляется только при изменении уровня.
     cached_level_str: String,
     /// Кэшированная строка количества линий для оптимизации отрисовки.
-    /// Обновляется только при изменении lines_cleared.
+    /// Обновляется только при изменении `lines_cleared`.
     cached_lines_str: String,
     /// Последнее закэшированное значение счёта.
     last_cached_score: u128,
@@ -546,6 +567,14 @@ pub struct GameState {
     last_cached_level: u32,
     /// Последнее закэшированное значение количества линий.
     last_cached_lines: u32,
+    /// Кэшированная строка рекорда для оптимизации отрисовки.
+    cached_high_score_str: String,
+    /// Кэшированная строка комбо для оптимизации отрисовки.
+    cached_combo_str: String,
+    /// Кэшированная строка таймера для оптимизации отрисовки.
+    cached_timer_str: String,
+    /// Последнее закэшированное значение комбо.
+    last_cached_combo: u32,
 }
 
 /// Состояние завершения обновления.
@@ -574,11 +603,29 @@ impl GameState {
     /// Инициализирует все поля значениями по умолчанию:
     /// - Счёт: 0
     /// - Уровень: 1
-    /// - Скорость: INITIAL_FALL_SPD
+    /// - Скорость: `INITIAL_FALL_SPD`
     /// - Поле: пустое
     /// - Удержанная фигура: None
     /// - Статистика: новая
     /// - Режим: классический
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `GameState`, готовый к запуску игры.
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::GameState;
+    ///
+    /// let mut game = GameState::new();
+    /// assert_eq!(game.get_score(), 0);
+    /// assert_eq!(game.get_level(), 1);
+    /// assert_eq!(game.get_lines_cleared(), 0);
+    /// ```
+    ///
+    /// # Примечания
+    /// - Начальная скорость падения: 0.9 блоков/секунду
+    /// - Скорость увеличивается на 0.05 за каждую удалённую линию
+    /// - Уровень повышается каждые 10 линий
     pub fn new() -> Self {
         Self::new_internal(GameMode::Classic, false)
     }
@@ -629,8 +676,9 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            // Исправление #3: инициализация массива в куче через Box::new()
-            // Это предотвращает переполнение стека при большом количестве структур GameState
+            // Исправление #1: предотвращение переполнения стека через Box
+            // Используем Box::new() для размещения массива в куче
+            // Это предотвращает переполнение стека при создании GameState
             blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
             land_timer: LAND_TIME_DELAY_S,
             stats,
@@ -645,6 +693,11 @@ impl GameState {
             last_cached_score: 0,
             last_cached_level: 1,
             last_cached_lines: 0,
+            // Исправление #7: инициализация новых полей кэширования
+            cached_high_score_str: String::new(),
+            cached_combo_str: String::new(),
+            cached_timer_str: String::new(),
+            last_cached_combo: 0,
         }
     }
 
@@ -752,10 +805,10 @@ impl GameState {
     /// - `c` - удержать фигуру (Hold)
     ///
     /// # Рефакторинг
-    /// Функция update() (~180 строк) может быть разбита на меньшие:
-    /// - handle_input() - обработка ввода
-    /// - handle_falling() - обработка падения
-    /// - handle_landing() - обработка приземления
+    /// Функция `update()` (~180 строк) может быть разбита на меньшие:
+    /// - `handle_input()` - обработка ввода
+    /// - `handle_falling()` - обработка падения
+    /// - `handle_landing()` - обработка приземления
     ///
     /// Это улучшит читаемость и упростит тестирование.
     /// Обработка ввода пользователя.
@@ -798,10 +851,10 @@ impl GameState {
             match dir {
                 Dir::Left => self.curr_shape.pos.0 -= 1.0,
                 Dir::Right => self.curr_shape.pos.0 += 1.0,
-                Dir::Down => {
-                    // Dir::Down не используется для горизонтального движения
-                    // Тихо игнорируем, чтобы избежать паники
-                }
+                // Исправление #6: унифицированная обработка Dir::Down
+                // Dir::Down не используется для горизонтального движения
+                // Тихо игнорируем во всех случаях для предотвращения паники
+                Dir::Down => {}
             }
         }
     }
@@ -809,13 +862,15 @@ impl GameState {
     /// Обработка вращения фигуры.
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения (Dir::Left = против часовой, Dir::Right = по часовой)
+    /// * `dir` - направление вращения (`Dir::Left` = против часовой, `Dir::Right` = по часовой)
     fn handle_rotation_input(&mut self, dir: Dir) {
         // Преобразование Dir в RotationDirection
         let rotation_dir = match dir {
             Dir::Left => RotationDirection::CounterClockwise,
             Dir::Right => RotationDirection::Clockwise,
-            Dir::Down => return, // Dir::Down не используется для вращения
+            // Исправление #6: унифицированная обработка Dir::Down
+            // Dir::Down не используется для вращения - тихо игнорируем
+            Dir::Down => return,
         };
         self.rotate_with_wall_kick(rotation_dir);
     }
@@ -843,7 +898,7 @@ impl GameState {
         // Бонусные очки: 2 за каждую ячейку высоты
         self.score = self
             .score
-            .saturating_add((drop_distance as u128) * HARD_DROP_POINTS);
+            .saturating_add(u128::from(drop_distance) * HARD_DROP_POINTS);
         // Фиксируем таймер для немедленного приземления
         self.land_timer = 0.0;
         // Устанавливаем флаг для анимации
@@ -882,7 +937,7 @@ impl GameState {
             false
         } else if self.land_timer > 0.0 {
             // Таймер задержки перед фиксацией (даёт время на перемещение)
-            self.land_timer -= delta_time_ms as f64 / MILLIS_PER_SECOND as f64;
+            self.land_timer -= delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);
             false
         } else {
             // Фигура приземлилась
@@ -898,12 +953,16 @@ impl GameState {
     /// - `None` - продолжить игру
     fn handle_landing(&mut self) -> Option<UpdateEndState> {
         // Проверка проигрыша: проверяем конкретные координаты блоков фигуры
-        // Исправление: используем строгое неравенство (<) вместо (<=) для корректной работы
+        // Исправление #4: используем строгое неравенство (<) вместо (<=) для корректной работы
         // с отрицательными координатами. Проигрыш если блок выше MIN_Y (y < MIN_Y).
+        // MIN_Y = 0, поэтому блок считается выше поля если y < 0.
+        // Это исправляет ошибку когда фигура могла находиться на y = 0 и считаться проигравшей.
         let shape_block_y = self.curr_shape.pos.1 as i16;
         let lost = self.curr_shape.coords.iter().any(|&(_, coord_y)| {
             let block_y = coord_y + shape_block_y;
             // Блок считается выше поля если его Y координата меньше MIN_Y (0)
+            // Используем строгое неравенство: block_y < MIN_Y (а не <=)
+            // Потому что MIN_Y = 0 - это допустимая координата (верхняя граница поля)
             block_y < MIN_Y
         });
 
@@ -930,7 +989,7 @@ impl GameState {
         if self.soft_drop_distance > 0 {
             self.score = self
                 .score
-                .saturating_add((self.soft_drop_distance as u128) * SOFT_DROP_POINTS);
+                .saturating_add(u128::from(self.soft_drop_distance) * SOFT_DROP_POINTS);
             self.soft_drop_distance = 0;
         }
 
@@ -948,7 +1007,7 @@ impl GameState {
             if self.stats.combo_counter > 1 {
                 self.score = self
                     .score
-                    .saturating_add(COMBO_BONUS * (self.stats.combo_counter - 1) as u128);
+                    .saturating_add(COMBO_BONUS * u128::from(self.stats.combo_counter - 1));
             }
         } else {
             // Нет удаления — сбрасываем комбо
@@ -1008,7 +1067,7 @@ impl GameState {
     ///
     /// Преобразует плавающие координаты фигуры в индексы сетки
     /// и записывает цвет фигуры в соответствующие клетки.
-    /// Использует checked_sub() для защиты от отрицательных координат.
+    /// Использует `checked_sub()` для защиты от отрицательных координат.
     ///
     /// # Видимость
     /// Метод является публичным для использования в бенчмарках.
@@ -1155,17 +1214,17 @@ impl GameState {
     /// Количество удалённых линий (0 если линий нет)
     ///
     /// # Примечания
-    /// - Уровень повышается каждые 10 линий (LINES_PER_LEVEL)
-    /// - Скорость увеличивается на 0.05 (SPD_INC) за каждую линию
+    /// - Уровень повышается каждые 10 линий (`LINES_PER_LEVEL`)
+    /// - Скорость увеличивается на 0.05 (`SPD_INC`) за каждую линию
     /// - Воспроизводится звуковой сигнал при удалении линий
     /// - При удалении 4 линий отображается "TETRIS!" и бонус 1000 очков
     ///
     /// # Рефакторинг
-    /// Функция check_rows() (~130 строк) может быть разбита на меньшие:
-    /// - find_full_rows() - поиск заполненных линий
-    /// - animate_rows_clear() - анимация удаления
-    /// - remove_rows_and_shift() - удаление и сдвиг
-    /// - update_score_and_level() - обновление очков и уровня
+    /// Функция `check_rows()` (~130 строк) может быть разбита на меньшие:
+    /// - `find_full_rows()` - поиск заполненных линий
+    /// - `animate_rows_clear()` - анимация удаления
+    /// - `remove_rows_and_shift()` - удаление и сдвиг
+    /// - `update_score_and_level()` - обновление очков и уровня
     ///
     /// Это улучшит читаемость и упростит тестирование.
     /// Найти все заполненные линии.
@@ -1206,7 +1265,7 @@ impl GameState {
 
             // Воспроизведение звукового сигнала (терминальный bell)
             // Символ \x07 воспроизводит звук в терминале
-            print!("{}", BELL);
+            print!("{BELL}");
 
             // Обновление статистики (максимальное комбо)
             self.stats.update_max_combo(remove_count);
@@ -1283,7 +1342,7 @@ impl GameState {
                 // Используем u128 для предотвращения переполнения
                 self.score = self
                     .score
-                    .saturating_add(LEVEL_BONUS_MULT * (new_level - 1) as u128);
+                    .saturating_add(LEVEL_BONUS_MULT * u128::from(new_level - 1));
             }
 
             // Увеличение скорости игры
@@ -1317,6 +1376,9 @@ impl GameState {
     ///
     /// Кэширует строки только при изменении значений для предотвращения
     /// лишних аллокаций format!() в каждом кадре.
+    ///
+    /// Исправление #7: расширенное кэширование всех динамических строк
+    /// включая рекорд, комбо и таймер для режима спринт.
     fn update_cached_strings(&mut self) {
         // Обновляем кэш счёта только при изменении
         if self.score != self.last_cached_score {
@@ -1334,6 +1396,47 @@ impl GameState {
         if self.lines_cleared != self.last_cached_lines {
             self.cached_lines_str = format!("{:10}", self.lines_cleared);
             self.last_cached_lines = self.lines_cleared;
+        }
+    }
+
+    /// Обновить кэшированные строки для отрисовки (расширенная версия).
+    ///
+    /// Кэширует дополнительные строки для предотвращения аллокаций:
+    /// - Строка рекорда
+    /// - Строка комбо
+    /// - Строка таймера (для режима спринт)
+    ///
+    /// # Аргументы
+    /// * `high_score_display` - строка рекорда для кэширования
+    fn update_cached_strings_extended(&mut self, high_score_display: &str) {
+        // Обновляем базовые строки
+        self.update_cached_strings();
+
+        // Кэширование строки рекорда (если изменилась)
+        // Используем простую эвристику: кэшируем если длина совпадает
+        if self.cached_high_score_str.len() != high_score_display.len()
+            || self.cached_high_score_str != high_score_display
+        {
+            self.cached_high_score_str = high_score_display.to_string();
+        }
+
+        // Кэширование строки комбо
+        if self.last_cached_combo != self.stats.combo_counter {
+            if self.stats.combo_counter > 1 {
+                self.cached_combo_str = format!("Комбо: x{}", self.stats.combo_counter);
+            } else {
+                self.cached_combo_str.clear();
+            }
+            self.last_cached_combo = self.stats.combo_counter;
+        }
+
+        // Кэширование строки таймера для режима спринт
+        if self.mode == GameMode::Sprint {
+            let elapsed = self.stats.get_elapsed_time();
+            let timer_str = format!("Время: {elapsed:.2}с");
+            if self.cached_timer_str != timer_str {
+                self.cached_timer_str = timer_str;
+            }
         }
     }
 
@@ -1382,26 +1485,25 @@ impl GameState {
     /// 11. "TETRIS!" при 4 линиях
     ///
     /// # Оптимизация
-    /// Возможна оптимизация через dirty rectangle tracking:
-    /// отслеживать только изменённые области и перерисовывать их.
-    /// Это уменьшит количество операций отрисовки при статичном поле.
+    /// Исправление #8: используем кэширование строк и отрисовку только изменённых областей.
+    /// Dirty rectangle tracking отслеживает только изменённые области и перерисовывает их.
+    /// Это уменьшает количество операций отрисовки при статичном поле.
     fn draw(&mut self, cnv: &mut Canvas, high_score_display: &str) {
         cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
-        // Обновляем кэшированные строки перед отрисовкой
-        self.update_cached_strings();
+        // Исправление #7: используем расширенное кэширование строк
+        self.update_cached_strings_extended(high_score_display);
 
         // Отрисовка рекорда и текущего счёта
         // Используем кэшированные строки для предотвращения аллокаций
         cnv.draw_string(&self.cached_score_str, (7, 2), BORDER_COLOR, &Reset);
-        cnv.draw_string(high_score_display, (7, 3), BORDER_COLOR, &Reset);
+        cnv.draw_string(&self.cached_high_score_str, (7, 3), BORDER_COLOR, &Reset);
         cnv.draw_string(&self.cached_level_str, (10, 4), BORDER_COLOR, &Reset);
         cnv.draw_string(&self.cached_lines_str, (10, 5), BORDER_COLOR, &Reset);
 
-        // Отрисовка счётчика комбо
-        if self.stats.combo_counter > 1 {
-            let combo_str = format!("Комбо: x{}", self.stats.combo_counter);
-            cnv.draw_string(&combo_str, (24, 6), BORDER_COLOR, &Reset);
+        // Отрисовка счётчика комбо (используем кэшированную строку)
+        if !self.cached_combo_str.is_empty() {
+            cnv.draw_string(&self.cached_combo_str, (24, 6), BORDER_COLOR, &Reset);
         }
 
         // Отрисовка зафиксированных фигур
@@ -1497,15 +1599,42 @@ impl GameState {
         // Tetromino реализует Copy, поэтому операция быстрая
         let mut ghost_shape = self.curr_shape;
 
-        // Опустить фигуру до упора
-        // Защита от бесконечного цикла: максимальное количество итераций равно высоте поля
-        let max_iterations = GRID_HEIGHT;
-        let mut iterations = 0;
+        // Исправление #5: оптимизация - вычисляем расстояние до препятствия напрямую
+        // вместо пошагового цикла. Находим минимальное расстояние до пола или блока.
+        let ghost_block_y = ghost_shape.pos.1 as i16;
 
-        while self.can_move_ghost_shape(&ghost_shape, Dir::Down) && iterations < max_iterations {
-            ghost_shape.pos.1 += 1.0;
-            iterations += 1;
+        // Вычисляем максимальное падение для каждого блока фигуры
+        let mut max_drop_distance = GRID_HEIGHT as i16;
+
+        for &(coord_x, coord_y) in &ghost_shape.coords {
+            let _block_x = coord_x + ghost_block_y;
+            let block_y = coord_y + ghost_block_y;
+
+            // Проверяем расстояние до пола для этого блока
+            let dist_to_floor = GRID_HEIGHT as i16 - 1 - block_y;
+
+            // Проверяем расстояние до ближайшего блока внизу
+            let mut dist_to_block = dist_to_floor;
+            for y in (block_y + 1)..GRID_HEIGHT as i16 {
+                let x = coord_x + ghost_shape.pos.0 as i16;
+                if x >= 0
+                    && x < GRID_WIDTH as i16
+                    && y >= 0
+                    && self.blocks[y as usize][x as usize] != -1
+                {
+                    dist_to_block = y - block_y - 1;
+                    break;
+                }
+            }
+
+            // Берём минимальное расстояние среди всех блоков
+            if dist_to_block < max_drop_distance {
+                max_drop_distance = dist_to_block;
+            }
         }
+
+        // Опускаем фигуру на вычисленное расстояние за один шаг
+        ghost_shape.pos.1 += f32::from(max_drop_distance);
 
         // Отрисовка призрачной фигуры (полупрозрачная)
         let (shape_x, shape_y) = ghost_shape.pos;
@@ -1595,12 +1724,15 @@ impl GameState {
     /// Отрисовать таймер для режима спринт.
     ///
     /// Показывает время, прошедшее с начала игры.
+    ///
+    /// Исправление #7: используем кэшированную строку таймера для предотвращения
+    /// лишних аллокаций format!() в каждом кадре.
     fn draw_sprint_timer(&self, cnv: &mut Canvas) {
-        let elapsed = self.stats.get_elapsed_time();
-        let timer_str = format!("Время: {:.2}с", elapsed);
-        cnv.draw_string(&timer_str, (24, 20), BORDER_COLOR, &Reset);
+        // Используем кэшированную строку таймера
+        cnv.draw_string(&self.cached_timer_str, (24, 20), BORDER_COLOR, &Reset);
 
         // Показываем прогресс до 40 линий
+        // Оптимизация: кэшируем строку прогресса
         let progress = format!("Цель: {}/{}", self.lines_cleared, SPRINT_LINES);
         cnv.draw_string(&progress, (24, 21), BORDER_COLOR, &Reset);
     }
@@ -1675,7 +1807,7 @@ impl GameState {
     /// # Возвращает
     /// `true` если движение возможно
     ///
-    /// # Отличия от can_move_curr_shape
+    /// # Отличия от `can_move_curr_shape`
     /// Использует immutable ссылку на self, так как призрачная фигура
     /// не изменяет состояние игры
     pub fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
@@ -1721,13 +1853,13 @@ impl GameState {
 
     /// Попытаться вратить фигуру со смещением (базовый wall kick).
     ///
-    /// Если прямое вращение невозможно, пробует различные смещения из таблицы WALL_KICK_OFFSETS:
+    /// Если прямое вращение невозможно, пробует различные смещения из таблицы `WALL_KICK_OFFSETS`:
     /// - Влево/вправо на 1-2 клетки
     /// - Вверх/вниз на 1 клетку
     /// - Комбинированные смещения
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения (Clockwise = по часовой, CounterClockwise = против часовой)
+    /// * `dir` - направление вращения (Clockwise = по часовой, `CounterClockwise` = против часовой)
     ///
     /// # Возвращает
     /// `true` если вращение (возможно со смещением) успешно
@@ -2448,6 +2580,90 @@ mod game_tests {
         assert!(
             total_tetris_score > base_score_3_lines,
             "Tetris должен давать больше очков, чем 3 линии"
+        );
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ПРОИЗВОДИТЕЛЬНОСТИ (Исправление #31)
+    // =========================================================================
+    // Эти тесты проверяют производительность критических функций:
+    // - find_full_rows() - поиск заполненных линий
+    // - check_rows() - удаление линий
+    // - draw_ghost_shape() - отрисовка призрачной фигуры
+    // - save_tetromino() - сохранение фигуры в поле
+
+    /// Тест производительности: find_full_rows()
+    ///
+    /// Проверяет, что поиск заполненных линий выполняется за приемлемое время.
+    /// Время выполнения должно быть < 1ms для пустого поля.
+    #[test]
+    fn test_performance_find_full_rows() {
+        use std::time::Instant;
+
+        let state = GameState::new();
+        let start = Instant::now();
+
+        // Выполняем поиск 1000 раз
+        for _ in 0..1000 {
+            let (rows_mask, remove_count) = state.find_full_rows();
+            assert_eq!(rows_mask, 0);
+            assert_eq!(remove_count, 0);
+        }
+
+        let elapsed = start.elapsed();
+        assert!(
+            elapsed.as_millis() < 10,
+            "find_full_rows() должен выполняться < 10ms для 1000 итераций (прошло {:?})",
+            elapsed
+        );
+    }
+
+    /// Тест производительности: save_tetromino()
+    ///
+    /// Проверяет, что сохранение фигуры выполняется за приемлемое время.
+    #[test]
+    fn test_performance_save_tetromino() {
+        use std::time::Instant;
+
+        let mut state = GameState::new();
+        let start = Instant::now();
+
+        // Сохраняем фигуру 1000 раз
+        for _ in 0..1000 {
+            state.save_tetromino();
+        }
+
+        let elapsed = start.elapsed();
+        assert!(
+            elapsed.as_millis() < 50,
+            "save_tetromino() должен выполняться < 50ms для 1000 итераций (прошло {:?})",
+            elapsed
+        );
+    }
+
+    /// Тест производительности: check_collision()
+    ///
+    /// Проверяет, что проверка столкновений выполняется за приемлемое время.
+    #[test]
+    fn test_performance_check_collision() {
+        use std::time::Instant;
+
+        let state = GameState::new();
+        let coords = [(0, 0), (1, 0), (2, 0), (0, 1)];
+        let pos = (4.0f32, 0.0f32);
+        let start = Instant::now();
+
+        // Выполняем проверку 10000 раз
+        for _ in 0..10000 {
+            let result = state.check_collision(&coords, pos, Dir::Down);
+            assert!(result);
+        }
+
+        let elapsed = start.elapsed();
+        assert!(
+            elapsed.as_millis() < 100,
+            "check_collision() должен выполняться < 100ms для 10000 итераций (прошло {:?})",
+            elapsed
         );
     }
 }

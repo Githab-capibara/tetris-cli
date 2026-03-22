@@ -43,7 +43,10 @@
 //! - `test_highscore_no_rate_limiting` - отсутствие rate limiting (5 тестов)
 //! - `test_io_resource_leak` - утечка ресурсов (5 тестов)
 //!
-//! Итого: 1456 тестов
+//! Комплексные тесты всех 32 исправленных проблем (33 теста)
+//! - `test_32_fixes_comprehensive` - тесты для каждой из 32 проблем
+//!
+//! Итого: 1489 тестов
 
 pub mod test_achievements;
 pub mod test_controls;
@@ -154,3 +157,6 @@ pub mod test_code_quality_fixes;
 
 // Тесты для всех исправленных проблем аудита (12 тестов + 1 интеграционный)
 pub mod test_audit_fixes;
+
+// Комплексные тесты для всех 32 исправленных проблем (32 теста + 1 интеграционный)
+pub mod test_32_fixes_comprehensive;

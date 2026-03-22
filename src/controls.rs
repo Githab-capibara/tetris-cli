@@ -118,10 +118,7 @@ fn validate_path_length(path: &str) -> io::Result<()> {
     if path.len() > MAX_PATH_LENGTH {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!(
-                "Путь слишком длинный (максимум {} символов): {:?}",
-                MAX_PATH_LENGTH, path
-            ),
+            format!("Путь слишком длинный (максимум {MAX_PATH_LENGTH} символов): {path:?}"),
         ));
     }
     Ok(())
@@ -142,7 +139,7 @@ fn validate_path_characters(path: &str) -> io::Result<()> {
     if path.contains(FORBIDDEN_CHARS) {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("Специальные символы не разрешены в пути: {:?}", path),
+            format!("Специальные символы не разрешены в пути: {path:?}"),
         ));
     }
     Ok(())
@@ -163,7 +160,7 @@ fn validate_no_symlinks(path: &Path) -> io::Result<()> {
         if metadata.file_type().is_symlink() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("Символические ссылки не разрешены: {:?}", path),
+                format!("Символические ссылки не разрешены: {path:?}"),
             ));
         }
     }
@@ -186,7 +183,7 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
         path.canonicalize().map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidInput,
-                format!("Неверный путь {:?}: {}", path, e),
+                format!("Неверный путь {path:?}: {e}"),
             )
         })?
     } else {
@@ -202,10 +199,7 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
     if canonical_path.strip_prefix(current_dir).is_err() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!(
-                "Путь вне разрешённой директории (symlink attack detected): {:?}",
-                path
-            ),
+            format!("Путь вне разрешённой директории (symlink attack detected): {path:?}"),
         ));
     }
     Ok(())
@@ -220,7 +214,7 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
 /// 4. Запрещает символические ссылки
 /// 5. Проверяет максимальную длину пути (255 символов)
 /// 6. Запрещает специальные символы в имени файла
-/// 7. Использует O_NOFOLLOW при открытии файлов для защиты от symlink атак
+/// 7. Использует `O_NOFOLLOW` при открытии файлов для защиты от symlink атак
 ///
 /// # Аргументы
 /// * `path` - путь для проверки
@@ -231,8 +225,8 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
 ///
 /// # Безопасность
 /// Защищает от symlink атак: символические ссылки запрещены.
-/// Проверка symlink_metadata() выполняется ДО валидации пути для предотвращения race condition.
-/// Использование O_NOFOLLOW предотвращает открытие symlink во время записи.
+/// Проверка `symlink_metadata()` выполняется ДО валидации пути для предотвращения race condition.
+/// Использование `O_NOFOLLOW` предотвращает открытие symlink во время записи.
 ///
 /// # Пример использования
 /// ```ignore
@@ -246,7 +240,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     if full_path.is_absolute() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("Абсолютные пути не разрешены: {:?}", path),
+            format!("Абсолютные пути не разрешены: {path:?}"),
         ));
     }
 
@@ -254,7 +248,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     if path.contains("..") {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("Path traversal не разрешён: {:?}", path),
+            format!("Path traversal не разрешён: {path:?}"),
         ));
     }
 
@@ -266,7 +260,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
 
     // Получаем текущую директорию
     let current_dir = std::env::current_dir()
-        .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {}", e)))?;
+        .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
     let joined_path = current_dir.join(full_path);
 
     // ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК
@@ -427,7 +421,7 @@ impl ControlsConfig {
         self
     }
 
-    /// Сравнить только клавиши управления (игнорируя hmac_key).
+    /// Сравнить только клавиши управления (игнорируя `hmac_key`).
     /// Используется в тестах для сравнения конфигураций.
     #[must_use]
     pub fn keys_match(&self, other: &Self) -> bool {
@@ -445,7 +439,7 @@ impl ControlsConfig {
     /// Сохранить конфигурацию в JSON файл.
     ///
     /// # Аргументы
-    /// * `path` - путь к файлу конфигурации (по умолчанию CONFIG_PATH)
+    /// * `path` - путь к файлу конфигурации (по умолчанию `CONFIG_PATH`)
     ///
     /// # Возвращает
     /// - `Ok(())` если сохранение успешно
@@ -461,7 +455,7 @@ impl ControlsConfig {
     /// # Безопасность
     /// - Генерируется новый HMAC ключ при каждом сохранении
     /// - Конфигурация подписывается HMAC-SHA256
-    /// - Используется O_NOFOLLOW для защиты от symlink атак
+    /// - Используется `O_NOFOLLOW` для защиты от symlink атак
     ///
     /// # Пример использования
     /// ```no_run
@@ -490,7 +484,7 @@ impl ControlsConfig {
 
         // Вычисляем HMAC подпись
         let config_json = serde_json::to_string(&config_inner)
-            .map_err(|e| io::Error::other(format!("Ошибка сериализации: {}", e)))?;
+            .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
         let hmac = compute_hmac(&config_inner.hmac_key, &config_json);
 
         // Создаём подписанную конфигурацию
@@ -518,7 +512,7 @@ impl ControlsConfig {
     /// Загрузить конфигурацию из JSON файла.
     ///
     /// # Аргументы
-    /// * `path` - путь к файлу конфигурации (по умолчанию CONFIG_PATH)
+    /// * `path` - путь к файлу конфигурации (по умолчанию `CONFIG_PATH`)
     ///
     /// # Возвращает
     /// - `Ok(ControlsConfig)` если загрузка успешна
@@ -534,7 +528,7 @@ impl ControlsConfig {
     ///
     /// # Безопасность
     /// - Проверяется HMAC подпись конфигурации
-    /// - Используется symlink_metadata() для защиты от symlink атак
+    /// - Используется `symlink_metadata()` для защиты от symlink атак
     ///
     /// # Пример использования
     /// ```no_run
@@ -548,16 +542,14 @@ impl ControlsConfig {
 
         // Проверяем, что файл не является symlink
         let joined_path = std::env::current_dir()
-            .map_err(|e| {
-                io::Error::other(format!("Не удалось получить текущую директорию: {}", e))
-            })?
+            .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?
             .join(path);
 
         if let Ok(metadata) = std::fs::symlink_metadata(&joined_path) {
             if metadata.file_type().is_symlink() {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
-                    format!("Символические ссылки не разрешены: {:?}", path),
+                    format!("Символические ссылки не разрешены: {path:?}"),
                 ));
             }
         }
@@ -658,7 +650,7 @@ impl ControlsConfig {
     /// * `quit` - клавиша выхода
     ///
     /// # Возвращает
-    /// Новый экземпляр ControlsConfig с заданными значениями
+    /// Новый экземпляр `ControlsConfig` с заданными значениями
     ///
     /// # Пример использования
     /// ```
