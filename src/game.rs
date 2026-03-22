@@ -206,9 +206,9 @@ pub const SPRINT_LINES: u32 = 40;
 #[allow(dead_code)]
 pub const MARATHON_LINES: u32 = 150;
 
-/// Порог проигрыша: если блок фигуры находится на этой высоте или выше - игра окончена.
-/// Соответствует верхней части игрового поля (y <= 1).
-pub const LOSE_THRESHOLD_Y: i16 = 1;
+/// Минимальная допустимая координата Y для блоков фигуры.
+/// Блоки не могут находиться ниже этой границы (отрицательные координаты).
+pub const MIN_Y: i16 = 0;
 
 /// Символ терминального bell для звуковых эффектов.
 pub const BELL: &str = "\x07";
@@ -873,11 +873,13 @@ impl GameState {
     /// - `None` - продолжить игру
     fn handle_landing(&mut self) -> Option<UpdateEndState> {
         // Проверка проигрыша: проверяем конкретные координаты блоков фигуры
-        // Если любой блок фигуры находится в верхней части поля (y <= LOSE_THRESHOLD_Y)
+        // Исправление: используем строгое неравенство (<) вместо (<=) для корректной работы
+        // с отрицательными координатами. Проигрыш если блок выше MIN_Y (y < MIN_Y).
         let shape_block_y = self.curr_shape.pos.1 as i16;
         let lost = self.curr_shape.coords.iter().any(|&(_, coord_y)| {
             let block_y = coord_y + shape_block_y;
-            block_y <= LOSE_THRESHOLD_Y
+            // Блок считается выше поля если его Y координата меньше MIN_Y (0)
+            block_y < MIN_Y
         });
 
         if lost {
