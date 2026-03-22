@@ -11,8 +11,10 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты механики вращения.
 
+// Разрешаем использование deprecated метода rotate_old() для тестирования обратной совместимости
+#![allow(deprecated)]
+
 use crate::game::Dir;
-use crate::tetromino::RotationDirection;
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
 
 // ============================================================================

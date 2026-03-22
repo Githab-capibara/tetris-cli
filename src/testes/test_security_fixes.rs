@@ -135,14 +135,10 @@ fn test_score_saturating_add() {
 
     // Добавляем ещё раз - должно сработать saturating_add
     state.add_score_no_check(max_test_value);
-    let final_score = state.get_score();
+    let _final_score = state.get_score();
 
     // Проверяем что не произошло переполнения (паники)
     // saturating_add гарантирует что значение не превысит u128::MAX
-    assert!(
-        final_score <= u128::MAX,
-        "Счёт не должен превышать u128::MAX"
-    );
 }
 
 // ============================================================================

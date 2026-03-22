@@ -1196,7 +1196,11 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
         let entry = LeaderboardEntry::new("ScoreTest".to_string(), 5000);
 
         // score() должен работать сразу после создания
-        assert_eq!(entry.score(), 5000, "score() должен вернуть 5000 сразу после создания");
+        assert_eq!(
+            entry.score(),
+            5000,
+            "score() должен вернуть 5000 сразу после создания"
+        );
 
         // Проверяем что имя тоже корректно
         assert_eq!(entry.name(), "ScoreTest", "Имя должно быть корректным");
@@ -1333,7 +1337,10 @@ mod test_unused_imports_removed {
     fn test_compilation_without_warnings() {
         // Этот тест документационный
         // Настоящая проверка происходит через cargo test -- -W warnings
-        assert!(true, "Код должен компилироваться без warning об unused imports");
+        assert!(
+            true,
+            "Код должен компилироваться без warning об unused imports"
+        );
     }
 }
 
@@ -1371,7 +1378,10 @@ mod test_unused_variables_fixed {
         // Документационный тест
         // Проверка через cargo test -- -W unused_variables
         let _test_value = 42;
-        assert!(true, "Код должен компилироваться без warning об unused variables");
+        assert!(
+            true,
+            "Код должен компилироваться без warning об unused variables"
+        );
     }
 }
 
@@ -1504,13 +1514,8 @@ mod test_f32_to_u32_conversion_safety {
     /// Протестируй конвертацию нормальных значений.
     #[test]
     fn test_f32_to_u32_normal_values() {
-        let test_cases: [(f32, u32); 5] = [
-            (0.0, 0),
-            (1.0, 1),
-            (10.5, 10),
-            (100.9, 100),
-            (1000.0, 1000),
-        ];
+        let test_cases: [(f32, u32); 5] =
+            [(0.0, 0), (1.0, 1), (10.5, 10), (100.9, 100), (1000.0, 1000)];
 
         for (float_val, expected_uint) in test_cases {
             let converted = float_val as u32;
@@ -1530,7 +1535,11 @@ mod test_f32_to_u32_conversion_safety {
         // Проверяем максимальное безопасное значение
         let max_safe: f32 = u32::MAX as f32;
         let max_converted: u32 = max_safe as u32;
-        assert_eq!(max_converted, u32::MAX, "Максимальное значение должно конвертироваться корректно");
+        assert_eq!(
+            max_converted,
+            u32::MAX,
+            "Максимальное значение должно конвертироваться корректно"
+        );
 
         // Проверяем NaN (преобразуется в 0)
         let nan_val = f32::NAN;
@@ -1542,7 +1551,11 @@ mod test_f32_to_u32_conversion_safety {
         let inf_val = f32::INFINITY;
         let inf_converted = inf_val as u32;
         // Infinity при конвертации даёт max u32
-        assert_eq!(inf_converted, u32::MAX, "Infinity должен конвертироваться в u32::MAX");
+        assert_eq!(
+            inf_converted,
+            u32::MAX,
+            "Infinity должен конвертироваться в u32::MAX"
+        );
     }
 
     /// Тест проверяет отрицательные значения
@@ -1557,8 +1570,7 @@ mod test_f32_to_u32_conversion_safety {
 
         // В Rust конвертация отрицательного f32 в u32 даёт 0
         assert_eq!(
-            negative_converted,
-            0,
+            negative_converted, 0,
             "Отрицательное значение должно конвертироваться в 0"
         );
 

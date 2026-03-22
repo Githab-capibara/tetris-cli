@@ -165,14 +165,14 @@ pub struct SaveData {
 }
 
 /// Запись в таблице лидеров.
-/// Представляет собой один результат с именем игрока и защищённым хешем.
+/// Представляет собой один результат с именем игрока и защищённым хешом.
 /// Исправление #2: используем u128 для предотвращения переполнения счёта
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
     name: String,
     /// Значение рекорда.
-    score: u128,
+    score_value: u128,
     /// Соль для хэша (защита от подделки).
     salt: String,
     /// Хэш записи с солью.
@@ -201,7 +201,9 @@ impl LeaderboardEntry {
             eprintln!("Предупреждение: запись в таблице лидеров не прошла валидацию!");
             return 0;
         }
-        self.score
+        // Исправление: возвращаем значение поля напрямую через self.score_value
+        // чтобы избежать бесконечной рекурсии (ранее self.score вызывало сам себя)
+        self.score_value
     }
 
     /// Получить хэш записи.
@@ -235,16 +237,31 @@ impl SaveData {
             Ok(data) => {
                 // Дополнительная проверка целостности
                 // Исправление: используем verify_and_get_score() вместо deprecated assert_hs()
-                if data.verify_and_get_score().is_none() && data.high_score != 0 {
-                    eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
-                    return Self::default();
+                match data.verify_and_get_score() {
+                    Some(score) => {
+                        // Логирование успешной загрузки
+                        if score > 0 {
+                            eprintln!("Информация: загружен рекорд со значением {}", score);
+                        }
+                        data
+                    }
+                    None if data.high_score != 0 => {
+                        eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
+                        Self::default()
+                    }
+                    None => {
+                        eprintln!("Предупреждение: рекорд не прошёл валидацию. Используется значение по умолчанию.");
+                        Self::default()
+                    }
                 }
-                data
             }
             Err(e) => {
+                // Подробное логирование ошибок загрузки
+                // Используем Display trait для форматирования ошибки
+                let error_msg = format!("{}", e);
                 eprintln!(
                     "Ошибка загрузки конфигурации: {}. Используется значение по умолчанию.",
-                    e
+                    error_msg
                 );
                 Self::default()
             }
@@ -430,7 +447,7 @@ impl LeaderboardEntry {
 
         Self {
             name: valid_name,
-            score,
+            score_value: score,
             salt,
             hash,
         }
@@ -452,7 +469,11 @@ impl LeaderboardEntry {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         use std::fmt::Write;
         let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 20);
-        let _ = write!(salt_and_score, "{}{}{}", self.salt, self.name, self.score);
+        let _ = write!(
+            salt_and_score,
+            "{}{}{}",
+            self.salt, self.name, self.score_value
+        );
         let test_hash = get_hash(&salt_and_score);
         self.hash == test_hash
     }
@@ -540,7 +561,12 @@ impl Leaderboard {
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный рекорд
-            let min_score = self.entries.iter().map(|e| e.score).min().unwrap_or(0);
+            let min_score = self
+                .entries
+                .iter()
+                .map(|e| e.score_value)
+                .min()
+                .unwrap_or(0);
             if score <= min_score {
                 return false;
             }
@@ -596,7 +622,8 @@ impl Leaderboard {
         self.entries.push(new_entry);
 
         // Сортировка по убыванию очков
-        self.entries.sort_by(|a, b| b.score.cmp(&a.score));
+        self.entries
+            .sort_by(|a, b| b.score_value.cmp(&a.score_value));
 
         // Оставляем только топ-5
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
@@ -637,7 +664,7 @@ impl Leaderboard {
     #[allow(dead_code)]
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
-        self.entries.first().map(|e| e.score).unwrap_or(0)
+        self.entries.first().map(|e| e.score_value).unwrap_or(0)
     }
 
     /// Проверить валидность всех записей.

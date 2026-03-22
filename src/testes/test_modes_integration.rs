@@ -159,7 +159,6 @@ fn test_modes_integration_hold_in_all_modes() {
 /// Проверяет возможность вращения фигур в каждом режиме.
 #[test]
 fn test_modes_integration_rotation_in_all_modes() {
-    use crate::game::Dir;
     use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
@@ -185,7 +184,6 @@ fn test_modes_integration_rotation_in_all_modes() {
 #[test]
 fn test_modes_integration_movement_in_all_modes() {
     use crate::game::Dir;
-    use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -216,7 +214,6 @@ fn test_modes_integration_movement_in_all_modes() {
 #[test]
 fn test_modes_integration_ghost_piece_in_all_modes() {
     use crate::game::Dir;
-    use crate::tetromino::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();

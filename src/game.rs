@@ -541,11 +541,46 @@ impl GameState {
     /// - Статистика: новая
     /// - Режим: классический
     pub fn new() -> Self {
+        Self::new_internal(GameMode::Classic, false)
+    }
+
+    /// Создать новое состояние игры для режима спринт.
+    ///
+    /// Отличается от классического режима:
+    /// - Цель: очистить 40 линий как можно быстрее
+    /// - Счёт не сохраняется в таблицу лидеров
+    /// - Отображается таймер
+    pub fn new_sprint() -> Self {
+        Self::new_internal(GameMode::Sprint, true)
+    }
+
+    /// Создать новое состояние игры для режима марафон.
+    ///
+    /// Отличается от классического режима:
+    /// - Цель: очистить 150 линий
+    /// - Сложность растёт быстрее (каждые 5 линий)
+    /// - Сохраняется в таблицу лидеров
+    pub fn new_marathon() -> Self {
+        Self::new_internal(GameMode::Marathon, true)
+    }
+
+    /// Внутренний метод создания состояния игры.
+    ///
+    /// # Аргументы
+    /// * `mode` - режим игры (Classic, Sprint, Marathon)
+    /// * `start_timer` - запустить ли таймер сразу (true для Sprint/Marathon)
+    ///
+    /// # Возвращает
+    /// Новое состояние игры с указанным режимом
+    fn new_internal(mode: GameMode, start_timer: bool) -> Self {
         let mut bag = crate::tetromino::BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);
         let next_shape = Tetromino::from_bag(&mut bag);
         let mut stats = GameStats::new();
         stats.add_piece(curr_shape.shape);
+        if start_timer {
+            stats.start_timer();
+        }
         Self {
             score: 0,
             level: 1,
@@ -560,75 +595,7 @@ impl GameState {
             blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
             land_timer: LAND_TIME_DELAY_S,
             stats,
-            mode: GameMode::Classic,
-            animating_rows_mask: 0,
-            is_hard_dropping: false,
-            soft_drop_distance: 0,
-            bag,
-        }
-    }
-
-    /// Создать новое состояние игры для режима спринт.
-    ///
-    /// Отличается от классического режима:
-    /// - Цель: очистить 40 линий как можно быстрее
-    /// - Счёт не сохраняется в таблицу лидеров
-    /// - Отображается таймер
-    pub fn new_sprint() -> Self {
-        let mut bag = crate::tetromino::BagGenerator::new();
-        let curr_shape = Tetromino::from_bag(&mut bag);
-        let next_shape = Tetromino::from_bag(&mut bag);
-        let mut stats = GameStats::new();
-        stats.add_piece(curr_shape.shape);
-        stats.start_timer();
-        Self {
-            score: 0,
-            level: 1,
-            lines_cleared: 0,
-            curr_shape,
-            next_shape,
-            held_shape: None,
-            can_hold: true,
-            fall_spd: INITIAL_FALL_SPD,
-            // Исправление #3: инициализация массива в куче через Box::new()
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
-            land_timer: LAND_TIME_DELAY_S,
-            stats,
-            mode: GameMode::Sprint,
-            animating_rows_mask: 0,
-            is_hard_dropping: false,
-            soft_drop_distance: 0,
-            bag,
-        }
-    }
-
-    /// Создать новое состояние игры для режима марафон.
-    ///
-    /// Отличается от классического режима:
-    /// - Цель: очистить 150 линий
-    /// - Сложность растёт быстрее (каждые 5 линий)
-    /// - Сохраняется в таблицу лидеров
-    pub fn new_marathon() -> Self {
-        let mut bag = crate::tetromino::BagGenerator::new();
-        let curr_shape = Tetromino::from_bag(&mut bag);
-        let next_shape = Tetromino::from_bag(&mut bag);
-        let mut stats = GameStats::new();
-        stats.add_piece(curr_shape.shape);
-        stats.start_timer();
-        Self {
-            score: 0,
-            level: 1,
-            lines_cleared: 0,
-            curr_shape,
-            next_shape,
-            held_shape: None,
-            can_hold: true,
-            fall_spd: INITIAL_FALL_SPD,
-            // Исправление #3: инициализация массива в куче через Box::new()
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
-            land_timer: LAND_TIME_DELAY_S,
-            stats,
-            mode: GameMode::Marathon,
+            mode,
             animating_rows_mask: 0,
             is_hard_dropping: false,
             soft_drop_distance: 0,
@@ -1074,6 +1041,19 @@ impl GameState {
     #[allow(dead_code)]
     pub fn save_tetromino_for_bench(&mut self) {
         self.save_tetromino_impl();
+    }
+
+    /// Установить текущую фигуру для бенчмарков.
+    ///
+    /// # Аргументы
+    /// * `shape` - фигура для установки
+    ///
+    /// # Примечания
+    /// Метод доступен только при включённой фиче `bench`.
+    #[cfg(feature = "bench")]
+    #[allow(dead_code)]
+    pub fn set_curr_shape_for_bench(&mut self, shape: Tetromino) {
+        self.curr_shape = shape;
     }
 
     /// Удержать текущую фигуру и получить следующую.
@@ -1808,35 +1788,39 @@ impl GameState {
         self.stats.get_elapsed_time()
     }
 
-    /// Получить удержанную фигуру (для тестов).
+    /// Получить удержанную фигуру.
+    ///
+    /// # Возвращает
+    /// `Some(Tetromino)` если фигура была удержана, `None` если удержание ещё не использовалось.
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::GameState;
+    ///
+    /// let state = GameState::new();
+    /// let held = state.get_held_shape();
+    /// assert!(held.is_none()); // В начале игры удержанной фигуры нет
+    /// ```
     #[allow(dead_code)]
     #[must_use]
     pub fn get_held_shape(&self) -> Option<Tetromino> {
         self.held_shape
     }
 
-    /// Получить игровое поле для бенчмарков.
+    /// Получить флаг возможности удержания фигуры.
     ///
     /// # Возвращает
-    /// Ссылку на двумерный массив игрового поля размером [`GRID_WIDTH`]×[`GRID_HEIGHT`].
-    ///
-    /// # Назначение
-    /// Метод предназначен для использования в бенчмарках и тестах производительности.
-    /// Позволяет получить прямой доступ к внутреннему состоянию поля для измерения
-    /// производительности операций отрисовки и проверки столкновений.
+    /// `true` если можно удержать фигуру в текущем ходу, `false` если удержание уже использовалось.
     ///
     /// # Пример использования
-    /// ```ignore
+    /// ```
     /// use tetris_cli::game::GameState;
     ///
-    /// let state = GameState::new();
-    /// let blocks = state.get_blocks_for_bench();
-    ///
-    /// // Доступ к клетке поля
-    /// let cell = blocks[0][0];
+    /// let mut state = GameState::new();
+    /// assert!(state.can_hold()); // В начале можно удерживать
+    /// state.hold_shape();
+    /// assert!(!state.can_hold()); // После удержания нельзя
     /// ```
-    ///
-    /// Получить флаг can_hold (для тестов).
     #[allow(dead_code)]
     #[must_use]
     pub fn can_hold(&self) -> bool {

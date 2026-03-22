@@ -277,7 +277,6 @@ fn test_rotate_old_deprecated() {
 
     // Тест подтверждает, что rotate_old существует
     // Deprecated атрибут проверяется через компиляцию с предупреждениями
-    assert!(true, "rotate_old() существует и помечен как deprecated");
 }
 
 /// Тест 11: Unicode валидация имён
@@ -343,7 +342,6 @@ fn test_dirty_tracking_exists() {
     );
 
     // Dirty tracking подтверждается существованием поля
-    assert!(true, "animating_rows_mask существует для dirty tracking");
 }
 
 /// Тест 13: Drop для KeyReader
@@ -363,8 +361,6 @@ fn test_key_reader_has_drop() {
     // Если Drop реализован, ресурсы должны быть освобождены
     // Проверяем, что KeyReader можно создать снова после выхода из области видимости
     let _reader2 = KeyReader::new();
-
-    assert!(true, "KeyReader реализует Drop для освобождения ресурсов");
 }
 
 /// Тест 14: assert_hs deprecated
@@ -382,11 +378,6 @@ fn test_assert_hs_deprecated() {
         verified,
         Some(3000),
         "verify_and_get_score() должен работать корректно"
-    );
-
-    assert!(
-        true,
-        "assert_hs() deprecated, используйте verify_and_get_score()"
     );
 }
 
@@ -417,8 +408,6 @@ fn test_bounds_check_before_access() {
     // Проверяем, что координаты фигуры в пределах границ
     assert!(tetromino.pos.0 >= 0.0, "X координата должна быть >= 0");
     assert!(tetromino.pos.0 < 10.0, "X координата должна быть < 10");
-
-    assert!(true, "Проверки границ выполняются перед доступом");
 }
 
 // ============================================================================
@@ -446,11 +435,6 @@ fn test_lib_docs_not_excessive() {
     let _ = std::any::type_name::<Tetromino>();
     let _ = std::any::type_name::<Canvas>();
     let _ = std::any::type_name::<SaveData>();
-
-    assert!(
-        true,
-        "lib.rs имеет документацию (избыточность проверяется через rustdoc)"
-    );
 }
 
 /// Тест 17: Константы вместо магических чисел
@@ -536,11 +520,6 @@ fn test_snake_case_naming() {
     let _save = SaveData::from_value(1000);
     let _entry = LeaderboardEntry::new("Test".to_string(), 500);
     let _ = LINE_SCORES[0];
-
-    assert!(
-        true,
-        "Все функции используют snake_case (проверяется через clippy)"
-    );
 }
 
 /// Тест 21: #[cfg(test)] вместо #[allow(dead_code)]
@@ -558,8 +537,6 @@ fn test_cfg_test_attribute() {
     use crate::game::GameState;
 
     let _state = GameState::new();
-
-    assert!(true, "#[cfg(test)] используется для тестовых модулей");
 }
 
 /// Тест 22: Тесты для main.rs
@@ -580,11 +557,6 @@ fn test_main_functions_testable() {
     let _state = GameState::new();
     let _leaderboard = Leaderboard::default();
     let _save = SaveData::from_value(1000);
-
-    assert!(
-        true,
-        "Функции main.rs тестируемы (вынесены в отдельные модули)"
-    );
 }
 
 /// Тест 23: String::with_capacity()
@@ -637,11 +609,6 @@ fn test_save_value_returns_result() {
             // Ошибка сохранения (ожидаемо в тестах)
         }
     }
-
-    assert!(
-        true,
-        "save_value_result() возвращает Result<(), ConfigError>"
-    );
 }
 
 /// Тест 25: Lookup таблица для очков
@@ -671,5 +638,4 @@ fn test_line_scores_lookup() {
     // 4 линии: 100 × 2^3 + 1000 = 1800
 
     // Lookup таблица обеспечивает быстрый доступ без вычислений
-    assert!(true, "LINE_SCORES используется как lookup таблица");
 }

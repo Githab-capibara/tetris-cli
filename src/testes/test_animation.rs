@@ -91,7 +91,7 @@ fn test_animation_hard_drop_blocks_down() {
 /// Тест 6: Проверка что Hard Drop работает для всех фигур
 #[test]
 fn test_animation_hard_drop_all_shapes() {
-    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,
@@ -213,7 +213,7 @@ fn test_animation_no_panic() {
 /// Тест 14: Проверка что анимация работает с разными фигурами
 #[test]
 fn test_animation_different_shapes() {
-    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,
@@ -408,7 +408,7 @@ fn test_animation_can_move_ghost_shape() {
 /// Тест 27: Проверка что призрачная фигура работает для всех типов
 #[test]
 fn test_animation_ghost_all_shapes() {
-    use crate::tetromino::{RotationDirection, ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
     let shapes = [
         ShapeType::T,

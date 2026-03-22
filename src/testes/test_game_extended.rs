@@ -349,7 +349,9 @@ fn test_extended_movement_with_rotation() {
 
     // Вращаем
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     // Двигаем вниз
@@ -460,7 +462,9 @@ fn test_extended_t_piece_full_rotation() {
     // 4 вращения по часовой
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -494,7 +498,9 @@ fn test_extended_l_piece_full_rotation() {
 
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -528,7 +534,9 @@ fn test_extended_j_piece_full_rotation() {
 
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -562,7 +570,9 @@ fn test_extended_s_piece_full_rotation() {
 
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -596,7 +606,9 @@ fn test_extended_z_piece_full_rotation() {
 
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -628,12 +640,16 @@ fn test_extended_o_piece_no_rotation() {
 
     // Пытаемся вращать по часовой
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     // Пытаемся вращать против часовой
     if state.can_rotate_curr_shape(RotationDirection::CounterClockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Left);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::CounterClockwise);
     }
 
     assert_eq!(
@@ -656,7 +672,9 @@ fn test_extended_i_piece_full_rotation() {
 
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         }
     }
@@ -689,7 +707,9 @@ fn test_extended_counter_clockwise_rotation() {
     // Вращаем против часовой 4 раза
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::CounterClockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Left);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::CounterClockwise);
             rotation_count += 1;
         }
     }
@@ -722,10 +742,14 @@ fn test_extended_alternating_rotation() {
     // Чередование: часовая, против, часовая, против
     for i in 0..4 {
         if i % 2 == 0 && state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Right);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::Clockwise);
             rotation_count += 1;
         } else if i % 2 == 1 && state.can_rotate_curr_shape(RotationDirection::CounterClockwise) {
-            state.get_curr_shape_mut().rotate_old(Dir::Left);
+            state
+                .get_curr_shape_mut()
+                .rotate(RotationDirection::CounterClockwise);
             rotation_count += 1;
         }
     }
@@ -848,7 +872,9 @@ fn test_extended_rotation_changes_coords() {
 
     // Вращаем по часовой
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     let new_coords = state.get_curr_shape().coords;
@@ -872,7 +898,9 @@ fn test_extended_rotation_with_movement() {
 
     // Вращаем
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     // Двигаем вниз
@@ -1030,7 +1058,9 @@ fn test_extended_hold_with_rotation() {
 
     // Вращаем новую фигуру
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     // Тест просто проверяет что код работает
@@ -1141,7 +1171,9 @@ fn test_extended_hold_with_rotation_and_movement() {
 
     // Вращаем
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     // Двигаем
@@ -1304,7 +1336,9 @@ fn test_extended_ghost_piece_after_rotation() {
 
     // Вращаем
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state.get_curr_shape_mut().rotate_old(Dir::Right);
+        state
+            .get_curr_shape_mut()
+            .rotate(RotationDirection::Clockwise);
     }
 
     let ghost_shape = state.get_curr_shape();
