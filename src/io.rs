@@ -182,17 +182,8 @@ impl Default for Canvas {
     ///
     /// # Примечания
     /// При ошибке инициализации создаёт fallback canvas с заглушкой.
-    /// Используется unwrap_or_else() вместо expect() для предотвращения паники.
     fn default() -> Self {
-        Self::new().unwrap_or_else(|e| {
-            eprintln!(
-                "Предупреждение: не удалось инициализировать Canvas: {}. Используется заглушка.",
-                e
-            );
-            // Создаём минимально рабочий Canvas для предотвращения паники
-            // Это позволяет тестам продолжать работу даже без TTY
-            Self::new_stub()
-        })
+        Self::new().unwrap_or_else(|_| Self::new_stub())
     }
 }
 

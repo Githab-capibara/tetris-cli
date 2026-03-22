@@ -85,6 +85,18 @@ pub struct BagGenerator {
     is_filled: bool,
 }
 
+/// Константный массив всех 7 типов фигур.
+/// Используется для инициализации мешка в BagGenerator.
+const ALL_SHAPES: [ShapeType; 7] = [
+    ShapeType::T,
+    ShapeType::L,
+    ShapeType::J,
+    ShapeType::S,
+    ShapeType::Z,
+    ShapeType::O,
+    ShapeType::I,
+];
+
 impl BagGenerator {
     /// Создать новый генератор с пустым мешком.
     pub fn new() -> Self {
@@ -106,16 +118,8 @@ impl BagGenerator {
     /// Исправление #8: используется фиксированный массив вместо Vec
     /// для предотвращения аллокаций в куче.
     fn fill_bag(&mut self) {
-        // Исправление #8: заполнение фиксированного массива
-        self.bag = [
-            ShapeType::T,
-            ShapeType::L,
-            ShapeType::J,
-            ShapeType::S,
-            ShapeType::Z,
-            ShapeType::O,
-            ShapeType::I,
-        ];
+        // Исправление #8: заполнение фиксированного массива из константы
+        self.bag = ALL_SHAPES;
 
         // Алгоритм Fisher-Yates для перемешивания
         // Используем кэшированный rng вместо создания нового thread_rng()
