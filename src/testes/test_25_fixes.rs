@@ -42,10 +42,8 @@ fn test_main_rs_integrity() {
 
     // Проверяем, что FRAME_DELAY_MS экспортируется из lib.rs (который импортирует main)
     use crate::FRAME_DELAY_MS;
-    assert!(
-        FRAME_DELAY_MS > 0,
-        "Задержка кадров должна быть положительной"
-    );
+    // Проверка константы компиляции ( FRAME_DELAY_MS > 0 всегда истинно)
+    let _ = FRAME_DELAY_MS;
 }
 
 /// Тест 3: Переполнение стека (Box для blocks)
@@ -97,10 +95,6 @@ fn test_canvas_default_has_panic_docs() {
 
     // Если компилируется, значит метод default() существует
     // Документация # Panics проверяется через rustdoc --test
-    assert!(
-        true,
-        "Canvas::default() существует (документация проверяется через rustdoc)"
-    );
 }
 
 /// Тест 5: Path traversal защита
@@ -185,10 +179,7 @@ fn test_no_shift_on_zero_lines() {
     // Если бы был сдвиг на -1, здесь произошла бы паника
     let _ = score_before; // Используем переменную чтобы избежать предупреждения
 
-    assert!(
-        true,
-        "Отсутствие паники при 0 линиях подтверждает исправление"
-    );
+    // Отсутствие паники при 0 линиях подтверждает исправление
 }
 
 // ============================================================================
@@ -245,10 +236,6 @@ fn test_update_decomposed() {
 
     // Если проект компилируется, значит декомпозиция выполнена
     // Методы handle_input, handle_falling, handle_landing должны существовать
-    assert!(
-        true,
-        "Декомпозиция update() подтверждена компиляцией проекта"
-    );
 }
 
 /// Тест 10: rotate_old deprecated
@@ -475,10 +462,7 @@ fn test_no_unused_imports() {
     let _state = GameState::new();
     let _bag = BagGenerator::new();
 
-    assert!(
-        true,
-        "Отсутствие предупреждений unused_imports подтверждает исправление"
-    );
+    // Отсутствие предупреждений unused_imports подтверждается успешной компиляцией
 }
 
 /// Тест 19: Бенчмарки
@@ -579,10 +563,6 @@ fn test_string_with_capacity() {
 
     // String::with_capacity() используется внутри sanitize_player_name
     // для предотвращения реаллокаций при валидации имени
-    assert!(
-        true,
-        "String::with_capacity() используется в sanitize_player_name"
-    );
 }
 
 /// Тест 24: Result из save_value

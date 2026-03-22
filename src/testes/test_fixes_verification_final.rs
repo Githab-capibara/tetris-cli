@@ -277,19 +277,10 @@ mod problem_5_unreachable_game {
         let right = Dir::Right;
         let down = Dir::Down;
 
-        // Используем match для проверки без Debug
-        let left_is_left = match left {
-            Dir::Left => true,
-            _ => false,
-        };
-        let right_is_right = match right {
-            Dir::Right => true,
-            _ => false,
-        };
-        let down_is_down = match down {
-            Dir::Down => true,
-            _ => false,
-        };
+        // Используем matches! для проверки без Debug
+        let left_is_left = matches!(left, Dir::Left);
+        let right_is_right = matches!(right, Dir::Right);
+        let down_is_down = matches!(down, Dir::Down);
 
         assert!(left_is_left, "left должен быть Dir::Left");
         assert!(right_is_right, "right должен быть Dir::Right");
@@ -1337,10 +1328,7 @@ mod test_unused_imports_removed {
     fn test_compilation_without_warnings() {
         // Этот тест документационный
         // Настоящая проверка происходит через cargo test -- -W warnings
-        assert!(
-            true,
-            "Код должен компилироваться без warning об unused imports"
-        );
+        // Код компилируется без warning об unused imports
     }
 }
 
@@ -1378,10 +1366,7 @@ mod test_unused_variables_fixed {
         // Документационный тест
         // Проверка через cargo test -- -W unused_variables
         let _test_value = 42;
-        assert!(
-            true,
-            "Код должен компилироваться без warning об unused variables"
-        );
+        // Код компилируется без warning об unused variables
     }
 }
 
@@ -1400,8 +1385,7 @@ mod test_load_config_error_handling {
         // Тест проверяет что метод существует и не паникует
         let _load_fn = SaveData::load_config;
 
-        // Метод должен быть доступен
-        assert!(true, "load_config должен существовать");
+        // Метод должен быть доступен (проверяется компиляцией)
     }
 
     /// Тест проверяет что load_config() логирует ошибки
@@ -1500,8 +1484,7 @@ mod test_canvas_default_no_panic {
         // Это подтверждается компиляцией кода
         let _default_fn = Canvas::default;
 
-        // Функция должна быть доступна
-        assert!(true, "Canvas::default должен существовать");
+        // Функция должна быть доступна (проверяется компиляцией)
     }
 }
 
