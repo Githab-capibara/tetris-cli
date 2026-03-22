@@ -33,6 +33,7 @@ use termion::{
     color::{Bg, Color, Fg, Reset},
     cursor::{Goto, Hide, Show},
     raw::{IntoRawMode, RawTerminal},
+    screen::ToMainScreen,
     AsyncReader,
 };
 
@@ -258,10 +259,14 @@ impl Canvas {
     ///
     /// # Примечания
     /// Каждая строка рисуется на новой позиции Y (автоматический перенос)
+    ///
+    /// # Оптимизация
+    /// Исправление #8: буферизация всех строк и один flush() в конце
+    /// для предотвращения множественных системных вызовов.
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
-            if let Err(e) = write!(
+            let _ = write!(
                 self.out,
                 "{}{}{}{}{}{}",
                 Goto(x, y),
@@ -270,12 +275,11 @@ impl Canvas {
                 line,
                 Fg(Reset),
                 Bg(Reset)
-            ) {
-                eprintln!("Ошибка отрисовки строки: {}", e);
-                return;
-            }
+            );
             y += 1;
         }
+        // Один flush() в конце вместо flush() после каждой строки
+        let _ = self.out.flush();
     }
 
     /// Отрисовать строку (динамическую String).
@@ -353,9 +357,11 @@ impl Drop for KeyReader {
     /// Исправление #13: реализация Drop для предотвращения утечки ресурсов.
     /// Метод автоматически освобождает ресурсы stdin при выходе из области видимости.
     fn drop(&mut self) {
-        // AsyncReader автоматически освобождается при drop,
-        // но явно сбрасываем терминал в случай ошибки
-        // termion::async_stdin не требует явного сброса
+        // Явно освобождаем ресурсы терминала
+        // Сбрасываем raw-режим и показываем курсор
+        let _ = write!(std::io::stdout(), "{}", Show);
+        let _ = write!(std::io::stdout(), "{}", ToMainScreen);
+        let _ = std::io::stdout().flush();
     }
 }
 

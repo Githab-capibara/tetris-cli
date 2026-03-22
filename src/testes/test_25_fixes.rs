@@ -375,18 +375,7 @@ fn test_key_reader_has_drop() {
 fn test_assert_hs_deprecated() {
     use crate::highscore::SaveData;
 
-    // Проверяем, что assert_hs существует но deprecated
-    #[allow(deprecated)]
-    {
-        let save = SaveData::from_value(5000);
-        let score = save.assert_hs();
-        assert_eq!(
-            score, 5000,
-            "assert_hs() должен возвращать значение рекорда"
-        );
-    }
-
-    // Проверяем, что verify_and_get_score() работает как замена
+    // Проверяем, что verify_and_get_score() работает как замена deprecated assert_hs()
     let save = SaveData::from_value(3000);
     let verified = save.verify_and_get_score();
     assert_eq!(

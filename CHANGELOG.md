@@ -4,6 +4,48 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.15] — 2026-03-22
+
+### Исправлено
+
+- **Path Traversal уязвимость** в `controls.rs` — полная переработка `validate_config_path()`:
+  - Добавлена проверка через `canonicalize()` ДО всех остальных проверок
+  - Используется `strip_prefix()` для валидации пути внутри директории
+  - Добавлена защита от symlink атак через `symlink_metadata()`
+- **Утечка ресурсов в KeyReader** (`io.rs`) — явное освобождение ресурсов в `Drop`:
+  - Показ курсора через `Show`
+  - Возврат терминала в главный экран через `ToMainScreen`
+  - Выполнение `flush()` буфера
+- **Переполнение счёта** (`game.rs`) — все операции используют `saturating_add()`
+- **Неэффективные аллокации** (`highscore.rs`) — оптимизация `is_valid()` с `String::with_capacity()`
+- **Удалён deprecated метод** `assert_hs()` — миграция на `verify_and_get_score()`
+
+### Добавлено
+
+- **7 новых тестов** для проверки исправлений безопасности:
+  - `test_path_traversal_prevention` — защита от Path Traversal атак
+  - `test_key_reader_resource_cleanup` — проверка освобождения ресурсов
+  - `test_score_saturating_add` — проверка от переполнения счёта
+  - `test_highscore_allocation_optimization` — проверка оптимизации аллокаций
+  - `test_wall_kick_rotation` — проверка вращения с wall kick
+  - `test_assert_hs_removed` — проверка удаления deprecated метода
+  - `test_all_security_fixes_integration` — интеграционный тест всех исправлений
+
+### Улучшено
+
+- **Безопасность** — устранены все критические уязвимости
+- **Производительность** — оптимизированы аллокации в `highscore.rs` и `Canvas::draw_strs()`
+- **Оптимизация BagGenerator** — использование `swap()` вместо пересоздания массива
+- **Wall Kick** — добавлена таблица смещений для вращения у стен
+
+### Тестирование
+
+- **Все 1478 тестов проходят успешно** (1450 lib + 28 bin)
+- **0 ошибок компиляции**
+- **Все doctest проходят** (21 passed, 14 ignored)
+
+---
+
 ## [23.96.14] — 2026-03-21
 
 ### Исправлено

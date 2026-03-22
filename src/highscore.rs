@@ -321,23 +321,6 @@ impl SaveData {
 
     /// Проверить целостность рекорда и вернуть значение.
     ///
-    /// # Возвращает
-    /// Значение рекорда, если хэш совпадает, или 0 при подделке
-    ///
-    /// # Пример
-    /// ```no_run
-    /// use tetris_cli::highscore::SaveData;
-    /// let save = SaveData::from_value(1000);
-    /// assert_eq!(save.assert_hs(), 1000);
-    /// ```
-    #[deprecated(since = "2.0.0", note = "Используйте verify_and_get_score()")]
-    #[allow(dead_code)]
-    pub fn assert_hs(&self) -> u128 {
-        self.verify_and_get_score().unwrap_or(0)
-    }
-
-    /// Проверить целостность рекорда и вернуть значение.
-    ///
     /// Возвращает Some(score) если хэш совпадает, None при подделке.
     /// Логирует попытки подделки рекорда.
     ///

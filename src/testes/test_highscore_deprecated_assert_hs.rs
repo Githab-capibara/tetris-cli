@@ -69,19 +69,6 @@ fn test_load_config_uses_verify_and_get_score() {
     }
 }
 
-/// Тест 4: Проверка что deprecated assert_hs() всё ещё работает.
-#[test]
-#[allow(deprecated)]
-fn test_deprecated_assert_hs_still_works() {
-    let save = SaveData::from_value(3000);
-    let old_result = save.assert_hs();
-
-    assert_eq!(
-        old_result, 3000,
-        "assert_hs() должен возвращать правильное значение"
-    );
-}
-
 /// Тест 5: Проверка что verify_and_get_score() работает с разными значениями.
 #[test]
 fn test_verify_and_get_score_with_different_values() {

@@ -993,7 +993,7 @@ mod problem_21_drawing_duplication {
 // cfg(test) removed - parent module is already test-only
 mod problem_22_magic_numbers {
     use crate::game::{
-        FPS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, LINE_SCORES,
+        FPS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, PIECE_SCORE_INC,
         SOFT_DROP_POINTS, SPRINT_LINES,
     };
 
@@ -1014,7 +1014,10 @@ mod problem_22_magic_numbers {
     fn test_menu_constants_exist() {
         // Проверяем константы очков
         assert_eq!(LINE_SCORES[0], 100, "LINE_SCORES[0] должен быть 100");
-        assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "PIECE_SCORE_INC должен быть 100");
+        assert_eq!(
+            PIECE_SCORE_INC, LINE_SCORES[0],
+            "PIECE_SCORE_INC должен быть 100"
+        );
         assert_eq!(PIECE_SCORE_INC, 100, "PIECE_SCORE_INC должен быть 100");
         assert_eq!(SOFT_DROP_POINTS, 1, "SOFT_DROP_POINTS должен быть 1");
         assert_eq!(HARD_DROP_POINTS, 2, "HARD_DROP_POINTS должен быть 2");
