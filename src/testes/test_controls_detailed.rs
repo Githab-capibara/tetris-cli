@@ -259,8 +259,11 @@ fn test_save_load_full_cycle() {
     // Загружаем
     let loaded = ControlsConfig::load_from_file(test_path).expect("Загрузка должна быть успешной");
 
-    // Сравниваем
-    assert_eq!(original, loaded, "Конфигурации должны совпадать");
+    // Сравниваем только клавиши (игнорируя hmac_key)
+    assert!(
+        original.keys_match(&loaded),
+        "Конфигурации должны совпадать"
+    );
 
     // Очищаем
     let _ = fs::remove_file(test_path);

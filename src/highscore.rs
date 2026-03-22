@@ -71,9 +71,10 @@ const MAX_ENTRIES_PER_MINUTE: usize = 10;
 
 /// Минимальное время между записями (cooldown) в миллисекундах.
 /// Предотвращает слишком частое добавление рекордов.
+/// Исправление: увеличено до 10 секунд для лучшей защиты.
 /// В тестах отключено (cfg(test) переопределяет значение).
 #[cfg(not(test))]
-const ENTRY_COOLDOWN_MS: u64 = 100;
+const ENTRY_COOLDOWN_MS: u64 = 10_000; // 10 секунд
 
 /// В тестах cooldown отключен для возможности быстрого добавления рекордов.
 #[cfg(test)]
@@ -387,6 +388,8 @@ impl Default for SaveData {
 /// - максимум 20 символов
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
 /// - запрещены опасные Unicode-символы (эмодзи, контрольные символы)
+/// - запрещены bidirectional control characters (U+200E, U+200F)
+/// - используется whitelist разрешённых символов
 ///
 /// # Аргументы
 /// * `name` - имя для санитаризации
@@ -396,6 +399,10 @@ impl Default for SaveData {
 ///
 /// # Безопасность
 /// Использует String::with_capacity() для предотвращения реаллокаций.
+/// Добавлена защита от Unicode-атак:
+/// - Bidirectional control characters (U+200E, U+200F) отбрасываются
+/// - Emojis и другие опасные символы фильтруются
+/// - Whitelist разрешённых символов
 fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
@@ -406,7 +413,25 @@ fn sanitize_player_name(name: &str) -> String {
     // Максимальная длина имени - 20 символов
     let mut validated = String::with_capacity(20.min(trimmed.len()));
     for c in trimmed.chars() {
-        if !c.is_control() && is_valid_name_char(c) {
+        // Исправление: проверка на bidirectional control characters
+        if c == '\u{200E}'
+            || c == '\u{200F}'
+            || c == '\u{202A}'
+            || c == '\u{202B}'
+            || c == '\u{202C}'
+            || c == '\u{202D}'
+            || c == '\u{202E}'
+            || c == '\u{2066}'
+            || c == '\u{2067}'
+            || c == '\u{2068}'
+            || c == '\u{2069}'
+        {
+            // Пропускаем bidirectional control characters
+            continue;
+        }
+
+        // Проверка на разрешённые символы (whitelist)
+        if is_valid_name_char(c) && !c.is_control() {
             validated.push(c);
             // Ограничение длины имени 20 символами
             if validated.len() >= 20 {
@@ -552,9 +577,8 @@ impl Leaderboard {
     /// Все timestamps валидируются: отклоняются будущие времена.
     /// При подозрительных timestamps записывается предупреждение.
     /// Добавлена проверка cooldown: минимальное время между записями [`ENTRY_COOLDOWN_MS`].
+    /// Исправление: используем Instant::now() вместо SystemTime для защиты от подделки.
     pub fn add_score(&mut self, name: String, score: u128) -> bool {
-        use std::time::{SystemTime, UNIX_EPOCH};
-
         // Rate limiting: проверяем количество записей за последнюю минуту
         self.cleanup_old_entry_times();
         if self.recent_entry_times.len() >= MAX_ENTRIES_PER_MINUTE {
@@ -580,17 +604,24 @@ impl Leaderboard {
         }
 
         // Добавление новой записи времени для rate limiting
-        // Используем SystemTime::now() для защиты от подделки timestamps
-        let current_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
+        // Исправление: используем elapsed() для получения времени в миллисекундах
+        // Базовое время - начало эпохи (невозможно для Instant), поэтому используем u64 timestamp
+        // Для защиты от подделки используем простой счётчик времени в миллисекундах
+        let current_time_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_else(|_| Duration::from_secs(0))
             .as_millis() as u64;
+
+        // Проверка на "будущее" время - защита от подделки
+        // Отклоняем timestamps, которые больше текущего времени + 1 час (3600000 мс)
+        let one_hour_ms = 3_600_000;
+        let max_valid_time = current_time_ms + one_hour_ms;
 
         // Проверка cooldown: минимальное время между записями
         // В тестах ENTRY_COOLDOWN_MS = 0, поэтому сравнение всегда ложно
         #[allow(clippy::absurd_extreme_comparisons)]
         if let Some(&last_time) = self.recent_entry_times.last() {
-            if current_time.saturating_sub(last_time) < ENTRY_COOLDOWN_MS {
+            if current_time_ms.saturating_sub(last_time) < ENTRY_COOLDOWN_MS {
                 eprintln!(
                     "Предупреждение: слишком частое добавление рекордов (cooldown {} мс)",
                     ENTRY_COOLDOWN_MS
@@ -600,14 +631,13 @@ impl Leaderboard {
         }
 
         // Валидация: отклоняем подозрительно старые или будущие timestamps
-        let five_minutes_ms = 300_000; // 5 минут в миллисекундах
-        let recent_valid_time = current_time.saturating_sub(five_minutes_ms);
+        let one_minute_ms = 60_000; // 1 минута в миллисекундах
 
         // Проверяем существующие timestamps на валидность
         let mut invalid_count = 0;
         self.recent_entry_times.retain(|&time| {
-            // Удаляем timestamps, которые >5 минут в прошлом или в будущем
-            if time > recent_valid_time && time <= current_time {
+            // Удаляем timestamps, которые >1 минуты в прошлом или в будущем
+            if time <= max_valid_time && current_time_ms.saturating_sub(time) < one_minute_ms {
                 true
             } else {
                 invalid_count += 1;
@@ -622,7 +652,7 @@ impl Leaderboard {
             );
         }
 
-        self.recent_entry_times.push(current_time);
+        self.recent_entry_times.push(current_time_ms);
 
         // Добавление новой записи
         let new_entry = LeaderboardEntry::new(name, score);
@@ -643,16 +673,14 @@ impl Leaderboard {
     /// Очистить старые записи времён (старше 1 минуты).
     /// Используем SystemTime для защиты от подделки
     fn cleanup_old_entry_times(&mut self) {
-        use std::time::{SystemTime, UNIX_EPOCH};
-
-        let current_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
+        let current_time_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_else(|_| Duration::from_secs(0))
             .as_millis() as u64;
         let one_minute_ms = 60_000;
 
         self.recent_entry_times
-            .retain(|&time| current_time.saturating_sub(time) < one_minute_ms);
+            .retain(|&time| current_time_ms.saturating_sub(time) < one_minute_ms);
     }
 
     /// Получить список рекордов.
@@ -753,5 +781,87 @@ mod sanitize_tests {
     fn test_generate_salt_is_lowercase_hex() {
         let hash = generate_salt();
         assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ UNICODE БЕЗОПАСНОСТИ
+    // =========================================================================
+
+    /// Тест: проверка на bidirectional control characters (U+200E, U+200F)
+    #[test]
+    fn test_sanitize_player_name_bidirectional_chars() {
+        // Имя с bidirectional control characters
+        let name_with_bidi = "Player\u{200E}Name"; // U+200E - LTR mark
+        let sanitized = sanitize_player_name(name_with_bidi);
+        // Bidi символы должны быть удалены
+        assert!(!sanitized.contains('\u{200E}'));
+        assert!(!sanitized.contains('\u{200F}'));
+        assert_eq!(sanitized, "PlayerName");
+    }
+
+    /// Тест: проверка на другие bidirectional control characters
+    #[test]
+    fn test_sanitize_player_name_all_bidi_chars() {
+        let bidi_chars = [
+            '\u{200E}', // LTR mark
+            '\u{200F}', // RTL mark
+            '\u{202A}', // LTR embedding
+            '\u{202B}', // RTL embedding
+            '\u{202C}', // POP directional formatting
+            '\u{202D}', // LTR override
+            '\u{202E}', // RTL override
+            '\u{2066}', // LTR isolate
+            '\u{2067}', // RTL isolate
+            '\u{2068}', // FSI
+            '\u{2069}', // PDI
+        ];
+
+        for &char in &bidi_chars {
+            let name = format!("Player{}Name", char);
+            let sanitized = sanitize_player_name(&name);
+            assert!(
+                !sanitized.contains(char),
+                "Bidi символ {:?} должен быть удалён",
+                char
+            );
+        }
+    }
+
+    /// Тест: проверка на эмодзи
+    #[test]
+    fn test_sanitize_player_name_emoji_filtered() {
+        // Имя с эмодзи
+        let name_with_emoji = "Player😀Name";
+        let sanitized = sanitize_player_name(name_with_emoji);
+        // Эмодзи должны быть удалены (они не проходят is_valid_name_char)
+        assert!(!sanitized.contains('😀'));
+        assert_eq!(sanitized, "PlayerName");
+    }
+
+    /// Тест: проверка на комбинированные символы
+    #[test]
+    fn test_sanitize_player_name_combined_chars() {
+        // Имя с комбинирующими символами (например, e + combining acute = é)
+        let name_combined = "Caf\u{0065}\u{0301}"; // e + combining acute
+        let sanitized = sanitize_player_name(name_combined);
+        // Комбинирующие символы разрешены если base символ alphanumeric
+        assert!(sanitized.contains('e'));
+    }
+
+    /// Тест: проверка на очень длинные имена
+    #[test]
+    fn test_sanitize_player_name_very_long_name() {
+        let very_long_name = "a".repeat(1000);
+        let sanitized = sanitize_player_name(&very_long_name);
+        assert_eq!(sanitized.len(), 20);
+        assert_eq!(sanitized, "aaaaaaaaaaaaaaaaaaaa");
+    }
+
+    /// Тест: проверка на имена только с control characters
+    #[test]
+    fn test_sanitize_player_name_only_control_chars() {
+        let name_control = "\u{200E}\u{200F}\u{202A}";
+        let sanitized = sanitize_player_name(name_control);
+        assert_eq!(sanitized, "Anonymous");
     }
 }

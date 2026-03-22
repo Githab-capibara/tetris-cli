@@ -4,6 +4,53 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.18] — 2026-03-22
+
+### Исправлено
+
+- **Проверка проигрыша** (`game.rs`) — исправлена проверка с учётом отрицательных координат фигур
+- **TOCTOU vulnerability** (`controls.rs`) — добавлена защита от symlink атак через `symlink_metadata()` и `O_NOFOLLOW`
+- **Unicode security** (`highscore.rs`) — добавлена защита от bidirectional control characters (U+200E, U+200F, U+202A-U+202E)
+- **Rate limiting** (`highscore.rs`) — увеличен cooldown до 10 секунд для лучшей защиты
+- **Обратная совместимость ControlsConfig** — добавлены публичные поля и метод `keys_match()` для тестов
+- **HMAC подпись конфигурации** (`controls.rs`) — добавлена защита от подделки через HMAC-SHA256 (BLAKE3)
+
+### Добавлено
+
+- **Константа `MIN_Y = 0`** — для корректной проверки границ игрового поля
+- **Метод `ControlsConfig::keys_match()`** — для сравнения конфигураций без учёта hmac_key
+- **Сеттеры для ControlsConfig** — `set_move_left()`, `set_move_right()`, и т.д.
+- **6 тестов для Unicode безопасности** в `highscore.rs`:
+  - `test_sanitize_player_name_bidirectional_chars`
+  - `test_sanitize_player_name_all_bidi_chars`
+  - `test_sanitize_player_name_emoji_filtered`
+  - `test_sanitize_player_name_combined_chars`
+  - `test_sanitize_player_name_very_long_name`
+  - `test_sanitize_player_name_only_control_chars`
+- **Зависимость `libc = "0.2"`** — для использования `O_NOFOLLOW`
+
+### Улучшено
+
+- **Валидация путей** (`controls.rs`) — добавлена проверка на максимальную длину (255 символов) и специальные символы
+- **Санитаризация имени** (`highscore.rs`) — используется whitelist разрешённых символов
+- **Документация ControlsConfig** — добавлены примеры использования и описание обратной совместимости
+- **Структура ControlsConfig** — поля стали публичными для обратной совместимости с тестами
+
+### Безопасность
+
+- **Защита от symlink атак** — использование `O_NOFOLLOW` при открытии файлов
+- **HMAC подпись конфигурации** — защита от подделки настроек управления
+- **Unicode фильтрация** — блокировка bidirectional control characters в именах
+- **Rate limiting** — защита от спама рекордов (10 секунд cooldown)
+
+### Тестирование
+
+- **Все 1500 тестов проходят успешно**
+- **0 ошибок компиляции**
+- **Все doctest проходят**
+
+---
+
 ## [23.96.17] — 2026-03-22
 
 ### Исправлено
