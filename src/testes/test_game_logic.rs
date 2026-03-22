@@ -12,7 +12,7 @@
 
 use crate::game::{Dir, GameMode, GameState};
 use crate::game::{
-    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, PIECE_SCORE_INC, LINE_SCORES,
+    COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, PIECE_SCORE_INC,
     SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
@@ -409,7 +409,10 @@ fn test_all_tetromino_rotate() {
 /// Проверяет значение базовых очков за размещение фигуры.
 #[test]
 fn test_piece_score_constant() {
-    assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "Очки за фигуру должны быть 100");
+    assert_eq!(
+        PIECE_SCORE_INC, LINE_SCORES[0],
+        "Очки за фигуру должны быть 100"
+    );
     assert_eq!(PIECE_SCORE_INC, 100, "Очки за фигуру должны быть 100");
 }
 

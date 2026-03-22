@@ -19,7 +19,10 @@ use crate::game::{
 /// Тест 1: Проверка константы PIECE_SCORE_INC
 #[test]
 fn test_scoring_piece_score_constant() {
-    assert_eq!(PIECE_SCORE_INC, LINE_SCORES[0], "Очки за фигуру должны быть 100");
+    assert_eq!(
+        PIECE_SCORE_INC, LINE_SCORES[0],
+        "Очки за фигуру должны быть 100"
+    );
     assert_eq!(PIECE_SCORE_INC, 100, "Очки за фигуру должны быть 100");
 }
 
@@ -159,7 +162,11 @@ fn test_scoring_row_score_positive() {
 /// Тест 18: Проверка что LINE_SCORES[0] делится на 10
 #[test]
 fn test_scoring_row_score_divisible_by_10() {
-    assert_eq!(LINE_SCORES[0] % 10, 0, "Очки за линию должны делиться на 10");
+    assert_eq!(
+        LINE_SCORES[0] % 10,
+        0,
+        "Очки за линию должны делиться на 10"
+    );
 }
 
 /// Тест 19: Проверка что очки за 4 линии больше чем за 1+1+1+1
