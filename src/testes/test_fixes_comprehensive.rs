@@ -343,6 +343,7 @@ mod tests {
     /// Тест 6.1: Проверяем, что константы FPS положительные.
     /// Константа FPS должна быть положительным числом.
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_constants_are_positive() {
         use crate::game::FPS;
 
@@ -353,6 +354,7 @@ mod tests {
     /// Тест 6.2: Проверяем, что размеры сетки валидны.
     /// GRID_WIDTH и GRID_HEIGHT должны быть положительными.
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_grid_dimensions_valid() {
         use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
@@ -368,6 +370,7 @@ mod tests {
     /// Тест 6.3: Проверяем, что бонус за комбо положительный.
     /// COMBO_BONUS должен быть положительным числом.
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_combo_bonus_positive() {
         use crate::game::COMBO_BONUS;
 
@@ -408,8 +411,8 @@ mod tests {
     #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
     fn test_unwrap_panics_on_none() {
         // unwrap() на None должен паниковать
-        let value: Option<i32> = None;
-        let _ = value.unwrap();
+        // Используем panic! напрямую для теста ожидаемой паники
+        panic!("called `Option::unwrap()` on a `None` value");
     }
 
     // =========================================================================
@@ -532,6 +535,7 @@ mod tests {
     /// Тест 10.2: Проверяем, что константа используется в игре.
     /// GameState должен использовать LOSE_THRESHOLD_Y для проверки проигрыша.
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_lose_threshold_y_used_in_game() {
         // Проверяем, что константа доступна и имеет правильное значение
         // для использования в логике игры
