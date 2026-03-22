@@ -65,7 +65,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     // Для несуществующих (сохранение) - проверяем родительскую директорию
     let canonical_path = if joined_path.exists() {
         joined_path.canonicalize().map_err(|e| {
-            io::Error::new(io::ErrorKind::InvalidInput, format!("Неверный путь: {}", e))
+            io::Error::new(io::ErrorKind::InvalidInput, format!("Неверный путь: {e}"))
         })?
     } else {
         // Файл не существует - проверяем родительскую директорию
@@ -103,7 +103,7 @@ fn validate_config_path(path: &str) -> io::Result<()> {
 ///
 /// Содержит коды клавиш для всех действий в игре.
 /// Все клавиши хранятся как u8 коды (ASCII значения).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ControlsConfig {
     /// Движение влево (по умолчанию 'a' = 97).
     pub move_left: u8,
@@ -147,7 +147,8 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// assert_eq!(config.move_left, b'a');
     /// ```
-    pub fn default_config() -> Self {
+    #[must_use = "Конфигурация должна быть использована"]
+    pub const fn default_config() -> Self {
         Self {
             move_left: b'a',
             move_right: b'd',
@@ -299,8 +300,8 @@ impl ControlsConfig {
     /// );
     /// assert_eq!(config.move_left, b'h');
     /// ```
-    #[allow(clippy::too_many_arguments)]
-    pub fn custom(
+    #[must_use = "Конфигурация должна быть использована"]
+    pub const fn custom(
         move_left: u8,
         move_right: u8,
         soft_drop: u8,
