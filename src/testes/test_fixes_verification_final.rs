@@ -150,7 +150,7 @@ mod problem_2_io_doctest {
 // cfg(test) removed - parent module is already test-only
 mod problem_3_dir_down_panic {
     use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::RotationDirection;
+    use crate::types::RotationDirection;
 
     /// Тест 3.1: Проверяет, что enum `RotationDirection` существует
     ///
@@ -262,7 +262,7 @@ mod problem_4_canvas_default_unwrap {
 // ----------------------------------------------------------------------------
 mod problem_5_unreachable_game {
     use crate::game::GameState;
-use crate::types::Direction;
+    use crate::types::Direction;
 
     /// Тест 5.1: Проверяет enum `MoveDirection`
     ///
@@ -1197,8 +1197,8 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
 // Тест 2: Dir импортирован корректно
 // ----------------------------------------------------------------------------
 mod test_dir_import_in_tests {
-    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
+    use crate::types::Direction;
 
     /// Тест проверяет что Dir импортирован корректно
     ///
@@ -1568,7 +1568,7 @@ mod test_f32_to_u32_conversion_safety {
 // ----------------------------------------------------------------------------
 mod test_rotate_old_to_rotate_migration {
     use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::RotationDirection;
+    use crate::types::RotationDirection;
 
     /// Тест проверяет что `rotate()` работает с `RotationDirection`
     ///

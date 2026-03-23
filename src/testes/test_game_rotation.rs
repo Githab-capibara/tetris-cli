@@ -14,8 +14,8 @@
 // Разрешаем использование deprecated метода rotate_old() для тестирования обратной совместимости
 #![allow(deprecated)]
 
-use crate::types::Direction;
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
+use crate::types::Direction;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-7: Вращение по часовой для всех фигур

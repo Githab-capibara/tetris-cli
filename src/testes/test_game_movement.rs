@@ -12,8 +12,8 @@
 //! Все тесты независимы и проверяют отдельные аспекты механики движения.
 
 use crate::game::GameState;
-use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::types::Direction;
 use crate::types::RotationDirection;
 
 // ============================================================================
@@ -442,7 +442,8 @@ fn test_move_above_fixed_piece() {
     let state = GameState::new();
 
     // В начале игры поле пустое, движение возможно
-    let can_move = state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right);
+    let can_move = state.can_move_curr_shape_direction(Direction::Left)
+        || state.can_move_curr_shape_direction(Direction::Right);
     assert!(can_move, "В начале игры движение должно быть возможным");
 }
 
@@ -470,7 +471,8 @@ fn test_movement_blocked_by_obstacle_right() {
 
     // В пустом поле движение должно быть возможным
     assert!(
-        state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right),
+        state.can_move_curr_shape_direction(Direction::Left)
+            || state.can_move_curr_shape_direction(Direction::Right),
         "В пустом поле движение должно быть возможным"
     );
 }
@@ -490,7 +492,8 @@ fn test_move_in_narrow_space() {
 
     // Движение всё ещё должно быть возможным
     assert!(
-        state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right),
+        state.can_move_curr_shape_direction(Direction::Left)
+            || state.can_move_curr_shape_direction(Direction::Right),
         "Движение должно быть возможным в узком пространстве"
     );
 }
@@ -787,8 +790,8 @@ fn test_movement_after_clockwise_rotation() {
             .rotate(RotationDirection::Clockwise);
 
         // Проверяем возможность движения после вращения
-        let can_move =
-            state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right);
+        let can_move = state.can_move_curr_shape_direction(Direction::Left)
+            || state.can_move_curr_shape_direction(Direction::Right);
         assert!(
             can_move,
             "Фигура должна иметь возможность движения после вращения по часовой"
@@ -808,8 +811,8 @@ fn test_movement_after_counter_clockwise_rotation() {
             .rotate(RotationDirection::CounterClockwise);
 
         // Проверяем возможность движения
-        let can_move =
-            state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right);
+        let can_move = state.can_move_curr_shape_direction(Direction::Left)
+            || state.can_move_curr_shape_direction(Direction::Right);
         assert!(
             can_move,
             "Фигура должна иметь возможность движения после вращения против часовой"
@@ -833,7 +836,8 @@ fn test_movement_after_full_rotation_cycle() {
     }
 
     // Движение должно быть возможным
-    let can_move = state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right);
+    let can_move = state.can_move_curr_shape_direction(Direction::Left)
+        || state.can_move_curr_shape_direction(Direction::Right);
     assert!(
         can_move,
         "Фигура должна иметь возможность движения после полного цикла вращения"
@@ -881,8 +885,8 @@ fn test_movement_after_hold() {
     let state = GameState::new();
 
     // Проверяем, что фигура может двигаться до hold
-    let can_move_before =
-        state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right);
+    let can_move_before = state.can_move_curr_shape_direction(Direction::Left)
+        || state.can_move_curr_shape_direction(Direction::Right);
     assert!(
         can_move_before,
         "Фигура должна иметь возможность движения до удержания"

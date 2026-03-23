@@ -47,7 +47,7 @@ pub fn hash(data: &str) -> String {
 
 /// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
 ///
-/// Использует криптографически стойкий генератор случайных чисел (OsRng).
+/// Использует криптографически стойкий генератор случайных чисел (`OsRng`).
 ///
 /// # Возвращает
 /// Hex-строка из 64 символов (32 байта = 256 бит)
@@ -143,7 +143,11 @@ mod crypto_tests {
     #[test]
     fn test_generate_salt_length() {
         let salt = generate_salt();
-        assert_eq!(salt.len(), 64, "Длина соли должна быть 64 символа (256 бит)");
+        assert_eq!(
+            salt.len(),
+            64,
+            "Длина соли должна быть 64 символа (256 бит)"
+        );
     }
 
     #[test]
@@ -172,7 +176,10 @@ mod crypto_tests {
         let key = "тестовый ключ";
         let data = "тестовые данные";
         let signature = hmac(key, data);
-        assert!(verify_hmac(key, data, &signature), "Правильная подпись должна проходить проверку");
+        assert!(
+            verify_hmac(key, data, &signature),
+            "Правильная подпись должна проходить проверку"
+        );
     }
 
     #[test]
@@ -180,7 +187,10 @@ mod crypto_tests {
         let key = "ключ1";
         let data = "данные";
         let signature = hmac(key, data);
-        assert!(!verify_hmac("ключ2", data, &signature), "Неправильный ключ не должен проходить проверку");
+        assert!(
+            !verify_hmac("ключ2", data, &signature),
+            "Неправильный ключ не должен проходить проверку"
+        );
     }
 
     #[test]
@@ -188,13 +198,19 @@ mod crypto_tests {
         let key = "ключ";
         let data = "данные1";
         let signature = hmac(key, data);
-        assert!(!verify_hmac(key, "данные2", &signature), "Неправильные данные не должны проходить проверку");
+        assert!(
+            !verify_hmac(key, "данные2", &signature),
+            "Неправильные данные не должны проходить проверку"
+        );
     }
 
     #[test]
     fn test_verify_hmac_invalid_signature() {
         let key = "ключ";
         let data = "данные";
-        assert!(!verify_hmac(key, data, "неправильная подпись"), "Неправильная подпись не должна проходить проверку");
+        assert!(
+            !verify_hmac(key, data, "неправильная подпись"),
+            "Неправильная подпись не должна проходить проверку"
+        );
     }
 }

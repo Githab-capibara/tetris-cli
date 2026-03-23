@@ -34,7 +34,10 @@ use std::fs::OpenOptions;
 /// # Устарело
 /// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
 /// Эта функция оставлена для обратной совместимости тестов.
-#[deprecated(since = "23.96.20", note = "Используйте `crate::crypto::generate_salt()`")]
+#[deprecated(
+    since = "23.96.20",
+    note = "Используйте `crate::crypto::generate_salt()`"
+)]
 #[allow(dead_code)]
 pub fn generate_salt() -> String {
     crypto::generate_salt()
@@ -44,7 +47,10 @@ pub fn generate_salt() -> String {
 ///
 /// # Устарело
 /// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
-#[deprecated(since = "2.1.0", note = "Используйте `generate_salt()` из модуля crypto")]
+#[deprecated(
+    since = "2.1.0",
+    note = "Используйте `generate_salt()` из модуля crypto"
+)]
 #[allow(dead_code)]
 pub fn get_random_hash() -> String {
     generate_salt()

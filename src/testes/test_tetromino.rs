@@ -11,8 +11,8 @@
 
 #![allow(deprecated)]
 
-use crate::types::Direction;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
+use crate::types::Direction;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-7: Создание каждой фигуры

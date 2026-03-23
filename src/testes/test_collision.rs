@@ -8,9 +8,9 @@
 //! - Тесты граничных случаев (5 тестов)
 
 use crate::game::GameState;
-use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, SHAPE_COORDS};
+use crate::types::Direction;
 use crate::types::RotationDirection;
 
 // ============================================================================

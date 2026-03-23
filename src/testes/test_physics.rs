@@ -11,9 +11,9 @@
 //! Все тесты независимы и проверяют отдельные аспекты физической механики.
 
 use crate::game::GameState;
-use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::BagGenerator;
+use crate::types::Direction;
 use crate::types::RotationDirection;
 
 // ============================================================================
@@ -236,7 +236,8 @@ fn test_collisions_in_empty_field() {
     // Если фигура не у границы, хотя бы одно направление должно быть доступно
     if curr_x > 0.0 && curr_x < (GRID_WIDTH - 1) as f32 {
         assert!(
-            state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right),
+            state.can_move_curr_shape_direction(Direction::Left)
+                || state.can_move_curr_shape_direction(Direction::Right),
             "В центре поля хотя бы одно направление должно быть доступно"
         );
     }

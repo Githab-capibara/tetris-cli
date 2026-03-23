@@ -12,9 +12,9 @@
 
 use crate::controls::ControlsConfig;
 use crate::game::{GameMode, GameState};
-use crate::types::Direction;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::types::Direction;
 use crate::types::RotationDirection;
 
 // ============================================================================
