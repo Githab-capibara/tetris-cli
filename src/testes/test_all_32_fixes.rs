@@ -167,8 +167,8 @@ fn test_4_ui_positioning_constants() {
 /// при вращении фигуры без паники.
 #[test]
 fn test_5_dir_down_ignored_in_rotation() {
-    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
+    use crate::types::Direction;
 
     // Создаём тестовую фигуру
     let mut tetromino = Tetromino {
@@ -200,8 +200,8 @@ fn test_5_dir_down_ignored_in_rotation() {
 /// для предотвращения аллокаций.
 #[test]
 fn test_6_tetromino_dir_copy() {
-    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
+    use crate::types::Direction;
 
     // Проверяем, что Dir реализует Copy
     let dir1 = Direction::Down;
@@ -570,7 +570,7 @@ fn test_18_naming_consistency() {
 #[test]
 fn test_19_debug_assert_for_conversions() {
     use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::RotationDirection;
+    use crate::types::RotationDirection;
 
     // Создаём фигуру
     let mut tetromino = Tetromino {
@@ -776,7 +776,7 @@ fn test_27_must_use_on_getters() {
 fn test_28_can_rotate_optimization() {
     use crate::game::GameState;
     use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::RotationDirection;
+    use crate::types::RotationDirection;
 
     // Создаём состояние игры
     let state = GameState::new();
@@ -899,7 +899,7 @@ fn test_32_full_integration() {
     use crate::game::GameState;
     use crate::highscore::{LeaderboardEntry, SaveData};
     use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
-use crate::types::RotationDirection;
+    use crate::types::RotationDirection;
 
     // Создаём состояние игры
     let state = GameState::new();

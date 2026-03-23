@@ -1814,7 +1814,12 @@ impl GameState {
     /// # Исправление #14
     /// Оптимизированы проверки границ: проверка верхней границы (y < 0) удалена,
     /// так как фигуры могут появляться выше поля.
-    fn check_collision_direction(&self, coords: &[(i16, i16)], pos: (f32, f32), dir: Direction) -> bool {
+    fn check_collision_direction(
+        &self,
+        coords: &[(i16, i16)],
+        pos: (f32, f32),
+        dir: Direction,
+    ) -> bool {
         let (shape_x, shape_y) = pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;

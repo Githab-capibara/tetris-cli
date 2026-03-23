@@ -10,9 +10,9 @@
 //! - Тесты отрисовки (10 тестов)
 
 use crate::game::{GameMode, GameState};
-use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
+use crate::types::Direction;
 use crate::types::RotationDirection;
 
 // ============================================================================

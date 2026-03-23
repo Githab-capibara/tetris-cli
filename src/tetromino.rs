@@ -424,9 +424,9 @@ impl Tetromino {
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
-                crate::types::Direction::Left => (y, -x),  // Поворот против часовой
+                crate::types::Direction::Left => (y, -x), // Поворот против часовой
                 crate::types::Direction::Right => (-y, x), // Поворот по часовой
-                crate::types::Direction::Down => return,   // Игнорируем
+                crate::types::Direction::Down => return,  // Игнорируем
             };
 
             // Проверка границ в отладочном режиме

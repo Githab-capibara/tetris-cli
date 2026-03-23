@@ -748,6 +748,9 @@ mod testes {
     // Тесты для всех исправленных проблем аудита (10 тестов + 1 интеграционный)
     pub mod test_audit_fixes;
 
+    // Тесты ограничения UTF-8 в KeyReader (7 тестов)
+    pub mod test_utf8_limitation;
+
     // Комплексные тесты для всех 32 исправленных проблем (33 теста)
     pub mod test_32_fixes_comprehensive;
 

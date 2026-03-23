@@ -102,6 +102,10 @@
 // ============================================================================
 // Импортируем необходимые модули и типы для работы главного меню
 
+/// Модуль криптографических утилит.
+/// Содержит hash, generate_salt, hmac, verify_hmac.
+mod crypto;
+
 /// Модуль общих типов.
 /// Содержит Direction, RotationDirection, UpdateEndState.
 mod types;
@@ -147,7 +151,7 @@ use termion::{
 
 /// Главное меню игры с управлением и информацией.
 ///
-/// Содержит ровно 25 строк (равно DISP_HEIGHT), что обеспечивает
+/// Содержит ровно 25 строк (равно `DISP_HEIGHT`), что обеспечивает
 /// идеальное заполнение минимального размера терминала.
 ///
 /// ## Структура меню (построчно):
@@ -243,7 +247,7 @@ const MENU: [&str; DISP_HEIGHT as usize] = [
 /// ## Почему &dyn Color?
 /// - Позволяет использовать любой цвет, реализующий трейт Color
 /// - Динамическая диспетчеризация во время выполнения
-/// - Совместимость с termion::color::Color
+/// - Совместимость с `termion::color::Color`
 const MENU_COLOR: &dyn Color = &White;
 
 /// Меню таблицы лидеров.
@@ -296,11 +300,11 @@ const LEADERBOARD_MENU: [&str; 8] = [
 ///
 /// 3. **Инициализация ввода/вывода**:
 ///    - Создание Canvas для отрисовки в терминале
-///    - Создание KeyReader для чтения нажатий клавиш
+///    - Создание `KeyReader` для чтения нажатий клавиш
 ///
 /// 4. **Главный цикл меню** (60 FPS):
 ///    - Отрисовка меню с текущим рекордом
-///    - Поддержание стабильного FPS через sleep()
+///    - Поддержание стабильного FPS через `sleep()`
 ///    - Обработка нажатий клавиш:
 ///      - `Enter` — запуск классической игры
 ///      - `R` — запуск режима спринт
@@ -345,7 +349,7 @@ const LEADERBOARD_MENU: [&str; 8] = [
 /// ## 📝 Примечания
 ///
 /// - Цикл меню работает на 60 FPS для плавной отрисовки
-/// - Поддерживает FPS через расчёт дельты времени и sleep()
+/// - Поддерживает FPS через расчёт дельты времени и `sleep()`
 /// - Рекорд отображается в реальном времени в меню
 /// - Выход через Backspace корректно сбрасывает терминал
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -388,9 +392,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // terminal_size() возвращает Result<(u16, u16), Error>
     let (width, height) = terminal_size().map_err(|e| {
         eprintln!(
-            "Ошибка: не удалось получить размер терминала: {}.\n\
-             Минимальный размер: {}x{} символов.",
-            e, DISP_WIDTH, DISP_HEIGHT
+            "Ошибка: не удалось получить размер терминала: {e}.\n\
+             Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов."
         );
         e
     })?;
@@ -404,9 +407,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::io::ErrorKind::InvalidInput,
             format!(
                 "Окно терминала слишком маленькое!\n\
-                 Минимальный размер: {}x{} символов.\n\
-                 Текущий размер: {}x{} символов.",
-                DISP_WIDTH, DISP_HEIGHT, width, height
+                 Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов.\n\
+                 Текущий размер: {width}x{height} символов."
             ),
         );
         // Исправление #15: используем {err} вместо "{}", err
@@ -457,7 +459,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Расчёт времени, прошедшего с последнего кадра (в миллисекундах)
         // subsec_millis() возвращает дробную часть секунды как u32
-        let delta_time_ms = now.duration_since(last_time).subsec_millis() as u64;
+        let delta_time_ms = u64::from(now.duration_since(last_time).subsec_millis());
 
         // Если прошло меньше времени чем нужно для целевого FPS
         if delta_time_ms < interval_ms {
@@ -477,7 +479,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Преобразование рекорда в строку для отображения в меню
         // {:10} означает форматирование с шириной 10 символов (выравнивание)
-        let hs_str = format!("{:10}", high_score);
+        let high_score_display = format!("{high_score:10}");
 
         // ---------------------------------------------------------------
         // ОТРИСОВКА МЕНЮ
@@ -490,7 +492,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Отрисовка текущего рекорда на позиции (11, 21)
         // Позиция выбрана так, чтобы попасть в поле "Рекорд:" в меню
-        cnv.draw_string(&hs_str, (11, 21), &MENU_COLOR, &Reset);
+        cnv.draw_string(&high_score_display, (11, 21), &MENU_COLOR, &Reset);
 
         // Обновление экрана (flush буфера терминала)
         // Без этого изменения не появятся на экране
@@ -517,7 +519,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let new_score = run_game_mode(
                     &mut cnv,
                     &mut inp,
-                    &hs_str,
+                    &high_score_display,
                     state,
                     true, // Сохранять в таблицу лидеров
                     &mut leaderboard,
@@ -541,7 +543,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 run_game_mode(
                     &mut cnv,
                     &mut inp,
-                    &hs_str,
+                    &high_score_display,
                     state,
                     false, // Не сохранять в таблицу лидеров
                     &mut leaderboard,
@@ -559,7 +561,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let new_score = run_game_mode(
                     &mut cnv,
                     &mut inp,
-                    &hs_str,
+                    &high_score_display,
                     state,
                     true, // Сохранять в таблицу лидеров
                     &mut leaderboard,
@@ -622,7 +624,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// # Аргументы
 /// * `cnv` - канвас для отрисовки
 /// * `inp` - читатель нажатий клавиш
-/// * `hs_str` - строка рекорда для отображения
+/// * `high_score_display` - строка рекорда для отображения
 /// * `state` - состояние игры
 /// * `save_to_leaderboard` - сохранять ли в таблицу лидеров (true для классики)
 /// * `leaderboard` - таблица лидеров (изменяемая)
@@ -633,13 +635,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn run_game_mode(
     cnv: &mut Canvas,
     inp: &mut KeyReader,
-    hs_str: &str,
+    high_score_display: &str,
     mut state: GameState,
     save_to_leaderboard: bool,
     leaderboard: &mut Leaderboard,
 ) -> u128 {
     // Запуск игрового цикла
-    let new_score = state.play(cnv, inp, hs_str);
+    let new_score = state.play(cnv, inp, high_score_display);
 
     // Отображение статистики после завершения игры
     show_game_stats(cnv, inp, &state);
@@ -729,7 +731,7 @@ fn run_game_mode(
 ///
 /// ## ⏱️ Производительность
 ///
-/// Функция использует sleep(Duration::from_millis(16)) после каждой итерации
+/// Функция использует `sleep(Duration::from_millis(16))` после каждой итерации
 /// для предотвращения высокой нагрузки на CPU. Это ограничивает частоту
 /// опроса клавиатуры до ~60 раз в секунду, обеспечивая плавный отклик.
 ///
@@ -758,7 +760,7 @@ fn run_game_mode(
 ///
 /// # Безопасность
 /// Исправление #11: расширенная валидация Unicode для поддержки международных имён.
-/// Запрещены управляющие символы и эмодзи через is_control().
+/// Запрещены управляющие символы и эмодзи через `is_control()`.
 fn is_valid_name_char(c: char) -> bool {
     // Исправление #11: расширенная валидация Unicode
     // Разрешаем ASCII alphanumeric, русские буквы и безопасные символы
@@ -833,7 +835,7 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                     // Исправление: убираем избыточную очистку пробелами
                     // Просто перерисовываем имя с заполнением пробелами до MAX_NAME_LEN
                     cnv.draw_string(
-                        &format!("{:<width$}", name, width = MAX_NAME_LEN),
+                        &format!("{name:<MAX_NAME_LEN$}"),
                         (16, 10),
                         MENU_COLOR,
                         &Reset,
@@ -955,7 +957,7 @@ fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
 ///
 /// ## ⏱️ Производительность
 ///
-/// Использует sleep(Duration::from_millis(16)) для предотвращения
+/// Использует `sleep(Duration::from_millis(16))` для предотвращения
 /// высокой нагрузки на CPU во время ожидания ввода.
 fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderboard) {
     // ========================================================================
@@ -1089,7 +1091,7 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
 /// ## 🔧 Технические детали
 ///
 /// ### Получение данных:
-/// - `state.get_stats()` — получение GameStats
+/// - `state.get_stats()` — получение `GameStats`
 /// - `state.get_mode()` — определение режима игры
 /// - `stats.get_elapsed_time()` — время в секундах (f64)
 /// - `stats.total_pieces()` — сумма всех фигур
@@ -1102,7 +1104,7 @@ fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderb
 ///
 /// ## ⏱️ Производительность
 ///
-/// Использует sleep(Duration::from_millis(16)) для предотвращения
+/// Использует `sleep(Duration::from_millis(16))` для предотвращения
 /// высокой нагрузки на CPU во время ожидания ввода.
 fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
     // ========================================================================

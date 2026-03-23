@@ -171,8 +171,8 @@ fn test_ghost_shape_efficient_computation() {
 /// без паники (игнорируется).
 #[test]
 fn test_dir_down_unified_handling() {
-    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
+    use crate::types::Direction;
 
     // Создаём тестовую фигуру
     let mut tetromino = Tetromino {

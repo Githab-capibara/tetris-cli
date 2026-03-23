@@ -24,10 +24,10 @@
 
 use crate::controls::ControlsConfig;
 use crate::game::GameState;
-use crate::types::Direction;
 use crate::highscore::{generate_salt, Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
 use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::Direction;
 use std::fs;
 use std::path::Path;
 
