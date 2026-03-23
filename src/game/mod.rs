@@ -281,6 +281,28 @@ impl GameState {
     pub fn set_curr_shape_for_bench(&mut self, shape: crate::tetromino::Tetromino) {
         self.curr_shape = shape;
     }
+
+    /// Проверить, может ли призрак двигаться в указанном направлении.
+    ///
+    /// Используется для отрисовки призрачной фигуры (предпросмотр приземления).
+    pub fn can_move_ghost_shape_direction(&self, dir: crate::types::Direction) -> bool {
+        can_move_curr_shape_direction(self, dir)
+    }
+
+    /// Получить значение флага возможности удержания фигуры.
+    ///
+    /// # Возвращает
+    /// `true` если можно удержать текущую фигуру
+    pub fn can_hold(&self) -> bool {
+        self.can_hold
+    }
+
+    /// Увеличить счетчик очищенных линий.
+    ///
+    /// Используется в тестах для проверки обновления счетчика.
+    pub fn increment_lines_cleared(&mut self) {
+        self.lines_cleared = self.lines_cleared.saturating_add(1);
+    }
 }
 
 // Импортируем типы из state для использования в impl
@@ -617,8 +639,6 @@ mod game_tests {
         use std::time::Instant;
 
         let state = GameState::new();
-        let coords = [(0, 0), (1, 0), (2, 0), (0, 1)];
-        let pos = (4.0f32, 0.0f32);
         let start = Instant::now();
 
         for _ in 0..10000 {
