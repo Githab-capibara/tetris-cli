@@ -19,6 +19,7 @@ use crate::crypto::{self, hash};
 use confy::{load, store};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+use std::fmt::Write;
 use std::fs::OpenOptions;
 
 // ===========================================================================
@@ -154,7 +155,11 @@ fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
 ///
 /// # Возвращает
 /// - `Ok(u64)` - текущее время в миллисекундах с начала UNIX epoch
-/// - `Err(std::time::SystemError)` - если системное время недоступно
+/// - `Err(std::time::SystemTimeError)` - если системное время недоступно
+///
+/// # Errors
+/// Возвращает [`std::time::SystemTimeError`] если системное время недоступно или
+/// если текущее время меньше UNIX EPOCH.
 ///
 /// # Исправление #11
 /// Выделена общая логика получения системного времени для переиспользования.
@@ -178,9 +183,7 @@ fn load_rate_limit_state() -> RateLimitState {
     use std::fs;
 
     // Получаем путь к файлу конфигурации
-    let proj_dirs = if let Some(dirs) = ProjectDirs::from("", "", APP_NAME) {
-        dirs
-    } else {
+    let Some(proj_dirs) = ProjectDirs::from("", "", APP_NAME) else {
         eprintln!("Информация: не удалось определить директорию конфигурации. Используется новое состояние.");
         return RateLimitState::default();
     };
@@ -252,9 +255,7 @@ fn save_rate_limit_state(state: &RateLimitState) {
     use fs2::FileExt;
 
     // Получаем путь к файлу конфигурации
-    let proj_dirs = if let Some(dirs) = ProjectDirs::from("", "", APP_NAME) {
-        dirs
-    } else {
+    let Some(proj_dirs) = ProjectDirs::from("", "", APP_NAME) else {
         eprintln!("Предупреждение: не удалось определить директорию конфигурации.");
         return;
     };
@@ -326,6 +327,11 @@ impl std::error::Error for ConfigError {}
 /// `Ok(())` если директория доступна для записи,
 /// `Err(ConfigError)` если директория недоступна
 ///
+/// # Errors
+/// Возвращает [`ConfigError::DirectoryNotWritable`] если директория конфигурации
+/// недоступна для записи или не существует.
+/// Возвращает [`ConfigError::IoError`] если не удалось определить директорию конфигурации.
+///
 /// # Примечания
 /// Проверяет возможность создания временного файла в директории конфигурации.
 #[allow(dead_code)]
@@ -342,14 +348,16 @@ pub fn check_config_directory_writable() -> Result<(), ConfigError> {
     // Проверяем существование директории
     if !config_dir.exists() {
         return Err(ConfigError::DirectoryNotWritable(format!(
-            "Директория не существует: {config_dir:?}"
+            "Директория не существует: {}",
+            config_dir.display()
         )));
     }
 
     // Проверяем, что это действительно директория
     if !config_dir.is_dir() {
         return Err(ConfigError::DirectoryNotWritable(format!(
-            "Путь не является директорией: {config_dir:?}"
+            "Путь не является директорией: {}",
+            config_dir.display()
         )));
     }
 
@@ -362,7 +370,8 @@ pub fn check_config_directory_writable() -> Result<(), ConfigError> {
             Ok(())
         }
         Err(e) => Err(ConfigError::DirectoryNotWritable(format!(
-            "Не удалось создать тестовый файл в {config_dir:?}: {e}"
+            "Не удалось создать тестовый файл в {}: {e}",
+            config_dir.display()
         ))),
     }
 }
@@ -544,6 +553,10 @@ impl SaveData {
     /// - `Ok(())` - рекорд успешно сохранён
     /// - `Err(ConfigError)` - ошибка при сохранении
     ///
+    /// # Errors
+    /// Возвращает [`ConfigError::IoError`] если произошла ошибка при сохранении
+    /// конфигурации через `confy::store()`.
+    ///
     /// # Пример
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
@@ -693,7 +706,6 @@ impl LeaderboardEntry {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         // для предотвращения лишних аллокаций.
         // Используем точную оценку длины числа через ilog10() вместо константы U128_MAX_DIGITS.
-        use std::fmt::Write;
         let score_digits = if score > 0 {
             score.ilog10() as usize + 1
         } else {
@@ -727,7 +739,6 @@ impl LeaderboardEntry {
     pub fn is_valid(&self) -> bool {
         // Оптимизация: используем String::with_capacity() + write!() вместо format!().
         // Используем точную оценку длины числа через ilog10().
-        use std::fmt::Write;
         let score_digits = if self.score_value > 0 {
             self.score_value.ilog10() as usize + 1
         } else {

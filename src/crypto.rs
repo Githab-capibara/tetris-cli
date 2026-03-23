@@ -80,7 +80,13 @@ pub fn generate_salt() -> String {
 /// let signature = hmac("ключ", "данные");
 /// assert_eq!(signature.len(), 64);
 /// ```
+///
+/// # Исправление #4
+/// Функция помечена как `#[doc(hidden)]` так как используется только в тестах
+/// и не предназначена для публичного использования.
 #[must_use = "HMAC должен быть использован для проверки"]
+#[doc(hidden)]
+#[allow(dead_code)]
 pub fn hmac(key: &str, data: &str) -> String {
     // Формируем ключ + данные для хеширования
     hash(&(key.to_string() + data))
@@ -104,7 +110,13 @@ pub fn hmac(key: &str, data: &str) -> String {
 /// let signature = hmac(key, data);
 /// assert!(verify_hmac(key, data, &signature));
 /// ```
+///
+/// # Исправление #4
+/// Функция помечена как `#[doc(hidden)]` так как используется только в тестах
+/// и не предназначена для публичного использования.
 #[must_use = "Результат проверки должен быть использован"]
+#[doc(hidden)]
+#[allow(dead_code)]
 pub fn verify_hmac(key: &str, data: &str, expected_hmac: &str) -> bool {
     hmac(key, data) == expected_hmac
 }
