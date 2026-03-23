@@ -717,7 +717,7 @@ impl LeaderboardEntry {
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert!(entry.is_valid());
     /// ```
     #[must_use]
