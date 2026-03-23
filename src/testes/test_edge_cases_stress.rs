@@ -25,12 +25,10 @@ use crate::types::RotationDirection;
 fn test_edge_cases_1000_plus_lines() {
     let mut state = GameState::new();
 
-    // Симулируем удаление 1000 линий
-    for _ in 0..100 {
-        // Удаляем по 10 линий за раз
-        for _ in 0..10 {
-            state.increment_lines_cleared();
-        }
+    // Симулируем удаление 1000 линий через update_score_and_level
+    // MAX_LINES_PER_CLEAR = 4, поэтому нужно 250 итераций по 4 линии
+    for _ in 0..250 {
+        crate::game::scoring::update_score_and_level(&mut state, 4);
     }
 
     // Проверяем что линии корректно подсчитаны
@@ -39,7 +37,7 @@ fn test_edge_cases_1000_plus_lines() {
         "Должно быть удалено 1000+ линий"
     );
 
-    // Проверяем что уровень корректно рассчитан
+    // Проверяем что уровень корректно рассчитан (каждые 10 линий = 1 уровень)
     let expected_level = (1000 / 10) + 1;
     assert!(
         state.get_level() >= expected_level,

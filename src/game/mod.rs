@@ -306,7 +306,6 @@ impl GameState {
 }
 
 // Импортируем типы из state для использования в impl
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use state::UpdateEndState;
 
 // ============================================================================
@@ -316,6 +315,7 @@ use state::UpdateEndState;
 #[cfg(test)]
 mod game_tests {
     use super::*;
+    use crate::io::{GRID_HEIGHT, GRID_WIDTH};
     use crate::Direction;
 
     // Тесты Hard Drop

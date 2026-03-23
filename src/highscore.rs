@@ -522,7 +522,7 @@ impl SaveData {
     /// Поля переименованы: используется `score`, `salt`, `hash`.
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
-        let salt = generate_salt();
+        let salt = crypto::generate_salt();
         let salt_and_score = salt.clone() + &score_str;
         let hash = hash(&salt_and_score);
 
@@ -702,7 +702,7 @@ impl LeaderboardEntry {
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
 
-        let salt = generate_salt();
+        let salt = crypto::generate_salt();
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
         // для предотвращения лишних аллокаций.
         // Используем точную оценку длины числа через ilog10() вместо константы U128_MAX_DIGITS.
