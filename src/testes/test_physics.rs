@@ -10,9 +10,11 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты физической механики.
 
-use crate::game::{Dir, GameState};
+use crate::game::GameState;
+use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, RotationDirection};
+use crate::tetromino::BagGenerator;
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-4: Гравитация и падение
@@ -30,13 +32,13 @@ fn test_gravity_and_falling() {
 
     // Фигура должна иметь возможность падения вниз
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Фигура должна иметь возможность падения вниз"
     );
 
     // Опускаем фигуру на 5 блоков
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Down) {
+        if state.can_move_curr_shape_direction(Direction::Down) {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
     }
@@ -62,14 +64,14 @@ fn test_piece_reaching_floor() {
 
     // Опускаем фигуру до упора
     let mut drop_count = 0;
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
         drop_count += 1;
     }
 
     // Движение вниз должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Down),
+        !state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть заблокировано после достижения пола"
     );
 
@@ -144,20 +146,20 @@ fn test_collision_with_left_wall() {
 
     // Перемещаем фигуру к левой границе
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
 
     // Движение влево должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Left),
+        !state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево должно быть заблокировано у левой стены"
     );
 
     // Движение вправо должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Right),
+        state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо должно быть возможно у левой стены"
     );
 }
@@ -171,20 +173,20 @@ fn test_collision_with_right_wall() {
 
     // Перемещаем фигуру к правой границе
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
 
     // Движение вправо должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Right),
+        !state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо должно быть заблокировано у правой стены"
     );
 
     // Движение влево должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Left),
+        state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево должно быть возможно у правой стены"
     );
 }
@@ -197,13 +199,13 @@ fn test_collision_with_fixed_pieces() {
     let mut state = GameState::new();
 
     // Опускаем фигуру на пол
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Down),
+        !state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть заблокировано на полу"
     );
 
@@ -224,7 +226,7 @@ fn test_collisions_in_empty_field() {
 
     // В начале игры движение вниз должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "В пустом поле движение вниз должно быть возможно"
     );
 
@@ -234,7 +236,7 @@ fn test_collisions_in_empty_field() {
     // Если фигура не у границы, хотя бы одно направление должно быть доступно
     if curr_x > 0.0 && curr_x < (GRID_WIDTH - 1) as f32 {
         assert!(
-            state.can_move_curr_shape(Dir::Left) || state.can_move_curr_shape(Dir::Right),
+            state.can_move_curr_shape_direction(Direction::Left) || state.can_move_curr_shape_direction(Direction::Right),
             "В центре поля хотя бы одно направление должно быть доступно"
         );
     }
@@ -256,7 +258,7 @@ fn test_rotation_near_left_wall() {
 
     // Перемещаем фигуру к левой границе
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
@@ -278,7 +280,7 @@ fn test_rotation_near_right_wall() {
 
     // Перемещаем фигуру к правой границе (но не вплотную)
     for _ in 0..3 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -303,7 +305,7 @@ fn test_rotation_near_floor() {
 
     // Опускаем фигуру близко к полу
     for _ in 0..15 {
-        if state.can_move_curr_shape(Dir::Down) {
+        if state.can_move_curr_shape_direction(Direction::Down) {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
     }
@@ -424,7 +426,7 @@ fn test_ghost_piece_position() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
-    let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
 
     // В начале игры призрачная фигура должна иметь возможность падения
     assert!(
@@ -448,7 +450,7 @@ fn test_ghost_piece_floor_detection() {
     let mut state = GameState::new();
 
     // Опускаем фигуру до пола
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -456,7 +458,7 @@ fn test_ghost_piece_floor_detection() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура не должна иметь возможность движения вниз
-    let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
     assert!(
         !can_move_down,
         "Призрачная фигура на полу не должна иметь возможность падения"

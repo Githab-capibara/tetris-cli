@@ -11,7 +11,8 @@
 
 use crate::game::{GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Пустые значения
@@ -112,7 +113,7 @@ fn test_edge_cases_right_boundary() {
     let mut state = GameState::new();
 
     for _ in 0..20 {
-        if state.can_move_curr_shape(crate::game::Dir::Right) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -127,7 +128,7 @@ fn test_edge_cases_left_boundary() {
     let mut state = GameState::new();
 
     for _ in 0..20 {
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
@@ -141,7 +142,7 @@ fn test_edge_cases_left_boundary() {
 fn test_edge_cases_bottom_boundary() {
     let mut state = GameState::new();
 
-    while state.can_move_curr_shape(crate::game::Dir::Down) {
+    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -301,12 +302,12 @@ fn test_edge_cases_shapes_within_bounds() {
 
     // Двигаем ко всем границам
     for _ in 0..10 {
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
 
-    while state.can_move_curr_shape(crate::game::Dir::Down) {
+    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -385,7 +386,7 @@ fn test_edge_cases_rotation_at_wall_no_panic() {
     let mut state = GameState::new();
 
     for _ in 0..10 {
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
@@ -399,12 +400,12 @@ fn test_edge_cases_rotation_at_wall_no_panic() {
 fn test_edge_cases_movement_at_floor_no_panic() {
     let mut state = GameState::new();
 
-    while state.can_move_curr_shape(crate::game::Dir::Down) {
+    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Движение не должно вызывать панику
-    let _ = state.can_move_curr_shape(crate::game::Dir::Down);
+    let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
 }
 
 /// Тест 33: Проверка что `BagGenerator` не паникует при 100000 вызовах
@@ -538,7 +539,7 @@ fn test_edge_cases_performance_movement_100k() {
     let start = std::time::Instant::now();
 
     for _ in 0..100_000 {
-        let _ = state.can_move_curr_shape(crate::game::Dir::Down);
+        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
     }
 
     let duration = start.elapsed();
@@ -552,9 +553,9 @@ fn test_edge_cases_performance_collision_100k() {
     let start = std::time::Instant::now();
 
     for _ in 0..100_000 {
-        let _ = state.can_move_curr_shape(crate::game::Dir::Down);
-        let _ = state.can_move_curr_shape(crate::game::Dir::Left);
-        let _ = state.can_move_curr_shape(crate::game::Dir::Right);
+        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
+        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Left);
+        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Right);
     }
 
     let duration = start.elapsed();

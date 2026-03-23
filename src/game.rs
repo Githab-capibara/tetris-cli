@@ -20,7 +20,8 @@
 use crate::io::{
     Canvas, KeyReader, DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
 };
-use crate::tetromino::{RotationDirection, Tetromino, SHAPE_COLORS};
+use crate::tetromino::{Tetromino, SHAPE_COLORS};
+use crate::types::{Direction, RotationDirection};
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -266,22 +267,6 @@ pub const HARD_DROP_ANIM_INTERVAL_MS: u16 = 50;
 /// Количество кадров для пропуска при анимации.
 /// Используется для мигания фигур (каждый второй кадр).
 pub const ANIMATION_FRAME_SKIP: u16 = 2;
-
-/// Направление движения/вращения.
-///
-/// # Исправление #7
-/// `Dir` реализует `Copy`, поэтому все операции с ним выполняются без аллокаций.
-/// Это означает, что передача `Dir` по значению не приводит к копированию данных,
-/// а лишь копирует целочисленное значение (tag) перечисления.
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum Dir {
-    /// Вниз.
-    Down,
-    /// Влево.
-    Left,
-    /// Вправо.
-    Right,
-}
 
 /// Режим игры.
 #[derive(PartialEq, Clone, Copy, Debug)]
@@ -856,10 +841,10 @@ impl GameState {
         match key {
             Some(KEY_BACKSPACE) => return Some(UpdateEndState::Quit), // Backspace — выход в меню
             Some(b'p') => return Some(UpdateEndState::Pause),         // p — пауза
-            Some(b'a') => self.handle_movement_input(Dir::Left),
-            Some(b'd') => self.handle_movement_input(Dir::Right),
-            Some(b'q') => self.handle_rotation_input(Dir::Left),
-            Some(b'e') => self.handle_rotation_input(Dir::Right),
+            Some(b'a') => self.handle_movement_input(Direction::Left),
+            Some(b'd') => self.handle_movement_input(Direction::Right),
+            Some(b'q') => self.handle_rotation_input(Direction::Left),
+            Some(b'e') => self.handle_rotation_input(Direction::Right),
             Some(b'w') => self.handle_hard_drop(),
             Some(b's') => self.handle_soft_drop(),
             Some(b'c' | b'C') => self.handle_hold_input(),
@@ -873,18 +858,14 @@ impl GameState {
     ///
     /// # Аргументы
     /// * `dir` - направление движения
-    ///
-    /// # Исправление #6
-    /// Обработка `Dir::Down` удалена - это направление не используется для горизонтального движения.
-    fn handle_movement_input(&mut self, dir: Dir) {
-        if self.can_move_curr_shape(dir) {
+    fn handle_movement_input(&mut self, dir: Direction) {
+        if self.can_move_curr_shape_direction(dir) {
             match dir {
-                Dir::Left => self.curr_shape.pos.0 -= 1.0,
-                Dir::Right => self.curr_shape.pos.0 += 1.0,
-                // Исправление #6: Dir::Down больше не обрабатывается здесь
-                // Это направление используется только для падения фигуры
-                Dir::Down => {
-                    // Тихо игнорируем - это направление не для горизонтального движения
+                Direction::Left => self.curr_shape.pos.0 -= 1.0,
+                Direction::Right => self.curr_shape.pos.0 += 1.0,
+                Direction::Down => {
+                    // Direction::Down не обрабатывается в этом методе
+                    // Используется только для падения фигуры
                 }
             }
         }
@@ -893,16 +874,10 @@ impl GameState {
     /// Обработка вращения фигуры.
     ///
     /// # Аргументы
-    /// * `dir` - направление вращения (`Dir::Left` = против часовой, `Dir::Right` = по часовой)
-    fn handle_rotation_input(&mut self, dir: Dir) {
-        // Преобразование Dir в RotationDirection
-        let rotation_dir = match dir {
-            Dir::Left => RotationDirection::CounterClockwise,
-            Dir::Right => RotationDirection::Clockwise,
-            // Исправление #6: унифицированная обработка Dir::Down
-            // Dir::Down не используется для вращения - тихо игнорируем
-            Dir::Down => return,
-        };
+    /// * `dir` - направление вращения
+    fn handle_rotation_input(&mut self, dir: Direction) {
+        // Преобразование Direction в RotationDirection
+        let rotation_dir = dir.to_rotation_direction();
         self.rotate_with_wall_kick(rotation_dir);
     }
 
@@ -913,7 +888,7 @@ impl GameState {
     /// для предотвращения переполнения.
     fn handle_hard_drop(&mut self) {
         let start_y = self.curr_shape.pos.1;
-        while self.can_move_curr_shape(Dir::Down) {
+        while self.can_move_curr_shape_direction(Direction::Down) {
             self.curr_shape.pos.1 += 1.0;
         }
         // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
@@ -942,7 +917,7 @@ impl GameState {
 
     /// Обработка Soft Drop (ускоренное падение).
     fn handle_soft_drop(&mut self) {
-        if self.can_move_curr_shape(Dir::Down) {
+        if self.can_move_curr_shape_direction(Direction::Down) {
             self.curr_shape.pos.1 += 1.0;
             // При каждом успешном шаге вниз считаем дистанцию для очков
             self.soft_drop_distance = self.soft_drop_distance.saturating_add(1);
@@ -965,7 +940,7 @@ impl GameState {
     /// - `true` - фигура приземлилась, требуется обработка
     /// - `false` - фигура ещё падает
     fn handle_falling(&mut self, delta_time_ms: u64) -> bool {
-        if self.can_move_curr_shape(Dir::Down) {
+        if self.can_move_curr_shape_direction(Direction::Down) {
             // Плавное падение с учётом скорости и времени
             // Безопасное преобразование: delta_time_ms всегда положительное
             self.curr_shape.pos.1 += self.fall_spd * (delta_time_ms as f32 / MILLIS_PER_SECOND);
@@ -1839,7 +1814,7 @@ impl GameState {
     /// # Исправление #14
     /// Оптимизированы проверки границ: проверка верхней границы (y < 0) удалена,
     /// так как фигуры могут появляться выше поля.
-    fn check_collision(&self, coords: &[(i16, i16)], pos: (f32, f32), dir: Dir) -> bool {
+    fn check_collision_direction(&self, coords: &[(i16, i16)], pos: (f32, f32), dir: Direction) -> bool {
         let (shape_x, shape_y) = pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
@@ -1851,9 +1826,9 @@ impl GameState {
 
             // Корректировка координат в зависимости от направления
             match dir {
-                Dir::Left => check_x -= 1,
-                Dir::Right => check_x += 1,
-                Dir::Down => check_y += 1,
+                Direction::Left => check_x -= 1,
+                Direction::Right => check_x += 1,
+                Direction::Down => check_y += 1,
             }
 
             // Исправление #14: оптимизация проверок границ
@@ -1885,8 +1860,8 @@ impl GameState {
     /// # Проверки
     /// 1. Выход за границы игрового поля
     /// 2. Столкновение с зафиксированными фигурами
-    pub fn can_move_curr_shape(&self, dir: Dir) -> bool {
-        self.check_collision(&self.curr_shape.coords, self.curr_shape.pos, dir)
+    pub fn can_move_curr_shape_direction(&self, dir: Direction) -> bool {
+        self.check_collision_direction(&self.curr_shape.coords, self.curr_shape.pos, dir)
     }
 
     /// Проверить возможность движения призрачной фигуры.
@@ -1898,12 +1873,12 @@ impl GameState {
     /// # Возвращает
     /// `true` если движение возможно
     ///
-    /// # Отличия от `can_move_curr_shape`
+    /// # Отличия от `can_move_curr_shape_direction`
     /// Использует immutable ссылку на self, так как призрачная фигура
     /// не изменяет состояние игры
     #[allow(dead_code)]
-    pub fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
-        self.check_collision(&ghost.coords, ghost.pos, dir)
+    pub fn can_move_ghost_shape_direction(&self, ghost: &Tetromino, dir: Direction) -> bool {
+        self.check_collision_direction(&ghost.coords, ghost.pos, dir)
     }
 
     /// Проверить возможность вращения текущей фигуры.
@@ -2337,7 +2312,7 @@ mod game_tests {
         let mut drop_height = 0;
 
         // Проверяем, что можем двигаться вниз
-        while state.can_move_curr_shape(Dir::Down) {
+        while state.can_move_curr_shape_direction(Direction::Down) {
             state.curr_shape.pos.1 += 1.0;
             drop_height += 1;
         }
@@ -2347,7 +2322,7 @@ mod game_tests {
 
         // После падения не должно быть возможности двигаться вниз
         assert!(
-            !state.can_move_curr_shape(Dir::Down),
+            !state.can_move_curr_shape_direction(Direction::Down),
             "После Hard Drop движение вниз должно быть заблокировано"
         );
     }
@@ -2362,7 +2337,7 @@ mod game_tests {
         let start_y = state.curr_shape.pos.1;
 
         // Выполняем Hard Drop
-        while state.can_move_curr_shape(Dir::Down) {
+        while state.can_move_curr_shape_direction(Direction::Down) {
             state.curr_shape.pos.1 += 1.0;
         }
 
@@ -2393,7 +2368,7 @@ mod game_tests {
         );
 
         // Симулируем Hard Drop
-        while state.can_move_curr_shape(Dir::Down) {
+        while state.can_move_curr_shape_direction(Direction::Down) {
             state.curr_shape.pos.1 += 1.0;
         }
         state.is_hard_dropping = true;
@@ -2422,7 +2397,7 @@ mod game_tests {
         let initial_y = state.curr_shape.pos.1;
 
         // Выполняем Hard Drop до упора
-        while state.can_move_curr_shape(Dir::Down) {
+        while state.can_move_curr_shape_direction(Direction::Down) {
             state.curr_shape.pos.1 += 1.0;
         }
 
@@ -2434,7 +2409,7 @@ mod game_tests {
 
         // Дальнейшее движение вниз должно быть заблокировано
         assert!(
-            !state.can_move_curr_shape(Dir::Down),
+            !state.can_move_curr_shape_direction(Direction::Down),
             "Движение вниз должно быть заблокировано после приземления"
         );
 
@@ -2514,7 +2489,7 @@ mod game_tests {
         let mut soft_drop_moves = 0;
 
         // Симулируем Soft Drop: двигаем фигуру вниз пока возможно
-        while state.can_move_curr_shape(Dir::Down) {
+        while state.can_move_curr_shape_direction(Direction::Down) {
             state.curr_shape.pos.1 += 1.0;
             soft_drop_moves += 1;
         }
@@ -2527,7 +2502,7 @@ mod game_tests {
 
         // После достижения дна движение должно быть заблокировано
         assert!(
-            !state.can_move_curr_shape(Dir::Down),
+            !state.can_move_curr_shape_direction(Direction::Down),
             "После достижения дна движение должно быть заблокировано"
         );
     }
@@ -2549,7 +2524,7 @@ mod game_tests {
         // Симулируем несколько шагов Soft Drop
         let test_moves = 5;
         for _ in 0..test_moves {
-            if state.can_move_curr_shape(Dir::Down) {
+            if state.can_move_curr_shape_direction(Direction::Down) {
                 state.curr_shape.pos.1 += 1.0;
                 state.soft_drop_distance += 1;
             }
@@ -2779,11 +2754,11 @@ mod game_tests {
         );
     }
 
-    /// Тест производительности: `check_collision()`
+    /// Тест производительности: `check_collision_direction()`
     ///
     /// Проверяет, что проверка столкновений выполняется за приемлемое время.
     #[test]
-    fn test_performance_check_collision() {
+    fn test_performance_check_collision_direction() {
         use std::time::Instant;
 
         let state = GameState::new();
@@ -2793,14 +2768,14 @@ mod game_tests {
 
         // Выполняем проверку 10000 раз
         for _ in 0..10000 {
-            let result = state.check_collision(&coords, pos, Dir::Down);
+            let result = state.check_collision_direction(&coords, pos, Direction::Down);
             assert!(result);
         }
 
         let elapsed = start.elapsed();
         assert!(
             elapsed.as_millis() < 100,
-            "check_collision() должен выполняться < 100ms для 10000 итераций (прошло {elapsed:?})"
+            "check_collision_direction() должен выполняться < 100ms для 10000 итераций (прошло {elapsed:?})"
         );
     }
 }

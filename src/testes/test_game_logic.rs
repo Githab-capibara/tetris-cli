@@ -10,13 +10,15 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
-use crate::game::{Dir, GameMode, GameState};
+use crate::game::{GameMode, GameState};
+use crate::types::Direction;
 use crate::game::{
     COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, PIECE_SCORE_INC,
     SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
+use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
@@ -130,14 +132,14 @@ fn test_collision_left_boundary() {
 
     // Перемещаем фигуру к левой границе
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
 
     // Дальнейшее движение влево должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Left),
+        !state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево за границу должно быть заблокировано"
     );
 }
@@ -151,14 +153,14 @@ fn test_collision_right_boundary() {
 
     // Перемещаем фигуру к правой границе
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
 
     // Дальнейшее движение вправо должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Right),
+        !state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо за границу должно быть заблокировано"
     );
 }
@@ -171,13 +173,13 @@ fn test_collision_floor() {
     let mut state = GameState::new();
 
     // Опускаем фигуру вниз до упора
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Дальнейшее движение вниз должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Down),
+        !state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз за границу пола должно быть заблокировано"
     );
 
@@ -197,13 +199,13 @@ fn test_collision_with_fixed_blocks() {
     let mut state = GameState::new();
 
     // Опускаем фигуру близко к полу для теста
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Down),
+        !state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз на пол должно быть заблокировано"
     );
 }
@@ -220,8 +222,8 @@ fn test_movement_in_empty_field() {
     let _initial_x = state.get_curr_shape_mut().pos.0;
 
     // Проверяем, что можем двигаться хотя бы в одну сторону
-    let can_move_left = state.can_move_curr_shape(Dir::Left);
-    let can_move_right = state.can_move_curr_shape(Dir::Right);
+    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
+    let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
 
     assert!(
         can_move_left || can_move_right,
@@ -238,7 +240,7 @@ fn test_ghost_piece_boundary() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
-    let can_move_down = state.can_move_ghost_shape(&ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
 
     // В начале игры призрачная фигура должна иметь возможность движения вниз
     assert!(

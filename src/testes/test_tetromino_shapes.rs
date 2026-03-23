@@ -9,7 +9,8 @@
 //!
 //! Все тесты проверяют отдельные аспекты свойств фигур.
 
-use crate::tetromino::{RotationDirection, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
+use crate::tetromino::{ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-14: Детальные тесты для каждой из 7 фигур

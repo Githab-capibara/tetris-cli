@@ -1,25 +1,25 @@
-//! Тесты для исправления Dir::Down в rotate() (tetromino.rs).
+//! Тесты для исправления Direction::Down в rotate() (tetromino.rs).
 //!
 //! Этот модуль содержит 3 теста для проверки исправления:
-//! - Проверка паники при Dir::Down с понятным сообщением
-//! - Проверка корректного вращения Dir::Left
-//! - Проверка корректного вращения Dir::Right
+//! - Проверка паники при Direction::Down с понятным сообщением
+//! - Проверка корректного вращения Direction::Left
+//! - Проверка корректного вращения Direction::Right
 //!
-//! Исправление: rotate() теперь паникует при Dir::Down с понятным сообщением
+//! Исправление: rotate() теперь паникует при Direction::Down с понятным сообщением
 
-use crate::game::Dir;
-use crate::tetromino::RotationDirection;
+use crate::types::Direction;
+use crate::types::RotationDirection;
 use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
-// ГРУППА ТЕСТОВ: Dir::Down fix
+// ГРУППА ТЕСТОВ: Direction::Down fix
 // ============================================================================
 
-/// Тест 1: Проверка паники при Dir::Down с понятным сообщением
+/// Тест 1: Проверка паники при Direction::Down с понятным сообщением
 ///
-/// Проверяет, что rotate(Dir::Down) вызывает панику с понятным сообщением.
+/// Проверяет, что rotate(Direction::Down) вызывает панику с понятным сообщением.
 #[test]
-#[should_panic(expected = "Dir::Down cannot be used for rotation")]
+#[should_panic(expected = "Direction::Down cannot be used for rotation")]
 fn test_dir_down_panic_with_message() {
     // Создаём тестовую фигуру T
     let mut tetromino = Tetromino {
@@ -29,13 +29,13 @@ fn test_dir_down_panic_with_message() {
         fg: 0,
     };
     
-    // Вызываем rotate с Dir::Down - должно вызвать панику
-    tetromino.rotate_old(Dir::Down);
+    // Вызываем rotate с Direction::Down - должно вызвать панику
+    tetromino.rotate_old(Direction::Down);
 }
 
-/// Тест 2: Проверка корректного вращения Dir::Left
+/// Тест 2: Проверка корректного вращения Direction::Left
 ///
-/// Проверяет, что rotate(Dir::Left) вращает фигуру против часовой стрелки.
+/// Проверяет, что rotate(Direction::Left) вращает фигуру против часовой стрелки.
 #[test]
 fn test_dir_left_rotation_correct() {
     // Создаём тестовую фигуру T
@@ -49,9 +49,9 @@ fn test_dir_left_rotation_correct() {
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords;
     
-    // Вращаем против часовой стрелки (Dir::Left)
+    // Вращаем против часовой стрелки (Direction::Left)
     // Формула: (x,y) -> (y,-x)
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate_old(Direction::Left);
     
     // Проверяем первую координату: (-1,0) -> (0,1)
     assert_eq!(
@@ -86,7 +86,7 @@ fn test_dir_left_rotation_correct() {
     };
     
     for _ in 0..4 {
-        t.rotate_old(Dir::Left);
+        t.rotate_old(Direction::Left);
     }
     
     assert_eq!(
@@ -103,7 +103,7 @@ fn test_dir_left_rotation_correct() {
     };
     
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate_old(Dir::Left);
+    o_tetromino.rotate_old(Direction::Left);
     
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -111,9 +111,9 @@ fn test_dir_left_rotation_correct() {
     );
 }
 
-/// Тест 3: Проверка корректного вращения Dir::Right
+/// Тест 3: Проверка корректного вращения Direction::Right
 ///
-/// Проверяет, что rotate(Dir::Right) вращает фигуру по часовой стрелке.
+/// Проверяет, что rotate(Direction::Right) вращает фигуру по часовой стрелке.
 #[test]
 fn test_dir_right_rotation_correct() {
     // Создаём тестовую фигуру T
@@ -127,9 +127,9 @@ fn test_dir_right_rotation_correct() {
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords;
     
-    // Вращаем по часовой стрелке (Dir::Right)
+    // Вращаем по часовой стрелке (Direction::Right)
     // Формула: (x,y) -> (-y,x)
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Direction::Right);
     
     // Проверяем первую координату: (-1,0) -> (0,-1)
     assert_eq!(
@@ -164,7 +164,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     for _ in 0..4 {
-        t.rotate_old(Dir::Right);
+        t.rotate_old(Direction::Right);
     }
     
     assert_eq!(
@@ -181,7 +181,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate_old(Dir::Right);
+    o_tetromino.rotate_old(Direction::Right);
     
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -197,7 +197,7 @@ fn test_dir_right_rotation_correct() {
     };
     
     let i_original = i_tetromino.coords;
-    i_tetromino.rotate_old(Dir::Right);
+    i_tetromino.rotate_old(Direction::Right);
     
     // I-фигура должна измениться (вертикальная -> горизонтальная)
     assert_ne!(
@@ -233,8 +233,8 @@ fn test_left_then_right_returns_to_original() {
         let original = t.coords;
         
         // Вращаем Left затем Right
-        t.rotate_old(Dir::Left);
-        t.rotate_old(Dir::Right);
+        t.rotate_old(Direction::Left);
+        t.rotate_old(Direction::Right);
         
         assert_eq!(
             t.coords, original,
@@ -243,8 +243,8 @@ fn test_left_then_right_returns_to_original() {
         );
         
         // Вращаем Right затем Left
-        t.rotate_old(Dir::Right);
-        t.rotate_old(Dir::Left);
+        t.rotate_old(Direction::Right);
+        t.rotate_old(Direction::Left);
         
         assert_eq!(
             t.coords, original,
@@ -254,11 +254,11 @@ fn test_left_then_right_returns_to_original() {
     }
 }
 
-/// Тест 5: Проверка что Dir::Down паникует для всех типов фигур
+/// Тест 5: Проверка что Direction::Down паникует для всех типов фигур
 ///
-/// Проверяет, что rotate(Dir::Down) вызывает панику для любой фигуры.
+/// Проверяет, что rotate(Direction::Down) вызывает панику для любой фигуры.
 #[test]
-#[should_panic(expected = "Dir::Down cannot be used for rotation")]
+#[should_panic(expected = "Direction::Down cannot be used for rotation")]
 fn test_dir_down_panic_for_all_shapes() {
     // Проверяем для всех типов фигур
     for (shape_idx, &shape_type) in [
@@ -280,6 +280,6 @@ fn test_dir_down_panic_for_all_shapes() {
         };
         
         // Должно вызвать панику для любой фигуры
-        t.rotate_old(Dir::Down);
+        t.rotate_old(Direction::Down);
     }
 }

@@ -10,7 +10,7 @@
 //! ## ЛОГИЧЕСКИЕ ОШИБКИ (4-6):
 //! 4. Проверка проигрыша - тест на граничные условия проигрыша
 //! 5. `draw_ghost_shape()` - тест на эффективность вычисления позиции
-//! 6. `Dir::Down` - тест на унифицированную обработку направлений
+//! 6. `Direction::Down` - тест на унифицированную обработку направлений
 //!
 //! ## ОПТИМИЗАЦИИ (7-10):
 //! 7. Кэширование строк - тест на наличие кэширования
@@ -165,13 +165,13 @@ fn test_ghost_shape_efficient_computation() {
     // и использование оптимального алгоритма поиска позиции приземления
 }
 
-/// Тест 6: `Dir::Down` - унифицированная обработка направлений.
+/// Тест 6: `Direction::Down` - унифицированная обработка направлений.
 ///
-/// Проверяет, что `Dir::Down` корректно обрабатывается в `rotate_old()`
+/// Проверяет, что `Direction::Down` корректно обрабатывается в `rotate_old()`
 /// без паники (игнорируется).
 #[test]
 fn test_dir_down_unified_handling() {
-    use crate::game::Dir;
+    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
 
     // Создаём тестовую фигуру
@@ -185,16 +185,16 @@ fn test_dir_down_unified_handling() {
     // Сохраняем исходные координаты
     let original_coords = tetromino.coords;
 
-    // Dir::Down должен игнорироваться без паники
+    // Direction::Down должен игнорироваться без паники
     #[allow(deprecated)]
     {
-        tetromino.rotate_old(Dir::Down);
+        tetromino.rotate_old(Direction::Down);
     }
 
     // Координаты не должны измениться
     assert_eq!(
         tetromino.coords, original_coords,
-        "Dir::Down должен игнорироваться без изменения координат"
+        "Direction::Down должен игнорироваться без изменения координат"
     );
 }
 
@@ -746,9 +746,9 @@ fn test_all_32_fixes_integration() {
     // ЛОГИЧЕСКИЕ (4-6)
     let _score = _state.get_score(); // Проверка проигрыша
     let _lines = _state.get_lines_cleared(); // Ghost shape
-    let mut tetromino = Tetromino::select(); // Dir::Down
+    let mut tetromino = Tetromino::select(); // Direction::Down
     #[allow(deprecated)]
-    tetromino.rotate_old(crate::game::Dir::Down);
+    tetromino.rotate_old(crate::types::Direction::Down);
 
     // ОПТИМИЗАЦИИ (7-10)
     use crate::highscore::MAX_SCORE_DIGITS;

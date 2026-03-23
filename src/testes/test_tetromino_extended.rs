@@ -9,7 +9,7 @@
 
 #![allow(deprecated)]
 
-use crate::game::Dir;
+use crate::types::Direction;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
 
 // ============================================================================
@@ -221,7 +221,7 @@ fn test_extended_t_rotate_90_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
 
     assert_ne!(t.coords, original);
 }
@@ -237,8 +237,8 @@ fn test_extended_t_rotate_180_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
+    t.rotate_old(Direction::Right);
 
     assert_ne!(t.coords, original);
 }
@@ -255,7 +255,7 @@ fn test_extended_t_rotate_270_cw() {
 
     let original = t.coords;
     for _ in 0..3 {
-        t.rotate_old(Dir::Right);
+        t.rotate_old(Direction::Right);
     }
 
     assert_ne!(t.coords, original);
@@ -272,7 +272,7 @@ fn test_extended_t_rotate_90_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
 
     assert_ne!(t.coords, original);
 }
@@ -288,7 +288,7 @@ fn test_extended_l_rotate_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_ne!(t.coords, original);
 }
 
@@ -303,7 +303,7 @@ fn test_extended_l_rotate_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_ne!(t.coords, original);
 }
 
@@ -318,7 +318,7 @@ fn test_extended_j_rotate_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_ne!(t.coords, original);
 }
 
@@ -333,7 +333,7 @@ fn test_extended_j_rotate_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_ne!(t.coords, original);
 }
 
@@ -348,7 +348,7 @@ fn test_extended_s_rotate_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_ne!(t.coords, original);
 }
 
@@ -363,7 +363,7 @@ fn test_extended_s_rotate_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_ne!(t.coords, original);
 }
 
@@ -378,7 +378,7 @@ fn test_extended_z_rotate_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_ne!(t.coords, original);
 }
 
@@ -393,7 +393,7 @@ fn test_extended_z_rotate_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_ne!(t.coords, original);
 }
 
@@ -408,7 +408,7 @@ fn test_extended_o_rotate_cw_no_change() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_eq!(t.coords, original);
 }
 
@@ -423,7 +423,7 @@ fn test_extended_o_rotate_ccw_no_change() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_eq!(t.coords, original);
 }
 
@@ -438,7 +438,7 @@ fn test_extended_i_rotate_cw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
     assert_ne!(t.coords, original);
 }
 
@@ -453,7 +453,7 @@ fn test_extended_i_rotate_ccw() {
     };
 
     let original = t.coords;
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Left);
     assert_ne!(t.coords, original);
 }
 
@@ -479,7 +479,7 @@ fn test_extended_four_cw_rotations_return() {
 
         let original = t.coords;
         for _ in 0..4 {
-            t.rotate_old(Dir::Right);
+            t.rotate_old(Direction::Right);
         }
 
         assert_eq!(
@@ -511,7 +511,7 @@ fn test_extended_four_ccw_rotations_return() {
 
         let original = t.coords;
         for _ in 0..4 {
-            t.rotate_old(Dir::Left);
+            t.rotate_old(Direction::Left);
         }
 
         assert_eq!(
@@ -534,10 +534,10 @@ fn test_extended_alternating_cw_ccw_rotation() {
     let original = t.coords;
 
     // Чередование: cw, ccw, cw, ccw
-    t.rotate_old(Dir::Right);
-    t.rotate_old(Dir::Left);
-    t.rotate_old(Dir::Right);
-    t.rotate_old(Dir::Left);
+    t.rotate_old(Direction::Right);
+    t.rotate_old(Direction::Left);
+    t.rotate_old(Direction::Right);
+    t.rotate_old(Direction::Left);
 
     assert_eq!(t.coords, original);
 }
@@ -553,8 +553,8 @@ fn test_extended_rotation_does_not_change_position() {
     };
 
     let original_pos = t.pos;
-    t.rotate_old(Dir::Right);
-    t.rotate_old(Dir::Right);
+    t.rotate_old(Direction::Right);
+    t.rotate_old(Direction::Right);
 
     assert_eq!(t.pos, original_pos);
 }

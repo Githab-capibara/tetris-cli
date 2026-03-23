@@ -11,7 +11,7 @@
 
 #![allow(deprecated)]
 //! 8. `hex::encode()` (использование в `get_random_hash`)
-//! 9. unreachable!() для `Dir::Down`
+//! 9. unreachable!() для `Direction::Down`
 //! 10. Удаление избыточных комментариев
 //! 11. Переименование переменной
 //! 12. `validate_config_path()`
@@ -23,7 +23,8 @@
 //! 18. Rate limiting
 
 use crate::controls::ControlsConfig;
-use crate::game::{Dir, GameState};
+use crate::game::GameState;
+use crate::types::Direction;
 use crate::highscore::{generate_salt, Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
 use crate::tetromino::{ShapeType, Tetromino};
@@ -194,10 +195,10 @@ fn test_rotation_negative_y_boundary() {
     };
 
     // Вращаем несколько раз
-    tetromino.rotate_old(Dir::Right);
-    tetromino.rotate_old(Dir::Right);
-    tetromino.rotate_old(Dir::Right);
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate_old(Direction::Right);
 
     // После 4 вращений координаты должны вернуться к исходным
     assert_eq!(
@@ -221,8 +222,8 @@ fn test_rotation_overflow_protection() {
 
     // Многократное вращение не должно вызывать переполнения
     for _ in 0..100 {
-        tetromino.rotate_old(Dir::Right);
-        tetromino.rotate_old(Dir::Left);
+        tetromino.rotate_old(Direction::Right);
+        tetromino.rotate_old(Direction::Left);
     }
 
     // Тест проходит, если не было паники от переполнения
@@ -445,12 +446,12 @@ fn test_hex_encode_length() {
 }
 
 // ============================================================================
-// ПРОБЛЕМА 9: unreachable!() для Dir::Down
+// ПРОБЛЕМА 9: unreachable!() для Direction::Down
 // ============================================================================
 
-/// Тест 9.1: Проверка что `Dir::Down` игнорируется
+/// Тест 9.1: Проверка что `Direction::Down` игнорируется
 ///
-/// Проверяет, что `Dir::Down` больше не вызывает панику, а тихо игнорируется.
+/// Проверяет, что `Direction::Down` больше не вызывает панику, а тихо игнорируется.
 #[test]
 fn test_rotate_down_no_panic() {
     let mut tetromino = Tetromino {
@@ -463,13 +464,13 @@ fn test_rotate_down_no_panic() {
     // Сохраняем исходные координаты
     let original_coords = tetromino.coords;
 
-    // Dir::Down теперь игнорируется без паники
-    tetromino.rotate_old(Dir::Down);
+    // Direction::Down теперь игнорируется без паники
+    tetromino.rotate_old(Direction::Down);
 
     // Координаты не должны измениться
     assert_eq!(
         tetromino.coords, original_coords,
-        "Dir::Down должен игнорироваться без изменения координат"
+        "Direction::Down должен игнорироваться без изменения координат"
     );
 }
 
@@ -486,7 +487,7 @@ fn test_rotate_left_correct() {
     };
 
     // Вращаем влево (против часовой)
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate_old(Direction::Left);
 
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (y, -x)
@@ -510,7 +511,7 @@ fn test_rotate_right_correct() {
     };
 
     // Вращаем вправо (по часовой)
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Direction::Right);
 
     // Проверяем, что координаты изменились корректно
     // Формула: (x, y) -> (-y, x)

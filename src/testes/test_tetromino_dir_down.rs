@@ -1,23 +1,23 @@
-//! Тесты обработки Dir::Down в rotate() (tetromino.rs).
+//! Тесты обработки Direction::Down в rotate() (tetromino.rs).
 //!
 //! Этот модуль содержит 3 теста для проверки исправления:
-//! - Проверка что Dir::Down не меняет координаты
-//! - Проверка что Dir::Left работает корректно
-//! - Проверка что Dir::Right работает корректно
+//! - Проверка что Direction::Down не меняет координаты
+//! - Проверка что Direction::Left работает корректно
+//! - Проверка что Direction::Right работает корректно
 //!
-//! Исправление: добавлен ранний возврат для Dir::Down в rotate()
+//! Исправление: добавлен ранний возврат для Direction::Down в rotate()
 
-use crate::game::Dir;
-use crate::tetromino::RotationDirection;
+use crate::types::Direction;
+use crate::types::RotationDirection;
 use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
-// ГРУППА ТЕСТОВ: Dir::Down в rotate()
+// ГРУППА ТЕСТОВ: Direction::Down в rotate()
 // ============================================================================
 
-/// Тест 1: Проверка что Dir::Down не меняет координаты
+/// Тест 1: Проверка что Direction::Down не меняет координаты
 ///
-/// Проверяет, что rotate(Dir::Down) не изменяет координаты фигуры.
+/// Проверяет, что rotate(Direction::Down) не изменяет координаты фигуры.
 #[test]
 fn test_dir_down_does_not_change_coords() {
     // Создаём тестовую фигуру T
@@ -31,13 +31,13 @@ fn test_dir_down_does_not_change_coords() {
     // Сохраняем оригинальные координаты
     let original_coords = tetromino.coords;
 
-    // Вызываем rotate с Dir::Down
-    tetromino.rotate_old(Dir::Down);
+    // Вызываем rotate с Direction::Down
+    tetromino.rotate_old(Direction::Down);
 
     // Проверяем что координаты не изменились
     assert_eq!(
         tetromino.coords, original_coords,
-        "Dir::Down не должен менять координаты фигуры"
+        "Direction::Down не должен менять координаты фигуры"
     );
 
     // Проверяем с другими типами фигур
@@ -59,11 +59,11 @@ fn test_dir_down_does_not_change_coords() {
         };
 
         let original = t.coords;
-        t.rotate_old(Dir::Down);
+        t.rotate_old(Direction::Down);
 
         assert_eq!(
             t.coords, original,
-            "Dir::Down не должен менять координаты фигуры {:?}",
+            "Direction::Down не должен менять координаты фигуры {:?}",
             shape_type
         );
     }
@@ -77,17 +77,17 @@ fn test_dir_down_does_not_change_coords() {
     };
 
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate_old(Dir::Down);
+    o_tetromino.rotate_old(Direction::Down);
 
     assert_eq!(
         o_tetromino.coords, o_original,
-        "Dir::Down не должен менять координаты квадрата"
+        "Direction::Down не должен менять координаты квадрата"
     );
 }
 
-/// Тест 2: Проверка что Dir::Left работает корректно
+/// Тест 2: Проверка что Direction::Left работает корректно
 ///
-/// Проверяет, что rotate(Dir::Left) вращает фигуру против часовой стрелки.
+/// Проверяет, что rotate(Direction::Left) вращает фигуру против часовой стрелки.
 #[test]
 fn test_dir_left_rotates_correctly() {
     // Создаём тестовую фигуру T
@@ -101,8 +101,8 @@ fn test_dir_left_rotates_correctly() {
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords;
 
-    // Вращаем против часовой стрелки (Dir::Left)
-    tetromino.rotate_old(Dir::Left);
+    // Вращаем против часовой стрелки (Direction::Left)
+    tetromino.rotate_old(Direction::Left);
 
     // После вращения против часовой: (0,-1), (0,0), (0,1), (-1,0)
     // Формула: (x,y) -> (y,-x)
@@ -124,7 +124,7 @@ fn test_dir_left_rotates_correctly() {
     };
 
     for _ in 0..4 {
-        t.rotate_old(Dir::Left);
+        t.rotate_old(Direction::Left);
     }
 
     assert_eq!(
@@ -141,7 +141,7 @@ fn test_dir_left_rotates_correctly() {
     };
 
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate_old(Dir::Left);
+    o_tetromino.rotate_old(Direction::Left);
 
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -149,9 +149,9 @@ fn test_dir_left_rotates_correctly() {
     );
 }
 
-/// Тест 3: Проверка что Dir::Right работает корректно
+/// Тест 3: Проверка что Direction::Right работает корректно
 ///
-/// Проверяет, что rotate(Dir::Right) вращает фигуру по часовой стрелке.
+/// Проверяет, что rotate(Direction::Right) вращает фигуру по часовой стрелке.
 #[test]
 fn test_dir_right_rotates_correctly() {
     // Создаём тестовую фигуру T
@@ -165,8 +165,8 @@ fn test_dir_right_rotates_correctly() {
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords;
 
-    // Вращаем по часовой стрелке (Dir::Right)
-    tetromino.rotate_old(Dir::Right);
+    // Вращаем по часовой стрелке (Direction::Right)
+    tetromino.rotate_old(Direction::Right);
 
     // После вращения по часовой: (0,-1), (0,0), (0,1), (-1,0)
     // Формула: (x,y) -> (-y,x)
@@ -188,7 +188,7 @@ fn test_dir_right_rotates_correctly() {
     };
 
     for _ in 0..4 {
-        t.rotate_old(Dir::Right);
+        t.rotate_old(Direction::Right);
     }
 
     assert_eq!(
@@ -205,7 +205,7 @@ fn test_dir_right_rotates_correctly() {
     };
 
     let o_original = o_tetromino.coords;
-    o_tetromino.rotate_old(Dir::Right);
+    o_tetromino.rotate_old(Direction::Right);
 
     assert_eq!(
         o_tetromino.coords, o_original,
@@ -221,7 +221,7 @@ fn test_dir_right_rotates_correctly() {
     };
 
     let i_original = i_tetromino.coords;
-    i_tetromino.rotate_old(Dir::Right);
+    i_tetromino.rotate_old(Direction::Right);
 
     // I-фигура должна измениться (вертикальная -> горизонтальная)
     assert_ne!(
@@ -238,7 +238,7 @@ fn test_dir_right_rotates_correctly() {
     };
 
     for _ in 0..4 {
-        i_tetromino2.rotate_old(Dir::Right);
+        i_tetromino2.rotate_old(Direction::Right);
     }
 
     assert_eq!(
@@ -272,25 +272,25 @@ fn test_all_directions_work_correctly() {
             fg: shape_idx,
         };
 
-        // Dir::Down не должен менять координаты
+        // Direction::Down не должен менять координаты
         let original = t.coords;
-        t.rotate_old(Dir::Down);
+        t.rotate_old(Direction::Down);
         assert_eq!(
             t.coords, original,
-            "Dir::Down не должен менять координаты для {:?}",
+            "Direction::Down не должен менять координаты для {:?}",
             shape_type
         );
 
-        // Dir::Left и Dir::Right должны вращать
+        // Direction::Left и Direction::Right должны вращать
         if shape_type != ShapeType::O {
-            t.rotate_old(Dir::Left);
+            t.rotate_old(Direction::Left);
             assert_ne!(
                 t.coords, original,
-                "Dir::Left должен вращать фигуру {:?}",
+                "Direction::Left должен вращать фигуру {:?}",
                 shape_type
             );
 
-            t.rotate_old(Dir::Right);
+            t.rotate_old(Direction::Right);
             // После Left + Right должна вернуться к исходному
             assert_eq!(
                 t.coords, original,
@@ -316,7 +316,7 @@ fn test_sequential_rotations() {
     // Последовательность: Left, Left, Left, Left (должно вернуться к исходному)
     let original = tetromino.coords;
     for _ in 0..4 {
-        tetromino.rotate_old(Dir::Left);
+        tetromino.rotate_old(Direction::Left);
     }
     assert_eq!(
         tetromino.coords, original,
@@ -325,7 +325,7 @@ fn test_sequential_rotations() {
 
     // Последовательность: Right, Right, Right, Right
     for _ in 0..4 {
-        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate_old(Direction::Right);
     }
     assert_eq!(
         tetromino.coords, original,
@@ -334,7 +334,7 @@ fn test_sequential_rotations() {
 
     // Последовательность: Down, Down, Down, Down (не должно менять)
     for _ in 0..4 {
-        tetromino.rotate_old(Dir::Down);
+        tetromino.rotate_old(Direction::Down);
     }
     assert_eq!(
         tetromino.coords, original,
@@ -342,14 +342,14 @@ fn test_sequential_rotations() {
     );
 
     // Смешанная последовательность: Left, Right, Left, Right
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate_old(Direction::Left);
     let after_left = tetromino.coords;
-    tetromino.rotate_old(Dir::Right);
+    tetromino.rotate_old(Direction::Right);
     assert_eq!(
         tetromino.coords, original,
         "Left + Right должны вернуть к исходному"
     );
-    tetromino.rotate_old(Dir::Left);
+    tetromino.rotate_old(Direction::Left);
     assert_eq!(
         tetromino.coords, after_left,
         "После Left должно быть то же состояние"

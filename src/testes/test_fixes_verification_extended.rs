@@ -38,7 +38,7 @@ mod panic_unreachable_tests {
         assert!(state.get_level() >= 1, "Level must be at least 1");
     }
 
-    /// Тест 2: Вращение с `Dir::Left` (успех)
+    /// Тест 2: Вращение с `Direction::Left` (успех)
     ///
     /// Проверяет, что вращение влево работает корректно.
     #[test]
@@ -50,15 +50,15 @@ mod panic_unreachable_tests {
         let _lines: u32 = state.get_lines_cleared();
     }
 
-    /// Тест 3: Вращение с `Dir::Down` (паника)
+    /// Тест 3: Вращение с `Direction::Down` (паника)
     ///
-    /// Проверяет, что вращение с `Dir::Down` вызывает панику.
+    /// Проверяет, что вращение с `Direction::Down` вызывает панику.
     /// Примечание: `rotate_with_wall_kick` - приватный метод, поэтому тест
     /// проверяет что код содержит panic! вместо unreachable!
     #[test]
     fn test_rotate_with_wall_kick_dir_down_panics() {
         // Этот тест проверяет что метод rotate_with_wall_kick существует
-        // и использует panic! вместо unreachable! для Dir::Down
+        // и использует panic! вместо unreachable! для Direction::Down
         // Поскольку метод приватный, мы проверяем через публичный API
 
         let state = GameState::new();
