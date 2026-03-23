@@ -629,7 +629,7 @@ mod problem_12_sanitize_validation {
     fn test_sanitize_removes_control_chars() {
         // Создаём запись с именем, содержащим control characters
         let name_with_control = "Player\x00\x01\x02";
-        let entry = LeaderboardEntry::new(name_with_control.to_string(), 1000);
+        let entry = LeaderboardEntry::new(name_with_control, 1000);
 
         // Имя должно быть санизировано
         assert!(
@@ -645,7 +645,7 @@ mod problem_12_sanitize_validation {
     fn test_sanitize_limits_length() {
         // Создаём запись с длинным именем
         let long_name = "ОченьДлинноеИмяКотороеПревышаетДвадцатьСимволов";
-        let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
+        let entry = LeaderboardEntry::new(&long_name.to_string(), 1000);
 
         // Длина имени должна быть не более 20 символов
         assert!(
@@ -661,7 +661,7 @@ mod problem_12_sanitize_validation {
     fn test_sanitize_empty_returns_anonymous() {
         // Создаём запись с пустым именем
         let empty_name = "";
-        let entry = LeaderboardEntry::new(empty_name.to_string(), 1000);
+        let entry = LeaderboardEntry::new(empty_name, 1000);
 
         // Должно вернуть "Anonymous"
         assert_eq!(
@@ -672,7 +672,7 @@ mod problem_12_sanitize_validation {
 
         // Также проверяем имя с пробелами
         let whitespace_name = "   ";
-        let entry2 = LeaderboardEntry::new(whitespace_name.to_string(), 1000);
+        let entry2 = LeaderboardEntry::new(whitespace_name, 1000);
         assert_eq!(
             entry2.name(),
             "Anonymous",
@@ -1139,7 +1139,7 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
     #[test]
     fn test_score_no_infinite_recursion() {
         // Создаём запись с валидным score
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+        let entry = LeaderboardEntry::new("TestPlayer", 1000);
 
         // Вызываем score() несколько раз - не должно быть бесконечной рекурсии
         let score1 = entry.score();
@@ -1163,7 +1163,7 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
         let test_scores: [u128; 5] = [0, 100, 1000, 10000, u128::MAX / 2];
 
         for &expected_score in &test_scores {
-            let entry = LeaderboardEntry::new("Player".to_string(), expected_score);
+            let entry = LeaderboardEntry::new("Player", expected_score);
             let actual_score = entry.score();
 
             assert_eq!(
@@ -1179,7 +1179,7 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
     #[test]
     fn test_score_after_entry_creation() {
         // Создаём запись
-        let entry = LeaderboardEntry::new("ScoreTest".to_string(), 5000);
+        let entry = LeaderboardEntry::new("ScoreTest", 5000);
 
         // score() должен работать сразу после создания
         assert_eq!(

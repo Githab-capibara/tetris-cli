@@ -101,7 +101,7 @@ fn test_default_value_on_error() {
 
     // Проверяем что можно добавить рекорд в default таблицу
     let mut leaderboard = Leaderboard::default();
-    let added = leaderboard.add_score("TestPlayer".to_string(), 1000);
+    let added = leaderboard.add_score("TestPlayer", 1000);
     assert!(added, "Добавление в default таблицу должно быть успешным");
     assert_eq!(leaderboard.len(), 1, "Таблица должна содержать 1 запись");
 }
@@ -139,7 +139,7 @@ fn test_leaderboard_error_handling() {
 
     // Проверяем что можно добавить запись
     let mut test_leaderboard = Leaderboard::default();
-    let added = test_leaderboard.add_score("Player".to_string(), 1000);
+    let added = test_leaderboard.add_score("Player", 1000);
     assert!(added, "Добавление должно быть успешным");
 
     // Проверяем что можно получить лучший рекорд

@@ -33,7 +33,7 @@ mod tests {
     /// Метод должен возвращать ссылку на строку (хэш записи).
     #[test]
     fn test_hash_method_exists_and_returns_string() {
-        let entry = LeaderboardEntry::new("Player1".to_string(), 1000);
+        let entry = LeaderboardEntry::new("Player1", 1000);
 
         // Вызываем метод hash() - он должен существовать
         let hash = entry.hash();
@@ -52,8 +52,8 @@ mod tests {
     /// Две разные записи должны иметь разные хэши.
     #[test]
     fn test_hash_method_unique_for_different_entries() {
-        let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
-        let entry2 = LeaderboardEntry::new("Player2".to_string(), 2000);
+        let entry1 = LeaderboardEntry::new("Player1", 1000);
+        let entry2 = LeaderboardEntry::new("Player2", 2000);
 
         let hash1 = entry1.hash();
         let hash2 = entry2.hash();
@@ -66,7 +66,7 @@ mod tests {
     /// Многократный вызов `hash()` на одной записи должен возвращать одинаковый результат.
     #[test]
     fn test_hash_method_consistent_for_same_entry() {
-        let entry = LeaderboardEntry::new("StablePlayer".to_string(), 5000);
+        let entry = LeaderboardEntry::new("StablePlayer", 5000);
 
         // Вызываем метод несколько раз
         let hash1 = entry.hash();
@@ -184,7 +184,7 @@ mod tests {
 
         // Добавляем запись только в первый
         let mut lb1 = leaderboard1;
-        lb1.add_score("Player".to_string(), 1000);
+        lb1.add_score("Player", 1000);
 
         // Остальные должны остаться пустыми
         assert_eq!(lb1.len(), 1);
@@ -205,7 +205,7 @@ mod tests {
 
         // Модифицируем оригинал
         let mut lb = leaderboard;
-        lb.add_score("Original".to_string(), 500);
+        lb.add_score("Original", 500);
 
         // Клон должен остаться неизменным
         assert!(

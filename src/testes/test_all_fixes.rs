@@ -679,7 +679,7 @@ fn test_no_unwrap_in_tests() {
 #[test]
 fn test_expect_messages_present() {
     // Проверяем, что LeaderboardEntry создаётся с валидацией
-    let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+    let entry = LeaderboardEntry::new("TestPlayer", 1000);
 
     // Используем assert с сообщением
     let name = entry.name();
@@ -744,7 +744,7 @@ fn test_leaderboard_performance() {
 
     // Добавляем 5 рекордов
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{i}"), i * 100);
+        leaderboard.add_score(&format!("Player{i}"), i * 100);
     }
 
     assert_eq!(leaderboard.len(), 5, "Должно быть 5 записей");
@@ -924,12 +924,12 @@ fn test_rate_limit_enforcement() {
 
     // Добавляем MAX_ENTRIES_PER_MINUTE записей
     for i in 0..10 {
-        let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+        let result = leaderboard.add_score(&format!("Player{i}"), i * 100);
         assert!(result, "Запись {i} должна быть добавлена");
     }
 
     // 11-я запись должна быть отклонена
-    let result = leaderboard.add_score("Player10".to_string(), 1000);
+    let result = leaderboard.add_score("Player10", 1000);
     assert!(
         !result,
         "11-я запись должна быть отклонена из-за rate limiting"
@@ -945,7 +945,7 @@ fn test_rate_limit_counter_reset() {
 
     // Добавляем записи
     for i in 0..5 {
-        let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+        let result = leaderboard.add_score(&format!("Player{i}"), i * 100);
         assert!(result, "Запись {i} должна быть добавлена");
     }
 
@@ -965,11 +965,11 @@ fn test_rate_limit_error_handling() {
 
     // Заполняем лимит
     for i in 0..10 {
-        let _ = leaderboard.add_score(format!("Player{i}"), i * 100);
+        let _ = leaderboard.add_score(&format!("Player{i}"), i * 100);
     }
 
     // Пытаемся добавить ещё одну запись
-    let result = leaderboard.add_score("Overflow".to_string(), 9999);
+    let result = leaderboard.add_score("Overflow", 9999);
 
     // Должно вернуть false (не паниковать)
     assert!(

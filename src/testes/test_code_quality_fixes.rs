@@ -243,7 +243,7 @@ fn test_documentation_backticks() {
     );
 
     // Создаём запись в таблице лидеров
-    let entry = LeaderboardEntry::new("TestPlayer".to_string(), 500);
+    let entry = LeaderboardEntry::new("TestPlayer", 500);
     assert_eq!(entry.name(), "TestPlayer", "Имя должно совпадать");
     assert_eq!(entry.score(), 500, "Очки должны совпадать");
 
@@ -287,7 +287,7 @@ fn test_all_code_quality_fixes_integration() {
 
     // 6. Проверяем документацию (импорты работают)
     let _save = SaveData::from_value(100);
-    let _entry = LeaderboardEntry::new("Player".to_string(), 200);
+    let _entry = LeaderboardEntry::new("Player", 200);
 
     // Все исправления работают корректно
 }

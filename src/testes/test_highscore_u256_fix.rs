@@ -86,8 +86,8 @@ fn test_использование_соли_в_записях() {
     );
 
     // Создаём два одинаковых LeaderboardEntry
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 5000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 5000);
+    let entry1 = LeaderboardEntry::new("Player", 5000);
+    let entry2 = LeaderboardEntry::new("Player", 5000);
 
     // Очки должны совпадать
     assert_eq!(entry1.score(), entry2.score(), "Очки должны совпадать");

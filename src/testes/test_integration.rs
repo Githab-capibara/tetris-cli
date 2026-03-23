@@ -217,7 +217,7 @@ fn test_game_state_leaderboard_interaction() {
 
     // Симулируем окончание игры с рекордом
     let final_score = 5000;
-    let added = leaderboard.add_score("TestPlayer".to_string(), final_score);
+    let added = leaderboard.add_score("TestPlayer", final_score);
 
     assert!(added, "Рекорд должен быть добавлен");
     assert_eq!(
@@ -297,7 +297,7 @@ fn test_save_data_leaderboard_interaction() {
 
     // Создаём Leaderboard
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Player".to_string(), 3000);
+    leaderboard.add_score("Player", 3000);
 
     assert_eq!(
         leaderboard.get_best_score(),
@@ -454,7 +454,7 @@ fn test_performance_leaderboard() {
 
     // Добавляем 1000 рекордов
     for i in 0..1000 {
-        leaderboard.add_score(format!("Player{i}"), i * 100);
+        leaderboard.add_score(&format!("Player{i}"), i * 100);
     }
 
     let duration = start.elapsed();

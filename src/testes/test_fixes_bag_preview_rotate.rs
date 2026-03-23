@@ -135,7 +135,7 @@ fn test_panic_contains_message() {
 /// Тест 12.3: Проверка что write!() не вызывает панику.
 #[test]
 fn test_write_no_panic() {
-    let entry = LeaderboardEntry::new("Test".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Test", 1000);
     assert!(entry.is_valid());
 }
 

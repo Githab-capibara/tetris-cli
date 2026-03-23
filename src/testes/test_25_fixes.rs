@@ -138,7 +138,7 @@ fn test_highscore_validation_before_use() {
     );
 
     // Проверяем LeaderboardEntry
-    let entry = LeaderboardEntry::new("Player".to_string(), 3000);
+    let entry = LeaderboardEntry::new("Player", 3000);
     // Метод score() должен выполнять валидацию перед возвратом
     let score = entry.score();
     assert_eq!(
@@ -147,7 +147,7 @@ fn test_highscore_validation_before_use() {
     );
 
     // Проверяем, что валидная запись проходит валидацию
-    let valid_entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let valid_entry = LeaderboardEntry::new("Player", 1000);
     assert!(
         valid_entry.is_valid(),
         "Валидная запись должна проходить валидацию"
@@ -273,7 +273,7 @@ fn test_unicode_name_validation() {
     use crate::highscore::LeaderboardEntry;
 
     // Проверяем поддержку русских букв
-    let russian_entry = LeaderboardEntry::new("Игрок".to_string(), 1000);
+    let russian_entry = LeaderboardEntry::new("Игрок", 1000);
     assert_eq!(
         russian_entry.name(),
         "Игрок",
@@ -281,7 +281,7 @@ fn test_unicode_name_validation() {
     );
 
     // Проверяем поддержку смешанных имён
-    let mixed_entry = LeaderboardEntry::new("Player123".to_string(), 2000);
+    let mixed_entry = LeaderboardEntry::new("Player123", 2000);
     assert_eq!(
         mixed_entry.name(),
         "Player123",
@@ -289,7 +289,7 @@ fn test_unicode_name_validation() {
     );
 
     // Проверяем отклонение управляющих символов
-    let control_entry = LeaderboardEntry::new("Player\u{0000}".to_string(), 3000);
+    let control_entry = LeaderboardEntry::new("Player\u{0000}", 3000);
     assert_eq!(
         control_entry.name(),
         "Player",
@@ -297,7 +297,7 @@ fn test_unicode_name_validation() {
     );
 
     // Проверяем поддержку специальных символов
-    let special_entry = LeaderboardEntry::new("Player_Name".to_string(), 4000);
+    let special_entry = LeaderboardEntry::new("Player_Name", 4000);
     assert_eq!(
         special_entry.name(),
         "Player_Name",
@@ -499,7 +499,7 @@ fn test_snake_case_naming() {
 
     let _state = GameState::new();
     let _save = SaveData::from_value(1000);
-    let _entry = LeaderboardEntry::new("Test".to_string(), 500);
+    let _entry = LeaderboardEntry::new("Test", 500);
     let _ = LINE_SCORES[0];
 }
 
@@ -551,7 +551,7 @@ fn test_string_with_capacity() {
     // sanitize_player_name используется внутри LeaderboardEntry::new()
     // Проверяем, что функция работает корректно с оптимизацией
 
-    let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+    let entry = LeaderboardEntry::new("TestPlayer", 1000);
     assert_eq!(
         entry.name(),
         "TestPlayer",

@@ -76,7 +76,7 @@ fn test_обнаружение_подделки_рекорда() {
 #[test]
 fn test_целостность_записи_таблицы_лидеров() {
     // Тест 1: Валидная запись
-    let entry = LeaderboardEntry::new("Player".to_string(), 5000);
+    let entry = LeaderboardEntry::new("Player", 5000);
     assert!(entry.is_valid(), "Новая запись должна быть валидной");
 
     // Тест 2: Проверяем что запись содержит правильные данные
@@ -87,7 +87,7 @@ fn test_целостность_записи_таблицы_лидеров() {
     assert!(!entry.hash().is_empty(), "Хеш не должен быть пустым");
 
     // Тест 4: Создаём запись с подделанными данными (через new с другими данными)
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry2 = LeaderboardEntry::new("Player", 1000);
     assert!(entry2.is_valid(), "Вторая запись тоже должна быть валидной");
 
     // Но хеши должны быть разными из-за разной соли

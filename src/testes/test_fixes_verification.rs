@@ -30,7 +30,7 @@ mod rate_limiting_tests {
 
         // Добавляем 5 рекордов подряд без задержек
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result,
                 "Record {i} must be added (rate limiting disabled in tests)"
@@ -50,13 +50,13 @@ mod rate_limiting_tests {
 
         // Добавляем 10 рекордов подряд (лимит)
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), i * 100);
             // Первые 10 должны добавиться
             assert!(result, "Record {i} must be added (within rate limit)");
         }
 
         // 11-я запись должна быть отклонена из-за rate limiting
-        let result_11 = leaderboard.add_score("Player11".to_string(), 1100);
+        let result_11 = leaderboard.add_score("Player11", 1100);
         assert!(
             !result_11,
             "Record 11 must be rejected (rate limiting exceeded)"
@@ -92,7 +92,7 @@ mod rate_limiting_tests {
 
         // Добавляем несколько рекордов подряд без задержек
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result || leaderboard.len() == 5,
                 "Record {i} must be added (no rate limiting)"
@@ -205,7 +205,7 @@ mod unreadable_literals_tests {
     fn test_underscore_literals_work() {
         // Числа с подчёркиваниями для читаемости
         let count_with_underscores = 100_000;
-        let count_without_underscores = 100000;
+        let count_without_underscores = 100_000;
 
         // Проверяем что значения равны
         assert_eq!(
@@ -214,7 +214,10 @@ mod unreadable_literals_tests {
         );
 
         // Проверяем конкретное значение
-        assert_eq!(count_with_underscores, 100000, "100_000 must equal 100000");
+        assert_eq!(
+            count_with_underscores, 100_000,
+            "100_000 must equal 100_000"
+        );
 
         // Тест с другими числами с подчёркиваниями
         let thousand = 1_000;
@@ -222,8 +225,11 @@ mod unreadable_literals_tests {
         let billion: u64 = 1_000_000_000;
 
         assert_eq!(thousand, 1000, "1_000 must be 1000");
-        assert_eq!(million, 1000000, "1_000_000 must be 1000000");
-        assert_eq!(billion, 1000000000, "1_000_000_000 must be 1000000000");
+        assert_eq!(million, 1_000_000, "1_000_000 must be 1_000_000");
+        assert_eq!(
+            billion, 1_000_000_000,
+            "1_000_000_000 must be 1_000_000_000"
+        );
     }
 
     /// Тест 2: Проверка производительности с большими числами
@@ -537,7 +543,7 @@ mod private_fields_tests {
     /// Проверяет, что поля name, score, salt, hash приватны.
     #[test]
     fn test_fields_not_accessible_directly() {
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 5000);
+        let entry = LeaderboardEntry::new("TestPlayer", 5000);
 
         // Проверяем что поля недоступны напрямую (этот тест компилируется только если поля приватны)
         // Следующий код не скомпилируется если поля приватны:
@@ -554,7 +560,7 @@ mod private_fields_tests {
     /// Проверяет, что публичные методы `name()`, `score()`, `hash()` работают корректно.
     #[test]
     fn test_getters_work() {
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 5000);
+        let entry = LeaderboardEntry::new("TestPlayer", 5000);
 
         // Проверяем геттер name()
         assert_eq!(entry.name(), "TestPlayer", "name() must return player name");
@@ -573,7 +579,7 @@ mod private_fields_tests {
     /// Проверяет, что `is_valid()` корректно проверяет целостность записи.
     #[test]
     fn test_validation_via_getters() {
-        let entry = LeaderboardEntry::new("ValidPlayer".to_string(), 10000);
+        let entry = LeaderboardEntry::new("ValidPlayer", 10000);
 
         // Проверяем что запись валидна
         assert!(entry.is_valid(), "New entry must be valid");
@@ -592,7 +598,7 @@ mod private_fields_tests {
         );
 
         // Проверяем что валидация работает для разных записей
-        let entry2 = LeaderboardEntry::new("AnotherPlayer".to_string(), 20000);
+        let entry2 = LeaderboardEntry::new("AnotherPlayer", 20000);
         assert!(entry2.is_valid(), "Second entry must also be valid");
 
         // Проверяем что записи разные

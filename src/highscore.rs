@@ -199,10 +199,12 @@ fn load_rate_limit_state() -> RateLimitState {
     }
 
     // Пытаемся открыть файл с блокировкой
+    // Исправление #2: добавлено .truncate(true) для безопасной работы с файлом
     if let Ok(file) = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
+        .truncate(true)
         .open(&config_file)
     {
         // Устанавливаем эксклюзивную блокировку
@@ -259,10 +261,12 @@ fn save_rate_limit_state(state: &RateLimitState) {
         .join(format!("{RATE_LIMIT_CONFIG_NAME}.toml"));
 
     // Пытаемся открыть файл с блокировкой
+    // Исправление #2: добавлено .truncate(true) для безопасной работы с файлом
     if let Ok(file) = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
+        .truncate(true)
         .open(&config_file)
     {
         // Устанавливаем эксклюзивную блокировку
@@ -363,14 +367,17 @@ pub fn check_config_directory_writable() -> Result<(), ConfigError> {
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
 /// Использует u128 для предотвращения переполнения счёта.
+///
+/// # Исправление #16
+/// Поля переименованы: `high_score` → `score`, `high_score_salt` → `salt`, `high_score_hash` → `hash`.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SaveData {
     /// Значение рекорда.
-    high_score: u128,
+    score: u128,
     /// Соль для хэша (защита от подделки).
-    high_score_salt: String,
+    salt: String,
     /// Хэш рекорда с солью.
-    high_score_hash: String,
+    hash: String,
 }
 
 /// Запись в таблице лидеров.
@@ -457,7 +464,7 @@ impl SaveData {
                         }
                         data
                     }
-                    None if data.high_score != 0 => {
+                    None if data.score != 0 => {
                         // Исправление #26: подробное предупреждение о подделке
                         eprintln!("Предупреждение: обнаружена подделка рекорда! Используется значение по умолчанию.");
                         eprintln!("  Если вы не пытались изменить файл конфигурации вручную, это может быть ошибкой.");
@@ -486,7 +493,7 @@ impl SaveData {
     /// Создать `SaveData` из значения рекорда.
     ///
     /// # Аргументы
-    /// * `high_score` - значение рекорда для сохранения
+    /// * `score` - значение рекорда для сохранения
     ///
     /// # Возвращает
     /// Новый экземпляр `SaveData` с вычисленным хешем
@@ -495,20 +502,19 @@ impl SaveData {
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
     /// let save = SaveData::from_value(1000);
-    /// // [`high_score`] содержит значение 1000
+    /// // [`score`] содержит значение 1000
     /// ```
     /// Использует u128 для предотвращения переполнения.
-    pub fn from_value(high_score: u128) -> Self {
-        let high_score_str = high_score.to_string();
+    ///
+    /// # Исправление #16
+    /// Поля переименованы: используется `score`, `salt`, `hash`.
+    pub fn from_value(score: u128) -> Self {
+        let score_str = score.to_string();
         let salt = generate_salt();
-        let salt_and_hs = salt.clone() + &high_score_str;
-        let hash = get_hash(&salt_and_hs);
+        let salt_and_score = salt.clone() + &score_str;
+        let hash = get_hash(&salt_and_score);
 
-        Self {
-            high_score,
-            high_score_salt: salt,
-            high_score_hash: hash,
-        }
+        Self { score, salt, hash }
     }
 
     /// Сохранить значение рекорда в файл.
@@ -568,12 +574,13 @@ impl SaveData {
     /// ```
     #[must_use]
     pub fn verify_and_get_score(&self) -> Option<u128> {
-        let high_score_str = self.high_score.to_string();
-        let salt_and_hs = self.high_score_salt.clone() + &high_score_str;
-        let test_hash = get_hash(&salt_and_hs);
+        // Исправление #16: используем новые имена полей
+        let score_str = self.score.to_string();
+        let salt_and_score = self.salt.clone() + &score_str;
+        let test_hash = get_hash(&salt_and_score);
 
-        if self.high_score_hash == test_hash {
-            Some(self.high_score)
+        if self.hash == test_hash {
+            Some(self.score)
         } else {
             // Логирование попытки подделки
             eprintln!("Предупреждение: обнаружена подделка рекорда! Хэш не совпадает.");
@@ -668,13 +675,16 @@ impl LeaderboardEntry {
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), 1000);
     /// ```
     /// Использует u128 для предотвращения переполнения.
-    pub fn new(name: String, score: u128) -> Self {
-        let valid_name = sanitize_player_name(&name);
+    ///
+    /// # Исправление #9
+    /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
+    pub fn new(name: &str, score: u128) -> Self {
+        let valid_name = sanitize_player_name(name);
 
         let salt = generate_salt();
         // Оптимизация: используем String::with_capacity() + write!() вместо format!()
@@ -808,9 +818,12 @@ impl Leaderboard {
     ///
     /// # Исправление #24
     /// Добавлена валидация имени игрока перед добавлением в таблицу лидеров.
-    pub fn add_score(&mut self, name: String, score: u128) -> bool {
+    ///
+    /// # Исправление #9
+    /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
+    pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         // Исправление #24: валидация имени игрока
-        let valid_name = sanitize_player_name(&name);
+        let valid_name = sanitize_player_name(name);
         if valid_name == "Anonymous" && name.trim() != "Anonymous" {
             eprintln!(
                 "Предупреждение: имя игрока не прошло валидацию и было заменено на 'Anonymous'"
@@ -890,7 +903,8 @@ impl Leaderboard {
         self.recent_entry_times.push(current_time_ms);
 
         // Добавление новой записи с валидированным именем
-        let new_entry = LeaderboardEntry::new(valid_name, score);
+        // Исправление #9: передаём &str вместо String
+        let new_entry = LeaderboardEntry::new(&valid_name, score);
         self.entries.push(new_entry);
 
         // Сортировка по убыванию очков

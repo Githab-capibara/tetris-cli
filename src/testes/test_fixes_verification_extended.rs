@@ -105,7 +105,7 @@ mod expect_unwrap_tests {
     #[test]
     fn test_expect_error_message() {
         // Создаём запись с корректными данными
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 5000);
+        let entry = LeaderboardEntry::new("TestPlayer", 5000);
 
         // Проверяем что геттеры работают
         let name = entry.name();
@@ -133,7 +133,7 @@ mod expect_unwrap_tests {
         assert_eq!(buffer, "", "Buffer must be empty");
 
         // Тест с LeaderboardEntry с пустым именем (будет заменено на "Anonymous")
-        let entry = LeaderboardEntry::new(String::new(), 0);
+        let entry = LeaderboardEntry::new(&String::new(), 0);
         assert_eq!(
             entry.name(),
             "Anonymous",
@@ -158,7 +158,7 @@ mod add_score_tests {
         let mut leaderboard = Leaderboard::default();
 
         // Добавляем рекорд
-        let result = leaderboard.add_score("Player1".to_string(), 1000);
+        let result = leaderboard.add_score("Player1", 1000);
 
         assert!(result, "add_score must return true for new high score");
         assert_eq!(leaderboard.len(), 1, "Leaderboard must contain 1 entry");
@@ -175,12 +175,12 @@ mod add_score_tests {
 
         // Добавляем 10 рекордов (лимит)
         for i in 0..10 {
-            let result = leaderboard.add_score(format!("Player{i}"), i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), i * 100);
             assert!(result, "Record {i} must be added (within limit)");
         }
 
         // 11-я запись должна быть отклонена
-        let result_11 = leaderboard.add_score("Player11".to_string(), 1100);
+        let result_11 = leaderboard.add_score("Player11", 1100);
         assert!(
             !result_11,
             "Record 11 must be rejected (rate limiting exceeded)"
@@ -196,7 +196,7 @@ mod add_score_tests {
 
         // Добавляем 5 рекордов подряд
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{i}"), 5000 - i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), 5000 - i * 100);
             assert!(result, "Record {i} must be added");
         }
 
@@ -437,7 +437,7 @@ mod cfg_attr_dead_code_tests {
     /// Проверяет, что `hash()` доступен в тестах.
     #[test]
     fn test_hash_method_available_in_tests() {
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+        let entry = LeaderboardEntry::new("TestPlayer", 1000);
 
         // hash() должен быть доступен в тестах благодаря cfg_attr
         let hash = entry.hash();
@@ -451,7 +451,7 @@ mod cfg_attr_dead_code_tests {
     /// Проверяет, что нет предупреждений о `dead_code`.
     #[test]
     fn test_hash_no_dead_code_warning() {
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 2000);
+        let entry = LeaderboardEntry::new("TestPlayer", 2000);
 
         // Используем hash() чтобы избежать предупреждения
         let _hash = entry.hash();
@@ -464,7 +464,7 @@ mod cfg_attr_dead_code_tests {
     /// Проверяет, что hash возвращает корректное значение.
     #[test]
     fn test_hash_correctness() {
-        let entry = LeaderboardEntry::new("HashTest".to_string(), 5000);
+        let entry = LeaderboardEntry::new("HashTest", 5000);
 
         let hash = entry.hash();
 
@@ -476,7 +476,7 @@ mod cfg_attr_dead_code_tests {
         );
 
         // Проверяем что хеш уникален для разных записей
-        let entry2 = LeaderboardEntry::new("HashTest2".to_string(), 5000);
+        let entry2 = LeaderboardEntry::new("HashTest2", 5000);
         let hash2 = entry2.hash();
 
         assert_ne!(hash, hash2, "Different entries must have different hashes");

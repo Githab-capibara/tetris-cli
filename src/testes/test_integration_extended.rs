@@ -205,7 +205,7 @@ fn test_leaderboard_adds_game_score() {
 
     // Симулируем рекорд из игры
     let score = 1000;
-    let added = leaderboard.add_score("Player".to_string(), score);
+    let added = leaderboard.add_score("Player", score);
 
     assert!(added, "Рекорд должен быть добавлен");
     assert_eq!(leaderboard.get_best_score(), score);
@@ -235,7 +235,7 @@ fn test_savedata_loads_score() {
 fn test_leaderboard_validates_entries() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
 
     for entry in leaderboard.get_entries() {
         assert!(entry.is_valid(), "Запись должна быть валидной");
@@ -292,9 +292,9 @@ fn test_marathon_mode_saves_score() {
 fn test_leaderboard_sorts_scores() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("P1".to_string(), 100);
-    leaderboard.add_score("P2".to_string(), 300);
-    leaderboard.add_score("P3".to_string(), 200);
+    leaderboard.add_score("P1", 100);
+    leaderboard.add_score("P2", 300);
+    leaderboard.add_score("P3", 200);
 
     let entries = leaderboard.get_entries();
 
@@ -320,7 +320,7 @@ fn test_leaderboard_max_size_integration() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(format!("P{i}"), u128::from(i as u64 * 100));
+        leaderboard.add_score(&format!("P{i}"), u128::from(i as u64 * 100));
     }
 
     assert_eq!(
@@ -728,7 +728,7 @@ fn test_fast_leaderboard_add() {
     let start = std::time::Instant::now();
 
     for i in 0..100 {
-        leaderboard.add_score(format!("P{i}"), u128::from(i as u64));
+        leaderboard.add_score(&format!("P{i}"), u128::from(i as u64));
     }
 
     let duration = start.elapsed();

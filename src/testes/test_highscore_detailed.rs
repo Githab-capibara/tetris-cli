@@ -116,7 +116,7 @@ fn test_leaderboard_creation() {
 fn test_leaderboard_add_score() {
     let mut leaderboard = Leaderboard::default();
 
-    let added = leaderboard.add_score("Player1".to_string(), 1000);
+    let added = leaderboard.add_score("Player1", 1000);
 
     assert!(added, "Рекорд должен быть добавлен");
     assert_eq!(leaderboard.len(), 1, "Таблица должна содержать 1 запись");
@@ -127,9 +127,9 @@ fn test_leaderboard_add_score() {
 fn test_leaderboard_add_multiple_scores() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 2000);
-    leaderboard.add_score("Player3".to_string(), 1500);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 2000);
+    leaderboard.add_score("Player3", 1500);
 
     assert_eq!(leaderboard.len(), 3, "Таблица должна содержать 3 записи");
 }
@@ -139,9 +139,9 @@ fn test_leaderboard_add_multiple_scores() {
 fn test_leaderboard_sorting_descending() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player3".to_string(), 300);
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 500);
+    leaderboard.add_score("Player3", 300);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 500);
 
     let entries = leaderboard.get_entries();
 
@@ -163,7 +163,7 @@ fn test_leaderboard_sorting_descending() {
 fn test_leaderboard_validation() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
 
     // Проверяем валидность всех записей
     for entry in leaderboard.get_entries() {
@@ -176,8 +176,8 @@ fn test_leaderboard_validation() {
 fn test_leaderboard_get_entries() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 2000);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 2000);
 
     let entries = leaderboard.get_entries();
 
@@ -189,9 +189,9 @@ fn test_leaderboard_get_entries() {
 fn test_leaderboard_best_score() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 2000);
-    leaderboard.add_score("Player3".to_string(), 1500);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 2000);
+    leaderboard.add_score("Player3", 1500);
 
     let best = leaderboard.get_best_score();
 
@@ -219,7 +219,7 @@ fn test_leaderboard_empty() {
 /// Тест 15: Хеш с солью создаётся
 #[test]
 fn test_hash_with_salt_creation() {
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
 
     // Проверяем, что запись валидна (значит хеш и соль созданы)
     assert!(entry.is_valid(), "Запись должна быть валидной");
@@ -228,8 +228,8 @@ fn test_hash_with_salt_creation() {
 /// Тест 16: Хеш с солью уникален
 #[test]
 fn test_hash_with_salt_unique() {
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry1 = LeaderboardEntry::new("Player", 1000);
+    let entry2 = LeaderboardEntry::new("Player", 1000);
 
     // Хеши должны быть разными из-за разной соли
     assert_ne!(entry1.hash(), entry2.hash(), "Хеши должны быть уникальными");
@@ -238,8 +238,8 @@ fn test_hash_with_salt_unique() {
 /// Тест 17: Хеш зависит от соли
 #[test]
 fn test_hash_depends_on_salt() {
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry1 = LeaderboardEntry::new("Player", 1000);
+    let entry2 = LeaderboardEntry::new("Player", 1000);
 
     // Хеши должны быть разными из-за разной соли
     assert_ne!(
@@ -252,8 +252,8 @@ fn test_hash_depends_on_salt() {
 /// Тест 18: Хеш зависит от имени
 #[test]
 fn test_hash_depends_on_name() {
-    let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player2".to_string(), 1000);
+    let entry1 = LeaderboardEntry::new("Player1", 1000);
+    let entry2 = LeaderboardEntry::new("Player2", 1000);
 
     assert_ne!(
         entry1.hash(),
@@ -265,8 +265,8 @@ fn test_hash_depends_on_name() {
 /// Тест 19: Хеш зависит от очков
 #[test]
 fn test_hash_depends_on_score() {
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 2000);
+    let entry1 = LeaderboardEntry::new("Player", 1000);
+    let entry2 = LeaderboardEntry::new("Player", 2000);
 
     assert_ne!(
         entry1.hash(),
@@ -281,7 +281,7 @@ fn test_salt_random() {
     let mut hashes = Vec::new();
 
     for _ in 0..10 {
-        let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+        let entry = LeaderboardEntry::new("Player", 1000);
         hashes.push(entry.hash().to_string());
     }
 
@@ -303,7 +303,7 @@ fn test_salt_random() {
 /// Тест 21: Валидная запись проходит проверку
 #[test]
 fn test_valid_entry_passes_check() {
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
 
     assert!(
         entry.is_valid(),
@@ -317,7 +317,7 @@ fn test_valid_entry_passes_check() {
 // /// Тест 22: Подделка хеша обнаруживается
 // #[test]
 // fn test_fake_hash_detected() {
-//     let mut entry = LeaderboardEntry::new("Player".to_string(), 1000);
+//     let mut entry = LeaderboardEntry::new("Player", 1000);
 //     entry.hash = "fake_hash".to_string();
 //     assert!(!entry.is_valid(), "Подделанный хеш должен обнаруживаться");
 // }
@@ -325,7 +325,7 @@ fn test_valid_entry_passes_check() {
 // /// Тест 23: Подделка очков обнаруживается
 // #[test]
 // fn test_fake_score_detected() {
-//     let mut entry = LeaderboardEntry::new("Player".to_string(), 1000);
+//     let mut entry = LeaderboardEntry::new("Player", 1000);
 //     entry.score = 9999;
 //     assert!(!entry.is_valid(), "Подделанные очки должны обнаруживаться");
 // }
@@ -333,7 +333,7 @@ fn test_valid_entry_passes_check() {
 // /// Тест 24: Подделка имени обнаруживается
 // #[test]
 // fn test_fake_name_detected() {
-//     let mut entry = LeaderboardEntry::new("Player".to_string(), 1000);
+//     let mut entry = LeaderboardEntry::new("Player", 1000);
 //     entry.name = "Cheater".to_string();
 //     assert!(!entry.is_valid(), "Подделанное имя должно обнаруживаться");
 // }
@@ -363,7 +363,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(format!("Player{i}"), u128::from(i as u64 * 100));
+        leaderboard.add_score(&format!("Player{i}"), u128::from(i as u64 * 100));
     }
 
     // Таблица должна содержать только топ-5
@@ -380,12 +380,12 @@ fn test_leaderboard_keeps_top_five() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем рекорды в случайном порядке
-    leaderboard.add_score("P5".to_string(), 500);
-    leaderboard.add_score("P1".to_string(), 100);
-    leaderboard.add_score("P3".to_string(), 300);
-    leaderboard.add_score("P2".to_string(), 200);
-    leaderboard.add_score("P4".to_string(), 400);
-    leaderboard.add_score("P6".to_string(), 600); // Должен вытеснить P1
+    leaderboard.add_score("P5", 500);
+    leaderboard.add_score("P1", 100);
+    leaderboard.add_score("P3", 300);
+    leaderboard.add_score("P2", 200);
+    leaderboard.add_score("P4", 400);
+    leaderboard.add_score("P6", 600); // Должен вытеснить P1
 
     let entries = leaderboard.get_entries();
 
@@ -404,11 +404,11 @@ fn test_leaderboard_low_score_not_added() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{i}"), u128::from((5 - i) as u64 * 100));
+        leaderboard.add_score(&format!("Player{i}"), u128::from((5 - i) as u64 * 100));
     }
 
     // Пытаемся добавить рекорд ниже минимального
-    let added = leaderboard.add_score("LowPlayer".to_string(), 50);
+    let added = leaderboard.add_score("LowPlayer", 50);
 
     assert!(
         !added,
@@ -423,11 +423,11 @@ fn test_leaderboard_high_score_displaces_low() {
 
     // Заполняем таблицу
     for i in 0..5 {
-        leaderboard.add_score(format!("Player{i}"), u128::from((5 - i) as u64 * 100));
+        leaderboard.add_score(&format!("Player{i}"), u128::from((5 - i) as u64 * 100));
     }
 
     // Добавляем высокий рекорд
-    let added = leaderboard.add_score("HighPlayer".to_string(), 1000);
+    let added = leaderboard.add_score("HighPlayer", 1000);
 
     assert!(added, "Высокий рекорд должен добавляться");
     assert_eq!(leaderboard.len(), 5, "Таблица должна остаться размером 5");
@@ -438,8 +438,8 @@ fn test_leaderboard_high_score_displaces_low() {
 fn test_leaderboard_clear() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 2000);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 2000);
 
     leaderboard.clear();
 

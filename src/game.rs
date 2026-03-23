@@ -1901,6 +1901,7 @@ impl GameState {
     /// # Отличия от `can_move_curr_shape`
     /// Использует immutable ссылку на self, так как призрачная фигура
     /// не изменяет состояние игры
+    #[allow(dead_code)]
     pub fn can_move_ghost_shape(&self, ghost: &Tetromino, dir: Dir) -> bool {
         self.check_collision(&ghost.coords, ghost.pos, dir)
     }

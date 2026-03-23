@@ -50,9 +50,9 @@ impl From<Dir> for RotationDirection {
     /// - `RotationDirection::Clockwise` для `Dir::Down` (по умолчанию)
     fn from(dir: Dir) -> Self {
         match dir {
-            Dir::Right => RotationDirection::Clockwise,
             Dir::Left => RotationDirection::CounterClockwise,
-            Dir::Down => RotationDirection::Clockwise, // По умолчанию
+            // Dir::Right и Dir::Down оба возвращают Clockwise
+            Dir::Right | Dir::Down => RotationDirection::Clockwise,
         }
     }
 }
