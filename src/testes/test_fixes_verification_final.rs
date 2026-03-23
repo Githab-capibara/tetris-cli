@@ -229,7 +229,7 @@ mod problem_4_canvas_default_unwrap {
     fn test_canvas_default_works() {
         // Canvas::default() может паниковать если терминал недоступен
         // В тестах это допустимо
-        let result = std::panic::catch_unwind(|| {
+        let _result = std::panic::catch_unwind(|| {
             let _canvas = Canvas::default();
         });
 
