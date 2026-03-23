@@ -8,11 +8,8 @@
 //! - Пользовательского ввода
 //! - Падения фигур
 
-use super::state::{
-    GameState, UpdateEndState, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MILLIS_PER_SECOND,
-};
+use super::state::{GameState, UpdateEndState, MILLIS_PER_SECOND};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::Tetromino;
 use crate::types::{Direction, RotationDirection};
 
 /// Таблица смещений для wall kick (Super Rotation System - упрощённая).

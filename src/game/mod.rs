@@ -294,7 +294,7 @@ use state::UpdateEndState;
 #[cfg(test)]
 mod game_tests {
     use super::*;
-    use crate::io::Direction;
+    use crate::Direction;
 
     // Тесты Hard Drop
     #[test]

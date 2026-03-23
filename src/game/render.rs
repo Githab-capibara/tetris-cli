@@ -14,7 +14,7 @@ use super::state::{
 };
 use crate::io::{Canvas, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
-use termion::color::{Color, Reset};
+use termion::color::Reset;
 
 /// Отрисовать текущее состояние игры.
 ///
