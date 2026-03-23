@@ -10,12 +10,12 @@
 //! ## ЛОГИЧЕСКИЕ ОШИБКИ (4-6):
 //! 4. Константы позиционирования UI - тест на наличие констант
 //! 5. `draw_ghost_shape()` - тест на корректность отрисовки
-//! 6. `Dir::Down` - тест на игнорирование в `handle_movement_input()`
+//! 6. `Direction::Down` - тест на игнорирование в `handle_movement_input()`
 //!
 //! ## ОПТИМИЗАЦИИ (7-10):
 //! 7. Копирование Tetromino/Dir - тест на Copy реализацию
 //! 8. `BagGenerator` без `is_filled` - тест на работу без флага
-//! 9. `check_collision()` - тест на оптимизацию проверки
+//! 9. `check_collision_direction()` - тест на оптимизацию проверки
 //! 10. `String::with_capacity()` - тест на использование константы
 //!
 //! ## ЧИТАЕМОСТЬ (11-14):
@@ -161,13 +161,13 @@ fn test_4_ui_positioning_constants() {
     );
 }
 
-/// Тест 5: Игнорирование `Dir::Down` в `handle_movement_input()`.
+/// Тест 5: Игнорирование `Direction::Down` в `handle_movement_input()`.
 ///
-/// Проверяет, что `Dir::Down` корректно игнорируется
+/// Проверяет, что `Direction::Down` корректно игнорируется
 /// при вращении фигуры без паники.
 #[test]
 fn test_5_dir_down_ignored_in_rotation() {
-    use crate::game::Dir;
+    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
 
     // Создаём тестовую фигуру
@@ -181,16 +181,16 @@ fn test_5_dir_down_ignored_in_rotation() {
     // Сохраняем исходные координаты
     let original_coords = tetromino.coords;
 
-    // Dir::Down должен игнорироваться без паники
+    // Direction::Down должен игнорироваться без паники
     #[allow(deprecated)]
     {
-        tetromino.rotate_old(Dir::Down);
+        tetromino.rotate_old(Direction::Down);
     }
 
     // Координаты не должны измениться
     assert_eq!(
         tetromino.coords, original_coords,
-        "Dir::Down должен игнорироваться без изменения координат"
+        "Direction::Down должен игнорироваться без изменения координат"
     );
 }
 
@@ -200,11 +200,11 @@ fn test_5_dir_down_ignored_in_rotation() {
 /// для предотвращения аллокаций.
 #[test]
 fn test_6_tetromino_dir_copy() {
-    use crate::game::Dir;
+    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
 
     // Проверяем, что Dir реализует Copy
-    let dir1 = Dir::Down;
+    let dir1 = Direction::Down;
     let dir2 = dir1; // Copy, не move
     assert_eq!(dir1, dir2, "Dir должен реализовывать Copy");
 
@@ -432,7 +432,7 @@ fn test_12_bag_generator_without_is_filled() {
     );
 }
 
-/// Тест 13: `check_collision()` оптимизация.
+/// Тест 13: `check_collision_direction()` оптимизация.
 ///
 /// Проверяет, что проверка столкновений оптимизирована.
 #[test]
@@ -450,11 +450,11 @@ fn test_13_check_collision_optimization() {
         "GameState должен использовать Box для blocks"
     );
 
-    // check_collision() использует оптимизированную проверку границ
+    // check_collision_direction() использует оптимизированную проверку границ
     // и ранний выход при обнаружении столкновения
 }
 
-/// Тест 14: Бенчмарк для `check_collision()`, `rotate_with_wall_kick()`, `find_full_rows()`.
+/// Тест 14: Бенчмарк для `check_collision_direction()`, `rotate_with_wall_kick()`, `find_full_rows()`.
 ///
 /// Проверяет, что бенчмарки существуют для критических функций.
 #[test]
@@ -469,7 +469,7 @@ fn test_14_benchmarks_for_critical_functions() {
     );
 
     // Бенчмарки измеряют производительность:
-    // - check_rows() (использует check_collision())
+    // - check_rows() (использует check_collision_direction())
     // - rotate() (использует wall kick)
     // - find_full_rows()
 }
@@ -568,7 +568,8 @@ fn test_18_naming_consistency() {
 /// Проверяет, что используются `debug_assert`! для проверок.
 #[test]
 fn test_19_debug_assert_for_conversions() {
-    use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
+    use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
     // Создаём фигуру
     let mut tetromino = Tetromino {
@@ -773,7 +774,8 @@ fn test_27_must_use_on_getters() {
 #[test]
 fn test_28_can_rotate_optimization() {
     use crate::game::GameState;
-    use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
+    use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
     // Создаём состояние игры
     let state = GameState::new();
@@ -860,7 +862,7 @@ fn test_31_integration_all_fixes() {
     // ЛОГИЧЕСКИЕ (4-6)
     let _score = _state.get_score(); // Проверка проигрыша
     let _lines = _state.get_lines_cleared(); // draw_ghost_shape
-    let _dir = crate::game::Dir::Down; // Dir::Down игнорируется
+    let _dir = crate::types::Direction::Down; // Direction::Down игнорируется
 
     // ОПТИМИЗАЦИИ (7-10)
     let _tetromino = Tetromino::from_bag(&mut BagGenerator::new()); // Copy
@@ -895,7 +897,8 @@ fn test_32_full_integration() {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
     use crate::highscore::{LeaderboardEntry, SaveData};
-    use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+    use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
     // Создаём состояние игры
     let state = GameState::new();

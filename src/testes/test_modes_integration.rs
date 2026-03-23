@@ -159,7 +159,7 @@ fn test_modes_integration_hold_in_all_modes() {
 /// Проверяет возможность вращения фигур в каждом режиме.
 #[test]
 fn test_modes_integration_rotation_in_all_modes() {
-    use crate::tetromino::RotationDirection;
+    use crate::types::RotationDirection;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -183,7 +183,7 @@ fn test_modes_integration_rotation_in_all_modes() {
 /// Проверяет возможность движения фигур в каждом режиме.
 #[test]
 fn test_modes_integration_movement_in_all_modes() {
-    use crate::game::Dir;
+    use crate::types::Direction;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -191,19 +191,19 @@ fn test_modes_integration_movement_in_all_modes() {
 
     // Classic
     assert!(
-        classic.can_move_curr_shape(Dir::Down),
+        classic.can_move_curr_shape_direction(Direction::Down),
         "Classic: движение вниз должно быть возможно"
     );
 
     // Sprint
     assert!(
-        sprint.can_move_curr_shape(Dir::Down),
+        sprint.can_move_curr_shape_direction(Direction::Down),
         "Sprint: движение вниз должно быть возможно"
     );
 
     // Marathon
     assert!(
-        marathon.can_move_curr_shape(Dir::Down),
+        marathon.can_move_curr_shape_direction(Direction::Down),
         "Marathon: движение вниз должно быть возможно"
     );
 }
@@ -213,7 +213,7 @@ fn test_modes_integration_movement_in_all_modes() {
 /// Проверяет механику призрачной фигуры в каждом режиме.
 #[test]
 fn test_modes_integration_ghost_piece_in_all_modes() {
-    use crate::game::Dir;
+    use crate::types::Direction;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -224,15 +224,15 @@ fn test_modes_integration_ghost_piece_in_all_modes() {
     let ghost_marathon = *marathon.get_curr_shape();
 
     assert!(
-        classic.can_move_ghost_shape(&ghost_classic, Dir::Down),
+        classic.can_move_ghost_shape_direction(&ghost_classic, Direction::Down),
         "Classic: призрачная фигура должна работать"
     );
     assert!(
-        sprint.can_move_ghost_shape(&ghost_sprint, Dir::Down),
+        sprint.can_move_ghost_shape_direction(&ghost_sprint, Direction::Down),
         "Sprint: призрачная фигура должна работать"
     );
     assert!(
-        marathon.can_move_ghost_shape(&ghost_marathon, Dir::Down),
+        marathon.can_move_ghost_shape_direction(&ghost_marathon, Direction::Down),
         "Marathon: призрачная фигура должна работать"
     );
 }

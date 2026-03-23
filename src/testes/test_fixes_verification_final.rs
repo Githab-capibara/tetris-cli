@@ -5,7 +5,7 @@
 //! ## 🔴 КРИТИЧЕСКИЕ (5 проблем = 15 тестов):
 //! 1. Некорректные doctest в lib.rs
 //! 2. Некорректный doctest в io.rs
-//! 3. Паника `Dir::Down` для вращения
+//! 3. Паника `Direction::Down` для вращения
 //! 4. `Unwrap()` в Default для Canvas
 //! 5. Unreachable! в game.rs
 //!
@@ -145,11 +145,12 @@ mod problem_2_io_doctest {
 }
 
 // ----------------------------------------------------------------------------
-// Проблема 3: Паника Dir::Down для вращения
+// Проблема 3: Паника Direction::Down для вращения
 // ----------------------------------------------------------------------------
 // cfg(test) removed - parent module is already test-only
 mod problem_3_dir_down_panic {
-    use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
+    use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
     /// Тест 3.1: Проверяет, что enum `RotationDirection` существует
     ///
@@ -260,7 +261,8 @@ mod problem_4_canvas_default_unwrap {
 // Проблема 5: Unreachable! в game.rs
 // ----------------------------------------------------------------------------
 mod problem_5_unreachable_game {
-    use crate::game::{Dir, GameState};
+    use crate::game::GameState;
+use crate::types::Direction;
 
     /// Тест 5.1: Проверяет enum `MoveDirection`
     ///
@@ -268,18 +270,18 @@ mod problem_5_unreachable_game {
     #[test]
     fn test_move_direction_enum_exists() {
         // Dir должен иметь варианты Left, Right, Down
-        let left = Dir::Left;
-        let right = Dir::Right;
-        let down = Dir::Down;
+        let left = Direction::Left;
+        let right = Direction::Right;
+        let down = Direction::Down;
 
         // Используем matches! для проверки без Debug
-        let left_is_left = matches!(left, Dir::Left);
-        let right_is_right = matches!(right, Dir::Right);
-        let down_is_down = matches!(down, Dir::Down);
+        let left_is_left = matches!(left, Direction::Left);
+        let right_is_right = matches!(right, Direction::Right);
+        let down_is_down = matches!(down, Direction::Down);
 
-        assert!(left_is_left, "left должен быть Dir::Left");
-        assert!(right_is_right, "right должен быть Dir::Right");
-        assert!(down_is_down, "down должен быть Dir::Down");
+        assert!(left_is_left, "left должен быть Direction::Left");
+        assert!(right_is_right, "right должен быть Direction::Right");
+        assert!(down_is_down, "down должен быть Direction::Down");
     }
 
     /// Тест 5.2: Проверяет движение влево
@@ -1195,12 +1197,12 @@ mod test_leaderboard_entry_score_no_infinite_recursion {
 // Тест 2: Dir импортирован корректно
 // ----------------------------------------------------------------------------
 mod test_dir_import_in_tests {
-    use crate::game::Dir;
+    use crate::types::Direction;
     use crate::tetromino::{ShapeType, Tetromino};
 
     /// Тест проверяет что Dir импортирован корректно
     ///
-    /// Создаёт Tetromino и вызывает `rotate_old()` с `Dir::Right` и `Dir::Left`.
+    /// Создаёт Tetromino и вызывает `rotate_old()` с `Direction::Right` и `Direction::Left`.
     /// Убеждается что вращение работает.
     #[test]
     fn test_dir_import_and_rotate() {
@@ -1215,19 +1217,19 @@ mod test_dir_import_in_tests {
         // Сохраняем оригинальные координаты
         let original_coords = tetromino.coords;
 
-        // Вращаем вправо с Dir::Right
+        // Вращаем вправо с Direction::Right
         #[allow(deprecated)]
-        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate_old(Direction::Right);
 
         // Координаты должны измениться
         assert_ne!(
             tetromino.coords, original_coords,
-            "Вращение Dir::Right должно изменить координаты"
+            "Вращение Direction::Right должно изменить координаты"
         );
 
-        // Вращаем влево с Dir::Left (возвращаем обратно)
+        // Вращаем влево с Direction::Left (возвращаем обратно)
         #[allow(deprecated)]
-        tetromino.rotate_old(Dir::Left);
+        tetromino.rotate_old(Direction::Left);
 
         // После двух противоположных вращений координаты должны вернуться
         // (для T-фигуры после 4 вращений возвращается оригинал)
@@ -1240,30 +1242,30 @@ mod test_dir_import_in_tests {
     #[test]
     fn test_dir_all_variants_exist() {
         // Проверяем существование всех вариантов Dir
-        let _down = Dir::Down;
-        let _left = Dir::Left;
-        let _right = Dir::Right;
+        let _down = Direction::Down;
+        let _left = Direction::Left;
+        let _right = Direction::Right;
 
         // Используем match для проверки без Debug
-        match Dir::Down {
-            Dir::Down => {}
-            _ => panic!("Dir::Down должен существовать"),
+        match Direction::Down {
+            Direction::Down => {}
+            _ => panic!("Direction::Down должен существовать"),
         }
 
-        match Dir::Left {
-            Dir::Left => {}
-            _ => panic!("Dir::Left должен существовать"),
+        match Direction::Left {
+            Direction::Left => {}
+            _ => panic!("Direction::Left должен существовать"),
         }
 
-        match Dir::Right {
-            Dir::Right => {}
-            _ => panic!("Dir::Right должен существовать"),
+        match Direction::Right {
+            Direction::Right => {}
+            _ => panic!("Direction::Right должен существовать"),
         }
     }
 
-    /// Тест проверяет вращение с `Dir::Down` (должно игнорироваться)
+    /// Тест проверяет вращение с `Direction::Down` (должно игнорироваться)
     ///
-    /// Проверяет что `Dir::Down` не вызывает панику при вращении.
+    /// Проверяет что `Direction::Down` не вызывает панику при вращении.
     #[test]
     fn test_dir_down_no_panic() {
         let mut tetromino = Tetromino {
@@ -1275,14 +1277,14 @@ mod test_dir_import_in_tests {
 
         let original_coords = tetromino.coords;
 
-        // Dir::Down должно игнорироваться без паники
+        // Direction::Down должно игнорироваться без паники
         #[allow(deprecated)]
-        tetromino.rotate_old(Dir::Down);
+        tetromino.rotate_old(Direction::Down);
 
-        // Координаты не должны измениться (Dir::Down игнорируется)
+        // Координаты не должны измениться (Direction::Down игнорируется)
         assert_eq!(
             tetromino.coords, original_coords,
-            "Dir::Down должно игнорироваться и не менять координаты"
+            "Direction::Down должно игнорироваться и не менять координаты"
         );
     }
 }
@@ -1565,7 +1567,8 @@ mod test_f32_to_u32_conversion_safety {
 // Тест 8: rotate() с RotationDirection
 // ----------------------------------------------------------------------------
 mod test_rotate_old_to_rotate_migration {
-    use crate::tetromino::{RotationDirection, ShapeType, Tetromino};
+    use crate::tetromino::{ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
     /// Тест проверяет что `rotate()` работает с `RotationDirection`
     ///

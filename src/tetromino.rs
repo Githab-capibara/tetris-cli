@@ -22,40 +22,9 @@
 //! | O | Квадрат | Светло-жёлтый | Квадрат 2x2 |
 //! | I | Линия | Голубой | Четыре блока в вертикальный ряд |
 
-use crate::game::Dir;
+use crate::types::RotationDirection;
 use rand::Rng;
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
-
-/// Направление вращения фигуры.
-///
-/// Используется для вращения тетрамино по часовой или против часовой стрелки.
-/// Отдельный enum предотвращает панику при передаче неправильного направления.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum RotationDirection {
-    /// По часовой стрелке (90° вправо)
-    Clockwise,
-    /// Против часовой стрелки (90° влево)
-    CounterClockwise,
-}
-
-impl From<Dir> for RotationDirection {
-    /// Конвертировать Dir в `RotationDirection`.
-    ///
-    /// # Аргументы
-    /// * `dir` - направление движения/вращения
-    ///
-    /// # Возвращает
-    /// - `RotationDirection::Clockwise` для `Dir::Right`
-    /// - `RotationDirection::CounterClockwise` для `Dir::Left`
-    /// - `RotationDirection::Clockwise` для `Dir::Down` (по умолчанию)
-    fn from(dir: Dir) -> Self {
-        match dir {
-            Dir::Left => RotationDirection::CounterClockwise,
-            // Dir::Right и Dir::Down оба возвращают Clockwise
-            Dir::Right | Dir::Down => RotationDirection::Clockwise,
-        }
-    }
-}
 
 /// Генератор фигур по системе 7-bag.
 ///
@@ -434,20 +403,20 @@ impl Tetromino {
     ///
     /// # Примечания
     /// - Квадрат (O) не вращается - метод возвращает управление сразу
-    /// - `Dir::Down` игнорируется (не вызывает панику)
+    /// - `Direction::Down` игнорируется (не вызывает панику)
     ///
     /// # Устарело
     /// Используйте [`Tetromino::rotate()`] с `RotationDirection` вместо этого метода.
     #[deprecated(since = "23.96.15", note = "Используйте rotate() с RotationDirection")]
     #[allow(dead_code)]
-    pub fn rotate_old(&mut self, dir: Dir) {
+    pub fn rotate_old(&mut self, dir: crate::types::Direction) {
         // Квадрат не вращается
         if self.shape == ShapeType::O {
             return;
         }
 
-        // Dir::Down игнорируется
-        if dir == Dir::Down {
+        // Direction::Down игнорируется
+        if dir == crate::types::Direction::Down {
             return;
         }
 
@@ -455,9 +424,9 @@ impl Tetromino {
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
-                Dir::Left => (y, -x),  // Поворот против часовой
-                Dir::Right => (-y, x), // Поворот по часовой
-                Dir::Down => return,   // Игнорируем
+                crate::types::Direction::Left => (y, -x),  // Поворот против часовой
+                crate::types::Direction::Right => (-y, x), // Поворот по часовой
+                crate::types::Direction::Down => return,   // Игнорируем
             };
 
             // Проверка границ в отладочном режиме

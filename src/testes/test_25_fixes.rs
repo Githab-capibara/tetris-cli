@@ -257,7 +257,7 @@ fn test_rotate_old_deprecated() {
 
         // rotate_old должен существовать но быть deprecated
         // Если компилируется с предупреждением, значит deprecated атрибут работает
-        tetromino.rotate_old(crate::game::Dir::Right);
+        tetromino.rotate_old(crate::types::Direction::Right);
     }
 
     // Тест подтверждает, что rotate_old существует

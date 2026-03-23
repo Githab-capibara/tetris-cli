@@ -90,8 +90,8 @@ fn test_обработка_отрицательных_x_координат() {
 
     // Проверяем что can_move_curr_shape корректно обрабатывает границы
     // Движение влево должно быть возможно только если фигура не у края
-    let can_move_left = game.can_move_curr_shape(crate::game::Dir::Left);
-    let can_move_right = game.can_move_curr_shape(crate::game::Dir::Right);
+    let can_move_left = game.can_move_curr_shape_direction(crate::types::Direction::Left);
+    let can_move_right = game.can_move_curr_shape_direction(crate::types::Direction::Right);
 
     // Фигура должна иметь возможность двигаться хотя бы в одном направлении
     assert!(

@@ -9,9 +9,11 @@
 //! - Тесты игрового цикла (15 тестов)
 //! - Тесты отрисовки (10 тестов)
 
-use crate::game::{Dir, GameMode, GameState};
+use crate::game::{GameMode, GameState};
+use crate::types::Direction;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-20: Расширенное движение фигур
@@ -24,14 +26,14 @@ fn test_extended_piece_move_left_to_boundary() {
     let mut move_count = 0;
 
     // Двигаем влево до упора
-    while state.can_move_curr_shape(Dir::Left) {
+    while state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
         move_count += 1;
     }
 
     assert!(move_count > 0, "Фигура должна двигаться влево");
     assert!(
-        !state.can_move_curr_shape(Dir::Left),
+        !state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево должно быть заблокировано у границы"
     );
 }
@@ -43,14 +45,14 @@ fn test_extended_piece_move_right_to_boundary() {
     let mut move_count = 0;
 
     // Двигаем вправо до упора
-    while state.can_move_curr_shape(Dir::Right) {
+    while state.can_move_curr_shape_direction(Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
         move_count += 1;
     }
 
     assert!(move_count > 0, "Фигура должна двигаться вправо");
     assert!(
-        !state.can_move_curr_shape(Dir::Right),
+        !state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо должно быть заблокировано у границы"
     );
 }
@@ -63,7 +65,7 @@ fn test_extended_piece_move_down_to_floor() {
     let start_y = state.get_curr_shape().pos.1;
 
     // Двигаем вниз до упора
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
         move_count += 1;
     }
@@ -83,20 +85,20 @@ fn test_extended_movement_after_left_wall() {
 
     // Двигаем к левой стене
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
 
     // Движение вниз должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть возможно у левой стены"
     );
 
     // Движение вправо должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Right),
+        state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо должно быть возможно у левой стены"
     );
 }
@@ -108,20 +110,20 @@ fn test_extended_movement_after_right_wall() {
 
     // Двигаем к правой стене
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
 
     // Движение вниз должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть возможно у правой стены"
     );
 
     // Движение влево должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Left),
+        state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево должно быть возможно у правой стены"
     );
 }
@@ -134,17 +136,17 @@ fn test_extended_zigzag_movement() {
     let start_y = state.get_curr_shape().pos.1;
 
     // Двигаем влево
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
     // Двигаем вправо
-    if state.can_move_curr_shape(Dir::Right) {
+    if state.can_move_curr_shape_direction(Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
 
     // Двигаем вниз
-    if state.can_move_curr_shape(Dir::Down) {
+    if state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -173,7 +175,7 @@ fn test_extended_l_piece_movement() {
 
     // Проверяем движение вниз
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "L-фигура должна двигаться вниз"
     );
 }
@@ -189,7 +191,7 @@ fn test_extended_j_piece_movement() {
     state.get_curr_shape_mut().fg = ShapeType::J as usize;
 
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "J-фигура должна двигаться вниз"
     );
 }
@@ -204,7 +206,7 @@ fn test_extended_s_piece_movement() {
     state.get_curr_shape_mut().fg = ShapeType::S as usize;
 
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "S-фигура должна двигаться вниз"
     );
 }
@@ -219,7 +221,7 @@ fn test_extended_z_piece_movement() {
     state.get_curr_shape_mut().fg = ShapeType::Z as usize;
 
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Z-фигура должна двигаться вниз"
     );
 }
@@ -234,7 +236,7 @@ fn test_extended_o_piece_movement() {
     state.get_curr_shape_mut().fg = ShapeType::O as usize;
 
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "O-фигура должна двигаться вниз"
     );
 }
@@ -249,7 +251,7 @@ fn test_extended_i_piece_movement() {
     state.get_curr_shape_mut().fg = ShapeType::I as usize;
 
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "I-фигура должна двигаться вниз"
     );
 }
@@ -264,15 +266,15 @@ fn test_extended_movement_in_center() {
 
     // Движение во всех направлениях должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Left),
+        state.can_move_curr_shape_direction(Direction::Left),
         "Движение влево должно быть возможно в центре"
     );
     assert!(
-        state.can_move_curr_shape(Dir::Right),
+        state.can_move_curr_shape_direction(Direction::Right),
         "Движение вправо должно быть возможно в центре"
     );
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть возможно в центре"
     );
 }
@@ -287,7 +289,7 @@ fn test_extended_movement_in_top_area() {
 
     // Движение вниз должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно быть возможно сверху"
     );
 }
@@ -301,7 +303,7 @@ fn test_extended_movement_in_bottom_area() {
     state.get_curr_shape_mut().pos = (5.0, 18.0);
 
     // Движение вниз может быть заблокировано
-    let can_move_down = state.can_move_curr_shape(Dir::Down);
+    let can_move_down = state.can_move_curr_shape_direction(Direction::Down);
 
     // Если фигура на полу, движение вниз заблокировано
     // Если ещё не на полу, движение возможно
@@ -316,14 +318,14 @@ fn test_extended_sequential_left_right_movement() {
 
     // 5 раз влево
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
 
     // 5 раз вправо
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -343,7 +345,7 @@ fn test_extended_movement_with_rotation() {
     let mut state = GameState::new();
 
     // Двигаем влево
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
@@ -355,7 +357,7 @@ fn test_extended_movement_with_rotation() {
     }
 
     // Двигаем вниз
-    if state.can_move_curr_shape(Dir::Down) {
+    if state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -384,7 +386,7 @@ fn test_extended_all_shapes_movement() {
 
         // Все фигуры должны двигаться вниз в начале игры
         assert!(
-            state.can_move_curr_shape(Dir::Down),
+            state.can_move_curr_shape_direction(Direction::Down),
             "{shape:?} фигура должна двигаться вниз"
         );
     }
@@ -397,20 +399,20 @@ fn test_extended_movement_after_multiple_moves() {
 
     // Выполняем серию движений
     for _ in 0..3 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
-        if state.can_move_curr_shape(Dir::Down) {
+        if state.can_move_curr_shape_direction(Direction::Down) {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
 
     // Движение вниз всё ещё должно быть возможно
     assert!(
-        state.can_move_curr_shape(Dir::Down),
+        state.can_move_curr_shape_direction(Direction::Down),
         "Движение вниз должно оставаться возможным"
     );
 }
@@ -422,7 +424,7 @@ fn test_extended_x_axis_boundaries() {
 
     // Минимальная позиция X (левая граница)
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
@@ -431,7 +433,7 @@ fn test_extended_x_axis_boundaries() {
     // Создаём новое состояние для правой границы
     let mut state2 = GameState::new();
     for _ in 0..10 {
-        if state2.can_move_curr_shape(Dir::Right) {
+        if state2.can_move_curr_shape_direction(Direction::Right) {
             state2.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -776,7 +778,7 @@ fn test_extended_rotation_at_left_boundary() {
 
     // Двигаем к левой границе
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Left) {
+        if state.can_move_curr_shape_direction(Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }
@@ -796,7 +798,7 @@ fn test_extended_rotation_at_right_boundary() {
 
     // Двигаем к правой границе
     for _ in 0..5 {
-        if state.can_move_curr_shape(Dir::Right) {
+        if state.can_move_curr_shape_direction(Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -816,7 +818,7 @@ fn test_extended_rotation_after_drop() {
 
     // Опускаем фигуру
     for _ in 0..10 {
-        if state.can_move_curr_shape(Dir::Down) {
+        if state.can_move_curr_shape_direction(Direction::Down) {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
     }
@@ -903,7 +905,7 @@ fn test_extended_rotation_with_movement() {
     }
 
     // Двигаем вниз
-    if state.can_move_curr_shape(Dir::Down) {
+    if state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -1074,7 +1076,7 @@ fn test_extended_hold_with_movement() {
     state.hold_shape();
 
     // Двигаем новую фигуру
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
@@ -1151,7 +1153,7 @@ fn test_extended_hold_with_drop() {
     state.hold_shape();
 
     // Опускаем фигуру
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -1175,7 +1177,7 @@ fn test_extended_hold_with_rotation_and_movement() {
     }
 
     // Двигаем
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
@@ -1233,7 +1235,7 @@ fn test_extended_ghost_piece_move_down() {
     let state = GameState::new();
     let ghost_shape = state.get_curr_shape();
 
-    let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
     assert!(
         can_move_down,
@@ -1247,12 +1249,12 @@ fn test_extended_ghost_piece_on_floor() {
     let mut state = GameState::new();
 
     // Опускаем фигуру на пол
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
     assert!(
         !can_move_down,
@@ -1279,7 +1281,7 @@ fn test_extended_ghost_piece_all_shapes() {
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
         let ghost_shape = state.get_curr_shape();
-        let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+        let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
         assert!(
             can_move_down,
@@ -1294,12 +1296,12 @@ fn test_extended_ghost_piece_after_left_move() {
     let mut state = GameState::new();
 
     // Двигаем влево
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
     assert!(
         can_move_down,
@@ -1313,12 +1315,12 @@ fn test_extended_ghost_piece_after_right_move() {
     let mut state = GameState::new();
 
     // Двигаем вправо
-    if state.can_move_curr_shape(Dir::Right) {
+    if state.can_move_curr_shape_direction(Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
     assert!(
         can_move_down,
@@ -1339,7 +1341,7 @@ fn test_extended_ghost_piece_after_rotation() {
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
     // После вращения призрачная фигура должна всё ещё иметь возможность падения
     let _ = can_move_down;
@@ -1354,7 +1356,7 @@ fn test_extended_ghost_piece_different_y_positions() {
     for y in &[0, 5, 10, 15] {
         state.get_curr_shape_mut().pos.1 = *y as f32;
         let ghost_shape = state.get_curr_shape();
-        let can_move_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+        let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
 
         // На разных высотах призрачная фигура должна иметь возможность падения
         let _ = can_move_down;
@@ -1368,9 +1370,9 @@ fn test_extended_ghost_piece_collision_logic() {
     let ghost_shape = state.get_curr_shape();
 
     // Проверяем все направления
-    let can_down = state.can_move_ghost_shape(ghost_shape, Dir::Down);
-    let can_left = state.can_move_ghost_shape(ghost_shape, Dir::Left);
-    let can_right = state.can_move_ghost_shape(ghost_shape, Dir::Right);
+    let can_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_left = state.can_move_ghost_shape_direction(ghost_shape, Direction::Left);
+    let can_right = state.can_move_ghost_shape_direction(ghost_shape, Direction::Right);
 
     // В начале игры все направления должны быть доступны (кроме границ)
     let _ = (can_down, can_left, can_right);
@@ -1775,7 +1777,7 @@ fn test_extended_draw_ghost_shape_exists() {
     // Тест просто проверяет что метод существует и компилируется
     let state = GameState::new();
     let ghost_shape = state.get_curr_shape();
-    let can_move = state.can_move_ghost_shape(ghost_shape, Dir::Down);
+    let can_move = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
     let _ = can_move;
 }
 

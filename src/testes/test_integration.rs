@@ -11,9 +11,11 @@
 #![allow(deprecated)]
 
 use crate::controls::ControlsConfig;
-use crate::game::{Dir, GameMode, GameState};
+use crate::game::{GameMode, GameState};
+use crate::types::Direction;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Полный игровой цикл
@@ -85,17 +87,17 @@ fn test_piece_movement_cycle() {
     let initial_y = state.get_curr_shape_mut().pos.1;
 
     // Двигаем влево
-    if state.can_move_curr_shape(Dir::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
     // Двигаем вправо
-    if state.can_move_curr_shape(Dir::Right) {
+    if state.can_move_curr_shape_direction(Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
 
     // Двигаем вниз
-    if state.can_move_curr_shape(Dir::Down) {
+    if state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -121,7 +123,7 @@ fn test_piece_drop_to_floor() {
 
     // Опускаем фигуру до упора
     let mut drop_count = 0;
-    while state.can_move_curr_shape(Dir::Down) {
+    while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
         drop_count += 1;
     }
@@ -134,7 +136,7 @@ fn test_piece_drop_to_floor() {
 
     // Дальнейшее движение вниз должно быть заблокировано
     assert!(
-        !state.can_move_curr_shape(Dir::Down),
+        !state.can_move_curr_shape_direction(Direction::Down),
         "После достижения пола движение вниз должно быть заблокировано"
     );
 }
@@ -411,9 +413,9 @@ fn test_performance_collision_detection() {
 
     // Выполняем 10000 проверок столкновений
     for _ in 0..10_000 {
-        let _ = state.can_move_curr_shape(Dir::Down);
-        let _ = state.can_move_curr_shape(Dir::Left);
-        let _ = state.can_move_curr_shape(Dir::Right);
+        let _ = state.can_move_curr_shape_direction(Direction::Down);
+        let _ = state.can_move_curr_shape_direction(Direction::Left);
+        let _ = state.can_move_curr_shape_direction(Direction::Right);
     }
 
     let duration = start.elapsed();
@@ -435,7 +437,7 @@ fn test_performance_rotation() {
 
     // Выполняем 10000 вращений
     for _ in 0..10_000 {
-        tetromino.rotate_old(Dir::Right);
+        tetromino.rotate_old(Direction::Right);
     }
 
     let duration = start.elapsed();

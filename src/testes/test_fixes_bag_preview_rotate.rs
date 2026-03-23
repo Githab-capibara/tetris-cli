@@ -2,7 +2,8 @@
 
 use crate::game::GameState;
 use crate::highscore::LeaderboardEntry;
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
 /// Тест 9.1: Проверка что `fill_bag()` работает корректно.
 #[test]
@@ -63,9 +64,9 @@ fn test_preview_constants_correct_values() {
     let _score: u128 = state.get_score();
 }
 
-/// Тест 11.1: Проверка что `rotate(Dir::Down)` игнорируется.
+/// Тест 11.1: Проверка что `rotate(Direction::Down)` игнорируется.
 ///
-/// `Dir::Down` больше не вызывает панику, а тихо игнорируется.
+/// `Direction::Down` больше не вызывает панику, а тихо игнорируется.
 #[test]
 fn test_rotate_dir_down_no_change() {
     let mut tetromino = Tetromino {
@@ -78,8 +79,8 @@ fn test_rotate_dir_down_no_change() {
     // Сохраняем оригинальные координаты для сравнения
     let original_coords = tetromino.coords;
 
-    // Dir::Down теперь игнорируется без паники
-    // Используем rotate с RotationDirection::Clockwise (Dir::Down конвертируется в Clockwise)
+    // Direction::Down теперь игнорируется без паники
+    // Используем rotate с RotationDirection::Clockwise (Direction::Down конвертируется в Clockwise)
     tetromino.rotate(RotationDirection::Clockwise);
 
     // Координаты должны измениться (вращение работает)

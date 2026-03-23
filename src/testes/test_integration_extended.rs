@@ -13,7 +13,8 @@
 
 use crate::game::{GameMode, GameState};
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Взаимодействие game + tetromino
@@ -94,8 +95,8 @@ fn test_piece_movement_in_gamestate() {
     let state = GameState::new();
 
     // Проверяем, что движение возможно
-    let can_move_left = state.can_move_curr_shape(crate::game::Dir::Left);
-    let can_move_right = state.can_move_curr_shape(crate::game::Dir::Right);
+    let can_move_left = state.can_move_curr_shape_direction(crate::types::Direction::Left);
+    let can_move_right = state.can_move_curr_shape_direction(crate::types::Direction::Right);
 
     assert!(
         can_move_left || can_move_right,
@@ -110,7 +111,7 @@ fn test_piece_fall_in_gamestate() {
 
     // В начале игры падение должно быть возможно
     assert!(
-        state.can_move_curr_shape(crate::game::Dir::Down),
+        state.can_move_curr_shape_direction(crate::types::Direction::Down),
         "Падение должно быть возможным в начале игры"
     );
 }
@@ -121,7 +122,7 @@ fn test_piece_stays_within_bounds() {
     let mut state = GameState::new();
 
     // Двигаем фигуру к левой границе
-    while state.can_move_curr_shape(crate::game::Dir::Left) {
+    while state.can_move_curr_shape_direction(crate::types::Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
@@ -342,7 +343,7 @@ fn test_gamestate_responds_to_input() {
     // Проверяем, что движение возможно
     let initial_x = state.get_curr_shape().pos.0;
 
-    if state.can_move_curr_shape(crate::game::Dir::Left) {
+    if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
         assert!(
             state.get_curr_shape().pos.0 < initial_x,
@@ -370,7 +371,7 @@ fn test_hard_drop_command() {
     let initial_y = state.get_curr_shape().pos.1;
 
     // Симулируем hard drop
-    while state.can_move_curr_shape(crate::game::Dir::Down) {
+    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -387,7 +388,7 @@ fn test_soft_drop_command() {
     let initial_y = state.get_curr_shape().pos.1;
 
     // Симулируем soft drop
-    if state.can_move_curr_shape(crate::game::Dir::Down) {
+    if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
@@ -404,13 +405,13 @@ fn test_move_left_right() {
     let initial_x = state.get_curr_shape().pos.0;
 
     // Движение влево
-    if state.can_move_curr_shape(crate::game::Dir::Left) {
+    if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
     let after_left = state.get_curr_shape().pos.0;
 
     // Движение вправо
-    if state.can_move_curr_shape(crate::game::Dir::Right) {
+    if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
     let after_right = state.get_curr_shape().pos.0;
@@ -677,7 +678,7 @@ fn test_fast_collision_check() {
     let start = std::time::Instant::now();
 
     for _ in 0..1000 {
-        let _ = state.can_move_curr_shape(crate::game::Dir::Down);
+        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
     }
 
     let duration = start.elapsed();
@@ -757,7 +758,7 @@ fn test_overall_system_performance() {
 
     // Двигаем фигуру
     for _ in 0..100 {
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
     }

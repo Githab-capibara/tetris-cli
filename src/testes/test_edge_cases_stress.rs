@@ -11,7 +11,8 @@
 
 use crate::game::{GameMode, GameState};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, SHAPE_COORDS};
+use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Экстремальные значения
@@ -110,7 +111,7 @@ fn test_edge_cases_all_shapes_extreme() {
 
         // Проверяем движение
         assert!(
-            state.can_move_curr_shape(crate::game::Dir::Down)
+            state.can_move_curr_shape_direction(crate::types::Direction::Down)
                 || state.get_curr_shape().pos.1 >= (GRID_HEIGHT - 2) as f32
         );
     }
@@ -154,11 +155,11 @@ fn test_stress_rapid_key_presses() {
     // Симулируем 1000 нажатий клавиш
     for _ in 0..1000 {
         // Движение влево
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
         // Движение вправо
-        if state.can_move_curr_shape(crate::game::Dir::Right) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
             state.get_curr_shape_mut().pos.0 += 1.0;
         }
     }
@@ -239,7 +240,7 @@ fn test_stress_sprint_mode_load() {
     // Активно используем все механики
     for _ in 0..1000 {
         // Движение
-        if state.can_move_curr_shape(crate::game::Dir::Left) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
             state.get_curr_shape_mut().pos.0 -= 1.0;
         }
         // Вращение
@@ -368,7 +369,7 @@ fn test_long_stability_1000_iterations() {
         );
 
         // Двигаем фигуру
-        if state.can_move_curr_shape(crate::game::Dir::Down) {
+        if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
             state.get_curr_shape_mut().pos.1 += 1.0;
         }
     }
@@ -410,7 +411,7 @@ fn test_long_memory_leak_1000_cycles() {
 
         // Активно используем
         for _ in 0..100 {
-            if state.can_move_curr_shape(crate::game::Dir::Left) {
+            if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
                 state.get_curr_shape_mut().pos.0 -= 1.0;
             }
         }
