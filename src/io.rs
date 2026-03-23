@@ -259,18 +259,8 @@ impl Canvas {
             match out.into_raw_mode() {
                 Ok(raw_out) => Self { out: raw_out },
                 Err(e) => {
-                    // Даже обычный stdout не работает - создаём минимальный stub
-                    // Используем stdout() напрямую, игнорируя ошибку
                     eprintln!("Предупреждение: создание stub Canvas невозможно: {e}");
-                    // Возвращаем stub с обычным stdout (без raw-режима)
-                    // Это последний fallback для предотвращения паники
-                    let fallback_out = stdout().into_raw_mode().unwrap_or_else(|_| {
-                        // Если ничего не помогает - используем stdout() напрямую
-                        // Это не будет работать корректно, но хотя бы не вызовет панику
-                        eprintln!("Критическая ошибка: все попытки создания Canvas провалились");
-                        std::process::exit(1);
-                    });
-                    Self { out: fallback_out }
+                    panic!("Не удалось создать Canvas: {e}");
                 }
             }
         }

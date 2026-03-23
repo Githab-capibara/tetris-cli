@@ -233,10 +233,8 @@ mod problem_4_canvas_default_unwrap {
         });
 
         // either Ok (success) or Err (panic - acceptable in tests)
-        assert!(
-            result.is_ok() || result.is_err(),
-            "Canvas::default может паниковать"
-        );
+        // Note: is_ok() || is_err() is always true, this test just verifies no abort
+        assert!(true, "Canvas::default может паниковать");
     }
 
     /// Тест 4.3: Проверяет сообщение об ошибке
