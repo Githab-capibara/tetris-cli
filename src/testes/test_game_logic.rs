@@ -240,7 +240,7 @@ fn test_ghost_piece_boundary() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
-    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     // В начале игры призрачная фигура должна иметь возможность движения вниз
     assert!(
