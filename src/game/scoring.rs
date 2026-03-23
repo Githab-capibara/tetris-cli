@@ -7,12 +7,11 @@
 //! - Таблица очков за линии
 
 use super::state::{
-    GameState, GameStats, COMBO_BONUS, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
+    GameState, COMBO_BONUS, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
     MAX_LINES_PER_CLEAR, SPD_INC,
 };
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::Tetromino;
-use crate::types::Direction;
 
 /// Найти все заполненные линии.
 ///
@@ -123,10 +122,9 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
 /// - `None` - продолжить игру
 pub fn handle_landing(state: &mut GameState) -> Option<super::state::UpdateEndState> {
     use super::state::{
-        GameMode, UpdateEndState, LAND_TIME_DELAY_S, MARATHON_LINES, MAX_FALL_SPEED, MIN_Y,
-        PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS, SPRINT_LINES,
+        UpdateEndState, LAND_TIME_DELAY_S, MAX_FALL_SPEED, MIN_Y,
+        PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
     };
-    use crate::io::GRID_WIDTH;
 
     // Проверка проигрыша
     let shape_block_y = state.curr_shape.pos.1 as i16;

@@ -648,6 +648,18 @@ impl GameState {
         self.held_shape.as_ref()
     }
 
+    /// Получить текущую фигуру (мутуабельная ссылка для тестов).
+    #[must_use]
+    pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
+        &mut self.curr_shape
+    }
+
+    /// Получить следующую фигуру (мутуабельная ссылка для тестов).
+    #[must_use]
+    pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
+        &mut self.next_shape
+    }
+
     /// Получить скорость падения.
     #[must_use]
     pub fn get_fall_spd(&self) -> f32 {
@@ -683,5 +695,20 @@ impl GameState {
     pub fn remove_full_rows(&mut self) {
         let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
         crate::game::remove_rows(&mut self.blocks, rows_mask);
+    }
+
+    /// Добавить очки без проверки (для тестов).
+    ///
+    /// # Аргументы
+    /// * `score` - Количество очков для добавления
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let mut state = GameState::new();
+    /// state.add_score_no_check(100);
+    /// assert_eq!(state.get_score(), 100);
+    /// ```
+    pub fn add_score_no_check(&mut self, score: u128) {
+        self.score = self.score.saturating_add(score);
     }
 }
