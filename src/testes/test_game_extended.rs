@@ -1235,7 +1235,7 @@ fn test_extended_ghost_piece_move_down() {
     let state = GameState::new();
     let ghost_shape = state.get_curr_shape();
 
-    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     assert!(
         can_move_down,
@@ -1254,7 +1254,7 @@ fn test_extended_ghost_piece_on_floor() {
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     assert!(
         !can_move_down,
@@ -1281,7 +1281,7 @@ fn test_extended_ghost_piece_all_shapes() {
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
         let ghost_shape = state.get_curr_shape();
-        let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+        let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
         assert!(
             can_move_down,
@@ -1301,7 +1301,7 @@ fn test_extended_ghost_piece_after_left_move() {
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     assert!(
         can_move_down,
@@ -1320,7 +1320,7 @@ fn test_extended_ghost_piece_after_right_move() {
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     assert!(
         can_move_down,
@@ -1341,7 +1341,7 @@ fn test_extended_ghost_piece_after_rotation() {
     }
 
     let ghost_shape = state.get_curr_shape();
-    let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     // После вращения призрачная фигура должна всё ещё иметь возможность падения
     let _ = can_move_down;
@@ -1356,7 +1356,7 @@ fn test_extended_ghost_piece_different_y_positions() {
     for y in &[0, 5, 10, 15] {
         state.get_curr_shape_mut().pos.1 = *y as f32;
         let ghost_shape = state.get_curr_shape();
-        let can_move_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+        let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
         // На разных высотах призрачная фигура должна иметь возможность падения
         let _ = can_move_down;
@@ -1370,9 +1370,9 @@ fn test_extended_ghost_piece_collision_logic() {
     let ghost_shape = state.get_curr_shape();
 
     // Проверяем все направления
-    let can_down = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
-    let can_left = state.can_move_ghost_shape_direction(ghost_shape, Direction::Left);
-    let can_right = state.can_move_ghost_shape_direction(ghost_shape, Direction::Right);
+    let can_down = state.can_move_ghost_shape_direction(Direction::Down);
+    let can_left = state.can_move_ghost_shape_direction(Direction::Left);
+    let can_right = state.can_move_ghost_shape_direction(Direction::Right);
 
     // В начале игры все направления должны быть доступны (кроме границ)
     let _ = (can_down, can_left, can_right);
@@ -1777,7 +1777,7 @@ fn test_extended_draw_ghost_shape_exists() {
     // Тест просто проверяет что метод существует и компилируется
     let state = GameState::new();
     let ghost_shape = state.get_curr_shape();
-    let can_move = state.can_move_ghost_shape_direction(ghost_shape, Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction(Direction::Down);
     let _ = can_move;
 }
 

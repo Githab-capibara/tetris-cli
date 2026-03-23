@@ -224,15 +224,15 @@ fn test_modes_integration_ghost_piece_in_all_modes() {
     let ghost_marathon = *marathon.get_curr_shape();
 
     assert!(
-        classic.can_move_ghost_shape_direction(&ghost_classic, Direction::Down),
+        classic.can_move_ghost_shape_direction(Direction::Down),
         "Classic: призрачная фигура должна работать"
     );
     assert!(
-        sprint.can_move_ghost_shape_direction(&ghost_sprint, Direction::Down),
+        sprint.can_move_ghost_shape_direction(Direction::Down),
         "Sprint: призрачная фигура должна работать"
     );
     assert!(
-        marathon.can_move_ghost_shape_direction(&ghost_marathon, Direction::Down),
+        marathon.can_move_ghost_shape_direction(Direction::Down),
         "Marathon: призрачная фигура должна работать"
     );
 }

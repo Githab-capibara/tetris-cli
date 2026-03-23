@@ -400,7 +400,7 @@ fn test_animation_can_move_ghost_shape_direction() {
     let state = GameState::new();
     let ghost = *state.get_curr_shape();
 
-    let can_move = state.can_move_ghost_shape_direction(&ghost, crate::types::Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction( crate::types::Direction::Down);
     assert!(can_move);
 }
 
@@ -425,7 +425,7 @@ fn test_animation_ghost_all_shapes() {
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
         let ghost = *state.get_curr_shape();
-        let can_move = state.can_move_ghost_shape_direction(&ghost, crate::types::Direction::Down);
+        let can_move = state.can_move_ghost_shape_direction( crate::types::Direction::Down);
 
         assert!(can_move);
     }
@@ -442,7 +442,7 @@ fn test_animation_ghost_after_movement() {
     }
 
     let ghost = *state.get_curr_shape();
-    let can_move = state.can_move_ghost_shape_direction(&ghost, crate::types::Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction( crate::types::Direction::Down);
 
     assert!(can_move);
 }
@@ -460,7 +460,7 @@ fn test_animation_ghost_after_rotation() {
     }
 
     let ghost = *state.get_curr_shape();
-    let can_move = state.can_move_ghost_shape_direction(&ghost, crate::types::Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction( crate::types::Direction::Down);
 
     assert!(can_move);
 }
@@ -476,7 +476,7 @@ fn test_animation_ghost_on_floor() {
     }
 
     let ghost = *state.get_curr_shape();
-    let can_move = state.can_move_ghost_shape_direction(&ghost, crate::types::Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction( crate::types::Direction::Down);
 
     assert!(!can_move);
 }

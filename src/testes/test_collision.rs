@@ -759,7 +759,7 @@ fn test_collision_ghost_piece() {
     let state = GameState::new();
     let ghost = *state.get_curr_shape();
 
-    let can_move = state.can_move_ghost_shape_direction(&ghost, Direction::Down);
+    let can_move = state.can_move_ghost_shape_direction(Direction::Down);
     assert!(
         can_move,
         "Призрачная фигура должна иметь возможность падения"

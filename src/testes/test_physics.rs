@@ -427,7 +427,7 @@ fn test_ghost_piece_position() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
-    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
 
     // В начале игры призрачная фигура должна иметь возможность падения
     assert!(
@@ -459,7 +459,7 @@ fn test_ghost_piece_floor_detection() {
     let ghost_shape = *state.get_curr_shape();
 
     // Призрачная фигура не должна иметь возможность движения вниз
-    let can_move_down = state.can_move_ghost_shape_direction(&ghost_shape, Direction::Down);
+    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
     assert!(
         !can_move_down,
         "Призрачная фигура на полу не должна иметь возможность падения"
