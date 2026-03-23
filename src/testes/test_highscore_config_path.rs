@@ -71,7 +71,7 @@ fn test_создание_директории_конфигурации() {
     // Создаём тестовую запись в таблице лидеров
     // Это должно создать директорию конфигурации если она не существует
     let mut leaderboard = Leaderboard::default();
-    let add_result = leaderboard.add_score("TestUser".to_string(), 1000);
+    let add_result = leaderboard.add_score("TestUser", 1000);
     
     // Добавление должно быть успешным (или false если rate limiting)
     // Важно: не должно быть паники или ошибки создания директории

@@ -154,7 +154,7 @@ fn test_highscore_allocation_optimization() {
     use crate::highscore::LeaderboardEntry;
 
     // Создаём запись в таблице лидеров
-    let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+    let entry = LeaderboardEntry::new("TestPlayer", 1000);
 
     // Проверяем что запись валидна
     let is_valid = entry.is_valid();
@@ -168,7 +168,7 @@ fn test_highscore_allocation_optimization() {
     // is_valid() работает эффективно без лишних аллокаций
     let mut entries = Vec::new();
     for i in 0..100 {
-        let entry = LeaderboardEntry::new(format!("Player{i}"), i * 100);
+        let entry = LeaderboardEntry::new(&format!("Player{i}"), i * 100);
         entries.push(entry);
     }
 
@@ -340,7 +340,7 @@ fn test_all_security_fixes_integration() {
 
     // Тест 4: Highscore allocation optimization
     use crate::highscore::LeaderboardEntry;
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
     assert!(entry.is_valid());
 
     // Тест 5: Wall kick rotation

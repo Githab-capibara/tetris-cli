@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 /// Тест 5.1: Проверка что `score()` имеет #[`must_use`].
 #[test]
 fn test_score_has_must_use() {
-    let entry = LeaderboardEntry::new("Test".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Test", 1000);
     let score = entry.score();
     assert_eq!(score, 1000);
 }
@@ -61,7 +61,7 @@ fn test_blocks_access_no_panic() {
 /// Тест 7.1: Проверка что `LeaderboardEntry::new()` работает корректно.
 #[test]
 fn test_leaderboard_entry_new_efficient() {
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
     assert_eq!(entry.name(), "Player");
     assert_eq!(entry.score(), 1000);
     assert!(entry.is_valid());
@@ -97,7 +97,7 @@ fn test_write_vs_format_efficiency() {
 /// Тест 7.3: Проверка что хэш генерируется корректно.
 #[test]
 fn test_hash_generation_with_write() {
-    let entry = LeaderboardEntry::new("HashTest".to_string(), 5000);
+    let entry = LeaderboardEntry::new("HashTest", 5000);
     let hash = entry.hash();
     assert_eq!(hash.len(), 64);
 }

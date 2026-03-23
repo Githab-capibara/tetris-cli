@@ -96,7 +96,7 @@ fn test_race_condition_file_locking() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем запись
-    leaderboard.add_score("Player1".to_string(), 1000);
+    leaderboard.add_score("Player1", 1000);
 
     // Проверяем, что запись добавлена
     assert_eq!(leaderboard.len(), 1, "Должна быть одна запись");
@@ -346,7 +346,7 @@ fn test_snake_case_naming_convention() {
     // Проверяем, что имена соответствуют snake_case
     let _state = GameState::new();
     let _save = SaveData::from_value(1000);
-    let _entry = LeaderboardEntry::new("Test".to_string(), 500);
+    let _entry = LeaderboardEntry::new("Test", 500);
     let _ = LINE_SCORES[0];
 
     // Все функции должны использовать snake_case:
@@ -389,7 +389,7 @@ fn test_load_rate_limit_state_error_handling() {
 
     // Проверяем, что Leaderboard работает корректно
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
 
     // load_rate_limit_state() обрабатывает ошибки:
     // - Недоступность директории конфигурации
@@ -468,7 +468,7 @@ fn test_unicode_whitelist_validation() {
     use crate::highscore::LeaderboardEntry;
 
     // Проверяем поддержку ASCII
-    let ascii_entry = LeaderboardEntry::new("Player123".to_string(), 1000);
+    let ascii_entry = LeaderboardEntry::new("Player123", 1000);
     assert_eq!(
         ascii_entry.name(),
         "Player123",
@@ -476,7 +476,7 @@ fn test_unicode_whitelist_validation() {
     );
 
     // Проверяем поддержку кириллицы
-    let cyrillic_entry = LeaderboardEntry::new("Игрок".to_string(), 2000);
+    let cyrillic_entry = LeaderboardEntry::new("Игрок", 2000);
     assert_eq!(
         cyrillic_entry.name(),
         "Игрок",
@@ -484,7 +484,7 @@ fn test_unicode_whitelist_validation() {
     );
 
     // Проверяем отклонение управляющих символов
-    let control_entry = LeaderboardEntry::new("Player\u{0000}".to_string(), 3000);
+    let control_entry = LeaderboardEntry::new("Player\u{0000}", 3000);
     assert_eq!(
         control_entry.name(),
         "Player",
@@ -503,7 +503,7 @@ fn test_rate_limiting_file_locks() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем запись
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
 
     // Rate limiting использует fs2 для файловых блокировок
     // Это предотвращает race condition при одновременном доступе
@@ -768,7 +768,7 @@ fn test_all_32_fixes_integration() {
     let _verified = save.verify_and_get_score();
 
     // БЕЗОПАСНОСТЬ (19-23)
-    let _entry = LeaderboardEntry::new("Игрок".to_string(), 1000); // Unicode
+    let _entry = LeaderboardEntry::new("Игрок", 1000); // Unicode
     use crate::highscore::MAX_CONFIG_FILE_SIZE; // Валидация размера
     let _ = MAX_CONFIG_FILE_SIZE;
 

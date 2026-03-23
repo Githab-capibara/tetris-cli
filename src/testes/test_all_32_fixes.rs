@@ -256,7 +256,7 @@ fn test_8_sanitize_player_name() {
     use crate::highscore::LeaderboardEntry;
 
     // Проверяем поддержку ASCII
-    let ascii_entry = LeaderboardEntry::new("Player123".to_string(), 1000);
+    let ascii_entry = LeaderboardEntry::new("Player123", 1000);
     assert_eq!(
         ascii_entry.name(),
         "Player123",
@@ -264,7 +264,7 @@ fn test_8_sanitize_player_name() {
     );
 
     // Проверяем поддержку кириллицы
-    let cyrillic_entry = LeaderboardEntry::new("Игрок".to_string(), 2000);
+    let cyrillic_entry = LeaderboardEntry::new("Игрок", 2000);
     assert_eq!(
         cyrillic_entry.name(),
         "Игрок",
@@ -272,7 +272,7 @@ fn test_8_sanitize_player_name() {
     );
 
     // Проверяем отклонение управляющих символов
-    let control_entry = LeaderboardEntry::new("Player\u{0000}".to_string(), 3000);
+    let control_entry = LeaderboardEntry::new("Player\u{0000}", 3000);
     assert_eq!(
         control_entry.name(),
         "Player",
@@ -280,12 +280,12 @@ fn test_8_sanitize_player_name() {
     );
 
     // Проверяем trim
-    let trimmed_entry = LeaderboardEntry::new("  Player  ".to_string(), 4000);
+    let trimmed_entry = LeaderboardEntry::new("  Player  ", 4000);
     assert_eq!(trimmed_entry.name(), "Player", "Пробелы должны обрезаться");
 
     // Проверяем ограничение длины
     let long_name = "A".repeat(100);
-    let long_entry = LeaderboardEntry::new(long_name, 5000);
+    let long_entry = LeaderboardEntry::new(&long_name, 5000);
     assert_eq!(
         long_entry.name().len(),
         20,
@@ -293,7 +293,7 @@ fn test_8_sanitize_player_name() {
     );
 
     // Проверяем пустое имя
-    let empty_entry = LeaderboardEntry::new(String::new(), 6000);
+    let empty_entry = LeaderboardEntry::new(&String::new(), 6000);
     assert_eq!(
         empty_entry.name(),
         "Anonymous",
@@ -337,7 +337,7 @@ fn test_10_get_current_time_ms_protected() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем запись
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
 
     // Rate limiting использует get_current_time_ms_protected()
     // для защиты от изменения системного времени назад
@@ -551,7 +551,7 @@ fn test_18_naming_consistency() {
     // Проверяем, что имена соответствуют snake_case
     let _state = GameState::new();
     let _save = SaveData::from_value(1000);
-    let _entry = LeaderboardEntry::new("Test".to_string(), 500);
+    let _entry = LeaderboardEntry::new("Test", 500);
     let _ = LINE_SCORES[0];
 
     // Все функции должны использовать snake_case:
@@ -653,11 +653,11 @@ fn test_23_name_validation_in_add_score() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем запись с валидным именем (меньше очков)
-    leaderboard.add_score("Player".to_string(), 1000);
+    leaderboard.add_score("Player", 1000);
     assert_eq!(leaderboard.len(), 1, "Должна быть одна запись");
 
     // Добавляем запись с невалидным именем (пустое, больше очков)
-    leaderboard.add_score(String::new(), 2000);
+    leaderboard.add_score(&String::new(), 2000);
     assert_eq!(leaderboard.len(), 2, "Должно быть две записи");
 
     // Проверяем, что записи имеют правильные имена
@@ -872,7 +872,7 @@ fn test_31_integration_all_fixes() {
 
     // ОБРАБОТКА ОШИБОК (15-18)
     let _save = SaveData::load_config(); // unwrap_or_else
-    let _entry = LeaderboardEntry::new("Test".to_string(), 1000); // sanitize
+    let _entry = LeaderboardEntry::new("Test", 1000); // sanitize
 
     // БЕЗОПАСНОСТЬ (19-23)
     let _result = _config.save_to_file("../test.json"); // Path traversal
@@ -914,7 +914,7 @@ fn test_32_full_integration() {
     assert_eq!(config.move_left(), b'a', "move_left должна быть 'a'");
 
     // Создаём запись в таблице лидеров
-    let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+    let entry = LeaderboardEntry::new("TestPlayer", 1000);
     assert_eq!(entry.name(), "TestPlayer", "Имя должно совпадать");
     assert_eq!(entry.score(), 1000, "Очки должны совпадать");
 

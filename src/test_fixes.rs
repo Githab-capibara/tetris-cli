@@ -54,7 +54,7 @@ mod tests {
     /// Тест 3: Проверка генерации `LeaderboardEntry` после исправления
     #[test]
     fn test_leaderboard_entry_generation() {
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 1000);
+        let entry = LeaderboardEntry::new("TestPlayer", 1000);
 
         assert_eq!(entry.name(), "TestPlayer");
         assert_eq!(entry.score(), 1000);
@@ -124,7 +124,7 @@ mod tests {
     /// Пустое имя должно заменяться на "Anonymous".
     #[test]
     fn test_empty_name_replaced_with_anonymous() {
-        let entry = LeaderboardEntry::new(String::new(), 1000);
+        let entry = LeaderboardEntry::new(&String::new(), 1000);
 
         assert_eq!(
             entry.name(),
@@ -138,7 +138,7 @@ mod tests {
     /// Имя с пробелами по краям должно обрезаться.
     #[test]
     fn test_whitespace_name_trimmed() {
-        let entry = LeaderboardEntry::new("  Player  ".to_string(), 1000);
+        let entry = LeaderboardEntry::new("  Player  ", 1000);
 
         assert_eq!(entry.name(), "Player", "Имя с пробелами должно обрезаться");
     }
@@ -149,7 +149,7 @@ mod tests {
     #[test]
     fn test_long_name_truncated() {
         let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
-        let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
+        let entry = LeaderboardEntry::new(long_name, 1000);
 
         // Проверяем, что имя обрезано до 20 символов (не байт!)
         assert_eq!(
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_unused_import_fixed() {
         // Используем импорт явно, чтобы избежать предупреждения
-        let _entry = LeaderboardEntry::new("Test".to_string(), 100);
+        let _entry = LeaderboardEntry::new("Test", 100);
         assert_eq!(_entry.name(), "Test");
     }
 

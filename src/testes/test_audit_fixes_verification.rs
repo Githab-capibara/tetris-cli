@@ -128,7 +128,7 @@ mod systemtime_rate_limiting_tests {
 
         // Добавляем несколько рекордов
         for i in 0..5 {
-            let result = leaderboard.add_score(format!("Player{i}"), 1000 + i * 100);
+            let result = leaderboard.add_score(&format!("Player{i}"), 1000 + i * 100);
             assert!(
                 result || !leaderboard.is_empty(),
                 "Рекорд {i} должен быть добавлен или таблица должна содержать записи"
@@ -776,7 +776,7 @@ mod public_method_documentation_tests {
         let _leaderboard = Leaderboard::default();
 
         // LeaderboardEntry
-        let _entry = LeaderboardEntry::new("Player".to_string(), 1000);
+        let _entry = LeaderboardEntry::new("Player", 1000);
 
         // SaveData
         let _save = SaveData::from_value(500);
@@ -867,7 +867,7 @@ mod expect_vs_unwrap_tests {
         assert_eq!(score, 0, "Начальный счёт должен быть 0");
 
         // Создаём запись таблицы лидеров
-        let entry = LeaderboardEntry::new("TestPlayer".to_string(), 5000);
+        let entry = LeaderboardEntry::new("TestPlayer", 5000);
         let name = entry.name();
         assert_eq!(name, "TestPlayer", "Имя должно совпадать");
 
@@ -949,7 +949,7 @@ mod integration_all_fixes_tests {
 
         // 3. Rate limiting
         let mut leaderboard = Leaderboard::default();
-        let _ = leaderboard.add_score("Player".to_string(), 1000);
+        let _ = leaderboard.add_score("Player", 1000);
 
         // 4. Кэширование строк
         let game = GameState::new();
@@ -1002,7 +1002,7 @@ mod integration_all_fixes_tests {
         }
 
         // 15. Документация pub методов
-        let _entry = LeaderboardEntry::new("Player".to_string(), 1000);
+        let _entry = LeaderboardEntry::new("Player", 1000);
 
         // 16. rustdoc ссылки
         let _width = GRID_WIDTH;

@@ -81,7 +81,7 @@ fn test_all_tests_pass() {
 #[test]
 fn test_documentation_concise() {
     let _state = GameState::new();
-    let _entry = LeaderboardEntry::new("Test".to_string(), 1000);
+    let _entry = LeaderboardEntry::new("Test", 1000);
 }
 
 /// Тест 16.2: Проверка что очевидные комментарии удалены.
@@ -116,7 +116,7 @@ fn test_documentation_style_unified() {
 /// Тест 17.3: Doctest что примеры работают.
 #[test]
 fn test_documentation_examples_work() {
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
     assert_eq!(entry.name(), "Player");
     assert_eq!(entry.score(), 1000);
 }
@@ -147,7 +147,7 @@ fn test_documentation_renders_correctly() {
 #[test]
 fn test_name_whitelist_works() {
     use crate::highscore::LeaderboardEntry;
-    let entry = LeaderboardEntry::new("Player1".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player1", 1000);
     assert_eq!(entry.name(), "Player1");
 }
 
@@ -156,7 +156,7 @@ fn test_name_whitelist_works() {
 fn test_max_name_length_checked() {
     use crate::highscore::LeaderboardEntry;
     let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
-    let entry = LeaderboardEntry::new(long_name.to_string(), 1000);
+    let entry = LeaderboardEntry::new(&long_name.to_string(), 1000);
     assert_eq!(entry.name().chars().count(), 20);
 }
 
@@ -164,7 +164,7 @@ fn test_max_name_length_checked() {
 #[test]
 fn test_special_chars_rejected() {
     use crate::highscore::LeaderboardEntry;
-    let entry = LeaderboardEntry::new("@@@###".to_string(), 1000);
+    let entry = LeaderboardEntry::new("@@@###", 1000);
     assert_eq!(entry.name(), "Anonymous");
 }
 

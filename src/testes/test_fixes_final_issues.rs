@@ -58,7 +58,7 @@ fn test_utf8_limitation_comment_exists() {
 #[test]
 fn test_add_score_works() {
     let mut leaderboard = Leaderboard::default();
-    let result = leaderboard.add_score("Player1".to_string(), 1000);
+    let result = leaderboard.add_score("Player1", 1000);
     assert!(result);
     assert_eq!(leaderboard.len(), 1);
 }
@@ -68,7 +68,7 @@ fn test_add_score_works() {
 fn test_cooldown_exists() {
     let mut leaderboard = Leaderboard::default();
     for i in 0..5 {
-        let result = leaderboard.add_score(format!("Player{i}"), 1000 * (i + 1));
+        let result = leaderboard.add_score(&format!("Player{i}"), 1000 * (i + 1));
         assert!(result);
     }
     assert_eq!(leaderboard.len(), 5);
@@ -78,7 +78,7 @@ fn test_cooldown_exists() {
 #[test]
 fn test_rate_limiting_comment_exists() {
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Test".to_string(), 100);
+    leaderboard.add_score("Test", 100);
 }
 
 /// Тест 24.1: Проверка что `update()` работает корректно.
@@ -105,8 +105,8 @@ fn test_draw_function_works() {
 /// Тест 25.1: Тест для `get_player_name()`.
 #[test]
 fn test_player_name_input() {
-    let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new(String::new(), 1000);
+    let entry1 = LeaderboardEntry::new("Player1", 1000);
+    let entry2 = LeaderboardEntry::new(&String::new(), 1000);
     assert_eq!(entry1.name(), "Player1");
     assert_eq!(entry2.name(), "Anonymous");
 }
@@ -115,8 +115,8 @@ fn test_player_name_input() {
 #[test]
 fn test_show_leaderboard() {
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Player1".to_string(), 3000);
-    leaderboard.add_score("Player2".to_string(), 2000);
+    leaderboard.add_score("Player1", 3000);
+    leaderboard.add_score("Player2", 2000);
     let entries = leaderboard.get_entries();
     assert_eq!(entries[0].score(), 3000);
 }

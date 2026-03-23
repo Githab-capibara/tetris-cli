@@ -405,7 +405,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 DISP_WIDTH, DISP_HEIGHT, width, height
             ),
         );
-        eprintln!("{}", err);
+        // Исправление #15: используем {err} вместо "{}", err
+        eprintln!("{err}");
         return Err(err.into());
     }
 
@@ -420,7 +421,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // - Скрывает курсор
     // Возвращает Result для корректной обработки ошибок
     let mut cnv = Canvas::new().map_err(|e| {
-        eprintln!("Ошибка инициализации терминала: {}", e);
+        // Исправление #15: используем {e} вместо "{}", e
+        eprintln!("Ошибка инициализации терминала: {e}");
         e
     })?;
 
@@ -646,7 +648,8 @@ fn run_game_mode(
         // Если имя не пустое (игрок не отменил ввод)
         if !name.is_empty() {
             // Добавление рекорда в таблицу лидеров
-            if !leaderboard.add_score(name.clone(), new_score) {
+            // Исправление #9: передаём &str вместо String
+            if !leaderboard.add_score(&name, new_score) {
                 cnv.draw_string("Рекорд не сохранён (rate limit)", (1, 23), &White, &Reset);
                 cnv.flush();
             }

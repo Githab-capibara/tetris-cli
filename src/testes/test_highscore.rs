@@ -117,7 +117,7 @@ fn test_leaderboard_empty() {
 fn test_leaderboard_add_score() {
     let mut leaderboard = Leaderboard::default();
 
-    let added = leaderboard.add_score("Player1".to_string(), 1000);
+    let added = leaderboard.add_score("Player1", 1000);
 
     assert!(added, "Добавление первого рекорда должно быть успешным");
     assert_eq!(leaderboard.len(), 1, "Таблица должна содержать 1 запись");
@@ -130,9 +130,9 @@ fn test_leaderboard_add_score() {
 fn test_leaderboard_add_multiple_scores() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player2".to_string(), 2000);
-    leaderboard.add_score("Player3".to_string(), 1500);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player2", 2000);
+    leaderboard.add_score("Player3", 1500);
 
     assert_eq!(leaderboard.len(), 3, "Таблица должна содержать 3 записи");
 }
@@ -146,7 +146,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 7 рекордов
     for i in 0..7 {
-        leaderboard.add_score(format!("Player{i}"), (i + 1) * 100);
+        leaderboard.add_score(&format!("Player{i}"), (i + 1) * 100);
     }
 
     // Таблица должна содержать только 5 лучших
@@ -174,11 +174,11 @@ fn test_leaderboard_sorting() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем рекорды в случайном порядке
-    leaderboard.add_score("Player3".to_string(), 300);
-    leaderboard.add_score("Player1".to_string(), 1000);
-    leaderboard.add_score("Player5".to_string(), 500);
-    leaderboard.add_score("Player2".to_string(), 2000);
-    leaderboard.add_score("Player4".to_string(), 100);
+    leaderboard.add_score("Player3", 300);
+    leaderboard.add_score("Player1", 1000);
+    leaderboard.add_score("Player5", 500);
+    leaderboard.add_score("Player2", 2000);
+    leaderboard.add_score("Player4", 100);
 
     let entries = leaderboard.get_entries();
 
@@ -199,8 +199,8 @@ fn test_leaderboard_sorting() {
 /// Проверяет, что каждая запись имеет уникальный хэш.
 #[test]
 fn test_leaderboard_entry_hash() {
-    let entry1 = LeaderboardEntry::new("Player1".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player2".to_string(), 1000);
+    let entry1 = LeaderboardEntry::new("Player1", 1000);
+    let entry2 = LeaderboardEntry::new("Player2", 1000);
 
     // Хэши должны быть разными из-за разной соли
     assert_ne!(
@@ -217,8 +217,8 @@ fn test_leaderboard_entry_hash() {
 /// Проверяет, что каждая запись получает уникальную соль.
 #[test]
 fn test_leaderboard_entry_salt_unique() {
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry1 = LeaderboardEntry::new("Player", 1000);
+    let entry2 = LeaderboardEntry::new("Player", 1000);
 
     // Даже с одинаковыми данными хэши должны быть разными из-за разной соли
     assert_ne!(
@@ -233,8 +233,8 @@ fn test_leaderboard_entry_salt_unique() {
 /// Проверяет, что разные значения дают разные хэши.
 #[test]
 fn test_hash_different_values() {
-    let entry1 = LeaderboardEntry::new("Player".to_string(), 1000);
-    let entry2 = LeaderboardEntry::new("Player".to_string(), 2000);
+    let entry1 = LeaderboardEntry::new("Player", 1000);
+    let entry2 = LeaderboardEntry::new("Player", 2000);
 
     // Хэши должны быть разными из-за разных очков
     assert_ne!(
@@ -253,7 +253,7 @@ fn test_hash_different_values() {
 /// Проверяет, что валидная запись проходит проверку `is_valid()`.
 #[test]
 fn test_leaderboard_entry_validation() {
-    let entry = LeaderboardEntry::new("Player".to_string(), 1000);
+    let entry = LeaderboardEntry::new("Player", 1000);
 
     assert!(
         entry.is_valid(),
@@ -276,21 +276,21 @@ fn test_leaderboard_get_best_score() {
     );
 
     // Добавляем рекорды
-    leaderboard.add_score("Player1".to_string(), 1000);
+    leaderboard.add_score("Player1", 1000);
     assert_eq!(
         leaderboard.get_best_score(),
         1000,
         "Лучший рекорд должен быть 1000"
     );
 
-    leaderboard.add_score("Player2".to_string(), 2000);
+    leaderboard.add_score("Player2", 2000);
     assert_eq!(
         leaderboard.get_best_score(),
         2000,
         "Лучший рекорд должен быть 2000"
     );
 
-    leaderboard.add_score("Player3".to_string(), 500);
+    leaderboard.add_score("Player3", 500);
     assert_eq!(
         leaderboard.get_best_score(),
         2000,
