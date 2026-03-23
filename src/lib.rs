@@ -721,6 +721,9 @@ mod testes {
     pub mod test_game_score_overflow_protection;
     pub mod test_highscore_deprecated_assert_hs;
 
+    // Тесты на безопасность cast и конвертацию типов (12 тестов)
+    pub mod test_cast_safety;
+
     // Комплексные тесты всех 18 исправлений (54 теста)
     pub mod test_all_fixes;
 

@@ -77,6 +77,7 @@ pub enum RotationDirection {
 ///
 /// Возвращается методами обновления игры для указания текущего состояния.
 #[derive(PartialEq, Clone, Copy, Debug)]
+#[allow(dead_code)]
 pub enum UpdateEndState {
     /// Выход из игры.
     Quit,

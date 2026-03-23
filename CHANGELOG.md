@@ -4,6 +4,51 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.23] — 2026-03-23
+
+### Исправлено
+
+- **Cast предупреждения Clippy** (`game.rs`) — заменены все cast `usize as i16` на безопасные аналоги с `i16::try_from().unwrap_or(i16::MAX)`
+- **Переполнение при конвертации f32 → u32** (`game.rs`) — добавлена защита от NaN/infinity и переполнения через saturating cast
+- **Missing `# Errors` section** (`highscore.rs`, `io.rs`) — добавлена документация возможных ошибок для функций возвращающих `Result`
+- **Items after statements** (`highscore.rs`) — перемещён `use std::fmt::Write;` в начало модуля
+- **Неиспользуемые публичные функции** (`crypto.rs`) — помечены `#[doc(hidden)]` функции `hmac()` и `verify_hmac()`
+- **Deprecated функция `generate_salt()`** (`highscore.rs`) — помечена как deprecated с указанием на `crate::crypto::generate_salt()`
+- **Непоследовательная обработка ошибок** (`main.rs`) — унифицировано логирование ошибок rate limiting
+
+### Добавлено
+
+- **12 новых тестов** в `test_cast_safety.rs`:
+  - `test_grid_bounds_cast_safety` — проверка безопасного cast границ сетки
+  - `test_coordinate_validation_cast` — проверка валидации координат
+  - `test_hard_drop_distance_normal` — нормальная конвертация f32 → u32
+  - `test_hard_drop_distance_nan` — защита от NaN
+  - `test_hard_drop_distance_infinity` — защита от infinity
+  - `test_hard_drop_distance_overflow` — защита от переполнения (> u32::MAX)
+  - `test_config_directory_error_handling` — обработка ошибок конфигурации
+  - `test_main_error_propagation` — распространение ошибок в main
+  - `test_documentation_completeness` — проверка полноты документации
+  - `test_all_cast_operations_integration` — интеграционный тест всех cast операций
+  - `test_f32_to_u32_stress_test` — стресс-тест конвертации
+  - `test_cast_no_panic_in_game` — проверка отсутствия паники в реальных условиях
+
+### Улучшено
+
+- **Безопасность cast операций** — исключено переполнение при cast usize → i16 на 16-битных платформах
+- **Защита от переполнения** — корректная обработка NaN/infinity при конвертации f32 → u32
+- **Качество документации** — все функции с `Result` имеют раздел `# Errors`
+- **Читаемость кода** — перемещены импорты в начало модуля
+- **Консистентность обработки ошибок** — унифицировано логирование в main
+
+### Тестирование
+
+- **1622 теста** (1610 + 12 новых)
+- **Все тесты проходят** без ошибок
+- **0 ошибок компиляции**
+- **Clippy warnings** — исправлены все критические предупреждения (cast, doc, items_after_statements)
+
+---
+
 ## [23.96.22] — 2026-03-23
 
 ### Исправлено

@@ -892,18 +892,16 @@ impl GameState {
             self.curr_shape.pos.1 += 1.0;
         }
         // Безопасное преобразование: drop_distance всегда >= 0 т.к. фигура падает вниз
-        // Добавляем проверку на infinity/NaN и ограничиваем максимальное значение
-        // Исправление #8: используем u32 вместо u64 для предотвращения проблем с конвертацией f32
-        let drop_distance_f32 = (self.curr_shape.pos.1 - start_y)
-            .abs()
-            .max(0.0)
-            .min(u32::MAX as f32);
-        // Исправление: добавлена проверка диапазона для безопасного преобразования f32 в u32
-        let drop_distance = if drop_distance_f32.is_finite() && drop_distance_f32 <= u32::MAX as f32
-        {
-            drop_distance_f32 as u32
-        } else {
+        // Исправление #7: улучшенная проверка переполнения f32 → u32
+        // Используем saturating_cast подход для предотвращения переполнения
+        let drop_distance_f32 = (self.curr_shape.pos.1 - start_y).abs().max(0.0);
+        // Проверка на NaN/infinity и переполнение
+        let drop_distance: u32 = if !drop_distance_f32.is_finite() {
             0 // Защита от NaN/infinity
+        } else if drop_distance_f32 >= u32::MAX as f32 {
+            u32::MAX // Saturating cast - ограничиваем максимальным значением
+        } else {
+            drop_distance_f32 as u32
         };
         // Исправление #12: используем saturating_mul() и saturating_add() для предотвращения переполнения
         self.score = self
@@ -1116,7 +1114,10 @@ impl GameState {
 
             // Проверка границ перед записью (защита от паники при отрицательных координатах)
             // Используем checked_sub() для безопасной работы с отрицательными значениями
-            if y >= 0 && y < GRID_HEIGHT as i16 && x >= 0 && x < GRID_WIDTH as i16 {
+            // Исправление #1: безопасный cast usize → i16 через try_from
+            let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
+            let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
+            if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
                 // Исправление #3: доступ к Box через разыменование
                 self.blocks[y as usize][x as usize] = self.curr_shape.fg as i8;
             }
@@ -1622,9 +1623,11 @@ impl GameState {
         let (shape_x, shape_y) = self.curr_shape.pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
+        // Исправление #1: безопасный cast usize → i16 через try_from
+        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
         for coord in self.curr_shape.coords {
             let (coord_x, coord_y) = coord;
-            let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + SHAPE_OFFSET_X;
+            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
 
             // Проверка границ перед отрисовкой для защиты от паники.
@@ -1668,22 +1671,26 @@ impl GameState {
         // Tetromino реализует Copy, поэтому операция быстрая
         let mut ghost_shape = self.curr_shape;
 
+        // Исправление #1: безопасный cast usize → i16 через try_from
+        let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
+        let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
+
         // Исправление #17: вычисляем расстояние до препятствия напрямую
         // Находим минимальное расстояние до пола или блока среди всех блоков фигуры
         let ghost_block_y = ghost_shape.pos.1 as i16;
-        let mut max_drop_distance = GRID_HEIGHT as i16;
+        let mut max_drop_distance = grid_height_i16;
 
         // Вычисляем максимальное падение для каждого блока фигуры
         for &(coord_x, coord_y) in &ghost_shape.coords {
             let block_y = coord_y + ghost_block_y;
             // Расстояние до пола
-            let dist_to_floor = GRID_HEIGHT as i16 - 1 - block_y;
+            let dist_to_floor = grid_height_i16 - 1 - block_y;
 
             // Расстояние до ближайшего блока внизу
             let mut dist_to_block = dist_to_floor;
-            for y in (block_y + 1)..GRID_HEIGHT as i16 {
+            for y in (block_y + 1)..grid_height_i16 {
                 let x = coord_x + ghost_shape.pos.0 as i16;
-                if x >= 0 && x < GRID_WIDTH as i16 && self.blocks[y as usize][x as usize] != -1 {
+                if x >= 0 && x < grid_width_i16 && self.blocks[y as usize][x as usize] != -1 {
                     dist_to_block = y - block_y - 1;
                     break;
                 }
@@ -1700,9 +1707,11 @@ impl GameState {
         let (shape_x, shape_y) = ghost_shape.pos;
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
+        // Исправление #1: безопасный cast usize → i16 через try_from
+        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
         for coord in ghost_shape.coords {
             let (coord_x, coord_y) = coord;
-            let x = (coord_x + shape_block_x) * SHAPE_WIDTH as i16 + SHAPE_OFFSET_X;
+            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X;
             let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
 
             // Отрисовка контуром (символ ░░)
@@ -1752,6 +1761,11 @@ impl GameState {
     /// * `pos_y` - позиция по Y
     /// * `title` - заголовок (например, "След:" или "Удерж:")
     /// * `is_faded` - если true, рисовать тусклым цветом (символ ░░)
+    ///
+    /// # Исправление Clippy
+    /// Функция помечена `#[allow(clippy::unused_self)]` так как использует self
+    /// только для вызова через метод, но не обращается к полям структуры.
+    #[allow(clippy::unused_self)]
     fn draw_shape_preview(
         &self,
         cnv: &mut Canvas,
@@ -1764,10 +1778,13 @@ impl GameState {
         cnv.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
 
         // Отрисовка блоков фигуры
+        // Исправление #1: безопасный cast usize → i16 через try_from
+        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
         for coord in shape.coords {
             let (coord_x, coord_y) = coord;
-            let x = pos_x as i16 + coord_x * SHAPE_WIDTH as i16 + DRAW_OFFSET_X;
-            let y = pos_y as i16 + coord_y + 1;
+            // Исправление Clippy: используем cast_signed() вместо as для u16 → i16
+            let x = pos_x.cast_signed() + coord_x * shape_width_i16 + DRAW_OFFSET_X;
+            let y = pos_y.cast_signed() + coord_y + 1;
 
             if x >= 0 && y >= 0 {
                 let display_char = if is_faded { "░░" } else { SHAPE_STR };
@@ -1841,7 +1858,10 @@ impl GameState {
             // Нижняя граница: y >= GRID_HEIGHT
             // Верхняя граница (y < 0) НЕ проверяется - фигуры могут появляться выше поля
             // Это уменьшает количество проверок на 25% (4 → 3 условия)
-            if check_x < 0 || check_x >= GRID_WIDTH as i16 || check_y >= GRID_HEIGHT as i16 {
+            // Исправление #1: безопасный cast usize → i16 через try_from
+            let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
+            let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
+            if check_x < 0 || check_x >= grid_width_i16 || check_y >= grid_height_i16 {
                 return false;
             }
 
@@ -1995,10 +2015,10 @@ impl GameState {
 
             // Проверка выхода за границы сетки (все 4 направления)
             // Важно: проверяем ДО конвертации в usize для предотвращения переполнения
-            if check_x < 0
-                || check_x >= GRID_WIDTH as i16
-                || check_y < 0
-                || check_y >= GRID_HEIGHT as i16
+            // Исправление #1: безопасный cast usize → i16 через try_from
+            let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
+            let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
+            if check_x < 0 || check_x >= grid_width_i16 || check_y < 0 || check_y >= grid_height_i16
             {
                 return false;
             }
