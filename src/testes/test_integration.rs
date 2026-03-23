@@ -266,20 +266,23 @@ fn test_controls_game_state_interaction() {
 #[test]
 fn test_game_stats_game_state_interaction() {
     let state = GameState::new();
-    let stats = state.get_stats();
+    let game_stats = state.get_stats();
 
     // В начале игры должна быть 1 фигура
     assert_eq!(
-        stats.total_pieces(),
+        game_stats.total_pieces(),
         1,
         "В начале игры должна быть 1 фигура"
     );
 
     // Проверяем, что max_combo равен 0
-    assert_eq!(stats.max_combo, 0, "Начальное комбо должно быть 0");
+    assert_eq!(game_stats.max_combo, 0, "Начальное комбо должно быть 0");
 
     // Проверяем, что таймер не запущен
-    assert!(stats.start_time.is_none(), "Таймер не должен быть запущен");
+    assert!(
+        game_stats.start_time.is_none(),
+        "Таймер не должен быть запущен"
+    );
 }
 
 /// Тест 11: Проверка взаимодействия `SaveData` и Leaderboard

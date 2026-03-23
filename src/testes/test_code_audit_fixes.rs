@@ -18,7 +18,7 @@ mod code_audit_tests {
     fn test_leaderboard_entry_accepts_str_reference() {
         // Это должно компилироваться без ошибок
         let entry = LeaderboardEntry::new("TestPlayer", 5000);
-        
+
         // Проверяем, что запись создана и валидна
         assert_eq!(entry.name(), "TestPlayer");
         assert_eq!(entry.score(), 5000u128);
@@ -28,12 +28,7 @@ mod code_audit_tests {
     /// Тест 2: Проверка, что LeaderboardEntry::new() работает с разными именами
     #[test]
     fn test_leaderboard_entry_with_various_names() {
-        let names = vec![
-            "Player",
-            "TestName",
-            "Anonymous",
-            "A",
-        ];
+        let names = vec!["Player", "TestName", "Anonymous", "A"];
 
         for name in names {
             let entry = LeaderboardEntry::new(name, 1000);
@@ -48,10 +43,10 @@ mod code_audit_tests {
     #[test]
     fn test_leaderboard_entry_hash_integrity() {
         let entry = LeaderboardEntry::new("TestPlayer", 12345);
-        
+
         // Новая запись должна быть валидной
         assert!(entry.is_valid());
-        
+
         // Проверяем score() возвращает правильное значение
         assert_eq!(entry.score(), 12345u128);
     }

@@ -585,8 +585,8 @@ fn test_sprint_timer() {
     std::thread::sleep(std::time::Duration::from_millis(100));
 
     // Получаем прошедшее время
-    let stats = state.get_stats();
-    let elapsed = stats.get_elapsed_time();
+    let game_stats = state.get_stats();
+    let elapsed = game_stats.get_elapsed_time();
 
     // Проверяем, что время больше 0
     assert!(elapsed > 0.0, "Время должно течь после запуска таймера");

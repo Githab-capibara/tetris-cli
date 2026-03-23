@@ -259,8 +259,8 @@ impl Canvas {
             match out.into_raw_mode() {
                 Ok(raw_out) => Self { out: raw_out },
                 Err(e) => {
-                    eprintln!("Предупреждение: создание stub Canvas невозможно: {e}");
-                    panic!("Не удалось создать Canvas: {e}");
+                    eprintln!("Критическая ошибка: терминал недоступен: {e}");
+                    std::process::exit(1);
                 }
             }
         }
