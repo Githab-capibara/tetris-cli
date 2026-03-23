@@ -51,48 +51,48 @@ fn test_edge_cases_held_shape_none() {
 #[test]
 fn test_edge_cases_achievements_empty() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert_eq!(stats.achievements.len(), 0);
+    let game_stats = state.get_stats();
+    assert_eq!(game_stats.achievements.len(), 0);
 }
 
 /// Тест 5: Проверка что `start_time` None при создании
 #[test]
 fn test_edge_cases_start_time_none() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert!(stats.start_time.is_none());
+    let game_stats = state.get_stats();
+    assert!(game_stats.start_time.is_none());
 }
 
 /// Тест 6: Проверка что `end_time` None при создании
 #[test]
 fn test_edge_cases_end_time_none() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert!(stats.end_time.is_none());
+    let game_stats = state.get_stats();
+    assert!(game_stats.end_time.is_none());
 }
 
 /// Тест 7: Проверка что `combo_counter` 0 при создании
 #[test]
 fn test_edge_cases_combo_counter_zero() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert_eq!(stats.combo_counter, 0);
+    let game_stats = state.get_stats();
+    assert_eq!(game_stats.combo_counter, 0);
 }
 
 /// Тест 8: Проверка что `max_combo` 0 при создании
 #[test]
 fn test_edge_cases_max_combo_zero() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert_eq!(stats.max_combo, 0);
+    let game_stats = state.get_stats();
+    assert_eq!(game_stats.max_combo, 0);
 }
 
 /// Тест 9: Проверка что `tetris_count` 0 при создании
 #[test]
 fn test_edge_cases_tetris_count_zero() {
     let state = GameState::new();
-    let stats = state.get_stats();
-    assert_eq!(stats.tetris_count, 0);
+    let game_stats = state.get_stats();
+    assert_eq!(game_stats.tetris_count, 0);
 }
 
 /// Тест 10: Проверка что `total_lines` 0 при создании
