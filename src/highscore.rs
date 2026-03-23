@@ -15,6 +15,7 @@
 //! Все операции с конфигурацией rate limiting защищены эксклюзивной файловой блокировкой fs2.
 //! Это предотвращает одновременный доступ к файлу конфигурации из нескольких процессов.
 
+use crate::crypto::{self, hash};
 use confy::{load, store};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
@@ -25,42 +26,38 @@ use std::fs::OpenOptions;
 // ===========================================================================
 // Общие функции для генерации хешей и солей
 // Используются в [`SaveData`] и [`LeaderboardEntry`]
+//
+// Исправление: используем функции из модуля crypto для устранения дублирования
 
 /// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
 ///
-/// Используется криптографически стойкий генератор случайных чисел (getrandom).
-/// Возвращает строку из ровно 64 шестнадцатеричных символов (256 бит).
-/// Оптимизация: использует `hex::encode()` вместо ручного цикла
-#[must_use = "Соль должна быть использована для хеширования"]
+/// # Устарело
+/// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
+/// Эта функция оставлена для обратной совместимости тестов.
+#[deprecated(since = "23.96.20", note = "Используйте `crate::crypto::generate_salt()`")]
+#[allow(dead_code)]
 pub fn generate_salt() -> String {
-    use rand::rngs::OsRng;
-    use rand::RngCore;
-
-    let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-                               // Используем криптографически стойкий генератор случайных чисел ОС.
-    OsRng.fill_bytes(&mut bytes);
-
-    // Оптимизация: используем hex::encode() для эффективного кодирования
-    hex::encode(bytes)
+    crypto::generate_salt()
 }
 
 /// Получить случайную соль (устаревшее имя).
 ///
 /// # Устарело
-/// Используйте [`generate_salt()`] вместо этой функции.
-#[deprecated(since = "2.1.0", note = "Используйте `generate_salt()`")]
+/// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
+#[deprecated(since = "2.1.0", note = "Используйте `generate_salt()` из модуля crypto")]
 #[allow(dead_code)]
 pub fn get_random_hash() -> String {
     generate_salt()
 }
 
-/// Получить хэш строки в шестнадцатеричном формате.
+/// Получить хэш строки в шестнадцатеричном формате (устаревшее).
 ///
-/// Использует криптографическую хеш-функцию BLAKE3 для вычисления хеша.
-/// Возвращает строку из 64 шестнадцатеричных символов (256 бит = 32 байта).
+/// # Устарело
+/// Используйте [`crate::crypto::hash()`] вместо этой функции.
+#[deprecated(since = "23.96.20", note = "Используйте `hash()` из модуля crypto")]
+#[allow(dead_code)]
 fn get_hash(msg: &str) -> String {
-    let hash = blake3::hash(msg.as_bytes());
-    hash.to_hex().to_string()
+    hash(msg)
 }
 
 /// Имя приложения для конфигурации.
@@ -512,7 +509,7 @@ impl SaveData {
         let score_str = score.to_string();
         let salt = generate_salt();
         let salt_and_score = salt.clone() + &score_str;
-        let hash = get_hash(&salt_and_score);
+        let hash = hash(&salt_and_score);
 
         Self { score, salt, hash }
     }
@@ -577,7 +574,7 @@ impl SaveData {
         // Исправление #16: используем новые имена полей
         let score_str = self.score.to_string();
         let salt_and_score = self.salt.clone() + &score_str;
-        let test_hash = get_hash(&salt_and_score);
+        let test_hash = hash(&salt_and_score);
 
         if self.hash == test_hash {
             Some(self.score)
@@ -699,7 +696,7 @@ impl LeaderboardEntry {
         let mut salt_and_score =
             String::with_capacity(salt.len() + valid_name.len() + score_digits);
         let _ = write!(salt_and_score, "{salt}{valid_name}{score}");
-        let hash = get_hash(&salt_and_score);
+        let hash = hash(&salt_and_score);
 
         Self {
             name: valid_name,
@@ -737,7 +734,7 @@ impl LeaderboardEntry {
             "{}{}{}",
             self.salt, self.name, self.score_value
         );
-        let test_hash = get_hash(&salt_and_score);
+        let test_hash = hash(&salt_and_score);
         self.hash == test_hash
     }
 }
