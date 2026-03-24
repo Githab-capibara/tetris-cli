@@ -181,7 +181,7 @@ fn test_error_formatting() {
 /// Атрибут #[`must_use`] предупреждает если результат не используется.
 #[test]
 fn test_generate_salt_must_use() {
-    use crate::highscore::generate_salt;
+    use crate::crypto::generate_salt;
 
     // Генерируем соль
     let salt = generate_salt();
@@ -260,7 +260,8 @@ fn test_documentation_backticks() {
 #[test]
 fn test_all_code_quality_fixes_integration() {
     use crate::controls::ControlsConfig;
-    use crate::highscore::{generate_salt, LeaderboardEntry, SaveData};
+    use crate::crypto::generate_salt;
+    use crate::highscore::{LeaderboardEntry, SaveData};
 
     // 1. Проверяем Eq для ControlsConfig
     let config1 = ControlsConfig::default_config();

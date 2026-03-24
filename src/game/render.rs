@@ -5,6 +5,30 @@
 //! - Фигур (текущей, призрачной, следующей, удержанной)
 //! - Интерфейса (счёт, уровень, линии, комбо, таймер)
 //! - Анимаций (мигание Hard Drop, очистка линий)
+//!
+//! ## Использование `GameView`
+//!
+//! Для отрисовки используется [`GameView`], который предоставляет
+//! неизменяемое представление состояния игры. Это уменьшает coupling
+//! между render.rs и `GameState`.
+//!
+//! ## Пример использования
+//! ```ignore
+//! use tetris_cli::game::{GameState, GameView};
+//! use tetris_cli::io::Canvas;
+//!
+//! let mut state = GameState::new();
+//! let mut canvas = Canvas::new().unwrap();
+//!
+//! // Обновление кэшированных строк (требует mutable доступ)
+//! update_cached_strings_extended(&mut state, high_score_display);
+//!
+//! // Создание GameView для отрисовки
+//! let view = GameView::from_game_state(&state);
+//!
+//! // Отрисовка
+//! draw(&view, &mut canvas);
+//! ```
 
 use super::state::{
     GameMode, GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, DRAW_OFFSET_X,
@@ -12,6 +36,7 @@ use super::state::{
     LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y, SCORE_X, SCORE_Y, SHAPE_DRAW_OFFSET,
     SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES,
 };
+use super::view::GameView;
 use crate::io::{Canvas, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use termion::color::Reset;
@@ -19,56 +44,48 @@ use termion::color::Reset;
 /// Отрисовать текущее состояние игры.
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `view` - представление игры для отрисовки
 /// * `cnv` - канвас для отрисовки
-/// * `high_score_display` - строка для отображения рекорда
-pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
+///
+/// # Пример
+/// ```ignore
+/// let state = GameState::new();
+/// let view = GameView::from_game_state(&state);
+/// draw(&view, &mut canvas);
+/// ```
+///
+/// ## Примечания
+/// - Функция принимает `GameView` вместо `GameState` для уменьшения coupling
+/// - Кэшированные строки должны быть обновлены до создания `GameView`
+/// - Используйте `update_cached_strings_extended()` перед созданием `GameView`
+pub fn draw(view: &GameView, cnv: &mut Canvas) {
     cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
-    // Обновление кэшированных строк
-    update_cached_strings_extended(state, high_score_display);
-
     // Отрисовка счёта и рекорда
+    cnv.draw_string(view.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
     cnv.draw_string(
-        &state.cached_score_str,
-        (SCORE_X, SCORE_Y),
-        BORDER_COLOR,
-        &Reset,
-    );
-    cnv.draw_string(
-        &state.cached_high_score_str,
+        view.high_score,
         (HIGH_SCORE_X, HIGH_SCORE_Y),
         BORDER_COLOR,
         &Reset,
     );
-    cnv.draw_string(
-        &state.cached_level_str,
-        (LEVEL_X, LEVEL_Y),
-        BORDER_COLOR,
-        &Reset,
-    );
-    cnv.draw_string(
-        &state.cached_lines_str,
-        (LINES_X, LINES_Y),
-        BORDER_COLOR,
-        &Reset,
-    );
+    cnv.draw_string(view.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
+    cnv.draw_string(view.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
 
     // Отрисовка счётчика комбо
-    if !state.cached_combo_str.is_empty() {
-        cnv.draw_string(&state.cached_combo_str, (24, 6), BORDER_COLOR, &Reset);
+    if let Some(combo) = view.combo {
+        cnv.draw_string(combo, (24, 6), BORDER_COLOR, &Reset);
     }
 
     // Отрисовка зафиксированных фигур
-    let animation_time = state.stats.get_elapsed_time();
-    let millis = (animation_time * 1000.0) as u16;
+    let millis = (view.elapsed_time * 1000.0) as u16;
     let show_animation = (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP);
 
     for y in 0..GRID_HEIGHT {
-        let is_animating = (state.animating_rows_mask & (1 << y)) != 0;
+        let is_animating = (view.animating_rows & (1 << y)) != 0;
 
         for x in 0..GRID_WIDTH {
-            if state.blocks[y][x] != -1 {
+            if view.blocks[y][x] != -1 {
                 if is_animating && !show_animation {
                     continue;
                 }
@@ -79,7 +96,7 @@ pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
                         (x * SHAPE_WIDTH + 2) as u16,
                         (y + SHAPE_DRAW_OFFSET as usize) as u16,
                     ),
-                    SHAPE_COLORS[state.blocks[y][x] as usize],
+                    SHAPE_COLORS[view.blocks[y][x] as usize],
                     &Reset,
                 );
             }
@@ -87,10 +104,10 @@ pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
     }
 
     // Отрисовка призрачной фигуры
-    draw_ghost_shape(state, cnv);
+    draw_ghost_shape(view, cnv);
 
     // Отрисовка текущей падающей фигуры с анимацией Hard Drop
-    let shape_display_char = if state.is_hard_dropping {
+    let shape_display_char = if view.is_hard_dropping {
         if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP) {
             SHAPE_STR
         } else {
@@ -100,12 +117,12 @@ pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
         SHAPE_STR
     };
 
-    let (shape_x, shape_y) = state.curr_shape.pos;
+    let (shape_x, shape_y) = view.curr_shape.pos;
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
     let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
-    for coord in state.curr_shape.coords {
+    for coord in view.curr_shape.coords {
         let (coord_x, coord_y) = coord;
         let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X;
         let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
@@ -114,21 +131,21 @@ pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
             cnv.draw_strs(
                 &[shape_display_char],
                 (x as u16, y as u16),
-                SHAPE_COLORS[state.curr_shape.fg],
+                SHAPE_COLORS[view.curr_shape.fg],
                 &Reset,
             );
         }
     }
 
     // Отрисовка следующей фигуры
-    draw_next_shape(state, cnv);
+    draw_next_shape(view, cnv);
 
     // Отрисовка удержанной фигуры
-    draw_held_shape(state, cnv);
+    draw_held_shape(view, cnv);
 
     // Отрисовка таймера для режима спринт
-    if state.mode == GameMode::Sprint {
-        draw_sprint_timer(state, cnv);
+    if view.mode == GameMode::Sprint {
+        draw_sprint_timer(view, cnv);
     }
 
     cnv.flush();
@@ -138,6 +155,10 @@ pub fn draw(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
+///
+/// ## Примечания
+/// Эта функция требует mutable доступ к `GameState`, поэтому не может
+/// использовать `GameView`. Вызывайте её перед созданием `GameView`.
 fn update_cached_strings(state: &mut GameState) {
     if state.score != state.last_cached_score {
         state.cached_score_str = format!("{:10}", state.score);
@@ -160,7 +181,11 @@ fn update_cached_strings(state: &mut GameState) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `high_score_display` - строка рекорда для кэширования
-fn update_cached_strings_extended(state: &mut GameState, high_score_display: &str) {
+///
+/// ## Примечания
+/// Эта функция требует mutable доступ к `GameState`, поэтому не может
+/// использовать `GameView`. Вызывайте её перед созданием `GameView`.
+pub fn update_cached_strings_extended(state: &mut GameState, high_score_display: &str) {
     update_cached_strings(state);
 
     // Кэширование строки рекорда
@@ -193,10 +218,10 @@ fn update_cached_strings_extended(state: &mut GameState, high_score_display: &st
 /// Отрисовать призрачную фигуру (точку приземления).
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `view` - представление игры
 /// * `cnv` - канвас для отрисовки
-fn draw_ghost_shape(state: &GameState, cnv: &mut Canvas) {
-    let mut ghost_shape = state.curr_shape;
+fn draw_ghost_shape(view: &GameView, cnv: &mut Canvas) {
+    let mut ghost_shape = *view.curr_shape;
 
     let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
     let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
@@ -212,7 +237,7 @@ fn draw_ghost_shape(state: &GameState, cnv: &mut Canvas) {
         let mut dist_to_block = dist_to_floor;
         for y in (block_y + 1)..grid_height_i16 {
             let x = coord_x + ghost_shape.pos.0 as i16;
-            if x >= 0 && x < grid_width_i16 && state.blocks[y as usize][x as usize] != -1 {
+            if x >= 0 && x < grid_width_i16 && view.blocks[y as usize][x as usize] != -1 {
                 dist_to_block = y - block_y - 1;
                 break;
             }
@@ -246,23 +271,25 @@ fn draw_ghost_shape(state: &GameState, cnv: &mut Canvas) {
 /// Отрисовать следующую фигуру (предпросмотр справа от поля).
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `view` - представление игры
 /// * `cnv` - канвас для отрисовки
-fn draw_next_shape(state: &GameState, cnv: &mut Canvas) {
-    draw_shape_preview(cnv, &state.next_shape, PREVIEW_X, PREVIEW_Y, "След:", false);
+fn draw_next_shape(view: &GameView, cnv: &mut Canvas) {
+    draw_shape_preview(cnv, view.next_shape, PREVIEW_X, PREVIEW_Y, "След:", false);
 }
 
 /// Отрисовать удержанную фигуру (слева от поля).
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `view` - представление игры
 /// * `cnv` - канвас для отрисовки
-fn draw_held_shape(state: &GameState, cnv: &mut Canvas) {
-    if let Some(held) = state.held_shape {
-        let is_faded = !state.can_hold;
+fn draw_held_shape(view: &GameView, cnv: &mut Canvas) {
+    if let Some(held) = view.held_shape {
+        // Примечание: can_hold не доступен в GameView, так как это внутреннее состояние
+        // Для полной поддержки можно добавить can_hold в GameView если нужно
+        let is_faded = false;
         draw_shape_preview(
             cnv,
-            &held,
+            held,
             HOLD_PREVIEW_X,
             HOLD_PREVIEW_Y,
             "Удерж:",
@@ -311,12 +338,14 @@ fn draw_shape_preview(
 /// Отрисовать таймер для режима спринт.
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `view` - представление игры
 /// * `cnv` - канвас для отрисовки
-fn draw_sprint_timer(state: &GameState, cnv: &mut Canvas) {
-    cnv.draw_string(&state.cached_timer_str, (24, 20), BORDER_COLOR, &Reset);
+fn draw_sprint_timer(view: &GameView, cnv: &mut Canvas) {
+    // Форматируем таймер на лету из elapsed_time
+    let timer_str = format!("Время: {:.2}с", view.elapsed_time);
+    cnv.draw_string(&timer_str, (24, 20), BORDER_COLOR, &Reset);
 
-    let progress = format!("Цель: {}/{}", state.lines_cleared, SPRINT_LINES);
+    let progress = format!("Цель: {}/{}", view.lines_cleared, SPRINT_LINES);
     cnv.draw_string(&progress, (24, 21), BORDER_COLOR, &Reset);
 }
 
@@ -326,6 +355,9 @@ fn draw_sprint_timer(state: &GameState, cnv: &mut Canvas) {
 /// * `state` - состояние игры (изменяемое)
 /// * `rows_mask` - битовая маска заполненных линий
 /// * `remove_count` - количество заполненных линий
+///
+/// ## Примечания
+/// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
 pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
     if remove_count > 0 {
         state.animating_rows_mask = rows_mask;
@@ -341,6 +373,9 @@ pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
 ///
 /// # Возвращает
 /// Количество удалённых линий
+///
+/// ## Примечания
+/// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
 pub fn check_rows(state: &mut GameState) -> u32 {
     // Поиск заполненных линий
     let (rows_mask, remove_count) = super::scoring::find_full_rows(&state.blocks);

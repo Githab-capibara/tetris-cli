@@ -39,26 +39,29 @@ fn test_statistics_combo_counter_zero() {
     assert_eq!(stats.combo_counter, 0);
 }
 
-/// Тест 4: Проверка что achievements пуст при создании
-#[test]
-fn test_statistics_achievements_empty() {
-    let stats = GameStats::new();
-    assert_eq!(stats.achievements.len(), 0);
-}
+// REMOVED: Achievement system removed
+// /// Тест 4: Проверка что achievements пуст при создании
+// #[test]
+// fn test_statistics_achievements_empty() {
+//     let stats = GameStats::new();
+//     assert_eq!(stats.achievements.len(), 0);
+// }
 
-/// Тест 5: Проверка что `tetris_count` равен 0 при создании
-#[test]
-fn test_statistics_tetris_count_zero() {
-    let stats = GameStats::new();
-    assert_eq!(stats.tetris_count, 0);
-}
+// REMOVED: Achievement system removed
+// /// Тест 5: Проверка что `tetris_count` равен 0 при создании
+// #[test]
+// fn test_statistics_tetris_count_zero() {
+//     let stats = GameStats::new();
+//     assert_eq!(stats.tetris_count, 0);
+// }
 
-/// Тест 6: Проверка что `total_lines` равен 0 при создании
-#[test]
-fn test_statistics_total_lines_zero() {
-    let stats = GameStats::new();
-    assert_eq!(stats.total_lines, 0);
-}
+// REMOVED: Achievement system removed
+// /// Тест 6: Проверка что `total_lines` равен 0 при создании
+// #[test]
+// fn test_statistics_total_lines_zero() {
+//     let stats = GameStats::new();
+//     assert_eq!(stats.total_lines, 0);
+// }
 
 /// Тест 7: Проверка что `start_time` равен None при создании
 #[test]
@@ -296,13 +299,14 @@ fn test_statistics_timer() {
     assert!(elapsed > 0.0);
 }
 
-/// Тест 30: Проверка `check_achievements` за Tetris
-#[test]
-fn test_statistics_check_achievements_tetris() {
-    let mut stats = GameStats::new();
+// REMOVED: Achievement system removed
+// /// Тест 30: Проверка `check_achievements` за Tetris
+// #[test]
+// fn test_statistics_check_achievements_tetris() {
+//     let mut stats = GameStats::new();
 
-    let achievements = stats.check_achievements(4, 1, GameMode::Classic);
+//     let achievements = stats.check_achievements(4, 1, GameMode::Classic);
 
-    assert_eq!(achievements.len(), 1);
-    assert_eq!(achievements[0].name, "🏆 TETRIS!");
-}
+//     assert_eq!(achievements.len(), 1);
+//     assert_eq!(achievements[0].name, "🏆 TETRIS!");
+// }

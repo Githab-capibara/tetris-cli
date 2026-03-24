@@ -121,7 +121,8 @@ mod systemtime_rate_limiting_tests {
     /// При изменении времени назад используется последнее сохранённое значение.
     #[test]
     fn test_rate_limiting_protected_from_time_change() {
-        use crate::highscore::{generate_salt, Leaderboard};
+        use crate::crypto::generate_salt;
+        use crate::highscore::Leaderboard;
 
         // Создаём таблицу лидеров
         let mut leaderboard = Leaderboard::default();
@@ -571,8 +572,9 @@ mod must_use_attribute_tests {
     #[test]
     fn test_must_use_attributes_present() {
         use crate::controls::ControlsConfig;
+        use crate::crypto::generate_salt;
         use crate::game::GameState;
-        use crate::highscore::{generate_salt, SaveData};
+        use crate::highscore::SaveData;
 
         // generate_salt() должен иметь #[must_use]
         let salt = generate_salt();
@@ -825,7 +827,7 @@ mod rustdoc_link_tests {
         let _initial_speed = game::INITIAL_FALL_SPD;
 
         // highscore модуль
-        let _salt = highscore::generate_salt();
+        let _salt = crate::crypto::generate_salt();
 
         // controls модуль
         let _config = controls::ControlsConfig::default_config();
@@ -933,8 +935,9 @@ mod integration_all_fixes_tests {
     #[test]
     fn test_all_fixes_work_together() {
         use crate::controls::ControlsConfig;
+        use crate::crypto::generate_salt;
         use crate::game::{GameState, LEVEL_BONUS_MULT};
-        use crate::highscore::{generate_salt, Leaderboard, LeaderboardEntry, SaveData};
+        use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
         use crate::io::{Canvas, GRID_HEIGHT, GRID_WIDTH};
 
         // 1. Бенчмарки компилируются (проверка констант)

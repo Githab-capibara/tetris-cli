@@ -30,43 +30,6 @@ use std::fs::OpenOptions;
 //
 // Исправление: используем функции из модуля crypto для устранения дублирования
 
-/// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
-///
-/// # Устарело
-/// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
-/// Эта функция оставлена для обратной совместимости тестов.
-#[deprecated(
-    since = "23.96.20",
-    note = "Используйте `crate::crypto::generate_salt()`"
-)]
-#[allow(dead_code)]
-pub fn generate_salt() -> String {
-    crypto::generate_salt()
-}
-
-/// Получить случайную соль (устаревшее имя).
-///
-/// # Устарело
-/// Используйте [`crate::crypto::generate_salt()`] вместо этой функции.
-#[deprecated(
-    since = "2.1.0",
-    note = "Используйте `generate_salt()` из модуля crypto"
-)]
-#[allow(dead_code)]
-pub fn get_random_hash() -> String {
-    generate_salt()
-}
-
-/// Получить хэш строки в шестнадцатеричном формате (устаревшее).
-///
-/// # Устарело
-/// Используйте [`crate::crypto::hash()`] вместо этой функции.
-#[deprecated(since = "23.96.20", note = "Используйте `hash()` из модуля crypto")]
-#[allow(dead_code)]
-fn get_hash(msg: &str) -> String {
-    hash(msg)
-}
-
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
 
@@ -125,15 +88,11 @@ struct RateLimitState {
 /// # Безопасность
 /// Если системное время было изменено назад, возвращается `last_known_time_ms`.
 /// Это предотвращает обход rate limiting через установку времени назад.
-///
-/// # Исправление #11
-/// Выделена общая логика получения системного времени в отдельную функцию.
 fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
-    let current_time_ms = get_system_time_ms().unwrap_or_else(|e| {
-        // Исправление #10: унифицированное логирование с unwrap_or_else
-        eprintln!("Ошибка: системное время недоступно: {e}. Используется время 0.");
-        0
-    });
+    let current_time_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
 
     // Защита от обхода rate limiting через изменение системного времени назад.
     // Если текущее время меньше последнего известного, используем последнее известное.
@@ -149,24 +108,6 @@ fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
         state.last_known_time_ms = current_time_ms;
         current_time_ms
     }
-}
-
-/// Получить системное время в миллисекундах.
-///
-/// # Возвращает
-/// - `Ok(u64)` - текущее время в миллисекундах с начала UNIX epoch
-/// - `Err(std::time::SystemTimeError)` - если системное время недоступно
-///
-/// # Errors
-/// Возвращает [`std::time::SystemTimeError`] если системное время недоступно или
-/// если текущее время меньше UNIX EPOCH.
-///
-/// # Исправление #11
-/// Выделена общая логика получения системного времени для переиспользования.
-fn get_system_time_ms() -> Result<u64, std::time::SystemTimeError> {
-    Ok(std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)?
-        .as_millis() as u64)
 }
 
 /// Загрузить состояние rate limiting из конфигурации с файловой блокировкой.
@@ -1004,6 +945,7 @@ impl Leaderboard {
 #[cfg(test)]
 mod sanitize_tests {
     use super::*;
+    use crate::crypto;
 
     #[test]
     fn test_sanitize_player_name_empty_to_anonymous() {
@@ -1030,21 +972,21 @@ mod sanitize_tests {
 
     #[test]
     fn test_generate_salt_length_and_hex() {
-        let hash = generate_salt();
+        let hash = crypto::generate_salt();
         assert_eq!(hash.len(), 64);
         assert!(hash.chars().all(|c| c.is_ascii_hexdigit()));
     }
 
     #[test]
     fn test_generate_salt_uniqueness_smoke() {
-        let a = generate_salt();
-        let b = generate_salt();
+        let a = crypto::generate_salt();
+        let b = crypto::generate_salt();
         assert_ne!(a, b, "Две соли подряд не должны совпадать (smoke test)");
     }
 
     #[test]
     fn test_generate_salt_is_lowercase_hex() {
-        let hash = generate_salt();
+        let hash = crypto::generate_salt();
         assert!(hash.chars().all(|c| !c.is_ascii_uppercase()));
     }
 

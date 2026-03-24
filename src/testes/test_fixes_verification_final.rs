@@ -1068,50 +1068,51 @@ mod problem_24_benchmarks {
 // ----------------------------------------------------------------------------
 // Проблема 25: Система достижений
 // ----------------------------------------------------------------------------
+// REMOVED: Achievement system removed
 // cfg(test) removed - parent module is already test-only
-mod problem_25_achievements_system {
-    use crate::game::{Achievement, GameStats};
+// mod problem_25_achievements_system {
+//     use crate::game::{Achievement, GameStats};
 
-    /// Тест 25.1: Проверяет поле achievements
-    ///
-    /// Проверяет, что поле achievements существует в `GameStats`.
-    #[test]
-    fn test_achievements_field_exists() {
-        let stats = GameStats::new();
+//     /// Тест 25.1: Проверяет поле achievements
+//     ///
+//     /// Проверяет, что поле achievements существует в `GameStats`.
+//     #[test]
+//     fn test_achievements_field_exists() {
+//         let stats = GameStats::new();
 
-        // achievements поле должно существовать
-        let _achievements = &stats.achievements;
-    }
+//         // achievements поле должно существовать
+//         let _achievements = &stats.achievements;
+//     }
 
-    /// Тест 25.2: Проверяет struct Achievement
-    ///
-    /// Проверяет, что struct Achievement существует.
-    #[test]
-    fn test_achievement_struct_exists() {
-        // Achievement должен существовать и иметь поля
-        let achievement = Achievement::new("Тест", "Описание", 100);
+//     /// Тест 25.2: Проверяет struct Achievement
+//     ///
+//     /// Проверяет, что struct Achievement существует.
+//     #[test]
+//     fn test_achievement_struct_exists() {
+//         // Achievement должен существовать и иметь поля
+//         let achievement = Achievement::new("Тест", "Описание", 100);
 
-        assert_eq!(achievement.name, "Тест");
-        assert_eq!(achievement.description, "Описание");
-        assert_eq!(achievement.points, 100);
-    }
+//         assert_eq!(achievement.name, "Тест");
+//         assert_eq!(achievement.description, "Описание");
+//         assert_eq!(achievement.points, 100);
+//     }
 
-    /// Тест 25.3: Проверяет добавление достижений
-    ///
-    /// Проверяет, что достижения могут быть добавлены.
-    #[test]
-    fn test_achievements_can_be_added() {
-        let mut stats = GameStats::new();
+//     /// Тест 25.3: Проверяет добавление достижений
+//     ///
+//     /// Проверяет, что достижения могут быть добавлены.
+//     #[test]
+//     fn test_achievements_can_be_added() {
+//         let mut stats = GameStats::new();
 
-        // Добавляем достижение
-        let achievement = Achievement::new("Достижение", "Описание", 50);
-        stats.achievements.push(achievement.clone());
+//         // Добавляем достижение
+//         let achievement = Achievement::new("Достижение", "Описание", 50);
+//         stats.achievements.push(achievement.clone());
 
-        // Проверяем, что достижение добавлено
-        assert_eq!(stats.achievements.len(), 1, "Должно быть 1 достижение");
-        assert_eq!(stats.achievements[0].name, "Достижение");
-    }
-}
+//         // Проверяем, что достижение добавлено
+//         assert_eq!(stats.achievements.len(), 1, "Должно быть 1 достижение");
+//         assert_eq!(stats.achievements[0].name, "Достижение");
+//     }
+// }
 
 // ============================================================================
 // 🎯 ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕННЫХ ПРОБЛЕМ

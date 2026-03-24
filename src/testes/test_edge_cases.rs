@@ -48,13 +48,14 @@ fn test_edge_cases_held_shape_none() {
     assert!(state.get_held_shape().is_none());
 }
 
-/// Тест 4: Проверка что achievements пуст при создании
-#[test]
-fn test_edge_cases_achievements_empty() {
-    let state = GameState::new();
-    let game_stats = state.get_stats();
-    assert_eq!(game_stats.achievements.len(), 0);
-}
+// REMOVED: Achievement system removed
+// /// Тест 4: Проверка что achievements пуст при создании
+// #[test]
+// fn test_edge_cases_achievements_empty() {
+//     let state = GameState::new();
+//     let game_stats = state.get_stats();
+//     assert_eq!(game_stats.achievements.len(), 0);
+// }
 
 /// Тест 5: Проверка что `start_time` None при создании
 #[test]
@@ -88,13 +89,14 @@ fn test_edge_cases_max_combo_zero() {
     assert_eq!(game_stats.max_combo, 0);
 }
 
-/// Тест 9: Проверка что `tetris_count` 0 при создании
-#[test]
-fn test_edge_cases_tetris_count_zero() {
-    let state = GameState::new();
-    let game_stats = state.get_stats();
-    assert_eq!(game_stats.tetris_count, 0);
-}
+// REMOVED: Achievement system removed
+// /// Тест 9: Проверка что `tetris_count` 0 при создании
+// #[test]
+// fn test_edge_cases_tetris_count_zero() {
+//     let state = GameState::new();
+//     let game_stats = state.get_stats();
+//     assert_eq!(game_stats.tetris_count, 0);
+// }
 
 /// Тест 10: Проверка что `total_lines` 0 при создании
 #[test]

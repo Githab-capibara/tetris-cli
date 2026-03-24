@@ -140,7 +140,7 @@ fn test_clippy_no_warnings() {
 #[test]
 fn test_documentation_renders_correctly() {
     let _ = crate::game::FPS;
-    let _ = crate::highscore::generate_salt();
+    let _ = crate::crypto::generate_salt();
 }
 
 /// Тест 19.1: Проверка что whitelist символов работает.

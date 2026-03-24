@@ -33,7 +33,7 @@ fn test_verify_and_get_score_returns_none_for_tampered_record() {
 
     // Для тестирования подделки создадим новый SaveData с некорректным хешем
     // Это симулирует ситуацию когда файл был подделан
-    use crate::highscore::generate_salt;
+    use crate::crypto::generate_salt;
     use std::fmt::Write;
 
     let salt = generate_salt();

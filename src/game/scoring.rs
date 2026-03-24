@@ -19,7 +19,7 @@ use crate::tetromino::Tetromino;
 /// Битовую маску заполненных линий и количество заполненных линий
 ///
 /// # Производительность
-/// O(n) сложность где n = GRID_HEIGHT (20 итераций)
+/// O(n) сложность где n = `GRID_HEIGHT` (20 итераций)
 #[must_use]
 pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
@@ -88,7 +88,6 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
 
         // Обновление количества удалённых линий
         state.lines_cleared = state.lines_cleared.saturating_add(capped_remove_count);
-        state.stats.total_lines = state.stats.total_lines.saturating_add(capped_remove_count);
 
         // Проверка повышения уровня (каждые 10 линий)
         let new_level = (state.lines_cleared / LINES_PER_LEVEL) + 1;
