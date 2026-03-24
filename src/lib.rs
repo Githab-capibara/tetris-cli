@@ -572,6 +572,49 @@ pub mod highscore;
 /// // Сброс терминала после игры
 /// canvas.reset();
 /// ```
+pub mod io_traits;
+
+/// Модуль ввода-вывода для работы с терминалом.
+///
+/// Предоставляет абстракции для работы с вводом и выводом:
+/// - Отрисовка текста и графики в терминале
+/// - Асинхронного чтения нажатий клавиш
+/// - Управления курсором и цветами
+/// - Перевода терминала в raw-режим
+///
+/// ## Основные структуры:
+/// - `Canvas` — канвас для отрисовки (обёртка над RawTerminal)
+/// - `KeyReader` — неблокирующий читатель клавиатуры
+///
+/// ## Константы размеров:
+/// - `SHAPE_WIDTH` — ширина блока в символах (2)
+/// - `GRID_WIDTH` — ширина поля в блоках (10)
+/// - `GRID_HEIGHT` — высота поля в блоках (20)
+/// - `DISP_WIDTH` — полная ширина дисплея (22)
+/// - `DISP_HEIGHT` — полная высота дисплея (25)
+///
+/// ## Пример использования:
+/// ```ignore
+/// use tetris_cli::io::{Canvas, KeyReader};
+/// use termion::color::{White, Reset};
+///
+/// let mut canvas = Canvas::new().expect("Не удалось создать Canvas");
+/// let mut reader = KeyReader::new();
+///
+/// // Отрисовка текста
+/// canvas.draw_string("Привет, Мир!", (1, 1), &White, &Reset);
+/// canvas.flush();
+///
+/// // Чтение клавиши
+/// if let Some(key) = reader.get_key() {
+///     if key == b'q' {
+///         println!("Выход из игры");
+///     }
+/// }
+///
+/// // Сброс терминала после игры
+/// canvas.reset();
+/// ```
 pub mod io;
 
 /// Модуль фигур тетрамино и системы генерации.
@@ -631,6 +674,9 @@ pub use tetromino::{BagGenerator, ShapeType, Tetromino};
 // Экспорт типов из модуля io
 pub use io::{Canvas, KeyReader};
 
+// Экспорт трейтов из модуля io_traits
+pub use io_traits::{InputReader, Renderer};
+
 // Экспорт типов из модуля highscore
 pub use highscore::{Leaderboard, LeaderboardEntry, SaveData};
 
@@ -660,7 +706,7 @@ pub const FRAME_DELAY_MS: u64 = 16;
 #[cfg(test)]
 mod testes {
     // Оригинальные тесты (160 тестов)
-    pub mod test_achievements;
+    // pub mod test_achievements; // REMOVED: Achievement system removed
     pub mod test_controls;
     pub mod test_game_logic;
     pub mod test_highscore;
@@ -768,6 +814,12 @@ mod testes {
 
     // Тесты аудита кода и исправлений найденных проблем (3 теста)
     pub mod test_code_audit_fixes;
+
+    // Тесты на архитектурную целостность (16 тестов)
+    pub mod test_architecture;
+
+    // Тесты на архитектурные улучшения (20 тестов)
+    pub mod test_architecture_improvements;
 }
 
 #[cfg(test)]
