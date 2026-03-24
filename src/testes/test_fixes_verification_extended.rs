@@ -489,7 +489,7 @@ mod cfg_attr_dead_code_tests {
 
 #[cfg(test)]
 mod generate_salt_rename_tests {
-    use crate::highscore::generate_salt;
+    use crate::crypto::generate_salt;
 
     /// Тест 1: `generate_salt()` возвращает String
     ///

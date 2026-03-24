@@ -37,6 +37,9 @@ use termion::{
     AsyncReader,
 };
 
+// Импорт трейтов для реализации
+use crate::io_traits::{InputReader, Renderer};
+
 /// Строковое представление блока фигуры.
 ///
 /// Используется символ "██" (два полных блока) для отрисовки.
@@ -55,22 +58,6 @@ pub const KEY_ENTER: u8 = b'\n';
 /// Код клавиши Enter (возврат каретки).
 #[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
-
-/// Специальные коды клавиш для стрелок (возвращаются `get_key_extended()`).
-///
-/// Эти коды используются при обработке ESC-последовательностей:
-/// - Стрелка вверх: 256
-/// - Стрелка вниз: 257
-/// - Стрелка вправо: 258
-/// - Стрелка влево: 259
-/// - Home: 260
-/// - End: 261
-pub const KEY_ARROW_UP: u16 = 256;
-pub const KEY_ARROW_DOWN: u16 = 257;
-pub const KEY_ARROW_RIGHT: u16 = 258;
-pub const KEY_ARROW_LEFT: u16 = 259;
-pub const KEY_HOME: u16 = 260;
-pub const KEY_END: u16 = 261;
 
 /// Ширина блока в символах.
 ///
@@ -458,7 +445,7 @@ impl KeyReader {
     ///
     /// # Примечания
     /// - Для специальных клавиш (стрелки, Home, End) возвращает первый байт ESC-последовательности
-    ///   (обычно 27 = ESC). Для полной обработки нужно использовать `get_key_extended()`.
+    ///   (обычно 27 = ESC).
     ///
     /// ## Технические детали
     /// - Поддерживаются только однобайтовые ASCII символы (0x00-0x7F)
@@ -522,89 +509,47 @@ impl KeyReader {
             }
         }
     }
+}
 
-    /// Получить код нажатой клавиши с обработкой ESC-последовательностей.
+// ============================================================================
+// РЕАЛИЗАЦИЯ ТРЕЙТОВ io_traits
+// ============================================================================
+
+impl InputReader for KeyReader {
+    /// Получить код нажатой клавиши.
     ///
-    /// # Возвращает
-    /// - ASCII код клавиши (a-z, 0-9, и т.д.)
-    /// - Специальные коды:
-    ///   - 27 (ESC) - клавиша Escape
-    ///   - 256-259 - стрелки (Up, Down, Left, Right)
-    ///   - 260 - Home
-    ///   - 261 - End
-    ///   - 0 - ошибка или нет нажатий
+    /// Делегирует вызов методу `KeyReader::get_key()`.
+    fn get_key(&mut self) -> Option<u8> {
+        self.get_key()
+    }
+}
+
+impl Renderer for Canvas {
+    /// Отрисовать строки.
     ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::io::KeyReader;
+    /// Делегирует вызов методу `Canvas::draw_strs()`.
+    fn draw_strs(&mut self, strings: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
+        self.draw_strs(strings, pos, fg, bg);
+    }
+
+    /// Отрисовать строку.
     ///
-    /// let mut reader = KeyReader::new();
-    /// let key = reader.get_key_extended();
+    /// Делегирует вызов методу `Canvas::draw_string()`.
+    fn draw_string(&mut self, string: &str, pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
+        self.draw_string(string, pos, fg, bg);
+    }
+
+    /// Обновить экран (flush).
     ///
-    /// match key {
-    ///     Some(256) => println!("Стрелка вверх"),
-    ///     Some(257) => println!("Стрелка вниз"),
-    ///     Some(113) => println!("Выход"), // 'q' = 113
-    ///     None => println!("Ошибка чтения"),
-    ///     _ => {}
-    /// }
-    /// ```
-    #[allow(dead_code)]
-    pub fn get_key_extended(&mut self) -> Option<u16> {
-        let mut buffer = [0u8; 3];
+    /// Делегирует вызов методу `Canvas::flush()`.
+    fn flush(&mut self) {
+        self.flush();
+    }
 
-        // Читаем первый байт
-        match self.inp.read_exact(&mut buffer[0..1]) {
-            Ok(()) => {}
-            Err(_) => return None,
-        }
-
-        // Если это ESC, читаем последовательность
-        if buffer[0] == 27 {
-            // Пытаемся прочитать второй байт (неблокирующе)
-            let mut second_byte = [0u8; 1];
-            match self.inp.read_exact(&mut second_byte) {
-                Ok(()) => {
-                    buffer[1] = second_byte[0];
-
-                    // Если второй байт '[' или 'O', читаем третий
-                    if buffer[1] == b'[' || buffer[1] == b'O' {
-                        let mut third_byte = [0u8; 1];
-                        match self.inp.read_exact(&mut third_byte) {
-                            Ok(()) => buffer[2] = third_byte[0],
-                            Err(_) => return Some(27), // Только ESC
-                        }
-                    }
-
-                    // Обрабатываем ESC-последовательности
-                    match buffer[1] {
-                        b'[' => {
-                            match buffer[2] {
-                                b'A' => return Some(KEY_ARROW_UP),    // Стрелка вверх
-                                b'B' => return Some(KEY_ARROW_DOWN),  // Стрелка вниз
-                                b'C' => return Some(KEY_ARROW_RIGHT), // Стрелка вправо
-                                b'D' => return Some(KEY_ARROW_LEFT),  // Стрелка влево
-                                b'H' => return Some(KEY_HOME),        // Home
-                                b'F' => return Some(KEY_END),         // End
-                                _ => return Some(27), // Неизвестная последовательность
-                            }
-                        }
-                        b'O' => {
-                            match buffer[2] {
-                                b'A' => return Some(KEY_ARROW_UP), // Стрелка вверх (альтернативная)
-                                b'B' => return Some(KEY_ARROW_DOWN), // Стрелка вниз (альтернативная)
-                                b'C' => return Some(KEY_ARROW_RIGHT), // Стрелка вправо (альтернативная)
-                                b'D' => return Some(KEY_ARROW_LEFT), // Стрелка влево (альтернативная)
-                                _ => return Some(27),
-                            }
-                        }
-                        _ => return Some(27),
-                    }
-                }
-                Err(_) => return Some(27), // Только ESC
-            }
-        }
-
-        Some(u16::from(buffer[0]))
+    /// Сбросить терминал в исходное состояние.
+    ///
+    /// Делегирует вызов методу `Canvas::reset()`.
+    fn reset(&mut self) {
+        self.reset();
     }
 }

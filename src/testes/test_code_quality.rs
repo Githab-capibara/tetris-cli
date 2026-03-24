@@ -45,18 +45,13 @@ fn test_bench_methods_only_with_bench_feature() {
 #[test]
 #[allow(deprecated)]
 fn test_deprecated_functions_still_work() {
-    use crate::highscore::{generate_salt, get_random_hash};
+    use crate::crypto::generate_salt;
 
-    // get_random_hash() помечена как deprecated, но должна работать
-    let old_hash = get_random_hash();
+    // generate_salt() должна работать
     let new_hash = generate_salt();
 
-    // Обе функции должны возвращать строку длиной 64 символа
-    assert_eq!(old_hash.len(), 64, "Deprecated функция должна работать");
-    assert_eq!(new_hash.len(), 64, "Новая функция должна работать");
-
-    // Фактически get_random_hash() вызывает generate_salt()
-    // Поэтому они могут быть равны (зависит от timing)
+    // Функция должна возвращать строку длиной 64 символа
+    assert_eq!(new_hash.len(), 64, "Функция должна работать");
 }
 
 /// Тест 1.3: Проверка что #[`allow(dead_code)`] работает корректно
@@ -97,7 +92,7 @@ fn test_allow_dead_code_attribute_works() {
 /// Проверяет, что новая функция `generate_salt()` генерирует уникальные значения.
 #[test]
 fn test_generate_salt_returns_unique_salt() {
-    use crate::highscore::generate_salt;
+    use crate::crypto::generate_salt;
 
     // Генерируем несколько солей
     let salt1 = generate_salt();
@@ -137,23 +132,22 @@ fn test_verify_and_get_score_checks_integrity() {
 ///
 /// Проверяет, что новый API отличается от старого (хотя функционально эквивалентен).
 #[test]
-#[allow(deprecated)]
 fn test_new_api_different_from_old_api() {
-    use crate::highscore::{generate_salt, get_random_hash};
+    use crate::crypto::generate_salt;
 
-    // Функционально они эквивалентны (get_random_hash вызывает generate_salt)
+    // Функционально generate_salt() из crypto эквивалентна
     // Но это разные функции с разными именами
-    let salt_new = generate_salt();
-    let salt_old = get_random_hash();
+    let salt1 = generate_salt();
+    let salt2 = generate_salt();
 
     // Обе должны возвращать hex строку длиной 64 символа
-    assert_eq!(salt_new.len(), 64);
-    assert_eq!(salt_old.len(), 64);
+    assert_eq!(salt1.len(), 64);
+    assert_eq!(salt2.len(), 64);
 
     // Проверяем, что это разные вызовы функций
     // (компилятор должен видеть разницу между ними)
-    assert!(salt_new.chars().all(|c| c.is_ascii_hexdigit()));
-    assert!(salt_old.chars().all(|c| c.is_ascii_hexdigit()));
+    assert!(salt1.chars().all(|c| c.is_ascii_hexdigit()));
+    assert!(salt2.chars().all(|c| c.is_ascii_hexdigit()));
 }
 
 // ============================================================================

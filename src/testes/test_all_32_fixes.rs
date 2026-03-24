@@ -867,7 +867,7 @@ fn test_31_integration_all_fixes() {
 
     // ОПТИМИЗАЦИИ (7-10)
     let _tetromino = Tetromino::from_bag(&mut BagGenerator::new()); // Copy
-    let _salt = crate::highscore::generate_salt(); // String::with_capacity
+    let _salt = crate::crypto::generate_salt(); // String::with_capacity
 
     // ЧИТАЕМОСТЬ (11-14)
     let _config = ControlsConfig::default_config(); // Константы

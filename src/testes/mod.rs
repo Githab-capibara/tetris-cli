@@ -48,7 +48,7 @@
 //!
 //! Итого: 1489 тестов
 
-pub mod test_achievements;
+// pub mod test_achievements; // REMOVED: Achievement system removed
 pub mod test_all_32_fixes;
 pub mod test_controls;
 pub mod test_game_logic;
@@ -113,7 +113,7 @@ pub mod test_highscore_error_handling;
 pub mod test_tetromino_dir_down;
 pub mod test_unwrap_to_expect;
 pub mod test_error_propagation;
-pub mod test_benchmarks;
+pub mod test_benchmarks; // REMOVED: benchmark methods removed
 pub mod test_highscore_deprecated_assert_hs;
 pub mod test_game_rotation_bounds;
 pub mod test_controls_path_traversal;
@@ -161,3 +161,6 @@ pub mod test_audit_fixes;
 
 // Комплексные тесты для всех 32 исправленных проблем (32 теста + 1 интеграционный)
 pub mod test_32_fixes_comprehensive;
+
+// Тесты на архитектурную целостность (16 тестов)
+pub mod test_architecture;

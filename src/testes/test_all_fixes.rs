@@ -23,8 +23,9 @@
 //! 18. Rate limiting
 
 use crate::controls::ControlsConfig;
+use crate::crypto::generate_salt;
 use crate::game::GameState;
-use crate::highscore::{generate_salt, Leaderboard, LeaderboardEntry, SaveData};
+use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
 use crate::io::{Canvas, KeyReader};
 use crate::tetromino::{ShapeType, Tetromino};
 use crate::types::Direction;

@@ -6,6 +6,7 @@
 //! 3. Валидация имён в таблице лидеров
 //! 4. Константа анимации Hard Drop
 
+use crate::crypto::generate_salt;
 use crate::game::{GameMode, GameState};
 use crate::highscore::LeaderboardEntry;
 
@@ -23,8 +24,6 @@ mod tests {
     /// после исправления (использование `rand::RngCore` вместо getrandom).
     #[test]
     fn test_random_hash_generation() {
-        use crate::highscore::generate_salt;
-
         let hash1 = generate_salt();
         let hash2 = generate_salt();
 
