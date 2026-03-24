@@ -5,89 +5,56 @@
 //! - [`logic`] — игровая логика (физика, коллизии, движение, ввод)
 //! - [`scoring`] — система очков и уровней
 //! - [`render`] — отрисовка и анимации
+//! - [`view`] — представление игры для отрисовки (GameView)
+//! - [`access`] — трейты доступа к состоянию игры (GameBoardAccess)
 //!
 //! ## Пример использования
 //!
 //! ```ignore
-//! use tetris_cli::game::GameState;
+//! use tetris_cli::game::{GameState, GameView};
 //!
 //! // Создание нового состояния игры
 //! let mut game = GameState::new();
+//!
+//! // Создание представления для отрисовки
+//! let view = GameView::from_game_state(&game);
 //!
 //! // Запуск игрового цикла
 //! // game.play(&mut cnv, &mut inp, &high_score_display);
 //! ```
 
 // Подмодули
+pub mod access;
 pub mod logic;
 pub mod render;
 pub mod scoring;
 pub mod state;
+pub mod view;
 
 // Re-export основных типов для обратной совместимости
 pub use state::{
-    Achievement,
     GameMode,
     GameState,
-    GameStats,
-    ANIMATION_FRAME_SKIP,
-    BELL,
-    BORDER,
-    COMBO_BONUS,
-    DRAW_OFFSET_X,
-    FIELD_HEIGHT,
-    FIELD_OFFSET_X,
-    FIELD_WIDTH,
     // Константы
     FPS,
     GAME_OVER,
     GAME_OVER_DELAY_MS,
-    HARD_DROP_ANIM_INTERVAL_MS,
-    HARD_DROP_POINTS,
-    HIGH_SCORE_X,
-    HIGH_SCORE_Y,
-    HOLD_PREVIEW_X,
-    HOLD_PREVIEW_Y,
-    INITIAL_FALL_SPD,
-    LAND_TIME_DELAY_S,
-    LEVEL_BONUS_MULT,
-    LEVEL_X,
-    LEVEL_Y,
-    LINES_PER_LEVEL,
-    LINES_X,
-    LINES_Y,
-    LINE_SCORES,
-    MARATHON_LINES,
-    MAX_FALL_SPEED,
-    MAX_LINES_PER_CLEAR,
-    MILLIS_PER_SECOND,
-    MIN_Y,
     PAUSE,
-    PIECE_SCORE_FALL_MULT,
-    PIECE_SCORE_INC,
-    PREVIEW_X,
-    PREVIEW_Y,
-    SCORE_X,
-    SCORE_Y,
-    SHAPE_DRAW_OFFSET,
-    SHAPE_OFFSET_X,
-    SHAPE_OFFSET_Y,
-    SOFT_DROP_POINTS,
-    SPD_INC,
-    SPRINT_LINES,
 };
 
 pub use logic::{
-    can_move_curr_shape_direction, can_rotate_curr_shape, handle_falling, handle_input,
-    rotate_with_wall_kick, save_tetromino, update, WALL_KICK_OFFSETS,
+    can_move_curr_shape_direction, can_rotate_curr_shape,
+    rotate_with_wall_kick, save_tetromino, update,
 };
 
 pub use scoring::{
-    find_full_rows, handle_hard_drop, handle_hold, handle_landing, handle_soft_drop, remove_rows,
-    update_score_and_level,
+    find_full_rows, handle_hold, remove_rows,
 };
 
-pub use render::{animate_clear, check_rows, draw};
+pub use render::{check_rows, draw, update_cached_strings_extended};
+
+// Экспорт GameView для отрисовки
+pub use view::GameView;
 
 // ============================================================================
 // МЕТОДЫ ДЛЯ GameState
@@ -177,7 +144,12 @@ impl GameState {
             }
 
             // Отрисовка текущего кадра
-            draw(self, cnv, high_score_display);
+            // Обновляем кэшированные строки перед созданием GameView
+            update_cached_strings_extended(self, high_score_display);
+            // Создаём GameView для отрисовки
+            let view = GameView::from_game_state(self);
+            // Отрисовываем с использованием GameView
+            draw(&view, cnv);
         }
 
         self.score
@@ -193,7 +165,7 @@ impl GameState {
 
     /// Сохранить текущую фигуру в сетке после приземления.
     pub fn save_tetromino(&mut self) {
-        save_tetromino(self)
+        save_tetromino(self);
     }
 
     /// Проверить возможность движения текущей фигуры.
@@ -231,7 +203,7 @@ impl GameState {
 
     /// Удержать текущую фигуру и получить следующую.
     pub fn hold_shape(&mut self) {
-        handle_hold(self)
+        handle_hold(self);
     }
 
     /// Запустить таймер.
@@ -242,44 +214,6 @@ impl GameState {
     /// Остановить таймер.
     pub fn stop_timer(&mut self) {
         self.stats.stop_timer();
-    }
-
-    /// Получить доступ к игровому полю для бенчмарков.
-    #[cfg(feature = "bench")]
-    #[must_use]
-    pub fn get_blocks_for_bench(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &self.blocks
-    }
-
-    /// Заполнить указанную линию блоками для бенчмарков.
-    #[cfg(feature = "bench")]
-    pub fn fill_line_for_bench(&mut self, line: usize) {
-        if line < GRID_HEIGHT {
-            for x in 0..GRID_WIDTH {
-                self.blocks[line][x] = 0;
-            }
-        }
-    }
-
-    /// Очистить заполненные линии для бенчмарков.
-    #[cfg(feature = "bench")]
-    pub fn clear_lines_for_bench(&mut self) {
-        let (rows_mask, remove_count) = find_full_rows(&self.blocks);
-        if rows_mask != 0 {
-            remove_rows(&mut self.blocks, rows_mask);
-        }
-    }
-
-    /// Сохранить текущую фигуру для бенчмарков.
-    #[cfg(feature = "bench")]
-    pub fn save_tetromino_for_bench(&mut self) {
-        save_tetromino(self)
-    }
-
-    /// Установить текущую фигуру для бенчмарков.
-    #[cfg(feature = "bench")]
-    pub fn set_curr_shape_for_bench(&mut self, shape: crate::tetromino::Tetromino) {
-        self.curr_shape = shape;
     }
 
     /// Проверить, может ли призрак двигаться в указанном направлении.
@@ -316,7 +250,7 @@ use state::UpdateEndState;
 mod game_tests {
     use super::*;
     use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-    use crate::Direction;
+    use crate::types::Direction;
 
     // Тесты Hard Drop
     #[test]

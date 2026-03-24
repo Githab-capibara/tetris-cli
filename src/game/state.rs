@@ -4,7 +4,6 @@
 //! - `GameState` — основное состояние игры
 //! - `GameStats` — статистика прошедшей игры
 //! - `GameMode` — режим игры
-//! - `Achievement` — достижения (заготовка)
 //! - Константы игры
 
 use crate::io::{DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH};
@@ -13,6 +12,44 @@ use std::time::Instant;
 
 // Импорт из io для использования в state
 use termion::color::White;
+
+/// Типы ошибок игры.
+#[derive(Debug)]
+pub enum GameError {
+    /// Ошибка ввода/вывода.
+    Io(std::io::Error),
+    /// Ошибка терминала.
+    Terminal(String),
+    /// Ошибка конфигурации.
+    Config(String),
+    /// Игра окончена.
+    GameOver,
+    /// Ошибка валидации.
+    Validation(String),
+}
+
+impl std::fmt::Display for GameError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GameError::Io(e) => write!(f, "Ошибка ввода/вывода: {e}"),
+            GameError::Terminal(msg) => write!(f, "Ошибка терминала: {msg}"),
+            GameError::Config(msg) => write!(f, "Ошибка конфигурации: {msg}"),
+            GameError::GameOver => write!(f, "Игра окончена"),
+            GameError::Validation(msg) => write!(f, "Ошибка валидации: {msg}"),
+        }
+    }
+}
+
+impl std::error::Error for GameError {}
+
+impl From<std::io::Error> for GameError {
+    fn from(err: std::io::Error) -> Self {
+        GameError::Io(err)
+    }
+}
+
+/// Тип результата игры.
+pub type GameResult<T> = Result<T, GameError>;
 
 // ============================================================================
 // КОНСТАНТЫ ИГРЫ
@@ -218,67 +255,6 @@ pub enum GameMode {
 }
 
 // ============================================================================
-// ДОСТИЖЕНИЯ
-// ============================================================================
-
-/// Достижение в игре (заготовка для будущей системы достижений).
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
-pub struct Achievement {
-    /// Название достижения.
-    pub name: String,
-    /// Описание достижения.
-    pub description: String,
-    /// Очки за достижение.
-    pub points: u32,
-}
-
-#[allow(dead_code)]
-impl Achievement {
-    /// Создать новое достижение.
-    pub fn new(name: &str, description: &str, points: u32) -> Self {
-        Self {
-            name: name.to_string(),
-            description: description.to_string(),
-            points,
-        }
-    }
-
-    /// Достижение "Первый Tetris" — удалить 4 линии одновременно.
-    pub fn first_tetris() -> Self {
-        Self::new("🏆 TETRIS!", "Удалите 4 линии одновременно", 100)
-    }
-
-    /// Достижение "Комбо-мастер" — достичь комбо x5.
-    pub fn combo_master(combo: u32) -> Self {
-        Self::new(
-            "🔥 Комбо-мастер",
-            &format!("Достигните комбо x{combo}"),
-            50 * combo,
-        )
-    }
-
-    /// Достижение "Спринтер" — завершить режим спринт.
-    pub fn sprinter() -> Self {
-        Self::new("⚡ Спринтер", "Завершите режим спринт", 200)
-    }
-
-    /// Достижение "Марафонец" — завершить режим марафон.
-    pub fn marathoner() -> Self {
-        Self::new("🏃 Марафонец", "Завершите режим марафон", 500)
-    }
-
-    /// Достижение "Ветеран" — достичь уровня 10.
-    pub fn veteran(level: u32) -> Self {
-        Self::new(
-            "⭐ Ветеран",
-            &format!("Достигните уровня {level}"),
-            100 * level,
-        )
-    }
-}
-
-// ============================================================================
 // СТАТИСТИКА ИГРЫ
 // ============================================================================
 
@@ -289,40 +265,30 @@ impl Achievement {
 /// - Общее количество очищенных линий
 /// - Максимальное комбо
 /// - Время игры
-/// - Полученные достижения
 #[derive(Default, Clone)]
 pub struct GameStats {
     /// Количество фигур типа T.
-    pub t_pieces: u32,
+    pub(crate) t_pieces: u32,
     /// Количество фигур типа L.
-    pub l_pieces: u32,
+    pub(crate) l_pieces: u32,
     /// Количество фигур типа J.
-    pub j_pieces: u32,
+    pub(crate) j_pieces: u32,
     /// Количество фигур типа S.
-    pub s_pieces: u32,
+    pub(crate) s_pieces: u32,
     /// Количество фигур типа Z.
-    pub z_pieces: u32,
+    pub(crate) z_pieces: u32,
     /// Количество фигур типа O.
-    pub o_pieces: u32,
+    pub(crate) o_pieces: u32,
     /// Количество фигур типа I.
-    pub i_pieces: u32,
+    pub(crate) i_pieces: u32,
     /// Максимальное комбо (одновременное удаление линий).
-    pub max_combo: u32,
+    pub(crate) max_combo: u32,
     /// Текущее комбо (последовательные удаления в нескольких ходах).
-    pub combo_counter: u32,
+    pub(crate) combo_counter: u32,
     /// Время начала игры.
-    pub start_time: Option<Instant>,
+    pub(crate) start_time: Option<Instant>,
     /// Время окончания игры.
-    pub end_time: Option<Instant>,
-    /// Полученные достижения.
-    #[allow(dead_code)]
-    pub achievements: Vec<Achievement>,
-    /// Количество Tetris (4 линии одновременно).
-    #[allow(dead_code)]
-    pub tetris_count: u32,
-    /// Общее количество удалённых линий.
-    #[allow(dead_code)]
-    pub total_lines: u32,
+    pub(crate) end_time: Option<Instant>,
 }
 
 #[allow(dead_code)]
@@ -383,64 +349,6 @@ impl GameStats {
     pub fn stop_timer(&mut self) {
         self.end_time = Some(Instant::now());
     }
-
-    /// Проверить и добавить достижения.
-    pub fn check_achievements(
-        &mut self,
-        lines: u32,
-        level: u32,
-        mode: GameMode,
-    ) -> Vec<Achievement> {
-        let mut new_achievements = Vec::new();
-
-        // Достижение за Tetris (4 линии одновременно)
-        if lines == 4 {
-            self.tetris_count += 1;
-
-            if !self.achievements.iter().any(|a| a.name == "🏆 TETRIS!") {
-                new_achievements.push(Achievement::first_tetris());
-            }
-        }
-
-        // Достижения за комбо
-        if self.combo_counter >= 5 && !self.achievements.iter().any(|a| a.name.starts_with("🔥"))
-        {
-            new_achievements.push(Achievement::combo_master(self.combo_counter));
-        }
-
-        // Достижение за завершение спринта
-        if mode == GameMode::Sprint
-            && self.total_lines >= SPRINT_LINES
-            && !self.achievements.iter().any(|a| a.name == "⚡ Спринтер")
-        {
-            new_achievements.push(Achievement::sprinter());
-        }
-
-        // Достижение за завершение марафона
-        if mode == GameMode::Marathon
-            && self.total_lines >= MARATHON_LINES
-            && !self.achievements.iter().any(|a| a.name == "🏃 Марафонец")
-        {
-            new_achievements.push(Achievement::marathoner());
-        }
-
-        // Достижения за уровни (каждые 5 уровней)
-        if level >= 5
-            && level.is_multiple_of(5)
-            && !self.achievements.iter().any(|a| a.name.starts_with("⭐"))
-        {
-            new_achievements.push(Achievement::veteran(level));
-        }
-
-        // Добавляем достижения в список
-        for achievement in &new_achievements {
-            if !self.achievements.iter().any(|a| a.name == achievement.name) {
-                self.achievements.push(achievement.clone());
-            }
-        }
-
-        new_achievements
-    }
 }
 
 // ============================================================================
@@ -459,58 +367,58 @@ impl GameStats {
 /// - Режим игры
 pub struct GameState {
     /// Текущий счёт.
-    pub score: u128,
+    pub(crate) score: u128,
     /// Текущий уровень.
-    pub level: u32,
+    pub(crate) level: u32,
     /// Количество удалённых линий.
-    pub lines_cleared: u32,
+    pub(crate) lines_cleared: u32,
     /// Текущая фигура.
-    pub curr_shape: Tetromino,
+    pub(crate) curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
-    pub next_shape: Tetromino,
+    pub(crate) next_shape: Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    pub held_shape: Option<Tetromino>,
+    pub(crate) held_shape: Option<Tetromino>,
     /// Можно ли ещё менять удержанную фигуру в этом ходу.
-    pub can_hold: bool,
+    pub(crate) can_hold: bool,
     /// Скорость падения.
-    pub fall_spd: f32,
+    pub(crate) fall_spd: f32,
     /// Двумерный массив игрового поля 10x20.
     /// Каждый элемент хранит индекс цвета (i8), 0 = пусто.
-    pub blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
+    pub(crate) blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
     /// Таймер приземления.
-    pub land_timer: f64,
+    pub(crate) land_timer: f64,
     /// Статистика игры.
-    pub stats: GameStats,
+    pub(crate) stats: GameStats,
     /// Режим игры.
-    pub mode: GameMode,
+    pub(crate) mode: GameMode,
     /// Строки для анимации (мигание при очистке).
-    pub animating_rows_mask: u32,
+    pub(crate) animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
-    pub is_hard_dropping: bool,
+    pub(crate) is_hard_dropping: bool,
     /// Количество ячеек, пройденных при Soft Drop.
-    pub soft_drop_distance: u32,
+    pub(crate) soft_drop_distance: u32,
     /// Генератор фигур по системе 7-bag.
-    pub bag: BagGenerator,
+    pub(crate) bag: BagGenerator,
     /// Кэшированная строка счёта для оптимизации отрисовки.
-    pub cached_score_str: String,
+    pub(crate) cached_score_str: String,
     /// Кэшированная строка уровня для оптимизации отрисовки.
-    pub cached_level_str: String,
+    pub(crate) cached_level_str: String,
     /// Кэшированная строка количества линий для оптимизации отрисовки.
-    pub cached_lines_str: String,
+    pub(crate) cached_lines_str: String,
     /// Последнее закэшированное значение счёта.
-    pub last_cached_score: u128,
+    pub(crate) last_cached_score: u128,
     /// Последнее закэшированное значение уровня.
-    pub last_cached_level: u32,
+    pub(crate) last_cached_level: u32,
     /// Последнее закэшированное значение количества линий.
-    pub last_cached_lines: u32,
+    pub(crate) last_cached_lines: u32,
     /// Кэшированная строка рекорда для оптимизации отрисовки.
-    pub cached_high_score_str: String,
+    pub(crate) cached_high_score_str: String,
     /// Кэшированная строка комбо для оптимизации отрисовки.
-    pub cached_combo_str: String,
+    pub(crate) cached_combo_str: String,
     /// Кэшированная строка таймера для оптимизации отрисовки.
-    pub cached_timer_str: String,
+    pub(crate) cached_timer_str: String,
     /// Последнее закэшированное значение комбо.
-    pub last_cached_combo: u32,
+    pub(crate) last_cached_combo: u32,
 }
 
 /// Состояние завершения обновления.
@@ -648,6 +556,12 @@ impl GameState {
         self.held_shape.as_ref()
     }
 
+    /// Получить удержанную фигуру (ссылка на Option).
+    #[must_use]
+    pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
+        &self.held_shape
+    }
+
     /// Получить текущую фигуру (мутуабельная ссылка для тестов).
     #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
@@ -664,6 +578,12 @@ impl GameState {
     #[must_use]
     pub fn get_fall_spd(&self) -> f32 {
         self.fall_spd
+    }
+
+    /// Получить кэшированную строку счёта.
+    #[must_use]
+    pub fn get_cached_score_str(&self) -> &str {
+        &self.cached_score_str
     }
 
     // ========================================================================
@@ -688,7 +608,6 @@ impl GameState {
     /// Добавить линии (для тестов).
     pub fn add_lines_cleared(&mut self, count: u32) {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
-        self.stats.total_lines = self.stats.total_lines.saturating_add(count);
     }
 
     /// Удалить заполненные линии (для тестов).
@@ -710,5 +629,102 @@ impl GameState {
     /// ```
     pub fn add_score_no_check(&mut self, score: u128) {
         self.score = self.score.saturating_add(score);
+    }
+
+    /// Добавить очки (для тестов и через трейт `GameBoardAccess`).
+    pub fn add_score(&mut self, points: u128) {
+        self.score = self.score.saturating_add(points);
+    }
+
+    /// Установить скорость падения (для тестов).
+    pub fn set_fall_spd(&mut self, spd: f32) {
+        self.fall_spd = spd;
+    }
+
+    /// Установить таймер приземления (для тестов).
+    pub fn set_land_timer(&mut self, timer: f64) {
+        self.land_timer = timer;
+    }
+
+    /// Получить таймер приземления (для тестов).
+    #[must_use]
+    pub fn get_land_timer(&self) -> f64 {
+        self.land_timer
+    }
+}
+
+// ============================================================================
+// РЕАЛИЗАЦИЯ ТРЕЙТА GAMEBOARDACCESS
+// ============================================================================
+
+impl crate::game::access::GameBoardAccess for GameState {
+    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &self.blocks
+    }
+
+    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &mut self.blocks
+    }
+
+    fn get_block(&self, x: usize, y: usize) -> i8 {
+        if x < GRID_WIDTH && y < GRID_HEIGHT {
+            self.blocks[y][x]
+        } else {
+            -1
+        }
+    }
+
+    fn set_block(&mut self, x: usize, y: usize, value: i8) {
+        if x < GRID_WIDTH && y < GRID_HEIGHT {
+            self.blocks[y][x] = value;
+        }
+    }
+
+    fn is_block_empty(&self, x: usize, y: usize) -> bool {
+        self.get_block(x, y) == -1
+    }
+
+    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+        self.get_block(x, y) >= 0
+    }
+
+    fn get_score(&self) -> u128 {
+        self.score
+    }
+
+    fn add_score(&mut self, points: u128) {
+        self.score = self.score.saturating_add(points);
+    }
+
+    fn get_level(&self) -> u32 {
+        self.level
+    }
+
+    fn set_level(&mut self, level: u32) {
+        self.level = level;
+    }
+
+    fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared
+    }
+
+    fn set_lines_cleared(&mut self, lines: u32) {
+        self.lines_cleared = lines;
+    }
+
+    fn get_fall_spd(&self) -> f32 {
+        self.fall_spd
+    }
+
+    fn set_fall_spd(&mut self, spd: f32) {
+        self.fall_spd = spd;
+    }
+
+    fn get_land_timer(&self) -> f64 {
+        self.land_timer
+    }
+
+    fn set_land_timer(&mut self, timer: f64) {
+        self.land_timer = timer;
     }
 }
