@@ -31,6 +31,7 @@
 use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::GameState;
 use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
+use tetris_cli::types::Direction;
 
 /// Главная функция для запуска бенчмарков.
 ///
@@ -43,6 +44,8 @@ fn main() {
     bench_check_rows(&mut c);
     bench_rotate(&mut c);
     bench_save_tetromino(&mut c);
+    bench_collision_detection(&mut c);
+    bench_wall_kick(&mut c);
 }
 
 /// Бенчмарк для find_full_rows().
@@ -210,6 +213,65 @@ fn bench_save_tetromino(c: &mut Criterion) {
             });
             game_state.save_tetromino_for_bench();
             black_box(game_state);
+        });
+    });
+
+    group.finish();
+}
+
+/// Бенчмарк для check_collision_direction().
+///
+/// Проверяет производительность проверки столкновений
+/// для различных направлений движения.
+fn bench_collision_detection(c: &mut Criterion) {
+    let mut group = c.benchmark_group("collision_detection");
+
+    // Проверка столкновений для пустого поля
+    group.bench_function("check_down_empty", |b| {
+        b.iter(|| {
+            let state = GameState::new();
+            black_box(state.can_move_curr_shape_direction(Direction::Down));
+        });
+    });
+
+    // Проверка столкновений для движения влево
+    group.bench_function("check_left_empty", |b| {
+        b.iter(|| {
+            let state = GameState::new();
+            black_box(state.can_move_curr_shape_direction(Direction::Left));
+        });
+    });
+
+    // Проверка столкновений для движения вправо
+    group.bench_function("check_right_empty", |b| {
+        b.iter(|| {
+            let state = GameState::new();
+            black_box(state.can_move_curr_shape_direction(Direction::Right));
+        });
+    });
+
+    group.finish();
+}
+
+/// Бенчмарк для rotate_with_wall_kick().
+///
+/// Проверяет производительность вращения фигуры с проверкой wall kick.
+fn bench_wall_kick(c: &mut Criterion) {
+    let mut group = c.benchmark_group("wall_kick");
+
+    // Вращение по часовой на пустом поле
+    group.bench_function("rotate_clockwise_empty", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            black_box(state.rotate_with_wall_kick(RotationDirection::Clockwise));
+        });
+    });
+
+    // Вращение против часовой на пустом поле
+    group.bench_function("rotate_counterclockwise_empty", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            black_box(state.rotate_with_wall_kick(RotationDirection::CounterClockwise));
         });
     });
 

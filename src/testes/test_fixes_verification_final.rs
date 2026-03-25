@@ -647,9 +647,10 @@ mod problem_12_sanitize_validation {
         let long_name = "ОченьДлинноеИмяКотороеПревышаетДвадцатьСимволов";
         let entry = LeaderboardEntry::new(&long_name.to_string(), 1000);
 
-        // Длина имени должна быть не более 20 символов
+        // Длина имени должна быть не более 20 символов (не байт!)
+        // Используем chars().count() для правильной проверки Unicode символов
         assert!(
-            entry.name().len() <= 20,
+            entry.name().chars().count() <= 20,
             "Длина имени должна быть не более 20 символов"
         );
     }

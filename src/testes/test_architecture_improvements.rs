@@ -271,7 +271,6 @@ fn test_architecture_improvements_backward_compatibility() {
     assert_eq!(state.get_score(), 100);
 
     // Используем новый API (GameBoardAccess)
-    use crate::game::GameBoardAccess;
     state.add_score(50);
     assert_eq!(state.get_score(), 150);
 
@@ -332,7 +331,7 @@ fn test_access_module_no_cycles() {
 /// Проверка, что state модуль корректно экспортирует типы.
 #[test]
 fn test_state_module_exports() {
-    use crate::game::state::{GameError, GameMode, GameResult, GameState, GameStats};
+    use crate::game::state::{GameMode, GameResult, GameState, GameStats};
 
     // Все типы должны быть доступны
     let _state = GameState::new();

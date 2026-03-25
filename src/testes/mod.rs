@@ -28,6 +28,14 @@
 //! - `test_controls_detailed` - детальные тесты управления (25 тестов)
 //! - `test_io_detailed` - детальные тесты ввода-вывода (20 тестов)
 //! - `test_integration_extended` - расширенные интеграционные тесты (50 тестов)
+
+#![allow(clippy::needless_range_loop)]
+#![allow(clippy::unused_local_helper)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::unreadable_literal)]
+#![allow(clippy::should_panic_without_expect)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 //! - `test_highscore_u256_fix` - тесты исправления U256 (3 теста)
 //! - `test_game_bounds_check` - тесты проверок границ as cast (3 теста)
 //! - `test_highscore_rate_limiting` - тесты rate limiting (3 теста)
@@ -164,3 +172,35 @@ pub mod test_32_fixes_comprehensive;
 
 // Тесты на архитектурную целостность (16 тестов)
 pub mod test_architecture;
+
+// ============================================================================
+// НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
+// ============================================================================
+
+// Тесты критических ошибок (8 тестов)
+pub mod test_game_stats_export;
+pub mod test_constant_imports;
+
+// Тесты логических ошибок (13 тестов)
+pub mod test_hard_drop_flag;
+pub mod test_direction_down;
+pub mod test_wall_kick_refactor;
+
+// Тесты оптимизаций (18 тестов)
+pub mod test_sanitize_optimization;
+pub mod test_string_caching;
+pub mod test_bounds_check_optimization;
+pub mod test_row_check_optimization;
+
+// Тесты безопасности (16 тестов)
+pub mod test_time_safety;
+pub mod test_hard_drop_overflow;
+pub mod test_unicode_validation;
+
+// Тесты best practices (11 тестов)
+pub mod test_must_use_attributes;
+pub mod test_track_caller;
+pub mod test_cfg_attr_dead_code;
+
+// Интеграционные тесты (10 тестов)
+pub mod test_all_fixes_integration;

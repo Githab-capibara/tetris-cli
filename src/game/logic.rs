@@ -73,7 +73,8 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
             Direction::Left => state.curr_shape.pos.0 -= 1.0,
             Direction::Right => state.curr_shape.pos.0 += 1.0,
             Direction::Down => {
-                // Direction::Down не обрабатывается в этом методе
+                // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
+                // Эта ветка намеренно пустая — движение вниз управляется гравитацией
             }
         }
     }
@@ -129,6 +130,15 @@ fn check_collision_direction(
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
+    // Оптимизация: используем as вместо try_from() для const значений
+    // GRID_WIDTH и GRID_HEIGHT известны на этапе компиляции и гарантированно помещаются в i16
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_width_i16 = GRID_WIDTH as i16;
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_height_i16 = GRID_HEIGHT as i16;
+
     for coord in coords {
         let (coord_x, coord_y) = coord;
         let mut check_x = coord_x + shape_block_x;
@@ -140,8 +150,6 @@ fn check_collision_direction(
             Direction::Down => check_y += 1,
         }
 
-        let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
-        let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
         if check_x < 0 || check_x >= grid_width_i16 || check_y >= grid_height_i16 {
             return false;
         }
@@ -184,18 +192,35 @@ pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirec
     }
 
     // Проверяем wall kick
-    for (offset_x, offset_y) in WALL_KICK_OFFSETS {
+    try_rotation_with_kicks(state, dir).is_some()
+}
+
+/// Попытаться вратить фигуру со смещением (wall kick).
+///
+/// Возвращает `Some((offset_x, offset_y))` если вращение успешно с указанным смещением,
+/// или `None` если вращение невозможно ни с одним смещением.
+///
+/// # Аргументы
+/// * `state` - состояние игры
+/// * `dir` - направление вращения
+///
+/// # Возвращает
+/// `Some((i32, i32))` с успешным смещением или `None` если вращение невозможно
+fn try_rotation_with_kicks(
+    state: &GameState,
+    dir: crate::types::RotationDirection,
+) -> Option<(i32, i32)> {
+    for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
         let mut kicked_shape = state.curr_shape;
         kicked_shape.pos.0 += offset_x as f32;
         kicked_shape.pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);
 
         if check_rotation_collision(state, &kicked_shape.coords, kicked_shape.pos) {
-            return true;
+            return Some((offset_x, offset_y));
         }
     }
-
-    false
+    None
 }
 
 /// Попытаться вратить фигуру со смещением (wall kick).
@@ -207,24 +232,18 @@ pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirec
 /// # Возвращает
 /// `true` если вращение успешно
 pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationDirection) -> bool {
+    // Проверяем прямое вращение
     if can_rotate_curr_shape(state, dir) {
         state.curr_shape.rotate(dir);
         return true;
     }
 
-    for (offset_x, offset_y) in WALL_KICK_OFFSETS {
-        let mut temp_shape = state.curr_shape;
-        temp_shape.pos.0 += offset_x as f32;
-        temp_shape.pos.1 += offset_y as f32;
-
-        temp_shape.rotate(dir);
-
-        if check_rotation_collision(state, &temp_shape.coords, temp_shape.pos) {
-            state.curr_shape.pos.0 += offset_x as f32;
-            state.curr_shape.pos.1 += offset_y as f32;
-            state.curr_shape.rotate(dir);
-            return true;
-        }
+    // Используем общую функцию для wall kick
+    if let Some((offset_x, offset_y)) = try_rotation_with_kicks(state, dir) {
+        state.curr_shape.pos.0 += offset_x as f32;
+        state.curr_shape.pos.1 += offset_y as f32;
+        state.curr_shape.rotate(dir);
+        return true;
     }
 
     false
@@ -244,13 +263,18 @@ fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (f32,
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
+    // Оптимизация: используем as вместо try_from() для const значений
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_width_i16 = GRID_WIDTH as i16;
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_height_i16 = GRID_HEIGHT as i16;
+
     for coord in coords {
         let (coord_x, coord_y) = coord;
         let check_x = coord_x + shape_block_x;
         let check_y = coord_y + shape_block_y;
-
-        let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
-        let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
 
         if check_x < 0 || check_x >= grid_width_i16 || check_y >= grid_height_i16 {
             return false;
@@ -272,13 +296,19 @@ pub fn save_tetromino(state: &mut GameState) {
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
+    // Оптимизация: используем as вместо try_from() для const значений
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_height_i16 = GRID_HEIGHT as i16;
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_width_i16 = GRID_WIDTH as i16;
+
     for coord in state.curr_shape.coords {
         let (coord_x, coord_y) = coord;
         let x = coord_x + shape_block_x;
         let y = coord_y + shape_block_y;
 
-        let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
-        let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
         if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
             state.blocks[y as usize][x as usize] = state.curr_shape.fg as i8;
         }

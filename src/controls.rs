@@ -242,6 +242,7 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
 /// use tetris_cli::controls::validate_config_path;
 /// validate_config_path("config.json").unwrap();
 /// ```
+#[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
     let full_path = Path::new(path);
 

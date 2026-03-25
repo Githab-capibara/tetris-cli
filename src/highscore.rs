@@ -91,7 +91,10 @@ struct RateLimitState {
 fn get_current_time_ms_protected(state: &mut RateLimitState) -> u64 {
     let current_time_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
+        .unwrap_or_else(|e| {
+            eprintln!("Предупреждение: системное время некорректно: {e}. Используется 0.");
+            std::time::Duration::ZERO
+        })
         .as_millis() as u64;
 
     // Защита от обхода rate limiting через изменение системного времени назад.
@@ -561,6 +564,7 @@ impl Default for SaveData {
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
 /// - запрещены опасные Unicode-символы (эмодзи, контрольные символы)
 /// - запрещены bidirectional control characters (U+200E, U+200F)
+/// - запрещены zero-width joiners (U+200C, U+200D) и variation selectors (U+FE00-U+FE0F)
 /// - используется whitelist разрешённых символов
 ///
 /// # Аргументы
@@ -570,9 +574,11 @@ impl Default for SaveData {
 /// Безопасное имя для таблицы лидеров
 ///
 /// # Безопасность
-/// Использует `String::with_capacity()` для предотвращения реаллокаций.
+/// Использует итераторы с `filter()` и `take()` для эффективной фильтрации.
 /// Добавлена защита от Unicode-атак:
 /// - Bidirectional control characters (U+200E, U+200F) отбрасываются
+/// - Zero-width joiners (U+200C, U+200D) отбрасываются
+/// - Variation selectors (U+FE00-U+FE0F) отбрасываются
 /// - Emojis и другие опасные символы фильтруются
 /// - Whitelist разрешённых символов
 fn sanitize_player_name(name: &str) -> String {
@@ -581,36 +587,41 @@ fn sanitize_player_name(name: &str) -> String {
         return "Anonymous".to_string();
     }
 
-    // Используем String::with_capacity() для предотвращения реаллокаций
-    // Максимальная длина имени - 20 символов
-    let mut validated = String::with_capacity(20.min(trimmed.len()));
-    for c in trimmed.chars() {
-        // Исправление: проверка на bidirectional control characters
-        if c == '\u{200E}'
-            || c == '\u{200F}'
-            || c == '\u{202A}'
-            || c == '\u{202B}'
-            || c == '\u{202C}'
-            || c == '\u{202D}'
-            || c == '\u{202E}'
-            || c == '\u{2066}'
-            || c == '\u{2067}'
-            || c == '\u{2068}'
-            || c == '\u{2069}'
-        {
-            // Пропускаем bidirectional control characters
-            continue;
-        }
-
-        // Проверка на разрешённые символы (whitelist)
-        if is_valid_name_char(c) && !c.is_control() {
-            validated.push(c);
-            // Ограничение длины имени 20 символами
-            if validated.len() >= 20 {
-                break;
+    // Оптимизация: используем filter() + take() + collect() вместо ручного цикла
+    let validated: String = trimmed
+        .chars()
+        .filter(|&c| {
+            // Фильтрация bidirectional control characters
+            if c == '\u{200E}'
+                || c == '\u{200F}'
+                || c == '\u{202A}'
+                || c == '\u{202B}'
+                || c == '\u{202C}'
+                || c == '\u{202D}'
+                || c == '\u{202E}'
+                || c == '\u{2066}'
+                || c == '\u{2067}'
+                || c == '\u{2068}'
+                || c == '\u{2069}'
+            {
+                return false;
             }
-        }
-    }
+
+            // Фильтрация zero-width joiners
+            if c == '\u{200C}' || c == '\u{200D}' {
+                return false;
+            }
+
+            // Фильтрация variation selectors (U+FE00-U+FE0F)
+            if ('\u{FE00}'..='\u{FE0F}').contains(&c) {
+                return false;
+            }
+
+            // Проверка на разрешённые символы (whitelist)
+            is_valid_name_char(c) && !c.is_control()
+        })
+        .take(20)
+        .collect();
 
     if validated.is_empty() {
         "Anonymous".to_string()
@@ -720,13 +731,12 @@ impl LeaderboardEntry {
 fn is_valid_name_char(c: char) -> bool {
     // Исправление #9: используем matches! макрос с диапазонами для читаемости
     !c.is_control()
-        && !c.is_whitespace()
         && c != '/'
         && c != '\\'
         && (matches!(c,
             'a'..='z' | 'A'..='Z' | '0'..='9' |  // ASCII буквы и цифры
             'а'..='я' | 'А'..='Я' | 'ё' | 'Ё' |  // Русские буквы
-            '_' | '-' | ' '  // Специальные символы
+            '_' | '-' | ' '  // Специальные символы (включая пробел)
         ))
 }
 

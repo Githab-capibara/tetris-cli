@@ -22,7 +22,7 @@
 //! | O | Квадрат | Светло-жёлтый | Квадрат 2x2 |
 //! | I | Линия | Голубой | Четыре блока в вертикальный ряд |
 
-use crate::types::RotationDirection;
+pub use crate::types::RotationDirection;
 use rand::Rng;
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
@@ -260,7 +260,6 @@ pub enum ShapeType {
 /// ## Пример использования
 /// ```
 /// use tetris_cli::tetromino::{Tetromino, BagGenerator};
-/// use tetris_cli::game::Dir;
 ///
 /// // Создание фигуры из мешка
 /// let mut bag = BagGenerator::new();
@@ -354,7 +353,8 @@ impl Tetromino {
     ///
     /// # Пример использования
     /// ```
-    /// use tetris_cli::tetromino::{Tetromino, ShapeType, RotationDirection};
+    /// use tetris_cli::tetromino::{Tetromino, ShapeType};
+    /// use tetris_cli::types::RotationDirection;
     ///
     /// let mut t = Tetromino {
     ///     pos: (4.0, 0.0),

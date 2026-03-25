@@ -42,6 +42,7 @@ impl Direction {
     /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
     /// - [`RotationDirection::Clockwise`] для [`Direction::Down`] (по умолчанию)
     #[must_use]
+    #[allow(dead_code)]
     pub const fn to_rotation_direction(self) -> RotationDirection {
         match self {
             Direction::Left => RotationDirection::CounterClockwise,

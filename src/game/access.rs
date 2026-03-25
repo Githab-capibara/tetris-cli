@@ -9,6 +9,7 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///
 /// Предоставляет методы для чтения и записи игрового поля,
 /// не раскрывая внутреннюю структуру `GameState`.
+#[allow(dead_code)]
 pub trait GameBoardAccess {
     /// Получить доступ к игровому полю (только чтение).
     ///

@@ -160,18 +160,23 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 /// Эта функция требует mutable доступ к `GameState`, поэтому не может
 /// использовать `GameView`. Вызывайте её перед созданием `GameView`.
 fn update_cached_strings(state: &mut GameState) {
+    use std::fmt::Write;
+
     if state.score != state.last_cached_score {
-        state.cached_score_str = format!("{:10}", state.score);
+        state.cached_score_str.clear();
+        let _ = write!(state.cached_score_str, "{:10}", state.score);
         state.last_cached_score = state.score;
     }
 
     if state.level != state.last_cached_level {
-        state.cached_level_str = format!("{:10}", state.level);
+        state.cached_level_str.clear();
+        let _ = write!(state.cached_level_str, "{:10}", state.level);
         state.last_cached_level = state.level;
     }
 
     if state.lines_cleared != state.last_cached_lines {
-        state.cached_lines_str = format!("{:10}", state.lines_cleared);
+        state.cached_lines_str.clear();
+        let _ = write!(state.cached_lines_str, "{:10}", state.lines_cleared);
         state.last_cached_lines = state.lines_cleared;
     }
 }

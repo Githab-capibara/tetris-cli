@@ -815,7 +815,6 @@ mod rustdoc_link_tests {
 
         use crate::controls;
         use crate::game;
-        use crate::highscore;
         use crate::io;
         use crate::tetromino;
 
