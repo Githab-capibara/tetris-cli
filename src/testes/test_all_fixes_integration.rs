@@ -25,9 +25,16 @@ fn test_game_stats_and_constants_integration() {
         "Должна быть хотя бы 1 фигура"
     );
 
+    // Запоминаем начальное количество T-фигур
+    let initial_t_pieces = state.stats.t_pieces;
+
     // Добавляем фигуру
     state.stats.add_piece(crate::tetromino::ShapeType::T);
-    assert_eq!(state.stats.t_pieces, 1, "Должна быть 1 T-фигура");
+    assert_eq!(
+        state.stats.t_pieces,
+        initial_t_pieces + 1,
+        "Должна добавиться 1 T-фигура"
+    );
 }
 
 /// Тест 2: Проверка совместной работы Hard Drop и флага is_hard_dropping

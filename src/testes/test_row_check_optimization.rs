@@ -2,8 +2,9 @@
 //!
 //! Проверяют ранний выход при пустой ячейке и корректность удаления линий.
 
-use crate::game::scoring::find_full_rows;
+use crate::game::scoring::{find_full_rows, remove_rows};
 use crate::game::GameState;
+use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
 /// Тест 1: Проверка раннего выхода при пустой ячейке
 ///
@@ -233,4 +234,56 @@ fn test_rows_mask_validity() {
         rows_mask,
         GRID_HEIGHT
     );
+}
+
+/// Тест 9: Проверка корректности удаления строк (расширенная)
+#[test]
+fn test_remove_rows_extended() {
+    let mut state = GameState::new();
+    // Заполняем линию 10
+    for x in 0..GRID_WIDTH {
+        state.blocks[10][x] = 1;
+    }
+
+    let (rows_mask, expected_count) = find_full_rows(&state.blocks);
+    assert_eq!(expected_count, 1, "Должна быть 1 строка для удаления");
+
+    remove_rows(&mut state.blocks, rows_mask);
+
+    // Проверяем что линия 10 теперь пустая
+    for x in 0..GRID_WIDTH {
+        assert_eq!(
+            state.blocks[10][x], -1,
+            "Линия 10 должна быть пустой после удаления"
+        );
+    }
+
+    // Тест 2: Удаление нескольких строк
+    let mut state2 = GameState::new();
+    // Заполняем линии 5, 7, 9
+    for &y in &[5, 7, 9] {
+        for x in 0..GRID_WIDTH {
+            state2.blocks[y][x] = 2;
+        }
+    }
+
+    let (rows_mask2, expected_count2) = find_full_rows(&state2.blocks);
+    assert_eq!(expected_count2, 3, "Должно быть 3 строки для удаления");
+
+    remove_rows(&mut state2.blocks, rows_mask2);
+
+    // Проверяем что линии теперь пустые
+    for &y in &[5, 7, 9] {
+        for x in 0..GRID_WIDTH {
+            assert_eq!(
+                state2.blocks[y][x], -1,
+                "Линия должна быть пустой после удаления"
+            );
+        }
+    }
+
+    // Тест 3: Невалидная маска не вызывает панику
+    let invalid_mask = 1u32 << (GRID_HEIGHT + 1); // Выход за границы
+    remove_rows(&mut state.blocks, invalid_mask);
+    // Функция должна просто вернуть 0 без паники
 }

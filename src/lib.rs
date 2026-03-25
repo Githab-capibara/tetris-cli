@@ -762,10 +762,10 @@ mod testes {
     pub mod test_code_quality_fixes;
 
     // Тесты верификации 17 исправленных проблем аудита (19 тестов - по 1 на каждую проблему + интеграционный)
-    pub mod test_audit_fixes_verification;
+    // pub mod test_audit_fixes_verification; // Времено отключен - файл отсутствует
 
     // Тесты для всех исправленных проблем аудита (10 тестов + 1 интеграционный)
-    pub mod test_audit_fixes;
+    // pub mod test_audit_fixes; // Времено отключен - файл отсутствует
 
     // Тесты ограничения UTF-8 в KeyReader (7 тестов)
     pub mod test_utf8_limitation;
@@ -777,7 +777,7 @@ mod testes {
     pub mod test_all_32_fixes;
 
     // Тесты аудита кода и исправлений найденных проблем (3 теста)
-    pub mod test_code_audit_fixes;
+    // pub mod test_code_audit_fixes; // Времено отключен - файл отсутствует
 
     // Тесты на архитектурную целостность (16 тестов)
     pub mod test_architecture;
@@ -819,6 +819,9 @@ mod testes {
 
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;
+
+    // Тесты для всех исправлений рефакторинга (55 тестов)
+    pub mod test_refactoring_fixes;
 }
 
 #[cfg(test)]
