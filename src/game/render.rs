@@ -405,7 +405,7 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     animate_clear(state, rows_mask, remove_count);
 
     // Удаление линий
-    super::scoring::remove_rows(&mut state.blocks, rows_mask);
+    let _ = super::scoring::remove_rows(&mut state.blocks, rows_mask);
 
     // Обновление счёта и уровня
     super::scoring::update_score_and_level(state, remove_count);

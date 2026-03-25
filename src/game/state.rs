@@ -369,12 +369,10 @@ impl GameStats {
 /// - Режим игры
 ///
 /// # Архитектурные заметки
-/// В будущей версии поля должны быть сделаны приватными с предоставлением
-/// контролируемых геттеров/сеттеров для улучшения инкапсуляции.
+/// Поля структуры имеют видимость `pub(crate)` для обратной совместимости.
+/// Для нового кода рекомендуется использовать геттеры и сеттеры.
 pub struct GameState {
     // === Игровая статистика ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Текущий счёт.
     pub(crate) score: u128,
     /// Текущий уровень.
@@ -383,8 +381,6 @@ pub struct GameState {
     pub(crate) lines_cleared: u32,
 
     // === Фигуры ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Текущая фигура.
     pub(crate) curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
@@ -395,27 +391,21 @@ pub struct GameState {
     pub(crate) can_hold: bool,
 
     // === Игровое поле ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Скорость падения.
     pub(crate) fall_spd: f32,
     /// Двумерный массив игрового поля 10x20.
-    /// Каждый элемент хранит индекс цвета (i8), 0 = пусто.
+    /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
     pub(crate) blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
     /// Таймер приземления.
     pub(crate) land_timer: f64,
 
     // === Статистика и режим игры ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Статистика игры.
     pub(crate) stats: GameStats,
     /// Режим игры.
     pub(crate) mode: GameMode,
 
     // === Анимации ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Строки для анимации (мигание при очистке).
     pub(crate) animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
@@ -424,14 +414,10 @@ pub struct GameState {
     pub(crate) soft_drop_distance: u32,
 
     // === Генератор фигур ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     /// Генератор фигур по системе 7-bag.
     pub(crate) bag: BagGenerator,
 
     // === Кэшированные строки для отрисовки ===
-    // TODO (#архитектура): Сделать поля приватными и добавить геттеры/сеттеры
-    // для улучшения инкапсуляции. Сейчас pub(crate) для обратной совместимости.
     // Кэширование используется для оптимизации производительности отрисовки.
     /// Кэшированная строка счёта для оптимизации отрисовки.
     pub(crate) cached_score_str: String,
@@ -560,6 +546,12 @@ impl GameState {
         &self.stats
     }
 
+    /// Получить статистику игры (мутуабельная ссылка).
+    #[must_use]
+    pub fn get_stats_mut(&mut self) -> &mut GameStats {
+        &mut self.stats
+    }
+
     /// Получить режим игры.
     #[must_use]
     pub fn get_mode(&self) -> GameMode {
@@ -570,6 +562,12 @@ impl GameState {
     #[must_use]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
+    }
+
+    /// Получить игровое поле (мутуабельная ссылка).
+    #[must_use]
+    pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &mut self.blocks
     }
 
     /// Получить текущую фигуру.
@@ -615,10 +613,82 @@ impl GameState {
         self.fall_spd
     }
 
+    /// Получить таймер приземления.
+    #[must_use]
+    pub fn get_land_timer(&self) -> f64 {
+        self.land_timer
+    }
+
+    /// Получить флаг возможности удержания фигуры.
+    #[must_use]
+    pub fn can_hold(&self) -> bool {
+        self.can_hold
+    }
+
+    /// Получить флаг анимации Hard Drop.
+    #[must_use]
+    pub fn is_hard_dropping(&self) -> bool {
+        self.is_hard_dropping
+    }
+
+    /// Получить расстояние Soft Drop.
+    #[must_use]
+    pub fn get_soft_drop_distance(&self) -> u32 {
+        self.soft_drop_distance
+    }
+
+    /// Получить маску анимации строк.
+    #[must_use]
+    pub fn get_animating_rows_mask(&self) -> u32 {
+        self.animating_rows_mask
+    }
+
+    /// Получить генератор фигур.
+    #[must_use]
+    pub fn get_bag(&self) -> &BagGenerator {
+        &self.bag
+    }
+
+    /// Получить генератор фигур (мутуабельная ссылка).
+    #[must_use]
+    pub fn get_bag_mut(&mut self) -> &mut BagGenerator {
+        &mut self.bag
+    }
+
     /// Получить кэшированную строку счёта.
     #[must_use]
     pub fn get_cached_score_str(&self) -> &str {
         &self.cached_score_str
+    }
+
+    /// Получить кэшированную строку уровня.
+    #[must_use]
+    pub fn get_cached_level_str(&self) -> &str {
+        &self.cached_level_str
+    }
+
+    /// Получить кэшированную строку линий.
+    #[must_use]
+    pub fn get_cached_lines_str(&self) -> &str {
+        &self.cached_lines_str
+    }
+
+    /// Получить кэшированную строку рекорда.
+    #[must_use]
+    pub fn get_cached_high_score_str(&self) -> &str {
+        &self.cached_high_score_str
+    }
+
+    /// Получить кэшированную строку комбо.
+    #[must_use]
+    pub fn get_cached_combo_str(&self) -> &str {
+        &self.cached_combo_str
+    }
+
+    /// Получить кэшированную строку таймера.
+    #[must_use]
+    pub fn get_cached_timer_str(&self) -> &str {
+        &self.cached_timer_str
     }
 
     // ========================================================================
@@ -645,6 +715,51 @@ impl GameState {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
     }
 
+    /// Установить текущую фигуру (для тестов).
+    pub fn set_curr_shape(&mut self, shape: Tetromino) {
+        self.curr_shape = shape;
+    }
+
+    /// Установить следующую фигуру (для тестов).
+    pub fn set_next_shape(&mut self, shape: Tetromino) {
+        self.next_shape = shape;
+    }
+
+    /// Установить удержанную фигуру (для тестов).
+    pub fn set_held_shape(&mut self, shape: Option<Tetromino>) {
+        self.held_shape = shape;
+    }
+
+    /// Установить флаг возможности удержания (для тестов).
+    pub fn set_can_hold(&mut self, can_hold: bool) {
+        self.can_hold = can_hold;
+    }
+
+    /// Установить скорость падения (для тестов).
+    pub fn set_fall_spd(&mut self, spd: f32) {
+        self.fall_spd = spd;
+    }
+
+    /// Установить таймер приземления (для тестов).
+    pub fn set_land_timer(&mut self, timer: f64) {
+        self.land_timer = timer;
+    }
+
+    /// Установить флаг Hard Drop (для тестов).
+    pub fn set_is_hard_dropping(&mut self, dropping: bool) {
+        self.is_hard_dropping = dropping;
+    }
+
+    /// Установить расстояние Soft Drop (для тестов).
+    pub fn set_soft_drop_distance(&mut self, distance: u32) {
+        self.soft_drop_distance = distance;
+    }
+
+    /// Установить маску анимации строк (для тестов).
+    pub fn set_animating_rows_mask(&mut self, mask: u32) {
+        self.animating_rows_mask = mask;
+    }
+
     /// Удалить заполненные линии (для тестов).
     pub fn remove_full_rows(&mut self) {
         let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
@@ -669,22 +784,6 @@ impl GameState {
     /// Добавить очки (для тестов и через трейт `GameBoardAccess`).
     pub fn add_score(&mut self, points: u128) {
         self.score = self.score.saturating_add(points);
-    }
-
-    /// Установить скорость падения (для тестов).
-    pub fn set_fall_spd(&mut self, spd: f32) {
-        self.fall_spd = spd;
-    }
-
-    /// Установить таймер приземления (для тестов).
-    pub fn set_land_timer(&mut self, timer: f64) {
-        self.land_timer = timer;
-    }
-
-    /// Получить таймер приземления (для тестов).
-    #[must_use]
-    pub fn get_land_timer(&self) -> f64 {
-        self.land_timer
     }
 }
 

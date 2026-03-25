@@ -12,8 +12,8 @@
 //! Конфигурация защищена HMAC-SHA256 подписью для предотвращения подделки.
 
 use serde::{Deserialize, Serialize};
-use std::fs::{self, OpenOptions};
-use std::io::{self, Write};
+use std::fs::OpenOptions;
+use std::io::{self, Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 
@@ -636,8 +636,16 @@ impl ControlsConfig {
             }
         }
 
-        // Читаем файл
-        let json = fs::read_to_string(path)?;
+        // Исправление #12: используем O_NOFOLLOW для защиты от race condition
+        // между проверкой symlink и открытием файла
+        let mut file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW)
+            .open(path)?;
+
+        // Читаем файл через буферизированный Read
+        let mut json = String::new();
+        file.read_to_string(&mut json)?;
 
         // Десериализуем подписанную конфигурацию
         let signed_config: SignedControlsConfig = serde_json::from_str(&json)
@@ -780,6 +788,7 @@ impl Default for ControlsConfig {
 #[cfg(test)]
 mod controls_tests {
     use super::*;
+    use std::fs;
     use std::path::Path;
 
     // =========================================================================
