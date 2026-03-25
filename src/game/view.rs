@@ -63,6 +63,16 @@ use crate::tetromino::Tetromino;
 /// println!("Счёт: {}", view.score);
 /// println!("Уровень: {}", view.level);
 /// ```
+///
+/// ## Архитектурные заметки
+/// ## Feature Envy (Problem 2.5)
+/// TODO (#архитектура, Problem 2.5): Добавить методы отрисовки в GameView
+/// для уменьшения Feature Envy между render.rs и GameView.
+/// В настоящее время render.rs имеет полный доступ к полям GameView.
+/// Рассмотрим возможность добавления методов:
+/// - `get_block(x, y)` - доступ к блокам
+/// - `is_row_animating(y)` - проверка анимации строки
+/// - `get_shape_display_char()` - получение символа для отрисовки фигуры
 pub struct GameView<'a> {
     // === UI элементы (кэшированные строки) ===
     /// Кэшированная строка счёта.
@@ -141,6 +151,88 @@ impl<'a> GameView<'a> {
             mode: state.get_mode(),
             lines_cleared: state.lines_cleared,
             elapsed_time: state.stats.get_elapsed_time(),
+        }
+    }
+
+    // ========================================================================
+    // МЕТОДЫ ОТРИСОВКИ (Problem 2.5 - Feature Envy)
+    // ========================================================================
+
+    /// Получить блок по координатам.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X
+    /// * `y` - координата Y
+    ///
+    /// # Возвращает
+    /// Значение блока (-1 = пусто) или -1 если координаты вне границ
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn get_block(&self, x: usize, y: usize) -> i8 {
+        if x < GRID_WIDTH && y < GRID_HEIGHT {
+            self.blocks[y][x]
+        } else {
+            -1
+        }
+    }
+
+    /// Проверить, пуста ли ячейка.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X
+    /// * `y` - координата Y
+    ///
+    /// # Возвращает
+    /// `true` если ячейка пуста
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn is_block_empty(&self, x: usize, y: usize) -> bool {
+        self.get_block(x, y) == -1
+    }
+
+    /// Проверить, занята ли ячейка.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X
+    /// * `y` - координата Y
+    ///
+    /// # Возвращает
+    /// `true` если ячейка занята
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+        self.get_block(x, y) >= 0
+    }
+
+    /// Проверить, анимируется ли строка.
+    ///
+    /// # Аргументы
+    /// * `y` - координата Y строки
+    ///
+    /// # Возвращает
+    /// `true` если строка анимируется
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn is_row_animating(&self, y: usize) -> bool {
+        (self.animating_rows & (1 << y)) != 0
+    }
+
+    /// Получить цвет блока.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X
+    /// * `y` - координата Y
+    ///
+    /// # Возвращает
+    /// Индекс цвета блока или None если блок пуст
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn get_block_color(&self, x: usize, y: usize) -> Option<usize> {
+        let block = self.get_block(x, y);
+        if block >= 0 {
+            Some(block as usize)
+        } else {
+            None
         }
     }
 }
