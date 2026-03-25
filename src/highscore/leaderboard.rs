@@ -78,7 +78,7 @@ impl LeaderboardEntry {
     ///
     /// # Пример
     /// ```
-    /// use tetris_cli::highscore::LeaderboardEntry;
+    /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), 1000);
@@ -122,7 +122,7 @@ impl LeaderboardEntry {
     ///
     /// # Пример
     /// ```
-    /// use tetris_cli::highscore::LeaderboardEntry;
+    /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert!(entry.is_valid());
     /// ```

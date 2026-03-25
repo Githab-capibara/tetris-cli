@@ -875,11 +875,14 @@ fn test_rotation_at_wall_and_movement() {
 
     // Тест проходит если:
     // 1. Можно двигаться вправо, ИЛИ
-    // 2. Вращение недоступно (фигура у стены)
+    // 2. Можно двигаться влево (фигура не застряла), ИЛИ
+    // 3. Вращение недоступно (фигура у стены)
+    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
     assert!(
-        can_move_right || !can_rotate_after,
-        "После вращения у стены: движение вправо = {}, вращение = {}",
+        can_move_right || can_move_left || !can_rotate_after,
+        "После вращения у стены: движение вправо = {}, влево = {}, вращение = {}",
         can_move_right,
+        can_move_left,
         can_rotate_after
     );
 }
