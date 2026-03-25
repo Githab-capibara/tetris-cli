@@ -41,16 +41,16 @@
 #[test]
 fn test_game_state_separation_into_components() {
     // Проверяем существование модуля state
-    use crate::game::state::{GameMode, GameState, GameStats};
+    use crate::game::state::{GameMode, GameState};
 
     // Проверяем существование модуля logic
-    use crate::game::logic::{can_move_curr_shape_direction, update};
+    use crate::game::logic::can_move_curr_shape_direction;
 
     // Проверяем существование модуля scoring
-    use crate::game::scoring::{find_full_rows, handle_hold, remove_rows};
+    use crate::game::scoring::{find_full_rows, handle_hold};
 
     // Проверяем существование модуля render
-    use crate::game::render::{check_rows, draw};
+    use crate::game::render::check_rows;
 
     // Проверяем существование модуля view
     use crate::game::view::GameView;
@@ -425,7 +425,7 @@ fn test_controls_separation_into_submodules() {
 fn test_game_logic_trait_exists() {
     // Проверяем, что модуль logic существует и экспортирует функции
     use crate::game::logic::{
-        can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, update,
+        can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick,
     };
     use crate::game::GameState;
     use crate::types::{Direction, RotationDirection};
@@ -458,9 +458,7 @@ fn test_game_logic_trait_exists() {
 /// Тест проверяет, что функции scoring существуют и работают.
 #[test]
 fn test_scoring_system_trait_exists() {
-    use crate::game::scoring::{
-        find_full_rows, handle_hard_drop, handle_hold, handle_soft_drop, remove_rows,
-    };
+    use crate::game::scoring::{find_full_rows, handle_hard_drop, handle_hold, handle_soft_drop};
     use crate::game::GameState;
 
     // Создаём состояние для тестирования

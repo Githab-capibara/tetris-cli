@@ -4,6 +4,7 @@
 //! к внутреннему состоянию игры без нарушения инкапсуляции.
 //!
 //! ## Архитектурные заметки
+//! ## Трейты доступа (Problem 2.9, 2.12, 2.14)
 //! Трейты используются для:
 //! - Уменьшения связанности между модулями
 //! - Предоставления ограниченного доступа к данным
@@ -11,6 +12,25 @@
 //!
 //! ## Доступные трейты:
 //! - [`GameBoardAccess`] - полный доступ к состоянию игры
+//!
+//! TODO (#архитектура, Problem 2.9): Добавить трейт ScoreAccess для контролируемого доступа к очкам.
+//! TODO (#архитектура, Problem 2.12): Добавить трейт ShapeAccess для доступа к фигурам.
+//! TODO (#архитектура, Problem 2.14): Рассмотреть возможность добавления трейта AnimationAccess
+//! для доступа к анимациям.
+//!
+//! ## Пример использования
+//! ```ignore
+//! use crate::game::access::GameBoardAccess;
+//!
+//! fn render_field<T: GameBoardAccess>(field: &T) {
+//!     for y in 0..GRID_HEIGHT {
+//!         for x in 0..GRID_WIDTH {
+//!             let block = field.get_block(x, y);
+//!             // Отрисовка блока...
+//!         }
+//!     }
+//! }
+//! ```
 
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
@@ -18,6 +38,14 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///
 /// Предоставляет методы для чтения и записи игрового поля,
 /// не раскрывая внутреннюю структуру `GameState`.
+///
+/// ## Архитектурные заметки
+/// ## Использование трейта (Problem 2.9)
+/// Этот трейт позволяет создавать функции, которые работают с любым типом,
+/// реализующим GameBoardAccess, что уменьшает связанность кода.
+///
+/// TODO (#архитектура): Добавить методы для доступа к призрачной фигуре
+/// и другим производным данным.
 ///
 /// ## Пример использования
 /// ```ignore
@@ -30,6 +58,7 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///     }
 /// }
 /// ```
+#[allow(dead_code)]
 pub trait GameBoardAccess {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -78,4 +107,86 @@ pub trait GameBoardAccess {
 
     /// Установить таймер приземления.
     fn set_land_timer(&mut self, timer: f64);
+}
+
+// ============================================================================
+// ТРЕЙТ SCOREACCESS
+// ============================================================================
+
+/// Трейт для доступа к очкам и уровням.
+///
+/// Предоставляет методы для чтения и изменения очков, уровней и линий,
+/// не раскрывая внутреннюю структуру `GameState`.
+///
+/// ## Архитектурные заметки
+/// ## Разделение ответственности (Problem 2.3, 2.9)
+/// Этот трейт выделяет доступ к системе очков в отдельный интерфейс,
+/// что позволяет создавать функции, работающие только с очками,
+/// без доступа к игровому полю.
+///
+/// TODO (#архитектура): Использовать этот трейт в функциях начисления очков
+/// вместо прямого использования GameState.
+///
+/// ## Пример использования
+/// ```ignore
+/// use crate::game::access::ScoreAccess;
+///
+/// fn add_line_bonus<T: ScoreAccess>(score: &mut T, lines: u32) {
+///     let bonus = lines * 100;
+///     score.add_score(bonus);
+/// }
+/// ```
+#[allow(dead_code)]
+pub trait ScoreAccess {
+    /// Получить текущий счёт.
+    fn get_score(&self) -> u128;
+
+    /// Добавить очки к текущему счёту.
+    fn add_score(&mut self, points: u128);
+
+    /// Установить счёт (для тестов).
+    fn set_score(&mut self, score: u128);
+
+    /// Получить текущий уровень.
+    fn get_level(&self) -> u32;
+
+    /// Установить текущий уровень.
+    fn set_level(&mut self, level: u32);
+
+    /// Получить количество удалённых линий.
+    fn get_lines_cleared(&self) -> u32;
+
+    /// Установить количество удалённых линий.
+    fn set_lines_cleared(&mut self, lines: u32);
+}
+
+// Реализация ScoreAccess для GameState
+impl ScoreAccess for crate::game::state::GameState {
+    fn get_score(&self) -> u128 {
+        self.score
+    }
+
+    fn add_score(&mut self, points: u128) {
+        self.score = self.score.saturating_add(points);
+    }
+
+    fn set_score(&mut self, score: u128) {
+        self.score = score;
+    }
+
+    fn get_level(&self) -> u32 {
+        self.level
+    }
+
+    fn set_level(&mut self, level: u32) {
+        self.level = level;
+    }
+
+    fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared
+    }
+
+    fn set_lines_cleared(&mut self, lines: u32) {
+        self.lines_cleared = lines;
+    }
 }

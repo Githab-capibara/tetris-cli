@@ -43,7 +43,7 @@ pub use state::{GameMode, GameState};
 pub use state::GameStats;
 
 // Константы
-pub use state::{FPS, GAME_OVER, GAME_OVER_DELAY_MS, PAUSE};
+pub use state::FPS;
 
 // Константы для тестов (обратная совместимость)
 #[allow(unused_imports)]
@@ -57,26 +57,28 @@ pub use state::{
 
 // Re-export трейтов и типов для тестов
 #[allow(unused_imports)]
-pub use access::GameBoardAccess;
+pub use access::{GameBoardAccess, ScoreAccess};
 #[allow(unused_imports)]
 pub use state::{GameError, GameResult};
 
 pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
-    update,
 };
 
 pub use scoring::{find_full_rows, handle_hold, remove_rows};
 
-pub use render::{check_rows, draw, update_cached_strings_extended};
+pub use render::check_rows;
 
 // Экспорт GameView для отрисовки
+#[allow(unused_imports)]
 pub use view::GameView;
 
 // Экспорт StringCache для кэширования
+#[allow(unused_imports)]
 pub use cache::StringCache;
 
 // Экспорт игрового цикла
+#[allow(unused_imports)]
 pub use cycle::run_game_loop;
 
 // ============================================================================
@@ -188,7 +190,6 @@ impl GameState {
 }
 
 // Импортируем типы из state для использования в impl
-use state::UpdateEndState;
 
 // ============================================================================
 // МОДУЛЬ ТЕСТОВ

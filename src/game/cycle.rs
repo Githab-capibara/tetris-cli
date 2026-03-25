@@ -8,10 +8,19 @@
 //!
 //! ## Архитектурные заметки
 //! Выделено из mod.rs для улучшения читаемости и тестируемости.
+//!
+//! ## Разделение фаз игрового цикла
+//! Игровой цикл разделён на три независимые фазы:
+//! 1. **FPS Control** (`run_game_loop`) - поддержание стабильного FPS
+//! 2. **Input Handling** (`handle_input`) - обработка ввода пользователя
+//! 3. **Rendering** (`render`) - отрисовка текущего кадра
+//!
+//! TODO (#архитектура): Рассмотреть возможность выделения каждой фазы в отдельный трейт
+//! для улучшения тестируемости и возможности мокирования.
 
 use std::{thread::sleep, time::Duration};
 
-use super::state::{GameState, UpdateEndState, FPS, GAME_OVER, GAME_OVER_DELAY_MS, PAUSE};
+use super::state::{GameState, UpdateEndState, FPS, GAME_OVER, GAME_OVER_DELAY_MS};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io::Canvas;
 use termion::color::Reset;
@@ -23,6 +32,7 @@ pub enum InputResult {
     /// Выход в меню.
     Quit,
     /// Пауза (ожидание снятия).
+    #[allow(dead_code)]
     Pause,
     /// Игра окончена.
     GameOver,
