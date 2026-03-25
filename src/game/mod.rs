@@ -7,6 +7,8 @@
 //! - [`render`] — отрисовка и анимации
 //! - [`view`] — представление игры для отрисовки (GameView)
 //! - [`access`] — трейты доступа к состоянию игры (GameBoardAccess)
+//! - [`cache`] — кэширование строк для отрисовки (StringCache)
+//! - [`cycle`] — игровой цикл (FPS, ввод, отрисовка)
 //!
 //! ## Пример использования
 //!
@@ -25,6 +27,8 @@
 
 // Подмодули
 pub mod access;
+pub mod cache;
+pub mod cycle;
 pub mod logic;
 pub mod render;
 pub mod scoring;
@@ -69,6 +73,12 @@ pub use render::{check_rows, draw, update_cached_strings_extended};
 // Экспорт GameView для отрисовки
 pub use view::GameView;
 
+// Экспорт StringCache для кэширования
+pub use cache::StringCache;
+
+// Экспорт игрового цикла
+pub use cycle::run_game_loop;
+
 // ============================================================================
 // МЕТОДЫ ДЛЯ GameState
 // ============================================================================
@@ -87,100 +97,18 @@ impl GameState {
     /// Финальный счёт игрока
     ///
     /// # Архитектурные заметки
-    /// Метод реализует основной игровой цикл с выделением следующих фаз:
-    /// 1. `handle_fps_control()` - поддержание стабильного FPS
-    /// 2. `process_input()` - обработка ввода пользователя
-    /// 3. `update_state()` - обновление состояния игры
-    /// 4. `render()` - отрисовка текущего кадра
-    /// 5. `handle_animations()` - обработка анимаций
-    ///
-    /// TODO (#архитектура): Выделить фазы в отдельные приватные методы для улучшения
-    /// читаемости и тестируемости кода.
+    /// Метод делегирует логику игрового цикла модулю [`cycle`]:
+    /// - `handle_fps_control()` - поддержание стабильного FPS
+    /// - `handle_input()` - обработка ввода пользователя
+    /// - `render()` - отрисовка текущего кадра
+    /// - `handle_game_over()` - обработка конца игры
     pub fn play(
         &mut self,
         cnv: &mut crate::io::Canvas,
         inp: &mut crate::io::KeyReader,
         high_score_display: &str,
     ) -> u128 {
-        use std::{
-            thread::sleep,
-            time::{Duration, Instant},
-        };
-
-        let mut last_time = Instant::now();
-        let interval_ms = 1_000 / FPS;
-
-        // ====================================================================
-        // ОСНОВНОЙ ИГРОВОЙ ЦИКЛ
-        // ====================================================================
-        loop {
-            // ---------------------------------------------------------------
-            // ФАЗА 1: Поддержание стабильного FPS
-            // TODO (#архитектура): Выделить в метод handle_fps_control()
-            // ---------------------------------------------------------------
-            let now = Instant::now();
-            let delta_time_ms = now.duration_since(last_time).as_millis() as u64;
-            if delta_time_ms < interval_ms {
-                sleep(Duration::from_millis(interval_ms - delta_time_ms));
-                continue;
-            }
-            last_time = now;
-
-            // ---------------------------------------------------------------
-            // ФАЗА 2: Обновление состояния игры (ввод + логика)
-            // TODO (#архитектура): Выделить в метод update_state()
-            // ---------------------------------------------------------------
-            match update(self, inp, delta_time_ms) {
-                UpdateEndState::Continue => {}
-                UpdateEndState::Quit => {
-                    return 0;
-                }
-                UpdateEndState::Lost | UpdateEndState::Won => {
-                    // Отрисовка сообщения о конце игры
-                    cnv.draw_strs(
-                        &GAME_OVER,
-                        (10, 12),
-                        state::BORDER_COLOR,
-                        &termion::color::Reset,
-                    );
-                    cnv.flush();
-                    sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
-                    break;
-                }
-                UpdateEndState::Pause => loop {
-                    // Обработка ввода в режиме паузы
-                    let key = inp.get_key();
-                    match key {
-                        Some(b'p') => break,
-                        Some(crate::io::KEY_BACKSPACE) => {
-                            cnv.draw_strs(
-                                &PAUSE,
-                                (7, 13),
-                                state::BORDER_COLOR,
-                                &termion::color::Reset,
-                            );
-                            return 0;
-                        }
-                        Some(_) | None => {}
-                    }
-                    cnv.draw_strs(&PAUSE, (7, 13), state::BORDER_COLOR, &termion::color::Reset);
-                    sleep(Duration::from_millis(interval_ms));
-                },
-            }
-
-            // ---------------------------------------------------------------
-            // ФАЗА 3: Отрисовка текущего кадра
-            // TODO (#архитектура): Выделить в метод render()
-            // ---------------------------------------------------------------
-            // Обновляем кэшированные строки перед созданием GameView
-            update_cached_strings_extended(self, high_score_display);
-            // Создаём GameView для отрисовки
-            let view = GameView::from_game_state(self);
-            // Отрисовываем с использованием GameView
-            draw(&view, cnv);
-        }
-
-        self.score
+        cycle::run_game_loop(self, cnv, inp, high_score_display)
     }
 
     /// Проверить заполненные линии и удалить их.
