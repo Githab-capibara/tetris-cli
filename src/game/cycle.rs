@@ -17,6 +17,18 @@
 //!
 //! TODO (#архитектура): Рассмотреть возможность выделения каждой фазы в отдельный трейт
 //! для улучшения тестируемости и возможности мокирования.
+//!
+//! ## Будущая рефакторизация
+//! TODO (#архитектура, срок: 2-3 недели): Разделить `run_game_loop()` на фазы с использованием трейтов:
+//! - `FPSControl::maintain_fps()` - контроль FPS
+//! - `InputHandler::process_input()` - обработка ввода
+//! - `GameUpdater::update_state()` - обновление состояния
+//! - `GameRenderer::render()` - отрисовка
+//!
+//! Это позволит:
+//! - Тестировать каждую фазу отдельно
+//! - Легко добавлять новые режимы (реплей, онлайн)
+//! - Упростить мокирование для интеграционных тестов
 
 use std::{thread::sleep, time::Duration};
 
@@ -24,6 +36,94 @@ use super::state::{GameState, UpdateEndState, FPS, GAME_OVER, GAME_OVER_DELAY_MS
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io::Canvas;
 use termion::color::Reset;
+
+// ============================================================================
+// ТРЕЙТЫ ДЛЯ ФАЗ ИГРОВОГО ЦИКЛА
+// ============================================================================
+// TODO (#архитектура): Использовать эти трейты для разделения ответственности
+// в игровом цикле. Каждый трейт отвечает за свою фазу.
+
+/// Трейт для управления FPS.
+///
+/// Отвечает за поддержание стабильной частоты кадров.
+/// TODO (#архитектура): Реализовать в отдельном модуле `fps_controller.rs`
+#[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+pub trait FPSControl {
+    /// Поддержать стабильный FPS.
+    ///
+    /// # Аргументы
+    /// * `frame_start` - время начала кадра
+    /// * `target_fps` - целевое количество кадров в секунду
+    fn maintain_fps(&self, frame_start: std::time::Instant, target_fps: u64);
+}
+
+/// Трейт для обработки ввода.
+///
+/// Отвечает за обработку ввода пользователя.
+/// TODO (#архитектура): Реализовать в отдельном модуле `input_handler.rs`
+#[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+pub trait InputHandler {
+    /// Тип результата обработки ввода.
+    type InputResult;
+
+    /// Обработать ввод пользователя.
+    ///
+    /// # Аргументы
+    /// * `state` - состояние игры
+    /// * `delta_time_ms` - время с последнего кадра (мс)
+    ///
+    /// # Возвращает
+    /// Результат обработки ввода
+    fn process_input(&mut self, state: &mut GameState, delta_time_ms: u64) -> Self::InputResult;
+}
+
+/// Трейт для обновления состояния.
+///
+/// Отвечает за обновление игрового состояния.
+/// TODO (#архитектура): Реализовать в отдельном модуле `game_updater.rs`
+#[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+pub trait GameUpdater {
+    /// Обновить состояние игры.
+    ///
+    /// # Аргументы
+    /// * `state` - состояние игры
+    /// * `delta_time_ms` - время с последнего кадра (мс)
+    fn update_state(&mut self, state: &mut GameState, delta_time_ms: u64);
+}
+
+/// Трейт для отрисовки.
+///
+/// Отвечает за отрисовку текущего кадра.
+/// TODO (#архитектура): Реализовать в отдельном модуле `game_renderer.rs`
+#[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+pub trait GameRenderer {
+    /// Отрисовать кадр игры.
+    ///
+    /// # Аргументы
+    /// * `state` - состояние игры
+    /// * `canvas` - канвас для отрисовки
+    /// * `high_score_display` - строка рекорда
+    fn render(&self, state: &mut GameState, canvas: &mut Canvas, high_score_display: &str);
+}
+
+// ============================================================================
+// РЕАЛИЗАЦИЯ ТРЕЙТОВ ПО УМОЛЧАНИЮ
+// ============================================================================
+// TODO (#архитектура): Переместить эти реализации в отдельные модули
+
+/// Реализация FPSControl по умолчанию.
+#[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+pub struct DefaultFPSControl;
+
+impl FPSControl for DefaultFPSControl {
+    fn maintain_fps(&self, frame_start: std::time::Instant, target_fps: u64) {
+        let interval_ms = 1_000 / target_fps;
+        let elapsed_ms = frame_start.elapsed().as_millis() as u64;
+        if elapsed_ms < interval_ms {
+            sleep(Duration::from_millis(interval_ms - elapsed_ms));
+        }
+    }
+}
 
 /// Результат обработки ввода.
 pub enum InputResult {

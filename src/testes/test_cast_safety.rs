@@ -390,7 +390,8 @@ mod tests {
         );
 
         // Проверка что невалидная запись обрабатывается корректно
-        let entry_invalid_name = crate::highscore::leaderboard::LeaderboardEntry::new("@@@###", 1000);
+        let entry_invalid_name =
+            crate::highscore::leaderboard::LeaderboardEntry::new("@@@###", 1000);
         // Имя с невалидными символами должно быть заменено на "Anonymous"
         assert_eq!(
             entry_invalid_name.name(),

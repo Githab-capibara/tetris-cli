@@ -235,4 +235,115 @@ impl<'a> GameView<'a> {
             None
         }
     }
+
+    // ========================================================================
+    // МЕТОДЫ ОТРИСОВКИ UI (Problem 2.5 - Feature Envy)
+    // ========================================================================
+    // TODO (#архитектура, Problem 2.5): Добавить методы отрисовки в GameView
+    // для уменьшения Feature Envy между render.rs и GameView.
+    // Эти методы предоставляют готовые строки для отрисовки UI.
+
+    /// Получить строку счёта для отрисовки.
+    ///
+    /// # Возвращает
+    /// Кэшированную строку счёта
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// println!("Счёт: {}", view.score_str());
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn score_str(&self) -> &str {
+        self.score
+    }
+
+    /// Получить строку уровня для отрисовки.
+    ///
+    /// # Возвращает
+    /// Кэшированную строку уровня
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// println!("Уровень: {}", view.level_str());
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn level_str(&self) -> &str {
+        self.level
+    }
+
+    /// Получить строку линий для отрисовки.
+    ///
+    /// # Возвращает
+    /// Кэшированную строку количества линий
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// println!("Линии: {}", view.lines_str());
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn lines_str(&self) -> &str {
+        self.lines
+    }
+
+    /// Получить строку комбо для отрисовки.
+    ///
+    /// # Возвращает
+    /// Кэшированную строку комбо (None если комбо нет)
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// if let Some(combo) = view.combo_str() {
+    ///     println!("{}", combo);
+    /// }
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn combo_str(&self) -> Option<&str> {
+        self.combo
+    }
+
+    /// Получить строку рекорда для отрисовки.
+    ///
+    /// # Возвращает
+    /// Кэшированную строку рекорда
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// println!("Рекорд: {}", view.high_score_str());
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn high_score_str(&self) -> &str {
+        self.high_score
+    }
+
+    /// Получить строку таймера для отрисовки.
+    ///
+    /// # Возвращает
+    /// Отформатированную строку таймера (только для режима Sprint)
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// if let Some(timer) = view.timer_str() {
+    ///     println!("{}", timer);
+    /// }
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
+    #[must_use]
+    pub fn timer_str(&self) -> Option<String> {
+        if self.mode == GameMode::Sprint {
+            Some(format!("Время: {:.2}с", self.elapsed_time))
+        } else {
+            None
+        }
+    }
 }

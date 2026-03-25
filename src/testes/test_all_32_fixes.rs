@@ -547,8 +547,8 @@ fn test_17_edge_cases() {
 #[test]
 fn test_18_naming_consistency() {
     use crate::game::{GameState, LINE_SCORES};
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::highscore::SaveData;
-use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем, что имена соответствуют snake_case
     let _state = GameState::new();
@@ -852,8 +852,8 @@ fn test_30_get_key_error_logging() {
 fn test_31_integration_all_fixes() {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::highscore::{Leaderboard, SaveData};
-use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::io::{Canvas, KeyReader};
     use crate::tetromino::{BagGenerator, Tetromino};
 
@@ -899,8 +899,8 @@ use crate::highscore::leaderboard::LeaderboardEntry;
 fn test_32_full_integration() {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::highscore::SaveData;
-use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
     use crate::types::RotationDirection;
 

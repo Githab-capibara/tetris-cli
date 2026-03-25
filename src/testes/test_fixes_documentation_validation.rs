@@ -1,8 +1,8 @@
 //! Тесты для исправлений проблем 13-20.
 
 use crate::game::{GameMode, GameState};
-use crate::highscore::Leaderboard;
 use crate::highscore::leaderboard::LeaderboardEntry;
+use crate::highscore::Leaderboard;
 
 /// Тест 13.1: Проверка что `save_to_file()` имеет # Errors секцию.
 #[test]

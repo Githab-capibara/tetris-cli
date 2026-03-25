@@ -3,8 +3,8 @@
 //! Проверяют, что get_current_time_ms_protected не паникует и корректно
 //! обрабатывает ошибки времени.
 
-use crate::highscore::Leaderboard;
 use crate::highscore::leaderboard::LeaderboardEntry;
+use crate::highscore::Leaderboard;
 
 /// Тест 1: Проверка, что get_current_time_ms_protected не паникует
 ///

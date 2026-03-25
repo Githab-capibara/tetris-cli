@@ -19,8 +19,8 @@
 mod tests {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::highscore::Leaderboard;
-use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::io::Canvas;
     use std::io;
 

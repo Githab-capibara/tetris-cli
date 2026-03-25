@@ -1,6 +1,6 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия документа:** 7.0
+**Версия документа:** 8.0
 **Последнее обновление:** 25 марта 2026 г.
 **Версия проекта:** 23.96.14
 
@@ -32,7 +32,7 @@ Tetris CLI использует **модульную архитектуру** с
 - **Инкапсуляция**: скрытие внутренней реализации, публичный API через mod.rs
 - **Безопасность**: защита данных через хеширование и валидацию
 - **Производительность**: 60 FPS стабильно через оптимизированный игровой цикл
-- **Тестируемость**: 1863 модульных и интеграционных тестов (1846 в lib + 75 в bin + 26 doc-тестов)
+- **Тестируемость**: 1889 модульных и интеграционных тестов (1788 в lib + 75 в bin + 26 doc-тестов)
 - **Отсутствие циклических зависимостей**: общие типы вынесены в отдельный модуль types.rs
 - **Разделение ответственности**: application layer, игровая логика, отрисовка и состояние разделены
 - **Расширяемость**: GameModeTrait для добавления новых режимов без изменения ядра
@@ -640,10 +640,10 @@ pub const WALL_KICK_OFFSETS: [(i16, i16); 5] = [
 
 ```
 ═══════════════════════════════════════════
-ВСЕГО: 1863 тестов
+ВСЕГО: 1889 тестов
 ═══════════════════════════════════════════
-• Запущено: 1863
-• Прошло в lib: 1846
+• Запущено: 1889
+• Прошло в lib: 1788
 • Прошло в bin: 75
 • Doc-тестов: 26
 ```
@@ -660,6 +660,7 @@ pub const WALL_KICK_OFFSETS: [(i16, i16); 5] = [
 8. **Scoring** — система очков, комбо, уровни
 9. **Edge Cases** — граничные случаи, стресс-тесты
 10. **Benchmarks** — тесты производительности с методами `fill_line_for_bench()`, `clear_lines_for_bench()`, `save_tetromino_for_bench()`, `set_curr_shape_for_bench()`
+11. **Architecture Constraints** — тесты на отсутствие циклических зависимостей, соблюдение границ модулей, инкапсуляцию, использование трейтов
 
 ### Запуск тестов
 
@@ -675,6 +676,9 @@ cargo test --lib game::state
 
 # Тесты с фильтром по имени
 cargo test test_leaderboard
+
+# Архитектурные тесты
+cargo test test_architecture_constraints
 ```
 
 ---
@@ -696,6 +700,192 @@ cargo test test_leaderboard
 ---
 
 ## 🔧 Улучшения архитектуры
+
+### Март 2026: Версия 8.0 — Архитектурные улучшения и тесты целостности
+
+В ходе развития архитектуры версии 23.96.14 были реализованы ключевые улучшения для повышения качества кода и тестируемости:
+
+#### 1. Трейты для фаз игрового цикла (cycle.rs)
+
+**Проблема**: Игровой цикл был монолитным, что затрудняло тестирование отдельных фаз.
+
+**Решение**: Введены специализированные трейты для каждой фазы игрового цикла:
+
+```rust
+// cycle.rs
+pub trait FPSControl {
+    fn maintain_fps(&mut self);
+    fn get_frame_delay(&self) -> u128;
+}
+
+pub trait InputHandler {
+    fn process_input(&mut self, key: Option<u8>) -> bool;
+}
+
+pub trait GameUpdater {
+    fn update_state(&mut self, delta_time: f32);
+}
+
+pub trait GameRenderer {
+    fn render(&self, canvas: &mut Canvas);
+}
+```
+
+**Преимущества**:
+- Возможность тестирования каждой фазы отдельно
+- Упрощение мокирования для интеграционных тестов
+- Соблюдение Interface Segregation Principle
+- Улучшенная расширяемость
+
+#### 2. PathValidator (controls.rs)
+
+**Проблема**: 5 отдельных функций валидации путей дублировали логику.
+
+**Решение**: Создан единый валидатор `PathValidator` с типами ошибок:
+
+```rust
+// controls.rs
+pub struct PathValidator;
+
+pub enum PathError {
+    TooLong { max: usize, actual: usize },
+    InvalidCharacter { char: char, position: usize },
+    SymlinkDetected,
+    PathTraversalAttempt,
+}
+
+pub enum PathErrorKind {
+    Length,
+    Character,
+    Symlink,
+    Traversal,
+}
+
+impl PathValidator {
+    pub fn validate(path: &str) -> Result<(), PathError>;
+    pub fn validate_length(path: &str, max: usize) -> Result<(), PathError>;
+    pub fn validate_characters(path: &str) -> Result<(), PathError>;
+    pub fn validate_no_symlink(path: &str) -> Result<(), PathError>;
+    pub fn validate_no_traversal(path: &str) -> Result<(), PathError>;
+}
+```
+
+**Преимущества**:
+- Централизованная валидация путей
+- Типизированные ошибки для каждой категории проблем
+- Устранение дублирования кода
+- Упрощение тестирования валидации
+
+#### 3. Методы отрисовки в GameView (view.rs)
+
+**Проблема**: Форматирование строк для отрисовки было разбросано по коду.
+
+**Решение**: Добавлены специализированные методы в `GameView`:
+
+```rust
+// view.rs
+impl GameView {
+    pub fn score_str(&self) -> &str;
+    pub fn level_str(&self) -> &str;
+    pub fn lines_str(&self) -> &str;
+    pub fn combo_str(&self) -> &str;
+    pub fn high_score_str(&self) -> &str;
+    pub fn timer_str(&self) -> &str;
+}
+```
+
+**Преимущества**:
+- Инкапсуляция логики форматирования
+- Кэширование результатов для производительности
+- Упрощение кода отрисовки
+- Централизованное управление представлением данных
+
+#### 4. Инкапсуляция GameState (state.rs)
+
+**Проблема**: Поля `GameState` были публичными, что нарушало инкапсуляцию.
+
+**Решение**: Поля сгруппированы по категориям с TODO комментариями:
+
+```rust
+// state.rs
+pub struct GameState {
+    // === Состояние игры ===
+    score: u128,
+    level: u32,
+    lines_cleared: u32,
+    
+    // === Фигуры ===
+    curr_shape: Tetromino,
+    next_shape: Tetromino,
+    held_shape: Option<Tetromino>,
+    
+    // === Игровое поле ===
+    blocks: Grid,
+    
+    // === Статистика ===
+    stats: GameStats,
+    
+    // === Анимации ===
+    anim_state: AnimationState,
+    
+    // TODO: Выделить в отдельные компоненты:
+    // - GameBoard (blocks, curr_shape, ghost_shape)
+    // - ScoreBoard (score, level, lines_cleared, combo)
+    // - FigureManager (next_shape, held_shape, bag)
+    // - AnimationState (anim_state, land_timer)
+}
+```
+
+**Преимущества**:
+- Чёткая группировка полей по ответственности
+- Документированный план будущей рефакторизации
+- Подготовка к разделению на компоненты
+- Улучшенная читаемость структуры
+
+#### 5. Архитектурные тесты (test_architecture_constraints.rs)
+
+**Проблема**: Отсутствие автоматических тестов на соблюдение архитектурных ограничений.
+
+**Решение**: Создан модуль архитектурных тестов:
+
+```rust
+// test_architecture_constraints.rs
+
+// Тесты на отсутствие циклических зависимостей
+#[test]
+fn test_no_cyclic_dependencies();
+
+// Тесты на соблюдение границ модулей
+#[test]
+fn test_module_boundaries();
+
+// Тесты на инкапсуляцию
+#[test]
+fn test_encapsulation();
+
+// Тесты на использование трейтов
+#[test]
+fn test_trait_usage();
+```
+
+**Преимущества**:
+- Автоматическая проверка архитектурных ограничений
+- Предотвращение регрессий архитектуры
+- Документирование архитектурных решений через тесты
+- Уверенность при рефакторинге
+
+#### Итоговая статистика улучшений
+
+| Метрика | Значение |
+|---------|----------|
+| Трейтов для фаз цикла | 4 |
+| Типов ошибок PathValidator | 2 (PathError, PathErrorKind) |
+| Методов отрисовки в GameView | 6 |
+| Категорий полей GameState | 5 |
+| Архитектурных тестов | 20+ |
+| Общее количество тестов | 1889 (1788 lib + 75 bin + 26 doc) |
+
+---
 
 ### Март 2026: Версия 23.96.25 — Архитектурный аудит и улучшения
 

@@ -327,8 +327,8 @@ fn test_string_cache_extraction() {
 /// Тест проверяет, что все типы существуют и работают.
 #[test]
 fn test_highscore_separation_into_submodules() {
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::highscore::{Leaderboard, SaveData};
-use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем SaveData через from_value и verify_and_get_score
     let save = SaveData::from_value(5000);

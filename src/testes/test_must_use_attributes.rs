@@ -4,8 +4,8 @@
 //! предупреждения компилятора работают корректно.
 
 use crate::game::GameState;
-use crate::highscore::SaveData;
 use crate::highscore::leaderboard::LeaderboardEntry;
+use crate::highscore::SaveData;
 
 /// Тест 1: Проверка #[must_use] на get_score()
 ///
