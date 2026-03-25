@@ -87,7 +87,7 @@ fn test_collision_with_other_pieces() {
     let y = (state.curr_shape.pos.1 + 2.0) as usize;
 
     if x < 10 && y < 20 {
-        state.blocks[y][x] = 0; // Устанавливаем блок
+        state.blocks[y][x] = 1; // Устанавливаем блок
 
         // Движение вниз должно быть заблокировано
         assert!(
