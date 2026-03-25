@@ -34,7 +34,7 @@ pub use crate::io::{Canvas, KeyReader};
 pub use crate::io_traits::{InputReader, Renderer};
 
 // Экспорт типов из модуля highscore
-pub use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+pub use crate::highscore::{Leaderboard, SaveData};
 
 // Экспорт типов из модуля controls
 pub use crate::controls::ControlsConfig;

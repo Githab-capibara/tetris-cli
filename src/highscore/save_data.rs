@@ -6,9 +6,65 @@
 use crate::crypto::{self, hash};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
 
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
+
+/// Получить путь к файлу конфигурации confy.
+///
+/// # Возвращает
+/// Путь к файлу конфигурации или None при ошибке
+fn get_config_file_path() -> Option<PathBuf> {
+    // confy хранит конфигурацию в директории конфигурации ОС
+    // Используем directories crate для получения пути
+    let config_dir = directories::BaseDirs::new()
+        .and_then(|dirs| dirs.config_dir().to_path_buf().into())
+        .or_else(|| {
+            // Fallback: домашняя директория/.config
+            std::env::var("HOME").ok().map(|home| {
+                let mut path = PathBuf::from(home);
+                path.push(".config");
+                path
+            })
+        })?;
+
+    let mut config_path = config_dir;
+    config_path.push(APP_NAME);
+    config_path.push("config.toml");
+
+    Some(config_path)
+}
+
+/// Проверить размер файла конфигурации.
+///
+/// # Аргументы
+/// * `path` - путь к файлу для проверки
+///
+/// # Возвращает
+/// - `Ok(())` если размер файла в пределах нормы
+/// - `Err(String)` если файл слишком большой или не существует
+fn check_config_file_size(path: &PathBuf) -> Result<(), String> {
+    match fs::metadata(path) {
+        Ok(metadata) => {
+            let file_size = metadata.len();
+            if file_size > super::MAX_CONFIG_FILE_SIZE {
+                return Err(format!(
+                    "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
+                    file_size,
+                    super::MAX_CONFIG_FILE_SIZE
+                ));
+            }
+            Ok(())
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // Файл не существует — это нормально, будет создан новый
+            Ok(())
+        }
+        Err(e) => Err(format!("Ошибка проверки файла: {e}")),
+    }
+}
 
 /// Ошибка операции с конфигурацией.
 #[derive(Debug)]
@@ -57,7 +113,18 @@ impl SaveData {
     ///
     /// # Исправление #26
     /// Добавлено предупреждение в UI о проблемах с загрузкой конфигурации.
+    ///
+    /// # Исправление #23
+    /// Добавлена проверка размера файла перед загрузкой для защиты от атак через большие файлы.
     pub fn load_config() -> Self {
+        // Проверка размера файла перед загрузкой (Исправление #23)
+        if let Some(config_path) = get_config_file_path() {
+            if let Err(e) = check_config_file_size(&config_path) {
+                eprintln!("Предупреждение: {e}. Используется значение по умолчанию.");
+                return Self::default();
+            }
+        }
+
         match load::<Self>(APP_NAME) {
             Ok(data) => {
                 // Дополнительная проверка целостности
@@ -202,5 +269,93 @@ impl SaveData {
 impl Default for SaveData {
     fn default() -> Self {
         Self::from_value(0)
+    }
+}
+
+// ============================================================================
+// ТЕСТЫ ДЛЯ ПРОВЕРКИ РАЗМЕРА ФАЙЛА
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use std::io::Write;
+
+    /// Тест для check_config_file_size() с файлом больше 1MB
+    /// Проверяет, что функция возвращает ошибку для файла > 1MB
+    #[test]
+    fn test_check_config_file_size_too_large() {
+        // Создаём временный файл
+        let test_path = PathBuf::from("test_config_large.toml");
+
+        // Создаём файл размером больше 1MB (1MB + 1 байт)
+        let large_size = (super::super::MAX_CONFIG_FILE_SIZE + 1) as usize;
+        let mut file = File::create(&test_path).expect("Не удалось создать тестовый файл");
+
+        // Записываем данные размером больше 1MB
+        let data = vec![b'a'; large_size];
+        file.write_all(&data)
+            .expect("Не удалось записать данные в файл");
+        drop(file);
+
+        // Проверяем, что функция возвращает ошибку
+        let result = check_config_file_size(&test_path);
+        assert!(
+            result.is_err(),
+            "Проверка файла > 1MB должна вернуть ошибку"
+        );
+
+        let error_msg = result.unwrap_err();
+        assert!(
+            error_msg.contains("слишком большим") || error_msg.contains("максимум"),
+            "Ошибка должна упоминать превышение размера"
+        );
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(&test_path);
+    }
+
+    /// Тест для check_config_file_size() с файлом меньше 1MB
+    /// Проверяет, что функция возвращает Ok для файла < 1MB
+    #[test]
+    fn test_check_config_file_size_ok() {
+        // Создаём временный файл
+        let test_path = PathBuf::from("test_config_small.toml");
+
+        // Создаём небольшой файл (1KB)
+        let small_size = 1024;
+        let mut file = File::create(&test_path).expect("Не удалось создать тестовый файл");
+
+        // Записываем небольшие данные
+        let data = vec![b'b'; small_size];
+        file.write_all(&data)
+            .expect("Не удалось записать данные в файл");
+        drop(file);
+
+        // Проверяем, что функция возвращает Ok
+        let result = check_config_file_size(&test_path);
+        assert!(result.is_ok(), "Проверка файла < 1MB должна вернуть Ok");
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(&test_path);
+    }
+
+    /// Тест для check_config_file_size() с несуществующим файлом
+    /// Проверяет, что функция возвращает Ok для несуществующего файла
+    #[test]
+    fn test_check_config_file_size_not_found() {
+        // Путь к несуществующему файлу
+        let test_path = PathBuf::from("test_config_nonexistent.toml");
+
+        // Убеждаемся, что файл не существует
+        let _ = fs::remove_file(&test_path);
+
+        // Проверяем, что функция возвращает Ok (файл будет создан)
+        let result = check_config_file_size(&test_path);
+        assert!(
+            result.is_ok(),
+            "Проверка несуществующего файла должна вернуть Ok"
+        );
     }
 }

@@ -1,7 +1,7 @@
 //! Тесты для исправлений проблем 9-12.
 
 use crate::game::GameState;
-use crate::highscore::LeaderboardEntry;
+use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 use crate::types::RotationDirection;
 

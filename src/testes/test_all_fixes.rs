@@ -25,7 +25,8 @@
 use crate::controls::ControlsConfig;
 use crate::crypto::generate_salt;
 use crate::game::GameState;
-use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::io::{Canvas, KeyReader};
 use crate::tetromino::{ShapeType, Tetromino};
 use crate::types::Direction;

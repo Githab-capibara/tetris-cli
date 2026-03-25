@@ -128,7 +128,7 @@ fn test_наличие_блокировки_rate_limiting() {
     let entries = leaderboard.get_entries();
     let min_score = entries
         .iter()
-        .map(super::super::highscore::LeaderboardEntry::score)
+        .map(super::super::highscore::leaderboard::LeaderboardEntry::score)
         .min()
         .unwrap_or(0);
     assert!(

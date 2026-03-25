@@ -907,6 +907,58 @@ impl GameState {
     pub fn add_score(&mut self, points: u128) {
         self.score = self.score.saturating_add(points);
     }
+
+    // ========================================================================
+    // МЕТОДЫ ДЛЯ БЕНЧМАРКОВ
+    // ========================================================================
+
+    /// Заполнить линию для бенчмарков.
+    ///
+    /// Заполняет указанную линию блоками для теста очистки линий.
+    /// Используется только при компиляции с feature = "bench".
+    ///
+    /// # Аргументы
+    /// * `line` - номер линии для заполнения (0-19)
+    #[cfg(feature = "bench")]
+    pub fn fill_line_for_bench(&mut self, line: usize) {
+        // Заполняем указанную линию блоками цвета 0
+        for x in 0..GRID_WIDTH {
+            self.blocks[line][x] = 0;
+        }
+    }
+
+    /// Очистить линии для бенчмарков.
+    ///
+    /// Выполняет очистку заполненных линий для теста производительности.
+    /// Используется только при компиляции с feature = "bench".
+    #[cfg(feature = "bench")]
+    pub fn clear_lines_for_bench(&mut self) {
+        let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
+        crate::game::remove_rows(&mut self.blocks, rows_mask);
+    }
+
+    /// Сохранить фигуру для бенчмарков.
+    ///
+    /// Сохраняет текущую фигуру в hold для теста механики hold.
+    /// Используется только при компиляции с feature = "bench".
+    #[cfg(feature = "bench")]
+    pub fn save_tetromino_for_bench(&mut self) {
+        if self.can_hold {
+            self.held_shape = Some(self.curr_shape);
+            self.can_hold = false;
+        }
+    }
+
+    /// Установить текущую фигуру для бенчмарков.
+    ///
+    /// Создаёт новую фигуру из мешка и устанавливает её как текущую.
+    /// Используется только при компиляции с feature = "bench".
+    #[cfg(feature = "bench")]
+    pub fn set_curr_shape_for_bench(&mut self) {
+        self.curr_shape = self.next_shape;
+        self.next_shape = Tetromino::from_bag(&mut self.bag);
+        self.stats.add_piece(self.curr_shape.shape);
+    }
 }
 
 // ============================================================================
@@ -982,5 +1034,165 @@ impl crate::game::access::GameBoardAccess for GameState {
 
     fn set_land_timer(&mut self, timer: f64) {
         self.land_timer = timer;
+    }
+}
+
+// ============================================================================
+// ТЕСТЫ ДЛЯ БЕНЧМАРК-МЕТОДОВ
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Тест для fill_line_for_bench()
+    /// Проверяет, что метод заполняет указанную линию блоками
+    #[test]
+    #[cfg(feature = "bench")]
+    fn test_fill_line_for_bench() {
+        let mut state = GameState::new();
+        let line = 5;
+
+        // Заполняем линию 5
+        state.fill_line_for_bench(line);
+
+        // Проверяем, что все ячейки в линии 5 заполнены блоками цвета 0
+        for x in 0..GRID_WIDTH {
+            assert_eq!(
+                state.blocks[line][x], 0,
+                "Ячейка [{}][{}] должна быть заполнена блоком цвета 0",
+                line, x
+            );
+        }
+
+        // Проверяем, что другие линии остались пустыми
+        for y in 0..GRID_HEIGHT {
+            if y != line {
+                for x in 0..GRID_WIDTH {
+                    assert_eq!(
+                        state.blocks[y][x], -1,
+                        "Ячейка [{}][{}] должна оставаться пустой",
+                        y, x
+                    );
+                }
+            }
+        }
+    }
+
+    /// Тест для clear_lines_for_bench()
+    /// Проверяет, что метод очищает заполненные линии
+    #[test]
+    #[cfg(feature = "bench")]
+    fn test_clear_lines_for_bench() {
+        let mut state = GameState::new();
+
+        // Заполняем линии 3, 5 и 7
+        state.fill_line_for_bench(3);
+        state.fill_line_for_bench(5);
+        state.fill_line_for_bench(7);
+
+        // Проверяем, что линии заполнены
+        for &line in &[3, 5, 7] {
+            for x in 0..GRID_WIDTH {
+                assert_eq!(
+                    state.blocks[line][x], 0,
+                    "Линия {} должна быть заполнена перед очисткой",
+                    line
+                );
+            }
+        }
+
+        // Очищаем линии
+        state.clear_lines_for_bench();
+
+        // Проверяем, что линии очищены (сдвинуты вниз)
+        // После очистки заполненные линии должны исчезнуть, а верхние сдвинуться
+        let mut empty_lines_count = 0;
+        for y in 0..GRID_HEIGHT {
+            let is_line_empty = (0..GRID_WIDTH).all(|x| state.blocks[y][x] == -1);
+            if is_line_empty {
+                empty_lines_count += 1;
+            }
+        }
+
+        // После очистки 3 линий должно быть как минимум 3 пустых линии
+        assert!(
+            empty_lines_count >= 3,
+            "После очистки должно быть как минимум 3 пустых линии"
+        );
+    }
+
+    /// Тест для save_tetromino_for_bench()
+    /// Проверяет, что метод сохраняет текущую фигуру в hold
+    #[test]
+    #[cfg(feature = "bench")]
+    fn test_save_tetromino_for_bench() {
+        let mut state = GameState::new();
+
+        // Запоминаем текущую фигуру
+        let original_shape = state.curr_shape.shape;
+
+        // Сохраняем фигуру в hold
+        state.save_tetromino_for_bench();
+
+        // Проверяем, что фигура сохранена в hold
+        assert!(
+            state.held_shape.is_some(),
+            "Фигура должна быть сохранена в hold"
+        );
+        assert_eq!(
+            state.held_shape.unwrap().shape,
+            original_shape,
+            "Сохранённая фигура должна совпадать с исходной"
+        );
+
+        // Проверяем, что can_hold установлен в false
+        assert!(
+            !state.can_hold,
+            "После удержания фигуры can_hold должен быть false"
+        );
+    }
+
+    /// Тест для set_curr_shape_for_bench()
+    /// Проверяет, что метод устанавливает следующую фигуру как текущую
+    #[test]
+    #[cfg(feature = "bench")]
+    fn test_set_curr_shape_for_bench() {
+        let mut state = GameState::new();
+
+        // Запоминаем следующую фигуру
+        let next_shape = state.next_shape.shape;
+
+        // Устанавливаем следующую фигуру как текущую
+        state.set_curr_shape_for_bench();
+
+        // Проверяем, что текущая фигура стала той, которая была следующей
+        assert_eq!(
+            state.curr_shape.shape, next_shape,
+            "Текущая фигура должна стать следующей"
+        );
+
+        // Проверяем, что следующая фигура обновилась (новая из мешка)
+        // Новая фигура должна отличаться от предыдущей (с высокой вероятностью)
+        // или быть любой из 7 типов
+        assert!(
+            matches!(
+                state.next_shape.shape,
+                ShapeType::T
+                    | ShapeType::L
+                    | ShapeType::J
+                    | ShapeType::S
+                    | ShapeType::Z
+                    | ShapeType::O
+                    | ShapeType::I
+            ),
+            "Следующая фигура должна быть одного из 7 типов"
+        );
+
+        // Проверяем, что статистика обновилась
+        assert!(
+            state.stats.total_pieces() >= 2,
+            "В статистике должно быть как минимум 2 фигуры"
+        );
     }
 }

@@ -621,7 +621,7 @@ mod problem_11_check_rows_refactoring {
 // ----------------------------------------------------------------------------
 // cfg(test) removed - parent module is already test-only
 mod problem_12_sanitize_validation {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     /// Тест 12.1: Проверяет удаление control characters
     ///
@@ -1133,7 +1133,7 @@ mod problem_24_benchmarks {
 // Тест 1: score() без бесконечной рекурсии
 // ----------------------------------------------------------------------------
 mod test_leaderboard_entry_score_no_infinite_recursion {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     /// Тест проверяет что метод `score()` не вызывает бесконечную рекурсию
     ///

@@ -19,13 +19,12 @@
 //! - [`sanitize`] — санитаризация имён игроков
 
 // Подмодули
-mod leaderboard;
-mod sanitize;
+pub mod leaderboard;
+pub mod sanitize;
 mod save_data;
 
 // Re-export основных типов для обратной совместимости
-pub use leaderboard::{Leaderboard, LeaderboardEntry};
-pub use sanitize::sanitize_player_name;
+pub use leaderboard::Leaderboard;
 pub use save_data::SaveData;
 
 // ============================================================================
@@ -43,4 +42,6 @@ pub const MAX_SCORE_DIGITS: usize = 39;
 /// Максимальный размер файла конфигурации в байтах (1MB).
 /// Используется для защиты от атак через большие файлы.
 /// Исправление #23: проверка размера файла перед загрузкой.
+// TODO: для будущей функциональности
+#[allow(dead_code)]
 pub const MAX_CONFIG_FILE_SIZE: u64 = 1_048_576; // 1MB

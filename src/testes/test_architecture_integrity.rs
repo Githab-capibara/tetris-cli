@@ -866,7 +866,9 @@ fn test_full_integration() {
 #[test]
 fn test_highscore_module_structure() {
     // Проверяем существование типов через re-export
-    use crate::highscore::{sanitize_player_name, Leaderboard, LeaderboardEntry, SaveData};
+    use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
+use crate::highscore::sanitize::sanitize_player_name;
 
     // SaveData должен существовать
     let _ = std::mem::size_of::<SaveData>();
@@ -924,14 +926,14 @@ fn test_no_rate_limiting_in_highscore() {
 #[test]
 fn test_application_struct_exists() {
     // Application должен существовать через crate::app
-    use crate::app::Application;
+    use crate::app::application::Application;
 
     // Application должен существовать как тип
     // Не создаём реальный экземпляр так как нужен терминал
     let _ = std::mem::size_of::<Application>();
 
     // Проверяем что функция run существует
-    let _ = crate::app::run as fn() -> Result<(), Box<dyn std::error::Error>>;
+    let _ = crate::app::run as fn();
 }
 
 /// Тест проверяет что main.rs не содержит бизнес-логики.
@@ -947,7 +949,7 @@ fn test_main_is_minimal() {
     assert!(true, "main.rs должен делегировать app::run()");
 
     // Проверяем что app::run имеет правильную сигнатуру
-    let run_ptr: fn() -> Result<(), Box<dyn std::error::Error>> = app_run;
+    let run_ptr: fn() = app_run;
     let _ = run_ptr;
 }
 
@@ -1144,7 +1146,7 @@ fn test_scoring_uses_traits() {
 /// Комплексная проверка всех компонентов архитектуры.
 #[test]
 fn test_architecture_integration() {
-    use crate::app::Application;
+    use crate::app::application::Application;
     use crate::game::mode_trait::{ClassicMode, GameModeTrait};
     use crate::highscore::{Leaderboard, SaveData};
 

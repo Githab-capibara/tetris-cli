@@ -253,7 +253,7 @@ fn test_7_documentation_present() {
 /// Проверяет, что имена игроков валидируются через whitelist.
 #[test]
 fn test_8_sanitize_player_name() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем поддержку ASCII
     let ascii_entry = LeaderboardEntry::new("Player123", 1000);
@@ -547,7 +547,8 @@ fn test_17_edge_cases() {
 #[test]
 fn test_18_naming_consistency() {
     use crate::game::{GameState, LINE_SCORES};
-    use crate::highscore::{LeaderboardEntry, SaveData};
+    use crate::highscore::SaveData;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем, что имена соответствуют snake_case
     let _state = GameState::new();
@@ -851,7 +852,8 @@ fn test_30_get_key_error_logging() {
 fn test_31_integration_all_fixes() {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
-    use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+    use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::io::{Canvas, KeyReader};
     use crate::tetromino::{BagGenerator, Tetromino};
 
@@ -897,7 +899,8 @@ fn test_31_integration_all_fixes() {
 fn test_32_full_integration() {
     use crate::controls::ControlsConfig;
     use crate::game::GameState;
-    use crate::highscore::{LeaderboardEntry, SaveData};
+    use crate::highscore::SaveData;
+use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
     use crate::types::RotationDirection;
 

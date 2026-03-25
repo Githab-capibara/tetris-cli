@@ -11,6 +11,9 @@
 //! ## Безопасность
 //! Конфигурация защищена HMAC-SHA256 подписью для предотвращения подделки.
 
+// TODO: для будущей функциональности
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};

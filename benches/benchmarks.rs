@@ -204,8 +204,8 @@ fn bench_save_tetromino(c: &mut Criterion) {
     group.bench_function("save_i_center", |b| {
         b.iter(|| {
             let mut game_state = GameState::new();
-            // Используем set_curr_shape_for_bench для установки I-фигуры
-            game_state.set_curr_shape_for_bench(Tetromino {
+            // Устанавливаем I-фигуру как текущую
+            game_state.set_curr_shape(Tetromino {
                 pos: (4.0, 0.0),
                 shape: ShapeType::I,
                 coords: tetris_cli::tetromino::SHAPE_COORDS[6],
