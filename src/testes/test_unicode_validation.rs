@@ -69,11 +69,12 @@ fn test_unicode_variation_selectors_range() {
 
 /// Тест 4: Проверка допустимых символов - ASCII буквы
 ///
-/// ASCII буквы должны проходить фильтрацию.
+/// ASCII буквы должны проходить фильтрацию (с учётом ограничения длины 20).
 #[test]
 fn test_unicode_allowed_ascii_letters() {
-    let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let lowercase = "abcdefghijklmnopqrstuvwxyz";
+    // Используем имена длиной 20 символов (максимальная длина)
+    let uppercase = "ABCDEFGHIJKLMNOPQRST";
+    let lowercase = "abcdefghijklmnopqrst";
 
     let entry_upper = LeaderboardEntry::new(uppercase, 1000);
     let entry_lower = LeaderboardEntry::new(lowercase, 1000);
@@ -252,24 +253,16 @@ fn test_unicode_mixed_allowed_disallowed() {
 
 /// Тест 12: Проверка кириллических символов
 ///
-/// Кириллические символы должны отфильтровываться (не в whitelist).
+/// Кириллические символы разрешены (поддержка международных имён).
 #[test]
 fn test_unicode_cyrillic_filtering() {
     let cyrillic_name = "Игрок";
     let entry = LeaderboardEntry::new(cyrillic_name, 1000);
 
-    // Кириллица не в whitelist, поэтому должна отфильтроваться
-    assert!(
-        !entry.name().contains('И'),
-        "Кириллические символы должны отфильтровываться"
+    // Кириллица разрешена для поддержки международных имён
+    assert_eq!(
+        entry.name(),
+        "Игрок",
+        "Кириллические символы должны проходить (поддержка международных имён)"
     );
-
-    // Пустое имя после фильтрации должно стать "Anonymous"
-    if entry.name().is_empty() || entry.name() == "Anonymous" {
-        assert_eq!(
-            entry.name(),
-            "Anonymous",
-            "Пустое имя после фильтрации должно стать 'Anonymous'"
-        );
-    }
 }

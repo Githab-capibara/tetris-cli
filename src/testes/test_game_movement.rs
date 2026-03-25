@@ -848,6 +848,8 @@ fn test_movement_after_full_rotation_cycle() {
 }
 
 /// Тест 48: Вращение у стены и движение
+///
+/// Проверяет вращение с wall kick у стены.
 #[test]
 #[allow(clippy::assertions_on_result_states)]
 fn test_rotation_at_wall_and_movement() {
@@ -860,16 +862,25 @@ fn test_rotation_at_wall_and_movement() {
 
     // Используем rotate_with_wall_kick для вращения у стены
     // Это правильный способ вращения с учётом wall kick
-    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
+    let can_rotate_before = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    if can_rotate_before {
         state.rotate_with_wall_kick(RotationDirection::Clockwise);
     }
 
-    // После вращения у стены должно быть возможно движение вправо
+    // После вращения проверяем что состояние корректно
     // Примечание: это известный edge case - некоторые фигуры могут оставаться у стены
+    // после вращения, поэтому проверяем что вращение либо сработало либо было недоступно
     let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
+    let can_rotate_after = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+
+    // Тест проходит если:
+    // 1. Можно двигаться вправо, ИЛИ
+    // 2. Вращение недоступно (фигура у стены)
     assert!(
-        can_move_right || !state.can_rotate_curr_shape(RotationDirection::Clockwise),
-        "После вращения у стены должно быть возможно движение вправо, или вращение должно быть недоступно"
+        can_move_right || !can_rotate_after,
+        "После вращения у стены: движение вправо = {}, вращение = {}",
+        can_move_right,
+        can_rotate_after
     );
 }
 

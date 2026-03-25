@@ -9,6 +9,7 @@
 //! - [`access`] — трейты доступа к состоянию игры (GameBoardAccess)
 //! - [`cache`] — кэширование строк для отрисовки (StringCache)
 //! - [`cycle`] — игровой цикл (FPS, ввод, отрисовка)
+//! - [`mode_trait`] — трейт режима игры (GameModeTrait)
 //!
 //! ## Пример использования
 //!
@@ -30,6 +31,7 @@ pub mod access;
 pub mod cache;
 pub mod cycle;
 pub mod logic;
+pub mod mode_trait;
 pub mod render;
 pub mod scoring;
 pub mod state;
