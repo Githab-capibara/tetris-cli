@@ -15,6 +15,7 @@ use termion::color::White;
 
 /// Типы ошибок игры.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum GameError {
     /// Ошибка ввода/вывода.
     Io(std::io::Error),
@@ -49,6 +50,7 @@ impl From<std::io::Error> for GameError {
 }
 
 /// Тип результата игры.
+#[allow(dead_code)]
 pub type GameResult<T> = Result<T, GameError>;
 
 // ============================================================================
@@ -558,6 +560,7 @@ impl GameState {
 
     /// Получить удержанную фигуру (ссылка на Option).
     #[must_use]
+    #[allow(clippy::ref_option)]
     pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
         &self.held_shape
     }

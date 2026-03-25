@@ -388,7 +388,7 @@ fn test_long_bag_100000_shapes() {
     }
 
     // Каждая фигура должна встретиться ~14285 раз
-    let expected = 100000 / 7;
+    let expected = 100_000 / 7;
     for (i, &count) in counts.iter().enumerate() {
         // Допускаем небольшую погрешность
         let diff = (i64::from(count) - i64::from(expected)).abs();

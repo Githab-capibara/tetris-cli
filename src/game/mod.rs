@@ -32,24 +32,37 @@ pub mod state;
 pub mod view;
 
 // Re-export основных типов для обратной совместимости
+pub use state::{GameMode, GameState};
+
+// Re-export GameStats для lib.rs
+#[allow(unused_imports)]
+pub use state::GameStats;
+
+// Константы
+pub use state::{FPS, GAME_OVER, GAME_OVER_DELAY_MS, PAUSE};
+
+// Константы для тестов (обратная совместимость)
+#[allow(unused_imports)]
 pub use state::{
-    GameMode,
-    GameState,
-    // Константы
-    FPS,
-    GAME_OVER,
-    GAME_OVER_DELAY_MS,
-    PAUSE,
+    ANIMATION_FRAME_SKIP, COMBO_BONUS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS,
+    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
+    MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, MILLIS_PER_SECOND, MIN_Y,
+    PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SHAPE_DRAW_OFFSET, SOFT_DROP_POINTS, SPD_INC,
+    SPRINT_LINES,
 };
+
+// Re-export трейтов и типов для тестов
+#[allow(unused_imports)]
+pub use access::GameBoardAccess;
+#[allow(unused_imports)]
+pub use state::{GameError, GameResult};
 
 pub use logic::{
-    can_move_curr_shape_direction, can_rotate_curr_shape,
-    rotate_with_wall_kick, save_tetromino, update,
+    can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
+    update,
 };
 
-pub use scoring::{
-    find_full_rows, handle_hold, remove_rows,
-};
+pub use scoring::{find_full_rows, handle_hold, remove_rows};
 
 pub use render::{check_rows, draw, update_cached_strings_extended};
 
@@ -61,6 +74,7 @@ pub use view::GameView;
 // ============================================================================
 // Расширяем GameState методами из подмодулей
 
+#[allow(dead_code)]
 impl GameState {
     /// Запустить игровой цикл и вернуть финальный счёт.
     ///
@@ -101,7 +115,7 @@ impl GameState {
                 UpdateEndState::Quit => {
                     return 0;
                 }
-                UpdateEndState::Lost => {
+                UpdateEndState::Lost | UpdateEndState::Won => {
                     cnv.draw_strs(
                         &GAME_OVER,
                         (10, 12),
@@ -130,17 +144,6 @@ impl GameState {
                     cnv.draw_strs(&PAUSE, (7, 13), state::BORDER_COLOR, &termion::color::Reset);
                     sleep(Duration::from_millis(interval_ms));
                 },
-                UpdateEndState::Won => {
-                    cnv.draw_strs(
-                        &GAME_OVER,
-                        (10, 12),
-                        state::BORDER_COLOR,
-                        &termion::color::Reset,
-                    );
-                    cnv.flush();
-                    sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
-                    break;
-                }
             }
 
             // Отрисовка текущего кадра
@@ -249,7 +252,7 @@ use state::UpdateEndState;
 #[cfg(test)]
 mod game_tests {
     use super::*;
-    use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+    use crate::io::GRID_HEIGHT;
     use crate::types::Direction;
 
     // Тесты Hard Drop

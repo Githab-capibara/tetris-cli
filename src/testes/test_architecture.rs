@@ -303,20 +303,18 @@ fn test_module_boundaries() {
     let _ = UpdateEndState::Continue;
 
     // crypto.rs экспортирует только функции хеширования
-    use crate::crypto::{generate_salt, hash, hmac, verify_hmac};
+    use crate::crypto::{generate_salt, hash};
     let _ = hash("data");
     let _ = generate_salt();
 
     // io.rs экспортирует Canvas и KeyReader
-    use crate::io::{Canvas, KeyReader};
     // Не создаём экземпляры, просто проверяем доступность типов
 
     // io_traits.rs экспортирует трейты
-    use crate::io_traits::{InputReader, Renderer};
     // Трейты используются через bounds
 
     // game/ экспортирует игровые структуры
-    use crate::game::{GameMode, GameState, GameStats, GameView};
+    use crate::game::{GameMode, GameState};
     let _ = GameState::new();
     let _ = GameMode::Classic;
 

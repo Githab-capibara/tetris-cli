@@ -5,7 +5,7 @@
 //! - Тесты подсчёта фигур (10 тестов)
 //! - Тесты комбо и достижений (5 тестов)
 
-use crate::game::{GameMode, GameStats};
+use crate::game::GameStats;
 use crate::tetromino::ShapeType;
 
 // ============================================================================

@@ -820,6 +820,38 @@ mod testes {
 
     // Тесты на архитектурные улучшения (20 тестов)
     pub mod test_architecture_improvements;
+
+    // ========================================================================
+    // НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
+    // ========================================================================
+
+    // Тесты критических ошибок (8 тестов)
+    pub mod test_constant_imports;
+    pub mod test_game_stats_export;
+
+    // Тесты логических ошибок (13 тестов)
+    pub mod test_direction_down;
+    pub mod test_hard_drop_flag;
+    pub mod test_wall_kick_refactor;
+
+    // Тесты оптимизаций (18 тестов)
+    pub mod test_bounds_check_optimization;
+    pub mod test_row_check_optimization;
+    pub mod test_sanitize_optimization;
+    pub mod test_string_caching;
+
+    // Тесты безопасности (16 тестов)
+    pub mod test_hard_drop_overflow;
+    pub mod test_time_safety;
+    pub mod test_unicode_validation;
+
+    // Тесты best practices (11 тестов)
+    pub mod test_cfg_attr_dead_code;
+    pub mod test_must_use_attributes;
+    pub mod test_track_caller;
+
+    // Интеграционные тесты (10 тестов)
+    pub mod test_all_fixes_integration;
 }
 
 #[cfg(test)]

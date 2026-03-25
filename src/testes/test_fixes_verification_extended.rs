@@ -112,7 +112,7 @@ mod expect_unwrap_tests {
         let score = entry.score();
 
         // Формируем строку для хеширования с expect()
-        let salt = format!("{:020}", entry.score() % 10000000000000000000u128);
+        let salt = format!("{:020}", entry.score() % 10_000_000_000_000_000_000_u128);
         let mut salt_and_score = String::with_capacity(salt.len() + name.len() + 20);
 
         // expect() должен работать без паники при корректных данных

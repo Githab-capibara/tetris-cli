@@ -8,7 +8,7 @@
 
 use super::state::{
     GameState, COMBO_BONUS, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR,
-    SPD_INC,
+    SOFT_DROP_POINTS, SPD_INC,
 };
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::Tetromino;
@@ -19,7 +19,8 @@ use crate::tetromino::Tetromino;
 /// Битовую маску заполненных линий и количество заполненных линий
 ///
 /// # Производительность
-/// O(n) сложность где n = `GRID_HEIGHT` (20 итераций)
+/// O(n) сложность где n = `GRID_HEIGHT` (20 итераций).
+/// Используется `.all()` с ранним выходом при обнаружении пустой ячейки.
 #[must_use]
 pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
@@ -27,6 +28,7 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
 
     // Поиск заполненных линий
     for (y, row) in blocks.iter().enumerate() {
+        // Оптимизация: .all() делает ранний выход при первом false
         let row_full = row
             .iter()
             .take(crate::io::GRID_WIDTH)
@@ -71,8 +73,8 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
     }
 
     // Заполняем верхние строки пустыми значениями (-1)
-    for y in 0..rows_removed_below {
-        blocks[y] = [-1; crate::io::GRID_WIDTH];
+    for row in blocks.iter_mut().take(rows_removed_below) {
+        *row = [-1; crate::io::GRID_WIDTH];
     }
 }
 
@@ -158,6 +160,9 @@ pub fn handle_landing(state: &mut GameState) -> Option<super::state::UpdateEndSt
         state.soft_drop_distance = 0;
     }
 
+    // Сброс флага Hard Drop после завершения анимации
+    state.is_hard_dropping = false;
+
     // Сохранение фигуры в сетке поля
     state.save_tetromino();
 
@@ -241,13 +246,13 @@ pub fn handle_hard_drop(state: &mut GameState) {
         state.curr_shape.pos.1 += 1.0;
     }
 
+    // Безопасная конвертация f32 → u32 с использованием clamp() + trunc()
     let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs().max(0.0);
-    let drop_distance: u32 = if !drop_distance_f32.is_finite() {
-        0
-    } else if drop_distance_f32 >= u32::MAX as f32 {
-        u32::MAX
+    let drop_distance: u32 = if drop_distance_f32.is_finite() {
+        // clamp() ограничивает диапазон, trunc() отбрасывает дробную часть
+        drop_distance_f32.clamp(0.0, u32::MAX as f32).trunc() as u32
     } else {
-        drop_distance_f32 as u32
+        0
     };
 
     state.score = state
@@ -267,5 +272,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
     if state.can_move_curr_shape_direction(Direction::Down) {
         state.curr_shape.pos.1 += 1.0;
         state.soft_drop_distance = state.soft_drop_distance.saturating_add(1);
+        // Начисляем очки за каждую ячейку падения (1 очко за ячейку)
+        state.score = state.score.saturating_add(SOFT_DROP_POINTS);
     }
 }

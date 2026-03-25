@@ -746,6 +746,7 @@ fn test_all_32_fixes_integration() {
     // ЛОГИЧЕСКИЕ (4-6)
     let _score = _state.get_score(); // Проверка проигрыша
     let _lines = _state.get_lines_cleared(); // Ghost shape
+    #[allow(deprecated)]
     let mut tetromino = Tetromino::select(); // Direction::Down
     #[allow(deprecated)]
     tetromino.rotate_old(crate::types::Direction::Down);
