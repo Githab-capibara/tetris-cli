@@ -45,6 +45,7 @@ mod rate_limiting_tests {
     ///
     /// После 10 записей следующие должны возвращать false.
     #[test]
+    #[ignore = "Rate limiting удалён как YAGNI для локальной игры"]
     fn test_add_many_scores_without_rate_limiting() {
         let mut leaderboard = Leaderboard::default();
 

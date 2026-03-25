@@ -10,11 +10,14 @@
 //! ## Архитектурные заметки
 //! Выделен из main.rs для улучшения читаемости и уменьшения размера файла.
 
+use crate::game::GameState;
 use crate::highscore::Leaderboard;
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, KEY_BACKSPACE};
-use crate::{game::GameState, FRAME_DELAY_MS};
 use std::{thread::sleep, time::Duration};
 use termion::color::{Color, Reset, White};
+
+/// Задержка между кадрами для поддержания 60 FPS (в миллисекундах).
+const FRAME_DELAY_MS: u64 = 16;
 
 // ============================================================================
 // КОНСТАНТЫ МЕНЮ

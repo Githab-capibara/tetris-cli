@@ -921,6 +921,7 @@ fn test_path_traversal_combined() {
 ///
 /// Проверяет, что rate limiting работает корректно.
 #[test]
+#[ignore = "Rate limiting удалён как YAGNI для локальной игры"]
 fn test_rate_limit_enforcement() {
     let mut leaderboard = Leaderboard::default();
 
@@ -962,6 +963,7 @@ fn test_rate_limit_counter_reset() {
 ///
 /// Проверяет, что ошибки rate limiting обрабатываются корректно.
 #[test]
+#[ignore = "Rate limiting удалён как YAGNI для локальной игры"]
 fn test_rate_limit_error_handling() {
     let mut leaderboard = Leaderboard::default();
 

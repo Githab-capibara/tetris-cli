@@ -170,6 +170,7 @@ mod add_score_tests {
     ///
     /// Проверяет, что rate limiting работает после 10 записей.
     #[test]
+    #[ignore = "Rate limiting удалён как YAGNI для локальной игры"]
     fn test_add_score_rate_limiting() {
         let mut leaderboard = Leaderboard::default();
 
