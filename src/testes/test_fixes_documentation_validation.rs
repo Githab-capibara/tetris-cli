@@ -1,7 +1,8 @@
 //! Тесты для исправлений проблем 13-20.
 
 use crate::game::{GameMode, GameState};
-use crate::highscore::{Leaderboard, LeaderboardEntry};
+use crate::highscore::Leaderboard;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 /// Тест 13.1: Проверка что `save_to_file()` имеет # Errors секцию.
 #[test]
@@ -146,7 +147,7 @@ fn test_documentation_renders_correctly() {
 /// Тест 19.1: Проверка что whitelist символов работает.
 #[test]
 fn test_name_whitelist_works() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     let entry = LeaderboardEntry::new("Player1", 1000);
     assert_eq!(entry.name(), "Player1");
 }
@@ -154,7 +155,7 @@ fn test_name_whitelist_works() {
 /// Тест 19.2: Проверка что максимальная длина проверяется.
 #[test]
 fn test_max_name_length_checked() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
     let entry = LeaderboardEntry::new(&long_name.to_string(), 1000);
     assert_eq!(entry.name().chars().count(), 20);
@@ -163,7 +164,7 @@ fn test_max_name_length_checked() {
 /// Тест 19.3: Проверка что специальные символы отклоняются.
 #[test]
 fn test_special_chars_rejected() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     let entry = LeaderboardEntry::new("@@@###", 1000);
     assert_eq!(entry.name(), "Anonymous");
 }

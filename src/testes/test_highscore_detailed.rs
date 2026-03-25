@@ -9,7 +9,8 @@
 //!
 //! Все тесты проверяют корректность системы сохранения рекордов.
 
-use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: SaveData (создание, сохранение, загрузка)

@@ -3,7 +3,7 @@
 //! Проверяют фильтрацию zero-width joiners, variation selectors,
 //! допустимые и недопустимые символы.
 
-use crate::highscore::LeaderboardEntry;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 /// Тест 1: Проверка фильтрации zero-width joiners (U+200C)
 ///

@@ -537,7 +537,7 @@ mod unwrap_to_expect_tests {
 
 #[cfg(test)]
 mod private_fields_tests {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     /// Тест 1: Проверка что поля недоступны напрямую
     ///

@@ -1,7 +1,7 @@
 //! Тесты для исправлений проблем 5-8.
 
 use crate::game::{GameState, FPS};
-use crate::highscore::LeaderboardEntry;
+use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::tetromino::BagGenerator;
 use std::time::{Duration, Instant};
 

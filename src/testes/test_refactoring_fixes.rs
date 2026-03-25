@@ -717,12 +717,12 @@ fn test_rotate_bounds_check_release() {
     );
 }
 
-/// Тест 44: Проверка assert в rotate_old() в release-режиме
+/// Тест 44: Проверка assert в rotate() в release-режиме
 ///
 /// Исправление #25: assert! вместо debug_assert! для проверки границ
 #[test]
 fn test_rotate_old_bounds_check_release() {
-    use crate::types::Direction;
+    use crate::types::RotationDirection;
 
     let mut tetromino = Tetromino {
         pos: (4.0, 0.0),
@@ -732,7 +732,7 @@ fn test_rotate_old_bounds_check_release() {
     };
 
     // Вращение должно работать корректно
-    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
 
     // Координаты должны измениться после вращения
     assert_ne!(
@@ -764,13 +764,13 @@ fn test_rotate_assert_in_release_mode() {
     tetromino.rotate(RotationDirection::Clockwise);
 }
 
-/// Тест 46: Проверка паники при выходе за границы в rotate_old()
+/// Тест 46: Проверка паники при выходе за границы в rotate()
 ///
 /// Исправление #25: assert! должен вызывать панику даже в release-режиме
 #[test]
 #[should_panic(expected = "Координата")]
 fn test_rotate_old_assert_in_release_mode() {
-    use crate::types::Direction;
+    use crate::types::RotationDirection;
 
     let mut tetromino = Tetromino {
         pos: (4.0, 0.0),
@@ -780,7 +780,7 @@ fn test_rotate_old_assert_in_release_mode() {
     };
 
     // Это должно вызвать панику из-за assert! проверки
-    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
 }
 
 // ============================================================================
@@ -1008,4 +1008,213 @@ fn test_canvas_error_handling_integration() {
     // Проверяем, что Canvas валиден
     let _size = std::mem::size_of_val(&canvas);
     assert!(true, "Canvas должен быть валидным");
+}
+
+// ============================================================================
+// ТЕСТЫ ДЛЯ ROTATE() С ROTATIONDIRECTION
+// ============================================================================
+
+/// Тест 56: Проверка вращения с RotationDirection::Clockwise
+///
+/// Проверяет корректность вращения фигуры по часовой стрелке
+#[test]
+fn test_rotate_clockwise() {
+    let mut tetromino = Tetromino {
+        pos: (4.0, 0.0),
+        shape: ShapeType::T,
+        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        fg: 0,
+    };
+
+    // Сохраняем начальные координаты
+    let initial_coords = tetromino.coords;
+
+    // Вращаем по часовой стрелке
+    tetromino.rotate(RotationDirection::Clockwise);
+
+    // Проверяем, что координаты изменились
+    assert_ne!(
+        tetromino.coords, initial_coords,
+        "Координаты должны измениться после вращения по часовой"
+    );
+
+    // Для T-фигуры в начальной позиции [(-1,0), (0,0), (1,0), (0,1)]
+    // после вращения по часовой должны получить [(0,-1), (0,0), (0,1), (-1,0)]
+    // Формула: (x, y) -> (-y, x)
+    // (-1,0) -> (0,-1)
+    // (0,0) -> (0,0)
+    // (1,0) -> (0,1)
+    // (0,1) -> (-1,0)
+    assert_eq!(
+        tetromino.coords[0],
+        (0, -1),
+        "Первый блок должен повернуться правильно"
+    );
+    assert_eq!(
+        tetromino.coords[1],
+        (0, 0),
+        "Центральный блок должен остаться на месте"
+    );
+    assert_eq!(
+        tetromino.coords[2],
+        (0, 1),
+        "Третий блок должен повернуться правильно"
+    );
+    assert_eq!(
+        tetromino.coords[3],
+        (-1, 0),
+        "Четвёртый блок должен повернуться правильно"
+    );
+}
+
+/// Тест 57: Проверка вращения с RotationDirection::CounterClockwise
+///
+/// Проверяет корректность вращения фигуры против часовой стрелки
+#[test]
+fn test_rotate_counter_clockwise() {
+    let mut tetromino = Tetromino {
+        pos: (4.0, 0.0),
+        shape: ShapeType::T,
+        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        fg: 0,
+    };
+
+    // Сохраняем начальные координаты
+    let initial_coords = tetromino.coords;
+
+    // Вращаем против часовой стрелки
+    tetromino.rotate(RotationDirection::CounterClockwise);
+
+    // Проверяем, что координаты изменились
+    assert_ne!(
+        tetromino.coords, initial_coords,
+        "Координаты должны измениться после вращения против часовой"
+    );
+
+    // Для T-фигуры в начальной позиции [(-1,0), (0,0), (1,0), (0,1)]
+    // после вращения против часовой должны получить [(0,1), (0,0), (0,-1), (1,0)]
+    // Формула: (x, y) -> (y, -x)
+    // (-1,0) -> (0,1)
+    // (0,0) -> (0,0)
+    // (1,0) -> (0,-1)
+    // (0,1) -> (1,0)
+    assert_eq!(
+        tetromino.coords[0],
+        (0, 1),
+        "Первый блок должен повернуться правильно"
+    );
+    assert_eq!(
+        tetromino.coords[1],
+        (0, 0),
+        "Центральный блок должен остаться на месте"
+    );
+    assert_eq!(
+        tetromino.coords[2],
+        (0, -1),
+        "Третий блок должен повернуться правильно"
+    );
+    assert_eq!(
+        tetromino.coords[3],
+        (1, 0),
+        "Четвёртый блок должен повернуться правильно"
+    );
+}
+
+/// Тест 58: Проверка полного цикла вращения (4 раза по 90°)
+///
+/// Проверяет, что после 4 вращений фигура возвращается к исходному состоянию
+#[test]
+fn test_rotate_full_cycle() {
+    let mut tetromino = Tetromino {
+        pos: (4.0, 0.0),
+        shape: ShapeType::L,
+        coords: [(-1, -1), (0, -1), (0, 0), (0, 1)],
+        fg: 1,
+    };
+
+    // Сохраняем начальные координаты
+    let initial_coords = tetromino.coords;
+
+    // Вращаем 4 раза по часовой стрелке (360°)
+    for _ in 0..4 {
+        tetromino.rotate(RotationDirection::Clockwise);
+    }
+
+    // После полного цикла фигура должна вернуться к исходному состоянию
+    assert_eq!(
+        tetromino.coords, initial_coords,
+        "После 4 вращений на 90° фигура должна вернуться к исходному состоянию"
+    );
+}
+
+/// Тест 59: Проверка, что квадрат (O) не вращается
+///
+/// Проверяет, что O-фигура остаётся неизменной при вращении
+#[test]
+fn test_rotate_o_shape_no_change() {
+    let mut tetromino = Tetromino {
+        pos: (4.0, 0.0),
+        shape: ShapeType::O,
+        coords: [(0, 0), (1, 0), (0, 1), (1, 1)],
+        fg: 5,
+    };
+
+    // Сохраняем начальные координаты
+    let initial_coords = tetromino.coords;
+
+    // Вращаем по часовой
+    tetromino.rotate(RotationDirection::Clockwise);
+
+    // O-фигура не должна измениться
+    assert_eq!(
+        tetromino.coords, initial_coords,
+        "O-фигура (квадрат) не должна вращаться"
+    );
+
+    // Вращаем против часовой для проверки
+    tetromino.rotate(RotationDirection::CounterClockwise);
+
+    // Всё ещё не должна измениться
+    assert_eq!(
+        tetromino.coords, initial_coords,
+        "O-фигура (квадрат) не должна вращаться против часовой"
+    );
+}
+
+/// Тест 60: Проверка вращения разных типов фигур
+///
+/// Проверяет вращение для всех типов фигур кроме O
+#[test]
+fn test_rotate_all_shape_types() {
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::I,
+    ];
+
+    for shape_type in shapes {
+        let mut bag = BagGenerator::new();
+        // Создаём фигуру через from_bag для получения правильных координат
+        let mut tetromino = Tetromino::from_bag(&mut bag);
+        // Устанавливаем нужный тип фигуры
+        tetromino.shape = shape_type;
+
+        // Сохраняем начальные координаты
+        let initial_coords = tetromino.coords;
+
+        // Вращаем 4 раза (полный цикл)
+        for _ in 0..4 {
+            tetromino.rotate(RotationDirection::Clockwise);
+        }
+
+        // После полного цикла фигура должна вернуться к исходному состоянию
+        assert_eq!(
+            tetromino.coords, initial_coords,
+            "Фигура {:?} должна вернуться к исходному состоянию после 4 вращений",
+            shape_type
+        );
+    }
 }

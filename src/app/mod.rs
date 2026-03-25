@@ -34,6 +34,6 @@
 //! }
 //! ```
 
-mod application;
+pub mod application;
 
-pub use application::{run, Application};
+pub use application::run;

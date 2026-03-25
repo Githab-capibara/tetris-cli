@@ -89,7 +89,6 @@ fn test_game_cycle_separation_into_phases() {
     use crate::game::cycle::{handle_game_over, handle_input, render, InputResult};
     use crate::game::GameState;
     use crate::io::{Canvas, KeyReader};
-    use crate::types::Direction;
 
     // Создаём состояние игры
     let mut state = GameState::new();
@@ -328,7 +327,8 @@ fn test_string_cache_extraction() {
 /// Тест проверяет, что все типы существуют и работают.
 #[test]
 fn test_highscore_separation_into_submodules() {
-    use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+    use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем SaveData через from_value и verify_and_get_score
     let save = SaveData::from_value(5000);
@@ -452,7 +452,7 @@ fn test_game_logic_trait_exists() {
 /// Тест проверяет, что функции scoring существуют и работают.
 #[test]
 fn test_scoring_system_trait_exists() {
-    use crate::game::scoring::{find_full_rows, handle_hard_drop, handle_hold, handle_soft_drop};
+    use crate::game::scoring::{find_full_rows, handle_hard_drop, handle_soft_drop};
     use crate::game::GameState;
 
     // Создаём состояние для тестирования

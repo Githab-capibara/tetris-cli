@@ -8,7 +8,7 @@
 
 use crate::crypto::generate_salt;
 use crate::game::{GameMode, GameState};
-use crate::highscore::LeaderboardEntry;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 #[cfg(test)]
 mod tests {

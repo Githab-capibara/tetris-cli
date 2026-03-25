@@ -8,7 +8,8 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты системы рекордов.
 
-use crate::highscore::{Leaderboard, LeaderboardEntry, SaveData};
+use crate::highscore::{Leaderboard, SaveData};
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: SaveData

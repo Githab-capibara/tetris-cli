@@ -1,7 +1,8 @@
 //! Тесты для исправлений проблем 21-26.
 
 use crate::game::{GameMode, GameState};
-use crate::highscore::{Leaderboard, LeaderboardEntry};
+use crate::highscore::Leaderboard;
+use crate::highscore::leaderboard::LeaderboardEntry;
 use std::time::Instant;
 
 /// Тест 21.1: Проверка что `draw()` работает корректно.

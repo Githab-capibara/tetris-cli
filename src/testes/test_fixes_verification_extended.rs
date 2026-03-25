@@ -79,7 +79,7 @@ mod panic_unreachable_tests {
 
 #[cfg(test)]
 mod expect_unwrap_tests {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use std::fmt::Write;
 
     /// Тест 1: Корректная запись в Write
@@ -431,7 +431,7 @@ mod allowed_config_dir_removal_tests {
 
 #[cfg(test)]
 mod cfg_attr_dead_code_tests {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     /// Тест 1: Метод `hash()` доступен в тестах
     ///

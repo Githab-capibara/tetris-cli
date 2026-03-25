@@ -197,7 +197,7 @@ fn test_game_state_implements_game_board_access() {
 /// Проверка, что методы GameBoardAccess работают корректно.
 #[test]
 fn test_game_board_access_methods() {
-    use crate::game::{GameBoardAccess, GameState};
+    use crate::game::GameState;
 
     let mut state = GameState::new();
 

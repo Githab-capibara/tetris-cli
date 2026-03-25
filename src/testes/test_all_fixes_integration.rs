@@ -120,7 +120,7 @@ fn test_wall_kick_and_rotation_integration() {
 /// Проверяем, что sanitize_player_name и Unicode валидация работают вместе.
 #[test]
 fn test_sanitize_and_unicode_validation_integration() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Имя с запрещёнными символами
     let bad_name = "Player\u{200C}\u{FE00}Name";
@@ -283,7 +283,7 @@ fn test_no_regressions() {
 #[test]
 fn test_all_fixes_comprehensive_integration() {
     use crate::game::scoring::{find_full_rows, handle_hard_drop};
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // 1. GameStats экспорт
     let mut state = GameState::new();

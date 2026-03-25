@@ -126,7 +126,8 @@ fn test_path_traversal_protection() {
 /// Это предотвращает race condition между проверкой и использованием.
 #[test]
 fn test_highscore_validation_before_use() {
-    use crate::highscore::{LeaderboardEntry, SaveData};
+    use crate::highscore::SaveData;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем SaveData
     let save = SaveData::from_value(5000);
@@ -270,7 +271,7 @@ fn test_rotate_old_deprecated() {
 /// включая русские буквы, но отклоняет эмодзи и управляющие символы.
 #[test]
 fn test_unicode_name_validation() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем поддержку русских букв
     let russian_entry = LeaderboardEntry::new("Игрок", 1000);
@@ -489,7 +490,8 @@ fn test_snake_case_naming() {
     // через проверку имён функций
 
     use crate::game::{GameState, LINE_SCORES};
-    use crate::highscore::{LeaderboardEntry, SaveData};
+    use crate::highscore::SaveData;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Все имена функций должны быть в snake_case:
     // - GameState::new() (исключение для конструкторов)
@@ -546,7 +548,7 @@ fn test_main_functions_testable() {
 /// для предотвращения лишних аллокаций.
 #[test]
 fn test_string_with_capacity() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // sanitize_player_name используется внутри LeaderboardEntry::new()
     // Проверяем, что функция работает корректно с оптимизацией

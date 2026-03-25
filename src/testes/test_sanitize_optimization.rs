@@ -2,7 +2,7 @@
 //!
 //! Проверяют фильтрацию опасных Unicode-символов и производительность.
 
-use crate::highscore::LeaderboardEntry;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 /// Тест 1: Проверка фильтрации zero-width joiners (U+200C, U+200D)
 ///

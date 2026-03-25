@@ -151,7 +151,7 @@ fn test_score_saturating_add() {
 /// для предотвращения лишних аллокаций памяти.
 #[test]
 fn test_highscore_allocation_optimization() {
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
 
     // Создаём запись в таблице лидеров
     let entry = LeaderboardEntry::new("TestPlayer", 1000);
@@ -339,7 +339,7 @@ fn test_all_security_fixes_integration() {
     assert!(state.get_score() >= 100);
 
     // Тест 4: Highscore allocation optimization
-    use crate::highscore::LeaderboardEntry;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     let entry = LeaderboardEntry::new("Player", 1000);
     assert!(entry.is_valid());
 

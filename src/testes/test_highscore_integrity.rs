@@ -7,7 +7,8 @@
 //!
 //! Проверка целостности защищает от модификации файлов сохранений.
 
-use crate::highscore::{LeaderboardEntry, SaveData};
+use crate::highscore::SaveData;
+use crate::highscore::leaderboard::LeaderboardEntry;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Проверка целостности при загрузке

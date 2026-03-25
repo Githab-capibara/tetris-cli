@@ -383,14 +383,14 @@ mod tests {
         SaveData::save_value(1000);
 
         // Проверка что LeaderboardEntry корректно обрабатывает ошибки валидации
-        let entry_valid = crate::highscore::LeaderboardEntry::new("TestPlayer", 1000);
+        let entry_valid = crate::highscore::leaderboard::LeaderboardEntry::new("TestPlayer", 1000);
         assert!(
             entry_valid.is_valid(),
             "Валидная запись должна проходить проверку"
         );
 
         // Проверка что невалидная запись обрабатывается корректно
-        let entry_invalid_name = crate::highscore::LeaderboardEntry::new("@@@###", 1000);
+        let entry_invalid_name = crate::highscore::leaderboard::LeaderboardEntry::new("@@@###", 1000);
         // Имя с невалидными символами должно быть заменено на "Anonymous"
         assert_eq!(
             entry_invalid_name.name(),
@@ -449,7 +449,7 @@ mod tests {
         assert_eq!(state.get_score(), 0, "GameState должен иметь документацию");
 
         // Проверка что LeaderboardEntry имеет документацию
-        let entry = crate::highscore::LeaderboardEntry::new("DocTest", 100);
+        let entry = crate::highscore::leaderboard::LeaderboardEntry::new("DocTest", 100);
         assert_eq!(
             entry.name(),
             "DocTest",
