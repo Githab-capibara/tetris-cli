@@ -866,9 +866,9 @@ fn test_full_integration() {
 #[test]
 fn test_highscore_module_structure() {
     // Проверяем существование типов через re-export
+    use crate::highscore::leaderboard::LeaderboardEntry;
+    use crate::highscore::sanitize::sanitize_player_name;
     use crate::highscore::{Leaderboard, SaveData};
-use crate::highscore::leaderboard::LeaderboardEntry;
-use crate::highscore::sanitize::sanitize_player_name;
 
     // SaveData должен существовать
     let _ = std::mem::size_of::<SaveData>();

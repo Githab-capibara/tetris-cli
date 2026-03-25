@@ -8,8 +8,8 @@
 //! Исправление обеспечивает корректную конвертацию 32 байт в 64 hex символа.
 
 use crate::crypto::generate_salt;
-use crate::highscore::SaveData;
 use crate::highscore::leaderboard::LeaderboardEntry;
+use crate::highscore::SaveData;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Исправление конвертации байтов в hex

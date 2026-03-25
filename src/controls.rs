@@ -6,10 +6,17 @@
 //! ## Структура модуля
 //! - `ControlsConfig` - структура конфигурации управления
 //! - `DEFAULT_CONTROLS` - значения по умолчанию
+//! - `PathValidator` - единый валидатор путей
 //! - `tests` - модульные тесты (4 теста)
 //!
 //! ## Безопасность
 //! Конфигурация защищена HMAC-SHA256 подписью для предотвращения подделки.
+//!
+//! ## Архитектурные заметки
+//! ## Единый валидатор путей (Problem 2.3)
+//! TODO (#архитектура): Использовать `PathValidator` для всех проверок путей в проекте.
+//! В настоящее время используются отдельные функции валидации.
+//! `PathValidator` объединяет все проверки в одном месте (DRY).
 
 // TODO: для будущей функциональности
 #![allow(dead_code)]
@@ -19,6 +26,304 @@ use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
+
+// ============================================================================
+// ЕДИНЫЙ ВАЛИДАТОР ПУТЕЙ (PathValidator)
+// ============================================================================
+// TODO (#архитектура, Problem 2.3): Заменить 5 отдельных функций валидации
+// на использование PathValidator. Это улучшит DRY и упростит тестирование.
+
+/// Ошибка валидации пути.
+///
+/// Содержит информацию о причине ошибки валидации.
+#[derive(Debug, Clone)]
+pub struct PathError {
+    /// Сообщение об ошибке.
+    pub message: String,
+    /// Тип ошибки.
+    pub kind: PathErrorKind,
+}
+
+/// Типы ошибок валидации пути.
+#[derive(Debug, Clone)]
+pub enum PathErrorKind {
+    /// Путь слишком длинный.
+    TooLong,
+    /// Запрещённые символы в пути.
+    ForbiddenCharacters,
+    /// Символическая ссылка.
+    Symlink,
+    /// Выход за пределы директории.
+    PathTraversal,
+    /// Абсолютный путь.
+    AbsolutePath,
+    /// Неверный путь.
+    InvalidPath,
+}
+
+impl std::fmt::Display for PathError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Ошибка валидации пути: {} ({:?})",
+            self.message, self.kind
+        )
+    }
+}
+
+impl std::error::Error for PathError {}
+
+impl From<PathError> for io::Error {
+    fn from(err: PathError) -> Self {
+        io::Error::new(io::ErrorKind::InvalidInput, err.message)
+    }
+}
+
+/// Валидатор путей для конфигурации.
+///
+/// Объединяет все проверки в одном месте (DRY).
+///
+/// # Архитектурные заметки
+/// ## Problem 2.3 - Консолидация валидации путей
+/// TODO (#архитектура): Заменить функции:
+/// - `validate_path_length`
+/// - `validate_path_characters`
+/// - `validate_no_symlinks`
+/// - `validate_path_within_directory`
+/// - `validate_config_path`
+///
+/// на использование `PathValidator`.
+///
+/// # Пример использования
+/// ```ignore
+/// use tetris_cli::controls::PathValidator;
+///
+/// let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-");
+/// let path = Path::new("config.json");
+/// validator.validate(path).unwrap();
+/// ```
+pub struct PathValidator {
+    /// Максимальная длина пути.
+    max_length: usize,
+    /// Разрешённые символы в пути.
+    allowed_chars: &'static str,
+}
+
+impl PathValidator {
+    /// Создать новый валидатор путей.
+    ///
+    /// # Аргументы
+    /// * `max_length` - максимальная длина пути (рекомендуется 255)
+    /// * `allowed_chars` - строка разрешённых символов
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `PathValidator`
+    pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
+        Self {
+            max_length,
+            allowed_chars,
+        }
+    }
+
+    /// Валидировать путь.
+    ///
+    /// Выполняет все проверки:
+    /// 1. Проверка длины
+    /// 2. Проверка символов
+    /// 3. Проверка на symlink
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если путь валиден
+    /// - `Err(PathError)` если путь невалиден
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь не проходит валидацию:
+    /// - `PathErrorKind::TooLong` - путь слишком длинный
+    /// - `PathErrorKind::ForbiddenCharacters` - запрещённые символы
+    /// - `PathErrorKind::Symlink` - путь является символической ссылкой
+    pub fn validate(&self, path: &Path) -> Result<(), PathError> {
+        self.validate_length(path)?;
+        self.validate_characters(path)?;
+        self.validate_no_symlinks(path)?;
+        Ok(())
+    }
+
+    /// Проверить максимальную длину пути.
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если длина в пределах нормы
+    /// - `Err(PathError)` если путь слишком длинный
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если длина пути превышает `max_length`.
+    pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
+        let path_str = path.to_str().ok_or_else(|| PathError {
+            message: "Путь содержит невалидные UTF-8 символы".to_string(),
+            kind: PathErrorKind::InvalidPath,
+        })?;
+
+        if path_str.len() > self.max_length {
+            return Err(PathError {
+                message: format!(
+                    "Путь слишком длинный (максимум {} символов): {:?}",
+                    self.max_length, path_str
+                ),
+                kind: PathErrorKind::TooLong,
+            });
+        }
+        Ok(())
+    }
+
+    /// Проверить допустимые символы в пути.
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если символы допустимы
+    /// - `Err(PathError)` если есть запрещённые символы
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь содержит символы, не входящие в `allowed_chars`.
+    pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
+        let path_str = path.to_str().ok_or_else(|| PathError {
+            message: "Путь содержит невалидные UTF-8 символы".to_string(),
+            kind: PathErrorKind::InvalidPath,
+        })?;
+
+        // Проверяем каждый символ
+        for ch in path_str.chars() {
+            if !self.allowed_chars.contains(ch) {
+                return Err(PathError {
+                    message: format!(
+                        "Запрещённый символ в пути: {:?} (символ: '{}')",
+                        path_str, ch
+                    ),
+                    kind: PathErrorKind::ForbiddenCharacters,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    /// Проверить отсутствие символических ссылок.
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если symlink не обнаружен
+    /// - `Err(PathError)` если путь является symlink
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь является символической ссылкой.
+    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
+        if let Ok(metadata) = std::fs::symlink_metadata(path) {
+            if metadata.file_type().is_symlink() {
+                return Err(PathError {
+                    message: format!("Символические ссылки не разрешены: {}", path.display()),
+                    kind: PathErrorKind::Symlink,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    /// Проверить, что путь находится внутри директории.
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    /// * `dir` - разрешённая директория
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если путь внутри директории
+    /// - `Err(PathError)` если путь вне директории
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь находится вне разрешённой директории.
+    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    pub fn validate_within_directory(&self, path: &Path, dir: &Path) -> Result<(), PathError> {
+        let canonical_path = if path.exists() {
+            path.canonicalize().map_err(|e| PathError {
+                message: format!("Неверный путь {}: {}", path.display(), e),
+                kind: PathErrorKind::InvalidPath,
+            })?
+        } else {
+            path.parent()
+                .and_then(|p| p.canonicalize().ok())
+                .unwrap_or_else(|| dir.to_path_buf())
+        };
+
+        if canonical_path.strip_prefix(dir).is_err() {
+            return Err(PathError {
+                message: format!("Путь вне разрешённой директории: {}", path.display()),
+                kind: PathErrorKind::PathTraversal,
+            });
+        }
+        Ok(())
+    }
+
+    /// Проверить запрет абсолютных путей.
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если путь относительный
+    /// - `Err(PathError)` если путь абсолютный
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь является абсолютным.
+    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    pub fn validate_not_absolute(&self, path: &Path) -> Result<(), PathError> {
+        if path.is_absolute() {
+            return Err(PathError {
+                message: format!("Абсолютные пути не разрешены: {}", path.display()),
+                kind: PathErrorKind::AbsolutePath,
+            });
+        }
+        Ok(())
+    }
+
+    /// Проверить запрет path traversal (..).
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки (строка)
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если нет последовательностей ..
+    /// - `Err(PathError)` если есть ..
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь содержит последовательности `..`.
+    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
+        if path.contains("..") {
+            return Err(PathError {
+                message: format!("Path traversal не разрешён: {:?}", path),
+                kind: PathErrorKind::PathTraversal,
+            });
+        }
+        Ok(())
+    }
+}
+
+/// Валидатор путей по умолчанию для конфигурации.
+///
+/// Использует стандартные настройки:
+/// - Максимальная длина: 255 символов
+/// - Разрешённые символы: буквы, цифры, ., _, -
+pub const DEFAULT_PATH_VALIDATOR: PathValidator = PathValidator {
+    max_length: 255,
+    allowed_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-",
+};
 
 /// Длина HMAC ключа в байтах (256 бит).
 const HMAC_KEY_LENGTH: usize = 32;
