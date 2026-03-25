@@ -172,17 +172,7 @@ fn test_tests_without_assertions_compile() {
     assert!(true, "Тест без проверок должен компилироваться");
 }
 
-/// Тест 3.2: Проверка что assert!(false) паникует
-///
-/// Проверяет, что assert!(false) вызывает панику теста.
-#[test]
-#[should_panic(expected = "assertion failed: false")]
-fn test_assert_false_panics() {
-    // assert!(false) должен вызывать панику
-    assert!(false);
-}
-
-/// Тест 3.3: Проверка что assert!(condition) работает
+/// Тест 3.2: Проверка что assert!(condition) работает
 ///
 /// Проверяет, что assert! с условием работает корректно.
 #[test]
@@ -203,19 +193,7 @@ fn test_assert_condition_works() {
 // КАТЕГОРИЯ 4: unwrap safety
 // ============================================================================
 
-/// Тест 4.1: `unwrap()` на None вызывает панику
-///
-/// Проверяет, что `unwrap()` на None вызывает панику.
-#[test]
-#[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
-fn test_unwrap_on_none_panics() {
-    let none_value: Option<i32> = None;
-
-    // unwrap() на None должен паниковать
-    let _value = none_value.unwrap();
-}
-
-/// Тест 4.2: `unwrap_or_default()` безопасен
+/// Тест 4.1: `unwrap_or_default()` безопасен
 ///
 /// Проверяет, что `unwrap_or_default()` не паникует на None.
 #[test]

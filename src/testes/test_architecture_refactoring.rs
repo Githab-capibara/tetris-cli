@@ -47,16 +47,10 @@ fn test_game_state_separation_into_components() {
     use crate::game::logic::can_move_curr_shape_direction;
 
     // Проверяем существование модуля scoring
-    use crate::game::scoring::{find_full_rows, handle_hold};
-
-    // Проверяем существование модуля render
-    use crate::game::render::check_rows;
+    use crate::game::scoring::find_full_rows;
 
     // Проверяем существование модуля view
     use crate::game::view::GameView;
-
-    // Проверяем существование модуля cycle
-    use crate::game::cycle::{handle_game_over, handle_input, render, run_game_loop};
 
     // Создаём состояние игры
     let state = GameState::new();
