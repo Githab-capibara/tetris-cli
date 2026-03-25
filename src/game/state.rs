@@ -290,7 +290,7 @@ impl GameMode {
     /// TODO (#архитектура, Problem 2.8): Выделить проверку условий в отдельный трейт
     /// WinConditionChecker для улучшения тестируемости.
     #[must_use]
-    pub fn check_win_condition(&self, lines_cleared: u32) -> bool {
+    pub fn check_win_condition(self, lines_cleared: u32) -> bool {
         match self {
             GameMode::Classic => false, // В классическом режиме нет победы
             GameMode::Sprint => lines_cleared >= SPRINT_LINES,
@@ -303,7 +303,7 @@ impl GameMode {
     /// # Возвращает
     /// Количество линий для победы (для Sprint/Marathon) или None для Classic
     #[must_use]
-    pub fn get_target_lines(&self) -> Option<u32> {
+    pub fn get_target_lines(self) -> Option<u32> {
         match self {
             GameMode::Classic => None,
             GameMode::Sprint => Some(SPRINT_LINES),

@@ -4,6 +4,7 @@
 
 use crate::game::GameState;
 use crate::types::Direction;
+use serial_test::serial;
 
 /// Тест 1: Проверка корректности check_collision_direction
 ///
@@ -76,25 +77,47 @@ fn test_bounds_check_boundaries() {
 /// Тест 3: Проверка коллизий с другими фигурами
 ///
 /// Проверяем, что коллизии с зафиксированными фигурами определяются.
+/// Используем #[serial] для предотвращения конфликтов при параллельном выполнении.
 #[test]
+#[serial]
 fn test_collision_with_other_pieces() {
     use crate::game::logic::can_move_curr_shape_direction;
+    use crate::io::GRID_HEIGHT;
 
     let mut state = GameState::new();
 
-    // Устанавливаем блок под текущей фигурой
-    let x = state.curr_shape.pos.0 as usize;
-    let y = (state.curr_shape.pos.1 + 2.0) as usize;
+    // Находим безопасную позицию для установки блока
+    // Используем фиксированную позицию вместо динамического вычисления
+    let test_x = 5;
+    let test_y = 10;
 
-    if x < 10 && y < 20 {
-        state.blocks[y][x] = 1; // Устанавливаем блок
+    // Проверяем, что позиция валидна
+    assert!(
+        test_x < 10 && test_y < GRID_HEIGHT,
+        "Тестовая позиция должна быть валидна"
+    );
 
-        // Движение вниз должно быть заблокировано
-        assert!(
-            !can_move_curr_shape_direction(&state, Direction::Down),
-            "Движение вниз должно быть заблокировано блоком"
-        );
-    }
+    // Сохраняем текущую позицию фигуры
+    let original_pos = state.curr_shape.pos;
+
+    // Перемещаем фигуру на тестовую позицию
+    state.curr_shape.pos = (test_x as f32, test_y as f32);
+
+    // Устанавливаем блок прямо под фигурой (на 1 ячейку ниже)
+    state.blocks[test_y + 1][test_x] = 1;
+
+    // Движение вниз должно быть заблокировано
+    let can_move = can_move_curr_shape_direction(&state, Direction::Down);
+
+    // Восстанавливаем оригинальную позицию
+    state.curr_shape.pos = original_pos;
+
+    assert!(
+        !can_move,
+        "Движение вниз должно быть заблокировано блоком на позиции ({}, {})",
+        test_x,
+        test_y + 1
+    );
 }
 
 /// Тест 4: Проверка производительности check_collision_direction

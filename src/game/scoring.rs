@@ -58,6 +58,10 @@ use crate::tetromino::Tetromino;
 /// # Производительность
 /// O(n) сложность где n = `GRID_HEIGHT` (20 итераций).
 /// Используется `.all()` с ранним выходом при обнаружении пустой ячейки.
+///
+/// # Исправление #2.4
+/// Убран избыточный вызов `.take(GRID_WIDTH)` так как `row` уже имеет тип `[i8; GRID_WIDTH]`
+/// и итерация происходит по всем элементам массива фиксированного размера.
 #[must_use]
 pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
@@ -66,10 +70,8 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
     // Поиск заполненных линий
     for (y, row) in blocks.iter().enumerate() {
         // Оптимизация: .all() делает ранний выход при первом false
-        let row_full = row
-            .iter()
-            .take(crate::io::GRID_WIDTH)
-            .all(|&cell| cell != -1);
+        // Исправление #2.4: убран .take(GRID_WIDTH) как избыточный
+        let row_full = row.iter().all(|&cell| cell != -1);
         if row_full {
             rows_mask |= 1 << y;
             remove_count += 1;

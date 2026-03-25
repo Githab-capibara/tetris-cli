@@ -665,7 +665,10 @@ impl LeaderboardEntry {
         };
         let mut salt_and_score =
             String::with_capacity(salt.len() + valid_name.len() + score_digits);
-        let _ = write!(salt_and_score, "{salt}{valid_name}{score}");
+        // Исправление #4.1: используем unwrap_or_else с логированием вместо let _ =
+        write!(salt_and_score, "{salt}{valid_name}{score}").unwrap_or_else(|e| {
+            eprintln!("Предупреждение: ошибка записи в строку: {e}");
+        });
         let hash = hash(&salt_and_score);
 
         Self {
@@ -698,11 +701,15 @@ impl LeaderboardEntry {
         };
         let mut salt_and_score =
             String::with_capacity(self.salt.len() + self.name.len() + score_digits);
-        let _ = write!(
+        // Исправление #4.1: используем unwrap_or_else с логированием вместо let _ =
+        write!(
             salt_and_score,
             "{}{}{}",
             self.salt, self.name, self.score_value
-        );
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("Предупреждение: ошибка записи в строку при валидации: {e}");
+        });
         let test_hash = hash(&salt_and_score);
         self.hash == test_hash
     }

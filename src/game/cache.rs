@@ -78,6 +78,7 @@ impl StringCache {
     /// * `mode` - режим игры (для таймера)
     /// * `stats` - статистика игры (для таймера)
     #[track_caller]
+    #[allow(clippy::too_many_arguments)] // Кэширование требует множественных параметров
     pub fn update(
         &mut self,
         score: u128,
