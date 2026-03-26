@@ -47,13 +47,13 @@
 //! ```
 
 use super::state::{
-    GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, DRAW_OFFSET_X,
+    GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, DRAW_OFFSET_X,
     HARD_DROP_ANIM_INTERVAL_MS, HIGH_SCORE_X, HIGH_SCORE_Y, HOLD_PREVIEW_X, HOLD_PREVIEW_Y,
-    LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y, SCORE_X, SCORE_Y, SHAPE_DRAW_OFFSET,
-    SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES,
+    LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y, PROGRESS_Y, SCORE_X, SCORE_Y,
+    SHAPE_DRAW_OFFSET, SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES, TIMER_Y,
 };
 use super::view::GameView;
-use crate::io::{Canvas, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::io::{Canvas, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use termion::color::Reset;
 
@@ -88,9 +88,9 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
     cnv.draw_string(view.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
     cnv.draw_string(view.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
 
-    // Отрисовка счётчика комбо
+    // Отрисовка счётчика комбо (ИСПРАВЛЕНИЕ #9: именованные константы)
     if let Some(combo) = view.combo {
-        cnv.draw_string(combo, (24, 6), BORDER_COLOR, &Reset);
+        cnv.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
     }
 
     // Отрисовка зафиксированных фигур
@@ -332,6 +332,9 @@ fn draw_held_shape(view: &GameView, cnv: &mut Canvas) {
 /// * `pos_y` - позиция по Y
 /// * `title` - заголовок
 /// * `is_faded` - если true, рисовать тусклым цветом
+///
+/// # Исправление #25
+/// Добавлена проверка всех границ экрана для предотвращения выхода за пределы канваса.
 fn draw_shape_preview(
     cnv: &mut Canvas,
     shape: &Tetromino,
@@ -343,12 +346,17 @@ fn draw_shape_preview(
     cnv.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
 
     let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
+
+    // Исправление #25: используем константы DISP_WIDTH и DISP_HEIGHT для проверки границ
     for coord in shape.coords {
         let (coord_x, coord_y) = coord;
         let x = pos_x.cast_signed() + coord_x * shape_width_i16 + DRAW_OFFSET_X;
         let y = pos_y.cast_signed() + coord_y + 1;
 
-        if x >= 0 && y >= 0 {
+        // Исправление #25: полная проверка всех границ
+        // x >= 0 && y >= 0 - проверка на отрицательные координаты
+        // x < DISP_WIDTH && y < DISP_HEIGHT - проверка на выход за пределы экрана
+        if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
             let display_char = if is_faded { "░░" } else { SHAPE_STR };
             cnv.draw_strs(
                 &[display_char],
@@ -366,12 +374,12 @@ fn draw_shape_preview(
 /// * `view` - представление игры
 /// * `cnv` - канвас для отрисовки
 fn draw_sprint_timer(view: &GameView, cnv: &mut Canvas) {
-    // Форматируем таймер на лету из elapsed_time
+    // Форматируем таймер на лету из elapsed_time (ИСПРАВЛЕНИЕ #9: именованные константы)
     let timer_str = format!("Время: {:.2}с", view.elapsed_time);
-    cnv.draw_string(&timer_str, (24, 20), BORDER_COLOR, &Reset);
+    cnv.draw_string(&timer_str, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
 
     let progress = format!("Цель: {}/{}", view.lines_cleared, SPRINT_LINES);
-    cnv.draw_string(&progress, (24, 21), BORDER_COLOR, &Reset);
+    cnv.draw_string(&progress, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
 }
 
 /// Анимировать очистку заполненных линий.

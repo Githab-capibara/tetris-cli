@@ -346,6 +346,7 @@ fn test_state_private_fields() {
     let _score = state.get_score();
     let _lines = state.get_lines_cleared();
     let _level = state.get_level();
+    #[allow(deprecated)] // Используем для обратной совместимости
     let _mode = state.get_mode();
 
     // Следующий код не скомпилируется (поля приватные):
@@ -370,7 +371,7 @@ fn test_state_must_use_attributes() {
     // Это проверяется через успешную компиляцию
     // Clippy предупредит если результат не использован
 
-    #[allow(unused_variables)]
+    #[allow(unused_variables, deprecated)]
     {
         let _score = state.get_score();
         let _lines = state.get_lines_cleared();

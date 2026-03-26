@@ -9,11 +9,16 @@
 //! # Подмодули
 //! - [`lines`] - поиск и удаление заполненных линий
 //! - [`points`] - начисление очков и обновление уровня
-//! - [`combo`] - комбо-система и бонусы
+//! - [`combo`] - комбо-система и бонусы (базовая функция)
 //!
 //! # Зависимости
 //! - [`state.rs`](super::state): константы очков, `GameState`
 //! - [`tetromino.rs`](crate::tetromino): `Tetromino`
+//!
+//! ## Архитектурные заметки
+//! ## Исправление #23
+//! Функции комбо-системы были сокращены до базовой `calculate_combo_bonus()`.
+//! Остальные функции удалены как неиспользуемые (YAGNI).
 //!
 //! ## Таблица очков
 //! | Действие | Формула | Пример |
@@ -51,16 +56,4 @@ pub use lines::{find_full_rows, remove_rows};
 // Публичные экспорты из points
 pub use points::{
     handle_hard_drop, handle_hold, handle_landing, handle_soft_drop, update_score_and_level,
-};
-
-// Публичные экспорты из combo
-pub use combo::{
-    calculate_combo_bonus, calculate_tetris_bonus, is_tetris, reset_combo_counter,
-    update_combo_counter,
-};
-
-// Константы для обратной совместимости
-pub use super::state::{
-    COMBO_BONUS, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR,
-    SOFT_DROP_POINTS, SPD_INC,
 };

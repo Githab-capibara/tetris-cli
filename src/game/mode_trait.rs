@@ -208,4 +208,68 @@ mod tests {
         assert!(modes[1].check_win_condition(40));
         assert!(modes[2].check_win_condition(150));
     }
+
+    /// Тест: проверка динамической диспетчеризации трейтов
+    /// Исправление #33: добавлен тест для trait objects
+    #[test]
+    fn test_trait_object_dynamic_dispatch() {
+        let modes: Vec<Box<dyn GameModeTrait>> = vec![
+            Box::new(ClassicMode),
+            Box::new(SprintMode::new()),
+            Box::new(MarathonMode::new()),
+        ];
+
+        for (i, mode) in modes.iter().enumerate() {
+            match i {
+                0 => assert_eq!(mode.name(), "Классика"),
+                1 => assert_eq!(mode.name(), "Спринт"),
+                2 => assert_eq!(mode.name(), "Марафон"),
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    /// Тест: проверка clone для режимов
+    #[test]
+    fn test_mode_clone() {
+        let sprint = SprintMode::new();
+        let sprint_clone = sprint;
+        assert_eq!(sprint_clone.get_target_lines(), Some(40));
+
+        let marathon = MarathonMode::new();
+        let marathon_clone = marathon;
+        assert_eq!(marathon_clone.get_target_lines(), Some(150));
+    }
+
+    /// Тест: проверка граничных значений для SprintMode
+    #[test]
+    fn test_sprint_mode_boundaries() {
+        let mode = SprintMode::new();
+
+        // Граница: 39 линий - ещё не победа
+        assert!(!mode.check_win_condition(39));
+
+        // Граница: 40 линий - победа
+        assert!(mode.check_win_condition(40));
+
+        // Выше границы - тоже победа
+        assert!(mode.check_win_condition(41));
+        assert!(mode.check_win_condition(100));
+    }
+
+    /// Тест: проверка граничных значений для MarathonMode
+    #[test]
+    fn test_marathon_mode_boundaries() {
+        let mode = MarathonMode::new();
+
+        // Граница: 149 линий - ещё не победа
+        assert!(!mode.check_win_condition(149));
+
+        // Граница: 150 линий - победа
+        assert!(mode.check_win_condition(150));
+
+        // Выше границы - тоже победа
+        assert!(mode.check_win_condition(151));
+        assert!(mode.check_win_condition(500));
+    }
 }

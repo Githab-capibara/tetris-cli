@@ -36,6 +36,7 @@
 #![allow(clippy::should_panic_without_expect)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
+#![allow(deprecated)] // Тесты могут использовать deprecated методы для обратной совместимости
 //! - `test_highscore_u256_fix` - тесты исправления U256 (3 теста)
 //! - `test_game_bounds_check` - тесты проверок границ as cast (3 теста)
 //! - `test_highscore_rate_limiting` - тесты rate limiting (3 теста)

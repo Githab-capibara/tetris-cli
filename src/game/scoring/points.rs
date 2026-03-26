@@ -63,13 +63,15 @@ pub fn handle_hard_drop(state: &mut GameState) {
         state.curr_shape.pos.1 += 1.0;
     }
 
-    // Безопасная конвертация f32 → u32 с использованием clamp() + trunc()
+    // Безопасная конвертация f32 → u32 с явной проверкой границ
+    // Исправление: защита от NaN, Infinity и переполнения
     let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs().max(0.0);
-    let drop_distance: u32 = if drop_distance_f32.is_finite() {
-        // clamp() ограничивает диапазон, trunc() отбрасывает дробную часть
-        drop_distance_f32.clamp(0.0, u32::MAX as f32).trunc() as u32
-    } else {
+    let drop_distance: u32 = if !drop_distance_f32.is_finite() || drop_distance_f32 < 0.0 {
         0
+    } else if drop_distance_f32 >= u32::MAX as f32 {
+        u32::MAX
+    } else {
+        drop_distance_f32 as u32
     };
 
     state.score = state
@@ -125,25 +127,73 @@ pub fn handle_hold(state: &mut GameState) {
 /// - `Some(UpdateEndState::Lost)` - проигрыш
 /// - `Some(UpdateEndState::Won)` - победа (завершение режима)
 /// - `None` - продолжить игру
+///
+/// # Исправление #24
+/// Функция разделена на подфункции для улучшения читаемости:
+/// - `check_game_over_condition()` - проверка проигрыша
+/// - `calculate_landing_bonus()` - расчёт бонуса за приземление
+/// - `spawn_next_tetromino()` - переход к следующей фигуре
+/// - `check_mode_completion()` - проверка окончания режима
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
-    use crate::game::state::{
-        COMBO_BONUS, LAND_TIME_DELAY_S, MAX_FALL_SPEED, MIN_Y, PIECE_SCORE_FALL_MULT,
-        PIECE_SCORE_INC,
-    };
     use crate::game::state::{MARATHON_LINES, SPRINT_LINES};
 
-    // Проверка проигрыша
-    let shape_block_y = state.curr_shape.pos.1 as i16;
-    let lost = state.curr_shape.coords.iter().any(|&(_, coord_y)| {
-        let block_y = coord_y + shape_block_y;
-        block_y < MIN_Y
-    });
-
-    if lost {
+    // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
+    if check_game_over_condition(state) {
         return Some(UpdateEndState::Lost);
     }
 
-    // Фиксация фигуры и начисление очков
+    // Начисление очков за приземление (Исправление #24: вынесено в подфункцию)
+    calculate_landing_bonus(state);
+
+    // Сохранение фигуры в сетке поля
+    state.save_tetromino();
+
+    // Проверка и удаление заполненных линий
+    let lines_cleared = state.check_rows();
+
+    // Обновление комбо
+    update_combo_on_clear(state, lines_cleared);
+
+    // Переход к следующей фигуре (Исправление #24: вынесено в подфункцию)
+    spawn_next_tetromino(state);
+
+    // Проверка окончания режима (Исправление #24: вынесено в подфункцию)
+    check_mode_completion(state, lines_cleared, SPRINT_LINES, MARATHON_LINES)
+}
+
+/// Проверить условие проигрыша.
+///
+/// # Аргументы
+/// * `state` - состояние игры
+///
+/// # Возвращает
+/// `true` если фигура достигла верха поля (проигрыш)
+///
+/// # Исправление #24
+/// Выделена из `handle_landing()` для улучшения читаемости.
+fn check_game_over_condition(state: &GameState) -> bool {
+    use crate::game::state::MIN_Y;
+
+    let shape_block_y = state.curr_shape.pos.1 as i16;
+    state.curr_shape.coords.iter().any(|&(_, coord_y)| {
+        let block_y = coord_y + shape_block_y;
+        block_y < MIN_Y
+    })
+}
+
+/// Рассчитать и начислить бонус за приземление фигуры.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+///
+/// # Исправление #24
+/// Выделена из `handle_landing()` для улучшения читаемости.
+fn calculate_landing_bonus(state: &mut GameState) {
+    use crate::game::state::{
+        LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC,
+    };
+
+    // Расчёт бонуса за скорость падения
     let limited_fall_spd = state.fall_spd.min(MAX_FALL_SPEED);
     let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
         .max(0.0)
@@ -168,13 +218,21 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
     // Сброс флага Hard Drop после завершения анимации
     state.is_hard_dropping = false;
 
-    // Сохранение фигуры в сетке поля
-    state.save_tetromino();
+    // Сброс таймера приземления
+    state.land_timer = LAND_TIME_DELAY_S;
+}
 
-    // Проверка и удаление заполненных линий
-    let lines_cleared = state.check_rows();
+/// Обновить счётчик комбо после удаления линий.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+/// * `lines_cleared` - количество удалённых линий
+///
+/// # Исправление #24
+/// Выделена из `handle_landing()` для улучшения читаемости.
+fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
+    use crate::game::state::COMBO_BONUS;
 
-    // Обновление комбо
     if lines_cleared > 0 {
         state.stats.combo_counter = state.stats.combo_counter.saturating_add(1);
         if state.stats.combo_counter > 1 {
@@ -185,27 +243,52 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
     } else {
         state.stats.combo_counter = 0;
     }
+}
 
-    // Сброс таймера и переход к следующей фигуре
-    state.land_timer = LAND_TIME_DELAY_S;
-
-    // Переход к следующей фигуре
+/// Создать следующую фигуру и обновить статистику.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+///
+/// # Исправление #24
+/// Выделена из `handle_landing()` для улучшения читаемости.
+fn spawn_next_tetromino(state: &mut GameState) {
     state.curr_shape = state.next_shape;
     state.next_shape = crate::tetromino::Tetromino::from_bag(&mut state.bag);
     state.can_hold = true;
 
     // Обновление статистики для новой фигуры
     state.stats.add_piece(state.curr_shape.shape);
+}
 
-    // Проверка окончания режима спринт
+/// Проверить условие окончания режима (спринт/марафон).
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+/// * `lines_cleared` - количество удалённых линий
+/// * `sprint_lines` - целевое количество линий для спринта
+/// * `marathon_lines` - целевое количество линий для марафона
+///
+/// # Возвращает
+/// - `Some(UpdateEndState::Won)` - режим завершён
+/// - `None` - продолжить игру
+///
+/// # Исправление #24
+/// Выделена из `handle_landing()` для улучшения читаемости.
+fn check_mode_completion(
+    state: &mut GameState,
+    lines_cleared: u32,
+    sprint_lines: u32,
+    marathon_lines: u32,
+) -> Option<UpdateEndState> {
     let mode_trait = state.get_mode_trait();
-    if mode_trait.get_target_lines() == Some(40) && state.lines_cleared >= SPRINT_LINES {
+
+    if mode_trait.get_target_lines() == Some(40) && lines_cleared >= sprint_lines {
         state.stats.stop_timer();
         return Some(UpdateEndState::Won);
     }
 
-    // Проверка окончания режима марафон
-    if mode_trait.get_target_lines() == Some(150) && state.lines_cleared >= MARATHON_LINES {
+    if mode_trait.get_target_lines() == Some(150) && lines_cleared >= marathon_lines {
         state.stats.stop_timer();
         return Some(UpdateEndState::Won);
     }

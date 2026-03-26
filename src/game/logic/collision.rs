@@ -1,16 +1,9 @@
 //! Модуль проверки столкновений.
 //!
-//! # Ответственность
-//! - Проверка возможности движения фигуры
-//! - Проверка возможности вращения фигуры
-//! - Проверка столкновений с границами и блоками
-//!
-//! # Зависимости
-//! - [`state.rs`](crate::game::state): `GameState`
-//! - [`types.rs`](crate::types): `Direction`, `RotationDirection`
+//! Проверка возможности движения и вращения фигуры.
 
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::io::GRID_WIDTH;
 use crate::types::Direction;
 
 /// Проверить возможность движения фигуры в заданном направлении.
