@@ -444,15 +444,10 @@ fn test_13_check_collision_optimization() {
     let _state = GameState::new();
 
     // Проверяем, что GameState использует оптимизированную проверку
-    // через проверку размера (Box вместо массива на стеке)
-    let state_size = std::mem::size_of::<GameState>();
-    assert!(
-        state_size < 500,
-        "GameState должен использовать Box для blocks"
-    );
-
     // check_collision_direction() использует оптимизированную проверку границ
     // и ранний выход при обнаружении столкновения
+    // Примечание: blocks использует массив на стеке [[i8; GRID_WIDTH]; GRID_HEIGHT]
+    // для лучшей производительности (избегание аллокаций в куче)
 }
 
 /// Тест 14: Бенчмарк для `check_collision_direction()`, `rotate_with_wall_kick()`, `find_full_rows()`.

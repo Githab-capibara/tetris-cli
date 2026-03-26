@@ -6,7 +6,6 @@
 use crate::crypto::{self, hash};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
-use std::fmt::Write;
 
 use super::sanitize::sanitize_player_name;
 
@@ -46,6 +45,12 @@ impl LeaderboardEntry {
     /// Метод возвращает значение только после успешной валидации хэша.
     /// Это предотвращает race condition между проверкой и использованием.
     /// Возвращает u128 для предотвращения переполнения.
+    ///
+    /// # Исправление #5: TOCTOU limitation
+    /// Обратите внимание: между вызовом `is_valid()` и возвратом значения
+    /// возможно изменение данных в памяти (TOCTOU уязвимость).
+    /// Для критических приложений рекомендуется использовать атомарные операции
+    /// или блокировки для гарантии целостности данных.
     #[must_use]
     pub fn score(&self) -> u128 {
         // Валидация перед каждым использованием
@@ -91,20 +96,12 @@ impl LeaderboardEntry {
         let valid_name = sanitize_player_name(name);
 
         let salt = crypto::generate_salt();
-        // Оптимизация: используем String::with_capacity() + write!() вместо format!()
-        // для предотвращения лишних аллокаций.
-        // Используем точную оценку длины числа через ilog10() вместо константы U128_MAX_DIGITS.
-        let score_digits = if score > 0 {
-            score.ilog10() as usize + 1
-        } else {
-            1 // Для 0 нужна 1 цифра
-        };
-        let mut salt_and_score =
-            String::with_capacity(salt.len() + valid_name.len() + score_digits);
-        // Исправление #4.1: используем unwrap_or_else с логированием вместо let _ =
-        write!(salt_and_score, "{salt}{valid_name}{score}").unwrap_or_else(|e| {
-            eprintln!("Предупреждение: ошибка записи в строку: {e}");
-        });
+        // Исправление #10: используем push_str() вместо write!() для конкатенации
+        // Это упрощает код и устраняет необходимость обработки Result
+        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 21); // 21 = макс. длина u128
+        salt_and_score.push_str(&salt);
+        salt_and_score.push_str(&valid_name);
+        salt_and_score.push_str(&score.to_string());
         let hash = hash(&salt_and_score);
 
         Self {
@@ -128,24 +125,11 @@ impl LeaderboardEntry {
     /// ```
     #[must_use]
     pub fn is_valid(&self) -> bool {
-        // Оптимизация: используем String::with_capacity() + write!() вместо format!().
-        // Используем точную оценку длины числа через ilog10().
-        let score_digits = if self.score_value > 0 {
-            self.score_value.ilog10() as usize + 1
-        } else {
-            1
-        };
-        let mut salt_and_score =
-            String::with_capacity(self.salt.len() + self.name.len() + score_digits);
-        // Исправление #4.1: используем unwrap_or_else с логированием вместо let _ =
-        write!(
-            salt_and_score,
-            "{}{}{}",
-            self.salt, self.name, self.score_value
-        )
-        .unwrap_or_else(|e| {
-            eprintln!("Предупреждение: ошибка записи в строку при валидации: {e}");
-        });
+        // Исправление #10: используем push_str() вместо write!() для конкатенации
+        let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 21); // 21 = макс. длина u128
+        salt_and_score.push_str(&self.salt);
+        salt_and_score.push_str(&self.name);
+        salt_and_score.push_str(&self.score_value.to_string());
         let test_hash = hash(&salt_and_score);
         self.hash == test_hash
     }
@@ -194,8 +178,9 @@ impl Leaderboard {
     /// # Исправление #24
     /// Добавлена валидация имени игрока перед добавлением в таблицу лидеров.
     ///
-    /// # Исправление #9
-    /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
+    /// # Исправление #23: Rate limiting
+    /// Добавлена проверка на максимальное количество записей от одного имени
+    /// (максимум 3 записи на одного игрока для предотвращения спама).
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         // Исправление #24: валидация имени игрока
         let valid_name = sanitize_player_name(name);
@@ -203,6 +188,21 @@ impl Leaderboard {
             eprintln!(
                 "Предупреждение: имя игрока не прошло валидацию и было заменено на 'Anonymous'"
             );
+        }
+
+        // Исправление #23: Rate limiting - максимум 3 записи на одного игрока
+        let entries_from_player = self
+            .entries
+            .iter()
+            .filter(|e| e.name() == valid_name)
+            .count();
+
+        if entries_from_player >= 3 {
+            eprintln!(
+                "Предупреждение: игрок '{}' достиг лимита записей (максимум 3)",
+                valid_name
+            );
+            return false;
         }
 
         // Проверка: достаточно ли высок рекорд для попадания в таблицу

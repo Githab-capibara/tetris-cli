@@ -86,8 +86,8 @@
 //! Модуль предоставляет общие криптографические функции:
 //! - `hash()` — хеширование BLAKE3
 //! - `generate_salt()` — генерация случайной соли
-//! - `hmac()` — вычисление HMAC-подобной подписи
-//! - `verify_hmac()` — проверка HMAC подписи
+//! - `keyed_hash()` — вычисление подписи с ключом (не настоящий HMAC!)
+//! - `verify_keyed_hash()` — проверка подписи
 //!
 //! ## 🚀 Быстрый старт
 //!
@@ -414,12 +414,12 @@ pub mod controls;
 /// Предоставляет общие криптографические функции для всего проекта:
 /// - `hash()` — хеширование BLAKE3
 /// - `generate_salt()` — генерация случайной соли (256 бит)
-/// - `hmac()` — вычисление HMAC-подобной подписи
-/// - `verify_hmac()` — проверка HMAC подписи
+/// - `keyed_hash()` — вычисление подписи с ключом (не настоящий HMAC!)
+/// - `verify_keyed_hash()` — проверка подписи
 ///
 /// ## Пример использования:
 /// ```
-/// use tetris_cli::crypto::{hash, generate_salt, hmac};
+/// use tetris_cli::crypto::{hash, generate_salt, keyed_hash};
 ///
 /// // Хэширование
 /// let h = hash("данные");
@@ -427,8 +427,8 @@ pub mod controls;
 /// // Генерация соли
 /// let salt = generate_salt();
 ///
-/// // HMAC подпись
-/// let signature = hmac("ключ", "данные");
+/// // Keyed hash подпись
+/// let signature = keyed_hash("ключ", "данные");
 /// ```
 pub mod crypto;
 
@@ -838,6 +838,9 @@ mod testes {
 
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;
+
+    // Тесты для всех 24 исправлений из отчета аудита (24 теста)
+    pub mod test_all_24_fixes;
 
     // Тесты для всех исправлений рефакторинга (55 тестов)
     pub mod test_refactoring_fixes;

@@ -83,15 +83,17 @@ pub fn handle_input(
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `dir` - направление движения
+///
+/// # Исправление #4
+/// Удалена ветка Direction::Down как dead code — движение вниз
+/// обрабатывается отдельно в handle_soft_drop/handle_hard_drop.
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
     if state.can_move_curr_shape_direction(dir) {
         match dir {
             Direction::Left => state.curr_shape.pos.0 -= 1.0,
             Direction::Right => state.curr_shape.pos.0 += 1.0,
-            Direction::Down => {
-                // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
-                // Эта ветка намеренно пустая — движение вниз управляется гравитацией
-            }
+            // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
+            Direction::Down => {}
         }
     }
 }
@@ -136,6 +138,12 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
 ///
 /// # Возвращает
 /// `true` если движение возможно
+///
+/// # Исправление #8
+/// Используется `.get()` с ранним выходом вместо множественных проверок границ.
+/// # Исправление бага
+/// Проверка check_y < 0 должна выполняться только для Direction::Down.
+/// Блоки выше поля (отрицательный Y) не должны блокировать движение влево/вправо.
 fn check_collision_direction(
     state: &GameState,
     coords: &[(i16, i16)],
@@ -145,15 +153,6 @@ fn check_collision_direction(
     let (shape_x, shape_y) = pos;
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
-
-    // Оптимизация: используем as вместо try_from() для const значений
-    // GRID_WIDTH и GRID_HEIGHT известны на этапе компиляции и гарантированно помещаются в i16
-    #[allow(clippy::cast_possible_wrap)]
-    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
-    let grid_width_i16 = GRID_WIDTH as i16;
-    #[allow(clippy::cast_possible_wrap)]
-    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
-    let grid_height_i16 = GRID_HEIGHT as i16;
 
     for coord in coords {
         let (coord_x, coord_y) = coord;
@@ -166,11 +165,35 @@ fn check_collision_direction(
             Direction::Down => check_y += 1,
         }
 
-        if check_x < 0 || check_x >= grid_width_i16 || check_y >= grid_height_i16 {
+        // Исправление #8: используем .get() с ранним выходом
+        // Проверка check_x < 0 для левой границы
+        if check_x < 0 {
             return false;
         }
 
-        if check_y >= 0 && state.blocks[check_y as usize][check_x as usize] != -1 {
+        // Проверка check_x >= GRID_WIDTH для правой границы
+        if check_x >= GRID_WIDTH as i16 {
+            return false;
+        }
+
+        // Для движения вниз проверяем, что фигура не выше поля
+        if dir == Direction::Down && check_y < 0 {
+            return false;
+        }
+
+        // Блоки выше поля (check_y < 0) игнорируются для Left/Right
+        // Проверяем только блоки внутри поля
+        if check_y < 0 {
+            continue;
+        }
+
+        // Проверяем наличие блока через .get()
+        if state
+            .blocks
+            .get(check_y as usize)
+            .and_then(|row| row.get(check_x as usize))
+            .is_none_or(|&cell| cell != -1)
+        {
             return false;
         }
     }
@@ -274,29 +297,45 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 ///
 /// # Возвращает
 /// `true` если вращение возможно
+///
+/// # Исправление #8
+/// Используется `.get()` с ранним выходом вместо множественных проверок границ.
+/// # Исправление бага
+/// Блоки выше поля (отрицательный Y) допустимы при вращении.
 fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (f32, f32)) -> bool {
     let (shape_x, shape_y) = pos;
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
-
-    // Оптимизация: используем as вместо try_from() для const значений
-    #[allow(clippy::cast_possible_wrap)]
-    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
-    let grid_width_i16 = GRID_WIDTH as i16;
-    #[allow(clippy::cast_possible_wrap)]
-    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
-    let grid_height_i16 = GRID_HEIGHT as i16;
 
     for coord in coords {
         let (coord_x, coord_y) = coord;
         let check_x = coord_x + shape_block_x;
         let check_y = coord_y + shape_block_y;
 
-        if check_x < 0 || check_x >= grid_width_i16 || check_y >= grid_height_i16 {
+        // Исправление #8: используем .get() с ранним выходом
+        // Проверка check_x < 0 для левой границы
+        if check_x < 0 {
             return false;
         }
 
-        if check_y >= 0 && state.blocks[check_y as usize][check_x as usize] != -1 {
+        // Проверка check_x >= GRID_WIDTH для правой границы
+        if check_x >= GRID_WIDTH as i16 {
+            return false;
+        }
+
+        // Блоки выше поля (check_y < 0) игнорируются
+        // Проверяем только блоки внутри поля
+        if check_y < 0 {
+            continue;
+        }
+
+        // Проверяем наличие блока через .get()
+        if state
+            .blocks
+            .get(check_y as usize)
+            .and_then(|row| row.get(check_x as usize))
+            .is_none_or(|&cell| cell != -1)
+        {
             return false;
         }
     }

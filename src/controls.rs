@@ -144,6 +144,10 @@ impl PathValidator {
     /// - `PathErrorKind::TooLong` - путь слишком длинный
     /// - `PathErrorKind::ForbiddenCharacters` - запрещённые символы
     /// - `PathErrorKind::Symlink` - путь является символической ссылкой
+    ///
+    /// # Исправление #18
+    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    #[track_caller]
     pub fn validate(&self, path: &Path) -> Result<(), PathError> {
         self.validate_length(path)?;
         self.validate_characters(path)?;
@@ -162,6 +166,10 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если длина пути превышает `max_length`.
+    ///
+    /// # Исправление #18
+    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    #[track_caller]
     pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
@@ -191,6 +199,10 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если путь содержит символы, не входящие в `allowed_chars`.
+    ///
+    /// # Исправление #18
+    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
@@ -223,7 +235,12 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если путь является символической ссылкой.
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    ///
+    /// # Исправление #18
+    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    #[allow(clippy::unused_self)]
+    // Будет использоваться с конфигурируемыми параметрами
+    #[track_caller]
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
         if let Ok(metadata) = std::fs::symlink_metadata(path) {
             if metadata.file_type().is_symlink() {
@@ -319,10 +336,10 @@ impl PathValidator {
 ///
 /// Использует стандартные настройки:
 /// - Максимальная длина: 255 символов
-/// - Разрешённые символы: буквы, цифры, ., _, -
+/// - Разрешённые символы: буквы, цифры, ., _, -, /
 pub const DEFAULT_PATH_VALIDATOR: PathValidator = PathValidator {
     max_length: 255,
-    allowed_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-",
+    allowed_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
 };
 
 /// Длина HMAC ключа в байтах (256 бит).
@@ -412,116 +429,6 @@ struct ControlsConfigInner {
     hmac_key: String,
 }
 
-/// Проверить максимальную длину пути.
-///
-/// # Аргументы
-/// * `path` - путь для проверки
-///
-/// # Возвращает
-/// - `Ok(())` если длина в пределах нормы
-/// - `Err(io::Error)` если путь слишком длинный
-///
-/// # Исправление #2
-/// Часть единого валидатора путей с конфигурируемыми правилами.
-fn validate_path_length(path: &str) -> io::Result<()> {
-    const MAX_PATH_LENGTH: usize = 255;
-
-    if path.len() > MAX_PATH_LENGTH {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Путь слишком длинный (максимум {MAX_PATH_LENGTH} символов): {path:?}"),
-        ));
-    }
-    Ok(())
-}
-
-/// Проверить допустимые символы в пути.
-///
-/// # Аргументы
-/// * `path` - путь для проверки
-///
-/// # Возвращает
-/// - `Ok(())` если символы допустимы
-/// - `Err(io::Error)` если есть запрещённые символы
-///
-/// # Исправление #2
-/// Часть единого валидатора путей с конфигурируемыми правилами.
-fn validate_path_characters(path: &str) -> io::Result<()> {
-    // Запрещаем специальные символы, которые могут быть использованы для атак
-    const FORBIDDEN_CHARS: [char; 5] = ['\0', '|', '&', ';', '$'];
-
-    if path.contains(FORBIDDEN_CHARS) {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Специальные символы не разрешены в пути: {path:?}"),
-        ));
-    }
-    Ok(())
-}
-
-/// Проверить отсутствие символических ссылок.
-///
-/// # Аргументы
-/// * `path` - путь для проверки
-///
-/// # Возвращает
-/// - `Ok(())` если symlink не обнаружен
-/// - `Err(io::Error)` если путь является symlink
-fn validate_no_symlinks(path: &Path) -> io::Result<()> {
-    // Используем symlink_metadata() для проверки symlink без следования по нему
-    // Это проверка выполняется ДО открытия файла для защиты от race condition
-    if let Ok(metadata) = std::fs::symlink_metadata(path) {
-        if metadata.file_type().is_symlink() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("Символические ссылки не разрешены: {}", path.display()),
-            ));
-        }
-    }
-    Ok(())
-}
-
-/// Проверить, что путь находится внутри разрешённой директории.
-///
-/// # Аргументы
-/// * `path` - путь для проверки
-/// * `current_dir` - текущая директория
-///
-/// # Возвращает
-/// - `Ok(())` если путь внутри разрешённой директории
-/// - `Err(io::Error)` если путь вне разрешённой директории
-fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result<()> {
-    // Для существующих файлов - используем canonicalize()
-    // Для несуществующих (сохранение) - проверяем родительскую директорию
-    let canonical_path = if path.exists() {
-        path.canonicalize().map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("Неверный путь {}: {}", path.display(), e),
-            )
-        })?
-    } else {
-        // Файл не существует - проверяем родительскую директорию
-        // Если родительской директории нет, используем текущую директорию
-        path.parent()
-            .and_then(|p| p.canonicalize().ok())
-            .unwrap_or_else(|| current_dir.to_path_buf())
-    };
-
-    // Проверяем, что resolved path находится внутри текущей директории
-    // Используем strip_prefix() для надёжной проверки
-    if canonical_path.strip_prefix(current_dir).is_err() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!(
-                "Путь вне разрешённой директории (symlink attack detected): {}",
-                path.display()
-            ),
-        ));
-    }
-    Ok(())
-}
-
 /// Проверить валидность пути для конфигурации.
 ///
 /// Эта функция реализует защиту от path traversal атак и symlink attacks:
@@ -550,6 +457,9 @@ fn validate_path_within_directory(path: &Path, current_dir: &Path) -> io::Result
 /// use tetris_cli::controls::validate_config_path;
 /// validate_config_path("config.json").unwrap();
 /// ```
+///
+/// # Исправление #3
+/// Использует `PathValidator` вместо отдельных функций валидации.
 #[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
     let full_path = Path::new(path);
@@ -570,22 +480,21 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // Проверка длины пути
-    validate_path_length(path)?;
-
-    // Проверка символов в пути
-    validate_path_characters(path)?;
+    // Проверяем относительный путь через PathValidator (до соединения с current_dir)
+    // Исправление: проверяем относительный путь, а не абсолютный
+    DEFAULT_PATH_VALIDATOR
+        .validate(full_path)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
     // Получаем текущую директорию
     let current_dir = std::env::current_dir()
         .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
     let joined_path = current_dir.join(full_path);
 
-    // ЗАПРЕТ СИМВОЛИЧЕСКИХ ССЫЛОК
-    validate_no_symlinks(&joined_path)?;
-
-    // Проверка, что путь внутри разрешённой директории
-    validate_path_within_directory(&joined_path, &current_dir)?;
+    // Дополнительная проверка: путь внутри директории
+    DEFAULT_PATH_VALIDATOR
+        .validate_within_directory(&joined_path, &current_dir)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
     Ok(())
 }

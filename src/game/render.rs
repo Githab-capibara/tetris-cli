@@ -175,23 +175,27 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 /// ## Примечания
 /// Эта функция требует mutable доступ к `GameState`, поэтому не может
 /// использовать `GameView`. Вызывайте её перед созданием `GameView`.
+///
+/// # Исправление #7: Оптимизация кэширования строк
+/// - Используется `truncate(0)` вместо `clear()` для предотвращения deallocation
+/// - Инициализация через `String::with_capacity(16)` для уменьшения аллокаций
 fn update_cached_strings(state: &mut GameState) {
     use std::fmt::Write;
 
     if state.score != state.last_cached_score {
-        state.cached_score_str.clear();
+        state.cached_score_str.truncate(0);
         let _ = write!(state.cached_score_str, "{:10}", state.score);
         state.last_cached_score = state.score;
     }
 
     if state.level != state.last_cached_level {
-        state.cached_level_str.clear();
+        state.cached_level_str.truncate(0);
         let _ = write!(state.cached_level_str, "{:10}", state.level);
         state.last_cached_level = state.level;
     }
 
     if state.lines_cleared != state.last_cached_lines {
-        state.cached_lines_str.clear();
+        state.cached_lines_str.truncate(0);
         let _ = write!(state.cached_lines_str, "{:10}", state.lines_cleared);
         state.last_cached_lines = state.lines_cleared;
     }

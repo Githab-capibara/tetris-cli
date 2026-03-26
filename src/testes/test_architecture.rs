@@ -39,7 +39,7 @@ fn test_types_no_cyclic_dependencies() {
 /// не импортируя другие модули проекта.
 #[test]
 fn test_crypto_only_external_dependencies() {
-    use crate::crypto::{generate_salt, hash, hmac, verify_hmac};
+    use crate::crypto::{generate_salt, hash, keyed_hash, verify_keyed_hash};
 
     // Проверяем базовую функциональность
     let h = hash("тест");
@@ -48,8 +48,8 @@ fn test_crypto_only_external_dependencies() {
     let salt = generate_salt();
     assert_eq!(salt.len(), 64, "Длина соли должна быть 64 символа");
 
-    let signature = hmac("ключ", "данные");
-    assert!(verify_hmac("ключ", "данные", &signature));
+    let signature = keyed_hash("ключ", "данные");
+    assert!(verify_keyed_hash("ключ", "данные", &signature));
 }
 
 /// Проверка, что game/ подмодули не создают циклов.
@@ -365,15 +365,15 @@ fn test_no_deprecated_calls() {
     assert_eq!(salt.len(), 64, "Соль должна быть 64 символа");
 
     // Проверяем, что crypto модуль предоставляет все необходимые функции
-    use crate::crypto::{hash, hmac, verify_hmac};
+    use crate::crypto::{hash, keyed_hash, verify_keyed_hash};
 
     let data = "тестовые данные";
     let h = hash(data);
     assert_eq!(h.len(), 64);
 
     let key = "ключ";
-    let signature = hmac(key, data);
-    assert!(verify_hmac(key, data, &signature));
+    let signature = keyed_hash(key, data);
+    assert!(verify_keyed_hash(key, data, &signature));
 }
 
 /// Проверка, что crypto функции являются каноническими.

@@ -3,11 +3,11 @@
 //! Этот модуль предоставляет общие криптографические функции для проекта:
 //! - Хэширование BLAKE3
 //! - Генерация случайной соли
-//! - HMAC-подобные конструкции
+//! - keyed_hash (ключ + данные)
 //!
 //! ## Пример использования
 //! ```
-//! use tetris_cli::crypto::{hash, generate_salt, hmac};
+//! use tetris_cli::crypto::{hash, generate_salt, keyed_hash};
 //!
 //! // Хэширование
 //! let data = "тестовые данные";
@@ -18,9 +18,9 @@
 //! let salt = generate_salt();
 //! assert_eq!(salt.len(), 64); // 32 байта = 64 hex символа
 //!
-//! // HMAC
+//! // keyed_hash (не настоящий HMAC!)
 //! let key = "секретный ключ";
-//! let signature = hmac(key, data);
+//! let signature = keyed_hash(key, data);
 //! ```
 
 use rand::rngs::OsRng;
@@ -65,7 +65,7 @@ pub fn generate_salt() -> String {
     hex::encode(bytes)
 }
 
-/// Вычислить HMAC (ключ + данные) используя BLAKE3.
+/// Вычислить keyed_hash (ключ + данные) используя BLAKE3.
 ///
 /// # Аргументы
 /// * `key` - секретный ключ
@@ -76,49 +76,55 @@ pub fn generate_salt() -> String {
 ///
 /// # Пример
 /// ```
-/// use tetris_cli::crypto::hmac;
-/// let signature = hmac("ключ", "данные");
+/// use tetris_cli::crypto::keyed_hash;
+/// let signature = keyed_hash("ключ", "данные");
 /// assert_eq!(signature.len(), 64);
 /// ```
 ///
-/// # Исправление #4
-/// Функция помечена как `#[doc(hidden)]` так как используется только в тестах
-/// и не предназначена для публичного использования.
-#[must_use = "HMAC должен быть использован для проверки"]
+/// # Важное замечание
+/// Это НЕ настоящий HMAC! Функция просто конкатенирует ключ и данные,
+/// затем хэширует результат. Для криптографически стойкого HMAC
+/// используйте специализированные библиотеки (например, hmac-sha256).
+///
+/// # Исправление #2
+/// Функция переименована из `hmac()` в `keyed_hash()` для ясности.
+#[must_use = "Keyed hash должен быть использован для проверки"]
 #[doc(hidden)]
 #[allow(dead_code)]
-pub fn hmac(key: &str, data: &str) -> String {
+pub fn keyed_hash(key: &str, data: &str) -> String {
     // Формируем ключ + данные для хеширования
     hash(&(key.to_string() + data))
 }
 
-/// Проверить HMAC подпись.
+/// Проверить keyed_hash подпись.
 ///
 /// # Аргументы
 /// * `key` - секретный ключ
 /// * `data` - данные
-/// * `expected_hmac` - ожидаемая подпись
+/// * `expected_hash` - ожидаемая подпись
 ///
 /// # Возвращает
 /// `true` если подпись верна
 ///
 /// # Пример
 /// ```
-/// use tetris_cli::crypto::{hmac, verify_hmac};
+/// use tetris_cli::crypto::{keyed_hash, verify_keyed_hash};
 /// let key = "секрет";
 /// let data = "данные";
-/// let signature = hmac(key, data);
-/// assert!(verify_hmac(key, data, &signature));
+/// let signature = keyed_hash(key, data);
+/// assert!(verify_keyed_hash(key, data, &signature));
 /// ```
 ///
-/// # Исправление #4
-/// Функция помечена как `#[doc(hidden)]` так как используется только в тестах
-/// и не предназначена для публичного использования.
+/// # Важное замечание
+/// Это НЕ настоящий HMAC! См. документацию к `keyed_hash()`.
+///
+/// # Исправление #2
+/// Функция переименована из `verify_hmac()` в `verify_keyed_hash()` для ясности.
 #[must_use = "Результат проверки должен быть использован"]
 #[doc(hidden)]
 #[allow(dead_code)]
-pub fn verify_hmac(key: &str, data: &str, expected_hmac: &str) -> bool {
-    hmac(key, data) == expected_hmac
+pub fn verify_keyed_hash(key: &str, data: &str, expected_hash: &str) -> bool {
+    keyed_hash(key, data) == expected_hash
 }
 
 #[cfg(test)]
@@ -163,65 +169,65 @@ mod crypto_tests {
     }
 
     #[test]
-    fn test_hmac_deterministic() {
-        let sig1 = hmac("ключ", "данные");
-        let sig2 = hmac("ключ", "данные");
-        assert_eq!(sig1, sig2, "HMAC должен быть детерминированным");
+    fn test_keyed_hash_deterministic() {
+        let sig1 = keyed_hash("ключ", "данные");
+        let sig2 = keyed_hash("ключ", "данные");
+        assert_eq!(sig1, sig2, "Keyed hash должен быть детерминированным");
     }
 
     #[test]
-    fn test_hmac_different_keys() {
-        let sig1 = hmac("ключ1", "данные");
-        let sig2 = hmac("ключ2", "данные");
-        assert_ne!(sig1, sig2, "Разные ключи должны давать разные HMAC");
+    fn test_keyed_hash_different_keys() {
+        let sig1 = keyed_hash("ключ1", "данные");
+        let sig2 = keyed_hash("ключ2", "данные");
+        assert_ne!(sig1, sig2, "Разные ключи должны давать разные keyed hash");
     }
 
     #[test]
-    fn test_hmac_different_data() {
-        let sig1 = hmac("ключ", "данные1");
-        let sig2 = hmac("ключ", "данные2");
-        assert_ne!(sig1, sig2, "Разные данные должны давать разные HMAC");
+    fn test_keyed_hash_different_data() {
+        let sig1 = keyed_hash("ключ", "данные1");
+        let sig2 = keyed_hash("ключ", "данные2");
+        assert_ne!(sig1, sig2, "Разные данные должны давать разные keyed hash");
     }
 
     #[test]
-    fn test_verify_hmac_valid() {
+    fn test_verify_keyed_hash_valid() {
         let key = "тестовый ключ";
         let data = "тестовые данные";
-        let signature = hmac(key, data);
+        let signature = keyed_hash(key, data);
         assert!(
-            verify_hmac(key, data, &signature),
+            verify_keyed_hash(key, data, &signature),
             "Правильная подпись должна проходить проверку"
         );
     }
 
     #[test]
-    fn test_verify_hmac_invalid_key() {
+    fn test_verify_keyed_hash_invalid_key() {
         let key = "ключ1";
         let data = "данные";
-        let signature = hmac(key, data);
+        let signature = keyed_hash(key, data);
         assert!(
-            !verify_hmac("ключ2", data, &signature),
+            !verify_keyed_hash("ключ2", data, &signature),
             "Неправильный ключ не должен проходить проверку"
         );
     }
 
     #[test]
-    fn test_verify_hmac_invalid_data() {
+    fn test_verify_keyed_hash_invalid_data() {
         let key = "ключ";
         let data = "данные1";
-        let signature = hmac(key, data);
+        let signature = keyed_hash(key, data);
         assert!(
-            !verify_hmac(key, "данные2", &signature),
+            !verify_keyed_hash(key, "данные2", &signature),
             "Неправильные данные не должны проходить проверку"
         );
     }
 
     #[test]
-    fn test_verify_hmac_invalid_signature() {
+    fn test_verify_keyed_hash_invalid_signature() {
         let key = "ключ";
         let data = "данные";
         assert!(
-            !verify_hmac(key, data, "неправильная подпись"),
+            !verify_keyed_hash(key, data, "неправильная подпись"),
             "Неправильная подпись не должна проходить проверку"
         );
     }

@@ -724,7 +724,7 @@ fn test_types_no_project_dependencies() {
 /// Проверяет что crypto.rs импортирует только rand и blake3.
 #[test]
 fn test_crypto_external_only() {
-    use crate::crypto::{generate_salt, hash, hmac, verify_hmac};
+    use crate::crypto::{generate_salt, hash, keyed_hash, verify_keyed_hash};
 
     // Проверяем базовую функциональность
     let h = hash("тестовая строка");
@@ -733,13 +733,13 @@ fn test_crypto_external_only() {
     let salt = generate_salt();
     assert_eq!(salt.len(), 64, "Длина соли 64 символа");
 
-    let signature = hmac("секретный ключ", "данные для подписи");
+    let signature = keyed_hash("секретный ключ", "данные для подписи");
     assert!(!signature.is_empty(), "Подпись не пустая");
 
-    let valid = verify_hmac("секретный ключ", "данные для подписи", &signature);
+    let valid = verify_keyed_hash("секретный ключ", "данные для подписи", &signature);
     assert!(valid, "Подпись должна быть валидной");
 
-    let invalid = verify_hmac("другой ключ", "данные для подписи", &signature);
+    let invalid = verify_keyed_hash("другой ключ", "данные для подписи", &signature);
     assert!(!invalid, "Невалидная подпись должна отвергаться");
 }
 

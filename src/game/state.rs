@@ -458,11 +458,11 @@ pub struct GameState {
     /// Двумерный массив игрового поля 10x20.
     /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
     ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_blocks()/get_blocks_mut()
-    pub(crate) blocks: Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]>,
+    /// # Исправление #9
+    /// Заменён Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> на [[i8; GRID_WIDTH]; GRID_HEIGHT]
+    /// для размещения данных на стеке вместо кучи (оптимизация производительности).
+    pub(crate) blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_filled_lines_mask()
     #[allow(dead_code)] // Будет использоваться в будущей оптимизации
     pub(crate) filled_lines: u32,
 
@@ -473,16 +473,10 @@ pub struct GameState {
     // Приоритет: Высокий
     // Срок: 1-2 недели
     /// Текущий счёт.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_score()/add_score()
     pub(crate) score: u128,
     /// Текущий уровень.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_level()/set_level()
     pub(crate) level: u32,
     /// Количество удалённых линий.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_lines_cleared()
     pub(crate) lines_cleared: u32,
 
     // ========================================================================
@@ -492,24 +486,14 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Текущая фигура.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_curr_shape()
     pub(crate) curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_next_shape()
     pub(crate) next_shape: Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_held_shape()
     pub(crate) held_shape: Option<Tetromino>,
     /// Можно ли ещё менять удержанную фигуру в этом ходу.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать can_hold()
     pub(crate) can_hold: bool,
     /// Генератор фигур по системе 7-bag.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_bag()/get_bag_mut()
     pub(crate) bag: BagGenerator,
 
     // ========================================================================
@@ -519,40 +503,26 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Строки для анимации (мигание при очистке).
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_animating_rows_mask()
     pub(crate) animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать is_hard_dropping()
     pub(crate) is_hard_dropping: bool,
 
     // ========================================================================
     // === ИГРОВАЯ ЛОГИКА ===
     // ========================================================================
     /// Скорость падения.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_fall_spd()/set_fall_spd()
     pub(crate) fall_spd: f32,
     /// Таймер приземления.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_land_timer()/set_land_timer()
     pub(crate) land_timer: f64,
     /// Количество ячеек, пройденных при Soft Drop.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_soft_drop_distance()
     pub(crate) soft_drop_distance: u32,
 
     // ========================================================================
     // === СТАТИСТИКА И РЕЖИМ ИГРЫ ===
     // ========================================================================
     /// Статистика игры.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_stats()/get_stats_mut()
     pub(crate) stats: GameStats,
     /// Режим игры.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_mode()
     pub(crate) mode: GameMode,
 
     // ========================================================================
@@ -561,28 +531,16 @@ pub struct GameState {
     // Кэширование используется для оптимизации производительности отрисовки.
     // TODO (#архитектура): Выделить в отдельную структуру RenderCache
     /// Кэшированная строка счёта для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_score_str()
     pub(crate) cached_score_str: String,
     /// Кэшированная строка уровня для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_level_str()
     pub(crate) cached_level_str: String,
     /// Кэшированная строка количества линий для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_lines_str()
     pub(crate) cached_lines_str: String,
     /// Кэшированная строка рекорда для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_high_score_str()
     pub(crate) cached_high_score_str: String,
     /// Кэшированная строка комбо для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_combo_str()
     pub(crate) cached_combo_str: String,
     /// Кэшированная строка таймера для оптимизации отрисовки.
-    ///
-    /// TODO (#архитектура): Сделать приватным, использовать get_cached_timer_str()
     pub(crate) cached_timer_str: String,
 
     // ========================================================================
@@ -592,20 +550,12 @@ pub struct GameState {
     /// использоваться напрямую. Доступ только через геттеры.
 
     /// Последнее закэшированное значение счёта.
-    ///
-    /// TODO (#архитектура): Сделать приватным (внутренняя деталь реализации)
     pub(crate) last_cached_score: u128,
     /// Последнее закэшированное значение уровня.
-    ///
-    /// TODO (#архитектура): Сделать приватным (внутренняя деталь реализации)
     pub(crate) last_cached_level: u32,
     /// Последнее закэшированное значение количества линий.
-    ///
-    /// TODO (#архитектура): Сделать приватным (внутренняя деталь реализации)
     pub(crate) last_cached_lines: u32,
     /// Последнее закэшированное значение комбо.
-    ///
-    /// TODO (#архитектура): Сделать приватным (внутренняя деталь реализации)
     pub(crate) last_cached_combo: u32,
 }
 
@@ -665,8 +615,9 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_spd: INITIAL_FALL_SPD,
-            blocks: Box::new([[-1; GRID_WIDTH]; GRID_HEIGHT]),
-            filled_lines: 0, // Битовая маска заполненных линий (изначально все линии пусты)
+            // Исправление #9: инициализация массива на стеке вместо Box
+            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
+            filled_lines: 0,
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode,
@@ -674,15 +625,28 @@ impl GameState {
             is_hard_dropping: false,
             soft_drop_distance: 0,
             bag,
-            cached_score_str: "0".to_string(),
-            cached_level_str: "1".to_string(),
-            cached_lines_str: "0".to_string(),
+            // Исправление #7: используем String::with_capacity(16) для оптимизации аллокаций
+            cached_score_str: {
+                let mut s = String::with_capacity(16);
+                s.push('0');
+                s
+            },
+            cached_level_str: {
+                let mut s = String::with_capacity(16);
+                s.push('1');
+                s
+            },
+            cached_lines_str: {
+                let mut s = String::with_capacity(16);
+                s.push('0');
+                s
+            },
             last_cached_score: 0,
             last_cached_level: 1,
             last_cached_lines: 0,
-            cached_high_score_str: String::new(),
-            cached_combo_str: String::new(),
-            cached_timer_str: String::new(),
+            cached_high_score_str: String::with_capacity(16),
+            cached_combo_str: String::with_capacity(16),
+            cached_timer_str: String::with_capacity(16),
             last_cached_combo: 0,
         }
     }
@@ -765,13 +729,11 @@ impl GameState {
     }
 
     /// Получить текущую фигуру (мутуабельная ссылка для тестов).
-    #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
 
     /// Получить следующую фигуру (мутуабельная ссылка для тестов).
-    #[must_use]
     pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.next_shape
     }
@@ -1090,7 +1052,6 @@ impl crate::game::access::GameBoardAccess for GameState {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     /// Тест для fill_line_for_bench()
     /// Проверяет, что метод заполняет указанную линию блоками
