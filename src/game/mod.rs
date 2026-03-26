@@ -63,17 +63,19 @@ pub mod state;
 pub mod view;
 
 // Подмодули scoring
-pub use scoring::{combo, lines, points};
 
 // Подмодули logic
-pub use logic::{collision, input, physics, rotation, update};
 
 // Re-export основных типов для обратной совместимости
-pub use state::{GameMode, GameState};
+pub use state::GameState;
 
 // Re-export GameStats для lib.rs
 #[allow(unused_imports)]
 pub use state::GameStats;
+
+// Re-export GameMode для тестов и обратной совместимости
+#[allow(unused_imports)]
+pub use state::GameMode;
 
 // Константы
 pub use state::FPS;

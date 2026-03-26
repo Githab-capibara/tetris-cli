@@ -106,7 +106,8 @@ fn test_crypto_keyed_hash_not_hmac() {
 /// для валидации путей вместо отдельных функций.
 #[test]
 fn test_controls_path_validator_only() {
-    use crate::controls::{ControlsConfig, PathValidator};
+    use crate::controls::ControlsConfig;
+    use crate::validation::PathValidator;
     use std::io;
     use std::path::Path;
 
@@ -410,7 +411,7 @@ fn test_state_expect_not_unwrap() {
 /// атрибут #[track_caller] для точных сообщений об ошибках.
 #[test]
 fn test_validation_track_caller() {
-    use crate::controls::PathValidator;
+    use crate::validation::PathValidator;
     use std::path::Path;
 
     // PathValidator должен иметь #[track_caller]

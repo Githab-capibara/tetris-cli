@@ -13,5 +13,5 @@ pub mod name;
 pub mod path;
 
 // Re-export для удобства использования
-pub use name::{is_valid_name_char, sanitize_player_name};
+pub use name::is_valid_name_char;
 pub use path::{PathError, PathErrorKind, PathValidator};

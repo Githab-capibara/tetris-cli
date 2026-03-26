@@ -6,7 +6,7 @@
 pub use crate::types::{Direction, RotationDirection, UpdateEndState};
 
 // Экспорт основных типов из модуля game
-pub use crate::game::{GameMode, GameState, GameStats};
+pub use crate::game::state::{GameMode, GameState, GameStats};
 
 // Экспорт типов из модуля tetromino
 pub use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
