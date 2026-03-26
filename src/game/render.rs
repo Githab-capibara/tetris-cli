@@ -47,7 +47,7 @@
 //! ```
 
 use super::state::{
-    GameMode, GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, DRAW_OFFSET_X,
+    GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, DRAW_OFFSET_X,
     HARD_DROP_ANIM_INTERVAL_MS, HIGH_SCORE_X, HIGH_SCORE_Y, HOLD_PREVIEW_X, HOLD_PREVIEW_Y,
     LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y, SCORE_X, SCORE_Y, SHAPE_DRAW_OFFSET,
     SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES,
@@ -159,8 +159,8 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
     // Отрисовка удержанной фигуры
     draw_held_shape(view, cnv);
 
-    // Отрисовка таймера для режима спринт
-    if view.mode == GameMode::Sprint {
+    // Отрисовка таймера для режима спринт (цель 40 линий)
+    if view.mode.get_target_lines() == Some(40) {
         draw_sprint_timer(view, cnv);
     }
 
@@ -231,7 +231,7 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     }
 
     // Кэширование строки таймера для режима спринт
-    if state.mode == GameMode::Sprint {
+    if state.get_mode_trait().get_target_lines() == Some(40) {
         let elapsed = state.stats.get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
         if state.cached_timer_str != timer_str {

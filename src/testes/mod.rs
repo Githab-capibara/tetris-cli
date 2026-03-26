@@ -176,6 +176,9 @@ pub mod test_cfg_attr_dead_code;
 // Тесты на архитектурную целостность (20 тестов)
 pub mod test_architecture_integrity;
 
+// Тесты на архитектурную модульность (7 тестов)
+pub mod test_architecture_modularity;
+
 // Интеграционные тесты (10 тестов)
 pub mod test_all_fixes_integration;
 

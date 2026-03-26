@@ -13,6 +13,7 @@
 use crate::game::GameState;
 use crate::highscore::Leaderboard;
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, KEY_BACKSPACE};
+use crate::validation::is_valid_name_char;
 use std::{thread::sleep, time::Duration};
 use termion::color::{Color, Reset, White};
 
@@ -108,25 +109,6 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 // ВВОД ИМЕНИ ИГРОКА
 // ============================================================================
 
-/// Проверка допустимости символа имени.
-///
-/// Разрешены только безопасные символы:
-/// - Алфавитно-цифровые (a-z, A-Z, 0-9)
-/// - Подчёркивание, дефис, пробел
-///
-/// # Аргументы
-/// * `c` - символ для проверки
-///
-/// # Возвращает
-/// `true` если символ допустим, `false` в противном случае
-fn is_valid_name_char(c: char) -> bool {
-    !c.is_control()
-        && !c.is_whitespace()
-        && c != '/'
-        && c != '\\'
-        && (c.is_alphanumeric() || c == '_' || c == '-' || c == ' ')
-}
-
 /// Запрос имени игрока после завершения игры.
 ///
 /// # Аргументы
@@ -212,14 +194,9 @@ pub fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Lea
 /// * `state` - состояние игры для отображения статистики
 #[track_caller]
 pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
-    use crate::game::GameMode;
-
     let stats = state.get_stats();
-    let mode_str = match state.get_mode() {
-        GameMode::Classic => "Классика",
-        GameMode::Sprint => "Спринт",
-        GameMode::Marathon => "Марафон",
-    };
+    let mode_trait = state.get_mode_trait();
+    let mode_str = mode_trait.name();
 
     let stats_lines = [
         "╔════════════════════╗",

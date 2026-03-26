@@ -70,7 +70,7 @@ fn test_game_submodules_no_cycles() {
 
     // Проверяем, что view корректно ссылается на state
     assert!(!view.score.is_empty());
-    assert_eq!(view.mode, GameMode::Classic);
+    assert_eq!(view.mode.name(), "Классика");
     assert_eq!(view.level, "1");
     assert_eq!(view.lines, "0");
 }
@@ -95,7 +95,7 @@ fn test_game_view_creation() {
     assert!(!view.score.is_empty(), "Score строка не должна быть пустой");
 
     // Проверяем режим игры
-    assert_eq!(view.mode, GameMode::Classic, "Режим должен быть Classic");
+    assert_eq!(view.mode.name(), "Классика", "Режим должен быть Classic");
 
     // Проверяем, что уровень установлен
     assert_eq!(view.level, "1", "Начальный уровень должен быть 1");
@@ -146,7 +146,7 @@ fn test_game_view_sprint_mode() {
     let state = GameState::new_sprint();
     let view = GameView::from_game_state(&state);
 
-    assert_eq!(view.mode, GameMode::Sprint, "Режим должен быть Sprint");
+    assert_eq!(view.mode.name(), "Спринт", "Режим должен быть Sprint");
     assert_eq!(
         view.lines_cleared, 0,
         "Начальное количество линий должно быть 0"

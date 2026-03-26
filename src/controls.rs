@@ -6,11 +6,11 @@
 //! ## Структура модуля
 //! - `ControlsConfig` - структура конфигурации управления
 //! - `DEFAULT_CONTROLS` - значения по умолчанию
-//! - `PathValidator` - единый валидатор путей
+//! - `PathValidator` - единый валидатор путей (переэкспортирован из [`crate::validation`])
 //! - `tests` - модульные тесты (4 теста)
 //!
 //! ## Безопасность
-//! Конфигурация защищена HMAC-SHA256 подписью для предотвращения подделки.
+//! Конфигурация защищена keyed hash подписью для предотвращения подделки.
 //!
 //! ## Архитектурные заметки
 //! ## Единый валидатор путей (Problem 2.3)
@@ -28,405 +28,42 @@ use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 
 // ============================================================================
-// ЕДИНЫЙ ВАЛИДАТОР ПУТЕЙ (PathValidator)
+// ВАЛИДАТОР ПУТЕЙ (переэкспортирован из crate::validation)
 // ============================================================================
-// TODO (#архитектура, Problem 2.3): Заменить 5 отдельных функций валидации
-// на использование PathValidator. Это улучшит DRY и упростит тестирование.
+// PathValidator, PathError и PathErrorKind теперь находятся в модуле validation
+// для централизации кода валидации.
 
-/// Ошибка валидации пути.
-///
-/// Содержит информацию о причине ошибки валидации.
-#[derive(Debug, Clone)]
-pub struct PathError {
-    /// Сообщение об ошибке.
-    pub message: String,
-    /// Тип ошибки.
-    pub kind: PathErrorKind,
-}
-
-/// Типы ошибок валидации пути.
-#[derive(Debug, Clone)]
-pub enum PathErrorKind {
-    /// Путь слишком длинный.
-    TooLong,
-    /// Запрещённые символы в пути.
-    ForbiddenCharacters,
-    /// Символическая ссылка.
-    Symlink,
-    /// Выход за пределы директории.
-    PathTraversal,
-    /// Абсолютный путь.
-    AbsolutePath,
-    /// Неверный путь.
-    InvalidPath,
-}
-
-impl std::fmt::Display for PathError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Ошибка валидации пути: {} ({:?})",
-            self.message, self.kind
-        )
-    }
-}
-
-impl std::error::Error for PathError {}
-
-impl From<PathError> for io::Error {
-    fn from(err: PathError) -> Self {
-        io::Error::new(io::ErrorKind::InvalidInput, err.message)
-    }
-}
-
-/// Валидатор путей для конфигурации.
-///
-/// Объединяет все проверки в одном месте (DRY).
-///
-/// # Архитектурные заметки
-/// ## Problem 2.3 - Консолидация валидации путей
-/// TODO (#архитектура): Заменить функции:
-/// - `validate_path_length`
-/// - `validate_path_characters`
-/// - `validate_no_symlinks`
-/// - `validate_path_within_directory`
-/// - `validate_config_path`
-///
-/// на использование `PathValidator`.
-///
-/// # Пример использования
-/// ```ignore
-/// use tetris_cli::controls::PathValidator;
-///
-/// let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-");
-/// let path = Path::new("config.json");
-/// validator.validate(path).unwrap();
-/// ```
-pub struct PathValidator {
-    /// Максимальная длина пути.
-    max_length: usize,
-    /// Разрешённые символы в пути.
-    allowed_chars: &'static str,
-}
-
-impl PathValidator {
-    /// Создать новый валидатор путей.
-    ///
-    /// # Аргументы
-    /// * `max_length` - максимальная длина пути (рекомендуется 255)
-    /// * `allowed_chars` - строка разрешённых символов
-    ///
-    /// # Возвращает
-    /// Новый экземпляр `PathValidator`
-    pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
-        Self {
-            max_length,
-            allowed_chars,
-        }
-    }
-
-    /// Валидировать путь.
-    ///
-    /// Выполняет все проверки:
-    /// 1. Проверка длины
-    /// 2. Проверка символов
-    /// 3. Проверка на symlink
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если путь валиден
-    /// - `Err(PathError)` если путь невалиден
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь не проходит валидацию:
-    /// - `PathErrorKind::TooLong` - путь слишком длинный
-    /// - `PathErrorKind::ForbiddenCharacters` - запрещённые символы
-    /// - `PathErrorKind::Symlink` - путь является символической ссылкой
-    ///
-    /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
-    #[track_caller]
-    pub fn validate(&self, path: &Path) -> Result<(), PathError> {
-        self.validate_length(path)?;
-        self.validate_characters(path)?;
-        self.validate_no_symlinks(path)?;
-        Ok(())
-    }
-
-    /// Проверить максимальную длину пути.
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если длина в пределах нормы
-    /// - `Err(PathError)` если путь слишком длинный
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если длина пути превышает `max_length`.
-    ///
-    /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
-    #[track_caller]
-    pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
-        let path_str = path.to_str().ok_or_else(|| PathError {
-            message: "Путь содержит невалидные UTF-8 символы".to_string(),
-            kind: PathErrorKind::InvalidPath,
-        })?;
-
-        if path_str.len() > self.max_length {
-            return Err(PathError {
-                message: format!(
-                    "Путь слишком длинный (максимум {} символов): {:?}",
-                    self.max_length, path_str
-                ),
-                kind: PathErrorKind::TooLong,
-            });
-        }
-        Ok(())
-    }
-
-    /// Проверить допустимые символы в пути.
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если символы допустимы
-    /// - `Err(PathError)` если есть запрещённые символы
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь содержит символы, не входящие в `allowed_chars`.
-    ///
-    /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
-    #[track_caller]
-    pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
-        let path_str = path.to_str().ok_or_else(|| PathError {
-            message: "Путь содержит невалидные UTF-8 символы".to_string(),
-            kind: PathErrorKind::InvalidPath,
-        })?;
-
-        // Проверяем каждый символ
-        for ch in path_str.chars() {
-            if !self.allowed_chars.contains(ch) {
-                return Err(PathError {
-                    message: format!(
-                        "Запрещённый символ в пути: {:?} (символ: '{}')",
-                        path_str, ch
-                    ),
-                    kind: PathErrorKind::ForbiddenCharacters,
-                });
-            }
-        }
-        Ok(())
-    }
-
-    /// Проверить отсутствие символических ссылок.
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если symlink не обнаружен
-    /// - `Err(PathError)` если путь является symlink
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь является символической ссылкой.
-    ///
-    /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
-    #[allow(clippy::unused_self)]
-    // Будет использоваться с конфигурируемыми параметрами
-    #[track_caller]
-    pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
-        if let Ok(metadata) = std::fs::symlink_metadata(path) {
-            if metadata.file_type().is_symlink() {
-                return Err(PathError {
-                    message: format!("Символические ссылки не разрешены: {}", path.display()),
-                    kind: PathErrorKind::Symlink,
-                });
-            }
-        }
-        Ok(())
-    }
-
-    /// Проверить, что путь находится внутри директории.
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    /// * `dir` - разрешённая директория
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если путь внутри директории
-    /// - `Err(PathError)` если путь вне директории
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь находится вне разрешённой директории.
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
-    pub fn validate_within_directory(&self, path: &Path, dir: &Path) -> Result<(), PathError> {
-        let canonical_path = if path.exists() {
-            path.canonicalize().map_err(|e| PathError {
-                message: format!("Неверный путь {}: {}", path.display(), e),
-                kind: PathErrorKind::InvalidPath,
-            })?
-        } else {
-            path.parent()
-                .and_then(|p| p.canonicalize().ok())
-                .unwrap_or_else(|| dir.to_path_buf())
-        };
-
-        if canonical_path.strip_prefix(dir).is_err() {
-            return Err(PathError {
-                message: format!("Путь вне разрешённой директории: {}", path.display()),
-                kind: PathErrorKind::PathTraversal,
-            });
-        }
-        Ok(())
-    }
-
-    /// Проверить запрет абсолютных путей.
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если путь относительный
-    /// - `Err(PathError)` если путь абсолютный
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь является абсолютным.
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
-    pub fn validate_not_absolute(&self, path: &Path) -> Result<(), PathError> {
-        if path.is_absolute() {
-            return Err(PathError {
-                message: format!("Абсолютные пути не разрешены: {}", path.display()),
-                kind: PathErrorKind::AbsolutePath,
-            });
-        }
-        Ok(())
-    }
-
-    /// Проверить запрет path traversal (..).
-    ///
-    /// # Аргументы
-    /// * `path` - путь для проверки (строка)
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если нет последовательностей ..
-    /// - `Err(PathError)` если есть ..
-    ///
-    /// # Errors
-    /// Возвращает `PathError` если путь содержит последовательности `..`.
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
-    pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
-        if path.contains("..") {
-            return Err(PathError {
-                message: format!("Path traversal не разрешён: {:?}", path),
-                kind: PathErrorKind::PathTraversal,
-            });
-        }
-        Ok(())
-    }
-}
-
-/// Валидатор путей по умолчанию для конфигурации.
-///
-/// Использует стандартные настройки:
-/// - Максимальная длина: 255 символов
-/// - Разрешённые символы: буквы, цифры, ., _, -, /
-pub const DEFAULT_PATH_VALIDATOR: PathValidator = PathValidator {
-    max_length: 255,
-    allowed_chars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+// Переэкспорт для обратной совместимости
+pub use crate::validation::path::{
+    PathError, PathErrorKind, PathValidator, DEFAULT_PATH_VALIDATOR,
 };
 
-/// Длина HMAC ключа в байтах (256 бит).
-const HMAC_KEY_LENGTH: usize = 32;
-
-/// Сгенерировать случайный HMAC ключ.
-///
-/// Использует криптографически стойкий генератор случайных чисел.
-/// Возвращает hex-строку из 64 символов (256 бит).
-fn generate_hmac_key() -> String {
-    use rand::rngs::OsRng;
-    use rand::RngCore;
-
-    let mut bytes = [0u8; HMAC_KEY_LENGTH];
-    OsRng.fill_bytes(&mut bytes);
-    hex::encode(bytes)
-}
-
-/// Вычислить HMAC-SHA256 для данных.
-///
-/// # Аргументы
-/// * `key` - HMAC ключ (hex-строка)
-/// * `data` - данные для подписи
-///
-/// # Возвращает
-/// HMAC подпись в виде hex-строки
-fn compute_hmac(key: &str, data: &str) -> String {
-    use blake3::Hasher;
-
-    // Используем BLAKE3 как HMAC функцию
-    // Формируем ключ + данные для хеширования
-    let mut hasher = Hasher::new();
-    hasher.update(key.as_bytes());
-    hasher.update(data.as_bytes());
-    let hash = hasher.finalize();
-    hash.to_hex().to_string()
-}
-
-/// Проверить HMAC подпись конфигурации.
-///
-/// # Аргументы
-/// * `key` - HMAC ключ
-/// * `config` - конфигурация для проверки
-/// * `expected_hmac` - ожидаемая подпись
-///
-/// # Возвращает
-/// `true` если подпись верна
-fn verify_hmac(key: &str, config: &ControlsConfigInner, expected_hmac: &str) -> bool {
-    // Сериализуем конфигурацию в JSON для вычисления HMAC
-    let config_json = serde_json::to_string(config).unwrap_or_else(|_| String::new());
-    let computed_hmac = compute_hmac(key, &config_json);
-    computed_hmac == expected_hmac
-}
-
-/// Конфигурация управления с HMAC подписью.
-/// Внутренняя структура для хранения подписи.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SignedControlsConfig {
-    /// Основная конфигурация.
-    config: ControlsConfigInner,
-    /// HMAC-SHA256 подпись конфигурации.
-    hmac: String,
-}
-
-/// Внутренняя структура конфигурации (без подписи).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-struct ControlsConfigInner {
+/// Конфигурация управления с keyed hash подписью.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ControlsConfig {
     /// Движение влево.
-    move_left: u8,
+    pub move_left: u8,
     /// Движение вправо.
-    move_right: u8,
+    pub move_right: u8,
     /// Мягкое падение.
-    soft_drop: u8,
+    pub soft_drop: u8,
     /// Жёсткое падение.
-    hard_drop: u8,
+    pub hard_drop: u8,
     /// Вращение против часовой.
-    rotate_left: u8,
+    pub rotate_left: u8,
     /// Вращение по часовой.
-    rotate_right: u8,
+    pub rotate_right: u8,
     /// Удержание фигуры.
-    hold: u8,
+    pub hold: u8,
     /// Пауза.
-    pause: u8,
+    pub pause: u8,
     /// Выход.
-    quit: u8,
-    /// Случайный HMAC ключ для этой конфигурации.
-    hmac_key: String,
+    pub quit: u8,
+    /// Внутренний HMAC ключ (не следует изменять напрямую).
+    #[doc(hidden)]
+    pub hmac_key: String,
+    /// Подпись конфигурации.
+    signature: String,
 }
 
 /// Проверить валидность пути для конфигурации.
@@ -499,39 +136,10 @@ fn validate_config_path(path: &str) -> io::Result<()> {
     Ok(())
 }
 
-/// Конфигурация управления игрой.
-///
-/// Содержит коды клавиш для всех действий в игре.
-/// Все клавиши хранятся как u8 коды (ASCII значения).
-/// Конфигурация защищена HMAC-SHA256 подписью для предотвращения подделки.
-///
-/// ## Обратная совместимость
-/// Поля структуры публичны для обратной совместимости с существующими тестами.
-/// Для нового кода рекомендуется использовать геттеры: `move_left()`, `move_right()`, и т.д.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ControlsConfig {
-    /// Движение влево.
-    pub move_left: u8,
-    /// Движение вправо.
-    pub move_right: u8,
-    /// Мягкое падение.
-    pub soft_drop: u8,
-    /// Жёсткое падение.
-    pub hard_drop: u8,
-    /// Вращение против часовой.
-    pub rotate_left: u8,
-    /// Вращение по часовой.
-    pub rotate_right: u8,
-    /// Удержание фигуры.
-    pub hold: u8,
-    /// Пауза.
-    pub pause: u8,
-    /// Выход.
-    pub quit: u8,
-    /// Внутренний HMAC ключ (не следует изменять напрямую).
-    #[doc(hidden)]
-    pub hmac_key: String,
-}
+// ============================================================================
+// КОНФИГУРАЦИЯ УПРАВЛЕНИЯ
+// ============================================================================
+// ControlsConfig теперь определён в начале файла с поддержкой keyed hash
 
 impl ControlsConfig {
     /// Создать конфигурацию со значениями по умолчанию.
@@ -568,6 +176,7 @@ impl ControlsConfig {
             pause: b'p',
             quit: 127,               // Backspace
             hmac_key: String::new(), // Ключ генерируется при сохранении
+            signature: String::new(),
         }
     }
 
@@ -681,7 +290,7 @@ impl ControlsConfig {
     ///
     /// # Безопасность
     /// - Генерируется новый HMAC ключ при каждом сохранении
-    /// - Конфигурация подписывается HMAC-SHA256
+    /// - Конфигурация подписывается keyed hash
     /// - Используется `O_NOFOLLOW` для защиты от symlink атак
     ///
     /// # Пример использования
@@ -695,8 +304,11 @@ impl ControlsConfig {
         // Валидация пути с использованием общей функции
         validate_config_path(path)?;
 
-        // Создаём временную структуру для сериализации
-        let config_inner = ControlsConfigInner {
+        // Генерируем новый ключ при сохранении
+        let hmac_key = crate::crypto::generate_salt();
+
+        // Сериализуем конфигурацию без signature для вычисления хеша
+        let config_for_hash = ControlsConfig {
             move_left: self.move_left,
             move_right: self.move_right,
             soft_drop: self.soft_drop,
@@ -706,22 +318,33 @@ impl ControlsConfig {
             hold: self.hold,
             pause: self.pause,
             quit: self.quit,
-            hmac_key: generate_hmac_key(),
+            hmac_key: hmac_key.clone(),
+            signature: String::new(),
         };
 
-        // Вычисляем HMAC подпись
-        let config_json = serde_json::to_string(&config_inner)
+        let config_json = serde_json::to_string(&config_for_hash)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
-        let hmac = compute_hmac(&config_inner.hmac_key, &config_json);
 
-        // Создаём подписанную конфигурацию
-        let signed_config = SignedControlsConfig {
-            config: config_inner,
-            hmac,
+        // Вычисляем keyed hash подпись
+        let signature = crate::crypto::keyed_hash(&hmac_key, &config_json);
+
+        // Создаём итоговую конфигурацию с подписью
+        let config_with_sig = ControlsConfig {
+            move_left: self.move_left,
+            move_right: self.move_right,
+            soft_drop: self.soft_drop,
+            hard_drop: self.hard_drop,
+            rotate_left: self.rotate_left,
+            rotate_right: self.rotate_right,
+            hold: self.hold,
+            pause: self.pause,
+            quit: self.quit,
+            hmac_key,
+            signature,
         };
 
         // Сериализуем в JSON
-        let json = serde_json::to_string_pretty(&signed_config)
+        let json = serde_json::to_string_pretty(&config_with_sig)
             .map_err(|e| io::Error::other(e.to_string()))?;
 
         // Используем O_NOFOLLOW для защиты от symlink атак при записи
@@ -754,7 +377,7 @@ impl ControlsConfig {
     /// - HMAC подпись не совпадает (подделка конфигурации)
     ///
     /// # Безопасность
-    /// - Проверяется HMAC подпись конфигурации
+    /// - Проверяется keyed hash подпись конфигурации
     /// - Используется `symlink_metadata()` для защиты от symlink атак
     ///
     /// # Пример использования
@@ -792,34 +415,42 @@ impl ControlsConfig {
         let mut json = String::new();
         file.read_to_string(&mut json)?;
 
-        // Десериализуем подписанную конфигурацию
-        let signed_config: SignedControlsConfig = serde_json::from_str(&json)
+        // Десериализуем конфигурацию
+        let config: ControlsConfig = serde_json::from_str(&json)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
-        // Проверяем HMAC подпись
-        if !verify_hmac(
-            &signed_config.config.hmac_key,
-            &signed_config.config,
-            &signed_config.hmac,
-        ) {
+        // Проверяем keyed hash подпись
+        let config_for_hash = ControlsConfig {
+            move_left: config.move_left,
+            move_right: config.move_right,
+            soft_drop: config.soft_drop,
+            hard_drop: config.hard_drop,
+            rotate_left: config.rotate_left,
+            rotate_right: config.rotate_right,
+            hold: config.hold,
+            pause: config.pause,
+            quit: config.quit,
+            hmac_key: config.hmac_key.clone(),
+            signature: String::new(),
+        };
+
+        let config_json = serde_json::to_string(&config_for_hash).map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Ошибка сериализации: {e}"),
+            )
+        })?;
+
+        let expected_signature = crate::crypto::keyed_hash(&config.hmac_key, &config_json);
+
+        if config.signature != expected_signature {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                "HMAC подпись не совпадает - возможна подделка конфигурации",
+                "Keyed hash подпись не совпадает - возможна подделка конфигурации",
             ));
         }
 
-        Ok(Self {
-            move_left: signed_config.config.move_left,
-            move_right: signed_config.config.move_right,
-            soft_drop: signed_config.config.soft_drop,
-            hard_drop: signed_config.config.hard_drop,
-            rotate_left: signed_config.config.rotate_left,
-            rotate_right: signed_config.config.rotate_right,
-            hold: signed_config.config.hold,
-            pause: signed_config.config.pause,
-            quit: signed_config.config.quit,
-            hmac_key: signed_config.config.hmac_key,
-        })
+        Ok(config)
     }
 
     /// Валидировать конфигурацию управления.
@@ -920,6 +551,7 @@ impl ControlsConfig {
             pause,
             quit,
             hmac_key: String::new(),
+            signature: String::new(),
         }
     }
 }

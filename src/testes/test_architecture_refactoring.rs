@@ -175,11 +175,11 @@ fn test_game_view_extended_with_data() {
     let _held_shape: &Option<_> = view.held_shape;
     let _animating_rows: u32 = view.animating_rows;
     let _is_hard_dropping: bool = view.is_hard_dropping;
-    let _mode: GameMode = view.mode;
+    let _mode: &dyn crate::game::mode_trait::GameModeTrait = view.mode;
 
     // Проверяем корректность данных
     assert!(!view.score.is_empty(), "Score строка не должна быть пустой");
-    assert_eq!(view.mode, GameMode::Classic);
+    assert_eq!(view.mode.name(), "Классика");
     assert_eq!(view.level, "1");
     assert_eq!(view.lines, "0");
     assert!(
@@ -192,7 +192,7 @@ fn test_game_view_extended_with_data() {
     // Проверяем режим спринт
     let sprint_state = GameState::new_sprint();
     let sprint_view = GameView::from_game_state(&sprint_state);
-    assert_eq!(sprint_view.mode, GameMode::Sprint);
+    assert_eq!(sprint_view.mode.name(), "Спринт");
 }
 
 /// Тест 5: Проверка инкапсуляции полей GameState.

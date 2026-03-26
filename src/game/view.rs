@@ -22,7 +22,8 @@
 //! // render::draw(&view, &mut canvas, high_score_display);
 //! ```
 
-use super::state::{GameMode, GameState};
+use super::mode_trait::GameModeTrait;
+use super::state::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::Tetromino;
 
@@ -105,8 +106,8 @@ pub struct GameView<'a> {
     pub is_hard_dropping: bool,
 
     // === Режим и статистика ===
-    /// Режим игры (Классика/Спринт).
-    pub mode: GameMode,
+    /// Режим игры (объект трейта).
+    pub mode: &'a dyn GameModeTrait,
     /// Количество очищенных линий.
     pub lines_cleared: u32,
     /// Прошедшее время игры (в секундах).
@@ -148,7 +149,7 @@ impl<'a> GameView<'a> {
             held_shape: state.get_held_shape_ref(),
             animating_rows: state.animating_rows_mask,
             is_hard_dropping: state.is_hard_dropping,
-            mode: state.get_mode(),
+            mode: state.get_mode_trait(),
             lines_cleared: state.lines_cleared,
             elapsed_time: state.stats.get_elapsed_time(),
         }
@@ -340,7 +341,8 @@ impl<'a> GameView<'a> {
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub fn timer_str(&self) -> Option<String> {
-        if self.mode == GameMode::Sprint {
+        // Спринт режим имеет цель 40 линий
+        if self.mode.get_target_lines() == Some(40) {
             Some(format!("Время: {:.2}с", self.elapsed_time))
         } else {
             None
