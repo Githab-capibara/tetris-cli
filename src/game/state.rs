@@ -318,7 +318,7 @@ impl GameMode {
     ///
     /// # Пример использования
     /// ```
-    /// use crate::game::state::GameMode;
+    /// use tetris_cli::game::state::GameMode;
     /// let mode = GameMode::Classic;
     /// let trait_obj = mode.as_trait();
     /// assert_eq!(trait_obj.name(), "Классика");

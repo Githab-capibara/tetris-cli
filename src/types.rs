@@ -24,6 +24,17 @@
 ///     Direction::Down => println!("Движение вниз"),
 /// }
 /// ```
+///
+/// ## Исправление #4 (Direction vs RotationDirection)
+/// Для конвертации в направление вращения используйте метод
+/// [`to_rotation_direction()`](Self::to_rotation_direction).
+///
+/// ### Соответствие направлений
+/// | Direction | RotationDirection |
+/// |-----------|-------------------|
+/// | `Left` | `CounterClockwise` |
+/// | `Right` | `Clockwise` |
+/// | `Down` | `Clockwise` (по умолчанию) |
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Direction {
     /// Движение вниз.
@@ -38,9 +49,27 @@ impl Direction {
     /// Конвертировать [`Direction`] в [`RotationDirection`].
     ///
     /// # Возвращает
-    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`]
     /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
-    /// - [`RotationDirection::Clockwise`] для [`Direction::Down`] (по умолчанию)
+    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`] и [`Direction::Down`]
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::types::{Direction, RotationDirection};
+    ///
+    /// assert_eq!(
+    ///     Direction::Left.to_rotation_direction(),
+    ///     RotationDirection::CounterClockwise
+    /// );
+    /// assert_eq!(
+    ///     Direction::Right.to_rotation_direction(),
+    ///     RotationDirection::Clockwise
+    /// );
+    /// ```
+    ///
+    /// # Примечания
+    /// Метод помечен как `#[allow(dead_code)]` так как используется
+    /// только в устаревшем коде. Новый код должен явно указывать
+    /// направление вращения через `RotationDirection`.
     #[must_use]
     #[allow(dead_code)]
     pub const fn to_rotation_direction(self) -> RotationDirection {

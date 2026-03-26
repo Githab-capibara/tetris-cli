@@ -1,10 +1,76 @@
 //! Модуль проверки столкновений.
 //!
 //! Проверка возможности движения и вращения фигуры.
+//!
+//! ## Архитектурные заметки
+//! ## Исправление #3 (DRY - Don't Repeat Yourself)
+//! Выделена общая функция `check_block_collision()` для устранения дублирования кода
+//! между проверкой движения и проверкой вращения.
 
 use crate::game::GameState;
 use crate::io::GRID_WIDTH;
 use crate::types::Direction;
+
+/// Проверить столкновение одного блока с границами или другими блоками.
+///
+/// # Аргументы
+/// * `state` - состояние игры
+/// * `check_x` - координата X блока для проверки
+/// * `check_y` - координата Y блока для проверки
+/// * `ignore_above_field` - игнорировать блоки выше поля (Y < 0)
+///
+/// # Возвращает
+/// `true` если блок не сталкивается ни с чем
+///
+/// # Исправление #3 (DRY)
+/// Общая функция для устранения дублирования между:
+/// - `check_collision_direction()` - проверка движения
+/// - `check_rotation_collision()` - проверка вращения
+///
+/// # Примечания
+/// - Проверка границ X: 0 <= check_x < GRID_WIDTH
+/// - Проверка заполненных ячеек: cell == -1 означает пусто
+/// - Игнорирование Y < 0 полезно для вращения (блоки могут быть выше поля)
+#[must_use]
+fn check_block_collision(
+    state: &GameState,
+    check_x: i16,
+    check_y: i16,
+    ignore_above_field: bool,
+) -> bool {
+    // Проверка левой границы
+    if check_x < 0 {
+        return false;
+    }
+
+    // Проверка правой границы
+    if check_x >= GRID_WIDTH as i16 {
+        return false;
+    }
+
+    // Игнорирование блоков выше поля (для вращения)
+    if ignore_above_field && check_y < 0 {
+        return true; // Считаем что блока нет (нет коллизии)
+    }
+
+    // Проверка нижней границы (только для движения вниз)
+    // Для вращения блоки выше поля допустимы
+    if check_y < 0 {
+        return true; // Считаем что блока нет (нет коллизии)
+    }
+
+    // Проверка наличия блока в сетке
+    if state
+        .blocks
+        .get(check_y as usize)
+        .and_then(|row| row.get(check_x as usize))
+        .is_none_or(|&cell| cell != -1)
+    {
+        return false; // Столкновение с заполненной ячейкой
+    }
+
+    true // Нет столкновений
+}
 
 /// Проверить возможность движения фигуры в заданном направлении.
 ///
@@ -43,35 +109,10 @@ fn check_collision_direction(
             Direction::Down => check_y += 1,
         }
 
-        // Исправление #8: используем .get() с ранним выходом
-        // Проверка check_x < 0 для левой границы
-        if check_x < 0 {
-            return false;
-        }
-
-        // Проверка check_x >= GRID_WIDTH для правой границы
-        if check_x >= GRID_WIDTH as i16 {
-            return false;
-        }
-
-        // Для движения вниз проверяем, что фигура не выше поля
-        if dir == Direction::Down && check_y < 0 {
-            return false;
-        }
-
-        // Блоки выше поля (check_y < 0) игнорируются для Left/Right
-        // Проверяем только блоки внутри поля
-        if check_y < 0 {
-            continue;
-        }
-
-        // Проверяем наличие блока через .get()
-        if state
-            .blocks
-            .get(check_y as usize)
-            .and_then(|row| row.get(check_x as usize))
-            .is_none_or(|&cell| cell != -1)
-        {
+        // Исправление #3 (DRY): используем общую функцию check_block_collision
+        // Для движения вниз не игнорируем блоки выше поля (check_y < 0 блокирует движение)
+        let ignore_above_field = false;
+        if !check_block_collision(state, check_x, check_y, ignore_above_field) {
             return false;
         }
     }
@@ -115,30 +156,10 @@ pub fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (
         let check_x = coord_x + shape_block_x;
         let check_y = coord_y + shape_block_y;
 
-        // Исправление #8: используем .get() с ранним выходом
-        // Проверка check_x < 0 для левой границы
-        if check_x < 0 {
-            return false;
-        }
-
-        // Проверка check_x >= GRID_WIDTH для правой границы
-        if check_x >= GRID_WIDTH as i16 {
-            return false;
-        }
-
-        // Блоки выше поля (check_y < 0) игнорируются
-        // Проверяем только блоки внутри поля
-        if check_y < 0 {
-            continue;
-        }
-
-        // Проверяем наличие блока через .get()
-        if state
-            .blocks
-            .get(check_y as usize)
-            .and_then(|row| row.get(check_x as usize))
-            .is_none_or(|&cell| cell != -1)
-        {
+        // Исправление #3 (DRY): используем общую функцию check_block_collision
+        // Для вращения игнорируем блоки выше поля (check_y < 0 допустимо)
+        let ignore_above_field = true;
+        if !check_block_collision(state, check_x, check_y, ignore_above_field) {
             return false;
         }
     }

@@ -329,7 +329,6 @@ pub const DEFAULT_PATH_VALIDATOR: PathValidator = PathValidator {
 #[cfg(test)]
 mod validation_path_tests {
     use super::*;
-    use std::path::PathBuf;
 
     #[test]
     fn test_path_validator_new() {

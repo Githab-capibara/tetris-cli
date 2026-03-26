@@ -9,7 +9,7 @@
 //! функции для обратной совместимости.
 
 // Переэкспорт из модуля валидации для обратной совместимости
-pub use crate::validation::name::{is_valid_name_char, sanitize_player_name};
+pub use crate::validation::name::sanitize_player_name;
 
 #[cfg(test)]
 mod sanitize_tests {

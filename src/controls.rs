@@ -40,9 +40,7 @@ pub fn reset_rate_limit_for_tests() {
 // для централизации кода валидации.
 
 // Переэкспорт для обратной совместимости
-pub use crate::validation::path::{
-    PathError, PathErrorKind, PathValidator, DEFAULT_PATH_VALIDATOR,
-};
+pub use crate::validation::path::DEFAULT_PATH_VALIDATOR;
 
 /// Конфигурация управления с keyed hash подписью.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
