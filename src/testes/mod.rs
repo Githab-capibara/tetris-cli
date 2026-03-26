@@ -178,3 +178,6 @@ pub mod test_architecture_integrity;
 
 // Интеграционные тесты (10 тестов)
 pub mod test_all_fixes_integration;
+
+// Тесты для всех 24 исправлений из отчета аудита (24 теста)
+pub mod test_all_24_fixes;
