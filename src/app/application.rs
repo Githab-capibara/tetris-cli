@@ -2,9 +2,13 @@
 //!
 //! Предоставляет структуру Application для управления жизненным циклом приложения.
 
+use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
+use crate::menu::run_game_mode;
 use std::error::Error;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 use termion::terminal_size;
 
 /// Приложение Tetris CLI.
@@ -118,96 +122,132 @@ impl Application {
 
     /// Главный цикл меню.
     ///
-    /// # Аргументы
-    /// * `self` - изменяемая ссылка на приложение
+    /// Обрабатывает отрисовку меню и ввод пользователя.
     fn run_menu_loop(&mut self) {
-        use crate::game::GameState;
         use crate::game::FPS;
-        use crate::menu::{draw_menu, run_game_mode, show_leaderboard};
-        use std::{thread::sleep, time::Duration, time::Instant};
+        use crate::menu::draw_menu;
+        use std::time::Instant;
 
         let mut last_time = Instant::now();
         let interval_ms = 1_000 / FPS;
 
         loop {
             // Поддержание стабильного FPS
-            let now = Instant::now();
-            let delta_time_ms = u64::from(now.duration_since(last_time).subsec_millis());
-
-            if delta_time_ms < interval_ms {
-                sleep(Duration::from_millis(interval_ms - delta_time_ms));
+            if !Self::wait_for_next_frame(&mut last_time, interval_ms) {
                 continue;
             }
-
-            last_time = now;
 
             // Отрисовка меню
             let high_score_display = format!("{:10}", self.high_score);
             draw_menu(&mut self.canvas, &high_score_display);
 
             // Обработка ввода
-            let key = self.input.get_key();
-
-            match key {
-                // ЗАПУСК КЛАССИЧЕСКОЙ ИГРЫ (Enter)
-                Some(b'\n' | b'\r') => {
-                    let state = GameState::new();
-                    let new_score = run_game_mode(
-                        &mut self.canvas,
-                        &mut self.input,
-                        &high_score_display,
-                        state,
-                        true,
-                        &mut self.leaderboard,
-                    );
-                    if new_score > self.high_score {
-                        self.high_score = new_score;
-                        SaveData::save_value(self.high_score);
-                    }
+            if let Some(key) = self.input.get_key() {
+                // Выход из приложения
+                if key == crate::io::KEY_BACKSPACE {
+                    break;
                 }
-
-                // ЗАПУСК РЕЖИМА СПРИНТ (R)
-                Some(b'r') => {
-                    let state = GameState::new_sprint();
-                    run_game_mode(
-                        &mut self.canvas,
-                        &mut self.input,
-                        &high_score_display,
-                        state,
-                        false,
-                        &mut self.leaderboard,
-                    );
-                }
-
-                // ЗАПУСК РЕЖИМА МАРАФОН (M)
-                Some(b'm') => {
-                    let state = GameState::new_marathon();
-                    let new_score = run_game_mode(
-                        &mut self.canvas,
-                        &mut self.input,
-                        &high_score_display,
-                        state,
-                        true,
-                        &mut self.leaderboard,
-                    );
-                    if new_score > self.high_score {
-                        self.high_score = new_score;
-                        SaveData::save_value(self.high_score);
-                    }
-                }
-
-                // ОТОБРАЖЕНИЕ ТАБЛИЦЫ ЛИДЕРОВ (L)
-                Some(b'l') => {
-                    show_leaderboard(&mut self.canvas, &mut self.input, &self.leaderboard);
-                }
-
-                // ВЫХОД ИЗ ПРИЛОЖЕНИЯ (Backspace)
-                Some(crate::io::KEY_BACKSPACE) => break,
-
-                // НЕИЗВЕСТНАЯ КЛАВИША
-                Some(_) | None => {}
+                self.handle_menu_input(key, &high_score_display);
             }
         }
+    }
+
+    /// Подождать следующего кадра для поддержания FPS.
+    ///
+    /// # Возвращает
+    /// `true` если пришло время обновлять кадр, `false` если нужно ждать
+    fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
+        let now = Instant::now();
+        let delta_time_ms = u64::from(now.duration_since(*last_time).subsec_millis());
+
+        if delta_time_ms < interval_ms {
+            sleep(Duration::from_millis(interval_ms - delta_time_ms));
+            return false;
+        }
+
+        *last_time = now;
+        true
+    }
+
+    /// Обработать ввод в меню.
+    ///
+    /// # Аргументы
+    /// * `key` - код нажатой клавиши
+    /// * `high_score_display` - строка для отображения рекорда
+    fn handle_menu_input(&mut self, key: u8, high_score_display: &str) {
+        use crate::menu::show_leaderboard;
+
+        match key {
+            // ЗАПУСК КЛАССИЧЕСКОЙ ИГРЫ (Enter)
+            b'\n' | b'\r' => {
+                let state = GameState::new();
+                let new_score = self.run_game_classic(high_score_display, state);
+                if new_score > self.high_score {
+                    self.high_score = new_score;
+                    SaveData::save_value(self.high_score);
+                }
+            }
+
+            // ЗАПУСК РЕЖИМА СПРИНТ (R)
+            b'r' => {
+                let state = GameState::new_sprint();
+                self.run_game_sprint(high_score_display, state);
+            }
+
+            // ЗАПУСК РЕЖИМА МАРАФОН (M)
+            b'm' => {
+                let state = GameState::new_marathon();
+                let new_score = self.run_game_marathon(high_score_display, state);
+                if new_score > self.high_score {
+                    self.high_score = new_score;
+                    SaveData::save_value(self.high_score);
+                }
+            }
+
+            // ОТОБРАЖЕНИЕ ТАБЛИЦЫ ЛИДЕРОВ (L)
+            b'l' => {
+                show_leaderboard(&mut self.canvas, &mut self.input, &self.leaderboard);
+            }
+
+            // НЕИЗВЕСТНАЯ КЛАВИША
+            _ => {}
+        }
+    }
+
+    /// Запустить классический режим игры.
+    fn run_game_classic(&mut self, high_score_display: &str, state: GameState) -> u128 {
+        run_game_mode(
+            &mut self.canvas,
+            &mut self.input,
+            high_score_display,
+            state,
+            true,
+            &mut self.leaderboard,
+        )
+    }
+
+    /// Запустить режим спринт.
+    fn run_game_sprint(&mut self, high_score_display: &str, state: GameState) {
+        run_game_mode(
+            &mut self.canvas,
+            &mut self.input,
+            high_score_display,
+            state,
+            false,
+            &mut self.leaderboard,
+        );
+    }
+
+    /// Запустить режим марафон.
+    fn run_game_marathon(&mut self, high_score_display: &str, state: GameState) -> u128 {
+        run_game_mode(
+            &mut self.canvas,
+            &mut self.input,
+            high_score_display,
+            state,
+            true,
+            &mut self.leaderboard,
+        )
     }
 }
 

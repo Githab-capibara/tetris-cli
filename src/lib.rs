@@ -382,17 +382,17 @@
 // Каждый модуль отвечает за определённую часть функциональности игры.
 // Модули организованы иерархически и могут импортировать друг друга.
 
-pub mod validation;
+pub mod app;
 pub mod controls;
 pub mod crypto;
-pub mod types;
 pub mod game;
-pub mod app;
-pub mod menu;
 pub mod highscore;
-pub mod io_traits;
 pub mod io;
+pub mod io_traits;
+pub mod menu;
 pub mod tetromino;
+pub mod types;
+pub mod validation;
 
 // Модуль публичного API для удобного импорта
 pub mod exports;

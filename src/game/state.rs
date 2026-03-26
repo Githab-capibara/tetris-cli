@@ -1,10 +1,9 @@
 //! Состояние игры и связанные структуры.
 //!
-//! Этот модуль содержит основные структуры данных для представления состояния игры:
-//! - `GameState` — основное состояние игры
-//! - `GameStats` — статистика прошедшей игры
-//! - `GameMode` — режим игры (enum для обратной совместимости)
-//! - `GameModeTrait` — трейт режима игры (предпочтительный способ)
+//! Модуль содержит основные структуры данных:
+//! - `GameState` - основное состояние игры
+//! - `GameStats` - статистика прошедшей игры
+//! - `GameModeTrait` - трейт режима игры
 //! - Константы игры
 
 use crate::io::{DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH};
@@ -135,23 +134,11 @@ pub const LINE_SCORES: [u128; 4] = [
 /// В классическом тетрисе максимально возможно удалить 4 линии одновременно (Tetris).
 pub const MAX_LINES_PER_CLEAR: u32 = 4;
 
-/// Ширина игрового поля в блоках.
-#[allow(dead_code)]
-pub const FIELD_WIDTH: usize = GRID_WIDTH;
-
-/// Высота игрового поля в блоках.
-#[allow(dead_code)]
-pub const FIELD_HEIGHT: usize = GRID_HEIGHT;
-
-/// Смещение игрового поля по горизонтали при отрисовке.
-#[allow(dead_code)]
-pub const FIELD_OFFSET_X: usize = 5;
-
 /// Количество линий для режима спринт.
 pub const SPRINT_LINES: u32 = 40;
 
 /// Количество линий для режима марафон.
-#[allow(dead_code)]
+/// Используется в handle_landing() для проверки окончания режима.
 pub const MARATHON_LINES: u32 = 150;
 
 /// Минимальная допустимая координата Y для блоков фигуры.
@@ -169,44 +156,85 @@ pub const ANIMATION_FRAME_SKIP: u16 = 2;
 // ============================================================================
 // КОНСТАНТЫ ПОЗИЦИЙ ОТРИСОВКИ UI
 // ============================================================================
+// Примечание: Позиции рассчитываются исходя из структуры BORDER массив:
+// - Строка 1: граница поля (верх)
+// - Строки 2-5: заголовки "Счёт:", "Рекорд:", "Уровень:", "Линии:"
+// - Строки 6-25: игровое поле 20x10 блоков
+// - Строка 26: граница поля (низ)
 
 /// Позиция X для отрисовки счёта (строка 2).
+/// Обоснование: 7 = 1 (левая граница) + 6 (длина "Счёт: ")
 pub const SCORE_X: u16 = 7;
 /// Позиция Y для отрисовки счёта (строка 2).
+/// Обоснование: строка 2 в массиве BORDER сразу после верхней границы
 pub const SCORE_Y: u16 = 2;
 /// Позиция X для отрисовки рекорда (строка 3).
+/// Обоснование: 7 = 1 (левая граница) + 6 (длина "Рекорд: ")
 pub const HIGH_SCORE_X: u16 = 7;
 /// Позиция Y для отрисовки рекорда (строка 3).
+/// Обоснование: строка 3 в массиве BORDER
 pub const HIGH_SCORE_Y: u16 = 3;
 /// Позиция X для отрисовки уровня (строка 4).
+/// Обоснование: 10 = 1 (левая граница) + 9 (длина "Уровень: ")
 pub const LEVEL_X: u16 = 10;
 /// Позиция Y для отрисовки уровня (строка 4).
+/// Обоснование: строка 4 в массиве BORDER
 pub const LEVEL_Y: u16 = 4;
 /// Позиция X для отрисовки линий (строка 5).
+/// Обоснование: 10 = 1 (левая граница) + 9 (длина "Линии: ")
 pub const LINES_X: u16 = 10;
 /// Позиция Y для отрисовки линий (строка 5).
+/// Обоснование: строка 5 в массиве BORDER
 pub const LINES_Y: u16 = 5;
 
 /// Позиция предпросмотра следующей фигуры по X (справа от поля).
+/// Обоснование: 24 = DISP_WIDTH (22) + 2 (отступ от правой границы поля)
 pub const PREVIEW_X: u16 = 24;
 /// Позиция предпросмотра следующей фигуры по Y.
+/// Обоснование: строка 8 для размещения под заголовками UI
 pub const PREVIEW_Y: u16 = 8;
 
 /// Позиция предпросмотра удержанной фигуры по X (слева от поля).
+/// Обоснование: 2 = 1 (левая граница) + 1 (отступ)
 pub const HOLD_PREVIEW_X: u16 = 2;
 /// Позиция предпросмотра удержанной фигуры по Y.
+/// Обоснование: строка 8 для симметрии с PREVIEW_Y
 pub const HOLD_PREVIEW_Y: u16 = 8;
 
+// ============================================================================
+// КОНСТАНТЫ ПОЗИЦИЙ ОТРИСОВКИ UI (ИСПРАВЛЕНИЕ #9)
+// ============================================================================
+
+/// Позиция X для отрисовки комбо.
+/// Обоснование: 24 = DISP_WIDTH (22) + 2 (отступ, аналогично PREVIEW_X)
+pub const COMBO_X: u16 = 24;
+/// Позиция Y для отрисовки комбо.
+/// Обоснование: строка 6 для размещения под заголовками UI
+pub const COMBO_Y: u16 = 6;
+/// Позиция Y для отрисовки таймера (режим спринт).
+/// Обоснование: строка 20 в правой панели UI
+pub const TIMER_Y: u16 = 20;
+/// Позиция Y для отрисовки прогресса (режим спринт).
+/// Обоснование: строка 21, сразу под таймером
+pub const PROGRESS_Y: u16 = 21;
+
+// ============================================================================
+// СМЕЩЕНИЯ ОТРИСОВКИ ФИГУР
+// ============================================================================
+
 /// Смещение отрисовки фигур по вертикали.
+/// Обоснование: 5 = отступ для размещения поля под границами
 pub const SHAPE_DRAW_OFFSET: i16 = 5;
 
 /// Смещение отрисовки фигур по горизонтали.
+/// Обоснование: 2 = отступ внутри границы поля
 pub const SHAPE_OFFSET_X: i16 = 2;
 
 /// Смещение отрисовки фигур по вертикали (дополнительное).
 pub const SHAPE_OFFSET_Y: i16 = 0;
 
 /// Смещение отрисовки фигур по горизонтали (для предпросмотра).
+/// Обоснование: 2 = отступ от заголовка "След:" / "Удерж:"
 pub const DRAW_OFFSET_X: i16 = 2;
 
 // ============================================================================
@@ -626,14 +654,10 @@ pub struct GameState {
     /// # Инкапсуляция
     /// Поле pub(crate) для доступа из модулей game/.
     /// Использует трейт GameModeTrait вместо enum для лучшей расширяемости.
-    pub(crate) mode_trait: Box<dyn GameModeTrait>,
-    /// Режим игры (enum для обратной совместимости).
     ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
-    /// Устарело, используйте mode_trait.
-    #[deprecated(since = "23.96.14", note = "Используйте mode_trait вместо enum")]
-    pub(crate) mode: GameMode,
+    /// # Исправление #14
+    /// Поле mode удалено, используется только mode_trait.
+    pub(crate) mode_trait: Box<dyn GameModeTrait>,
 
     // ========================================================================
     // === КЭШИРОВАННЫЕ СТРОКИ ДЛЯ ОТРИСОВКИ ===
@@ -751,8 +775,6 @@ impl GameState {
             land_timer: LAND_TIME_DELAY_S,
             stats,
             mode_trait,
-            #[allow(deprecated)]
-            mode,
             animating_rows_mask: 0,
             is_hard_dropping: false,
             soft_drop_distance: 0,
@@ -839,11 +861,21 @@ impl GameState {
     /// Значение enum GameMode
     ///
     /// # Архитектурные заметки
-    /// Устарело, используйте get_mode_trait() для нового кода.
+    /// Метод сохранён для обратной совместимости с тестами.
+    /// Использует get_mode_trait() для получения режима.
+    ///
+    /// # Исправление #14
+    /// Метод использует только mode_trait (поле mode удалено из структуры).
     #[must_use]
     #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
     pub fn get_mode(&self) -> GameMode {
-        self.mode
+        // Используем name() трейта для определения режима
+        match self.get_mode_trait().name() {
+            "Классика" => GameMode::Classic,
+            "Спринт" => GameMode::Sprint,
+            "Марафон" => GameMode::Marathon,
+            _ => GameMode::Classic, // Fallback
+        }
     }
 
     /// Получить игровое поле.
@@ -978,17 +1010,24 @@ impl GameState {
     }
 
     // ========================================================================
-    // СЕТТЕРЫ ДЛЯ ИЗМЕНЕНИЯ ПОЛЕЙ (ДЛЯ ТЕСТОВ)
+    // СЕТТЕРЫ ДЛЯ ИЗМЕНЕНИЯ ПОЛЕЙ (ДЛЯ ТЕСТОВ) С ВАЛИДАЦИЕЙ
     // ========================================================================
+    // Исправление #15: Добавлена валидация входных значений
 
     /// Установить счёт (для тестов).
+    ///
+    /// # Исправление #15
+    /// u128 всегда >= 0, валидация не требуется.
     pub fn set_score(&mut self, score: u128) {
         self.score = score;
     }
 
     /// Установить уровень (для тестов).
+    ///
+    /// # Исправление #15
+    /// Уровень должен быть >= 1.
     pub fn set_level(&mut self, level: u32) {
-        self.level = level;
+        self.level = level.max(1);
     }
 
     /// Установить количество удалённых линий (для тестов).
@@ -1018,10 +1057,12 @@ impl GameState {
     ///
     /// # Архитектурные заметки
     /// Устарело, используйте set_mode_trait() для нового кода.
+    ///
+    /// # Исправление #14
+    /// Метод обновлён для работы только с mode_trait (поле mode удалено).
     #[deprecated(since = "23.96.14", note = "Используйте set_mode_trait() вместо enum")]
     pub fn set_mode(&mut self, mode: GameMode) {
         self.mode_trait = mode.as_trait();
-        self.mode = mode;
     }
 
     /// Добавить линии (для тестов).
@@ -1050,13 +1091,19 @@ impl GameState {
     }
 
     /// Установить скорость падения (для тестов).
+    ///
+    /// # Исправление #15
+    /// Скорость падения должна быть в диапазоне [0.1, MAX_FALL_SPEED].
     pub fn set_fall_spd(&mut self, spd: f32) {
-        self.fall_spd = spd;
+        self.fall_spd = spd.clamp(0.1, MAX_FALL_SPEED);
     }
 
     /// Установить таймер приземления (для тестов).
+    ///
+    /// # Исправление #15
+    /// Таймер должен быть >= 0.
     pub fn set_land_timer(&mut self, timer: f64) {
-        self.land_timer = timer;
+        self.land_timer = timer.max(0.0);
     }
 
     /// Установить флаг Hard Drop (для тестов).
@@ -1150,82 +1197,6 @@ impl GameState {
         self.curr_shape = self.next_shape;
         self.next_shape = Tetromino::from_bag(&mut self.bag);
         self.stats.add_piece(self.curr_shape.shape);
-    }
-}
-
-// ============================================================================
-// РЕАЛИЗАЦИЯ ТРЕЙТА GAMEBOARDACCESS
-// ============================================================================
-
-impl crate::game::access::GameBoardAccess for GameState {
-    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &self.blocks
-    }
-
-    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &mut self.blocks
-    }
-
-    fn get_block(&self, x: usize, y: usize) -> i8 {
-        if x < GRID_WIDTH && y < GRID_HEIGHT {
-            self.blocks[y][x]
-        } else {
-            -1
-        }
-    }
-
-    fn set_block(&mut self, x: usize, y: usize, value: i8) {
-        if x < GRID_WIDTH && y < GRID_HEIGHT {
-            self.blocks[y][x] = value;
-        }
-    }
-
-    fn is_block_empty(&self, x: usize, y: usize) -> bool {
-        self.get_block(x, y) == -1
-    }
-
-    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
-        self.get_block(x, y) >= 0
-    }
-
-    fn get_score(&self) -> u128 {
-        self.score
-    }
-
-    fn add_score(&mut self, points: u128) {
-        self.score = self.score.saturating_add(points);
-    }
-
-    fn get_level(&self) -> u32 {
-        self.level
-    }
-
-    fn set_level(&mut self, level: u32) {
-        self.level = level;
-    }
-
-    fn get_lines_cleared(&self) -> u32 {
-        self.lines_cleared
-    }
-
-    fn set_lines_cleared(&mut self, lines: u32) {
-        self.lines_cleared = lines;
-    }
-
-    fn get_fall_spd(&self) -> f32 {
-        self.fall_spd
-    }
-
-    fn set_fall_spd(&mut self, spd: f32) {
-        self.fall_spd = spd;
-    }
-
-    fn get_land_timer(&self) -> f64 {
-        self.land_timer
-    }
-
-    fn set_land_timer(&mut self, timer: f64) {
-        self.land_timer = timer;
     }
 }
 

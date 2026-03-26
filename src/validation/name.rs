@@ -4,8 +4,34 @@
 //! перед сохранением в таблицу лидеров.
 //!
 //! ## Функции
-//! - [`is_valid_name_char`] — проверка допустимости символа
+//! - [`is_forbidden_char`] — проверка запрещённых Unicode-символов
+//! - [`is_valid_name_char`] — проверка допустимости символа имени
 //! - [`sanitize_player_name`] — санитаризация имени игрока
+
+/// Проверить запрещённые Unicode-символы.
+///
+/// Запрещены:
+/// - Bidirectional control characters (U+200E, U+200F, U+202A-U+202E, U+2066-U+2069)
+/// - Zero-width joiners (U+200C, U+200D)
+/// - Variation selectors (U+FE00-U+FE0F)
+///
+/// # Аргументы
+/// * `c` - символ для проверки
+///
+/// # Возвращает
+/// `true` если символ запрещён
+///
+/// # Исправление #18
+/// Выделена из `sanitize_player_name()` для улучшения читаемости и тестируемости.
+fn is_forbidden_char(c: char) -> bool {
+    matches!(c,
+        '\u{200E}' | '\u{200F}' |  // Bidi
+        '\u{202A}'..='\u{202E}' |  // Bidi formatting
+        '\u{2066}'..='\u{2069}' |  // Bidi isolate
+        '\u{200C}' | '\u{200D}' |  // Zero-width joiners
+        '\u{FE00}'..='\u{FE0F}'    // Variation selectors
+    )
+}
 
 /// Проверить допустимость символа имени.
 ///
@@ -60,11 +86,14 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// # Безопасность
 /// Использует итераторы с `filter()` и `take()` для эффективной фильтрации.
 /// Добавлена защита от Unicode-атак:
-/// - Bidirectional control characters (U+200E, U+200F) отбрасываются
-/// - Zero-width joiners (U+200C, U+200D) отбрасываются
-/// - Variation selectors (U+FE00-U+FE0F) отбрасываются
+/// - Bidirectional control characters отбрасываются через `is_forbidden_char()`
+/// - Zero-width joiners отбрасываются через `is_forbidden_char()`
+/// - Variation selectors отбрасываются через `is_forbidden_char()`
 /// - Emojis и другие опасные символы фильтруются
-/// - Whitelist разрешённых символов
+/// - Whitelist разрешённых символов через `is_valid_name_char()`
+///
+/// # Исправление #18
+/// Использует функцию `is_forbidden_char()` для улучшения читаемости.
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
@@ -74,36 +103,8 @@ pub fn sanitize_player_name(name: &str) -> String {
     // Оптимизация: используем filter() + take() + collect() вместо ручного цикла
     let validated: String = trimmed
         .chars()
-        .filter(|&c| {
-            // Фильтрация bidirectional control characters
-            if c == '\u{200E}'
-                || c == '\u{200F}'
-                || c == '\u{202A}'
-                || c == '\u{202B}'
-                || c == '\u{202C}'
-                || c == '\u{202D}'
-                || c == '\u{202E}'
-                || c == '\u{2066}'
-                || c == '\u{2067}'
-                || c == '\u{2068}'
-                || c == '\u{2069}'
-            {
-                return false;
-            }
-
-            // Фильтрация zero-width joiners
-            if c == '\u{200C}' || c == '\u{200D}' {
-                return false;
-            }
-
-            // Фильтрация variation selectors (U+FE00-U+FE0F)
-            if ('\u{FE00}'..='\u{FE0F}').contains(&c) {
-                return false;
-            }
-
-            // Проверка на разрешённые символы (whitelist)
-            is_valid_name_char(c) && !c.is_control()
-        })
+        .filter(|&c| !is_forbidden_char(c))
+        .filter(|&c| is_valid_name_char(c))
         .take(20)
         .collect();
 
@@ -261,5 +262,49 @@ mod validation_name_tests {
         assert!(!is_valid_name_char('!'));
         assert!(!is_valid_name_char('\n'));
         assert!(!is_valid_name_char('\t'));
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ is_forbidden_char()
+    // =========================================================================
+
+    /// Тест: проверка is_forbidden_char для bidi символов
+    #[test]
+    fn test_is_forbidden_char_bidirectional() {
+        assert!(is_forbidden_char('\u{200E}'));
+        assert!(is_forbidden_char('\u{200F}'));
+        assert!(is_forbidden_char('\u{202A}'));
+        assert!(is_forbidden_char('\u{202E}'));
+        assert!(is_forbidden_char('\u{2066}'));
+        assert!(is_forbidden_char('\u{2069}'));
+    }
+
+    /// Тест: проверка is_forbidden_char для zero-width joiners
+    #[test]
+    fn test_is_forbidden_char_zero_width() {
+        assert!(is_forbidden_char('\u{200C}'));
+        assert!(is_forbidden_char('\u{200D}'));
+    }
+
+    /// Тест: проверка is_forbidden_char для variation selectors
+    #[test]
+    fn test_is_forbidden_char_variation_selectors() {
+        assert!(is_forbidden_char('\u{FE00}'));
+        assert!(is_forbidden_char('\u{FE0F}'));
+        assert!(is_forbidden_char('\u{FE05}'));
+    }
+
+    /// Тест: проверка is_forbidden_char для обычных символов
+    #[test]
+    fn test_is_forbidden_char_normal_chars() {
+        assert!(!is_forbidden_char('a'));
+        assert!(!is_forbidden_char('A'));
+        assert!(!is_forbidden_char('0'));
+        assert!(!is_forbidden_char('_'));
+        assert!(!is_forbidden_char('-'));
+        assert!(!is_forbidden_char(' '));
+        assert!(!is_forbidden_char('а'));
+        assert!(!is_forbidden_char('я'));
+        assert!(!is_forbidden_char('ё'));
     }
 }

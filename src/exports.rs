@@ -1,22 +1,6 @@
 //! Модуль публичного API.
 //!
-//! Переэкспорт наиболее часто используемых типов для удобства импорта.
-//!
-//! ## Пример использования
-//!
-//! ```ignore
-//! use tetris_cli::exports::*;
-//!
-//! // Теперь доступны все основные типы:
-//! // - Direction, RotationDirection, UpdateEndState
-//! // - GameMode, GameState, GameStats
-//! // - BagGenerator, ShapeType, Tetromino
-//! // - Canvas, KeyReader
-//! // - InputReader, Renderer
-//! // - Leaderboard, LeaderboardEntry, SaveData
-//! // - ControlsConfig
-//! // - generate_salt, hash, hmac, verify_hmac
-//! ```
+//! Переэкспорт наиболее часто используемых типов.
 
 // Экспорт типов из модуля types
 pub use crate::types::{Direction, RotationDirection, UpdateEndState};

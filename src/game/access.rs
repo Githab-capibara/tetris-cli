@@ -58,7 +58,6 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///     }
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait GameBoardAccess {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -107,6 +106,76 @@ pub trait GameBoardAccess {
 
     /// Установить таймер приземления.
     fn set_land_timer(&mut self, timer: f64);
+}
+
+// ============================================================================
+// РЕАЛИЗАЦИЯ GameBoardAccess ДЛЯ GameState
+// ============================================================================
+
+impl GameBoardAccess for crate::game::state::GameState {
+    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        self.get_blocks()
+    }
+
+    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        self.get_blocks_mut()
+    }
+
+    fn get_block(&self, x: usize, y: usize) -> i8 {
+        self.blocks[y][x]
+    }
+
+    fn set_block(&mut self, x: usize, y: usize, value: i8) {
+        self.blocks[y][x] = value;
+    }
+
+    fn is_block_empty(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] == -1
+    }
+
+    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] != -1
+    }
+
+    fn get_score(&self) -> u128 {
+        self.get_score()
+    }
+
+    fn add_score(&mut self, points: u128) {
+        self.add_score(points);
+    }
+
+    fn get_level(&self) -> u32 {
+        self.get_level()
+    }
+
+    fn set_level(&mut self, level: u32) {
+        self.set_level(level);
+    }
+
+    fn get_lines_cleared(&self) -> u32 {
+        self.get_lines_cleared()
+    }
+
+    fn set_lines_cleared(&mut self, lines: u32) {
+        self.set_lines_cleared(lines);
+    }
+
+    fn get_fall_spd(&self) -> f32 {
+        self.get_fall_spd()
+    }
+
+    fn set_fall_spd(&mut self, spd: f32) {
+        self.set_fall_spd(spd);
+    }
+
+    fn get_land_timer(&self) -> f64 {
+        self.get_land_timer()
+    }
+
+    fn set_land_timer(&mut self, timer: f64) {
+        self.set_land_timer(timer);
+    }
 }
 
 // ============================================================================

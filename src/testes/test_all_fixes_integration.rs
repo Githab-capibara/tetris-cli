@@ -2,6 +2,8 @@
 //!
 //! Проверяют совместную работу всех исправлений и отсутствие регрессий.
 
+#![allow(deprecated)] // Для обратной совместимости
+
 use crate::game::GameState;
 use crate::types::{Direction, RotationDirection};
 

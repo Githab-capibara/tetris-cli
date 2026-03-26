@@ -284,6 +284,7 @@ fn test_get_cached_timer_str() {
 }
 
 /// Тест 20: Проверка геттера режима игры
+#[allow(deprecated)] // Используем для обратной совместимости
 #[test]
 fn test_get_mode() {
     let classic = GameState::new();
@@ -830,6 +831,7 @@ fn test_game_state_getters_only() {
     let _score = state.get_score();
     let _level = state.get_level();
     let _lines = state.get_lines_cleared();
+    #[allow(deprecated)]
     let _mode = state.get_mode();
     let _curr_shape = state.get_curr_shape();
     let _next_shape = state.get_next_shape();

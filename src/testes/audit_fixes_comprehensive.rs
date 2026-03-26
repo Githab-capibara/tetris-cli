@@ -14,24 +14,26 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::game::state::{
-        COMBO_BONUS, COMBO_X, COMBO_Y, GameState, HARD_DROP_POINTS, INITIAL_FALL_SPD,
-        LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MARATHON_LINES,
-        MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC,
-        PROGRESS_Y, SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES, TIMER_Y,
+    use crate::controls::ControlsConfig;
+    use crate::game::scoring::points::{
+        handle_hard_drop, handle_landing, handle_soft_drop, update_score_and_level,
     };
-    use crate::game::scoring::points::{handle_landing, handle_hard_drop, handle_soft_drop, update_score_and_level};
+    use crate::game::state::{
+        GameState, COMBO_BONUS, COMBO_X, COMBO_Y, HARD_DROP_POINTS, INITIAL_FALL_SPD,
+        LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MARATHON_LINES,
+        MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, PROGRESS_Y,
+        SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES, TIMER_Y,
+    };
     use crate::highscore::leaderboard::LeaderboardEntry;
+    use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH};
+    use crate::menu::MENU;
     use crate::tetromino::{BagGenerator, Tetromino};
     use crate::validation::{
         name::{is_valid_name_char, sanitize_player_name},
-        path::{PathValidator, DEFAULT_PATH_VALIDATOR, PathErrorKind},
+        path::{PathErrorKind, PathValidator, DEFAULT_PATH_VALIDATOR},
     };
-    use crate::controls::ControlsConfig;
-    use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH};
-    use crate::menu::MENU;
-    use std::path::Path;
     use std::io;
+    use std::path::Path;
 
     // =========================================================================
     // ===== CRITICAL ИСПРАВЛЕНИЯ =====
@@ -108,8 +110,14 @@ mod tests {
         );
 
         // Проверяем что состояние корректное после hard drop
-        assert!(state.is_hard_dropping, "Флаг hard drop должен быть установлен");
-        assert_eq!(state.land_timer, 0.0, "Таймер приземления должен быть сброшен");
+        assert!(
+            state.is_hard_dropping,
+            "Флаг hard drop должен быть установлен"
+        );
+        assert_eq!(
+            state.land_timer, 0.0,
+            "Таймер приземления должен быть сброшен"
+        );
     }
 
     /// Тест 2.2: Проверка граничных значений f32
@@ -130,7 +138,10 @@ mod tests {
 
         let drop_distance = state.curr_shape.pos.1 - initial_y;
         assert!(drop_distance.is_finite(), "Дистанция должна быть конечной");
-        assert!(drop_distance >= 0.0, "Дистанция должна быть неотрицательной");
+        assert!(
+            drop_distance >= 0.0,
+            "Дистанция должна быть неотрицательной"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -202,9 +213,7 @@ mod tests {
     #[test]
     fn test_logic_imports_cleaned() {
         // Проверяем что основные функции логики доступны
-        use crate::game::logic::{
-            can_move_curr_shape_direction, can_rotate_curr_shape,
-        };
+        use crate::game::logic::{can_move_curr_shape_direction, can_rotate_curr_shape};
 
         let state = GameState::new();
 
@@ -226,9 +235,7 @@ mod tests {
     #[test]
     fn test_scoring_imports_cleaned() {
         // Проверяем что функции scoring доступны напрямую
-        use crate::game::scoring::{
-            handle_hard_drop, handle_soft_drop, handle_hold, handle_landing, update_score_and_level,
-        };
+        use crate::game::scoring::update_score_and_level;
 
         let mut state = GameState::new();
         let initial_score = state.score;
@@ -237,7 +244,7 @@ mod tests {
         update_score_and_level(&mut state, 1);
         assert!(state.score > initial_score);
 
-        // handle_hold должна быть доступна
+        // handle_hold должна быть доступна через state
         state.hold_shape();
         assert!(state.held_shape.is_some());
     }
@@ -252,8 +259,8 @@ mod tests {
     /// - draw() - использует &GameView (только чтение)
     #[test]
     fn test_gameview_consistency() {
-        use crate::game::view::GameView;
         use crate::game::render::{draw, update_cached_strings_extended};
+        use crate::game::view::GameView;
 
         let mut state = GameState::new();
         let high_score = "10000".to_string();
@@ -359,7 +366,10 @@ mod tests {
             // Создаём symlink
             symlink(&target_path, &symlink_path).expect("Не удалось создать symlink");
 
-            let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/");
+            let validator = PathValidator::new(
+                255,
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+            );
 
             // Проверяем что symlink отклоняется
             let result = validator.validate_no_symlinks(&symlink_path);
@@ -385,7 +395,10 @@ mod tests {
     /// Проверяет что PathValidator отклоняет различные варианты path traversal.
     #[test]
     fn test_path_validator_path_traversal() {
-        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/");
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
 
         // Вариант 1: Классический ../
         assert!(validator.validate_no_traversal("../etc/passwd").is_err());
@@ -397,7 +410,9 @@ mod tests {
         assert!(validator.validate_no_traversal("../../etc/passwd").is_err());
 
         // Вариант 4: В середине пути
-        assert!(validator.validate_no_traversal("config/../../../etc/passwd").is_err());
+        assert!(validator
+            .validate_no_traversal("config/../../../etc/passwd")
+            .is_err());
 
         // Вариант 5: Корректный путь
         assert!(validator.validate_no_traversal("config/file.txt").is_ok());
@@ -441,17 +456,26 @@ mod tests {
 
         // Тест set_fall_spd() - диапазон [0.1, MAX_FALL_SPEED]
         state.set_fall_spd(0.0);
-        assert!(state.fall_spd >= 0.1, "Скорость падения должна быть минимум 0.1");
+        assert!(
+            state.fall_spd >= 0.1,
+            "Скорость падения должна быть минимум 0.1"
+        );
 
         state.set_fall_spd(MAX_FALL_SPEED * 2.0);
-        assert!(state.fall_spd <= MAX_FALL_SPEED, "Скорость падения не должна превышать MAX_FALL_SPEED");
+        assert!(
+            state.fall_spd <= MAX_FALL_SPEED,
+            "Скорость падения не должна превышать MAX_FALL_SPEED"
+        );
 
         state.set_fall_spd(INITIAL_FALL_SPD);
         assert_eq!(state.fall_spd, INITIAL_FALL_SPD);
 
         // Тест set_land_timer() - минимум 0.0
         state.set_land_timer(-1.0);
-        assert!(state.land_timer >= 0.0, "Таймер приземления должен быть минимум 0.0");
+        assert!(
+            state.land_timer >= 0.0,
+            "Таймер приземления должен быть минимум 0.0"
+        );
 
         // Тест set_score() - u128 всегда >= 0
         state.set_score(10000);
@@ -473,18 +497,27 @@ mod tests {
         // Проверяем что sanitize_player_name() фильтрует запрещённые символы
         let name_with_bidi = "Player\u{200E}Name";
         let sanitized = sanitize_player_name(name_with_bidi);
-        assert!(!sanitized.contains('\u{200E}'), "Bidi символ должен быть удалён");
+        assert!(
+            !sanitized.contains('\u{200E}'),
+            "Bidi символ должен быть удалён"
+        );
         assert_eq!(sanitized, "PlayerName");
 
         // Проверяем фильтрацию zero-width joiners
         let name_with_zwj = "Player\u{200D}Name";
         let sanitized = sanitize_player_name(name_with_zwj);
-        assert!(!sanitized.contains('\u{200D}'), "Zero-width joiner должен быть удалён");
+        assert!(
+            !sanitized.contains('\u{200D}'),
+            "Zero-width joiner должен быть удалён"
+        );
 
         // Проверяем фильтрацию variation selectors
         let name_with_vs = "Player\u{FE0F}Name";
         let sanitized = sanitize_player_name(name_with_vs);
-        assert!(!sanitized.contains('\u{FE0F}'), "Variation selector должен быть удалён");
+        assert!(
+            !sanitized.contains('\u{FE0F}'),
+            "Variation selector должен быть удалён"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -504,7 +537,10 @@ mod tests {
         // BagGenerator содержит: [ShapeType; 7] + usize + bool
         // ShapeType = 1 байт (enum без данных)
         // Ожидаемый размер: 7 + 8 + 1 = 16 байт (с выравниванием)
-        assert!(bag_size < 100, "BagGenerator не должен содержать rng в поле");
+        assert!(
+            bag_size < 100,
+            "BagGenerator не должен содержать rng в поле"
+        );
 
         // Проверяем что BagGenerator работает корректно
         let mut bag = BagGenerator::new();
@@ -542,7 +578,10 @@ mod tests {
         // Главное что функция выполнилась без паники
 
         // Проверяем что состояние обновилось (статистика фигур)
-        assert!(state.stats.total_pieces() > 0, "Статистика должна обновиться");
+        assert!(
+            state.stats.total_pieces() > 0,
+            "Статистика должна обновиться"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -617,7 +656,10 @@ mod tests {
         // Проверяем handle_soft_drop с saturating_add
         let initial_score = state.score;
         handle_soft_drop(&mut state);
-        assert!(state.score >= initial_score, "Счёт должен увеличиться или остаться тем же");
+        assert!(
+            state.score >= initial_score,
+            "Счёт должен увеличиться или остаться тем же"
+        );
 
         // Проверяем handle_hard_drop с saturating_mul
         let mut state2 = GameState::new();
@@ -642,7 +684,11 @@ mod tests {
 
         // Проверяем что константы имеют документацию
         // LINE_SCORES должен иметь комментарий о формуле
-        assert_eq!(LINE_SCORES.len(), 4, "LINE_SCORES должен содержать 4 значения");
+        assert_eq!(
+            LINE_SCORES.len(),
+            4,
+            "LINE_SCORES должен содержать 4 значения"
+        );
         assert_eq!(LINE_SCORES[0], 100, "1 линия = 100 очков");
         assert_eq!(LINE_SCORES[3], 1800, "4 линии (Tetris) = 1800 очков");
 
@@ -659,10 +705,18 @@ mod tests {
     #[test]
     fn test_menu_constants_exist() {
         // Проверяем что MENU имеет корректный размер
-        assert_eq!(MENU.len(), DISP_HEIGHT as usize, "MENU должен иметь размер DISP_HEIGHT");
+        assert_eq!(
+            MENU.len(),
+            DISP_HEIGHT as usize,
+            "MENU должен иметь размер DISP_HEIGHT"
+        );
 
         // Проверяем что MENU заполняет весь экран
-        assert_eq!(MENU[0].len(), 22, "Первая строка MENU должна быть 22 символа");
+        assert_eq!(
+            MENU[0].len(),
+            22,
+            "Первая строка MENU должна быть 22 символа"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -694,6 +748,3 @@ mod tests {
         assert!(app_size > 0, "Application должен иметь размер > 0");
     }
 }
-
-// Импорты для тестов
-use crate::tetromino::Tetromino;

@@ -35,18 +35,10 @@ pub mod rotation;
 pub mod update;
 
 // Публичные экспорты из collision
-pub use collision::{
-    can_move_curr_shape_direction, can_rotate_curr_shape, check_rotation_collision,
-};
+pub use collision::{can_move_curr_shape_direction, can_rotate_curr_shape};
 
 // Публичные экспорты из rotation
 pub use rotation::{rotate_with_wall_kick, WALL_KICK_OFFSETS};
 
 // Публичные экспорты из update
 pub use update::{save_tetromino, update};
-
-// Публичные экспорты из input
-pub use input::handle_input;
-
-// Публичные экспорты из physics
-pub use physics::handle_falling;

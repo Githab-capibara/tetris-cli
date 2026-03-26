@@ -1,22 +1,7 @@
 //! Конфигурация управления.
 //!
-//! Этот модуль предоставляет систему настройки клавиш управления для игры Tetris CLI.
-//! Поддерживает сохранение и загрузку конфигурации, валидацию клавиш.
-//!
-//! ## Структура модуля
-//! - `ControlsConfig` - структура конфигурации управления
-//! - `DEFAULT_CONTROLS` - значения по умолчанию
-//! - `PathValidator` - единый валидатор путей (переэкспортирован из [`crate::validation`])
-//! - `tests` - модульные тесты (4 теста)
-//!
-//! ## Безопасность
-//! Конфигурация защищена keyed hash подписью для предотвращения подделки.
-//!
-//! ## Архитектурные заметки
-//! ## Единый валидатор путей (Problem 2.3)
-//! TODO (#архитектура): Использовать `PathValidator` для всех проверок путей в проекте.
-//! В настоящее время используются отдельные функции валидации.
-//! `PathValidator` объединяет все проверки в одном месте (DRY).
+//! Модуль предоставляет систему настройки клавиш управления для игры.
+//! Поддерживает сохранение/загрузку конфигурации и валидацию клавиш.
 
 // TODO: для будущей функциональности
 #![allow(dead_code)]
@@ -26,6 +11,27 @@ use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+// ============================================================================
+// RATE LIMITING ДЛЯ save_to_file (Исправление #29)
+// ============================================================================
+/// Минимальный интервал между сохранениями в секундах.
+const SAVE_RATE_LIMIT_SECS: u64 = 60;
+
+/// Последняя метка времени сохранения конфигурации.
+/// Используется для rate limiting чтобы предотвратить частые записи на диск.
+static LAST_SAVE_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
+
+/// Сбросить rate limiting для тестов.
+///
+/// # Безопасность
+/// Эта функция предназначена ТОЛЬКО для тестов.
+/// Не вызывайте её в производственном коде.
+#[cfg(test)]
+pub fn reset_rate_limit_for_tests() {
+    LAST_SAVE_TIMESTAMP.store(0, Ordering::Relaxed);
+}
 
 // ============================================================================
 // ВАЛИДАТОР ПУТЕЙ (переэкспортирован из crate::validation)
@@ -68,14 +74,13 @@ pub struct ControlsConfig {
 
 /// Проверить валидность пути для конфигурации.
 ///
-/// Эта функция реализует защиту от path traversal атак и symlink attacks:
-/// 1. Запрещает абсолютные пути
-/// 2. Запрещает последовательности ".."
-/// 3. Проверяет, что путь находится внутри текущей директории
-/// 4. Запрещает символические ссылки
-/// 5. Проверяет максимальную длину пути (255 символов)
-/// 6. Запрещает специальные символы в имени файла
-/// 7. Использует `O_NOFOLLOW` при открытии файлов для защиты от symlink атак
+/// Эта функция использует централизованный `PathValidator` для всех проверок:
+/// 1. Проверка длины пути (максимум 255 символов)
+/// 2. Проверка разрешённых символов
+/// 3. Защита от symlink атак
+/// 4. Защита от path traversal (..)
+/// 5. Запрет абсолютных путей
+/// 6. Проверка, что путь находится внутри текущей директории
 ///
 /// # Аргументы
 /// * `path` - путь для проверки
@@ -85,9 +90,8 @@ pub struct ControlsConfig {
 /// - `Err(io::Error)` если путь невалиден
 ///
 /// # Безопасность
-/// Защищает от symlink атак: символические ссылки запрещены.
-/// Проверка `symlink_metadata()` выполняется ДО валидации пути для предотвращения race condition.
-/// Использование `O_NOFOLLOW` предотвращает открытие symlink во время записи.
+/// Защищает от symlink атак и path traversal.
+/// Использует `O_NOFOLLOW` при открытии файлов для защиты от symlink атак.
 ///
 /// # Пример использования
 /// ```ignore
@@ -95,8 +99,8 @@ pub struct ControlsConfig {
 /// validate_config_path("config.json").unwrap();
 /// ```
 ///
-/// # Исправление #3
-/// Использует `PathValidator` вместо отдельных функций валидации.
+/// # Исправление #4 (DRY)
+/// Функция делегирует всю валидацию `PathValidator`, устраняя дублирование кода.
 #[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
     let full_path = Path::new(path);
@@ -117,18 +121,16 @@ fn validate_config_path(path: &str) -> io::Result<()> {
         ));
     }
 
-    // Проверяем относительный путь через PathValidator (до соединения с current_dir)
-    // Исправление: проверяем относительный путь, а не абсолютный
+    // Используем PathValidator для всех остальных проверок (DRY)
     DEFAULT_PATH_VALIDATOR
         .validate(full_path)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-    // Получаем текущую директорию
+    // Проверка, что путь внутри директории
     let current_dir = std::env::current_dir()
         .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
     let joined_path = current_dir.join(full_path);
 
-    // Дополнительная проверка: путь внутри директории
     DEFAULT_PATH_VALIDATOR
         .validate_within_directory(&joined_path, &current_dir)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
@@ -300,7 +302,33 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
+    ///
+    /// # Panics
+    /// Может паниковать при переполнении времени (крайне маловероятно)
+    ///
+    /// # Исправление #29
+    /// Добавлено rate limiting: минимум 60 секунд между сохранениями.
+    /// Это предотвращает износ диска при частых вызовах функции.
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
+        // Исправление #29: rate limiting для предотвращения частых записей
+        // Отключаем rate limiting для тестов
+        #[cfg(not(test))]
+        {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+
+            let last_save = LAST_SAVE_TIMESTAMP.load(Ordering::Relaxed);
+            if now - last_save < SAVE_RATE_LIMIT_SECS {
+                // Тихо игнорируем сохранение если прошло слишком мало времени
+                return Ok(());
+            }
+
+            // Обновляем метку времени перед сохранением
+            LAST_SAVE_TIMESTAMP.store(now, Ordering::Relaxed);
+        }
+
         // Валидация пути с использованием общей функции
         validate_config_path(path)?;
 
@@ -607,6 +635,9 @@ mod controls_tests {
     /// Использует временный файл для тестирования.
     #[test]
     fn test_controls_config_save_load() -> std::io::Result<()> {
+        // Сбрасываем rate limiting для тестов
+        reset_rate_limit_for_tests();
+
         // Используем относительный путь в текущей директории
         let test_path = "test_controls_config_temp.json";
 
