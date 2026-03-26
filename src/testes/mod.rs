@@ -184,3 +184,9 @@ pub mod test_all_fixes_integration;
 
 // Тесты для всех 24 исправлений из отчета аудита (24 теста)
 pub mod test_all_24_fixes;
+
+// Тесты для исправленных проблем (15 тестов)
+pub mod test_fixes;
+
+// Комплексные тесты для всех исправлений аудита (Critical, High, Medium, Low)
+pub mod audit_fixes_comprehensive;
