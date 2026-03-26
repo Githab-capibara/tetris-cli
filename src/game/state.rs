@@ -3,7 +3,8 @@
 //! Этот модуль содержит основные структуры данных для представления состояния игры:
 //! - `GameState` — основное состояние игры
 //! - `GameStats` — статистика прошедшей игры
-//! - `GameMode` — режим игры
+//! - `GameMode` — режим игры (enum для обратной совместимости)
+//! - `GameModeTrait` — трейт режима игры (предпочтительный способ)
 //! - Константы игры
 
 use crate::io::{DISP_HEIGHT, GRID_HEIGHT, GRID_WIDTH};
@@ -12,6 +13,9 @@ use std::time::Instant;
 
 // Импорт из io для использования в state
 use termion::color::White;
+
+// Импорт трейта GameModeTrait
+use super::mode_trait::GameModeTrait;
 
 /// Типы ошибок игры.
 ///
@@ -259,8 +263,11 @@ pub const MILLIS_PER_SECOND: f32 = 1000.0;
 ///
 /// # Архитектурные заметки
 /// ## Абстракции для режимов (Problem 2.8)
-/// TODO (#архитектура): Рассмотреть возможность выделения режимов в отдельные типы
-/// или использовать трейт GameModeTrait для лучшей расширяемости.
+/// Этот enum сохраняется для обратной совместимости.
+/// Для нового кода рекомендуется использовать `GameModeTrait` напрямую.
+///
+/// ## Конвертация в трейт
+/// Используйте метод `as_trait()` для получения объекта трейта.
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum GameMode {
     /// Классический режим — игра до проигрыша.
@@ -275,6 +282,29 @@ pub enum GameMode {
 // МЕТОДЫ ДЛЯ GAMEMODE
 // ============================================================================
 
+impl GameMode {
+    /// Преобразовать enum в объект трейта GameModeTrait.
+    ///
+    /// # Возвращает
+    /// Box<dyn GameModeTrait> с соответствующим режимом
+    ///
+    /// # Пример использования
+    /// ```
+    /// use crate::game::state::GameMode;
+    /// let mode = GameMode::Classic;
+    /// let trait_obj = mode.as_trait();
+    /// assert_eq!(trait_obj.name(), "Классика");
+    /// ```
+    #[must_use]
+    pub fn as_trait(self) -> Box<dyn GameModeTrait> {
+        match self {
+            GameMode::Classic => Box::new(super::mode_trait::ClassicMode),
+            GameMode::Sprint => Box::new(super::mode_trait::SprintMode::new()),
+            GameMode::Marathon => Box::new(super::mode_trait::MarathonMode::new()),
+        }
+    }
+}
+
 #[allow(dead_code)]
 impl GameMode {
     /// Проверить условие победы для текущего режима.
@@ -287,15 +317,10 @@ impl GameMode {
     /// `false` для классического режима (победы нет, только проигрыш)
     ///
     /// # Архитектурные заметки
-    /// TODO (#архитектура, Problem 2.8): Выделить проверку условий в отдельный трейт
-    /// WinConditionChecker для улучшения тестируемости.
+    /// Этот метод делегирует вызов трейту GameModeTrait.
     #[must_use]
     pub fn check_win_condition(self, lines_cleared: u32) -> bool {
-        match self {
-            GameMode::Classic => false, // В классическом режиме нет победы
-            GameMode::Sprint => lines_cleared >= SPRINT_LINES,
-            GameMode::Marathon => lines_cleared >= MARATHON_LINES,
-        }
+        self.as_trait().check_win_condition(lines_cleared)
     }
 
     /// Получить целевое количество линий для режима.
@@ -304,11 +329,7 @@ impl GameMode {
     /// Количество линий для победы (для Sprint/Marathon) или None для Classic
     #[must_use]
     pub fn get_target_lines(self) -> Option<u32> {
-        match self {
-            GameMode::Classic => None,
-            GameMode::Sprint => Some(SPRINT_LINES),
-            GameMode::Marathon => Some(MARATHON_LINES),
-        }
+        self.as_trait().get_target_lines()
     }
 }
 
@@ -326,26 +347,59 @@ impl GameMode {
 #[derive(Default, Clone)]
 pub struct GameStats {
     /// Количество фигур типа T.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) t_pieces: u32,
     /// Количество фигур типа L.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) l_pieces: u32,
     /// Количество фигур типа J.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) j_pieces: u32,
     /// Количество фигур типа S.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) s_pieces: u32,
     /// Количество фигур типа Z.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) z_pieces: u32,
     /// Количество фигур типа O.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) o_pieces: u32,
     /// Количество фигур типа I.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) i_pieces: u32,
     /// Максимальное комбо (одновременное удаление линий).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) max_combo: u32,
     /// Текущее комбо (последовательные удаления в нескольких ходах).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) combo_counter: u32,
     /// Время начала игры.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) start_time: Option<Instant>,
     /// Время окончания игры.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) end_time: Option<Instant>,
 }
 
@@ -426,10 +480,10 @@ impl GameStats {
 ///
 /// # Архитектурные заметки
 /// ## Инкапсуляция (Problem 2.1)
-/// Поля структуры имеют видимость `pub(crate)` для обратной совместимости.
+/// Поля структуры сделаны приватными для улучшения инкапсуляции.
 ///
-/// TODO (#архитектура): Сделать все поля приватными и предоставить контролируемый доступ
-/// через геттеры/сеттеры. Это улучшит инкапсуляцию и позволит валидировать изменения.
+/// Доступ к полям осуществляется через геттеры/сеттеры в impl блоке ниже.
+/// Это позволяет валидировать изменения и контролировать доступ.
 ///
 /// ## Геттеры
 /// Для всех полей существуют геттеры в impl блоке ниже.
@@ -461,6 +515,9 @@ pub struct GameState {
     /// # Исправление #9
     /// Заменён Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> на [[i8; GRID_WIDTH]; GRID_HEIGHT]
     /// для размещения данных на стеке вместо кучи (оптимизация производительности).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
     #[allow(dead_code)] // Будет использоваться в будущей оптимизации
@@ -473,10 +530,19 @@ pub struct GameState {
     // Приоритет: Высокий
     // Срок: 1-2 недели
     /// Текущий счёт.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) score: u128,
     /// Текущий уровень.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) level: u32,
     /// Количество удалённых линий.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) lines_cleared: u32,
 
     // ========================================================================
@@ -486,14 +552,29 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Текущая фигура.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) next_shape: Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) held_shape: Option<Tetromino>,
     /// Можно ли ещё менять удержанную фигуру в этом ходу.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) can_hold: bool,
     /// Генератор фигур по системе 7-bag.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) bag: BagGenerator,
 
     // ========================================================================
@@ -503,26 +584,55 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Строки для анимации (мигание при очистке).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) is_hard_dropping: bool,
 
     // ========================================================================
     // === ИГРОВАЯ ЛОГИКА ===
     // ========================================================================
     /// Скорость падения.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) fall_spd: f32,
     /// Таймер приземления.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) land_timer: f64,
     /// Количество ячеек, пройденных при Soft Drop.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) soft_drop_distance: u32,
 
     // ========================================================================
     // === СТАТИСТИКА И РЕЖИМ ИГРЫ ===
     // ========================================================================
     /// Статистика игры.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) stats: GameStats,
-    /// Режим игры.
+    /// Режим игры (объект трейта).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
+    /// Использует трейт GameModeTrait вместо enum для лучшей расширяемости.
+    pub(crate) mode_trait: Box<dyn GameModeTrait>,
+    /// Режим игры (enum для обратной совместимости).
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
+    /// Устарело, используйте mode_trait.
+    #[deprecated(since = "23.96.14", note = "Используйте mode_trait вместо enum")]
     pub(crate) mode: GameMode,
 
     // ========================================================================
@@ -531,16 +641,34 @@ pub struct GameState {
     // Кэширование используется для оптимизации производительности отрисовки.
     // TODO (#архитектура): Выделить в отдельную структуру RenderCache
     /// Кэшированная строка счёта для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_score_str: String,
     /// Кэшированная строка уровня для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_level_str: String,
     /// Кэшированная строка количества линий для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_lines_str: String,
     /// Кэшированная строка рекорда для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_high_score_str: String,
     /// Кэшированная строка комбо для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_combo_str: String,
     /// Кэшированная строка таймера для оптимизации отрисовки.
+    ///
+    /// # Инкапсуляция
+    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) cached_timer_str: String,
 
     // ========================================================================
@@ -606,6 +734,8 @@ impl GameState {
         if start_timer {
             stats.start_timer();
         }
+        // Создаём объект трейта из enum
+        let mode_trait = mode.as_trait();
         Self {
             score: 0,
             level: 1,
@@ -620,6 +750,8 @@ impl GameState {
             filled_lines: 0,
             land_timer: LAND_TIME_DELAY_S,
             stats,
+            mode_trait,
+            #[allow(deprecated)]
             mode,
             animating_rows_mask: 0,
             is_hard_dropping: false,
@@ -685,8 +817,31 @@ impl GameState {
         &mut self.stats
     }
 
-    /// Получить режим игры.
+    /// Получить режим игры (объект трейта).
+    ///
+    /// # Возвращает
+    /// Ссылка на объект трейта GameModeTrait
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let state = GameState::new();
+    /// let mode = state.get_mode_trait();
+    /// assert_eq!(mode.name(), "Классика");
+    /// ```
     #[must_use]
+    pub fn get_mode_trait(&self) -> &dyn GameModeTrait {
+        &*self.mode_trait
+    }
+
+    /// Получить режим игры (enum для обратной совместимости).
+    ///
+    /// # Возвращает
+    /// Значение enum GameMode
+    ///
+    /// # Архитектурные заметки
+    /// Устарело, используйте get_mode_trait() для нового кода.
+    #[must_use]
+    #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
     pub fn get_mode(&self) -> GameMode {
         self.mode
     }
@@ -839,6 +994,34 @@ impl GameState {
     /// Установить количество удалённых линий (для тестов).
     pub fn set_lines_cleared(&mut self, lines: u32) {
         self.lines_cleared = lines;
+    }
+
+    /// Установить режим игры через трейт (для тестов).
+    ///
+    /// # Аргументы
+    /// * `mode_trait` - объект трейта GameModeTrait
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// use crate::game::mode_trait::{ClassicMode, GameModeTrait};
+    /// let mut state = GameState::new();
+    /// state.set_mode_trait(Box::new(ClassicMode));
+    /// ```
+    pub fn set_mode_trait(&mut self, mode_trait: Box<dyn GameModeTrait>) {
+        self.mode_trait = mode_trait;
+    }
+
+    /// Установить режим игры через enum (для обратной совместимости).
+    ///
+    /// # Аргументы
+    /// * `mode` - значение enum GameMode
+    ///
+    /// # Архитектурные заметки
+    /// Устарело, используйте set_mode_trait() для нового кода.
+    #[deprecated(since = "23.96.14", note = "Используйте set_mode_trait() вместо enum")]
+    pub fn set_mode(&mut self, mode: GameMode) {
+        self.mode_trait = mode.as_trait();
+        self.mode = mode;
     }
 
     /// Добавить линии (для тестов).

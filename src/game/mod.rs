@@ -37,6 +37,12 @@ pub mod scoring;
 pub mod state;
 pub mod view;
 
+// Подмодули scoring
+pub use scoring::{combo, lines, points};
+
+// Подмодули logic
+pub use logic::{collision, input, physics, rotation, update};
+
 // Re-export основных типов для обратной совместимости
 pub use state::{GameMode, GameState};
 

@@ -1,0 +1,95 @@
+//! Модуль обновления состояния игры.
+//!
+//! # Ответственность
+//! - Координация всех подмодулей логики
+//! - Основной цикл обновления состояния
+//! - Обработка ввода, физики, приземления
+//!
+//! # Зависимости
+//! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
+//! - [`input.rs`](super::input): `handle_input`
+//! - [`physics.rs`](super::physics): `handle_falling`
+//! - [`scoring.rs`](crate::game::scoring): `handle_landing`
+
+use crate::game::state::{GameState, UpdateEndState};
+
+/// Обновить состояние игры за один кадр.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+/// * `inp` - читатель нажатий клавиш
+/// * `delta_time_ms` - время, прошедшее с последнего кадра (мс)
+///
+/// # Возвращает
+/// Состояние завершения обновления
+pub fn update(
+    state: &mut GameState,
+    inp: &mut crate::io::KeyReader,
+    delta_time_ms: u64,
+) -> UpdateEndState {
+    // Обработка ввода
+    if let Some(update_state) = super::input::handle_input(state, inp) {
+        return update_state;
+    }
+
+    // Обработка падения
+    if !super::physics::handle_falling(state, delta_time_ms) {
+        return UpdateEndState::Continue;
+    }
+
+    // Обработка приземления
+    if let Some(update_state) = crate::game::scoring::handle_landing(state) {
+        return update_state;
+    }
+
+    UpdateEndState::Continue
+}
+
+/// Сохранить текущую фигуру в сетке после приземления.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+pub fn save_tetromino(state: &mut GameState) {
+    let (shape_x, shape_y) = state.curr_shape.pos;
+    let shape_block_x = shape_x as i16;
+    let shape_block_y = shape_y as i16;
+
+    // Оптимизация: используем as вместо try_from() для const значений
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_height_i16 = crate::io::GRID_HEIGHT as i16;
+    #[allow(clippy::cast_possible_wrap)]
+    // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
+    let grid_width_i16 = crate::io::GRID_WIDTH as i16;
+
+    for coord in state.curr_shape.coords {
+        let (coord_x, coord_y) = coord;
+        let x = coord_x + shape_block_x;
+        let y = coord_y + shape_block_y;
+
+        if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
+            state.blocks[y as usize][x as usize] = state.curr_shape.fg as i8;
+        }
+    }
+}
+
+#[cfg(test)]
+mod update_tests {
+    use super::*;
+    use crate::game::GameState;
+
+    #[test]
+    fn test_update_continue() {
+        let mut state = GameState::new();
+        let mut inp = crate::io::KeyReader::default();
+
+        let result = update(&mut state, &mut inp, 100);
+
+        assert!(
+            matches!(result, UpdateEndState::Continue)
+                || matches!(result, UpdateEndState::Pause)
+                || matches!(result, UpdateEndState::Quit),
+            "Обновление должно вернуть допустимое состояние"
+        );
+    }
+}
