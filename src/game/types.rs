@@ -121,8 +121,10 @@ impl From<Score> for u128 {
 /// assert_eq!(level.value(), 2);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub struct Level(u32);
 
+#[allow(dead_code)]
 impl Level {
     /// Создать новый уровень со значением 1 (начальный уровень).
     #[must_use]
@@ -144,7 +146,7 @@ impl Level {
 
     /// Получить текущее значение уровня.
     #[must_use]
-    pub fn value(&self) -> u32 {
+    pub fn value(self) -> u32 {
         self.0
     }
 
@@ -236,7 +238,7 @@ impl LinesCount {
 
     /// Получить текущее количество линий.
     #[must_use]
-    pub fn value(&self) -> u32 {
+    pub fn value(self) -> u32 {
         self.0
     }
 
@@ -278,7 +280,7 @@ impl LinesCount {
     /// # Возвращает
     /// `true` если количество линий >= threshold
     #[must_use]
-    pub fn reached(&self, threshold: u32) -> bool {
+    pub fn reached(self, threshold: u32) -> bool {
         self.0 >= threshold
     }
 }

@@ -253,10 +253,15 @@ impl Application {
 
 /// Запустить приложение.
 ///
-/// # Panics
-/// Паникует при ошибке инициализации приложения.
+/// Выходит из программы с кодом 1 при ошибке инициализации.
 pub fn run() {
-    let mut app = Application::new().expect("Ошибка инициализации приложения");
+    let mut app = match Application::new() {
+        Ok(app) => app,
+        Err(e) => {
+            eprintln!("Критическая ошибка запуска: {}", e);
+            std::process::exit(1);
+        }
+    };
     app.run();
 }
 

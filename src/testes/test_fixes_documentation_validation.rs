@@ -1,6 +1,6 @@
 //! Тесты для исправлений проблем 13-20.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::highscore::Leaderboard;
 
@@ -111,7 +111,7 @@ fn test_all_functions_documented() {
 #[test]
 fn test_documentation_style_unified() {
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 17.3: Doctest что примеры работают.
@@ -175,7 +175,7 @@ fn test_timer_starts_in_classic_mode() {
     // Classic режим не запускает таймер автоматически
     // Проверяем что GameState создаётся корректно
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 20.2: Проверка что таймер запускается в Sprint режиме.

@@ -36,7 +36,7 @@ fn test_saturating_add_prevents_overflow() {
 #[test]
 fn test_normal_fall_spd_calculation() {
     let state = GameState::new();
-    assert_eq!(state.get_mode(), crate::game::GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 6: Проверка что отрицательный `fall_spd` обрабатывается.

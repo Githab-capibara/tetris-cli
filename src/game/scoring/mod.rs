@@ -54,6 +54,4 @@ pub mod points;
 pub use lines::{find_full_rows, remove_rows};
 
 // Публичные экспорты из points
-pub use points::{
-    handle_hard_drop, handle_hold, handle_landing, handle_soft_drop, update_score_and_level,
-};
+pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};

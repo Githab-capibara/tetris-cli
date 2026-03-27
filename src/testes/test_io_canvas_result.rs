@@ -52,7 +52,6 @@ fn test_canvas_new_error_handling() {
     match result {
         Ok(canvas) => {
             // Канвас создан успешно - это нормально в терминале
-            assert!(true, "Canvas создан успешно");
             drop(canvas);
         }
         Err(IoError::RawMode(msg)) => {
@@ -175,7 +174,6 @@ fn test_canvas_drop() {
     // Если Drop не работает, терминал останется в raw-режиме
     
     // Этот тест просто проверяет что код не паникует
-    assert!(true, "Canvas::drop() не должен вызывать панику");
 }
 
 /// Тест 5: Проверка Canvas::reset()
@@ -188,9 +186,7 @@ fn test_canvas_reset() {
     
     // Вызываем reset - не должно паниковать
     canvas.reset();
-    
+
     // Проверяем что после reset канвас всё ещё работает
     canvas.flush();
-    
-    assert!(true, "Canvas::reset() не должен вызывать панику");
 }

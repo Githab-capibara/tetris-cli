@@ -33,6 +33,7 @@ use crate::game::constants::COMBO_BONUS;
 /// - 3-е комбо: 100 бонусных очков
 /// - N-е комбо: 50 × (N - 1) бонусных очков
 #[must_use]
+#[allow(dead_code)]
 pub fn calculate_combo_bonus(combo_counter: u32) -> u128 {
     if combo_counter > 1 {
         COMBO_BONUS.saturating_mul(u128::from(combo_counter - 1))

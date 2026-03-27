@@ -9,7 +9,7 @@
 //!
 //! Все тесты независимы и проверяют корректную работу режимов.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::game::{MARATHON_LINES, SPRINT_LINES};
 use crate::tetromino::ShapeType;
 
@@ -25,9 +25,9 @@ fn test_modes_integration_classic_creation() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
-        "Режим должен быть Classic"
+        state.get_mode_trait().name(),
+        "Классика",
+        "Режим должен быть Классика"
     );
     assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
@@ -42,9 +42,9 @@ fn test_modes_integration_sprint_creation() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
-        "Режим должен быть Sprint"
+        state.get_mode_trait().name(),
+        "Спринт",
+        "Режим должен быть Спринт"
     );
     assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
@@ -59,9 +59,9 @@ fn test_modes_integration_marathon_creation() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Marathon,
-        "Режим должен быть Marathon"
+        state.get_mode_trait().name(),
+        "Марафон",
+        "Режим должен быть Марафон"
     );
     assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
@@ -369,7 +369,7 @@ fn test_modes_integration_classic_no_goal() {
     let state = GameState::new();
 
     // Classic режим не имеет фиксированной цели
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
     // Нет константы цели для Classic
 }
 

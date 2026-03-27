@@ -6,7 +6,7 @@
 //! - find_filled_lines (поиск заполненных линий)
 //! - TOCTOU маркер (!Send + !Sync)
 
-use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
+use crate::game::access::{BoardMutable, BoardReadonly};
 use crate::game::cache::StringCache;
 use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::render::find_filled_lines;
@@ -556,7 +556,6 @@ fn test_toctou_marker_documentation() {
 
     // Этот тест всегда проходит, но документирует намерение:
     // GameState должен быть !Send + !Sync для предотвращения TOCTOU уязвимостей
-    assert!(true, "TOCTOU маркеры должны быть задокументированы");
 }
 
 /// Тест 29: Проверка что GameState не имеет явной реализации Send

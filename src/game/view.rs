@@ -380,7 +380,7 @@ impl<'a> GameView<'a> {
     /// let view = GameView::from_game_state(&state);
     /// view.draw_shape(&mut canvas);
     /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
+    #[allow(dead_code, clippy::unused_self)]
     pub fn draw_shape<R>(&self, _renderer: &mut R)
     where
         R: crate::io_traits::Renderer,

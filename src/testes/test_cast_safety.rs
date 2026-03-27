@@ -23,6 +23,7 @@ mod tests {
     ///
     /// Проверяет что константы `GRID_WIDTH` и `GRID_HEIGHT` могут быть безопасно
     /// преобразованы в `i16` без потери данных или переполнения.
+    #[allow(clippy::assertions_on_constants)]
     #[test]
     fn test_grid_bounds_cast_safety() {
         // Базовая проверка: константы должны быть положительными
