@@ -523,7 +523,7 @@ pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
         state.animating_rows_mask = rows_mask;
         // Исправление #1.7: print!() не требует обработки ошибки
         // Ошибка вывода bell-символа не критична для работы игры
-        print!("{BELL}", BELL = super::state::BELL);
+        print!("{BELL}", BELL = super::constants::BELL);
         state.stats.update_max_combo(remove_count);
     }
 }

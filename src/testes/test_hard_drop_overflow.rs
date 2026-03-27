@@ -114,7 +114,7 @@ fn test_max_drop_distance() {
 /// Проверяем, что очки за Hard Drop начисляются корректно.
 #[test]
 fn test_hard_drop_scoring() {
-    use crate::game::state::HARD_DROP_POINTS;
+    use crate::game::constants::HARD_DROP_POINTS;
 
     let mut state = GameState::new();
     let initial_y = state.curr_shape.pos.1;

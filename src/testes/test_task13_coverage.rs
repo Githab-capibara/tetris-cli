@@ -6,7 +6,7 @@
 //! - find_filled_lines (поиск заполненных линий)
 //! - TOCTOU маркер (!Send + !Sync)
 
-use crate::game::access::GameBoardAccess;
+use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
 use crate::game::cache::StringCache;
 use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::render::find_filled_lines;
