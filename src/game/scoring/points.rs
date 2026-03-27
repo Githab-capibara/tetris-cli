@@ -11,9 +11,9 @@
 //! - [`lines.rs`](super::lines): удаление линий
 
 use crate::game::constants::{
-    LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPD_INC,
+    LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPD_INC,
 };
-use crate::game::state::{GameState, UpdateEndState, LINES_PER_LEVEL};
+use crate::game::state::{GameState, UpdateEndState};
 use crate::tetromino::Tetromino;
 
 /// Обновить счёт, уровень и скорость после удаления линий.

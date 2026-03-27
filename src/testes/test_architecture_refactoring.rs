@@ -493,7 +493,7 @@ fn test_scoring_system_trait_exists() {
 /// Тест проверяет, что все публичные функции access.rs используются.
 #[test]
 fn test_no_dead_code_in_access() {
-    use crate::game::access::GameBoardAccess;
+    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
     use crate::game::GameState;
 
     let mut state = GameState::new();

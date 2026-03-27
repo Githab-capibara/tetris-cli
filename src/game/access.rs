@@ -11,18 +11,15 @@
 //! - Упрощения тестирования через моки
 //!
 //! ## Доступные трейты:
-//! - [`GameBoardAccess`] - полный доступ к состоянию игры
-//!
-//! TODO (#архитектура, Problem 2.9): Добавить трейт ScoreAccess для контролируемого доступа к очкам.
-//! TODO (#архитектура, Problem 2.12): Добавить трейт ShapeAccess для доступа к фигурам.
-//! TODO (#архитектура, Problem 2.14): Рассмотреть возможность добавления трейта AnimationAccess
-//! для доступа к анимациям.
+//! - [`BoardReadonly`] - только чтение игрового поля
+//! - [`BoardMutable`] - чтение и запись игрового поля
+//! - [`ScoreAccess`] - доступ к очкам и уровням
 //!
 //! ## Пример использования
 //! ```ignore
-//! use crate::game::access::GameBoardAccess;
+//! use crate::game::access::BoardReadonly;
 //!
-//! fn render_field<T: GameBoardAccess>(field: &T) {
+//! fn render_field<T: BoardReadonly>(field: &T) {
 //!     for y in 0..GRID_HEIGHT {
 //!         for x in 0..GRID_WIDTH {
 //!             let block = field.get_block(x, y);
@@ -34,22 +31,23 @@
 
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
-/// Трейт для доступа к игровому полю.
+// ============================================================================
+// ТРЕЙТ BOARDREADONLY (только чтение)
+// ============================================================================
+
+/// Трейт для доступа только на чтение к игровому полю.
 ///
-/// Предоставляет методы для чтения и записи игрового поля,
+/// Предоставляет методы для чтения игрового поля,
 /// не раскрывая внутреннюю структуру `GameState`.
 ///
 /// ## Архитектурные заметки
-/// ## Использование трейта (Problem 2.9)
+/// ## Разделение ответственности (Problem 2.9)
 /// Этот трейт позволяет создавать функции, которые работают с любым типом,
-/// реализующим GameBoardAccess, что уменьшает связанность кода.
-///
-/// TODO (#архитектура): Добавить методы для доступа к призрачной фигуре
-/// и другим производным данным.
+/// реализующим BoardReadonly, что уменьшает связанность кода.
 ///
 /// ## Пример использования
 /// ```ignore
-/// fn render_field<T: GameBoardAccess>(field: &T) {
+/// fn render_field<T: BoardReadonly>(field: &T) {
 ///     for y in 0..GRID_HEIGHT {
 ///         for x in 0..GRID_WIDTH {
 ///             let block = field.get_block(x, y);
@@ -58,42 +56,47 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///     }
 /// }
 /// ```
-pub trait GameBoardAccess {
+#[allow(dead_code)]
+pub trait BoardReadonly {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
 
-    /// Получить доступ к игровому полю (мутабельный).
-    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
-
     /// Получить значение ячейки игрового поля.
     fn get_block(&self, x: usize, y: usize) -> i8;
-
-    /// Установить значение ячейки игрового поля.
-    fn set_block(&mut self, x: usize, y: usize, value: i8);
 
     /// Проверить, пуста ли ячейка.
     fn is_block_empty(&self, x: usize, y: usize) -> bool;
 
     /// Проверить, занята ли ячейка.
     fn is_block_occupied(&self, x: usize, y: usize) -> bool;
+}
 
-    /// Получить текущий счёт.
-    fn get_score(&self) -> u128;
+// ============================================================================
+// ТРЕЙТ BOARDMUTABLE (чтение и запись)
+// ============================================================================
 
-    /// Добавить очки к текущему счёту.
-    fn add_score(&mut self, points: u128);
+/// Трейт для доступа на чтение и запись к игровому полю.
+///
+/// Предоставляет методы для чтения и записи игрового поля,
+/// не раскрывая внутреннюю структуру `GameState`.
+///
+/// ## Архитектурные заметки
+/// ## Разделение ответственности (Problem 2.9)
+/// Этот трейт расширяет BoardReadonly методами для изменения поля.
+///
+/// ## Пример использования
+/// ```ignore
+/// fn place_piece<T: BoardMutable>(field: &mut T, x: usize, y: usize, value: i8) {
+///     field.set_block(x, y, value);
+/// }
+/// ```
+#[allow(dead_code)]
+pub trait BoardMutable: BoardReadonly {
+    /// Получить доступ к игровому полю (мутабельный).
+    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
 
-    /// Получить текущий уровень.
-    fn get_level(&self) -> u32;
-
-    /// Установить текущий уровень.
-    fn set_level(&mut self, level: u32);
-
-    /// Получить количество удалённых линий.
-    fn get_lines_cleared(&self) -> u32;
-
-    /// Установить количество удалённых линий.
-    fn set_lines_cleared(&mut self, lines: u32);
+    /// Установить значение ячейки игрового поля.
+    fn set_block(&mut self, x: usize, y: usize, value: i8);
 
     /// Получить скорость падения.
     fn get_fall_spd(&self) -> f32;
@@ -115,85 +118,7 @@ pub trait GameBoardAccess {
 }
 
 // ============================================================================
-// РЕАЛИЗАЦИЯ GameBoardAccess ДЛЯ GameState
-// ============================================================================
-
-impl GameBoardAccess for crate::game::state::GameState {
-    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        self.get_blocks()
-    }
-
-    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        self.get_blocks_mut()
-    }
-
-    fn get_block(&self, x: usize, y: usize) -> i8 {
-        self.blocks[y][x]
-    }
-
-    fn set_block(&mut self, x: usize, y: usize, value: i8) {
-        self.blocks[y][x] = value;
-    }
-
-    fn is_block_empty(&self, x: usize, y: usize) -> bool {
-        self.blocks[y][x] == -1
-    }
-
-    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
-        self.blocks[y][x] != -1
-    }
-
-    fn get_score(&self) -> u128 {
-        self.get_score()
-    }
-
-    fn add_score(&mut self, points: u128) {
-        self.add_score(points);
-    }
-
-    fn get_level(&self) -> u32 {
-        self.get_level()
-    }
-
-    fn set_level(&mut self, level: u32) {
-        self.set_level(level);
-    }
-
-    fn get_lines_cleared(&self) -> u32 {
-        self.get_lines_cleared()
-    }
-
-    fn set_lines_cleared(&mut self, lines: u32) {
-        self.set_lines_cleared(lines);
-    }
-
-    fn get_fall_spd(&self) -> f32 {
-        self.get_fall_spd()
-    }
-
-    fn set_fall_spd(&mut self, spd: f32) {
-        self.set_fall_spd(spd);
-    }
-
-    fn get_land_timer(&self) -> f64 {
-        self.get_land_timer()
-    }
-
-    fn set_land_timer(&mut self, timer: f64) {
-        self.set_land_timer(timer);
-    }
-
-    fn get_filled_lines(&self) -> u32 {
-        self.filled_lines
-    }
-
-    fn set_filled_lines(&mut self, value: u32) {
-        self.filled_lines = value;
-    }
-}
-
-// ============================================================================
-// ТРЕЙТ SCOREACCESS
+// ТРЕЙТ SCOREACCESS (очки и уровни)
 // ============================================================================
 
 /// Трейт для доступа к очкам и уровням.
@@ -206,9 +131,6 @@ impl GameBoardAccess for crate::game::state::GameState {
 /// Этот трейт выделяет доступ к системе очков в отдельный интерфейс,
 /// что позволяет создавать функции, работающие только с очками,
 /// без доступа к игровому полю.
-///
-/// TODO (#архитектура): Использовать этот трейт в функциях начисления очков
-/// вместо прямого использования GameState.
 ///
 /// ## Пример использования
 /// ```ignore
@@ -243,7 +165,83 @@ pub trait ScoreAccess {
     fn set_lines_cleared(&mut self, lines: u32);
 }
 
-// Реализация ScoreAccess для GameState
+// ============================================================================
+// ТРЕЙТ GAMEBOARDACCESS (объединённый - для обратной совместимости)
+// ============================================================================
+
+/// Трейт для полного доступа к игровому полю.
+///
+/// Объединяет BoardMutable и ScoreAccess для обратной совместимости.
+///
+/// ## Архитектурные заметки
+/// ## Обратная совместимость
+/// Этот трейт сохранён для обратной совместимости.
+/// Для нового кода рекомендуется использовать специализированные трейты:
+/// - BoardReadonly для чтения
+/// - BoardMutable для чтения и записи
+/// - ScoreAccess для очков
+#[allow(dead_code)]
+pub trait GameBoardAccess: BoardMutable + ScoreAccess {}
+
+// Реализация GameBoardAccess для всех типов, реализующих BoardMutable и ScoreAccess
+impl<T: BoardMutable + ScoreAccess> GameBoardAccess for T {}
+
+// ============================================================================
+// РЕАЛИЗАЦИЯ ДЛЯ GameState
+// ============================================================================
+
+impl BoardReadonly for crate::game::state::GameState {
+    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        self.get_blocks()
+    }
+
+    fn get_block(&self, x: usize, y: usize) -> i8 {
+        self.blocks[y][x]
+    }
+
+    fn is_block_empty(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] == -1
+    }
+
+    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] != -1
+    }
+}
+
+impl BoardMutable for crate::game::state::GameState {
+    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        self.get_blocks_mut()
+    }
+
+    fn set_block(&mut self, x: usize, y: usize, value: i8) {
+        self.blocks[y][x] = value;
+    }
+
+    fn get_fall_spd(&self) -> f32 {
+        self.get_fall_spd()
+    }
+
+    fn set_fall_spd(&mut self, spd: f32) {
+        self.set_fall_spd(spd);
+    }
+
+    fn get_land_timer(&self) -> f64 {
+        self.get_land_timer()
+    }
+
+    fn set_land_timer(&mut self, timer: f64) {
+        self.set_land_timer(timer);
+    }
+
+    fn get_filled_lines(&self) -> u32 {
+        self.filled_lines
+    }
+
+    fn set_filled_lines(&mut self, value: u32) {
+        self.filled_lines = value;
+    }
+}
+
 impl ScoreAccess for crate::game::state::GameState {
     fn get_score(&self) -> u128 {
         self.score

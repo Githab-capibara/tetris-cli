@@ -77,12 +77,15 @@ pub mod view;
 pub use state::GameState;
 
 // Re-export GameStats для lib.rs и тестов
+#[allow(dead_code)]
 pub use state::GameStats;
 
 // Re-export GameMode для тестов и обратной совместимости
+#[allow(dead_code)]
 pub use state::GameMode;
 
-// Re-export констант из constants.rs
+// Re-export констант из constants.rs (обратная совместимость)
+#[allow(dead_code)]
 pub use constants::{
     BORDER, BORDER_COLOR, COMBO_BONUS, DISP_HEIGHT, DISP_WIDTH, FPS, GRID_HEIGHT, GRID_WIDTH,
     INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINE_SCORES, MAX_CONFIG_FILE_SIZE,
@@ -90,16 +93,17 @@ pub use constants::{
 };
 
 // Константы для тестов (обратная совместимость)
+#[allow(dead_code)]
 pub use constants::{
     ANIMATION_FRAME_SKIP, BELL, GAME_OVER, GAME_OVER_DELAY_MS, HARD_DROP_ANIM_INTERVAL_MS,
-    MARATHON_LINES, MAX_LINES_PER_CLEAR, MIN_Y, SPRINT_LINES,
-};
-pub use state::{
-    HARD_DROP_POINTS, LINES_PER_LEVEL, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
+    HARD_DROP_POINTS, LINES_PER_LEVEL, MARATHON_LINES, MAX_LINES_PER_CLEAR, MIN_Y,
+    PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS, SPRINT_LINES,
 };
 
-// Re-export трейтов и типов для тестов
-pub use access::{GameBoardAccess, ScoreAccess};
+// Re-export трейтов и типов для тестов (обратная совместимость)
+#[allow(dead_code)]
+pub use access::{BoardMutable, BoardReadonly, GameBoardAccess, ScoreAccess};
+#[allow(dead_code)]
 pub use state::{GameError, GameResult};
 
 pub use logic::{
@@ -110,13 +114,16 @@ pub use scoring::{find_full_rows, handle_hold, remove_rows};
 
 pub use render::check_rows;
 
-// Экспорт GameView для отрисовки
+// Экспорт GameView для отрисовки (обратная совместимость)
+#[allow(dead_code)]
 pub use view::GameView;
 
-// Экспорт StringCache для кэширования
+// Экспорт StringCache для кэширования (обратная совместимость)
+#[allow(dead_code)]
 pub use cache::StringCache;
 
-// Экспорт игрового цикла
+// Экспорт игрового цикла (обратная совместимость)
+#[allow(dead_code)]
 pub use cycle::run_game_loop;
 
 // ============================================================================

@@ -153,6 +153,7 @@ pub mod test_constant_imports;
 // ============================================================================
 
 pub mod test_architecture;
+pub mod test_architecture_fixes;
 pub mod test_architecture_refactoring;
 pub mod test_architecture_improvements;
 pub mod test_architecture_new_modules;

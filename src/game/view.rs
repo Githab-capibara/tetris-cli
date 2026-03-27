@@ -330,4 +330,121 @@ impl<'a> GameView<'a> {
             None
         }
     }
+
+    // ========================================================================
+    // МЕТОДЫ ОТРИСОВКИ (Problem 2.5 - Feature Envy)
+    // ========================================================================
+    // Эти методы предоставляют готовую отрисовку через Renderer,
+    // уменьшая связанность между render.rs и GameView.
+
+    /// Отрисовать игровое поле.
+    ///
+    /// # Аргументы
+    /// * `renderer` - объект для отрисовки
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// view.draw_field(&mut canvas);
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
+    pub fn draw_field<R>(&self, renderer: &mut R)
+    where
+        R: crate::io_traits::Renderer,
+    {
+        use crate::game::constants::{BORDER, BORDER_COLOR};
+        use termion::color::Reset;
+
+        // Отрисовка границ
+        renderer.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
+
+        // Отрисовка блоков поля
+        for y in 0..GRID_HEIGHT {
+            for x in 0..GRID_WIDTH {
+                let block = self.get_block(x, y);
+                if block >= 0 {
+                    // TODO: отрисовка блока с цветом
+                    // Для этого нужен доступ к таблице цветов
+                }
+            }
+        }
+    }
+
+    /// Отрисовать текущую фигуру.
+    ///
+    /// # Аргументы
+    /// * `renderer` - объект для отрисовки
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// view.draw_shape(&mut canvas);
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
+    pub fn draw_shape<R>(&self, _renderer: &mut R)
+    where
+        R: crate::io_traits::Renderer,
+    {
+        // TODO: отрисовка текущей фигуры
+        // Требуется доступ к таблице цветов и координатам фигуры
+    }
+
+    /// Отрисовать UI (счёт, уровень, линии, комбо, рекорд).
+    ///
+    /// # Аргументы
+    /// * `renderer` - объект для отрисовки
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// view.draw_ui(&mut canvas);
+    /// ```
+    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
+    pub fn draw_ui<R>(&self, renderer: &mut R)
+    where
+        R: crate::io_traits::Renderer,
+    {
+        use crate::game::constants::{
+            BORDER_COLOR, COMBO_X, COMBO_Y, HIGH_SCORE_X, HIGH_SCORE_Y, LEVEL_X, LEVEL_Y, LINES_X,
+            LINES_Y, SCORE_X, SCORE_Y,
+        };
+        use termion::color::Reset;
+
+        // Отрисовка счёта
+        renderer.draw_string(
+            &format!("{:10}", self.score),
+            (SCORE_X, SCORE_Y),
+            BORDER_COLOR,
+            &Reset,
+        );
+
+        // Отрисовка рекорда
+        renderer.draw_string(
+            &format!("{:10}", self.high_score),
+            (HIGH_SCORE_X, HIGH_SCORE_Y),
+            BORDER_COLOR,
+            &Reset,
+        );
+
+        // Отрисовка уровня
+        renderer.draw_string(
+            &format!("{:10}", self.level),
+            (LEVEL_X, LEVEL_Y),
+            BORDER_COLOR,
+            &Reset,
+        );
+
+        // Отрисовка линий
+        renderer.draw_string(
+            &format!("{:10}", self.lines),
+            (LINES_X, LINES_Y),
+            BORDER_COLOR,
+            &Reset,
+        );
+
+        // Отрисовка комбо (если есть)
+        if let Some(combo) = self.combo {
+            renderer.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
+        }
+    }
 }

@@ -530,6 +530,9 @@ mod testes {
     // Тесты на архитектурную целостность (16 тестов)
     pub mod test_architecture;
 
+    // Тесты на архитектурные улучшения (16 тестов)
+    pub mod test_architecture_fixes;
+
     // Тесты для 15 архитектурных исправлений (16 тестов - 15 по одному на каждое + 1 интеграционный)
     pub mod test_architecture_refactoring;
 

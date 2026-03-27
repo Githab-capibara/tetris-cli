@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия документа:** 10.0
+**Версия документа:** 11.0
 **Последнее обновление:** 27 марта 2026 г.
-**Версия проекта:** 23.96.14
+**Версия проекта:** 23.96.15
 
 ---
 
@@ -2382,3 +2382,83 @@ use tetris_cli::game::constants;
 println!("FPS: {}", constants::FPS);
 println!("Очки за Tetris: {}", constants::LINE_SCORES[3]);
 ```
+
+---
+
+## Архитектурные улучшения (v23.96.15+)
+
+### Разделение модуля menu
+**Статус**: ✅ Выполнено
+
+**Изменения**:
+- Удалён дублирующий файл `src/menu.rs`
+- Создан `src/menu/mod.rs` с переэкспортом функций
+- Все импорты обновлены на `use crate::menu::{...}`
+
+**Преимущества**:
+- Устранение дублирования кода
+- Чёткая модульная структура
+- Улучшенная организация кода
+
+### Централизация констант
+**Статус**: ✅ Выполнено
+
+**Изменения**:
+- Константы `GRID_WIDTH`, `GRID_HEIGHT`, `SHAPE_WIDTH`, `SHAPE_STR` переэкспортируются из `game/constants.rs` в `io.rs`
+- Удалены дублирующие константы из `game/state.rs`
+- Добавлена константа `LINES_PER_LEVEL` в `game/constants.rs`
+
+**Преимущества**:
+- Единая точка истины (DRY)
+- Упрощение поддержки
+- Снижение риска рассинхронизации
+
+### Разделение трейта GameBoardAccess
+**Статус**: ✅ Выполнено
+
+**Изменения**:
+- Создан трейт `BoardReadonly` (только чтение): `get_blocks()`, `get_block()`, `is_block_empty()`
+- Создан трейт `BoardMutable` (чтение и запись): `get_blocks_mut()`, `set_block()`, `is_block_occupied()`
+- Трейт `ScoreAccess` сохранён для доступа к очкам
+- `GameBoardAccess` сохранён для обратной совместимости
+
+**Преимущества**:
+- Разделение ответственности (ISP)
+- Улучшенная инкапсуляция
+- Более точный контроль доступа
+
+### Добавление методов отрисовки в GameView
+**Статус**: ✅ Выполнено
+
+**Изменения**:
+- Добавлен метод `draw_field(&self, canvas: &mut dyn Renderer)`
+- Добавлен метод `draw_shape(&self, canvas: &mut dyn Renderer)`
+- Добавлен метод `draw_ui(&self, canvas: &mut dyn Renderer)`
+
+**Преимущества**:
+- Уменьшение Feature Envy (render.rs)
+- Улучшенная инкапсуляция данных
+- Возможность замены рендерера
+
+### Новые тесты архитектуры
+**Статус**: ✅ Выполнено
+
+**Добавлено 16 тестов**:
+1. `test_menu_module_only` — проверка модуля menu
+2. `test_constants_centralized` — централизация констант
+3. `test_no_duplicate_constants_in_state` — отсутствие дублирования
+4. `test_board_readonly_trait` — трейт BoardReadonly
+5. `test_board_mutable_trait` — трейт BoardMutable
+6. `test_game_board_access_combined` — комбинация трейтов
+7. `test_game_view_draw_methods` — методы отрисовки GameView
+8. `test_game_view_reduces_feature_envy` — уменьшение Feature Envy
+9. `test_no_game_menu_cycle` — отсутствие цикла game/menu
+10. `test_no_validation_controls_cycle` — отсутствие цикла validation/controls
+11. `test_scoring_render_boundary` — граница scoring/render
+12. `test_logic_render_boundary` — граница logic/render
+13. `test_private_fields_encapsulation` — инкапсуляция полей
+14. `test_game_mode_trait_usage` — использование GameModeTrait
+15. `test_io_traits_exist` — трейты InputReader/Renderer
+16. `test_all_architecture_improvements_integration` — интеграционный тест
+
+**Общее количество тестов**: 1429 (все проходят)

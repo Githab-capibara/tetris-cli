@@ -319,10 +319,12 @@ fn test_encapsulation_doesnt_break_tests() {
 /// Проверка, что access модуль не создаёт циклических зависимостей.
 #[test]
 fn test_access_module_no_cycles() {
-    use crate::game::access::GameBoardAccess;
+    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
 
-    // Трейт должен быть доступен из game::access
-    fn _use_trait<T: GameBoardAccess>(_t: &T) {}
+    // Трейты должны быть доступны из game::access
+    fn _use_board_readonly<T: BoardReadonly>(_t: &T) {}
+    fn _use_board_mutable<T: BoardMutable>(_t: &mut T) {}
+    fn _use_score_access<T: ScoreAccess>(_t: &T) {}
 
     // Тест компилируется только если нет циклов
     assert!(true);
