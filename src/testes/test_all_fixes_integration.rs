@@ -354,5 +354,4 @@ fn test_all_fixes_comprehensive_integration() {
     assert!(entry2.is_valid());
 
     // Все тесты прошли - исправления работают вместе
-    assert!(true, "Все исправления работают корректно");
 }
