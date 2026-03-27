@@ -11,7 +11,7 @@
 //! - [`lines.rs`](super::lines): удаление линий
 
 use crate::game::constants::{
-    LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPD_INC,
+    LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
 use crate::game::state::{GameState, UpdateEndState};
 use crate::tetromino::Tetromino;
@@ -21,32 +21,33 @@ use crate::tetromino::Tetromino;
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `remove_count` - количество удалённых линий
+///
+/// # Инкапсуляция (Задача HIGH)
+/// Использует методы GameState вместо прямого доступа к полям.
 #[allow(dead_code)]
 pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
     if remove_count > 0 {
         // Ограничение remove_count максимум 4
         let capped_remove_count = remove_count.min(MAX_LINES_PER_CLEAR);
 
-        // Обновление количества удалённых линий
-        state.lines_cleared = state.lines_cleared.saturating_add(capped_remove_count);
+        // Обновление количества удалённых линий через метод (Инкапсуляция)
+        state.add_lines_cleared(capped_remove_count);
 
         // Проверка повышения уровня (каждые 10 линий)
-        let new_level = (state.lines_cleared / LINES_PER_LEVEL) + 1;
-        if new_level > state.level {
-            state.level = new_level;
+        let new_level = (state.get_lines_cleared() / LINES_PER_LEVEL) + 1;
+        if new_level > state.get_level() {
+            state.set_level(new_level);
             // Бонус за повышение уровня
-            state.score = state
-                .score
-                .saturating_add(LEVEL_BONUS_MULT.saturating_mul(u128::from(new_level - 1)));
+            state.add_score(LEVEL_BONUS_MULT.saturating_mul(u128::from(new_level - 1)));
         }
 
         // Увеличение скорости игры
-        state.fall_spd += SPD_INC * capped_remove_count as f32;
+        state.set_fall_spd(state.get_fall_spd() + SPD_INC * capped_remove_count as f32);
 
         // Начисление очков за линии (lookup таблица)
         if capped_remove_count > 0 {
             let line_score = LINE_SCORES[(capped_remove_count - 1) as usize];
-            state.score = state.score.saturating_add(line_score);
+            state.add_score(line_score);
         }
     }
 }
@@ -78,11 +79,14 @@ fn safe_f32_to_u32(value: f32) -> u32 {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
+///
+/// # Инкапсуляция (Задача HIGH)
+/// Использует методы GameState вместо прямого доступа к полям.
 pub fn handle_hard_drop(state: &mut GameState) {
     use crate::game::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
 
-    let start_y = state.curr_shape.pos.1;
+    let start_y = state.get_curr_shape().pos.1;
     while state.can_move_curr_shape_direction(Direction::Down) {
         state.curr_shape.pos.1 += 1.0;
     }
@@ -92,9 +96,8 @@ pub fn handle_hard_drop(state: &mut GameState) {
     let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs();
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
-    state.score = state
-        .score
-        .saturating_add(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
+    // Инкапсуляция: используем add_score() вместо прямого доступа
+    state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     state.land_timer = 0.0;
     state.is_hard_dropping = true;
 }
@@ -103,14 +106,18 @@ pub fn handle_hard_drop(state: &mut GameState) {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
+///
+/// # Инкапсуляция (Задача HIGH)
+/// Использует методы GameState вместо прямого доступа к полям.
 pub fn handle_soft_drop(state: &mut GameState) {
+    use crate::game::constants::SOFT_DROP_POINTS;
     use crate::types::Direction;
 
     if state.can_move_curr_shape_direction(Direction::Down) {
         state.curr_shape.pos.1 += 1.0;
         state.soft_drop_distance = state.soft_drop_distance.saturating_add(1);
-        // Начисляем очки за каждую ячейку падения (1 очко за ячейку)
-        state.score = state.score.saturating_add(SOFT_DROP_POINTS);
+        // Инкапсуляция: используем add_score() вместо прямого доступа
+        state.add_score(SOFT_DROP_POINTS);
     }
 }
 
@@ -206,13 +213,16 @@ fn check_game_over_condition(state: &GameState) -> bool {
 ///
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
+///
+/// # Инкапсуляция (Задача HIGH)
+/// Использует методы GameState вместо прямого доступа к полям.
 fn calculate_landing_bonus(state: &mut GameState) {
     use crate::game::constants::{
-        LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC,
+        LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
     };
 
     // Расчёт бонуса за скорость падения
-    let limited_fall_spd = state.fall_spd.min(MAX_FALL_SPEED);
+    let limited_fall_spd = state.get_fall_spd().min(MAX_FALL_SPEED);
     let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
         .max(0.0)
         .min(u32::MAX as f32);
@@ -221,15 +231,12 @@ fn calculate_landing_bonus(state: &mut GameState) {
     } else {
         0
     };
-    state.score = state
-        .score
-        .saturating_add(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
+    // Инкапсуляция: используем add_score() вместо прямого доступа
+    state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop
     if state.soft_drop_distance > 0 {
-        state.score = state
-            .score
-            .saturating_add(u128::from(state.soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
+        state.add_score(u128::from(state.soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
         state.soft_drop_distance = 0;
     }
 
@@ -248,15 +255,17 @@ fn calculate_landing_bonus(state: &mut GameState) {
 ///
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
+///
+/// # Инкапсуляция (Задача HIGH)
+/// Использует методы GameState вместо прямого доступа к полям.
 fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::game::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
         state.stats.combo_counter = state.stats.combo_counter.saturating_add(1);
         if state.stats.combo_counter > 1 {
-            state.score = state.score.saturating_add(
-                COMBO_BONUS.saturating_mul(u128::from(state.stats.combo_counter - 1)),
-            );
+            // Инкапсуляция: используем add_score() вместо прямого доступа
+            state.add_score(COMBO_BONUS.saturating_mul(u128::from(state.stats.combo_counter - 1)));
         }
     } else {
         state.stats.combo_counter = 0;
@@ -322,28 +331,32 @@ mod points_tests {
     #[test]
     fn test_update_score_and_level_basic() {
         let mut state = GameState::new();
-        let initial_score = state.score;
+        let initial_score = state.get_score();
 
         update_score_and_level(&mut state, 1);
 
-        assert!(state.score > initial_score, "Счёт должен увеличиться");
-        assert_eq!(state.lines_cleared, 1, "Должна быть очищена 1 линия");
+        assert!(state.get_score() > initial_score, "Счёт должен увеличиться");
+        assert_eq!(state.get_lines_cleared(), 1, "Должна быть очищена 1 линия");
     }
 
     #[test]
     fn test_handle_hold_basic() {
         let mut state = GameState::new();
-        let initial_shape = state.curr_shape;
+        let initial_shape = *state.get_curr_shape();
 
         state.hold_shape();
 
-        assert!(state.held_shape.is_some(), "Фигура должна быть удержана");
+        assert!(
+            state.get_held_shape().is_some(),
+            "Фигура должна быть удержана"
+        );
         assert_ne!(
-            state.curr_shape.shape, initial_shape.shape,
+            state.get_curr_shape().shape,
+            initial_shape.shape,
             "Текущая фигура должна измениться"
         );
         assert!(
-            !state.can_hold,
+            !state.can_hold(),
             "can_hold должен быть false после удержания"
         );
     }

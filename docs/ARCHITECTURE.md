@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия документа:** 11.0
+**Версия документа:** 12.0
 **Последнее обновление:** 27 марта 2026 г.
-**Версия проекта:** 23.96.15
+**Версия проекта:** 23.96.17
 
 ---
 
@@ -18,8 +18,9 @@
 8. [Безопасность](#безопасность)
 9. [Тестирование](#тестирование)
 10. [Улучшения архитектуры](#улучшения-архитектуры)
-11. [Новая архитектура (v23.96.16+)](#новая-архитектура-v239616)
-12. [Архитектурные улучшения (v23.96.14+)](#архитектурные-улучшения-v239614)
+11. [Компоненты GameState (v23.96.17+)](#компоненты-gamestate-v239617)
+12. [Новая архитектура (v23.96.16+)](#новая-архитектура-v239616)
+13. [Архитектурные улучшения (v23.96.14+)](#архитектурные-улучшения-v239614)
 
 ---
 
@@ -2462,3 +2463,144 @@ println!("Очки за Tetris: {}", constants::LINE_SCORES[3]);
 16. `test_all_architecture_improvements_integration` — интеграционный тест
 
 **Общее количество тестов**: 1429 (все проходят)
+
+---
+
+## 🧩 Компоненты GameState (v23.96.17+)
+
+**Статус**: ✅ Выполнено в версии 23.96.17
+
+**Проблема**: GameState был God Object с 25+ полями, смешанной ответственностью и низкой связностью (4/10).
+
+### Решение
+
+Разделение GameState на специализированные компоненты:
+
+#### GameBoard
+
+**Ответственность**: Состояние игрового поля.
+
+**Поля**:
+- `blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT]` — игровое поле
+- `filled_lines: u32` — битовая маска заполненных линий
+
+**Методы**:
+- `get_blocks()` — получить поле
+- `get_block(x, y)` — получить ячейку
+- `set_block(x, y, value)` — установить ячейку
+- `is_cell_empty(x, y)` — проверка пустоты
+- `get_filled_lines_mask()` — маска линий
+- `clear_rows(rows_mask)` — очистка линий
+
+**Файл**: `src/game/components.rs:37-115`
+
+#### ScoreBoard
+
+**Ответственность**: Подсчёт очков и управление уровнями.
+
+**Поля**:
+- `score: u128` — текущие очки
+- `level: u32` — текущий уровень
+- `lines_cleared: u32` — количество удалённых линий
+- `combo_counter: u32` — счётчик комбо
+- `max_combo: u32` — максимальное комбо
+
+**Методы**:
+- `get_score()` — получить очки
+- `add_score(points)` — добавить очки
+- `get_level()` — получить уровень
+- `set_level(level)` — установить уровень
+- `get_lines_cleared()` — получить линии
+- `add_lines_cleared(lines)` — добавить линии
+- `get_combo_counter()` — получить комбо
+- `increment_combo()` — увеличить комбо
+- `reset_combo()` — сбросить комбо
+
+**Файл**: `src/game/components.rs:127-225`
+
+#### FigureManager
+
+**Ответственность**: Управление фигурами.
+
+**Поля**:
+- `curr_shape: Tetromino` — текущая фигура
+- `next_shape: Tetromino` — следующая фигура
+- `held_shape: Option<Tetromino>` — удержанная фигура
+- `can_hold: bool` — флаг возможности удержания
+- `bag: BagGenerator` — генератор фигур
+
+**Методы**:
+- `get_curr_shape()` — получить текущую фигуру
+- `get_next_shape()` — получить следующую фигуру
+- `get_held_shape()` — получить удержанную фигуру
+- `hold_shape()` — удержать фигуру
+- `can_hold()` — проверка возможности удержания
+- `set_can_hold(flag)` — установить флаг
+
+**Файл**: `src/game/components.rs:227-325`
+
+#### AnimationState
+
+**Ответственность**: Состояние анимаций.
+
+**Поля**:
+- `animating_rows_mask: u32` — маска анимируемых линий
+- `is_hard_dropping: bool` — флаг hard drop
+- `hard_drop_timer: u64` — таймер hard drop
+- `clear_animation_timer: u64` — таймер анимации очистки
+
+**Методы**:
+- `is_hard_dropping()` — проверка hard drop
+- `set_hard_dropping(flag)` — установить флаг
+- `get_animating_rows_mask()` — маска анимации
+- `set_animating_rows_mask(mask)` — установить маску
+
+**Файл**: `src/game/components.rs:327-420`
+
+### Преимущества разделения
+
+1. **Высокая связность**: Каждый компонент отвечает за одну область
+2. **Низкая связанность**: Компоненты независимы друг от друга
+3. **Инкапсуляция**: Доступ только через публичные методы
+4. **Тестируемость**: Каждый компонент тестируется отдельно
+5. **Масштабируемость**: Легко добавлять новые функции
+
+### Тесты компонентов
+
+**test_architecture_components.rs** (24 теста):
+- `test_game_board_structure` — структура GameBoard
+- `test_game_board_encapsulation` — инкапсуляция GameBoard
+- `test_score_board_structure` — структура ScoreBoard
+- `test_score_board_encapsulation` — инкапсуляция ScoreBoard
+- `test_figure_manager_structure` — структура FigureManager
+- `test_figure_manager_encapsulation` — инкапсуляция FigureManager
+- `test_animation_state_structure` — структура AnimationState
+- `test_animation_state_encapsulation` — инкапсуляция AnimationState
+- `test_position_creation` — создание Position
+- `test_position_mutation` — мутация Position
+- `test_position_offset` — смещение Position
+- `test_position_is_zero` — проверка is_zero
+- `test_position_from_tuple` — конвертация из кортежа
+- `test_position_into_tuple` — конвертация в кортеж
+- `test_component_separation` — разделение ответственности
+- `test_component_encapsulation` — инкапсуляция компонентов
+- `test_component_independence` — независимость компонентов
+- `test_components_integration` — интеграция компонентов
+- `test_architecture_scalability` — масштабируемость
+- `test_no_circular_dependencies` — отсутствие циклов
+- `test_game_board_stress` — стресс-тест GameBoard
+- `test_score_board_stress` — стресс-тест ScoreBoard
+- `test_position_stress` — стресс-тест Position
+- `test_all_architecture_improvements_integration` — интеграционный тест
+
+### Обратная совместимость
+
+GameState сохраняет геттеры/сеттеры для обратной совместимости:
+- `get_blocks()` → `board.get_blocks()`
+- `get_score()` → `scoreboard.get_score()`
+- `get_curr_shape()` → `figure_manager.get_curr_shape()`
+- И так далее
+
+**Миграция**: Старый код продолжает работать через делегирование.
+
+---
