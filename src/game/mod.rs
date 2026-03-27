@@ -2,6 +2,7 @@
 //!
 //! Этот модуль содержит всю игровую логику Tetris и разделён на подмодули:
 //! - [`state`] — структуры состояния игры (GameState, GameStats, GameMode)
+//! - [`components`] — компоненты состояния (GameBoard, ScoreBoard, FigureManager, AnimationState)
 //! - [`logic`] — игровая логика (физика, коллизии, движение, ввод)
 //! - [`scoring`] — система очков и уровней
 //! - [`render`] — отрисовка и анимации
@@ -18,6 +19,7 @@
 //! ├── constants.rs (базовый, нет зависимостей)
 //! ├── types.rs (базовый, нет зависимостей)
 //! ├── state.rs (базовый, нет зависимостей от game/*)
+//! ├── components.rs (базовый, зависит от io.rs, tetromino.rs)
 //! ├── mode_trait.rs (базовый, нет зависимостей от game/*)
 //! ├── access.rs (зависит от state.rs, io.rs)
 //! ├── cache.rs (зависит от state.rs)
@@ -32,14 +34,15 @@
 //! 1. `constants.rs` - централизованные константы
 //! 2. `types.rs` - типобезопасные обёртки (Score, Level, LinesCount)
 //! 3. `state.rs` - базовые структуры и константы
-//! 4. `mode_trait.rs` - трейты режимов
-//! 5. `access.rs` - трейты доступа
-//! 6. `cache.rs` - кэширование строк
-//! 7. `view.rs` - представление для отрисовки
-//! 8. `logic/` - игровая логика
-//! 9. `scoring/` - система очков
-//! 10. `render/` - отрисовка
-//! 11. `cycle.rs` - игровой цикл (использует все модули)
+//! 4. `components.rs` - компоненты состояния
+//! 5. `mode_trait.rs` - трейты режимов
+//! 6. `access.rs` - трейты доступа
+//! 7. `cache.rs` - кэширование строк
+//! 8. `view.rs` - представление для отрисовки
+//! 9. `logic/` - игровая логика
+//! 10. `scoring/` - система очков
+//! 11. `render/` - отрисовка
+//! 12. `cycle.rs` - игровой цикл (использует все модули)
 //!
 //! ## Пример использования
 //!
@@ -59,6 +62,7 @@
 // Подмодули
 pub mod access;
 pub mod cache;
+pub mod components;
 pub mod constants;
 pub mod cycle;
 pub mod logic;
@@ -75,6 +79,10 @@ pub mod view;
 
 // Re-export основных типов для обратной совместимости
 pub use state::GameState;
+
+// Re-export компонентов для обратной совместимости
+#[allow(unused_imports, dead_code)]
+pub use components::{AnimationState, FigureManager, GameBoard, ScoreBoard};
 
 // Re-export GameStats для lib.rs и тестов
 #[allow(unused_imports, dead_code)]
@@ -105,6 +113,10 @@ pub use constants::{
 pub use access::{BoardMutable, BoardReadonly, GameBoardAccess, ScoreAccess};
 #[allow(unused_imports, dead_code)]
 pub use state::{GameError, GameResult};
+
+// Re-export типов из types.rs (обратная совместимость)
+#[allow(unused_imports, dead_code)]
+pub use types::{Level, LinesCount, Position, Score};
 
 pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,

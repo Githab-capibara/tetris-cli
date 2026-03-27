@@ -2,6 +2,12 @@
 //!
 //! Предоставляет типобезопасные обёртки для очков, уровня и линий.
 //! Решает проблему Primitive Obsession.
+//!
+//! ## Структуры
+//! - [`Score`] - типобезопасная обёртка для очков
+//! - [`Level`] - типобезопасная обёртка для уровня
+//! - [`LinesCount`] - типобезопасная обёртка для количества линий
+//! - [`Position`] - структура для координат (x, y)
 
 use std::fmt;
 
@@ -304,6 +310,99 @@ impl From<LinesCount> for u32 {
 }
 
 // ============================================================================
+// СТРУКТУРА ПОЗИЦИИ (Position)
+// ============================================================================
+
+/// Структура для представления координат (x, y).
+///
+/// Решает проблему Data Clumps (Problem 2.4) для координат.
+/// Используется для устранения дублирования пар (i16, i16) в коде.
+///
+/// # Примеры
+/// ```
+/// use tetris_cli::game::types::Position;
+///
+/// let pos = Position::new(5, 10);
+/// assert_eq!(pos.x(), 5);
+/// assert_eq!(pos.y(), 10);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Position {
+    /// Координата X.
+    x: i16,
+    /// Координата Y.
+    y: i16,
+}
+
+impl Position {
+    /// Создать новую позицию с указанными координатами.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X
+    /// * `y` - координата Y
+    #[must_use]
+    pub const fn new(x: i16, y: i16) -> Self {
+        Self { x, y }
+    }
+
+    /// Получить координату X.
+    #[must_use]
+    pub const fn x(self) -> i16 {
+        self.x
+    }
+
+    /// Получить координату Y.
+    #[must_use]
+    pub const fn y(self) -> i16 {
+        self.y
+    }
+
+    /// Установить координату X.
+    pub fn set_x(&mut self, x: i16) {
+        self.x = x;
+    }
+
+    /// Установить координату Y.
+    pub fn set_y(&mut self, y: i16) {
+        self.y = y;
+    }
+
+    /// Установить обе координаты.
+    pub fn set(&mut self, x: i16, y: i16) {
+        self.x = x;
+        self.y = y;
+    }
+
+    /// Сдвинуть позицию на указанные значения.
+    ///
+    /// # Аргументы
+    /// * `dx` - смещение по X
+    /// * `dy` - смещение по Y
+    pub fn offset(&mut self, dx: i16, dy: i16) {
+        self.x = self.x.saturating_add(dx);
+        self.y = self.y.saturating_add(dy);
+    }
+
+    /// Проверить, равна ли позиция нулю.
+    #[must_use]
+    pub fn is_zero(self) -> bool {
+        self.x == 0 && self.y == 0
+    }
+}
+
+impl From<(i16, i16)> for Position {
+    fn from((x, y): (i16, i16)) -> Self {
+        Self::new(x, y)
+    }
+}
+
+impl From<Position> for (i16, i16) {
+    fn from(pos: Position) -> Self {
+        (pos.x, pos.y)
+    }
+}
+
+// ============================================================================
 // ТЕСТЫ
 // ============================================================================
 
@@ -499,5 +598,58 @@ mod tests {
         let mut lines = LinesCount::with_value(u32::MAX);
         lines.add(100);
         assert_eq!(lines.value(), u32::MAX); // Saturating
+    }
+
+    // ==================== Тесты для Position ====================
+
+    #[test]
+    fn test_position_new() {
+        let pos = Position::new(5, 10);
+        assert_eq!(pos.x(), 5);
+        assert_eq!(pos.y(), 10);
+    }
+
+    #[test]
+    fn test_position_default() {
+        let pos = Position::default();
+        assert_eq!(pos.x(), 0);
+        assert_eq!(pos.y(), 0);
+    }
+
+    #[test]
+    fn test_position_set() {
+        let mut pos = Position::new(0, 0);
+        pos.set(15, 20);
+        assert_eq!(pos.x(), 15);
+        assert_eq!(pos.y(), 20);
+    }
+
+    #[test]
+    fn test_position_offset() {
+        let mut pos = Position::new(5, 10);
+        pos.offset(3, -2);
+        assert_eq!(pos.x(), 8);
+        assert_eq!(pos.y(), 8);
+    }
+
+    #[test]
+    fn test_position_is_zero() {
+        assert!(Position::new(0, 0).is_zero());
+        assert!(!Position::new(1, 0).is_zero());
+        assert!(!Position::new(0, 1).is_zero());
+    }
+
+    #[test]
+    fn test_position_from_tuple() {
+        let pos: Position = (7, 14).into();
+        assert_eq!(pos.x(), 7);
+        assert_eq!(pos.y(), 14);
+    }
+
+    #[test]
+    fn test_position_into_tuple() {
+        let pos = Position::new(9, 11);
+        let tuple: (i16, i16) = pos.into();
+        assert_eq!(tuple, (9, 11));
     }
 }
