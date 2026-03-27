@@ -1,11 +1,11 @@
 //! Тесты граничных случаев.
 //!
-//! Этот модуль содержит 50 тестов для проверки граничных случаев:
-//! - Тесты пустых значений (10 тестов)
-//! - Тесты максимальных значений (10 тестов)
-//! - Тесты специальных случаев (10 тестов)
-//! - Тесты ошибок и исключений (10 тестов)
-//! - Тесты производительности (10 тестов)
+//! Этот модуль содержит тесты для проверки граничных случаев:
+//! - Тесты пустых значений
+//! - Тесты максимальных значений
+//! - Тесты специальных случаев
+//! - Тесты ошибок и исключений
+//! - Тесты производительности
 
 #![allow(deprecated)]
 
@@ -15,10 +15,10 @@ use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::RotationDirection;
 
 // ============================================================================
-// ГРУППА ТЕСТОВ 1-10: Пустые значения
+// ГРУППА ТЕСТОВ: Пустые значения
 // ============================================================================
 
-/// Тест 1: Проверка создания `GameState` с пустым полем
+/// Тест: Проверка создания `GameState` с пустым полем
 #[test]
 fn test_edge_cases_empty_field() {
     let state = GameState::new();
@@ -31,33 +31,21 @@ fn test_edge_cases_empty_field() {
     }
 }
 
-/// Тест 2: Проверка что `BagGenerator` инициализирован при создании
-/// Исправление #8: `BagGenerator` теперь инициализируется с временными данными
+/// Тест: Проверка что `BagGenerator` инициализирован при создании
 #[test]
 fn test_edge_cases_bag_empty() {
     let bag = BagGenerator::new();
-    // Исправление #8: bag теперь содержит 7 фигур (временная инициализация)
-    // Фактическое заполнение происходит при первом вызове fill_bag()
     assert_eq!(bag.get_bag().len(), 7);
 }
 
-/// Тест 3: Проверка что удержанная фигура None при создании
+/// Тест: Проверка что удержанная фигура None при создании
 #[test]
 fn test_edge_cases_held_shape_none() {
     let state = GameState::new();
     assert!(state.get_held_shape().is_none());
 }
 
-// REMOVED: Achievement system removed
-// /// Тест 4: Проверка что achievements пуст при создании
-// #[test]
-// fn test_edge_cases_achievements_empty() {
-//     let state = GameState::new();
-//     let game_stats = state.get_stats();
-//     assert_eq!(game_stats.achievements.len(), 0);
-// }
-
-/// Тест 5: Проверка что `start_time` None при создании
+/// Тест: Проверка что `start_time` None при создании
 #[test]
 fn test_edge_cases_start_time_none() {
     let state = GameState::new();
@@ -65,7 +53,7 @@ fn test_edge_cases_start_time_none() {
     assert!(game_stats.start_time.is_none());
 }
 
-/// Тест 6: Проверка что `end_time` None при создании
+/// Тест: Проверка что `end_time` None при создании
 #[test]
 fn test_edge_cases_end_time_none() {
     let state = GameState::new();
@@ -73,7 +61,7 @@ fn test_edge_cases_end_time_none() {
     assert!(game_stats.end_time.is_none());
 }
 
-/// Тест 7: Проверка что `combo_counter` 0 при создании
+/// Тест: Проверка что `combo_counter` 0 при создании
 #[test]
 fn test_edge_cases_combo_counter_zero() {
     let state = GameState::new();
@@ -81,7 +69,7 @@ fn test_edge_cases_combo_counter_zero() {
     assert_eq!(game_stats.combo_counter, 0);
 }
 
-/// Тест 8: Проверка что `max_combo` 0 при создании
+/// Тест: Проверка что `max_combo` 0 при создании
 #[test]
 fn test_edge_cases_max_combo_zero() {
     let state = GameState::new();
@@ -89,16 +77,7 @@ fn test_edge_cases_max_combo_zero() {
     assert_eq!(game_stats.max_combo, 0);
 }
 
-// REMOVED: Achievement system removed
-// /// Тест 9: Проверка что `tetris_count` 0 при создании
-// #[test]
-// fn test_edge_cases_tetris_count_zero() {
-//     let state = GameState::new();
-//     let game_stats = state.get_stats();
-//     assert_eq!(game_stats.tetris_count, 0);
-// }
-
-/// Тест 10: Проверка что `total_lines` 0 при создании
+/// Тест: Проверка что `total_lines` 0 при создании
 #[test]
 fn test_edge_cases_total_lines_zero() {
     let state = GameState::new();

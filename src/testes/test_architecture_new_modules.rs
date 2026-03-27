@@ -274,7 +274,7 @@ mod test_module_boundaries {
         // level.0 = 10; // Это не скомпилируется
 
         // Только через публичные методы
-        level.increment();
+        let _ = level.increment();
         assert_eq!(level.value(), 6);
     }
 
@@ -318,14 +318,14 @@ mod test_integration {
 
         // Проверка уровня
         if lines.reached(10) {
-            level.increment();
+            let _ = level.increment();
         }
         assert!(!lines.reached(10)); // Ещё нет
 
         // Добавим ещё 6 линий
         lines.add(6);
         assert!(lines.reached(10)); // Теперь да
-        level.increment();
+        let _ = level.increment();
         assert_eq!(level.value(), 2);
     }
 
