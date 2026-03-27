@@ -33,7 +33,7 @@ fn test_rotation_in_corner() {
 #[test]
 fn test_wall_kick_at_wall() {
     let state = GameState::new();
-    assert_eq!(state.get_mode(), crate::game::GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 5: Проверка что вращение не выходит за границы поля.

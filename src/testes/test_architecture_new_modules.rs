@@ -5,6 +5,8 @@
 //! - Соблюдение границ модулей
 //! - Корректность экспорта типов
 
+#![allow(clippy::assertions_on_constants)]
+
 // ============================================================================
 // ТЕСТЫ ДЛЯ GAME::CONSTANTS
 // ============================================================================
@@ -209,7 +211,6 @@ mod test_no_circular_dependencies {
         let _width = constants::GRID_WIDTH;
 
         // Если код компилируется - зависимости нет
-        assert!(true);
     }
 
     /// Тест 2: types.rs не зависит от state.rs
@@ -221,8 +222,6 @@ mod test_no_circular_dependencies {
         let _score = types::Score::new();
         let _level = types::Level::new();
         let _lines = types::LinesCount::new();
-
-        assert!(true);
     }
 
     /// Тест 3: modules hierarchy
@@ -239,8 +238,6 @@ mod test_no_circular_dependencies {
         let _fps = constants::FPS;
         let _score = types::Score::new();
         let _game = state::GameState::new();
-
-        assert!(true);
     }
 }
 

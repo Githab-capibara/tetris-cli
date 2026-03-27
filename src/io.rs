@@ -565,6 +565,7 @@ impl KeyReader {
     ///
     /// # Исправление #1 (UTF-8 поддержка)
     /// Добавлена полная поддержка Unicode для локализации управления.
+    #[allow(dead_code)]
     pub fn get_key_unicode(&mut self) -> Option<char> {
         let mut first_byte: [u8; 1] = [0];
 

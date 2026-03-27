@@ -40,7 +40,6 @@ fn test_utf8_multibyte_returns_none() {
     }
 
     // Если тест дошёл до этой точки, паники не произошло
-    assert!(true, "get_key() работает без паники для UTF-8");
 }
 
 /// Тест 2: Проверка корректного чтения ASCII символов
@@ -71,8 +70,6 @@ fn test_ascii_characters_read_correctly() {
         let mut reader = KeyReader::new();
         let _ = reader.get_key();
     }
-
-    assert!(true, "ASCII символы читаются корректно");
 }
 
 /// Тест 3: Проверка последовательности UTF-8 + ASCII
@@ -111,8 +108,6 @@ fn test_utf8_then_ascii_sequence() {
     // Проверяем что KeyReader остаётся работоспособным
     let mut final_reader = KeyReader::new();
     let _ = final_reader.get_key();
-
-    assert!(true, "Последовательность UTF-8 + ASCII обрабатывается корректно");
 }
 
 /// Тест 4: Проверка обработки различных диапазонов UTF-8
@@ -140,10 +135,7 @@ fn test_utf8_range_handling() {
         }
 
         // Проверяем что итерация прошла успешно
-        assert!(true, "Итерация {} завершена успешно", i);
     }
-
-    assert!(true, "Все диапазоны UTF-8 обрабатываются корректно");
 }
 
 /// Тест 5: Проверка что невалидные UTF-8 последовательности не вызывают панику
@@ -165,6 +157,4 @@ fn test_invalid_utf8_no_panic() {
     // Проверяем что KeyReader остаётся работоспособным
     let mut new_reader = KeyReader::new();
     let _ = new_reader.get_key();
-
-    assert!(true, "Невалидный UTF-8 не вызывает панику");
 }

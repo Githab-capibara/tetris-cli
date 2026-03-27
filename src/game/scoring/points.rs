@@ -21,6 +21,7 @@ use crate::tetromino::Tetromino;
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `remove_count` - количество удалённых линий
+#[allow(dead_code)]
 pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
     if remove_count > 0 {
         // Ограничение remove_count максимум 4

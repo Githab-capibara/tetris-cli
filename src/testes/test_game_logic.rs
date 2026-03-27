@@ -10,7 +10,7 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::game::{
     COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, PIECE_SCORE_INC,
     SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
@@ -113,9 +113,9 @@ fn test_game_state_default_mode() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
-        "Режим по умолчанию должен быть Classic"
+        state.get_mode_trait().name(),
+        "Классика",
+        "Режим по умолчанию должен быть Классика"
     );
 }
 
@@ -559,9 +559,9 @@ fn test_sprint_mode_creation() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
-        "Режим должен быть Sprint"
+        state.get_mode_trait().name(),
+        "Спринт",
+        "Режим должен быть Спринт"
     );
 }
 
@@ -622,8 +622,8 @@ fn test_game_stats_in_different_modes() {
 
     // Проверяем, что режимы разные
     assert_ne!(
-        classic_state.get_mode(),
-        sprint_state.get_mode(),
+        classic_state.get_mode_trait().name(),
+        sprint_state.get_mode_trait().name(),
         "Режимы Classic и Sprint должны отличаться"
     );
 }

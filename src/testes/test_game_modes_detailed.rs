@@ -9,7 +9,7 @@
 //!
 //! Все тесты проверяют корректность работы игровых режимов.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::game::{LINES_PER_LEVEL, MARATHON_LINES, SPRINT_LINES};
 
 // ============================================================================
@@ -22,9 +22,9 @@ fn test_classic_mode_creation() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
-        "Режим по умолчанию должен быть Classic"
+        state.get_mode_trait().name(),
+        "Классика",
+        "Режим по умолчанию должен быть Классика"
     );
 }
 
@@ -85,8 +85,8 @@ fn test_classic_mode_play_until_loss() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
+        state.get_mode_trait().name(),
+        "Классика",
         "Classic режим должен продолжаться до проигрыша"
     );
 }
@@ -98,8 +98,8 @@ fn test_classic_mode_score_saved() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
+        state.get_mode_trait().name(),
+        "Классика",
         "Classic режим должен поддерживать сохранение рекорда"
     );
 }
@@ -153,9 +153,9 @@ fn test_sprint_mode_creation() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
-        "Режим должен быть Sprint"
+        state.get_mode_trait().name(),
+        "Спринт",
+        "Режим должен быть Спринт"
     );
 }
 
@@ -211,8 +211,8 @@ fn test_sprint_mode_time_to_complete() {
 
     // Sprint режим должен измерять время
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
+        state.get_mode_trait().name(),
+        "Спринт",
         "Sprint режим должен отслеживать время"
     );
 }
@@ -243,8 +243,8 @@ fn test_sprint_mode_score_not_saved() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
+        state.get_mode_trait().name(),
+        "Спринт",
         "Sprint режим может не сохранять счёт"
     );
 }
@@ -268,9 +268,9 @@ fn test_marathon_mode_creation() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Marathon,
-        "Режим должен быть Marathon"
+        state.get_mode_trait().name(),
+        "Марафон",
+        "Режим должен быть Марафон"
     );
 }
 
@@ -314,8 +314,8 @@ fn test_marathon_mode_difficulty_progression() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Marathon,
+        state.get_mode_trait().name(),
+        "Марафон",
         "Marathon режим должен иметь прогрессию сложности"
     );
 }
@@ -334,8 +334,8 @@ fn test_marathon_mode_score_saved() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Marathon,
+        state.get_mode_trait().name(),
+        "Марафон",
         "Marathon режим должен сохранять рекорд"
     );
 }
@@ -378,8 +378,8 @@ fn test_mode_switch_classic_to_sprint() {
     let sprint = GameState::new_sprint();
 
     assert_ne!(
-        classic.get_mode(),
-        sprint.get_mode(),
+        classic.get_mode_trait().name(),
+        sprint.get_mode_trait().name(),
         "Режимы должны отличаться"
     );
 }
@@ -391,8 +391,8 @@ fn test_mode_switch_classic_to_marathon() {
     let marathon = GameState::new_marathon();
 
     assert_ne!(
-        classic.get_mode(),
-        marathon.get_mode(),
+        classic.get_mode_trait().name(),
+        marathon.get_mode_trait().name(),
         "Режимы должны отличаться"
     );
 }
@@ -404,8 +404,8 @@ fn test_mode_switch_sprint_to_marathon() {
     let marathon = GameState::new_marathon();
 
     assert_ne!(
-        sprint.get_mode(),
-        marathon.get_mode(),
+        sprint.get_mode_trait().name(),
+        marathon.get_mode_trait().name(),
         "Режимы должны отличаться"
     );
 }
@@ -428,9 +428,9 @@ fn test_modes_have_different_settings() {
     let marathon = GameState::new_marathon();
 
     // Все режимы должны быть инициализированы
-    assert_eq!(classic.get_mode(), GameMode::Classic);
-    assert_eq!(sprint.get_mode(), GameMode::Sprint);
-    assert_eq!(marathon.get_mode(), GameMode::Marathon);
+    assert_eq!(classic.get_mode_trait().name(), "Классика");
+    assert_eq!(sprint.get_mode_trait().name(), "Спринт");
+    assert_eq!(marathon.get_mode_trait().name(), "Марафон");
 }
 
 // ============================================================================
@@ -444,8 +444,8 @@ fn test_classic_mode_no_win_condition() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
+        state.get_mode_trait().name(),
+        "Классика",
         "Classic режим не имеет условия победы"
     );
 }

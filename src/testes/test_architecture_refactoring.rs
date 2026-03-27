@@ -41,7 +41,7 @@
 #[test]
 fn test_game_state_separation_into_components() {
     // Проверяем существование модуля state
-    use crate::game::state::{GameMode, GameState};
+    use crate::game::state::GameState;
 
     // Проверяем существование модуля logic
     use crate::game::logic::can_move_curr_shape_direction;
@@ -56,7 +56,7 @@ fn test_game_state_separation_into_components() {
     let state = GameState::new();
 
     // Проверяем, что все компоненты работают
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
     assert_eq!(state.get_level(), 1);
     assert_eq!(state.get_lines_cleared(), 0);
 
@@ -122,8 +122,6 @@ fn test_game_cycle_separation_into_phases() {
     let _pause = InputResult::Pause;
     let _game_over = InputResult::GameOver;
     let _won = InputResult::Won;
-
-    assert!(true, "Игровой цикл разделён на корректные фазы");
 }
 
 /// Тест 3: Проверка выделения меню в отдельный модуль.
@@ -212,7 +210,7 @@ fn test_game_state_field_encapsulation() {
     let _score = state.get_score();
     let _level = state.get_level();
     let _lines = state.get_lines_cleared();
-    let _mode = state.get_mode();
+    let _mode = state.get_mode_trait().name();
     let _curr_shape = state.get_curr_shape();
     let _next_shape = state.get_next_shape();
     let _held_shape = state.get_held_shape();
@@ -241,9 +239,6 @@ fn test_game_state_field_encapsulation() {
     assert_eq!(state.get_score(), 1000, "Счёт должен обновиться");
     assert_eq!(state.get_level(), 5, "Уровень должен обновиться");
     assert_eq!(state.get_lines_cleared(), 25, "Линии должны обновиться");
-
-    // Этот тест компилируется только если поля инкапсулированы
-    assert!(true, "Инкапсуляция GameState работает корректно");
 }
 
 // ============================================================================
@@ -352,8 +347,6 @@ fn test_highscore_separation_into_submodules() {
     use crate::{Leaderboard as LibLeaderboard, SaveData as LibSaveData};
     let _lib_lb = LibLeaderboard::load();
     let _lib_save = LibSaveData::from_value(100);
-
-    assert!(true, "Highscore разделён на корректные подмодули");
 }
 
 /// Тест 8: Проверка разделения controls на подмодули.
@@ -405,8 +398,6 @@ fn test_controls_separation_into_submodules() {
         !invalid_config.validate(),
         "Конфигурация с дубликатами должна быть невалидной"
     );
-
-    assert!(true, "Controls разделён на корректные подмодули");
 }
 
 /// Тест 9: Проверка существования трейта GameLogic.
@@ -440,8 +431,6 @@ fn test_game_logic_trait_exists() {
     // Проверяем, что update функция существует
     // update(&mut state, &mut inp, delta_time_ms) -> UpdateEndState
     // Не вызываем реально, проверяем только компиляцию сигнатуры
-
-    assert!(true, "Трейт GameLogic (логика) существует и работает");
 }
 
 /// Тест 10: Проверка существования трейта ScoringSystem.
@@ -493,7 +482,7 @@ fn test_scoring_system_trait_exists() {
 /// Тест проверяет, что все публичные функции access.rs используются.
 #[test]
 fn test_no_dead_code_in_access() {
-    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
+    use crate::game::access::{BoardMutable, BoardReadonly};
     use crate::game::GameState;
 
     let mut state = GameState::new();
@@ -528,9 +517,6 @@ fn test_no_dead_code_in_access() {
     let _land_timer = state.get_land_timer();
     state.set_land_timer(0.5);
     assert_eq!(state.get_land_timer(), 0.5);
-
-    // Все методы используются - мёртвого кода нет
-    assert!(true, "В access.rs нет мёртвого кода");
 }
 
 /// Тест 12: Проверка упрощения валидации путей.
@@ -575,8 +561,6 @@ fn test_simplified_path_validation() {
 
     // Очищаем тестовый файл
     let _ = fs::remove_file(valid_path);
-
-    assert!(true, "Валидация путей упрощена и работает корректно");
 }
 
 /// Тест 13: Проверка упрощения rate limiting.
@@ -607,8 +591,6 @@ fn test_simplified_rate_limiting() {
         final_count >= initial_count,
         "Рекорды должны добавляться (в тестах rate limiting отключен)"
     );
-
-    assert!(true, "Rate limiting упрощён и работает корректно");
 }
 
 /// Тест 14: Проверка отсутствия дублирования валидации.
@@ -645,8 +627,6 @@ fn test_no_duplicate_validation() {
         !invalid_value_config.validate(),
         "Недопустимые значения должны отклоняться единым методом валидации"
     );
-
-    assert!(true, "Валидация централизована и не дублируется");
 }
 
 /// Тест 15: Проверка DI (Dependency Injection) для рекордов.
@@ -689,8 +669,6 @@ fn test_dependency_injection_for_leaderboard() {
 
     let mut test_lb = Leaderboard::load();
     _test_leaderboard_injection(&mut test_lb, "InjectedPlayer", 5000);
-
-    assert!(true, "DI для рекордов работает корректно");
 }
 
 // ============================================================================
@@ -711,7 +689,7 @@ fn test_all_15_fixes_integration() {
 
     // 1. Проверяем разделение GameState на компоненты
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 
     // 2. Проверяем GameView
     let view = GameView::from_game_state(&state);
@@ -731,7 +709,4 @@ fn test_all_15_fixes_integration() {
     // 5. Проверяем ControlsConfig
     let config = ControlsConfig::default_config();
     assert!(config.validate());
-
-    // Все исправления работают совместно
-    assert!(true, "Все 15 архитектурных исправлений работают совместно");
 }

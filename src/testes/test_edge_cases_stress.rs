@@ -9,7 +9,7 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты надёжности.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{BagGenerator, ShapeType, SHAPE_COORDS};
 use crate::types::RotationDirection;
@@ -28,7 +28,7 @@ fn test_edge_cases_1000_plus_lines() {
     // Симулируем удаление 1000 линий через update_score_and_level
     // MAX_LINES_PER_CLEAR = 4, поэтому нужно 250 итераций по 4 линии
     for _ in 0..250 {
-        crate::game::scoring::update_score_and_level(&mut state, 4);
+        crate::game::scoring::points::update_score_and_level(&mut state, 4);
     }
 
     // Проверяем что линии корректно подсчитаны
@@ -254,7 +254,7 @@ fn test_stress_sprint_mode_load() {
     }
 
     // Режим должен остаться рабочим
-    assert_eq!(state.get_mode(), GameMode::Sprint);
+    assert_eq!(state.get_mode_trait().name(), "Спринт");
 }
 
 // ============================================================================
@@ -448,7 +448,7 @@ fn test_long_all_modes_stability() {
     }
 
     // Все режимы должны остаться рабочими
-    assert_eq!(classic.get_mode(), GameMode::Classic);
-    assert_eq!(sprint.get_mode(), GameMode::Sprint);
-    assert_eq!(marathon.get_mode(), GameMode::Marathon);
+    assert_eq!(classic.get_mode_trait().name(), "Классика");
+    assert_eq!(sprint.get_mode_trait().name(), "Спринт");
+    assert_eq!(marathon.get_mode_trait().name(), "Марафон");
 }

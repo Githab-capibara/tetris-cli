@@ -5,7 +5,7 @@
 //! - Тесты Sprint режима (15 тестов)
 //! - Тесты Marathon режима (15 тестов)
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::game::{MARATHON_LINES, SPRINT_LINES};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
@@ -17,7 +17,7 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 #[test]
 fn test_modes_classic_creation() {
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 2: Проверка что Classic режим имеет счёт 0
@@ -68,7 +68,7 @@ fn test_modes_classic_timer_not_started() {
 fn test_modes_classic_saves_score() {
     // Classic режим должен сохранять счёт в таблицу лидеров
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 9: Проверка что Classic режим имеет стандартную скорость
@@ -95,7 +95,7 @@ fn test_modes_classic_play_until_loss() {
 #[test]
 fn test_modes_sprint_creation() {
     let state = GameState::new_sprint();
-    assert_eq!(state.get_mode(), GameMode::Sprint);
+    assert_eq!(state.get_mode_trait().name(), "Спринт");
 }
 
 /// Тест 12: Проверка что Sprint режим имеет цель 40 линий
@@ -171,7 +171,7 @@ fn test_modes_sprint_ends_at_40_lines() {
 fn test_modes_sprint_does_not_save_score() {
     // Sprint режим не сохраняет счёт в таблицу лидеров
     let state = GameState::new_sprint();
-    assert_eq!(state.get_mode(), GameMode::Sprint);
+    assert_eq!(state.get_mode_trait().name(), "Спринт");
 }
 
 /// Тест 22: Проверка работы таймера в Sprint режиме
@@ -218,7 +218,7 @@ fn test_modes_sprint_has_curr_shape() {
 #[test]
 fn test_modes_marathon_creation() {
     let state = GameState::new_marathon();
-    assert_eq!(state.get_mode(), GameMode::Marathon);
+    assert_eq!(state.get_mode_trait().name(), "Марафон");
 }
 
 /// Тест 27: Проверка что Marathon режим имеет цель 150 линий
@@ -281,7 +281,7 @@ fn test_modes_marathon_ends_at_150_lines() {
 fn test_modes_marathon_saves_score() {
     // Marathon режим сохраняет счёт в таблицу лидеров
     let state = GameState::new_marathon();
-    assert_eq!(state.get_mode(), GameMode::Marathon);
+    assert_eq!(state.get_mode_trait().name(), "Марафон");
 }
 
 /// Тест 36: Проверка что Marathon режим имеет статистику

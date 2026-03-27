@@ -99,7 +99,6 @@ fn test_game_state_fields_private() {
     let _lines = state.get_lines_cleared();
 
     // Если этот тест компилируется, значит поля инкапсулированы
-    assert!(true);
 }
 
 /// Проверка, что геттеры GameState работают корректно.
@@ -113,7 +112,7 @@ fn test_game_state_getters_encapsulation() {
     assert_eq!(state.get_score(), 0);
     assert_eq!(state.get_level(), 1);
     assert_eq!(state.get_lines_cleared(), 0);
-    assert_eq!(state.get_mode(), crate::game::GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 
     // Проверяем геттеры для фигур
     let curr_shape = state.get_curr_shape();
@@ -174,7 +173,6 @@ fn test_game_board_access_trait_exists() {
     fn _use_trait<T: GameBoardAccess>(_board: &T) {}
 
     // Этот тест компилируется только если трейт существует
-    assert!(true);
 }
 
 /// Проверка, что GameState реализует GameBoardAccess.
@@ -275,7 +273,6 @@ fn test_architecture_improvements_backward_compatibility() {
     assert_eq!(state.get_score(), 150);
 
     // Оба API работают корректно
-    assert!(true);
 }
 
 /// Проверка, что GameError используется в проекте.
@@ -288,7 +285,6 @@ fn test_game_error_usage_in_project() {
     let _error: GameError = GameError::GameOver;
 
     // Тест компилируется только если GameError правильно экспортирован
-    assert!(true);
 }
 
 /// Проверка, что инкапсуляция не ломает тесты.
@@ -309,7 +305,6 @@ fn test_encapsulation_doesnt_break_tests() {
     assert_eq!(state.get_lines_cleared(), 30);
 
     // Тесты работают через публичный API
-    assert!(true);
 }
 
 // ============================================================================
@@ -327,7 +322,6 @@ fn test_access_module_no_cycles() {
     fn _use_score_access<T: ScoreAccess>(_t: &T) {}
 
     // Тест компилируется только если нет циклов
-    assert!(true);
 }
 
 /// Проверка, что state модуль корректно экспортирует типы.
@@ -340,6 +334,4 @@ fn test_state_module_exports() {
     let _stats = GameStats::new();
     let _mode = GameMode::Classic;
     let _error: GameResult<()> = Ok(());
-
-    assert!(true);
 }

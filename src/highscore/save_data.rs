@@ -231,6 +231,7 @@ impl SaveData {
     /// # Note
     /// Этот метод используется только в тестах
     #[cfg(test)]
+    #[allow(dead_code)]
     pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
         let save = Self::from_value(high_score);
         store(APP_NAME, save)

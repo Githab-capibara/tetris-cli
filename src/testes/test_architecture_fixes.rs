@@ -111,7 +111,7 @@ fn test_board_mutable_trait() {
 /// GameBoardAccess должен быть комбинацией BoardReadonly и BoardMutable.
 #[test]
 fn test_game_board_access_combined() {
-    use crate::game::access::{BoardMutable, BoardReadonly};
+    use crate::game::access::BoardMutable;
     use crate::game::GameState;
 
     let mut state = GameState::new();
@@ -189,7 +189,6 @@ fn test_no_game_menu_cycle() {
 #[test]
 fn test_no_validation_controls_cycle() {
     use crate::controls::ControlsConfig;
-    use crate::validation;
 
     // validation должен быть независим
     let _config = ControlsConfig::default_config();
@@ -204,10 +203,9 @@ fn test_no_validation_controls_cycle() {
 /// scoring должен только начислять очки, не отрисовывать.
 #[test]
 fn test_scoring_render_boundary() {
-    // scoring должен только начислять очки, не отрисовывать
-    use crate::game::scoring;
     use crate::game::GameState;
 
+    // scoring должен только начислять очки, не отрисовывать
     let mut state = GameState::new();
     // Функции scoring не должны вызывать отрисовку
     let _score = state.get_score();
@@ -218,7 +216,6 @@ fn test_scoring_render_boundary() {
 /// logic должен только обновлять состояние, не отрисовывать.
 #[test]
 fn test_logic_render_boundary() {
-    use crate::game::logic;
     use crate::game::GameState;
 
     // logic должен только обновлять состояние, не отрисовывать
@@ -290,7 +287,7 @@ fn test_io_traits_exist() {
 /// Этот тест проверяет что все архитектурные улучшения работают совместно.
 #[test]
 fn test_all_architecture_improvements_integration() {
-    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
+    use crate::game::access::{BoardMutable, BoardReadonly};
     use crate::game::constants;
     use crate::game::mode_trait::{ClassicMode, GameModeTrait};
     use crate::game::view::GameView;
@@ -337,5 +334,4 @@ fn test_all_architecture_improvements_integration() {
     fn _use_traits<T: InputReader + Renderer>(_t: &mut T) {}
 
     // Все архитектурные улучшения работают совместно
-    assert!(true);
 }

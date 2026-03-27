@@ -313,8 +313,6 @@ pub struct RenderCache {
     pub last_cached_high_score: u128,
     /// Последнее закэшированное значение комбо.
     pub last_cached_combo: u32,
-    /// Последнее закэшированное значение таймера.
-    pub last_cached_timer: u64,
 }
 
 impl RenderCache {
@@ -332,7 +330,6 @@ impl RenderCache {
             last_cached_lines: 0,
             last_cached_high_score: 0,
             last_cached_combo: 0,
-            last_cached_timer: 0,
         }
     }
 
@@ -1015,6 +1012,7 @@ impl GameState {
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     /// Тест для fill_line_for_bench()

@@ -33,7 +33,6 @@ fn test_track_caller_error_handling() {
     assert_eq!(score, 0, "Счёт должен быть 0");
 
     // Если дошли сюда - ошибки обработаны корректно
-    assert!(true, "Ошибки должны обрабатываться корректно");
 }
 
 /// Тест 3: Проверка assert с track_caller
@@ -62,8 +61,6 @@ fn test_track_caller_debug_assert() {
     // debug_assert должен работать в тестах
     debug_assert!(state.get_score() == 0, "Счёт должен быть 0");
     debug_assert!(state.get_level() == 1, "Уровень должен быть 1");
-
-    assert!(true, "debug_assert должен работать в тестах");
 }
 
 /// Тест 5: Проверка expect с track_caller

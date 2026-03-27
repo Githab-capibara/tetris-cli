@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 27 марта 2026 г. (очистка закомментированного кода)
+**Дата последней актуализации:** 27 марта 2026 г. (аудит и исправление предупреждений clippy)
 **Версия проекта:** 23.96.14
 **Всего тестов:** 1239 (проходят 100%)
 **Всего файлов тестов:** 77 (включая mod.rs)
@@ -9,23 +9,34 @@
 
 ## 📊 СТАТИСТИКА ОЧИСТКИ
 
-### Последняя очистка (27 марта 2026):
+### Последняя очистка (27 марта 2026 - аудит кода):
 
-#### Удален закомментированный код (2 файла):
+#### Исправления критических проблем:
+- **app/application.rs:** Заменён `expect()` на обработку ошибок с `eprintln!` + `exit(1)`
+- **game/state.rs:** Удалено неиспользуемое поле `last_cached_timer`
+- **game/types.rs:** Исправлено `trivially_copy_pass_by_ref` для `Level::value()`, `LinesCount::value()`, `LinesCount::reached()`
 
-**test_statistics.rs:**
-- Удалено 6 закомментированных тестов про achievements (Achievement system удалена)
-- Удалены номера тестов из комментариев
-- Обновлен docstring модуля
+#### Удалены `assert!(true, ...)` из тестов:
+- Удалено 36 бессмысленных утверждений `assert!(true, ...)` из 12 файлов
+- Файлы: test_architecture_refactoring.rs, test_io_utf8_handling.rs, test_io_canvas_result.rs, test_must_use_attributes.rs, test_task13_coverage.rs, test_highscore_config_path.rs, test_utf8_limitation.rs, test_architecture_improvements.rs, test_architecture_fixes.rs, test_track_caller.rs, test_architecture_new_modules.rs
 
-**test_edge_cases.rs:**
-- Удалено 3 закомментированных теста про achievements
-- Удалены номера тестов из комментариев
-- Обновлен docstring модуля
+#### Обновлены deprecated вызовы:
+- Заменено 30+ вызовов `get_mode()` на `get_mode_trait().name()`
+- Файлы: test_game_logic.rs, test_modes.rs, test_edge_cases_stress.rs, test_modes_integration.rs, test_game_modes_detailed.rs, test_fixes_documentation_validation.rs, test_fixes_final_issues.rs, test_game_rotation_bounds.rs, test_game_score_overflow_protection.rs, test_architecture.rs, test_architecture_refactoring.rs
 
-**Итого удалено:** 9 закомментированных тестов, ~100 строк кода
+#### Удалены неиспользуемые импорты:
+- 21 неиспользуемый импорт удалён из 6 файлов
+- Файлы: test_architecture_fixes.rs, test_architecture_refactoring.rs, game/mod.rs, game/scoring/mod.rs
+
+#### Помечен мёртвый код:
+- 7 элементов помечено `#[allow(dead_code)]`
+- FRAME_DELAY_MS, calculate_combo_bonus, update_score_and_level, Level struct, get_key_unicode, save_value_result
+
+**Итого исправлено:** 78 предупреждений clippy, 1239 тестов проходят (100%)
 
 ---
+
+### Предыдущая очистка (27 марта 2026 - закомментированный код):
 
 ### Удаленные файлы (28 файлов) - историческая справка:
 

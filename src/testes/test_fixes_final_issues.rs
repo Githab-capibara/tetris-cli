@@ -1,6 +1,6 @@
 //! Тесты для исправлений проблем 21-26.
 
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::highscore::Leaderboard;
 use std::time::Instant;
@@ -86,7 +86,7 @@ fn test_rate_limiting_comment_exists() {
 #[test]
 fn test_update_works_correctly() {
     let state = GameState::new();
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 24.2: Проверка что `check_rows()` работает корректно.

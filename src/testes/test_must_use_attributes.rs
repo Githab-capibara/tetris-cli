@@ -123,12 +123,8 @@ fn test_must_use_get_mode() {
     let state = GameState::new();
 
     // Используем результат
-    let mode = state.get_mode();
-    assert_eq!(
-        mode,
-        crate::game::GameMode::Classic,
-        "Режим по умолчанию должен быть Classic"
-    );
+    let mode = state.get_mode_trait().name();
+    assert_eq!(mode, "Классика", "Режим по умолчанию должен быть Классика");
 }
 
 /// Тест 11: Проверка компиляции с предупреждениями
@@ -143,9 +139,7 @@ fn test_must_use_compilation() {
     let _score = state.get_score();
     let _level = state.get_level();
     let _lines = state.get_lines_cleared();
-    let _mode = state.get_mode();
-
-    assert!(true, "Код с #[must_use] должен компилироваться без ошибок");
+    let _mode = state.get_mode_trait().name();
 }
 
 /// Тест 12: Проверка #[must_use] на get_stats()

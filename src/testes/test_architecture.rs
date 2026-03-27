@@ -243,7 +243,7 @@ fn test_game_state_getters() {
     let _score = state.get_score();
     let _level = state.get_level();
     let _lines = state.get_lines_cleared();
-    let _mode = state.get_mode();
+    let _mode = state.get_mode_trait().name();
     let _blocks = state.get_blocks();
     let _curr_shape = state.get_curr_shape();
     let _next_shape = state.get_next_shape();
