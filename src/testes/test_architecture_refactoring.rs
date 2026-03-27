@@ -157,7 +157,7 @@ fn test_menu_extraction_to_separate_module() {
 /// Тест проверяет, что все поля доступны в GameView.
 #[test]
 fn test_game_view_extended_with_data() {
-    use crate::game::{GameMode, GameState, GameView};
+    use crate::game::{GameState, GameView};
 
     // Создаём состояние игры
     let state = GameState::new();

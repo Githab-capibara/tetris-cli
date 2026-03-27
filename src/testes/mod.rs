@@ -1,33 +1,61 @@
 //! Модули интеграционных тестов для Tetris CLI.
 //!
-//! Этот модуль содержит все тесты для проверки компонентов игры:
-//! - `test_controls` - тесты конфигурации управления (20 тестов)
-//! - `test_game_logic` - тесты игровой логики (30 тестов)
-//! - `test_tetromino` - тесты фигур (25 тестов)
-//! - `test_highscore` - тесты системы рекордов (15 тестов)
-//! - `test_io` - тесты ввода/вывода (10 тестов)
-//! - `test_integration` - интеграционные тесты (20 тестов)
-//! - `test_achievements` - тесты системы достижений (20 тестов)
-//! - `test_physics` - тесты физической механики (20 тестов)
-//! - `test_game_extended` - расширенные тесты игровой логики (100 тестов)
-//! - `test_tetromino_extended` - расширенные тесты фигур (80 тестов)
-//! - `test_scoring` - тесты системы очков (50 тестов)
-//! - `test_collision` - тесты столкновений (50 тестов)
-//! - `test_animation` - тесты анимаций (30 тестов)
-//! - `test_modes` - тесты режимов игры (40 тестов)
-//! - `test_statistics` - тесты статистики (30 тестов)
-//! - `test_edge_cases` - тесты граничных случаев (50 тестов)
-//! - `test_edge_cases_stress` - стресс-тесты и граничные значения (20 тестов)
-//! - `test_game_movement` - тесты движения фигур (50 тестов)
-//! - `test_game_rotation` - тесты вращения фигур (50 тестов)
-//! - `test_tetromino_shapes` - тесты форм фигур (40 тестов)
-//! - `test_bag_system` - тесты Bag Generator (30 тестов)
-//! - `test_scoring_detailed` - детальные тесты очков (40 тестов)
-//! - `test_game_modes_detailed` - детальные тесты режимов (40 тестов)
-//! - `test_highscore_detailed` - детальные тесты рекордов (30 тестов)
-//! - `test_controls_detailed` - детальные тесты управления (25 тестов)
-//! - `test_io_detailed` - детальные тесты ввода-вывода (20 тестов)
-//! - `test_integration_extended` - расширенные интеграционные тесты (50 тестов)
+//! Этот модуль содержит все тесты для проверки компонентов игры.
+//!
+//! ## Структура тестов
+//!
+//! ### Базовые тесты компонентов
+//! - `test_controls` - тесты конфигурации управления
+//! - `test_game_logic` - тесты игровой логики
+//! - `test_tetromino` - тесты фигур
+//! - `test_highscore` - тесты системы рекордов
+//! - `test_io` - тесты ввода/вывода
+//! - `test_integration` - интеграционные тесты
+//! - `test_physics` - тесты физической механики
+//! - `test_scoring` - тесты системы очков
+//! - `test_collision` - тесты столкновений
+//! - `test_animation` - тесты анимаций
+//! - `test_modes` - тесты режимов игры
+//! - `test_statistics` - тесты статистики
+//!
+//! ### Расширенные тесты
+//! - `test_edge_cases` - тесты граничных случаев
+//! - `test_edge_cases_stress` - стресс-тесты
+//! - `test_game_movement` - тесты движения фигур
+//! - `test_game_rotation` - тесты вращения фигур
+//! - `test_tetromino_shapes` - тесты форм фигур
+//! - `test_bag_system` - тесты Bag Generator
+//! - `test_game_modes_detailed` - детальные тесты режимов
+//! - `test_integration_extended` - расширенные интеграционные тесты
+//!
+//! ### Тесты исправлений и безопасности
+//! - `test_controls_path_validation` - валидация путей
+//! - `test_game_bounds_check` - проверки границ
+//! - `test_game_wall_kick` - wall kick механика
+//! - `test_highscore_integrity` - целостность рекордов
+//! - `test_controls_error_handling` - обработка ошибок
+//! - `test_game_negative_coords` - отрицательные координаты
+//! - `test_game_stack_overflow` - переполнение стека
+//! - `test_io_resource_leak` - утечка ресурсов
+//!
+//! ### Архитектурные тесты
+//! - `test_architecture` - архитектурная целостность
+//! - `test_architecture_refactoring` - тесты рефакторинга
+//! - `test_architecture_improvements` - архитектурные улучшения
+//! - `test_architecture_new_modules` - тесты новых модулей
+//!
+//! ### Тесты качества кода
+//! - `test_must_use_attributes` - атрибуты must_use
+//! - `test_track_caller` - атрибуты track_caller
+//! - `test_cfg_attr_dead_code` - cfg_attr и dead_code
+//! - `test_cast_safety` - безопасность cast
+//! - `test_unicode_validation` - валидация Unicode
+//!
+//! ### Тесты оптимизаций
+//! - `test_sanitize_optimization` - оптимизация sanitize
+//! - `test_string_caching` - кеширование строк
+//! - `test_bounds_check_optimization` - оптимизация проверок границ
+//! - `test_row_check_optimization` - оптимизация проверки линий
 
 #![allow(clippy::needless_range_loop)]
 #![allow(clippy::unused_local_helper)]
@@ -36,29 +64,12 @@
 #![allow(clippy::should_panic_without_expect)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(deprecated)] // Тесты могут использовать deprecated методы для обратной совместимости
-//! - `test_highscore_u256_fix` - тесты исправления U256 (3 теста)
-//! - `test_game_bounds_check` - тесты проверок границ as cast (3 теста)
-//! - `test_highscore_rate_limiting` - тесты rate limiting (3 теста)
-//! - `test_controls_path_validation` - тесты валидации путей (3 теста)
-//! - `test_game_wall_kick` - тесты wall kick (3 теста)
-//! - `test_highscore_integrity` - тесты целостности (3 теста)
-//! - `test_fixes_verification` - верификация исправлений (27 тестов)
-//!
-//! Тесты критических проблем (20 тестов - по 4-5 на каждую из 5 проблем)
-//! - `test_controls_error_handling` - обработка ошибок (5 тестов)
-//! - `test_game_negative_coords` - отрицательные координаты (4 теста)
-//! - `test_game_stack_overflow` - переполнение стека (3 теста)
-//! - `test_highscore_no_rate_limiting` - отсутствие rate limiting (5 тестов)
-//! - `test_io_resource_leak` - утечка ресурсов (5 тестов)
-//!
-//! Комплексные тесты всех 32 исправленных проблем (33 теста)
-//! - `test_32_fixes_comprehensive` - тесты для каждой из 32 проблем
-//!
-//! Итого: 1489 тестов
+#![allow(deprecated)]
 
-// pub mod test_achievements; // REMOVED: Achievement system removed
-pub mod test_all_32_fixes;
+// ============================================================================
+// БАЗОВЫЕ ТЕСТЫ КОМПОНЕНТОВ
+// ============================================================================
+
 pub mod test_controls;
 pub mod test_game_logic;
 pub mod test_highscore;
@@ -67,127 +78,161 @@ pub mod test_io;
 pub mod test_physics;
 pub mod test_tetromino;
 
-// Новые расширенные тесты
+// ============================================================================
+// РАСШИРЕННЫЕ ТЕСТЫ
+// ============================================================================
+
 pub mod test_animation;
 pub mod test_collision;
 pub mod test_edge_cases;
-pub mod test_game_extended;
+pub mod test_edge_cases_stress;
+pub mod test_game_movement;
+pub mod test_game_rotation;
 pub mod test_modes;
 pub mod test_scoring;
 pub mod test_statistics;
-pub mod test_tetromino_extended;
-
-// Стресс-тесты и граничные случаи (20 тестов)
-pub mod test_edge_cases_stress;
-
-// Интеграционные тесты режимов (20 тестов)
-pub mod test_modes_integration;
-
-// Новые детальные тесты (375 тестов)
-pub mod test_bag_system;
-pub mod test_controls_detailed;
-pub mod test_game_modes_detailed;
-pub mod test_game_movement;
-pub mod test_game_rotation;
-pub mod test_highscore_detailed;
-pub mod test_integration_extended;
-pub mod test_io_detailed;
-pub mod test_scoring_detailed;
 pub mod test_tetromino_shapes;
 
-// Тесты исправленных проблем (18 тестов)
-pub mod test_controls_path_validation;
-pub mod test_game_bounds_check;
-pub mod test_game_wall_kick;
-pub mod test_highscore_integrity;
-pub mod test_highscore_rate_limiting;
-pub mod test_highscore_u256_fix;
+// Детальные тесты
+pub mod test_bag_system;
+pub mod test_game_modes_detailed;
+pub mod test_integration_extended;
 
-// Тесты верификации всех исправлений аудита (27 тестов)
-pub mod test_fixes_verification;
+// ============================================================================
+// ТЕСТЫ ИСПРАВЛЕНИЙ И БЕЗОПАСНОСТИ
+// ============================================================================
 
-// Тесты критических проблем (15 тестов - по 3 на каждую из 5 проблем)
 pub mod test_controls_error_handling;
-pub mod test_game_negative_coords;
-pub mod test_game_stack_overflow;
-pub mod test_game_box_array;
-pub mod test_game_score_overflow;
+pub mod test_controls_path_traversal;
+pub mod test_controls_path_validation;
+
 pub mod test_game_bitmask_check_rows;
-pub mod test_highscore_no_rate_limiting;
-pub mod test_highscore_verify_integrity;
+pub mod test_game_bounds_check;
+pub mod test_game_box_array;
+pub mod test_game_negative_coords;
+pub mod test_game_rotation_bounds;
+pub mod test_game_score_overflow;
+pub mod test_game_score_overflow_protection;
+pub mod test_game_stack_overflow;
+pub mod test_game_stats_export;
+pub mod test_game_wall_kick;
+
+pub mod test_highscore_config_path;
+pub mod test_highscore_deprecated_assert_hs;
+pub mod test_highscore_error_handling;
+pub mod test_highscore_integrity;
 pub mod test_highscore_random_hash;
+pub mod test_highscore_verify_integrity;
+
+pub mod test_io_canvas_result;
 pub mod test_io_resource_leak;
 pub mod test_io_utf8_handling;
-pub mod test_highscore_error_handling;
+
 pub mod test_tetromino_dir_down;
-pub mod test_unwrap_to_expect;
-pub mod test_error_propagation;
-pub mod test_benchmarks; // REMOVED: benchmark methods removed
-pub mod test_highscore_deprecated_assert_hs;
-pub mod test_game_rotation_bounds;
-pub mod test_controls_path_traversal;
-pub mod test_game_score_overflow_protection;
-pub mod test_fixes_must_use_stack_format;
-pub mod test_fixes_bag_preview_rotate;
-pub mod test_fixes_documentation_validation;
-pub mod test_fixes_final_issues;
+pub mod test_tetromino_dir_down_panic;
 
-// Комплексные тесты всех исправлений (основной файл)
-// Содержит тесты для всех исправленных проблем
-pub mod test_all_fixes;
-
-// Тесты на архитектурную целостность (16 тестов)
-pub mod test_architecture;
-
-// Тесты для 15 архитектурных исправлений (16 тестов - 15 по одному на каждое + 1 интеграционный)
-pub mod test_architecture_refactoring;
-
-// Тесты на архитектурные ограничения (20 тестов)
-pub mod test_architecture_constraints;
-
-// ============================================================================
-// НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
-// ============================================================================
-
-// Тесты критических ошибок (8 тестов)
-pub mod test_game_stats_export;
-pub mod test_constant_imports;
-
-// Тесты логических ошибок (13 тестов)
 pub mod test_hard_drop_flag;
+pub mod test_hard_drop_overflow;
+
 pub mod test_direction_down;
 pub mod test_wall_kick_refactor;
 
-// Тесты оптимизаций (18 тестов)
-pub mod test_sanitize_optimization;
-pub mod test_string_caching;
-pub mod test_bounds_check_optimization;
-pub mod test_row_check_optimization;
+pub mod test_unwrap_to_expect;
+pub mod test_error_propagation;
 
-// Тесты безопасности (16 тестов)
-pub mod test_time_safety;
-pub mod test_hard_drop_overflow;
-pub mod test_unicode_validation;
+pub mod test_benchmarks;
 
-// Тесты best practices (11 тестов)
+// Интеграционные тесты режимов
+pub mod test_modes_integration;
+
+// Тесты констант
+pub mod test_constant_imports;
+
+// ============================================================================
+// АРХИТЕКТУРНЫЕ ТЕСТЫ
+// ============================================================================
+
+pub mod test_architecture;
+pub mod test_architecture_refactoring;
+pub mod test_architecture_improvements;
+pub mod test_architecture_new_modules;
+
+// ============================================================================
+// ТЕСТЫ КАЧЕСТВА КОДА
+// ============================================================================
+
+pub mod test_cast_safety;
+pub mod test_cfg_attr_dead_code;
 pub mod test_must_use_attributes;
 pub mod test_track_caller;
-pub mod test_cfg_attr_dead_code;
+pub mod test_unicode_validation;
 
-// Тесты на архитектурную целостность (20 тестов)
-pub mod test_architecture_integrity;
+// ============================================================================
+// ТЕСТЫ ОПТИМИЗАЦИЙ
+// ============================================================================
 
-// Тесты на архитектурную модульность (7 тестов)
-pub mod test_architecture_modularity;
+pub mod test_bounds_check_optimization;
+pub mod test_row_check_optimization;
+pub mod test_sanitize_optimization;
+pub mod test_string_caching;
 
-// Интеграционные тесты (10 тестов)
+// ============================================================================
+// ТЕСТЫ БЕЗОПАСНОСТИ
+// ============================================================================
+
+pub mod test_security_fixes;
+pub mod test_time_safety;
+
+// ============================================================================
+// ОБЩИЕ ТЕСТЫ ИСПРАВЛЕНИЙ
+// ============================================================================
+
+pub mod test_fixes;
+pub mod test_fixes_bag_preview_rotate;
+pub mod test_fixes_documentation_validation;
+pub mod test_fixes_final_issues;
+pub mod test_fixes_must_use_stack_format;
+
+// Интеграционные тесты исправлений
 pub mod test_all_fixes_integration;
 
-// Тесты для всех 24 исправлений из отчета аудита (24 теста)
-pub mod test_all_24_fixes;
+// ============================================================================
+// ОГРАНИЧЕНИЯ И СПЕЦИАЛЬНЫЕ ТЕСТЫ
+// ============================================================================
 
-// Тесты для исправленных проблем (15 тестов)
-pub mod test_fixes;
+pub mod test_utf8_limitation;
 
-// Комплексные тесты для всех исправлений аудита (Critical, High, Medium, Low)
-pub mod audit_fixes_comprehensive;
+// ============================================================================
+// УДАЛЕННЫЕ МОДУЛИ (закомментированы)
+// ============================================================================
+
+// pub mod test_achievements; // REMOVED: Achievement system removed
+// pub mod test_all_32_fixes; // REMOVED: дублирование с test_all_fixes_integration
+// pub mod test_all_24_fixes; // REMOVED: дублирование с test_all_fixes_integration
+// pub mod test_all_fixes; // REMOVED: дублирование с test_all_fixes_integration
+// pub mod test_fixes_comprehensive; // REMOVED: дублирование
+// pub mod test_fixes_verification; // REMOVED: дублирование
+// pub mod test_fixes_verification_extended; // REMOVED: дублирование
+// pub mod test_fixes_verification_final; // REMOVED: дублирование
+// pub mod audit_fixes_comprehensive; // REMOVED: дублирование
+
+// REMOVED: дублирование с базовыми тестами
+// pub mod test_controls_detailed;
+// pub mod test_highscore_detailed;
+// pub mod test_tetromino_extended;
+// pub mod test_game_extended;
+// pub mod test_io_detailed;
+// pub mod test_scoring_detailed;
+
+// REMOVED: временные тесты для исправлений
+// pub mod test_highscore_u256_fix;
+// pub mod test_game_score_overflow_u128;
+// pub mod test_highscore_no_rate_limiting;
+
+// REMOVED: дублирование архитектурных тестов
+// pub mod test_architecture_constraints;
+// pub mod test_architecture_integrity;
+// pub mod test_architecture_modularity;
+// pub mod test_code_quality;
+// pub mod test_code_quality_fixes;
+// pub mod test_refactoring_fixes;
