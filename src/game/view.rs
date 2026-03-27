@@ -120,11 +120,11 @@ impl<'a> GameView<'a> {
     /// - Время жизни `'a` гарантирует безопасность ссылок
     pub fn from_game_state(state: &'a GameState) -> Self {
         GameView {
-            score: &state.cached_score_str,
-            level: &state.cached_level_str,
-            lines: &state.cached_lines_str,
-            combo: state.cached_combo_str.as_str().into(),
-            high_score: &state.cached_high_score_str,
+            score: state.get_cached_score_str(),
+            level: state.get_cached_level_str(),
+            lines: state.get_cached_lines_str(),
+            combo: state.get_cached_combo_str().into(),
+            high_score: state.get_cached_high_score_str(),
             blocks: state.get_blocks(),
             curr_shape: state.get_curr_shape(),
             next_shape: state.get_next_shape(),

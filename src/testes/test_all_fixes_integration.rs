@@ -164,19 +164,19 @@ fn test_string_caching_and_render_integration() {
 
     // Проверяем кэш
     assert!(
-        state.cached_score_str.trim() == "1500",
+        state.render_cache.cached_score_str.trim() == "1500",
         "Кэш счёта должен быть '1500', получено '{}'",
-        state.cached_score_str
+        state.render_cache.cached_score_str
     );
     assert!(
-        state.cached_level_str.trim() == "5",
+        state.render_cache.cached_level_str.trim() == "5",
         "Кэш уровня должен быть '5', получено '{}'",
-        state.cached_level_str
+        state.render_cache.cached_level_str
     );
     assert!(
-        state.cached_lines_str.trim() == "25",
+        state.render_cache.cached_lines_str.trim() == "25",
         "Кэш линий должен быть '25', получено '{}'",
-        state.cached_lines_str
+        state.render_cache.cached_lines_str
     );
 }
 
@@ -330,15 +330,15 @@ fn test_all_fixes_comprehensive_integration() {
     update_cached_strings_extended(&mut state, "0");
     // Кэш счёта форматируется с пробелами
     assert!(
-        state.cached_score_str.trim().contains("1500"),
+        state.render_cache.cached_score_str.trim().contains("1500"),
         "Кэш счёта должен содержать '1500'"
     );
     assert!(
-        state.cached_level_str.trim().contains("5"),
+        state.render_cache.cached_level_str.trim().contains("5"),
         "Кэш уровня должен содержать '5'"
     );
     assert!(
-        state.cached_lines_str.trim().contains("25"),
+        state.render_cache.cached_lines_str.trim().contains("25"),
         "Кэш линий должен содержать '25'"
     );
 

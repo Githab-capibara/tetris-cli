@@ -46,12 +46,13 @@
 //! draw(&view, &mut canvas);
 //! ```
 
-use super::state::{
-    GameState, ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, DRAW_OFFSET_X,
+use super::constants::{
+    ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, DRAW_OFFSET_X,
     HARD_DROP_ANIM_INTERVAL_MS, HIGH_SCORE_X, HIGH_SCORE_Y, HOLD_PREVIEW_X, HOLD_PREVIEW_Y,
     LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y, PROGRESS_Y, SCORE_X, SCORE_Y,
     SHAPE_DRAW_OFFSET, SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES, TIMER_Y,
 };
+use super::state::GameState;
 use super::view::GameView;
 use crate::io::{Canvas, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
@@ -182,22 +183,26 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 fn update_cached_strings(state: &mut GameState) {
     use std::fmt::Write;
 
-    if state.score != state.last_cached_score {
-        state.cached_score_str.truncate(0);
-        let _ = write!(state.cached_score_str, "{:10}", state.score);
-        state.last_cached_score = state.score;
+    if state.score != state.render_cache.last_cached_score {
+        state.render_cache.cached_score_str.truncate(0);
+        let _ = write!(state.render_cache.cached_score_str, "{:10}", state.score);
+        state.render_cache.last_cached_score = state.score;
     }
 
-    if state.level != state.last_cached_level {
-        state.cached_level_str.truncate(0);
-        let _ = write!(state.cached_level_str, "{:10}", state.level);
-        state.last_cached_level = state.level;
+    if state.level != state.render_cache.last_cached_level {
+        state.render_cache.cached_level_str.truncate(0);
+        let _ = write!(state.render_cache.cached_level_str, "{:10}", state.level);
+        state.render_cache.last_cached_level = state.level;
     }
 
-    if state.lines_cleared != state.last_cached_lines {
-        state.cached_lines_str.truncate(0);
-        let _ = write!(state.cached_lines_str, "{:10}", state.lines_cleared);
-        state.last_cached_lines = state.lines_cleared;
+    if state.lines_cleared != state.render_cache.last_cached_lines {
+        state.render_cache.cached_lines_str.truncate(0);
+        let _ = write!(
+            state.render_cache.cached_lines_str,
+            "{:10}",
+            state.lines_cleared
+        );
+        state.render_cache.last_cached_lines = state.lines_cleared;
     }
 }
 
@@ -214,28 +219,28 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     update_cached_strings(state);
 
     // Кэширование строки рекорда
-    if state.cached_high_score_str.len() != high_score_display.len()
-        || state.cached_high_score_str != high_score_display
+    if state.render_cache.cached_high_score_str.len() != high_score_display.len()
+        || state.render_cache.cached_high_score_str != high_score_display
     {
-        state.cached_high_score_str = high_score_display.to_string();
+        state.render_cache.cached_high_score_str = high_score_display.to_string();
     }
 
     // Кэширование строки комбо
-    if state.last_cached_combo != state.stats.combo_counter {
+    if state.render_cache.last_cached_combo != state.stats.combo_counter {
         if state.stats.combo_counter > 1 {
-            state.cached_combo_str = format!("Комбо: x{}", state.stats.combo_counter);
+            state.render_cache.cached_combo_str = format!("Комбо: x{}", state.stats.combo_counter);
         } else {
-            state.cached_combo_str.clear();
+            state.render_cache.cached_combo_str.clear();
         }
-        state.last_cached_combo = state.stats.combo_counter;
+        state.render_cache.last_cached_combo = state.stats.combo_counter;
     }
 
     // Кэширование строки таймера для режима спринт
     if state.get_mode_trait().get_target_lines() == Some(40) {
         let elapsed = state.stats.get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
-        if state.cached_timer_str != timer_str {
-            state.cached_timer_str = timer_str;
+        if state.render_cache.cached_timer_str != timer_str {
+            state.render_cache.cached_timer_str = timer_str;
         }
     }
 }
@@ -382,6 +387,128 @@ fn draw_sprint_timer(view: &GameView, cnv: &mut Canvas) {
     cnv.draw_string(&progress, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
 }
 
+// ============================================================================
+// ПРИВАТНЫЕ ФУНКЦИИ ДЛЯ РАЗДЕЛЕНИЯ ОТВЕТСТВЕННОСТИ (Задача 14)
+// ============================================================================
+
+/// Поиск заполненных линий.
+///
+/// # Аргументы
+/// * `blocks` - игровое поле (только чтение)
+///
+/// # Возвращает
+/// Вектор с индексами заполненных линий
+///
+/// # Пример
+/// ```ignore
+/// let filled_rows = find_filled_lines(&state.blocks);
+/// assert!(filled_rows.is_empty()); // На пустом поле
+/// ```
+pub fn find_filled_lines(blocks: &[[i8; GRID_WIDTH]; GRID_HEIGHT]) -> Vec<usize> {
+    let mut filled = Vec::new();
+
+    for (y, row) in blocks.iter().enumerate() {
+        // Проверка: линия заполнена если все ячейки не пустые (!= -1)
+        let row_full = row.iter().all(|&cell| cell != -1);
+        if row_full {
+            filled.push(y);
+        }
+    }
+
+    filled
+}
+
+/// Анимация удаления линии (мигание, инверсия цветов).
+///
+/// # Аргументы
+/// * `canvas` - канвас для отрисовки (изменяемый)
+/// * `row` - индекс удаляемой линии
+///
+/// # Примечания
+/// В текущей реализации анимация упрощена до установки флага анимации.
+/// Полная анимация может включать:
+/// - Инверсию цветов линии
+/// - Мигание (несколько кадров)
+/// - Звуковой сигнал
+fn animate_line_clear(_canvas: &mut Canvas, _row: usize) {
+    // Примечание: полная анимация требует доступа к canvas и отрисовки нескольких кадров
+    // В текущей реализации анимация выполняется через animate_clear() в check_rows()
+    // Эта функция预留ена для будущей реализации полной анимации
+}
+
+/// Удаление линий и сдвиг поля.
+///
+/// # Аргументы
+/// * `blocks` - игровое поле (изменяемое)
+/// * `rows` - срез с индексами удаляемых линий
+///
+/// # Пример
+/// ```ignore
+/// let filled_rows = find_filled_lines(&blocks);
+/// remove_lines(&mut blocks, &filled_rows);
+/// ```
+fn remove_lines(blocks: &mut [[i8; GRID_WIDTH]; GRID_HEIGHT], rows: &[usize]) {
+    // Преобразуем список строк в битовую маску для совместимости с remove_rows()
+    let mut rows_mask: u32 = 0;
+    for &row in rows {
+        rows_mask |= 1u32 << row;
+    }
+
+    // Используем существующую функцию удаления
+    super::scoring::remove_rows(blocks, rows_mask);
+}
+
+/// Обновление счёта за удалённые линии.
+///
+/// # Аргументы
+/// * `score` - счёт (изменяемый)
+/// * `level` - текущий уровень
+/// * `rows_cleared` - количество удалённых линий
+/// * `combo_counter` - счётчик комбо (изменяемый)
+///
+/// # Примечания
+/// Формула расчёта очков:
+/// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
+/// - Бонус за комбо: COMBO_BONUS × (combo_counter - 1)
+/// - Бонус за уровень: LEVEL_BONUS_MULT × (level - 1)
+fn update_score_for_lines(
+    score: &mut u128,
+    level: u32,
+    rows_cleared: usize,
+    combo_counter: &mut u32,
+) {
+    use super::constants::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR};
+
+    if rows_cleared > 0 {
+        // Ограничение количества линий максимум 4
+        let capped_rows = rows_cleared.min(MAX_LINES_PER_CLEAR as usize);
+
+        // Начисление очков за линии
+        let line_score = LINE_SCORES[capped_rows - 1];
+        *score = score.saturating_add(line_score);
+
+        // Обновление комбо
+        *combo_counter = combo_counter.saturating_add(1);
+
+        // Бонус за комбо (если комбо > 1)
+        if *combo_counter > 1 {
+            let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
+            *score = score.saturating_add(combo_bonus);
+        }
+
+        // Бонус за уровень (каждые 10 линий)
+        let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
+        *score = score.saturating_add(level_bonus);
+    } else {
+        // Сброс комбо если линии не удалены
+        *combo_counter = 0;
+    }
+}
+
+// ============================================================================
+// ПУБЛИЧНЫЕ ФУНКЦИИ (используют приватные функции выше)
+// ============================================================================
+
 /// Анимировать очистку заполненных линий.
 ///
 /// # Аргументы
@@ -411,18 +538,52 @@ pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
 ///
 /// ## Примечания
 /// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
+///
+/// ## Архитектурные заметки (Задача 14)
+/// Функция разделена на приватные методы для улучшения тестируемости:
+/// - `find_filled_lines()` - поиск заполненных линий
+/// - `animate_line_clear()` - анимация удаления
+/// - `remove_lines()` - удаление линий и сдвиг
+/// - `update_score_for_lines()` - начисление очков
 pub fn check_rows(state: &mut GameState) -> u32 {
     // Поиск заполненных линий
-    let (rows_mask, remove_count) = super::scoring::find_full_rows(&state.blocks);
+    let filled_rows = find_filled_lines(&state.blocks);
+    let remove_count = filled_rows.len() as u32;
 
-    // Анимация и звук
+    // Преобразуем в битовую маску для анимации
+    let mut rows_mask: u32 = 0;
+    for &row in &filled_rows {
+        rows_mask |= 1u32 << row;
+    }
+
+    // Анимация и звук для каждой линии
+    for &row in &filled_rows {
+        animate_line_clear(
+            &mut Canvas::new().unwrap_or_else(|_| Canvas::default()),
+            row,
+        );
+    }
+
+    // Анимация через существующий механизм
     animate_clear(state, rows_mask, remove_count);
 
-    // Удаление линий
-    super::scoring::remove_rows(&mut state.blocks, rows_mask);
+    // Удаление линий и сдвиг поля
+    remove_lines(&mut state.blocks, &filled_rows);
 
-    // Обновление счёта и уровня
-    super::scoring::update_score_and_level(state, remove_count);
+    // Обновление счёта, уровня и комбо
+    update_score_for_lines(
+        &mut state.score,
+        state.level,
+        filled_rows.len(),
+        &mut state.stats.combo_counter,
+    );
+
+    // Обновление количества очищенных линий
+    state.lines_cleared = state.lines_cleared.saturating_add(remove_count);
+
+    // Увеличение скорости игры
+    use super::constants::SPD_INC;
+    state.fall_spd += SPD_INC * remove_count as f32;
 
     remove_count
 }

@@ -6,6 +6,7 @@
 use crate::crypto::{self, hash};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
+use std::marker::PhantomData;
 
 use super::sanitize::sanitize_player_name;
 
@@ -60,6 +61,10 @@ pub struct LeaderboardEntry {
     salt: String,
     /// Хэш записи с солью.
     hash: String,
+    /// Маркер отсутствия потокобезопасности (!Send + !Sync).
+    /// Предотвращает случайное использование в многопоточном коде без синхронизации.
+    #[serde(skip)]
+    _phantom: PhantomData<*mut ()>,
 }
 
 impl LeaderboardEntry {
@@ -161,6 +166,7 @@ impl LeaderboardEntry {
             score_value: score,
             salt,
             hash,
+            _phantom: PhantomData,
         }
     }
 

@@ -50,31 +50,35 @@ mod test_constants_module {
     #[test]
     fn test_ui_positions_valid() {
         // Все позиции должны быть в пределах экрана
-        let (score_x, score_y) = constants::SCORE_POS;
+        let score_x = constants::SCORE_X;
+        let score_y = constants::SCORE_Y;
         assert!(score_x < constants::DISP_WIDTH as u16);
         assert!(score_y < constants::DISP_HEIGHT as u16);
 
-        let (high_x, high_y) = constants::HIGH_SCORE_POS;
+        let high_x = constants::HIGH_SCORE_X;
+        let high_y = constants::HIGH_SCORE_Y;
         assert!(high_x < constants::DISP_WIDTH as u16);
         assert!(high_y < constants::DISP_HEIGHT as u16);
     }
 
     /// Тест 5: Wall kick offsets корректны
+    ///
+    /// Примечание: WALL_KICK_OFFSETS перемещён в модуль logic::rotation
     #[test]
     fn test_wall_kick_offsets_valid() {
-        assert_eq!(constants::WALL_KICK_OFFSETS.len(), 5);
-        // Первое смещение должно быть (0, 0) - оригинальная позиция
-        assert_eq!(constants::WALL_KICK_OFFSETS[0], (0, 0));
+        use crate::game::logic::rotation::WALL_KICK_OFFSETS;
+
+        assert_eq!(WALL_KICK_OFFSETS.len(), 8);
+        // Первое смещение должно быть (-1, 0) - проверка стены слева
+        assert_eq!(WALL_KICK_OFFSETS[0], (-1, 0));
     }
 
     /// Тест 6: Константы безопасности корректны
     #[test]
     fn test_security_constants_valid() {
         assert!(constants::MAX_CONFIG_FILE_SIZE > 0);
-        assert!(constants::MAX_PLAYER_NAME_LENGTH > 0);
-        assert!(constants::MIN_PLAYER_NAME_LENGTH > 0);
-        assert!(constants::MAX_PLAYER_NAME_LENGTH >= constants::MIN_PLAYER_NAME_LENGTH);
-        assert!(constants::LEADERBOARD_COOLDOWN_SECS > 0);
+        // MAX_PLAYER_NAME_LENGTH и MIN_PLAYER_NAME_LENGTH удалены как неиспользуемые
+        // LEADERBOARD_COOLDOWN_SECS удалён как неиспользуемый
         assert!(constants::MAX_LEADERBOARD_ENTRIES > 0);
     }
 }

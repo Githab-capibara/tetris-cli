@@ -18,7 +18,7 @@ fn test_cache_update_on_score_change() {
         "Начальный счёт должен быть '0'"
     );
     assert_eq!(
-        state.last_cached_score, 0,
+        state.render_cache.last_cached_score, 0,
         "last_cached_score должен быть 0"
     );
 
@@ -35,7 +35,7 @@ fn test_cache_update_on_score_change() {
         "Кэш счёта должен обновиться до '100'"
     );
     assert_eq!(
-        state.last_cached_score, 100,
+        state.render_cache.last_cached_score, 100,
         "last_cached_score должен обновиться до 100"
     );
 }
@@ -53,7 +53,7 @@ fn test_cache_no_update_without_changes() {
     update_cached_strings_extended(&mut state, "0");
 
     let cached_score_str = state.get_cached_score_str().to_string();
-    let last_cached_score = state.last_cached_score;
+    let last_cached_score = state.render_cache.last_cached_score;
 
     // Обновляем кэш снова (без изменений)
     update_cached_strings_extended(&mut state, "0");
@@ -65,7 +65,7 @@ fn test_cache_no_update_without_changes() {
         "Кэш не должен измениться без изменений счёта"
     );
     assert_eq!(
-        state.last_cached_score, last_cached_score,
+        state.render_cache.last_cached_score, last_cached_score,
         "last_cached_score не должен измениться без изменений"
     );
 }
@@ -79,12 +79,12 @@ fn test_level_cache_update() {
 
     // Начальный уровень
     assert_eq!(
-        state.cached_level_str.trim(),
+        state.render_cache.cached_level_str.trim(),
         "1",
         "Начальный уровень должен быть '1'"
     );
     assert_eq!(
-        state.last_cached_level, 1,
+        state.render_cache.last_cached_level, 1,
         "last_cached_level должен быть 1"
     );
 
@@ -96,12 +96,12 @@ fn test_level_cache_update() {
     update_cached_strings_extended(&mut state, "0");
 
     assert_eq!(
-        state.cached_level_str.trim(),
+        state.render_cache.cached_level_str.trim(),
         "5",
         "Кэш уровня должен обновиться до '5'"
     );
     assert_eq!(
-        state.last_cached_level, 5,
+        state.render_cache.last_cached_level, 5,
         "last_cached_level должен обновиться до 5"
     );
 }
@@ -115,12 +115,12 @@ fn test_lines_cache_update() {
 
     // Начальное количество линий
     assert_eq!(
-        state.cached_lines_str.trim(),
+        state.render_cache.cached_lines_str.trim(),
         "0",
         "Начальное количество линий должно быть '0'"
     );
     assert_eq!(
-        state.last_cached_lines, 0,
+        state.render_cache.last_cached_lines, 0,
         "last_cached_lines должен быть 0"
     );
 
@@ -132,12 +132,12 @@ fn test_lines_cache_update() {
     update_cached_strings_extended(&mut state, "0");
 
     assert_eq!(
-        state.cached_lines_str.trim(),
+        state.render_cache.cached_lines_str.trim(),
         "25",
         "Кэш линий должен обновиться до '25'"
     );
     assert_eq!(
-        state.last_cached_lines, 25,
+        state.render_cache.last_cached_lines, 25,
         "last_cached_lines должен обновиться до 25"
     );
 }
@@ -151,11 +151,11 @@ fn test_combo_cache_update() {
 
     // Начальное комбо
     assert_eq!(
-        state.cached_combo_str, "",
+        state.render_cache.cached_combo_str, "",
         "Начальное комбо должно быть пустой строкой"
     );
     assert_eq!(
-        state.last_cached_combo, 0,
+        state.render_cache.last_cached_combo, 0,
         "last_cached_combo должен быть 0"
     );
 
@@ -168,11 +168,11 @@ fn test_combo_cache_update() {
 
     // Проверяем, что кэш комбо обновился
     assert!(
-        !state.cached_combo_str.is_empty(),
+        !state.render_cache.cached_combo_str.is_empty(),
         "Кэш комбо должен обновиться"
     );
     assert_eq!(
-        state.last_cached_combo, 3,
+        state.render_cache.last_cached_combo, 3,
         "last_cached_combo должен обновиться до 3"
     );
 }
@@ -215,10 +215,10 @@ fn test_caching_performance() {
 fn test_high_score_cache_update() {
     let mut state = GameState::new();
 
-    // Начальный рекорд
+    // Начальный рекорд (инициализируется "0" через init_with_values)
     assert_eq!(
-        state.cached_high_score_str, "",
-        "Начальный рекорд должен быть пустой строкой"
+        state.render_cache.cached_high_score_str, "0",
+        "Начальный рекорд должен быть '0'"
     );
 
     // Обновляем кэш с рекордом
@@ -226,7 +226,7 @@ fn test_high_score_cache_update() {
     update_cached_strings_extended(&mut state, "1000");
 
     assert_eq!(
-        state.cached_high_score_str, "1000",
+        state.render_cache.cached_high_score_str, "1000",
         "Кэш рекорда должен обновиться до '1000'"
     );
 }
@@ -248,7 +248,7 @@ fn test_timer_cache_update() {
 
     // Проверяем, что кэш таймера обновился
     assert!(
-        !state.cached_timer_str.is_empty(),
+        !state.render_cache.cached_timer_str.is_empty(),
         "Кэш таймера должен обновиться"
     );
 }

@@ -50,8 +50,6 @@ pub struct BagGenerator {
     bag: [ShapeType; 7],
     /// Индекс текущей фигуры в мешке.
     index: usize,
-    /// Заполнен ли мешок в данный момент.
-    is_filled: bool,
 }
 
 /// Константный массив всех 7 типов фигур.
@@ -69,11 +67,12 @@ const ALL_SHAPES: [ShapeType; 7] = [
 impl BagGenerator {
     /// Создать новый генератор с пустым мешком.
     pub fn new() -> Self {
-        Self {
+        let mut bag = Self {
             bag: [ShapeType::T; 7], // Временная инициализация, заполнится в fill_bag()
-            index: 0,
-            is_filled: false,
-        }
+            index: 7, // Устанавливаем index=7, чтобы первый вызов next_shape() вызвал fill_bag()
+        };
+        bag.fill_bag(); // Заполняем мешок сразу при создании
+        bag
     }
 
     /// Заполнить мешок всеми 7 типами фигур и перемешать.
@@ -102,7 +101,6 @@ impl BagGenerator {
         }
 
         self.index = 0;
-        self.is_filled = true;
     }
 
     /// Получить следующую фигуру из мешка.
@@ -115,7 +113,7 @@ impl BagGenerator {
     /// - Гарантирует равномерное распределение фигур
     pub fn next_shape(&mut self) -> ShapeType {
         // Если фигуры закончились, заполняем новый мешок
-        if !self.is_filled || self.index >= self.bag.len() {
+        if self.index >= self.bag.len() {
             self.fill_bag();
         }
 
