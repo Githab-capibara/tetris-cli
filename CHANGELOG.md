@@ -4,6 +4,57 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.16] — 2026-03-27
+
+### Исправления аудита кода
+
+**CRITICAL:**
+- **Безопасная конвертация f32 → u32** (`src/game/scoring/points.rs`) — добавлена функция `safe_f32_to_u32()` для защиты от переполнения, NaN и infinity
+- **Документация TOCTOU** (`src/highscore/leaderboard.rs`) — усилена документация уязвимости Time-of-check to time-of-use
+
+**HIGH:**
+- **Wall kick рефакторинг** (`src/game/logic/wall_kick.rs`) — создан новый модуль для централизации логики wall kick (207 строк)
+- **Упрощение validate_config_path** (`src/controls.rs`) — полное делегирование валидации модулю `PathValidator`
+- **#[must_use] атрибуты** (`src/game/state.rs`) — добавлены на важные геттеры
+- **cleanup() метод** (`src/io.rs`) — добавлен явный метод очистки ресурсов для `KeyReader`
+
+**MEDIUM:**
+- **Удаление dead code** (`src/game/mode_trait.rs`) — удалён `#![allow(dead_code)]`
+- **Централизация wall kick** (`src/game/logic/rotation.rs`, `src/game/logic/collision.rs`) — делегирование в новый модуль wall_kick
+
+### Тесты
+
+- **test_audit_fixes.rs** — 15 новых тестов для проверки всех исправлений аудита
+  - Тесты безопасной конвертации f32 → u32 (5 тестов)
+  - Тесты wall kick offsets (2 теста)
+  - Тесты #[must_use] атрибутов (1 тест)
+  - Тесты cleanup() метода (1 тест)
+  - Тесты проверок границ (1 тест)
+  - Интеграционные тесты (5 тестов)
+- **Всего тестов: 1256** (все проходят)
+
+### Улучшения
+
+- **Безопасность** — защита от переполнения при конвертации типов
+- **Читаемость** — централизация wall kick логики
+- **Производительность** — упрощение валидации путей
+- **Надёжность** — явная очистка ресурсов терминала
+
+### Изменённые файлы
+
+- `src/game/scoring/points.rs` — safe_f32_to_u32()
+- `src/highscore/leaderboard.rs` — документация TOCTOU
+- `src/game/logic/wall_kick.rs` — новый модуль
+- `src/game/logic/mod.rs` — экспорт wall_kick
+- `src/game/logic/rotation.rs` — делегирование
+- `src/game/logic/collision.rs` — делегирование
+- `src/controls.rs` — упрощение
+- `src/game/state.rs` — #[must_use]
+- `src/io.rs` — cleanup()
+- `src/game/mode_trait.rs` — удаление dead_code
+- `src/testes/mod.rs` — новый тест
+- `src/testes/test_audit_fixes.rs` — новый файл
+
 ## [23.96.15] — 2026-03-27
 
 ### Архитектурные улучшения

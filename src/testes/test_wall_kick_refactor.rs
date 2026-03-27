@@ -99,7 +99,7 @@ fn test_wall_kick_logic_unity() {
 /// Проверяем, что таблица смещений WALL_KICK_OFFSETS корректна.
 #[test]
 fn test_wall_kick_offsets_table() {
-    use crate::game::logic::WALL_KICK_OFFSETS;
+    use crate::game::logic::wall_kick::WALL_KICK_OFFSETS;
 
     // Проверяем длину таблицы
     assert_eq!(

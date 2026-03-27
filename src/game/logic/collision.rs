@@ -173,9 +173,13 @@ pub fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (
 /// * `dir` - направление вращения
 ///
 /// # Возвращает
-/// `true` если вращение возможно
+/// `true` если вращение возможно (прямое или с wall kick)
+///
+/// ## Исправление #4 (HIGH)
+/// Функция делегирует логику wall kick в модуль `wall_kick.rs`.
+/// Прямая проверка вращения без использования wall kick.
 pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
-    // Сначала проверяем прямое вращение
+    // Сначала проверяем прямое вращение (без wall kick)
     let mut temp_shape = state.curr_shape;
     temp_shape.rotate(dir);
 
@@ -183,36 +187,9 @@ pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirec
         return true;
     }
 
-    // Проверяем wall kick
-    try_rotation_with_kicks(state, dir).is_some()
-}
-
-/// Попытаться вратить фигуру со смещением (wall kick).
-///
-/// Возвращает `Some((offset_x, offset_y))` если вращение успешно с указанным смещением,
-/// или `None` если вращение невозможно ни с одним смещением.
-///
-/// # Аргументы
-/// * `state` - состояние игры
-/// * `dir` - направление вращения
-///
-/// # Возвращает
-/// `Some((i32, i32))` с успешным смещением или `None` если вращение невозможно
-fn try_rotation_with_kicks(
-    state: &GameState,
-    dir: crate::types::RotationDirection,
-) -> Option<(i32, i32)> {
-    for &(offset_x, offset_y) in &crate::game::logic::WALL_KICK_OFFSETS {
-        let mut kicked_shape = state.curr_shape;
-        kicked_shape.pos.0 += offset_x as f32;
-        kicked_shape.pos.1 += offset_y as f32;
-        kicked_shape.rotate(dir);
-
-        if check_rotation_collision(state, &kicked_shape.coords, kicked_shape.pos) {
-            return Some((offset_x, offset_y));
-        }
-    }
-    None
+    // Делегируем проверку wall kick в специализированный модуль
+    // Исправление #4: устранено дублирование try_rotation_with_kicks
+    super::wall_kick::try_wall_kick_offsets(state, dir).is_some()
 }
 
 #[cfg(test)]
