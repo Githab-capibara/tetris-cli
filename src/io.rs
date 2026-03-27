@@ -237,9 +237,15 @@ impl Canvas {
         match stdout().into_raw_mode() {
             Ok(mut out) => {
                 // Тихо игнорируем ошибки инициализации в stub режиме
-                let _ = write!(out, "{}{}", All, Goto(1, 1));
-                let _ = out.flush();
-                let _ = write!(out, "{Hide}");
+                if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
+                    eprintln!("Warning: failed to clear terminal: {}", e);
+                }
+                if let Err(e) = out.flush() {
+                    eprintln!("Warning: failed to flush terminal: {}", e);
+                }
+                if let Err(e) = write!(out, "{Hide}") {
+                    eprintln!("Warning: failed to hide cursor: {}", e);
+                }
                 Ok(Self { out })
             }
             Err(e) => {
@@ -289,7 +295,7 @@ impl Canvas {
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
-            let _ = write!(
+            if let Err(e) = write!(
                 self.out,
                 "{}{}{}{}{}{}",
                 Goto(x, y),
@@ -298,11 +304,15 @@ impl Canvas {
                 line,
                 Fg(Reset),
                 Bg(Reset)
-            );
+            ) {
+                eprintln!("Warning: failed to draw string: {}", e);
+            }
             y += 1;
         }
         // Один flush() в конце вместо flush() после каждой строки
-        let _ = self.out.flush();
+        if let Err(e) = self.out.flush() {
+            eprintln!("Warning: failed to flush terminal: {}", e);
+        }
     }
 
     /// Отрисовать строку (динамическую String).

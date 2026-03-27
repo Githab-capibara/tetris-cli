@@ -98,26 +98,20 @@ pub struct ControlsConfig {
 /// ```
 ///
 /// # Исправление #4 (DRY)
-/// Функция делегирует всю валидацию `PathValidator`, устраняя дублирование кода.
+/// Функция полностью делегирует валидацию `PathValidator`, устраняя дублирование кода.
 #[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
     let full_path = Path::new(path);
 
-    // ЗАПРЕТ АБСОЛЮТНЫХ ПУТЕЙ
-    if full_path.is_absolute() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Абсолютные пути не разрешены: {path:?}"),
-        ));
-    }
+    // Проверка на абсолютные пути
+    DEFAULT_PATH_VALIDATOR
+        .validate_not_absolute(full_path)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-    // ЗАПРЕТ PATH TRAVERSAL (..)
-    if path.contains("..") {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("Path traversal не разрешён: {path:?}"),
-        ));
-    }
+    // Проверка на path traversal
+    DEFAULT_PATH_VALIDATOR
+        .validate_no_traversal(path)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
     // Используем PathValidator для всех остальных проверок (DRY)
     DEFAULT_PATH_VALIDATOR

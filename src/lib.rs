@@ -518,6 +518,9 @@ mod testes {
     // Тесты ограничения UTF-8 в KeyReader (7 тестов)
     pub mod test_utf8_limitation;
 
+    // Тесты для Задач 12-15 (30 тестов)
+    pub mod test_task13_coverage;
+
     // Комплексные тесты для всех 32 исправлений (32 теста + 2 интеграционных)
     // pub mod test_all_32_fixes; // REMOVED: дублирование
 

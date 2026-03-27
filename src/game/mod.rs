@@ -76,31 +76,30 @@ pub mod view;
 // Re-export основных типов для обратной совместимости
 pub use state::GameState;
 
-// Re-export GameStats для lib.rs
-#[allow(unused_imports)]
+// Re-export GameStats для lib.rs и тестов
 pub use state::GameStats;
 
 // Re-export GameMode для тестов и обратной совместимости
-#[allow(unused_imports)]
 pub use state::GameMode;
 
-// Константы
-pub use state::FPS;
+// Re-export констант из constants.rs
+pub use constants::{
+    BORDER, BORDER_COLOR, COMBO_BONUS, DISP_HEIGHT, DISP_WIDTH, FPS, GRID_HEIGHT, GRID_WIDTH,
+    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINE_SCORES, MAX_CONFIG_FILE_SIZE,
+    MAX_FALL_SPEED, MAX_LEADERBOARD_ENTRIES, SHAPE_STR, SHAPE_WIDTH, SPD_INC,
+};
 
 // Константы для тестов (обратная совместимость)
-#[allow(unused_imports)]
+pub use constants::{
+    ANIMATION_FRAME_SKIP, BELL, GAME_OVER, GAME_OVER_DELAY_MS, HARD_DROP_ANIM_INTERVAL_MS,
+    MARATHON_LINES, MAX_LINES_PER_CLEAR, MIN_Y, SPRINT_LINES,
+};
 pub use state::{
-    ANIMATION_FRAME_SKIP, COMBO_BONUS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS,
-    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
-    MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, MILLIS_PER_SECOND, MIN_Y,
-    PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SHAPE_DRAW_OFFSET, SOFT_DROP_POINTS, SPD_INC,
-    SPRINT_LINES,
+    HARD_DROP_POINTS, LINES_PER_LEVEL, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
 };
 
 // Re-export трейтов и типов для тестов
-#[allow(unused_imports)]
 pub use access::{GameBoardAccess, ScoreAccess};
-#[allow(unused_imports)]
 pub use state::{GameError, GameResult};
 
 pub use logic::{
@@ -112,15 +111,12 @@ pub use scoring::{find_full_rows, handle_hold, remove_rows};
 pub use render::check_rows;
 
 // Экспорт GameView для отрисовки
-#[allow(unused_imports)]
 pub use view::GameView;
 
 // Экспорт StringCache для кэширования
-#[allow(unused_imports)]
 pub use cache::StringCache;
 
 // Экспорт игрового цикла
-#[allow(unused_imports)]
 pub use cycle::run_game_loop;
 
 // ============================================================================

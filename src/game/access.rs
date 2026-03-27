@@ -106,6 +106,12 @@ pub trait GameBoardAccess {
 
     /// Установить таймер приземления.
     fn set_land_timer(&mut self, timer: f64);
+
+    /// Получить количество заполненных линий.
+    fn get_filled_lines(&self) -> u32;
+
+    /// Установить количество заполненных линий.
+    fn set_filled_lines(&mut self, value: u32);
 }
 
 // ============================================================================
@@ -175,6 +181,14 @@ impl GameBoardAccess for crate::game::state::GameState {
 
     fn set_land_timer(&mut self, timer: f64) {
         self.set_land_timer(timer);
+    }
+
+    fn get_filled_lines(&self) -> u32 {
+        self.filled_lines
+    }
+
+    fn set_filled_lines(&mut self, value: u32) {
+        self.filled_lines = value;
     }
 }
 

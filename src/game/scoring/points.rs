@@ -10,10 +10,10 @@
 //! - [`tetromino.rs`](crate::tetromino): `Tetromino`
 //! - [`lines.rs`](super::lines): удаление линий
 
-use crate::game::state::{
-    GameState, UpdateEndState, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR,
-    SOFT_DROP_POINTS, SPD_INC,
+use crate::game::constants::{
+    LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPD_INC,
 };
+use crate::game::state::{GameState, UpdateEndState, LINES_PER_LEVEL};
 use crate::tetromino::Tetromino;
 
 /// Обновить счёт, уровень и скорость после удаления линий.
@@ -55,7 +55,7 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 pub fn handle_hard_drop(state: &mut GameState) {
-    use crate::game::state::HARD_DROP_POINTS;
+    use crate::game::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
 
     let start_y = state.curr_shape.pos.1;
@@ -135,7 +135,7 @@ pub fn handle_hold(state: &mut GameState) {
 /// - `spawn_next_tetromino()` - переход к следующей фигуре
 /// - `check_mode_completion()` - проверка окончания режима
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
-    use crate::game::state::{MARATHON_LINES, SPRINT_LINES};
+    use crate::game::constants::{MARATHON_LINES, SPRINT_LINES};
 
     // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
     if check_game_over_condition(state) {
@@ -172,7 +172,7 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn check_game_over_condition(state: &GameState) -> bool {
-    use crate::game::state::MIN_Y;
+    use crate::game::constants::MIN_Y;
 
     let shape_block_y = state.curr_shape.pos.1 as i16;
     state.curr_shape.coords.iter().any(|&(_, coord_y)| {
@@ -189,7 +189,7 @@ fn check_game_over_condition(state: &GameState) -> bool {
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn calculate_landing_bonus(state: &mut GameState) {
-    use crate::game::state::{
+    use crate::game::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC,
     };
 
@@ -231,7 +231,7 @@ fn calculate_landing_bonus(state: &mut GameState) {
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
-    use crate::game::state::COMBO_BONUS;
+    use crate::game::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
         state.stats.combo_counter = state.stats.combo_counter.saturating_add(1);
