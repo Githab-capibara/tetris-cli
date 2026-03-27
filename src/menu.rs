@@ -16,7 +16,6 @@ pub mod draw;
 pub mod input;
 
 // Ре-экспорт для обратной совместимости
-pub use constants::{MENU, MENU_COLOR};
 pub use draw::draw_menu;
 pub use input::get_player_name;
 

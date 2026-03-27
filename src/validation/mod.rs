@@ -14,4 +14,3 @@ pub mod path;
 
 // Re-export для удобства использования
 pub use name::is_valid_name_char;
-pub use path::{PathError, PathErrorKind, PathValidator};

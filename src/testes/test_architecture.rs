@@ -60,7 +60,7 @@ fn test_crypto_only_external_dependencies() {
 /// state → scoring
 #[test]
 fn test_game_submodules_no_cycles() {
-    use crate::game::{GameMode, GameState, GameView};
+    use crate::game::{GameState, GameView};
 
     // Создаём состояние
     let state = GameState::new();
@@ -85,7 +85,7 @@ fn test_game_submodules_no_cycles() {
 /// для отрисовки через неизменяемые ссылки.
 #[test]
 fn test_game_view_creation() {
-    use crate::game::{GameMode, GameState, GameView};
+    use crate::game::{GameState, GameView};
     use crate::tetromino::ShapeType;
 
     let state = GameState::new();
@@ -141,7 +141,7 @@ fn test_game_view_creation() {
 /// Проверка, что GameView корректно работает в режиме спринт.
 #[test]
 fn test_game_view_sprint_mode() {
-    use crate::game::{GameMode, GameState, GameView};
+    use crate::game::{GameState, GameView};
 
     let state = GameState::new_sprint();
     let view = GameView::from_game_state(&state);
