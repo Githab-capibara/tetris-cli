@@ -75,8 +75,11 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `dir` - направление вращения
+///
+/// ## Исправление #4 (HIGH)
+/// Функция обновлена для использования wall_kick модуля.
 fn handle_rotation_input(state: &mut GameState, dir: RotationDirection) {
-    super::rotation::rotate_with_wall_kick(state, dir);
+    super::wall_kick::rotate_with_wall_kick(state, dir);
 }
 
 #[cfg(test)]

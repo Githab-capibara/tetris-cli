@@ -722,11 +722,13 @@ impl GameState {
     }
 
     /// Получить текущую фигуру (мутуабельная ссылка для тестов).
+    #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
 
     /// Получить следующую фигуру (мутуабельная ссылка для тестов).
+    #[must_use]
     pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.next_shape
     }

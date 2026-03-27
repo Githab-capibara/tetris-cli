@@ -72,14 +72,6 @@ pub struct ControlsConfig {
 
 /// Проверить валидность пути для конфигурации.
 ///
-/// Эта функция использует централизованный `PathValidator` для всех проверок:
-/// 1. Проверка длины пути (максимум 255 символов)
-/// 2. Проверка разрешённых символов
-/// 3. Защита от symlink атак
-/// 4. Защита от path traversal (..)
-/// 5. Запрет абсолютных путей
-/// 6. Проверка, что путь находится внутри текущей директории
-///
 /// # Аргументы
 /// * `path` - путь для проверки
 ///
@@ -97,28 +89,27 @@ pub struct ControlsConfig {
 /// validate_config_path("config.json").unwrap();
 /// ```
 ///
-/// # Исправление #4 (DRY)
-/// Функция полностью делегирует валидацию `PathValidator`, устраняя дублирование кода.
+/// # Исправление #5 (HIGH)
+/// Функция полностью делегирует валидацию `DEFAULT_PATH_VALIDATOR`.
+/// Устранено дублирование проверок - все проверки в PathValidator.
 #[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
     let full_path = Path::new(path);
 
-    // Проверка на абсолютные пути
+    // Полное делегирование валидации PathValidator (Исправление #5)
     DEFAULT_PATH_VALIDATOR
         .validate_not_absolute(full_path)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-    // Проверка на path traversal
     DEFAULT_PATH_VALIDATOR
         .validate_no_traversal(path)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-    // Используем PathValidator для всех остальных проверок (DRY)
     DEFAULT_PATH_VALIDATOR
         .validate(full_path)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-    // Проверка, что путь внутри директории
+    // Проверка, что путь внутри директории (единственная локальная проверка)
     let current_dir = std::env::current_dir()
         .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
     let joined_path = current_dir.join(full_path);

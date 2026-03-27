@@ -51,6 +51,29 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
     }
 }
 
+/// Безопасно конвертировать f32 в u32 с защитой от переполнения.
+///
+/// # Аргументы
+/// * `value` - значение для конвертации
+///
+/// # Возвращает
+/// - `u32` если значение в допустимом диапазоне
+/// - `0` если значение NaN, отрицательное или бесконечное
+/// - `u32::MAX` если значение превышает максимальное
+///
+/// # Исправление #1 (CRITICAL)
+/// Использует clamp + cast для безопасной конвертации без паники.
+/// Защита от NaN, Infinity, отрицательных значений и переполнения.
+#[inline]
+fn safe_f32_to_u32(value: f32) -> u32 {
+    if !value.is_finite() {
+        return 0;
+    }
+    // clamp гарантирует что значение в диапазоне [0, u32::MAX]
+    // cast безопасен после clamp
+    value.clamp(0.0, u32::MAX as f32) as u32
+}
+
 /// Обработать Hard Drop (мгновенное падение).
 ///
 /// # Аргументы
@@ -64,16 +87,10 @@ pub fn handle_hard_drop(state: &mut GameState) {
         state.curr_shape.pos.1 += 1.0;
     }
 
-    // Безопасная конвертация f32 → u32 с явной проверкой границ
-    // Исправление: защита от NaN, Infinity и переполнения
-    let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs().max(0.0);
-    let drop_distance: u32 = if !drop_distance_f32.is_finite() || drop_distance_f32 < 0.0 {
-        0
-    } else if drop_distance_f32 >= u32::MAX as f32 {
-        u32::MAX
-    } else {
-        drop_distance_f32 as u32
-    };
+    // Безопасная конвертация f32 → u32 с использованием clamp + cast
+    // Исправление #1 (CRITICAL): защита от NaN, Infinity и переполнения
+    let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs();
+    let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
     state.score = state
         .score

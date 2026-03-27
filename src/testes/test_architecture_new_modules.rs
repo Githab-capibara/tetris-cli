@@ -65,10 +65,10 @@ mod test_constants_module {
 
     /// Тест 5: Wall kick offsets корректны
     ///
-    /// Примечание: WALL_KICK_OFFSETS перемещён в модуль logic::rotation
+    /// Примечание: WALL_KICK_OFFSETS перемещён в модуль logic::wall_kick
     #[test]
     fn test_wall_kick_offsets_valid() {
-        use crate::game::logic::rotation::WALL_KICK_OFFSETS;
+        use crate::game::logic::wall_kick::WALL_KICK_OFFSETS;
 
         assert_eq!(WALL_KICK_OFFSETS.len(), 8);
         // Первое смещение должно быть (-1, 0) - проверка стены слева

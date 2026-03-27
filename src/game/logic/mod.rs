@@ -11,7 +11,8 @@
 //! - [`input`] - обработка ввода пользователя
 //! - [`physics`] - физика падения и гравитация
 //! - [`collision`] - проверка столкновений
-//! - [`rotation`] - вращение с wall kick
+//! - [`rotation`] - вращение фигур
+//! - [`wall_kick`] - вращение с wall kick (централизованная логика)
 //! - [`update`] - координирует обновление состояния
 //!
 //! # Зависимости
@@ -26,6 +27,10 @@
 //!
 //! TODO (#архитектура): Выделить обработку ввода в отдельный модуль `input.rs`
 //! для уменьшения связанности с терминальным вводом.
+//!
+//! ## Исправление #4 (HIGH)
+//! Логика wall kick выделена в отдельный модуль `wall_kick.rs`
+//! для устранения дублирования кода между collision.rs и rotation.rs.
 
 // Подмодули
 pub mod collision;
@@ -33,12 +38,14 @@ pub mod input;
 pub mod physics;
 pub mod rotation;
 pub mod update;
+pub mod wall_kick;
 
 // Публичные экспорты из collision
 pub use collision::{can_move_curr_shape_direction, can_rotate_curr_shape};
 
-// Публичные экспорты из rotation
-pub use rotation::{rotate_with_wall_kick, WALL_KICK_OFFSETS};
+// Публичные экспорты из wall_kick (централизованная логика wall kick)
+// Исправление #13: удалены неиспользуемые импорты
+pub use wall_kick::rotate_with_wall_kick;
 
 // Публичные экспорты из update
 pub use update::{save_tetromino, update};
