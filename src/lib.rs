@@ -385,12 +385,12 @@
 pub mod app;
 pub mod controls;
 pub mod crypto;
+pub mod errors;
 pub mod game;
 pub mod highscore;
 pub mod io;
 pub mod io_traits;
 pub mod menu;
-pub mod terminal_backend;
 pub mod tetromino;
 pub mod types;
 pub mod validation;

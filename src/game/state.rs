@@ -24,7 +24,6 @@ use super::mode_trait::GameModeTrait;
 /// В настоящее время используется только в тестах.
 /// Для обработки ошибок в проекте используются стандартные механизмы Rust.
 #[derive(Debug)]
-#[allow(dead_code)]
 pub enum GameError {
     /// Ошибка ввода/вывода.
     Io(std::io::Error),
@@ -63,7 +62,6 @@ impl From<std::io::Error> for GameError {
 /// # Архитектурные заметки
 /// TODO (#архитектура): Удалить этот тип, если GameError будет удалён.
 /// В настоящее время используется только в тестах.
-#[allow(dead_code)]
 pub type GameResult<T> = Result<T, GameError>;
 
 // ============================================================================
@@ -116,7 +114,6 @@ impl GameMode {
     }
 }
 
-#[allow(dead_code)]
 impl GameMode {
     /// Проверить условие победы для текущего режима.
     ///
@@ -181,7 +178,6 @@ pub struct GameStats {
     pub(crate) end_time: Option<Instant>,
 }
 
-#[allow(dead_code)]
 impl GameStats {
     /// Создать новую статистику.
     pub fn new() -> Self {
@@ -372,7 +368,6 @@ pub struct GameState {
     /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
-    #[allow(dead_code)]
     filled_lines: u32,
 
     // ========================================================================
@@ -462,7 +457,6 @@ impl Default for GameState {
     }
 }
 
-#[allow(dead_code)]
 impl GameState {
     /// Создать новое состояние игры.
     pub fn new() -> Self {

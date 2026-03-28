@@ -17,20 +17,11 @@ const APP_NAME: &str = "tetris-cli";
 /// # Возвращает
 /// Путь к файлу конфигурации или None при ошибке
 fn get_config_file_path() -> Option<PathBuf> {
-    // confy хранит конфигурацию в директории конфигурации ОС
-    // Используем directories crate для получения пути
-    let config_dir = directories::BaseDirs::new()
-        .and_then(|dirs| dirs.config_dir().to_path_buf().into())
-        .or_else(|| {
-            // Fallback: домашняя директория/.config
-            std::env::var("HOME").ok().map(|home| {
-                let mut path = PathBuf::from(home);
-                path.push(".config");
-                path
-            })
-        })?;
-
-    let mut config_path = config_dir;
+    // confy 0.6 сам управляет путями к конфигурации
+    // Используем стандартный подход с переменной окружения HOME
+    let home_dir = std::env::var("HOME").ok()?;
+    let mut config_path = PathBuf::from(home_dir);
+    config_path.push(".config");
     config_path.push(APP_NAME);
     config_path.push("config.toml");
 
@@ -137,8 +128,8 @@ impl SaveData {
             check_config_file_size(&config_path)?;
         }
 
-        let data: Self =
-            load::<Self>(APP_NAME).map_err(|e| format!("Ошибка загрузки конфигурации: {e}"))?;
+        let data: Self = load::<Self>(APP_NAME, Some("config"))
+            .map_err(|e| format!("Ошибка загрузки конфигурации: {e}"))?;
 
         // Дополнительная проверка целостности
         match data.verify_and_get_score() {
@@ -191,7 +182,7 @@ impl SaveData {
     /// Использует u128 для предотвращения переполнения.
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
-        if let Err(e) = store(APP_NAME, save) {
+        if let Err(e) = store(APP_NAME, Some("config"), save) {
             eprintln!("Ошибка сохранения рекорда: {e}");
         }
     }
@@ -225,7 +216,7 @@ impl SaveData {
     #[allow(dead_code)]
     pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
         let save = Self::from_value(high_score);
-        store(APP_NAME, save)
+        store(APP_NAME, Some("config"), save)
             .map_err(|e| ConfigError::IoError(format!("Ошибка сохранения рекорда: {e}")))
     }
 

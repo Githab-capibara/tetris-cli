@@ -41,7 +41,6 @@ use termion::color::Color;
 ///     }
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait InputReader {
     /// Получить код нажатой клавиши.
     ///
@@ -92,7 +91,6 @@ pub trait InputReader {
 ///     }
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait Renderer {
     /// Отрисовать строки.
     ///
