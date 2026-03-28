@@ -215,7 +215,7 @@ fn test_edge_cases_bag_10000_shapes() {
 #[test]
 fn test_edge_cases_speed_reasonable() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(fall_spd < 10.0);
 }

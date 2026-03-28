@@ -21,7 +21,7 @@ use std::sync::{Arc, Mutex};
 /// Примечание: этот тест игнорируется по умолчанию так как требует реальный терминал.
 #[test]
 #[ignore = "Требует реальный терминал для проверки Drop"]
-fn test_восстановление_терминала_при_панике() {
+fn test_terminal_restore_on_panic() {
     // Флаг для отслеживания вызова Drop
     let drop_called = Arc::new(Mutex::new(false));
     let drop_flag = drop_called.clone();
@@ -51,7 +51,7 @@ fn test_восстановление_терминала_при_панике() {
 ///
 /// Проверяет, что `KeyReader` корректно освобождает ресурсы.
 #[test]
-fn test_работа_drop_при_ошибке() {
+fn test_drop_works_on_error() {
     // Создаём KeyReader
     let reader = KeyReader::new();
 
@@ -75,7 +75,7 @@ fn test_работа_drop_при_ошибке() {
 /// Примечание: этот тест игнорируется по умолчанию так как требует реальный терминал.
 #[test]
 #[ignore = "Требует реальный терминал для проверки сброса"]
-fn test_корректный_сброс_терминала() {
+fn test_terminal_cleanup_correct() {
     // Создаём канвас в отдельной области видимости
     let canvas_created = panic::catch_unwind(|| {
         let create_result = Canvas::new();
@@ -118,7 +118,7 @@ fn test_корректный_сброс_терминала() {
 ///
 /// Проверяет, что Drop реализация Canvas безопасна.
 #[test]
-fn test_drop_canvas_не_паникует() {
+fn test_drop_canvas_does_not_panic() {
     // Проверяем что Drop не вызывает панику даже без создания Canvas
     // Drop будет вызван автоматически при выходе из области видимости
 
@@ -152,7 +152,7 @@ fn test_drop_canvas_не_паникует() {
 ///
 /// Проверяет, что множественные создания/удаления `KeyReader` работают корректно.
 #[test]
-fn test_множественные_создания_уничтожения() {
+fn test_multiple_creations_and_destructions() {
     // Создаём и удаляем несколько KeyReader
     for i in 0..10 {
         let mut reader = KeyReader::new();

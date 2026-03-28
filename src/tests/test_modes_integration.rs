@@ -77,9 +77,9 @@ fn test_modes_integration_initial_speed_consistency() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
-    let classic_speed = classic.get_fall_spd();
-    let sprint_speed = sprint.get_fall_spd();
-    let marathon_speed = marathon.get_fall_spd();
+    let classic_speed = classic.get_fall_speed();
+    let sprint_speed = sprint.get_fall_speed();
+    let marathon_speed = marathon.get_fall_speed();
 
     assert!(
         (classic_speed - sprint_speed).abs() < f32::EPSILON,

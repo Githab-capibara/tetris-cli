@@ -435,7 +435,7 @@ mod tests {
     pub mod test_collision;
     pub mod test_edge_cases;
     // pub mod test_game_extended; // REMOVED: дублирование
-    pub mod test_scoring;
+    // pub mod test_scoring; // REMOVED: удалён при очистке
     pub mod test_statistics;
     // pub mod test_tetromino_extended; // REMOVED: дублирование
 

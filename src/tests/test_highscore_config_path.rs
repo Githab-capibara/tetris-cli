@@ -19,7 +19,7 @@ use directories::ProjectDirs;
 /// Проверяет, что ProjectDirs корректно определяет директорию конфигурации
 /// для приложения tetris-cli.
 #[test]
-fn test_получение_пути_конфигурации_directories() {
+fn test_get_configuration_path_via_directories() {
     // Получаем путь к директории конфигурации через directories crate
     let proj_dirs = ProjectDirs::from("", "", "tetris-cli");
     
@@ -60,7 +60,7 @@ fn test_получение_пути_конфигурации_directories() {
 /// Проверяет, что check_config_directory_writable() корректно обрабатывает
 /// ситуацию, когда директория конфигурации ещё не существует.
 #[test]
-fn test_создание_директории_конфигурации() {
+fn test_create_configuration_directory() {
     // Получаем путь к директории конфигурации
     let proj_dirs = ProjectDirs::from("", "", "tetris-cli").unwrap();
     let config_dir = proj_dirs.config_dir();
@@ -96,7 +96,7 @@ fn test_создание_директории_конфигурации() {
 /// Проверяет, что check_config_directory_writable() корректно возвращает
 /// ошибку ConfigError при недоступности директории конфигурации.
 #[test]
-fn test_обработка_ошибки_недоступности_директории() {
+fn test_directory_unavailable_error_handling() {
     // Тест 1: Проверяем что check_config_directory_writable() работает
     // (возвращает Ok или Err, но не паникует)
     let result = check_config_directory_writable();

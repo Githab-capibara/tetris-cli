@@ -220,11 +220,11 @@ fn test_game_board_access_methods() {
     state.set_lines_cleared(10);
     assert_eq!(state.get_lines_cleared(), 10);
 
-    // Тестируем get_fall_spd / set_fall_spd
-    let initial_spd = state.get_fall_spd();
+    // Тестируем get_fall_speed / set_fall_speed
+    let initial_spd = state.get_fall_speed();
     assert!((initial_spd - 0.9).abs() < f32::EPSILON);
-    state.set_fall_spd(2.0);
-    assert_eq!(state.get_fall_spd(), 2.0);
+    state.set_fall_speed(2.0);
+    assert_eq!(state.get_fall_speed(), 2.0);
 
     // Тестируем get_land_timer / set_land_timer
     state.set_land_timer(0.5);

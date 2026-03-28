@@ -15,7 +15,7 @@ fn test_get_current_time_ms_no_panic() {
     let mut leaderboard = Leaderboard::load();
 
     // Добавляем запись
-    leaderboard.add_score("TestPlayer", 1000);
+    let _ = leaderboard.add_score("TestPlayer", 1000);
 
     // Если дошли сюда - паники не было
     // get_current_time_ms_protected не вызывает панику
@@ -56,7 +56,7 @@ fn test_rate_limiting_with_time_protection() {
 
     // Добавляем несколько записей быстро
     for i in 0..5 {
-        leaderboard.add_score(&format!("Player{i}"), 1000 + i);
+        let _ = leaderboard.add_score(&format!("Player{i}"), 1000 + i);
     }
 
     // Проверяем, что записи добавлены

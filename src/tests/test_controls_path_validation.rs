@@ -19,7 +19,7 @@ use std::fs;
 /// Проверяет, что `save_to_file` и `load_from_file` возвращают ошибку
 /// при попытке использовать абсолютный путь.
 #[test]
-fn test_запрет_абсолютных_путей() {
+fn test_absolute_paths_forbidden() {
     let config = ControlsConfig::default_config();
 
     // Тест 1: Попытка сохранить с абсолютным путём
@@ -57,7 +57,7 @@ fn test_запрет_абсолютных_путей() {
 ///
 /// Проверяет, что нельзя использовать ".." для выхода за пределы директории.
 #[test]
-fn test_запрет_path_traversal() {
+fn test_path_traversal_forbidden() {
     let config = ControlsConfig::default_config();
 
     // Тест 1: Попытка сохранить с path traversal
@@ -96,7 +96,7 @@ fn test_запрет_path_traversal() {
 ///
 /// Проверяет, что валидные относительные пути работают корректно.
 #[test]
-fn test_разрешение_относительных_путей() {
+fn test_relative_paths_allowed() {
     let config = ControlsConfig::default_config();
     let test_path = "test_valid_path_config.json";
 

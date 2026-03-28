@@ -359,15 +359,15 @@ fn test_game_board_access_fall_spd() {
     let mut state = GameState::new();
 
     // Начальная скорость
-    let initial_spd = state.get_fall_spd();
+    let initial_spd = state.get_fall_speed();
     assert!(
         initial_spd > 0.0,
         "Начальная скорость должна быть положительной"
     );
 
     // Установка скорости
-    state.set_fall_spd(2.5);
-    assert_eq!(state.get_fall_spd(), 2.5, "Скорость должна быть 2.5");
+    state.set_fall_speed(2.5);
+    assert_eq!(state.get_fall_speed(), 2.5, "Скорость должна быть 2.5");
 }
 
 /// Тест 18: Проверка получения и установки таймера приземления

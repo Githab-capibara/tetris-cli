@@ -131,9 +131,9 @@ fn test_leaderboard_add_score() {
 fn test_leaderboard_add_multiple_scores() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player1", 1000);
-    leaderboard.add_score("Player2", 2000);
-    leaderboard.add_score("Player3", 1500);
+    let _ = leaderboard.add_score("Player1", 1000);
+    let _ = leaderboard.add_score("Player2", 2000);
+    let _ = leaderboard.add_score("Player3", 1500);
 
     assert_eq!(leaderboard.len(), 3, "Таблица должна содержать 3 записи");
 }
@@ -147,7 +147,7 @@ fn test_leaderboard_max_size() {
 
     // Добавляем 7 рекордов
     for i in 0..7 {
-        leaderboard.add_score(&format!("Player{i}"), (i + 1) * 100);
+        let _ = leaderboard.add_score(&format!("Player{i}"), (i + 1) * 100);
     }
 
     // Таблица должна содержать только 5 лучших
@@ -175,11 +175,11 @@ fn test_leaderboard_sorting() {
     let mut leaderboard = Leaderboard::default();
 
     // Добавляем рекорды в случайном порядке
-    leaderboard.add_score("Player3", 300);
-    leaderboard.add_score("Player1", 1000);
-    leaderboard.add_score("Player5", 500);
-    leaderboard.add_score("Player2", 2000);
-    leaderboard.add_score("Player4", 100);
+    let _ = leaderboard.add_score("Player3", 300);
+    let _ = leaderboard.add_score("Player1", 1000);
+    let _ = leaderboard.add_score("Player5", 500);
+    let _ = leaderboard.add_score("Player2", 2000);
+    let _ = leaderboard.add_score("Player4", 100);
 
     let entries = leaderboard.get_entries();
 
@@ -277,21 +277,21 @@ fn test_leaderboard_get_best_score() {
     );
 
     // Добавляем рекорды
-    leaderboard.add_score("Player1", 1000);
+    let _ = leaderboard.add_score("Player1", 1000);
     assert_eq!(
         leaderboard.get_best_score(),
         1000,
         "Лучший рекорд должен быть 1000"
     );
 
-    leaderboard.add_score("Player2", 2000);
+    let _ = leaderboard.add_score("Player2", 2000);
     assert_eq!(
         leaderboard.get_best_score(),
         2000,
         "Лучший рекорд должен быть 2000"
     );
 
-    leaderboard.add_score("Player3", 500);
+    let _ = leaderboard.add_score("Player3", 500);
     assert_eq!(
         leaderboard.get_best_score(),
         2000,
