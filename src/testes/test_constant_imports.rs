@@ -46,14 +46,6 @@ fn test_initial_fall_spd_constant() {
         (INITIAL_FALL_SPD - 0.9).abs() < f32::EPSILON,
         "Начальная скорость падения должна быть 0.9, получено {INITIAL_FALL_SPD}"
     );
-    assert!(
-        INITIAL_FALL_SPD > 0.0,
-        "Начальная скорость должна быть положительной"
-    );
-    assert!(
-        INITIAL_FALL_SPD < 10.0,
-        "Начальная скорость должна быть разумной"
-    );
 }
 
 /// Тест 3: Проверка MAX_FALL_SPEED
@@ -65,10 +57,6 @@ fn test_max_fall_speed_constant() {
         MAX_FALL_SPEED, 1000.0,
         "Максимальная скорость должна быть 1000.0"
     );
-    assert!(
-        MAX_FALL_SPEED > INITIAL_FALL_SPD,
-        "MAX_FALL_SPEED должна быть больше INITIAL_FALL_SPD"
-    );
 }
 
 /// Тест 4: Проверка FPS
@@ -77,7 +65,6 @@ fn test_max_fall_speed_constant() {
 #[test]
 fn test_fps_constant() {
     assert_eq!(FPS, 60, "FPS должен быть 60");
-    assert!(FPS > 0, "FPS должен быть положительным");
 }
 
 /// Тест 5: Проверка LAND_TIME_DELAY_S
@@ -88,14 +75,6 @@ fn test_land_time_delay_s_constant() {
     assert!(
         (LAND_TIME_DELAY_S - 0.1).abs() < f64::EPSILON,
         "Задержка приземления должна быть 0.1 секунды, получено {LAND_TIME_DELAY_S}"
-    );
-    assert!(
-        LAND_TIME_DELAY_S > 0.0,
-        "Задержка должна быть положительной"
-    );
-    assert!(
-        LAND_TIME_DELAY_S < 1.0,
-        "Задержка должна быть меньше 1 секунды"
     );
 }
 
@@ -150,8 +129,8 @@ fn test_combo_bonus_constant() {
     assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
 
     // Проверяем расчёт бонусов для разных уровней комбо
-    assert_eq!(COMBO_BONUS * 0, 0, "Бонус за комбо 1 должен быть 0");
-    assert_eq!(COMBO_BONUS * 1, 50, "Бонус за комбо 2 должен быть 50");
+    assert_eq!(0, 0, "Бонус за комбо 1 должен быть 0");
+    assert_eq!(COMBO_BONUS, 50, "Бонус за комбо 2 должен быть 50");
     assert_eq!(COMBO_BONUS * 2, 100, "Бонус за комбо 3 должен быть 100");
     assert_eq!(COMBO_BONUS * 9, 450, "Бонус за комбо 10 должен быть 450");
 }
@@ -168,7 +147,7 @@ fn test_level_bonus_mult_constant() {
 
     // Проверяем расчёт бонусов для разных уровней
     assert_eq!(
-        LEVEL_BONUS_MULT * 1,
+        LEVEL_BONUS_MULT,
         500,
         "Бонус за уровень 2 должен быть 500"
     );
@@ -190,10 +169,6 @@ fn test_level_bonus_mult_constant() {
 #[test]
 fn test_lines_per_level_constant() {
     assert_eq!(LINES_PER_LEVEL, 10, "Для повышения уровня нужно 10 линий");
-    assert!(
-        LINES_PER_LEVEL > 0,
-        "LINES_PER_LEVEL должен быть положительным"
-    );
 }
 
 /// Тест 11: Проверка SPD_INC
@@ -205,7 +180,6 @@ fn test_spd_inc_constant() {
         (SPD_INC - 0.05).abs() < f32::EPSILON,
         "Прирост скорости должен быть 0.05, получено {SPD_INC}"
     );
-    assert!(SPD_INC > 0.0, "Прирост скорости должен быть положительным");
 }
 
 /// Тест 12: Проверка PIECE_SCORE_INC
@@ -292,23 +266,11 @@ fn test_min_y_constant() {
 /// Проверяем, что константы согласованы друг с другом.
 #[test]
 fn test_constants_consistency() {
-    // MAX_FALL_SPEED должна быть больше INITIAL_FALL_SPD
-    assert!(
-        MAX_FALL_SPEED > INITIAL_FALL_SPD,
-        "MAX_FALL_SPEED должна быть > INITIAL_FALL_SPD"
-    );
-
     // LINE_SCORES должен иметь 4 элемента для 1-4 линий
     assert_eq!(
         LINE_SCORES.len(),
         MAX_LINES_PER_CLEAR as usize,
         "LINE_SCORES.len() должен равняться MAX_LINES_PER_CLEAR"
-    );
-
-    // Очки за Hard Drop должны быть больше Soft Drop
-    assert!(
-        HARD_DROP_POINTS > SOFT_DROP_POINTS,
-        "Hard Drop должен давать больше очков, чем Soft Drop"
     );
 
     // Бонус за Tetris (4 линии) должен быть больше суммы бонусов за 1+1+1+1 линии

@@ -18,10 +18,7 @@ fn test_get_current_time_ms_no_panic() {
     leaderboard.add_score("TestPlayer", 1000);
 
     // Если дошли сюда - паники не было
-    assert!(
-        true,
-        "get_current_time_ms_protected не должен вызывать панику"
-    );
+    // get_current_time_ms_protected не вызывает панику
 }
 
 /// Тест 2: Проверка обработки ошибок времени

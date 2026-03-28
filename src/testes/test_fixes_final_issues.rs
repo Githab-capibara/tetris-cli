@@ -107,7 +107,7 @@ fn test_draw_function_works() {
 #[test]
 fn test_player_name_input() {
     let entry1 = LeaderboardEntry::new("Player1", 1000);
-    let entry2 = LeaderboardEntry::new(&String::new(), 1000);
+    let entry2 = LeaderboardEntry::new("", 1000);
     assert_eq!(entry1.name(), "Player1");
     assert_eq!(entry2.name(), "Anonymous");
 }

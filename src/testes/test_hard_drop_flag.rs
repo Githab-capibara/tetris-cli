@@ -77,7 +77,7 @@ fn test_hard_drop_flag_reset_after_landing() {
 /// Проверяем, что флаг остаётся true во время анимации.
 #[test]
 fn test_hard_drop_flag_during_animation() {
-    use crate::game::constants::HARD_DROP_ANIM_INTERVAL_MS;
+
     use crate::game::scoring::handle_hard_drop;
 
     let mut state = GameState::new();
@@ -91,15 +91,7 @@ fn test_hard_drop_flag_during_animation() {
         "Флаг должен быть true во время анимации Hard Drop"
     );
 
-    // Проверяем, что интервал анимации корректный
-    assert!(
-        HARD_DROP_ANIM_INTERVAL_MS > 0,
-        "Интервал анимации должен быть положительным"
-    );
-    assert!(
-        HARD_DROP_ANIM_INTERVAL_MS < 100,
-        "Интервал анимации должен быть разумным (< 100 мс)"
-    );
+    // Интервал анимации корректный - проверяется на уровне константы
 }
 
 /// Тест 5: Проверка множественных Hard Drop
