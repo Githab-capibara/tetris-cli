@@ -288,11 +288,12 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     if lines_cleared > 0 {
         let combo_bonus = {
             let stats = state.get_stats_mut();
-            stats.combo_counter = stats.combo_counter.saturating_add(1);
-            if stats.combo_counter > 1 {
+            let new_combo = stats.combo_counter().saturating_add(1);
+            stats.set_combo_counter(new_combo);
+            if new_combo > 1 {
                 // Инкапсуляция: используем add_score() вместо прямого доступа
                 // Исправление C1: saturating_mul для защиты от переполнения
-                Some(COMBO_BONUS.saturating_mul(u128::from(stats.combo_counter - 1)))
+                Some(COMBO_BONUS.saturating_mul(u128::from(new_combo - 1)))
             } else {
                 None
             }
@@ -301,7 +302,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
             state.add_score(bonus);
         }
     } else {
-        state.get_stats_mut().combo_counter = 0;
+        state.get_stats_mut().set_combo_counter(0);
     }
 }
 
@@ -494,7 +495,7 @@ mod points_tests {
         // Устанавливаем счёт близкий к максимальному
         state.set_score(u128::MAX - 10000);
         // Устанавливаем высокий комбо-счётчик
-        state.get_stats_mut().combo_counter = 1000;
+        state.get_stats_mut().set_combo_counter(1000);
 
         // Тестируем update_combo_on_clear напрямую (без save_tetromino)
         update_combo_on_clear(&mut state, 1);

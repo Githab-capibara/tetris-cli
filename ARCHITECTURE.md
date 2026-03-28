@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 1.2
-**Дата:** 28 марта 2026 (обновлено)
-**Проект:** tetris-cli v23.96.18+
+**Версия:** 2.0
+**Дата:** 29 марта 2026 (обновлено)
+**Проект:** tetris-cli v23.96.20+
 
 ---
 
@@ -18,26 +18,26 @@ tetris-cli/
 │   │   └── application.rs   # Application struct, игровой цикл
 │   ├── game/                # Игровая логика
 │   │   ├── mod.rs
-│   │   ├── state.rs         # GameState (1171 строка)
+│   │   ├── state.rs         # GameState, GameStats, GameMode
 │   │   ├── mode_trait.rs    # GameModeTrait
-│   │   ├── types.rs         # Типобезопасные обёртки
-│   │   ├── constants.rs     # Константы
+│   │   ├── types.rs         # Типобезопасные обёртки (Score, Level, LinesCount)
 │   │   ├── view.rs          # GameView для отрисовки
-│   │   ├── access.rs        # Трейты доступа
-│   │   ├── cache.rs         # Кэширование
-│   │   ├── cycle.rs         # Игровой цикл
-│   │   ├── render.rs        # Отрисовка
+│   │   ├── access.rs        # Трейты доступа (BoardReadonly, BoardMutable)
+│   │   ├── cache.rs         # StringCache для кэширования строк
+│   │   ├── cycle.rs         # Игровой цикл (run_game_loop)
+│   │   ├── render.rs        # Отрисовка игрового поля
 │   │   ├── logic/           # Логика игры
-│   │   │   ├── collision.rs
-│   │   │   ├── input.rs
-│   │   │   ├── physics.rs
-│   │   │   ├── rotation.rs
-│   │   │   ├── update.rs
-│   │   │   └── wall_kick.rs
+│   │   │   ├── mod.rs
+│   │   │   ├── input.rs     # Обработка ввода
+│   │   │   ├── physics.rs   # Физика и гравитация
+│   │   │   ├── collision.rs # Проверка коллизий
+│   │   │   ├── rotation.rs  # Вращение с wall kick
+│   │   │   └── update.rs    # Обновление состояния
 │   │   └── scoring/         # Система очков
-│   │       ├── combo.rs
-│   │       ├── lines.rs
-│   │       └── points.rs
+│   │       ├── mod.rs
+│   │       ├── lines.rs     # Поиск и удаление линий
+│   │       ├── points.rs    # Начисление очков
+│   │       └── combo.rs     # Комбо-логика
 │   ├── menu/                # Главное меню
 │   │   ├── mod.rs
 │   │   ├── constants.rs
@@ -48,22 +48,27 @@ tetris-cli/
 │   │   ├── leaderboard.rs
 │   │   ├── sanitize.rs
 │   │   └── save_data.rs
-│   ├── tetromino.rs         # Фигуры (698 строк)
-│   ├── controls.rs          # Конфигурация управления (757 строк)
-│   ├── io.rs                # Ввод/вывод
+│   ├── tetromino.rs         # Фигуры (7-bag система)
+│   ├── controls.rs          # Конфигурация управления
+│   ├── io.rs                # Ввод/вывод (Canvas, KeyReader)
 │   ├── io_traits.rs         # Трейты InputReader, Renderer
-│   ├── crypto.rs            # Криптография
+│   ├── crypto/              # Криптография
+│   │   ├── mod.rs
+│   │   └── validator.rs     # HmacValidator для HMAC-SHA256
 │   ├── validation/          # Валидация
 │   │   ├── mod.rs
 │   │   ├── name.rs
 │   │   └── path.rs
 │   ├── terminal_backend.rs  # TerminalBackend трейт
 │   ├── types.rs             # Direction, RotationDirection
+│   ├── constants.rs         # Глобальные константы
 │   └── tests/               # Интеграционные тесты (86 файлов)
 ├── tests/                   # Integration tests
 │   └── test_architecture_integrity.rs
 ├── docs/
-│   └── ARCHITECTURE.md      # Подробная документация (2607 строк)
+│   └── ARCHITECTURE.md      # Подробная документация
+├── benches/
+│   └── benchmarks.rs        # Бенчмарки производительности
 ├── Cargo.toml
 └── README.md
 ```
@@ -93,26 +98,26 @@ tetris-cli/
 
 **Ключевые компоненты:**
 
-#### GameState (state.rs, 1171 строка)
+#### GameState (state.rs)
 ```rust
 pub struct GameState {
     // Состояние игры
     score: u128,
     level: u32,
     lines_cleared: u32,
-    
+
     // Фигуры
     curr_shape: Tetromino,
     next_shape: Tetromino,
     held_shape: Option<Tetromino>,
-    
+
     // Игровое поле
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
-    
+
     // Физика
-    fall_spd: f32,
+    fall_speed: f32,
     land_timer: f32,
-    
+
     // Кэширование
     render_cache: RenderCache,
 }
@@ -120,7 +125,7 @@ pub struct GameState {
 
 **Инкапсуляция:**
 - Геттеры: `get_score()`, `get_level()`, `get_lines_cleared()`
-- Сеттеры с валидацией: `set_level()`, `set_fall_spd()`
+- Сеттеры с валидацией: `set_level()`, `set_fall_speed()`
 - Saturating arithmetic для защиты от переполнения
 
 #### GameModeTrait (mode_trait.rs)
@@ -136,6 +141,18 @@ pub trait GameModeTrait {
 - `ClassicMode` — классическая игра
 - `SprintMode` — 40 линий на скорость
 - `MarathonMode` — 150 линий
+
+#### Подмодули логики (`logic/`)
+- `input.rs` — обработка ввода пользователя
+- `physics.rs` — физика и гравитация
+- `collision.rs` — проверка коллизий
+- `rotation.rs` — вращение с wall kick
+- `update.rs` — обновление состояния
+
+#### Подмодули системы очков (`scoring/`)
+- `lines.rs` — поиск и удаление заполненных линий (битовая маска u32)
+- `points.rs` — начисление очков с saturating операциями
+- `combo.rs` — комбо-логика и бонусы
 
 ---
 
@@ -179,7 +196,10 @@ pub trait GameModeTrait {
 - `Tetromino` — фигура с координатами
 - `BagGenerator` — 7-bag система
 
-**Размер:** 698 строк (допустимо для Rust)
+**7-bag система:**
+- Каждые 7 фигур содержат все 7 типов
+- Алгоритм Fisher-Yates для перемешивания
+- Гарантия равномерного распределения
 
 ---
 
@@ -192,7 +212,10 @@ pub trait GameModeTrait {
 - Валидация (делегирование в `validation/`)
 - Сериализация JSON
 
-**Размер:** 757 строк
+**Безопасность:**
+- PathValidator для валидации путей
+- HMAC-подпись конфигурации
+- Проверка на дубликаты клавиш
 
 ---
 
@@ -207,6 +230,38 @@ pub trait GameModeTrait {
 **Принципы:**
 - Централизованная валидация
 - Типизированные ошибки
+- Whitelist-фильтрация Unicode
+
+---
+
+### 8. Crypto Module (`crypto/`)
+
+**Ответственность:** Криптографические утилиты
+
+**Компоненты:**
+- `hash()` — хеширование BLAKE3
+- `generate_salt()` — генерация случайной соли
+- `HmacValidator` — HMAC-SHA256 подписи и проверка
+
+#### HmacValidator (validator.rs)
+```rust
+pub struct HmacValidator {
+    key: String,
+}
+
+impl HmacValidator {
+    pub fn new(key: &str) -> Self;
+    pub fn generate() -> Self;
+    pub fn sign(&self, data: &str) -> String;
+    pub fn verify(&self, data: &str, signature: &str) -> bool;
+    pub fn verify_and_return(&self, data: &str, signature: &str) -> Option<String>;
+}
+```
+
+**Применение:**
+- Защита конфигурационных файлов
+- Проверка целостности данных
+- Constant-time сравнение для защиты от timing-атак
 
 ---
 
@@ -269,13 +324,13 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 
 | Метрика | Значение | Оценка |
 |---------|----------|--------|
-| **Количество модулей** | 15+ | ✅ |
-| **Средний размер модуля** | ~400 строк | ✅ |
-| **Крупные модули** | 3 (state, tetromino, controls) | ⚠️ |
+| **Количество модулей** | 18+ | ✅ |
+| **Средний размер модуля** | ~350 строк | ✅ |
+| **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1085 тестов | ✅ |
+| **Покрытие тестами** | 1100+ тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
-| **Меры безопасности** | 8 (constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
+| **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
 
 ---
 
@@ -304,73 +359,80 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 - `test_architecture_integrity` — отсутствие циклов
 - `test_module_naming_consistency` — именование
 
-### Тесты верификации исправлений (`src/tests/test_fixes_verification.rs`)
-- **C1**: Безопасный cast в cycle.rs (3 теста)
-- **L2**: Объединённые match паттерны (3 теста)
-- **L3**: if let обработка ошибок (3 теста)
-- **M4**: TODO комментарии и dead_code (2 теста)
-- Интеграционные тесты (3 теста)
+### Тесты безопасности (`src/tests/test_security_fixes.rs`)
+- **Constant-time HMAC** — защита от timing-атак (HmacValidator)
+- **Валидация UTF-8** — отбрасывание невалидных последовательностей
+- **Безопасное вращение** — saturating операции вместо паники
+- **Path traversal защита** — canonicalize() перед проверкой
+- **Оптимизация sanitize_player_name** — фильтрация в один проход
+- **Защита от переполнения времени** — безопасная конвертация u128 → u64
+- **Защита от переполнения очков** — saturating_mul/add для всех операций
+- **TOCTOU защита** — атомарная проверка и получение в LeaderboardEntry
 
-### Тесты безопасности (`src/tests/test_audit_fixes_comprehensive.rs`)
-- **Constant-time HMAC** — защита от timing-атак (1 тест)
-- **Валидация UTF-8** — отбрасывание невалидных последовательностей (1 тест)
-- **Безопасное вращение** — saturating операции вместо паники (1 тест)
-- **Path traversal защита** — canonicalize() перед проверкой (1 тест)
-- **Оптимизация sanitize_player_name** — фильтрация в один проход (1 тест)
-- **Защита от переполнения времени** — безопасная конвертация u128 → u64 (1 тест)
+### Тесты производительности
+- Бенчмарки в `benches/benchmarks.rs`
+- Тесты производительности в `src/tests/`
 
 ### Запуск:
 ```bash
-cargo test
-cargo test test_architecture_integrity
+cargo test                    # Запуск всех тестов
+cargo test test_architecture_integrity  # Тесты целостности
+cargo bench --features bench  # Бенчмарки
 ```
+
+**ВСЕГО: 1100+ тестов** (unit + integration + architecture)
 
 ---
 
 ## 📝 Принципы проектирования
 
 ### SOLID
-- **S** — Single Responsibility (соблюдается)
-- **O** — Open/Closed (GameModeTrait)
-- **L** — Liskov Substitution (трейты)
-- **I** — Interface Segregation (BoardReadonly/BoardMutable)
-- **D** — Dependency Inversion (TerminalBackend)
+- **S** — Single Responsibility (соблюдается, модули разделены по ответственности)
+- **O** — Open/Closed (GameModeTrait для расширения режимов)
+- **L** — Liskov Substitution (трейты BoardReadonly/BoardMutable)
+- **I** — Interface Segregation (разделение трейтов доступа)
+- **D** — Dependency Inversion (TerminalBackend, InputReader, Renderer)
 
 ### DRY
-- Централизованная валидация
-- Общие константы (DISP_WIDTH, DISP_HEIGHT в game/constants.rs)
-- Криптография в crypto.rs
+- Централизованная валидация в `validation/`
+- Общие константы в `constants.rs`
+- Криптография в `crypto/`
+- Re-export через `game/mod.rs`
 
 ### KISS
 - Простые структуры данных
 - Минимум абстракций
-- Явные зависимости
+- Явные зависимости между модулями
 
 ### YAGNI
 - Удалена зависимость fs2
 - Удалены неиспользуемые модули
+- Удалены избыточные поля структур
 
 ---
 
 ## 🎯 Оценка архитектуры
 
-**Текущая оценка: 8.0/10**
+**Текущая оценка: 8.5/10**
 
 **Сильные стороны:**
-- ✅ Модульная структура
+- ✅ Модульная структура с чётким разделением ответственности
 - ✅ Отсутствие циклических зависимостей
-- ✅ Разделение ответственности
-- ✅ Трейты для абстракции
-- ✅ Обширное тестирование (1037 тестов)
+- ✅ Разделение render/scoring/logic на подмодули
+- ✅ Трейты для абстракции (GameModeTrait, TerminalBackend, InputReader, Renderer)
+- ✅ Обширное тестирование (1100+ тестов)
 - ✅ Защита от переполнения (saturating операции)
 - ✅ TOCTOU защита в LeaderboardEntry
 - ✅ Централизованная валидация путей
+- ✅ HmacValidator для HMAC-SHA256 подписей
+- ✅ Constant-time сравнение для защиты от timing-атак
+- ✅ Битовая маска для заполненных линий (оптимизация памяти)
 
 **Области улучшения:**
-- ⚠️ GameState — God Object (1171 строка)
-- ⚠️ tetromino.rs — 698 строк
-- ⚠️ controls.rs — 757 строк
+- ⚠️ GameState — крупный модуль (требует дальнейшего разделения)
+- ⚠️ tetromino.rs — 600+ строк
 - ⚠️ Нарушение инкапсуляции через pub(crate)
+- ⚠️ Возможность дальнейшей оптимизации кэширования
 
 ---
 
@@ -378,62 +440,65 @@ cargo test test_architecture_integrity
 
 ### Реализованные механизмы защиты:
 
+#### H1: HmacValidator для HMAC-SHA256
+- **Файл:** `src/crypto/validator.rs`
+- **Решение:** Структура `HmacValidator` с методами `sign()`, `verify()`, `verify_and_return()`
+- **Защита:** Constant-time сравнение подписей через XOR-накопление
+- **Применение:** Защита конфигурационных файлов, проверка целостности данных
+
 #### C1: Constant-time comparison для HMAC-SHA256
 - **Файл:** `src/crypto.rs`
 - **Решение:** XOR-накопление вместо раннего выхода при проверке подписей
 - **Защита:** Предотвращение timing-атак при проверке HMAC-SHA256
-- **Тест:** `test_hmac_constant_time()`
 
 #### C2: Защита от переполнения времени
 - **Файл:** `src/io.rs`, `src/game/cycle.rs`
 - **Решение:** Безопасная конвертация `u128 → u64` с проверкой границ
 - **Защита:** Предотвращение переполнения при длительных интервалах между кадрами
-- **Тест:** `test_time_conversion_safety()`
 
 #### C3: Валидация UTF-8
 - **Файл:** `src/io.rs`
 - **Решение:** Корректное отбрасывание невалидных UTF-8 последовательностей
 - **Защита:** Предотвращение паники при получении невалидного Unicode
-- **Тест:** `test_utf8_validation()`
 
 #### C4: Безопасное вращение фигур
 - **Файл:** `src/tetromino.rs`
 - **Решение:** `saturating_neg()` вместо `assert!` при вращении
 - **Защита:** Предотвращение паники при выходе координат за границы
-- **Тест:** `test_rotate_bounds_safety()`
 
 #### C5: Path traversal защита
 - **Файл:** `src/validation/path.rs`
 - **Решение:** `canonicalize()` выполняется перед проверкой нахождения в директории
 - **Защита:** Предотвращение обхода путей через символические ссылки
-- **Тест:** `test_path_traversal_canonicalize()`
 
 #### C6: Оптимизация sanitize_player_name
 - **Файл:** `src/validation/name.rs`
 - **Решение:** Объединение двух фильтров в один проход
 - **Улучшение:** Снижение количества аллокаций при обработке имён
-- **Тест:** `test_sanitize_single_pass()`
 
 #### A1: Защита от переполнения очков
 - **Файлы:** `src/game/scoring/points.rs`, `src/game/scoring/combo.rs`
 - **Решение:** `saturating_mul()` и `saturating_add()` для всех операций с очками
-- **Тест:** `test_score_overflow_protection()`
 
 #### A2: TOCTOU защита в таблице лидеров
 - **Файл:** `src/highscore/leaderboard.rs`
 - **Решение:** Атомарный метод `get_valid_score()` объединяет проверку и получение
-- **Тест:** `test_leaderboard_entry_atomic_validation()`
+
+#### A3: Битовая маска для заполненных линий
+- **Файл:** `src/game/scoring/lines.rs`
+- **Решение:** `u32` битовая маска вместо `[bool; GRID_HEIGHT]`
+- **Улучшение:** Снижение памяти с 20 байт до 4 байт
 
 ---
 
 ## 📚 Дополнительная документация
 
-- `docs/ARCHITECTURE.md` — подробная документация (2607 строк)
+- `docs/ARCHITECTURE.md` — подробная документация
 - `README.md` — обзор проекта
 - `TESTS_REGISTRY.md` — реестр тестов
-- `SECURITY.md` — безопасность
+- `SECURITY.md` — политика безопасности
 
 ---
 
-**Дата последнего обновления:** 28 марта 2026
+**Дата последнего обновления:** 29 марта 2026
 **Версия проекта:** 23.96.20

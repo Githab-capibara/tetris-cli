@@ -152,6 +152,10 @@ impl GameMode {
 /// - Общее количество очищенных линий
 /// - Максимальное комбо
 /// - Время игры
+///
+/// # Инкапсуляция (Задача 4 CRITICAL)
+/// Поля структуры сделаны приватными для улучшения инкапсуляции.
+/// Доступ к полям осуществляется через геттеры/сеттеры ниже.
 #[derive(Default, Clone)]
 pub struct GameStats {
     /// Количество фигур типа T.
@@ -182,6 +186,136 @@ impl GameStats {
     /// Создать новую статистику.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    // ========================================================================
+    // ГЕТТЕРЫ ДЛЯ ПОЛЕЙ (Задача 4 CRITICAL)
+    // ========================================================================
+
+    /// Получить количество фигур типа T.
+    #[must_use]
+    pub fn t_pieces(&self) -> u32 {
+        self.t_pieces
+    }
+
+    /// Получить количество фигур типа L.
+    #[must_use]
+    pub fn l_pieces(&self) -> u32 {
+        self.l_pieces
+    }
+
+    /// Получить количество фигур типа J.
+    #[must_use]
+    pub fn j_pieces(&self) -> u32 {
+        self.j_pieces
+    }
+
+    /// Получить количество фигур типа S.
+    #[must_use]
+    pub fn s_pieces(&self) -> u32 {
+        self.s_pieces
+    }
+
+    /// Получить количество фигур типа Z.
+    #[must_use]
+    pub fn z_pieces(&self) -> u32 {
+        self.z_pieces
+    }
+
+    /// Получить количество фигур типа O.
+    #[must_use]
+    pub fn o_pieces(&self) -> u32 {
+        self.o_pieces
+    }
+
+    /// Получить количество фигур типа I.
+    #[must_use]
+    pub fn i_pieces(&self) -> u32 {
+        self.i_pieces
+    }
+
+    /// Получить максимальное комбо.
+    #[must_use]
+    pub fn max_combo(&self) -> u32 {
+        self.max_combo
+    }
+
+    /// Получить текущее комбо.
+    #[must_use]
+    pub fn combo_counter(&self) -> u32 {
+        self.combo_counter
+    }
+
+    /// Получить время начала игры.
+    #[must_use]
+    pub fn start_time(&self) -> Option<Instant> {
+        self.start_time
+    }
+
+    /// Получить время окончания игры.
+    #[must_use]
+    pub fn end_time(&self) -> Option<Instant> {
+        self.end_time
+    }
+
+    // ========================================================================
+    // СЕТТЕРЫ ДЛЯ ПОЛЕЙ (Задача 4 CRITICAL)
+    // ========================================================================
+    // Сеттеры предназначены для внутреннего использования и тестов.
+    // Для нового кода рекомендуется использовать специализированные методы
+    /// Установить количество фигур типа T.
+    pub fn set_t_pieces(&mut self, value: u32) {
+        self.t_pieces = value;
+    }
+
+    /// Установить количество фигур типа L.
+    pub fn set_l_pieces(&mut self, value: u32) {
+        self.l_pieces = value;
+    }
+
+    /// Установить количество фигур типа J.
+    pub fn set_j_pieces(&mut self, value: u32) {
+        self.j_pieces = value;
+    }
+
+    /// Установить количество фигур типа S.
+    pub fn set_s_pieces(&mut self, value: u32) {
+        self.s_pieces = value;
+    }
+
+    /// Установить количество фигур типа Z.
+    pub fn set_z_pieces(&mut self, value: u32) {
+        self.z_pieces = value;
+    }
+
+    /// Установить количество фигур типа O.
+    pub fn set_o_pieces(&mut self, value: u32) {
+        self.o_pieces = value;
+    }
+
+    /// Установить количество фигур типа I.
+    pub fn set_i_pieces(&mut self, value: u32) {
+        self.i_pieces = value;
+    }
+
+    /// Установить максимальное комбо.
+    pub fn set_max_combo(&mut self, value: u32) {
+        self.max_combo = value;
+    }
+
+    /// Установить текущее комбо.
+    pub fn set_combo_counter(&mut self, value: u32) {
+        self.combo_counter = value;
+    }
+
+    /// Установить время начала игры.
+    pub fn set_start_time(&mut self, value: Option<Instant>) {
+        self.start_time = value;
+    }
+
+    /// Установить время окончания игры.
+    pub fn set_end_time(&mut self, value: Option<Instant>) {
+        self.end_time = value;
     }
 
     /// Увеличить счётчик для указанной фигуры.

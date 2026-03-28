@@ -2,6 +2,9 @@
 //!
 //! Модуль предоставляет систему настройки клавиш управления для игры.
 //! Поддерживает сохранение/загрузку конфигурации и валидацию клавиш.
+//!
+//! # Исправление #3 (CRITICAL)
+//! HMAC логика перемещена в модуль `crypto::validator`.
 
 #![allow(dead_code)]
 
@@ -18,6 +21,12 @@ use std::os::unix::fs::OpenOptionsExt;
 
 // Переэкспорт для обратной совместимости
 pub use crate::validation::path::DEFAULT_PATH_VALIDATOR;
+
+use crate::crypto::validator::sign_salt_and_data;
+
+/// Секретный ключ для HMAC подписи конфигурации.
+/// Используется константный ключ для обратной совместимости.
+const HMAC_KEY: &str = "tetris-cli-controls-hmac-key";
 
 /// Конфигурация управления с keyed hash подписью.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -214,6 +223,9 @@ impl ControlsConfig {
     ///
     /// # Panics
     /// Может паниковать при переполнении времени (крайне маловероятно)
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR
         let current_dir = std::env::current_dir().map_err(|e| {
@@ -244,8 +256,8 @@ impl ControlsConfig {
         let config_json = serde_json::to_string(&config_for_hash)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
-        // Вычисляем HMAC-SHA256 подпись (Исправление #4: настоящий HMAC)
-        let signature = crate::crypto::hmac_sha256(&hmac_key, &config_json);
+        // Вычисляем HMAC-SHA256 подпись через validator модуль
+        let signature = sign_salt_and_data(&hmac_key, "", &config_json);
 
         // Создаём итоговую конфигурацию с подписью
         let config_with_sig = ControlsConfig {
@@ -373,8 +385,8 @@ impl ControlsConfig {
             )
         })?;
 
-        // Проверяем HMAC-SHA256 подпись (Исправление #4: настоящий HMAC)
-        let expected_signature = crate::crypto::hmac_sha256(&config.hmac_key, &config_json);
+        // Проверяем HMAC-SHA256 подпись через validator модуль
+        let expected_signature = sign_salt_and_data(&config.hmac_key, "", &config_json);
 
         if config.signature != expected_signature {
             return Err(io::Error::new(

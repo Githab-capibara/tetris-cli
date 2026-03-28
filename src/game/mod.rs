@@ -81,14 +81,23 @@ pub use crate::constants;
 // Подмодули logic
 
 // Re-export основных типов для обратной совместимости
-pub use state::GameState;
-
-// Re-export GameStats для lib.rs и тестов
-
-// Re-export GameMode для тестов и обратной совместимости
+pub use state::{GameError, GameMode, GameResult, GameState, GameStats};
 
 // Re-export констант из constants.rs (обратная совместимость)
-pub use constants::FPS;
+pub use constants::{
+    ANIMATION_FRAME_SKIP, COMBO_BONUS, FPS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS,
+    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
+    MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, MIN_Y, PIECE_SCORE_FALL_MULT,
+    PIECE_SCORE_INC, SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
+};
+
+// Re-export трейтов и типов из access
+pub use access::{BoardMutable, BoardReadonly, GameBoardAccess};
+
+// Re-export GameView и StringCache для отрисовки и кэширования
+pub use cache::StringCache;
+pub use scoring::lines::find_filled_lines;
+pub use view::GameView;
 
 // Константы для тестов (обратная совместимость)
 
@@ -101,9 +110,7 @@ pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
 };
 
-pub use scoring::{find_full_rows, handle_hold, remove_rows};
-
-pub use render::check_rows;
+pub use scoring::{check_rows, find_full_rows, handle_hold, remove_rows};
 
 // Экспорт GameView для отрисовки (обратная совместимость)
 
@@ -412,30 +419,34 @@ mod game_tests {
         let mut stats = GameStats::new();
 
         assert_eq!(
-            stats.combo_counter, 0,
+            stats.combo_counter(),
+            0,
             "Начальное значение комбо должно быть 0"
         );
 
-        stats.combo_counter += 1;
+        stats.set_combo_counter(1);
         assert_eq!(
-            stats.combo_counter, 1,
+            stats.combo_counter(),
+            1,
             "После первого удаления комбо должно быть 1"
         );
 
-        stats.combo_counter += 1;
+        stats.set_combo_counter(2);
         assert_eq!(
-            stats.combo_counter, 2,
+            stats.combo_counter(),
+            2,
             "После второго удаления комбо должно быть 2"
         );
 
-        stats.combo_counter += 1;
+        stats.set_combo_counter(3);
         assert_eq!(
-            stats.combo_counter, 3,
+            stats.combo_counter(),
+            3,
             "После третьего удаления комбо должно быть 3"
         );
 
-        stats.update_max_combo(stats.combo_counter);
-        assert_eq!(stats.max_combo, 3, "Максимальное комбо должно быть 3");
+        stats.update_max_combo(stats.combo_counter());
+        assert_eq!(stats.max_combo(), 3, "Максимальное комбо должно быть 3");
     }
 
     #[test]
@@ -477,18 +488,20 @@ mod game_tests {
     fn test_combo_reset_on_no_clear() {
         let mut stats = GameStats::new();
 
-        stats.combo_counter = 3;
-        assert_eq!(stats.combo_counter, 3, "Комбо должно быть 3");
+        stats.set_combo_counter(3);
+        assert_eq!(stats.combo_counter(), 3, "Комбо должно быть 3");
 
-        stats.combo_counter = 0;
+        stats.set_combo_counter(0);
         assert_eq!(
-            stats.combo_counter, 0,
+            stats.combo_counter(),
+            0,
             "После хода без удаления комбо должно сбрасываться в 0"
         );
 
-        stats.combo_counter += 1;
+        stats.set_combo_counter(1);
         assert_eq!(
-            stats.combo_counter, 1,
+            stats.combo_counter(),
+            1,
             "После сброса новое комбо начинается с 1"
         );
     }

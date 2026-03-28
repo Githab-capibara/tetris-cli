@@ -22,7 +22,7 @@
 
 #![deny(clippy::mut_mutex_lock)]
 
-use crate::crypto::{self, hash};
+use crate::crypto::validator::{sign_salt_and_data, verify_salt_and_data};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
@@ -35,6 +35,10 @@ const APP_NAME: &str = "tetris-cli";
 
 /// Максимальное количество рекордов в таблице лидеров.
 const MAX_LEADERBOARD_SIZE: usize = 5;
+
+/// Секретный ключ для HMAC подписи рекордов.
+/// Используется константный ключ для обратной совместимости.
+const HMAC_KEY: &str = "tetris-cli-leaderboard-hmac-key";
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.
@@ -207,14 +211,13 @@ impl LeaderboardEntry {
     /// # Безопасность
     /// Этот метод позволяет выполнить валидацию для конкретного значения,
     /// что предотвращает TOCTOU уязвимость при использовании в методе `score()`.
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
-        let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 21);
-        salt_and_score.push_str(&self.salt);
-        salt_and_score.push_str(&self.name);
-        salt_and_score.push_str(&value.to_string());
-        let test_hash = hash(&salt_and_score);
-        self.hash == test_hash
+        let salt_name_score = format!("{}{}{}", self.salt, self.name, value);
+        verify_salt_and_data(HMAC_KEY, &self.salt, &salt_name_score, &self.hash)
     }
 
     /// Получить хэш записи.
@@ -247,18 +250,16 @@ impl LeaderboardEntry {
     ///
     /// # Исправление #9
     /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
 
-        let salt = crypto::generate_salt();
-        // Исправление #10: используем push_str() вместо write!() для конкатенации
-        // Это упрощает код и устраняет необходимость обработки Result
-        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 21); // 21 = макс. длина u128
-        salt_and_score.push_str(&salt);
-        salt_and_score.push_str(&valid_name);
-        salt_and_score.push_str(&score.to_string());
-        let hash = hash(&salt_and_score);
+        let salt = crate::crypto::generate_salt();
+        let salt_name_score = format!("{salt}{valid_name}{}", score);
+        let hash = sign_salt_and_data(HMAC_KEY, &salt, &salt_name_score);
 
         Self {
             name: valid_name,
@@ -295,15 +296,13 @@ impl LeaderboardEntry {
     /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert!(entry.is_valid());
     /// ```
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn is_valid(&self) -> bool {
-        // Исправление #10: используем push_str() вместо write!() для конкатенации
-        let mut salt_and_score = String::with_capacity(self.salt.len() + self.name.len() + 21); // 21 = макс. длина u128
-        salt_and_score.push_str(&self.salt);
-        salt_and_score.push_str(&self.name);
-        salt_and_score.push_str(&self.score_value.to_string());
-        let test_hash = hash(&salt_and_score);
-        self.hash == test_hash
+        let salt_name_score = format!("{}{}{}", self.salt, self.name, self.score_value);
+        verify_salt_and_data(HMAC_KEY, &self.salt, &salt_name_score, &self.hash)
     }
 }
 
@@ -355,15 +354,15 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Возвращает
     /// Новый экземпляр `ThreadSafeLeaderboardEntry`
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
-        let salt = crypto::generate_salt();
-        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 21);
-        salt_and_score.push_str(&salt);
-        salt_and_score.push_str(&valid_name);
-        salt_and_score.push_str(&score.to_string());
-        let hash = hash(&salt_and_score);
+        let salt = crate::crypto::generate_salt();
+        let salt_name_score = format!("{salt}{valid_name}{score}");
+        let hash = sign_salt_and_data(HMAC_KEY, &salt, &salt_name_score);
 
         Self {
             inner: Mutex::new(LeaderboardEntryData {
@@ -383,17 +382,15 @@ impl ThreadSafeLeaderboardEntry {
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     /// Валидация и возврат значения выполняются атомарно под блокировкой.
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn score(&self) -> u128 {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let score_value = guard.score_value;
-        // Проверяем хэш для того же значения
-        let mut salt_and_score = String::with_capacity(guard.salt.len() + guard.name.len() + 21);
-        salt_and_score.push_str(&guard.salt);
-        salt_and_score.push_str(&guard.name);
-        salt_and_score.push_str(&score_value.to_string());
-        let test_hash = hash(&salt_and_score);
-        if guard.hash != test_hash {
+        let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+        if !verify_salt_and_data(HMAC_KEY, &guard.salt, &salt_name_score, &guard.hash) {
             eprintln!("Предупреждение: запись не прошла валидацию!");
             return 0;
         }
@@ -407,15 +404,14 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn is_valid(&self) -> bool {
         let guard = self.inner.lock().expect("Mutex poisoned");
-        let mut salt_and_score = String::with_capacity(guard.salt.len() + guard.name.len() + 21);
-        salt_and_score.push_str(&guard.salt);
-        salt_and_score.push_str(&guard.name);
-        salt_and_score.push_str(&guard.score_value.to_string());
-        let test_hash = hash(&salt_and_score);
-        guard.hash == test_hash
+        let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+        verify_salt_and_data(HMAC_KEY, &guard.salt, &salt_name_score, &guard.hash)
     }
 
     /// Получить имя игрока.

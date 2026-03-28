@@ -51,7 +51,7 @@ pub mod lines;
 pub mod points;
 
 // Публичные экспорты из lines
-pub use lines::{find_full_rows, remove_rows};
+pub use lines::{check_rows, find_full_rows, remove_rows};
 
 // Публичные экспорты из points
 pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};

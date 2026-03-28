@@ -56,7 +56,7 @@ pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameS
         game_state.level(),
         game_state.lines_cleared(),
         stats.total_pieces(),
-        stats.max_combo,
+        stats.max_combo(),
         stats.get_elapsed_time(),
     );
 

@@ -9,7 +9,7 @@
 use crate::game::access::{BoardMutable, BoardReadonly};
 use crate::game::cache::StringCache;
 use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
-use crate::game::render::find_filled_lines;
+use crate::game::scoring::lines::find_filled_lines;
 use crate::game::state::{GameMode, GameState, GameStats};
 
 // ============================================================================

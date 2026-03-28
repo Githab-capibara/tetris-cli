@@ -4,6 +4,10 @@
 //! - `hash()` - хеширование BLAKE3
 //! - `generate_salt()` - генерация случайной соли
 //! - `hmac_sha256()` - настоящий HMAC-SHA256 для подписи данных
+//! - `validator` - модуль валидации HMAC подписей
+
+// Подмодули
+pub mod validator;
 
 use hmac::{Hmac, Mac};
 use rand::rngs::StdRng;
