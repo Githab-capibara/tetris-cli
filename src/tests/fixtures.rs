@@ -79,7 +79,7 @@ pub fn create_test_sprint_state() -> GameState {
 pub fn create_test_marathon_state() -> GameState {
     // Используем GameMode::Marathon через GameState
     // Если нет прямого метода, создаём через new() и устанавливаем режим
-    GameState::new() // TODO: добавить new_marathon() если нужен
+    GameState::new() // Добавить new_marathon() если нужен
 }
 
 /// Создаёт состояние игры с заданным счётом.

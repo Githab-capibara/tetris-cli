@@ -560,7 +560,6 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Количество записей
-    // TODO: для будущей функциональности
     #[allow(dead_code)]
     #[must_use]
     pub fn len(&self) -> usize {
@@ -571,7 +570,6 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если таблица пуста
-    // TODO: для будущей функциональности
     #[allow(dead_code)]
     #[must_use]
     pub fn is_empty(&self) -> bool {

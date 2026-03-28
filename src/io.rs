@@ -19,11 +19,11 @@ use termion::{
 use crate::io_traits::{InputReader, Renderer};
 
 // ============================================================================
-// ПЕРЕЭКСПОРТ КОНСТАНТ ИЗ game/constants.rs
+// ИМПОРТ КОНСТАНТ ИЗ constants.rs
 // ============================================================================
 // Централизация констант для устранения дублирования.
-// DISP_WIDTH и DISP_HEIGHT определены в game/constants.rs.
-pub use crate::game::constants::{
+// DISP_WIDTH и DISP_HEIGHT определены в constants.rs.
+pub use crate::constants::{
     DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH,
 };
 
@@ -37,12 +37,10 @@ pub use crate::game::constants::{
 pub const KEY_BACKSPACE: u8 = 127;
 
 /// Код клавиши Enter (перевод строки).
-/// TODO: использовать для будущей функциональности (локализация, макросы)
 #[allow(dead_code)]
 pub const KEY_ENTER: u8 = b'\n';
 
 /// Код клавиши Enter (возврат каретки).
-/// TODO: использовать для будущей функциональности (локализация, макросы)
 #[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
 
@@ -59,7 +57,6 @@ pub enum IoError {
     /// Ошибка flush буфера.
     Flush(String),
     /// Ошибка отрисовки.
-    /// TODO: использовать в будущей функциональности отрисовки
     #[allow(dead_code)]
     Draw(String),
 }

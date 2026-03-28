@@ -12,7 +12,6 @@ use crate::io::DISP_HEIGHT;
 use termion::color::White;
 
 /// Задержка между кадрами для поддержания 60 FPS (в миллисекундах).
-/// TODO: использовать в будущей рефакторизации FPS контроллера меню
 #[allow(dead_code)]
 pub const FRAME_DELAY_MS: u64 = 16;
 
@@ -21,7 +20,6 @@ pub const FRAME_DELAY_MS: u64 = 16;
 // ============================================================================
 
 /// Позиции элементов меню (X координаты)
-/// TODO: использовать в будущей рефакторизации отрисовки меню
 #[allow(dead_code)]
 pub const MENU_TITLE_X: u16 = 11;
 #[allow(dead_code)]
@@ -32,7 +30,6 @@ pub const MENU_CONTROLS_X: u16 = 11;
 pub const MENU_RECORD_X: u16 = 11;
 
 /// Позиции элементов меню (Y координаты)
-/// TODO: использовать в будущей рефакторизации отрисовки меню
 #[allow(dead_code)]
 pub const MENU_TITLE_Y: u16 = 3;
 #[allow(dead_code)]
@@ -93,7 +90,6 @@ pub const LEADERBOARD_MENU: [&str; 8] = [
 ];
 
 /// Сообщение о паузе.
-/// TODO: использовать в будущей рефакторизации режима паузы
 #[allow(dead_code)]
 pub const PAUSE_MENU: [&str; 3] = ["╔════════╗", "║ ПАУЗА  ║", "╚════════╝"];
 

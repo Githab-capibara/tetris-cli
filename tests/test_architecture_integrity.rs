@@ -22,8 +22,8 @@ mod tests {
 
     #[test]
     fn test_no_circular_dependencies_game_constants() {
-        // Проверяем, что game/constants.rs не импортирует из game/mod.rs
-        let constants_path = "src/game/constants.rs";
+        // Проверяем, что constants.rs не импортирует из game/mod.rs
+        let constants_path = "src/constants.rs";
         let constants_content =
             fs::read_to_string(constants_path).expect("Failed to read constants.rs");
 
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn test_constants_module_independence() {
         // Проверяем, что константы независимы
-        let constants_path = "src/game/constants.rs";
+        let constants_path = "src/constants.rs";
         let constants_content =
             fs::read_to_string(constants_path).expect("Failed to read constants.rs");
 

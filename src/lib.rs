@@ -382,6 +382,12 @@
 // Каждый модуль отвечает за определённую часть функциональности игры.
 // Модули организованы иерархически и могут импортировать друг друга.
 
+// Базовые модули (без зависимостей от других модулей проекта)
+pub mod constants;
+pub mod io_traits;
+pub mod types;
+
+// Остальные модули
 pub mod app;
 pub mod controls;
 pub mod crypto;
@@ -389,10 +395,8 @@ pub mod errors;
 pub mod game;
 pub mod highscore;
 pub mod io;
-pub mod io_traits;
 pub mod menu;
 pub mod tetromino;
-pub mod types;
 pub mod validation;
 
 // Модуль публичного API для удобного импорта

@@ -56,7 +56,6 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 ///     }
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait BoardReadonly {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -90,7 +89,6 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -141,7 +139,6 @@ pub trait BoardMutable: BoardReadonly {
 ///     score.add_score(bonus);
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait ScoreAccess {
     /// Получить текущий счёт.
     fn get_score(&self) -> u128;
@@ -180,7 +177,6 @@ pub trait ScoreAccess {
 /// - [`BoardReadonly`] для чтения
 /// - [`BoardMutable`] для чтения и записи
 /// - [`ScoreAccess`] для очков
-#[allow(dead_code)]
 pub trait GameBoardAccess: BoardMutable + ScoreAccess {}
 
 // Реализация GameBoardAccess для всех типов, реализующих [`BoardMutable`] и [`ScoreAccess`]
