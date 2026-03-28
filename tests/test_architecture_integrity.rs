@@ -329,7 +329,12 @@ mod tests {
             "src/game/cycle.rs",
         ];
 
-        for module_path in modules {
+        // Сначала проверяем что хотя бы один модуль существует
+        let existing_modules = modules.iter().filter(|p| Path::new(p).exists()).count();
+        assert!(existing_modules > 0, "Хотя бы один модуль должен существовать");
+
+        // Проверяем размер модулей
+        for module_path in &modules {
             if Path::new(module_path).exists() {
                 let content = fs::read_to_string(module_path).expect("Failed to read module");
                 let lines = content.lines().count();
@@ -343,11 +348,6 @@ mod tests {
                 }
             }
         }
-
-        // Тест всегда проходит, но выводит предупреждения
-        // Проверяем что хотя бы один модуль существует
-        let existing_modules = modules.iter().filter(|p| Path::new(p).exists()).count();
-        assert!(existing_modules > 0, "Хотя бы один модуль должен существовать");
     }
 
     // ========================================================================
