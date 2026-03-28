@@ -4,7 +4,7 @@
 //! - Отрисовка игрового поля и границ
 //! - Отрисовка фигур (текущей, призрачной, следующей, удержанной)
 //! - Отрисовка интерфейса (счёт, уровень, линии, комбо, таймер)
-//! - Анимации (мигание Hard Drop, очистка линий)
+//! - Анимации (мигание Hard Drop)
 //!
 //! # Зависимости
 //! - [`state.rs`](super::state): константы отрисовки
@@ -14,7 +14,6 @@
 //!
 //! ## Основные функции:
 //! - [`draw()`] - основная функция отрисовки кадра
-//! - [`check_rows()`] - проверка и анимация заполненных линий
 //! - [`update_cached_strings_extended()`] - обновление кэшированных строк UI
 //!
 //! ## Архитектурные заметки
@@ -45,6 +44,12 @@
 //! // Отрисовка
 //! draw(&view, &mut canvas);
 //! ```
+//!
+//! ## Архитектурные заметки (Задача 2)
+//! Функция `check_rows()` была перемещена в [`super::scoring::lines`] для:
+//! - Улучшения разделения ответственности (отрисовка vs логика игры)
+//! - Уменьшения связанности между модулями
+//! - Улучшения тестируемости логики удаления линий
 
 use super::constants::{
     ANIMATION_FRAME_SKIP, BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, DRAW_OFFSET_X,
@@ -236,7 +241,7 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     }
 
     // Кэширование строки комбо
-    let combo_counter = state.get_stats().combo_counter;
+    let combo_counter = state.get_stats().combo_counter();
     {
         let render_cache = state.get_render_cache_mut();
         if render_cache.last_cached_combo != combo_counter {
@@ -403,206 +408,15 @@ fn draw_sprint_timer(view: &GameView, cnv: &mut Canvas) {
 }
 
 // ============================================================================
-// ПРИВАТНЫЕ ФУНКЦИИ ДЛЯ РАЗДЕЛЕНИЯ ОТВЕТСТВЕННОСТИ (Задача 14)
+// АРХИТЕКТУРНЫЕ ЗАМЕТКИ (Задача 2)
 // ============================================================================
-
-/// Поиск заполненных линий.
-///
-/// # Аргументы
-/// * `blocks` - игровое поле (только чтение)
-///
-/// # Возвращает
-/// Вектор с индексами заполненных линий
-///
-/// # Пример
-/// ```ignore
-/// let filled_rows = find_filled_lines(&state.blocks);
-/// assert!(filled_rows.is_empty()); // На пустом поле
-/// ```
-pub fn find_filled_lines(blocks: &[[i8; GRID_WIDTH]; GRID_HEIGHT]) -> Vec<usize> {
-    let mut filled = Vec::new();
-
-    for (y, row) in blocks.iter().enumerate() {
-        // Проверка: линия заполнена если все ячейки не пустые (!= -1)
-        let row_full = row.iter().all(|&cell| cell != -1);
-        if row_full {
-            filled.push(y);
-        }
-    }
-
-    filled
-}
-
-/// Анимация удаления линии (мигание, инверсия цветов).
-///
-/// # Аргументы
-/// * `canvas` - канвас для отрисовки (изменяемый)
-/// * `row` - индекс удаляемой линии
-///
-/// # Примечания
-/// В текущей реализации анимация упрощена до установки флага анимации.
-/// Полная анимация может включать:
-/// - Инверсию цветов линии
-/// - Мигание (несколько кадров)
-/// - Звуковой сигнал
-fn animate_line_clear(_canvas: &mut Canvas, _row: usize) {
-    // Примечание: полная анимация требует доступа к canvas и отрисовки нескольких кадров
-    // В текущей реализации анимация выполняется через animate_clear() в check_rows()
-    // Эта функция预留ена для будущей реализации полной анимации
-}
-
-/// Удаление линий и сдвиг поля.
-///
-/// # Аргументы
-/// * `blocks` - игровое поле (изменяемое)
-/// * `rows` - срез с индексами удаляемых линий
-///
-/// # Пример
-/// ```ignore
-/// let filled_rows = find_filled_lines(&blocks);
-/// remove_lines(&mut blocks, &filled_rows);
-/// ```
-fn remove_lines(blocks: &mut [[i8; GRID_WIDTH]; GRID_HEIGHT], rows: &[usize]) {
-    // Преобразуем список строк в битовую маску для совместимости с remove_rows()
-    let mut rows_mask: u32 = 0;
-    for &row in rows {
-        rows_mask |= 1u32 << row;
-    }
-
-    // Используем существующую функцию удаления
-    super::scoring::remove_rows(blocks, rows_mask);
-}
-
-/// Обновление счёта за удалённые линии.
-///
-/// # Аргументы
-/// * `score` - счёт (изменяемый)
-/// * `level` - текущий уровень
-/// * `rows_cleared` - количество удалённых линий
-/// * `combo_counter` - счётчик комбо (изменяемый)
-///
-/// # Примечания
-/// Формула расчёта очков:
-/// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
-/// - Бонус за комбо: COMBO_BONUS × (combo_counter - 1)
-/// - Бонус за уровень: LEVEL_BONUS_MULT × (level - 1)
-fn update_score_for_lines(
-    score: &mut u128,
-    level: u32,
-    rows_cleared: usize,
-    combo_counter: &mut u32,
-) {
-    use super::constants::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR};
-
-    if rows_cleared > 0 {
-        // Ограничение количества линий максимум 4
-        let capped_rows = rows_cleared.min(MAX_LINES_PER_CLEAR as usize);
-
-        // Начисление очков за линии
-        let line_score = LINE_SCORES[capped_rows - 1];
-        *score = score.saturating_add(line_score);
-
-        // Обновление комбо
-        *combo_counter = combo_counter.saturating_add(1);
-
-        // Бонус за комбо (если комбо > 1)
-        if *combo_counter > 1 {
-            let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
-            *score = score.saturating_add(combo_bonus);
-        }
-
-        // Бонус за уровень (каждые 10 линий)
-        let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
-        *score = score.saturating_add(level_bonus);
-    } else {
-        // Сброс комбо если линии не удалены
-        *combo_counter = 0;
-    }
-}
-
-// ============================================================================
-// ПУБЛИЧНЫЕ ФУНКЦИИ (используют приватные функции выше)
-// ============================================================================
-
-/// Анимировать очистку заполненных линий.
-///
-/// # Аргументы
-/// * `state` - состояние игры (изменяемое)
-/// * `rows_mask` - битовая маска заполненных линий
-/// * `remove_count` - количество заполненных линий
-///
-/// ## Примечания
-/// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
-pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
-    if remove_count > 0 {
-        state.set_animating_rows_mask(rows_mask);
-        // Исправление #1.7: print!() не требует обработки ошибки
-        // Ошибка вывода bell-символа не критична для работы игры
-        print!("{BELL}", BELL = super::constants::BELL);
-        state.get_stats_mut().update_max_combo(remove_count);
-    }
-}
-
-/// Проверить заполненные линии и удалить их.
-///
-/// # Аргументы
-/// * `state` - состояние игры (изменяемое)
-///
-/// # Возвращает
-/// Количество удалённых линий
-///
-/// ## Примечания
-/// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
-///
-/// ## Архитектурные заметки (Задача 14)
-/// Функция разделена на приватные методы для улучшения тестируемости:
-/// - `find_filled_lines()` - поиск заполненных линий
-/// - `animate_line_clear()` - анимация удаления
-/// - `remove_lines()` - удаление линий и сдвиг
-/// - `update_score_for_lines()` - начисление очков
-pub fn check_rows(state: &mut GameState) -> u32 {
-    // Поиск заполненных линий
-    let filled_rows = find_filled_lines(state.get_blocks());
-    let remove_count = filled_rows.len() as u32;
-
-    // Преобразуем в битовую маску для анимации
-    let mut rows_mask: u32 = 0;
-    for &row in &filled_rows {
-        rows_mask |= 1u32 << row;
-    }
-
-    // Анимация и звук для каждой линии
-    for &row in &filled_rows {
-        animate_line_clear(
-            &mut Canvas::new().unwrap_or_else(|_| Canvas::default()),
-            row,
-        );
-    }
-
-    // Анимация через существующий механизм
-    animate_clear(state, rows_mask, remove_count);
-
-    // Удаление линий и сдвиг поля
-    remove_lines(state.get_blocks_mut(), &filled_rows);
-
-    // Обновление счёта, уровня и комбо
-    let mut score = state.score();
-    let level = state.level();
-    let mut combo_counter = state.get_stats_mut().combo_counter;
-
-    update_score_for_lines(&mut score, level, filled_rows.len(), &mut combo_counter);
-
-    state.set_score(score);
-    state.get_stats_mut().combo_counter = combo_counter;
-
-    // Обновление количества очищенных линий
-    let lines_cleared = state.lines_cleared().saturating_add(remove_count);
-    state.set_lines_cleared(lines_cleared);
-
-    // Увеличение скорости игры
-    use super::constants::SPD_INC;
-    let fall_speed = state.fall_speed();
-    state.set_fall_speed(fall_speed + SPD_INC * remove_count as f32);
-
-    remove_count
-}
+//
+// Функции check_rows(), animate_clear(), find_filled_lines(), animate_line_clear(),
+// remove_lines() и update_score_for_lines() были перемещены в super::scoring::lines
+// для улучшения разделения ответственности между модулями отрисовки и логики игры.
+//
+// Для проверки и удаления линий используйте:
+// ```
+// use tetris_cli::game::scoring::check_rows;
+// check_rows(&mut state);
+// ```

@@ -275,11 +275,11 @@ fn test_game_stats_game_state_interaction() {
     );
 
     // Проверяем, что max_combo равен 0
-    assert_eq!(game_stats.max_combo, 0, "Начальное комбо должно быть 0");
+    assert_eq!(game_stats.max_combo(), 0, "Начальное комбо должно быть 0");
 
     // Проверяем, что таймер не запущен
     assert!(
-        game_stats.start_time.is_none(),
+        game_stats.start_time().is_none(),
         "Таймер не должен быть запущен"
     );
 }

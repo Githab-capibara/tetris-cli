@@ -562,7 +562,7 @@ mod tests {
     pub mod test_track_caller;
 
     // Тесты на архитектурную целостность (20 тестов)
-    // pub mod test_architecture_integrity; // REMOVED: дублирование
+    pub mod test_architecture_integrity;
 
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;

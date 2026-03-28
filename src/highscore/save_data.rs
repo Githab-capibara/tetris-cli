@@ -2,8 +2,11 @@
 //!
 //! Предоставляет структуры для хранения одиночного рекорда
 //! с защитой от подделки через хэширование с солью.
+//!
+//! # Исправление #3 (CRITICAL)
+//! HMAC логика перемещена в модуль `crypto::validator`.
 
-use crate::crypto::{self, hash};
+use crate::crypto::validator::{sign_salt_and_data, verify_salt_and_data};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -11,6 +14,10 @@ use std::path::PathBuf;
 
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
+
+/// Секретный ключ для HMAC подписи рекордов.
+/// Используется константный ключ для обратной совместимости.
+const HMAC_KEY: &str = "tetris-cli-save-data-hmac-key";
 
 /// Получить путь к файлу конфигурации confy.
 ///
@@ -163,11 +170,13 @@ impl SaveData {
     ///
     /// # Исправление #16
     /// Поля переименованы: используется `score`, `salt`, `hash`.
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
-        let salt = crypto::generate_salt();
-        let salt_and_score = salt.clone() + &score_str;
-        let hash = hash(&salt_and_score);
+        let salt = crate::crypto::generate_salt();
+        let hash = sign_salt_and_data(HMAC_KEY, &salt, &score_str);
 
         Self { score, salt, hash }
     }
@@ -235,14 +244,13 @@ impl SaveData {
     /// let save = SaveData::from_value(1000);
     /// assert_eq!(save.verify_and_get_score(), Some(1000));
     /// ```
+    ///
+    /// # Исправление #3 (CRITICAL)
+    /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
     pub fn verify_and_get_score(&self) -> Option<u128> {
-        // Исправление #16: используем новые имена полей
         let score_str = self.score.to_string();
-        let salt_and_score = self.salt.clone() + &score_str;
-        let test_hash = hash(&salt_and_score);
-
-        if self.hash == test_hash {
+        if verify_salt_and_data(HMAC_KEY, &self.salt, &score_str, &self.hash) {
             Some(self.score)
         } else {
             // Логирование попытки подделки
