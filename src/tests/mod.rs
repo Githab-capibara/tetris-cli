@@ -36,6 +36,7 @@
 //! - `test_game_negative_coords` - отрицательные координаты
 //! - `test_game_stack_overflow` - переполнение стека
 //! - `test_io_resource_leak` - утечка ресурсов
+//! - `test_safety_architecture` - тесты архитектуры безопасности (Critical/HIGH)
 //!
 //! ### Архитектурные тесты
 //! - `test_architecture` - архитектурная целостность
@@ -185,6 +186,7 @@ pub mod test_string_caching;
 // ТЕСТЫ БЕЗОПАСНОСТИ
 // ============================================================================
 
+pub mod test_safety_architecture;
 pub mod test_security_fixes;
 pub mod test_time_safety;
 

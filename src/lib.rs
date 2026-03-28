@@ -502,6 +502,7 @@ mod tests {
     // pub mod test_fixes_verification_final; // REMOVED: дублирование
 
     // Тесты исправлений безопасности и оптимизаций (7 тестов - 6 основных + 1 интеграционный)
+    pub mod test_safety_architecture;
     pub mod test_security_fixes;
 
     // Тесты качества кода для 6 исправлений (6 тестов + 1 интеграционный)
