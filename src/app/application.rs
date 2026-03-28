@@ -93,7 +93,7 @@ impl Application {
             e
         })?;
 
-        if width < DISP_WIDTH || height < DISP_HEIGHT {
+        if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
             let err = std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,
                 format!(

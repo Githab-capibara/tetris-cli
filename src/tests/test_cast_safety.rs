@@ -63,11 +63,11 @@ mod tests {
         let display_height = DISP_HEIGHT;
 
         assert!(
-            display_width <= i16::MAX as u16,
+            display_width <= i16::MAX as usize,
             "DISP_WIDTH должен помещаться в i16"
         );
         assert!(
-            display_height <= i16::MAX as u16,
+            display_height <= i16::MAX as usize,
             "DISP_HEIGHT должен помещаться в i16"
         );
 

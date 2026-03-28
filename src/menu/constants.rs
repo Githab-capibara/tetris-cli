@@ -48,7 +48,7 @@ pub const MENU_RECORD_Y: u16 = 21;
 /// - Строки 8-15: Управление
 /// - Строки 17-20: Режимы игры
 /// - Строки 21-22: Рекорд
-pub const MENU: [&str; DISP_HEIGHT as usize] = [
+pub const MENU: [&str; DISP_HEIGHT] = [
     "                      ",
     "╔════════════════════╗",
     "║                    ║",
