@@ -9,6 +9,7 @@
 
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
+#![allow(clippy::assertions_on_constants)]
 
 #[cfg(test)]
 mod tests {
