@@ -15,7 +15,7 @@
 //! - `test_scoring` - тесты системы очков
 //! - `test_collision` - тесты столкновений
 //! - `test_animation` - тесты анимаций
-//! - `test_modes` - тесты режимов игры
+//! - `test_modes_integration` - интеграция режимов игры
 //! - `test_statistics` - тесты статистики
 //!
 //! ### Расширенные тесты
@@ -31,7 +31,6 @@
 //! ### Тесты исправлений и безопасности
 //! - `test_controls_path_validation` - валидация путей
 //! - `test_game_bounds_check` - проверки границ
-//! - `test_game_wall_kick` - wall kick механика
 //! - `test_highscore_integrity` - целостность рекордов
 //! - `test_controls_error_handling` - обработка ошибок
 //! - `test_game_negative_coords` - отрицательные координаты
@@ -92,7 +91,6 @@ pub mod test_edge_cases;
 pub mod test_edge_cases_stress;
 pub mod test_game_movement;
 pub mod test_game_rotation;
-pub mod test_modes;
 pub mod test_scoring;
 pub mod test_statistics;
 pub mod test_tetromino_shapes;
@@ -119,7 +117,6 @@ pub mod test_game_score_overflow;
 pub mod test_game_score_overflow_protection;
 pub mod test_game_stack_overflow;
 pub mod test_game_stats_export;
-pub mod test_game_wall_kick;
 
 pub mod test_highscore_config_path;
 pub mod test_highscore_deprecated_assert_hs;

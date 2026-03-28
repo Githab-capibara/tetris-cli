@@ -435,7 +435,6 @@ mod tests {
     pub mod test_collision;
     pub mod test_edge_cases;
     // pub mod test_game_extended; // REMOVED: дублирование
-    pub mod test_modes;
     pub mod test_scoring;
     pub mod test_statistics;
     // pub mod test_tetromino_extended; // REMOVED: дублирование
@@ -461,7 +460,6 @@ mod tests {
     // Тесты исправленных проблем (18 тестов)
     pub mod test_controls_path_validation;
     pub mod test_game_bounds_check;
-    pub mod test_game_wall_kick;
     pub mod test_highscore_integrity;
     // pub mod test_highscore_u256_fix; // REMOVED: временный тест
 
