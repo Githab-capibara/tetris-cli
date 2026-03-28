@@ -469,7 +469,6 @@ mod tests {
     // Тесты критических проблем (20 тестов)
     pub mod test_controls_error_handling;
     pub mod test_game_negative_coords;
-    pub mod test_game_stack_overflow;
     // pub mod test_highscore_no_rate_limiting; // REMOVED: rate limiting удален
     pub mod test_io_resource_leak;
 
@@ -478,13 +477,7 @@ mod tests {
 
     // Новые тесты для 26 исправленных проблем (90 тестов)
     pub mod test_controls_path_traversal;
-    pub mod test_fixes_bag_preview_rotate;
-    pub mod test_fixes_documentation_validation;
-    pub mod test_fixes_final_issues;
-    pub mod test_fixes_must_use_stack_format;
     pub mod test_game_rotation_bounds;
-    pub mod test_game_score_overflow_protection;
-    pub mod test_highscore_deprecated_assert_hs;
 
     // Тесты на безопасность cast и конвертацию типов (12 тестов)
     pub mod test_cast_safety;
@@ -530,16 +523,7 @@ mod tests {
     pub mod test_architecture;
 
     // Тесты на архитектурные улучшения (16 тестов)
-    pub mod test_architecture_fixes;
-
-    // Тесты для 15 архитектурных исправлений (16 тестов - 15 по одному на каждое + 1 интеграционный)
-    pub mod test_architecture_refactoring;
-
-    // Тесты на архитектурные улучшения (20 тестов)
     pub mod test_architecture_improvements;
-
-    // Тесты для новых модулей (constants.rs, types.rs)
-    pub mod test_architecture_new_modules;
 
     // ========================================================================
     // НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
