@@ -23,10 +23,13 @@ use crate::types::Direction;
 /// - `false` - фигура ещё падает
 pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.curr_shape.pos.1 += state.fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
+        let fall_speed = state.fall_speed();
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.pos.1 += fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
         false
-    } else if state.land_timer > 0.0 {
-        state.land_timer -= delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);
+    } else if state.land_timer() > 0.0 {
+        let land_timer = state.land_timer();
+        state.set_land_timer(land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND));
         false
     } else {
         true
@@ -41,14 +44,14 @@ mod physics_tests {
     #[test]
     fn test_handle_falling_initial() {
         let mut state = GameState::new();
-        let initial_y = state.curr_shape.pos.1;
+        let initial_y = state.curr_shape().pos.1;
 
         // Фигура должна падать
         let result = handle_falling(&mut state, 100);
 
         assert!(!result, "Фигура должна ещё падать");
         assert!(
-            state.curr_shape.pos.1 >= initial_y,
+            state.curr_shape().pos.1 >= initial_y,
             "Y координата должна увеличиться или остаться"
         );
     }

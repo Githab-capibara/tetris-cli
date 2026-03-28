@@ -70,12 +70,15 @@ pub fn generate_salt() -> String {
 ///
 /// # Исправление #2
 /// Функция переименована из `hmac()` в `keyed_hash()` для ясности.
+///
+/// # Оптимизация 4.2
+/// Используется `format!("{key}{data}")` вместо `key.to_string() + data`.
 #[must_use = "Keyed hash должен быть использован для проверки"]
 #[doc(hidden)]
 #[allow(dead_code)]
 pub fn keyed_hash(key: &str, data: &str) -> String {
     // Формируем ключ + данные для хеширования
-    hash(&(key.to_string() + data))
+    hash(&format!("{key}{data}"))
 }
 
 /// Проверить keyed_hash подпись.

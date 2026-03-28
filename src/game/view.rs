@@ -126,14 +126,14 @@ impl<'a> GameView<'a> {
             combo: state.get_cached_combo_str().into(),
             high_score: state.get_cached_high_score_str(),
             blocks: state.get_blocks(),
-            curr_shape: state.get_curr_shape(),
-            next_shape: state.get_next_shape(),
+            curr_shape: state.curr_shape(),
+            next_shape: state.next_shape(),
             held_shape: state.get_held_shape_ref(),
-            animating_rows: state.animating_rows_mask,
-            is_hard_dropping: state.is_hard_dropping,
+            animating_rows: state.get_animating_rows_mask(),
+            is_hard_dropping: state.is_hard_dropping(),
             mode: state.get_mode_trait(),
-            lines_cleared: state.lines_cleared,
-            elapsed_time: state.stats.get_elapsed_time(),
+            lines_cleared: state.lines_cleared(),
+            elapsed_time: state.get_stats().get_elapsed_time(),
         }
     }
 

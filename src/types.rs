@@ -50,7 +50,8 @@ impl Direction {
     ///
     /// # Возвращает
     /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
-    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`] и [`Direction::Down`]
+    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`]
+    /// - `None` для [`Direction::Down`] (не является направлением вращения)
     ///
     /// # Пример
     /// ```
@@ -58,24 +59,29 @@ impl Direction {
     ///
     /// assert_eq!(
     ///     Direction::Left.to_rotation_direction(),
-    ///     RotationDirection::CounterClockwise
+    ///     Some(RotationDirection::CounterClockwise)
     /// );
     /// assert_eq!(
     ///     Direction::Right.to_rotation_direction(),
-    ///     RotationDirection::Clockwise
+    ///     Some(RotationDirection::Clockwise)
     /// );
+    /// assert_eq!(Direction::Down.to_rotation_direction(), None);
     /// ```
     ///
     /// # Примечания
     /// Метод помечен как `#[allow(dead_code)]` так как используется
     /// только в устаревшем коде. Новый код должен явно указывать
     /// направление вращения через `RotationDirection`.
+    ///
+    /// # Исправление 1.3
+    /// Direction::Down больше не конвертируется в RotationDirection::Clockwise.
     #[must_use]
     #[allow(dead_code)]
-    pub const fn to_rotation_direction(self) -> RotationDirection {
+    pub const fn to_rotation_direction(self) -> Option<RotationDirection> {
         match self {
-            Direction::Left => RotationDirection::CounterClockwise,
-            Direction::Right | Direction::Down => RotationDirection::Clockwise,
+            Direction::Left => Some(RotationDirection::CounterClockwise),
+            Direction::Right => Some(RotationDirection::Clockwise),
+            Direction::Down => None,
         }
     }
 }
@@ -129,16 +135,13 @@ mod types_tests {
     fn test_direction_to_rotation_direction() {
         assert_eq!(
             Direction::Left.to_rotation_direction(),
-            RotationDirection::CounterClockwise
+            Some(RotationDirection::CounterClockwise)
         );
         assert_eq!(
             Direction::Right.to_rotation_direction(),
-            RotationDirection::Clockwise
+            Some(RotationDirection::Clockwise)
         );
-        assert_eq!(
-            Direction::Down.to_rotation_direction(),
-            RotationDirection::Clockwise
-        );
+        assert_eq!(Direction::Down.to_rotation_direction(), None);
     }
 
     #[test]

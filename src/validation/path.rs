@@ -135,6 +135,46 @@ impl PathValidator {
         Ok(())
     }
 
+    /// Валидировать путь полностью (все проверки).
+    ///
+    /// Выполняет все проверки:
+    /// 1. Проверка длины
+    /// 2. Проверка символов
+    /// 3. Проверка на symlink
+    /// 4. Проверка на абсолютный путь
+    /// 5. Проверка на path traversal
+    /// 6. Проверка нахождения внутри директории
+    ///
+    /// # Аргументы
+    /// * `path` - путь для проверки (строка)
+    /// * `current_dir` - текущая директория для проверки внутри директории
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если путь валиден
+    /// - `Err(PathError)` если путь невалиден
+    ///
+    /// # Errors
+    /// Возвращает `PathError` если путь не проходит любую из проверок.
+    ///
+    /// # Исправление H1
+    /// Этот метод заменяет дублирующуюся валидацию в controls.rs.
+    #[track_caller]
+    pub fn validate_all(
+        &self,
+        path: &str,
+        current_dir: &Path,
+    ) -> Result<std::path::PathBuf, PathError> {
+        let full_path = Path::new(path);
+        let joined_path = current_dir.join(full_path);
+
+        self.validate_not_absolute(full_path)?;
+        self.validate_no_traversal(path)?;
+        self.validate(full_path)?;
+        self.validate_within_directory(&joined_path, current_dir)?;
+
+        Ok(joined_path)
+    }
+
     /// Проверить максимальную длину пути.
     ///
     /// # Аргументы

@@ -10,28 +10,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::Path;
-use std::sync::atomic::{AtomicU64, Ordering};
-
-// ============================================================================
-// RATE LIMITING ДЛЯ save_to_file (Исправление #29)
-// ============================================================================
-/// Минимальный интервал между сохранениями в секундах.
-const SAVE_RATE_LIMIT_SECS: u64 = 60;
-
-/// Последняя метка времени сохранения конфигурации.
-/// Используется для rate limiting чтобы предотвратить частые записи на диск.
-static LAST_SAVE_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
-
-/// Сбросить rate limiting для тестов.
-///
-/// # Безопасность
-/// Эта функция предназначена ТОЛЬКО для тестов.
-/// Не вызывайте её в производственном коде.
-#[cfg(test)]
-pub fn reset_rate_limit_for_tests() {
-    LAST_SAVE_TIMESTAMP.store(0, Ordering::Relaxed);
-}
 
 // ============================================================================
 // ВАЛИДАТОР ПУТЕЙ (переэкспортирован из crate::validation)
@@ -85,26 +63,15 @@ pub struct ControlsConfig {
 ///
 /// # Исправление #6
 /// Выделена из `save_to_file()` и `load_from_file()` для устранения дублирования кода.
+///
+/// # Исправление H1
+/// Использует PathValidator::validate_all() для централизованной валидации.
 fn validate_config_path(path: &str) -> io::Result<(std::path::PathBuf, std::path::PathBuf)> {
-    let full_path = Path::new(path);
     let current_dir = std::env::current_dir()
         .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
-    let joined_path = current_dir.join(full_path);
 
-    DEFAULT_PATH_VALIDATOR
-        .validate_not_absolute(full_path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    DEFAULT_PATH_VALIDATOR
-        .validate_no_traversal(path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    DEFAULT_PATH_VALIDATOR
-        .validate(full_path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    DEFAULT_PATH_VALIDATOR
-        .validate_within_directory(&joined_path, &current_dir)
+    let joined_path = DEFAULT_PATH_VALIDATOR
+        .validate_all(path, &current_dir)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
     Ok((joined_path, current_dir))
@@ -277,30 +244,7 @@ impl ControlsConfig {
     ///
     /// # Panics
     /// Может паниковать при переполнении времени (крайне маловероятно)
-    ///
-    /// # Исправление #29
-    /// Добавлено rate limiting: минимум 60 секунд между сохранениями.
-    /// Это предотвращает износ диска при частых вызовах функции.
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
-        // Исправление #29: rate limiting для предотвращения частых записей
-        // Отключаем rate limiting для тестов
-        #[cfg(not(test))]
-        {
-            let now = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
-
-            let last_save = LAST_SAVE_TIMESTAMP.load(Ordering::Relaxed);
-            if now - last_save < SAVE_RATE_LIMIT_SECS {
-                // Тихо игнорируем сохранение если прошло слишком мало времени
-                return Ok(());
-            }
-
-            // Обновляем метку времени перед сохранением
-            LAST_SAVE_TIMESTAMP.store(now, Ordering::Relaxed);
-        }
-
         // Валидация пути (Исправление #6: вынесено в отдельную функцию)
         let (joined_path, _current_dir) = validate_config_path(path)?;
 
@@ -603,9 +547,6 @@ mod controls_tests {
     /// Использует временный файл для тестирования.
     #[test]
     fn test_controls_config_save_load() -> std::io::Result<()> {
-        // Сбрасываем rate limiting для тестов
-        reset_rate_limit_for_tests();
-
         // Используем относительный путь в текущей директории
         let test_path = "test_controls_config_temp.json";
 

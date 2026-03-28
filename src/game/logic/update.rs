@@ -50,7 +50,7 @@ pub fn update(
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 pub fn save_tetromino(state: &mut GameState) {
-    let (shape_x, shape_y) = state.curr_shape.pos;
+    let (shape_x, shape_y) = state.curr_shape().pos;
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
@@ -62,13 +62,17 @@ pub fn save_tetromino(state: &mut GameState) {
     // GRID_WIDTH и GRID_HEIGHT — константы (10 и 20), безопасно для cast
     let grid_width_i16 = crate::io::GRID_WIDTH as i16;
 
-    for coord in state.curr_shape.coords {
+    let curr_shape = state.curr_shape();
+    let fg = curr_shape.fg;
+    let coords = curr_shape.coords;
+
+    for coord in coords {
         let (coord_x, coord_y) = coord;
         let x = coord_x + shape_block_x;
         let y = coord_y + shape_block_y;
 
         if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
-            state.blocks[y as usize][x as usize] = state.curr_shape.fg as i8;
+            state.get_blocks_mut()[y as usize][x as usize] = fg as i8;
         }
     }
 }

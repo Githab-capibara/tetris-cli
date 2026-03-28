@@ -73,15 +73,20 @@ pub const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
 pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationDirection) -> bool {
     // Проверяем прямое вращение без смещения
     if super::collision::can_rotate_curr_shape(state, dir) {
-        state.curr_shape.rotate(dir);
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.rotate(dir);
         return true;
     }
 
     // Пытаемся вращать с wall kick смещениями
     if let Some((offset_x, offset_y)) = try_wall_kick_offsets(state, dir) {
-        state.curr_shape.pos.0 += offset_x as f32;
-        state.curr_shape.pos.1 += offset_y as f32;
-        state.curr_shape.rotate(dir);
+        {
+            let curr_shape = state.get_curr_shape_mut();
+            curr_shape.pos.0 += offset_x as f32;
+            curr_shape.pos.1 += offset_y as f32;
+        }
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.rotate(dir);
         return true;
     }
 
@@ -115,7 +120,7 @@ pub(crate) fn try_wall_kick_offsets(
     dir: crate::types::RotationDirection,
 ) -> Option<(i32, i32)> {
     for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
-        let mut kicked_shape = state.curr_shape;
+        let mut kicked_shape = *state.curr_shape();
         kicked_shape.pos.0 += offset_x as f32;
         kicked_shape.pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);
@@ -164,7 +169,7 @@ mod wall_kick_tests {
     #[test]
     fn test_rotate_with_wall_kick_basic() {
         let mut state = GameState::new();
-        let initial_coords = state.curr_shape.coords;
+        let initial_coords = state.curr_shape().coords;
 
         let result = rotate_with_wall_kick(&mut state, RotationDirection::Clockwise);
 

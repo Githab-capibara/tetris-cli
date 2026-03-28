@@ -370,14 +370,10 @@ pub struct GameState {
     // Срок: 1-2 недели
     /// Двумерный массив игрового поля 10x20.
     /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
-    ///
-    /// # Исправление #9
-    /// Заменён Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> на [[i8; GRID_WIDTH]; GRID_HEIGHT]
-    /// для размещения данных на стеке вместо кучи (оптимизация производительности).
-    pub(crate) blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
+    blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
     #[allow(dead_code)]
-    pub(crate) filled_lines: u32,
+    filled_lines: u32,
 
     // ========================================================================
     // === СОСТОЯНИЕ ОЧКОВ (будущий ScoreBoard) ===
@@ -386,11 +382,11 @@ pub struct GameState {
     // Приоритет: Высокий
     // Срок: 1-2 недели
     /// Текущий счёт.
-    pub(crate) score: u128,
+    score: u128,
     /// Текущий уровень.
-    pub(crate) level: u32,
+    level: u32,
     /// Количество удалённых линий.
-    pub(crate) lines_cleared: u32,
+    lines_cleared: u32,
 
     // ========================================================================
     // === СОСТОЯНИЕ ФИГУР (будущий FigureManager) ===
@@ -399,15 +395,15 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Текущая фигура.
-    pub(crate) curr_shape: Tetromino,
+    curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
-    pub(crate) next_shape: Tetromino,
+    next_shape: Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    pub(crate) held_shape: Option<Tetromino>,
+    held_shape: Option<Tetromino>,
     /// Можно ли ещё менять удержанную фигуру в этом ходу.
-    pub(crate) can_hold: bool,
+    can_hold: bool,
     /// Генератор фигур по системе 7-bag.
-    pub(crate) bag: BagGenerator,
+    bag: BagGenerator,
 
     // ========================================================================
     // === СОСТОЯНИЕ АНИМАЦИЙ (будущий AnimationState) ===
@@ -416,37 +412,34 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Строки для анимации (мигание при очистке).
-    pub(crate) animating_rows_mask: u32,
+    animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
-    pub(crate) is_hard_dropping: bool,
+    is_hard_dropping: bool,
 
     // ========================================================================
     // === ИГРОВАЯ ЛОГИКА ===
     // ========================================================================
     /// Скорость падения.
-    pub(crate) fall_speed: f32,
+    fall_speed: f32,
     /// Таймер приземления.
-    pub(crate) land_timer: f64,
+    land_timer: f64,
     /// Количество ячеек, пройденных при Soft Drop.
-    pub(crate) soft_drop_distance: u32,
+    soft_drop_distance: u32,
 
     // ========================================================================
     // === СТАТИСТИКА И РЕЖИМ ИГРЫ ===
     // ========================================================================
     /// Статистика игры.
-    pub(crate) stats: GameStats,
+    stats: GameStats,
     /// Режим игры (объект трейта).
     /// Использует трейт GameModeTrait вместо enum для лучшей расширяемости.
-    ///
-    /// # Исправление #14
-    /// Поле mode удалено, используется только mode_trait.
-    pub(crate) mode_trait: Box<dyn GameModeTrait>,
+    mode_trait: Box<dyn GameModeTrait>,
 
     // ========================================================================
     // === КЭШ ДЛЯ ОТРИСОВКИ ===
     // ========================================================================
     /// Кэш для оптимизации отрисовки.
-    pub(crate) render_cache: RenderCache,
+    render_cache: RenderCache,
 }
 
 /// Состояние завершения обновления.
@@ -507,7 +500,6 @@ impl GameState {
             held_shape: None,
             can_hold: true,
             fall_speed: INITIAL_FALL_SPD,
-            // Исправление #9: инициализация массива на стеке вместо Box
             blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             filled_lines: 0,
             land_timer: LAND_TIME_DELAY_S,
@@ -530,20 +522,50 @@ impl GameState {
 
     /// Получить текущий счёт.
     #[must_use]
-    pub fn get_score(&self) -> u128 {
+    pub fn score(&self) -> u128 {
         self.score
     }
 
     /// Получить текущий уровень.
     #[must_use]
-    pub fn get_level(&self) -> u32 {
+    pub fn level(&self) -> u32 {
         self.level
     }
 
     /// Получить количество удалённых линий.
     #[must_use]
-    pub fn get_lines_cleared(&self) -> u32 {
+    pub fn lines_cleared(&self) -> u32 {
         self.lines_cleared
+    }
+
+    /// Получить текущий счёт (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`score()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте score()")]
+    pub fn get_score(&self) -> u128 {
+        self.score()
+    }
+
+    /// Получить текущий уровень (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`level()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте level()")]
+    pub fn get_level(&self) -> u32 {
+        self.level()
+    }
+
+    /// Получить количество удалённых линий (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`lines_cleared()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте lines_cleared()")]
+    pub fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared()
     }
 
     /// Получить статистику игры.
@@ -582,9 +604,6 @@ impl GameState {
     /// # Архитектурные заметки
     /// Метод сохранён для обратной совместимости с тестами.
     /// Использует get_mode_trait() для получения режима.
-    ///
-    /// # Исправление #14
-    /// Метод использует только mode_trait (поле mode удалено из структуры).
     #[must_use]
     #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
     pub fn get_mode(&self) -> GameMode {
@@ -611,20 +630,50 @@ impl GameState {
 
     /// Получить текущую фигуру.
     #[must_use]
-    pub fn get_curr_shape(&self) -> &Tetromino {
+    pub fn curr_shape(&self) -> &Tetromino {
         &self.curr_shape
     }
 
     /// Получить следующую фигуру.
     #[must_use]
-    pub fn get_next_shape(&self) -> &Tetromino {
+    pub fn next_shape(&self) -> &Tetromino {
         &self.next_shape
     }
 
     /// Получить удержанную фигуру.
     #[must_use]
-    pub fn get_held_shape(&self) -> Option<&Tetromino> {
+    pub fn held_shape(&self) -> Option<&Tetromino> {
         self.held_shape.as_ref()
+    }
+
+    /// Получить текущую фигуру (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`curr_shape()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте curr_shape()")]
+    pub fn get_curr_shape(&self) -> &Tetromino {
+        self.curr_shape()
+    }
+
+    /// Получить следующую фигуру (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`next_shape()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте next_shape()")]
+    pub fn get_next_shape(&self) -> &Tetromino {
+        self.next_shape()
+    }
+
+    /// Получить удержанную фигуру (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`held_shape()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте held_shape()")]
+    pub fn get_held_shape(&self) -> Option<&Tetromino> {
+        self.held_shape()
     }
 
     /// Получить удержанную фигуру (ссылка на Option).
@@ -634,13 +683,13 @@ impl GameState {
         &self.held_shape
     }
 
-    /// Получить текущую фигуру (мутуабельная ссылка для тестов).
+    /// Получить текущую фигуру (мутуабельная ссылка).
     #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
 
-    /// Получить следующую фигуру (мутуабельная ссылка для тестов).
+    /// Получить следующую фигуру (мутуабельная ссылка).
     #[must_use]
     pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.next_shape
@@ -648,24 +697,47 @@ impl GameState {
 
     /// Получить скорость падения.
     #[must_use]
-    pub fn get_fall_speed(&self) -> f32 {
+    pub fn fall_speed(&self) -> f32 {
         self.fall_speed
     }
 
     /// Получить скорость падения (устаревшее имя).
     ///
     /// # Устарело
-    /// Используйте [`get_fall_speed()`] вместо этого.
+    /// Используйте [`fall_speed()`] вместо этого.
     #[must_use]
-    #[deprecated(since = "23.96.15", note = "Используйте get_fall_speed()")]
+    #[deprecated(since = "23.96.16", note = "Используйте fall_speed()")]
+    pub fn get_fall_speed(&self) -> f32 {
+        self.fall_speed()
+    }
+
+    /// Получить скорость падения (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`fall_speed()`] вместо этого.
+    #[must_use]
+    #[deprecated(
+        since = "23.96.15",
+        note = "Используйте get_fall_speed(), затем fall_speed()"
+    )]
     pub fn get_fall_spd(&self) -> f32 {
-        self.get_fall_speed()
+        self.fall_speed()
     }
 
     /// Получить таймер приземления.
     #[must_use]
-    pub fn get_land_timer(&self) -> f64 {
+    pub fn land_timer(&self) -> f64 {
         self.land_timer
+    }
+
+    /// Получить таймер приземления (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`land_timer()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте land_timer()")]
+    pub fn get_land_timer(&self) -> f64 {
+        self.land_timer()
     }
 
     /// Получить флаг возможности удержания фигуры.
@@ -682,8 +754,18 @@ impl GameState {
 
     /// Получить расстояние Soft Drop.
     #[must_use]
-    pub fn get_soft_drop_distance(&self) -> u32 {
+    pub fn soft_drop_distance(&self) -> u32 {
         self.soft_drop_distance
+    }
+
+    /// Получить расстояние Soft Drop (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`soft_drop_distance()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.16", note = "Используйте soft_drop_distance()")]
+    pub fn get_soft_drop_distance(&self) -> u32 {
+        self.soft_drop_distance()
     }
 
     /// Получить маску анимации строк.
@@ -740,28 +822,66 @@ impl GameState {
         &self.render_cache.cached_timer_str
     }
 
+    /// Получить битовую маску заполненных линий.
+    #[must_use]
+    pub fn get_filled_lines(&self) -> u32 {
+        self.filled_lines
+    }
+
+    /// Получить кэш для отрисовки (ссылка).
+    #[must_use]
+    pub fn get_render_cache(&self) -> &RenderCache {
+        &self.render_cache
+    }
+
+    /// Получить кэш для отрисовки (мутуабельная ссылка).
+    #[must_use]
+    pub fn get_render_cache_mut(&mut self) -> &mut RenderCache {
+        &mut self.render_cache
+    }
+
+    // ========================================================================
+    // ТЕСТОВЫЕ ГЕТТЕРЫ (#[cfg(test)])
+    // ========================================================================
+
+    /// Получить игровое поле (для тестов).
+    #[cfg(test)]
+    pub fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        &self.blocks
+    }
+
+    /// Получить статистику игры (для тестов).
+    #[cfg(test)]
+    pub fn stats(&self) -> &GameStats {
+        &self.stats
+    }
+
+    /// Получить кэш для отрисовки (для тестов).
+    #[cfg(test)]
+    pub fn render_cache(&self) -> &RenderCache {
+        &self.render_cache
+    }
+
     // ========================================================================
     // СЕТТЕРЫ ДЛЯ ИЗМЕНЕНИЯ ПОЛЕЙ (ДЛЯ ТЕСТОВ) С ВАЛИДАЦИЕЙ
     // ========================================================================
-    // Исправление #15: Добавлена валидация входных значений
 
     /// Установить счёт (для тестов).
-    ///
-    /// # Исправление #15
-    /// u128 всегда >= 0, валидация не требуется.
+    #[track_caller]
     pub fn set_score(&mut self, score: u128) {
         self.score = score;
     }
 
     /// Установить уровень (для тестов).
     ///
-    /// # Исправление #15
     /// Уровень должен быть >= 1.
+    #[track_caller]
     pub fn set_level(&mut self, level: u32) {
         self.level = level.max(1);
     }
 
     /// Установить количество удалённых линий (для тестов).
+    #[track_caller]
     pub fn set_lines_cleared(&mut self, lines: u32) {
         self.lines_cleared = lines;
     }
@@ -777,6 +897,7 @@ impl GameState {
     /// let mut state = GameState::new();
     /// state.set_mode_trait(Box::new(ClassicMode));
     /// ```
+    #[track_caller]
     pub fn set_mode_trait(&mut self, mode_trait: Box<dyn GameModeTrait>) {
         self.mode_trait = mode_trait;
     }
@@ -792,39 +913,45 @@ impl GameState {
     /// # Исправление #14
     /// Метод обновлён для работы только с mode_trait (поле mode удалено).
     #[deprecated(since = "23.96.14", note = "Используйте set_mode_trait() вместо enum")]
+    #[track_caller]
     pub fn set_mode(&mut self, mode: GameMode) {
         self.mode_trait = mode.as_trait();
     }
 
     /// Добавить линии (для тестов).
+    #[track_caller]
     pub fn add_lines_cleared(&mut self, count: u32) {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
     }
 
     /// Установить текущую фигуру (для тестов).
+    #[track_caller]
     pub fn set_curr_shape(&mut self, shape: Tetromino) {
         self.curr_shape = shape;
     }
 
     /// Установить следующую фигуру (для тестов).
+    #[track_caller]
     pub fn set_next_shape(&mut self, shape: Tetromino) {
         self.next_shape = shape;
     }
 
     /// Установить удержанную фигуру (для тестов).
+    #[track_caller]
     pub fn set_held_shape(&mut self, shape: Option<Tetromino>) {
         self.held_shape = shape;
     }
 
     /// Установить флаг возможности удержания (для тестов).
+    #[track_caller]
     pub fn set_can_hold(&mut self, can_hold: bool) {
         self.can_hold = can_hold;
     }
 
     /// Установить скорость падения (для тестов).
     ///
-    /// # Исправление #15
     /// Скорость падения должна быть в диапазоне [0.1, MAX_FALL_SPEED].
+    #[track_caller]
     pub fn set_fall_speed(&mut self, spd: f32) {
         self.fall_speed = spd.clamp(0.1, MAX_FALL_SPEED);
     }
@@ -834,34 +961,39 @@ impl GameState {
     /// # Устарело
     /// Используйте [`set_fall_speed()`] вместо этого.
     #[deprecated(since = "23.96.15", note = "Используйте set_fall_speed()")]
+    #[track_caller]
     pub fn set_fall_spd(&mut self, spd: f32) {
         self.set_fall_speed(spd);
     }
 
     /// Установить таймер приземления (для тестов).
     ///
-    /// # Исправление #15
     /// Таймер должен быть >= 0.
+    #[track_caller]
     pub fn set_land_timer(&mut self, timer: f64) {
         self.land_timer = timer.max(0.0);
     }
 
     /// Установить флаг Hard Drop (для тестов).
+    #[track_caller]
     pub fn set_is_hard_dropping(&mut self, dropping: bool) {
         self.is_hard_dropping = dropping;
     }
 
     /// Установить расстояние Soft Drop (для тестов).
+    #[track_caller]
     pub fn set_soft_drop_distance(&mut self, distance: u32) {
         self.soft_drop_distance = distance;
     }
 
     /// Установить маску анимации строк (для тестов).
+    #[track_caller]
     pub fn set_animating_rows_mask(&mut self, mask: u32) {
         self.animating_rows_mask = mask;
     }
 
     /// Удалить заполненные линии (для тестов).
+    #[track_caller]
     pub fn remove_full_rows(&mut self) {
         let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
         crate::game::remove_rows(&mut self.blocks, rows_mask);
@@ -878,11 +1010,13 @@ impl GameState {
     /// state.add_score_no_check(100);
     /// assert_eq!(state.get_score(), 100);
     /// ```
+    #[track_caller]
     pub fn add_score_no_check(&mut self, score: u128) {
         self.score = self.score.saturating_add(score);
     }
 
     /// Добавить очки (для тестов и через трейт `GameBoardAccess`).
+    #[track_caller]
     pub fn add_score(&mut self, points: u128) {
         self.score = self.score.saturating_add(points);
     }

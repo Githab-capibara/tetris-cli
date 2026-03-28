@@ -696,3 +696,98 @@ impl Renderer for Canvas {
         self.reset();
     }
 }
+
+// ============================================================================
+// MOCK CANVAS ДЛЯ ТЕСТОВ
+// ============================================================================
+
+/// Mock-канвас для тестирования отрисовки.
+///
+/// Используется в тестах для проверки отрисовки без реального терминала.
+/// Подсчитывает количество вызовов flush() и хранит отрисованные строки.
+///
+/// # Пример использования
+/// ```
+/// use crate::io::MockCanvas;
+///
+/// let mut canvas = MockCanvas::new();
+/// canvas.draw_strs(&["строка 1", "строка 2"], (1, 1));
+/// assert_eq!(canvas.flush_count(), 1);
+/// ```
+#[cfg(test)]
+#[derive(Debug, Default)]
+pub struct MockCanvas {
+    /// Количество вызовов flush().
+    flush_count: u32,
+    /// Список отрисованных строк с позициями.
+    drawn_strings: Vec<(String, (u16, u16))>,
+}
+
+#[cfg(test)]
+impl MockCanvas {
+    /// Создать новый MockCanvas.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Проверить что канвас является stub (всегда true для MockCanvas).
+    pub fn is_stub(&self) -> bool {
+        true
+    }
+
+    /// Получить количество вызовов flush().
+    pub fn flush_count(&self) -> u32 {
+        self.flush_count
+    }
+
+    /// Получить список отрисованных строк с позициями.
+    pub fn get_drawn_strings(&self) -> &[(String, (u16, u16))] {
+        &self.drawn_strings
+    }
+
+    /// Отрисовать строки (статические).
+    ///
+    /// # Аргументы
+    /// * `lines` - массив строк для отрисовки
+    /// * `pos` - позиция верхней левой строки (x, y)
+    pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16)) {
+        let (x, mut y) = pos;
+        for line in lines {
+            self.drawn_strings.push((line.to_string(), (x, y)));
+            y += 1;
+        }
+        // Один flush() в конце как в реальном Canvas
+        self.flush_count += 1;
+    }
+
+    /// Отрисовать строку.
+    ///
+    /// # Аргументы
+    /// * `text` - текст для отрисовки
+    /// * `pos` - позиция верхнего левого угла (x, y)
+    pub fn draw_string(&mut self, text: &str, pos: (u16, u16)) {
+        self.drawn_strings.push((text.to_string(), pos));
+    }
+
+    /// Обновить вывод (flush).
+    pub fn flush(&mut self) {
+        self.flush_count += 1;
+    }
+
+    /// Сбросить терминал (no-op для MockCanvas).
+    pub fn reset(&mut self) {
+        // No-op для тестов
+    }
+
+    /// Отрисовать строку (no-op для MockCanvas).
+    pub fn draw_str(&mut self, text: &str, x: u16, y: u16) {
+        self.drawn_strings.push((text.to_string(), (x, y)));
+    }
+}
+
+#[cfg(test)]
+impl Drop for MockCanvas {
+    fn drop(&mut self) {
+        // No-op для тестов
+    }
+}

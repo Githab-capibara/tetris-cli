@@ -183,32 +183,33 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 fn update_cached_strings(state: &mut GameState) {
     use std::fmt::Write;
 
-    if state.score != state.render_cache.last_cached_score {
-        state.render_cache.cached_score_str.truncate(0);
-        if let Err(e) = write!(state.render_cache.cached_score_str, "{:10}", state.score) {
+    let score = state.score();
+    let level = state.level();
+    let lines_cleared = state.lines_cleared();
+    let render_cache = state.get_render_cache_mut();
+
+    if score != render_cache.last_cached_score {
+        render_cache.cached_score_str.truncate(0);
+        if let Err(e) = write!(render_cache.cached_score_str, "{:10}", score) {
             eprintln!("Ошибка записи кэша счёта: {e}");
         }
-        state.render_cache.last_cached_score = state.score;
+        render_cache.last_cached_score = score;
     }
 
-    if state.level != state.render_cache.last_cached_level {
-        state.render_cache.cached_level_str.truncate(0);
-        if let Err(e) = write!(state.render_cache.cached_level_str, "{:10}", state.level) {
+    if level != render_cache.last_cached_level {
+        render_cache.cached_level_str.truncate(0);
+        if let Err(e) = write!(render_cache.cached_level_str, "{:10}", level) {
             eprintln!("Ошибка записи кэша уровня: {e}");
         }
-        state.render_cache.last_cached_level = state.level;
+        render_cache.last_cached_level = level;
     }
 
-    if state.lines_cleared != state.render_cache.last_cached_lines {
-        state.render_cache.cached_lines_str.truncate(0);
-        if let Err(e) = write!(
-            state.render_cache.cached_lines_str,
-            "{:10}",
-            state.lines_cleared
-        ) {
+    if lines_cleared != render_cache.last_cached_lines {
+        render_cache.cached_lines_str.truncate(0);
+        if let Err(e) = write!(render_cache.cached_lines_str, "{:10}", lines_cleared) {
             eprintln!("Ошибка записи кэша линий: {e}");
         }
-        state.render_cache.last_cached_lines = state.lines_cleared;
+        render_cache.last_cached_lines = lines_cleared;
     }
 }
 
@@ -225,28 +226,36 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     update_cached_strings(state);
 
     // Кэширование строки рекорда
-    if state.render_cache.cached_high_score_str.len() != high_score_display.len()
-        || state.render_cache.cached_high_score_str != high_score_display
     {
-        state.render_cache.cached_high_score_str = high_score_display.to_string();
+        let render_cache = state.get_render_cache_mut();
+        if render_cache.cached_high_score_str.len() != high_score_display.len()
+            || render_cache.cached_high_score_str != high_score_display
+        {
+            render_cache.cached_high_score_str = high_score_display.to_string();
+        }
     }
 
     // Кэширование строки комбо
-    if state.render_cache.last_cached_combo != state.stats.combo_counter {
-        if state.stats.combo_counter > 1 {
-            state.render_cache.cached_combo_str = format!("Комбо: x{}", state.stats.combo_counter);
-        } else {
-            state.render_cache.cached_combo_str.clear();
+    let combo_counter = state.get_stats().combo_counter;
+    {
+        let render_cache = state.get_render_cache_mut();
+        if render_cache.last_cached_combo != combo_counter {
+            if combo_counter > 1 {
+                render_cache.cached_combo_str = format!("Комбо: x{combo_counter}");
+            } else {
+                render_cache.cached_combo_str.clear();
+            }
+            render_cache.last_cached_combo = combo_counter;
         }
-        state.render_cache.last_cached_combo = state.stats.combo_counter;
     }
 
     // Кэширование строки таймера для режима спринт
     if state.get_mode_trait().get_target_lines() == Some(40) {
-        let elapsed = state.stats.get_elapsed_time();
+        let elapsed = state.get_stats().get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
-        if state.render_cache.cached_timer_str != timer_str {
-            state.render_cache.cached_timer_str = timer_str;
+        let render_cache = state.get_render_cache_mut();
+        if render_cache.cached_timer_str != timer_str {
+            render_cache.cached_timer_str = timer_str;
         }
     }
 }
@@ -526,11 +535,11 @@ fn update_score_for_lines(
 /// Эта функция модифицирует состояние игры, поэтому не может использовать `GameView`.
 pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
     if remove_count > 0 {
-        state.animating_rows_mask = rows_mask;
+        state.set_animating_rows_mask(rows_mask);
         // Исправление #1.7: print!() не требует обработки ошибки
         // Ошибка вывода bell-символа не критична для работы игры
         print!("{BELL}", BELL = super::constants::BELL);
-        state.stats.update_max_combo(remove_count);
+        state.get_stats_mut().update_max_combo(remove_count);
     }
 }
 
@@ -553,7 +562,7 @@ pub fn animate_clear(state: &mut GameState, rows_mask: u32, remove_count: u32) {
 /// - `update_score_for_lines()` - начисление очков
 pub fn check_rows(state: &mut GameState) -> u32 {
     // Поиск заполненных линий
-    let filled_rows = find_filled_lines(&state.blocks);
+    let filled_rows = find_filled_lines(state.get_blocks());
     let remove_count = filled_rows.len() as u32;
 
     // Преобразуем в битовую маску для анимации
@@ -574,22 +583,26 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     animate_clear(state, rows_mask, remove_count);
 
     // Удаление линий и сдвиг поля
-    remove_lines(&mut state.blocks, &filled_rows);
+    remove_lines(state.get_blocks_mut(), &filled_rows);
 
     // Обновление счёта, уровня и комбо
-    update_score_for_lines(
-        &mut state.score,
-        state.level,
-        filled_rows.len(),
-        &mut state.stats.combo_counter,
-    );
+    let mut score = state.score();
+    let level = state.level();
+    let mut combo_counter = state.get_stats_mut().combo_counter;
+
+    update_score_for_lines(&mut score, level, filled_rows.len(), &mut combo_counter);
+
+    state.set_score(score);
+    state.get_stats_mut().combo_counter = combo_counter;
 
     // Обновление количества очищенных линий
-    state.lines_cleared = state.lines_cleared.saturating_add(remove_count);
+    let lines_cleared = state.lines_cleared().saturating_add(remove_count);
+    state.set_lines_cleared(lines_cleared);
 
     // Увеличение скорости игры
     use super::constants::SPD_INC;
-    state.fall_speed += SPD_INC * remove_count as f32;
+    let fall_speed = state.fall_speed();
+    state.set_fall_speed(fall_speed + SPD_INC * remove_count as f32);
 
     remove_count
 }
