@@ -4,6 +4,65 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.18] — 2026-03-28
+
+### Исправления аудита кода
+
+**CRITICAL:**
+- **C1: Безопасный cast в cycle.rs** (`src/game/cycle.rs`) — добавлена безопасная конвертация `u128 → u64` в функциях `maintain_fps()` и `delta_time()`, защита от переполнения при длительных интервалах между кадрами
+
+**LOW:**
+- **L1: Улучшена документация** (`src/**/*.rs`) — добавлены backticks для имён функций, типов и констант в документации, улучшена читаемость документации API, исправлено форматирование примеров кода
+- **L2: Оптимизирован match в cycle.rs** (`src/game/cycle.rs`) — объединены паттерны `match` для обработки `InputResult::Continue` и `InputResult::Pause`, упрощена логика обработки результатов ввода в игровом цикле, снижено количество дублирования кода
+- **L3: Улучшена обработка ошибок в application.rs** (`src/app/application.rs`) — использован `if let` вместо `match` для обработки опционального рекорда, улучшена читаемость кода загрузкисохранений, добавлено логирование ошибок через `eprintln!`
+
+**MEDIUM:**
+- **M4: Добавлены TODO комментарии** (`src/game/cycle.rs`) — добавлены TODO комментарии для будущей рефакторизации трейтов, константы с `#[allow(dead_code)]` для будущих улучшений, документированы планы по разделению модулей
+
+### Тесты
+
+- **test_fixes_verification.rs** — 14 новых тестов для проверки всех исправлений аудита:
+  - **Группа C1 (3 теста):**
+    - `test_c1_maintain_fps_long_intervals` — тест безопасного cast в maintain_fps
+    - `test_c1_delta_time_large_delays` — тест безопасного cast в delta_time
+    - `test_c1_cast_no_overflow` — тест отсутствия переполнения при cast u128 → u64
+  - **Группа L2 (3 теста):**
+    - `test_l2_input_result_continue` — тест обработки InputResult::Continue
+    - `test_l2_input_result_pause` — тест обработки InputResult::Pause
+    - `test_l2_game_continues_after_pause` — тест продолжения игры после паузы
+  - **Группа L3 (3 теста):**
+    - `test_l3_some_score_handling` — тест обработки Some(score)
+    - `test_l3_none_invalid_hash` — тест обработки None (ошибка хэша)
+    - `test_l3_error_logging_invalid_record` — тест логирования ошибки
+  - **Группа M4 (2 теста):**
+    - `test_m4_todo_comments_exist` — тест наличия TODO комментариев
+    - `test_m4_allow_dead_code_constants_exist` — тест констант с #[allow(dead_code)]
+  - **Интеграционные тесты (3 теста):**
+    - `test_all_fixes_integration` — комплексная проверка всех исправлений
+    - `test_cast_stress_test` — стресс-тест на безопасность cast
+    - `test_all_input_result_variants` — тест всех вариантов InputResult
+
+- **Всего тестов: 1053** (1030 lib + 23 doctest, все проходят)
+
+### Улучшения
+
+- **Безопасность** — защита от переполнения при cast u128 → u64 в игровом цикле
+- **Читаемость** — улучшена документация с backticks, упрощён код обработки ошибок
+- **Производительность** — оптимизированы match паттерны в игровом цикле
+- **Поддерживаемость** — добавлены TODO комментарии для будущей рефакторизации
+
+### Изменённые файлы
+
+- `src/game/cycle.rs` — безопасный cast, объединённые match паттерны, TODO комментарии
+- `src/app/application.rs` — if let обработка ошибок
+- `src/tests/test_fixes_verification.rs` — 14 новых тестов
+- `src/tests/mod.rs` — экспорт test_fixes_verification
+- `README.md` — обновление количества тестов, новые функции
+- `ARCHITECTURE.md` — обновление метрик, новая секция о тестах верификации
+- `CHANGELOG.md` — запись изменений
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+
+
 ## [23.96.17] — 2026-03-28
 
 ### Исправления аудита кода

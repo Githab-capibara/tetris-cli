@@ -45,13 +45,12 @@ impl Application {
         let (save, leaderboard) = Self::load_game_data();
 
         // Проверка целостности рекорда
-        // Исправление C3: замена unwrap_or_else на match с подробным логированием
-        let high_score = match save.verify_and_get_score() {
-            Some(score) => score,
-            None => {
-                eprintln!("Ошибка: рекорд не прошёл валидацию. Используется 0.");
-                0
-            }
+        // Исправление C3: замена unwrap_or_else на if let с подробным логированием
+        let high_score = if let Some(score) = save.verify_and_get_score() {
+            score
+        } else {
+            eprintln!("Ошибка: рекорд не прошёл валидацию. Используется 0.");
+            0
         };
 
         // Проверка терминала и инициализация ввода/вывода
