@@ -48,20 +48,16 @@ fn check_block_collision(
         return false;
     }
 
-    // Игнорирование блоков выше поля (для вращения)
-    if ignore_above_field && check_y < 0 {
-        return true; // Считаем что блока нет (нет коллизии)
-    }
-
-    // Проверка нижней границы (только для движения вниз)
-    // Для вращения блоки выше поля допустимы
+    // Проверка нижней границы (блоки выше поля считаются пустыми)
+    // Блоки выше поля (Y < 0) не должны считаться коллизией
+    // Это важно для движения влево/вправо, когда фигура появляется на поле
     if check_y < 0 {
-        return true; // Считаем что блока нет (нет коллизии)
+        return true; // Нет коллизии выше поля
     }
 
     // Проверка наличия блока в сетке
     if state
-        .blocks
+        .get_blocks()
         .get(check_y as usize)
         .and_then(|row| row.get(check_x as usize))
         .is_none_or(|&cell| cell != -1)
@@ -129,7 +125,8 @@ fn check_collision_direction(
 /// `true` если движение возможно
 #[must_use]
 pub fn can_move_curr_shape_direction(state: &GameState, dir: Direction) -> bool {
-    check_collision_direction(state, &state.curr_shape.coords, state.curr_shape.pos, dir)
+    let curr_shape = state.curr_shape();
+    check_collision_direction(state, &curr_shape.coords, curr_shape.pos, dir)
 }
 
 /// Проверить возможность вращения фигуры (без смещения).
@@ -180,7 +177,7 @@ pub fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (
 /// Прямая проверка вращения без использования wall kick.
 pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
     // Сначала проверяем прямое вращение (без wall kick)
-    let mut temp_shape = state.curr_shape;
+    let mut temp_shape = *state.curr_shape();
     temp_shape.rotate(dir);
 
     if check_rotation_collision(state, &temp_shape.coords, temp_shape.pos) {
