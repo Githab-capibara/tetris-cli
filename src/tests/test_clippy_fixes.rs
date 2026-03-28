@@ -84,7 +84,7 @@ mod clippy_fixes_tests {
         // u32 не может быть > u32::MAX по определению
         // Такие проверки убраны из production кода
         // Этот тест просто подтверждает что код компилируется
-        let _max_check = value <= u32::MAX;
-        assert!(true); // Тест проходит если код скомпилировался
+        let max_check = value <= u32::MAX;
+        assert!(max_check, "Значение u32 должно быть <= u32::MAX");
     }
 }
