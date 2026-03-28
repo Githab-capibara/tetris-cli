@@ -3,7 +3,6 @@
 //! Модуль предоставляет систему настройки клавиш управления для игры.
 //! Поддерживает сохранение/загрузку конфигурации и валидацию клавиш.
 
-// TODO: для будущей функциональности
 #![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
@@ -46,35 +45,6 @@ pub struct ControlsConfig {
     pub hmac_key: String,
     /// Подпись конфигурации.
     signature: String,
-}
-
-// ============================================================================
-// ВАЛИДАЦИЯ ПУТЕЙ (Исправление #6 - устранение дублирования)
-// ============================================================================
-
-/// Валидировать путь к файлу конфигурации.
-///
-/// # Аргументы
-/// * `path` - путь для валидации
-///
-/// # Возвращает
-/// - `Ok((PathBuf, PathBuf))` - кортеж (полный путь, текущая директория)
-/// - `Err(io::Error)` - ошибка валидации
-///
-/// # Исправление #6
-/// Выделена из `save_to_file()` и `load_from_file()` для устранения дублирования кода.
-///
-/// # Исправление H1
-/// Использует PathValidator::validate_all() для централизованной валидации.
-fn validate_config_path(path: &str) -> io::Result<(std::path::PathBuf, std::path::PathBuf)> {
-    let current_dir = std::env::current_dir()
-        .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
-
-    let joined_path = DEFAULT_PATH_VALIDATOR
-        .validate_all(path, &current_dir)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    Ok((joined_path, current_dir))
 }
 
 // ============================================================================
@@ -245,8 +215,13 @@ impl ControlsConfig {
     /// # Panics
     /// Может паниковать при переполнении времени (крайне маловероятно)
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
-        // Валидация пути (Исправление #6: вынесено в отдельную функцию)
-        let (joined_path, _current_dir) = validate_config_path(path)?;
+        // Валидация пути через DEFAULT_PATH_VALIDATOR
+        let current_dir = std::env::current_dir().map_err(|e| {
+            io::Error::other(format!("Не удалось получить текущую директорию: {e}"))
+        })?;
+        let joined_path = DEFAULT_PATH_VALIDATOR
+            .validate_all(path, &current_dir)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
         // Генерируем новый ключ при сохранении
         let hmac_key = crate::crypto::generate_salt();
@@ -331,8 +306,13 @@ impl ControlsConfig {
     /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
     /// ```
     pub fn load_from_file(path: &str) -> io::Result<Self> {
-        // Валидация пути (Исправление #6: вынесено в отдельную функцию)
-        let (joined_path, _current_dir) = validate_config_path(path)?;
+        // Валидация пути через DEFAULT_PATH_VALIDATOR
+        let current_dir = std::env::current_dir().map_err(|e| {
+            io::Error::other(format!("Не удалось получить текущую директорию: {e}"))
+        })?;
+        let joined_path = DEFAULT_PATH_VALIDATOR
+            .validate_all(path, &current_dir)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
         // Проверяем, что файл не является symlink
         if let Ok(metadata) = std::fs::symlink_metadata(&joined_path) {

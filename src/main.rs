@@ -22,6 +22,7 @@
 //!
 // Модули игры
 mod app;
+pub mod constants;
 mod controls;
 mod crypto;
 mod game;

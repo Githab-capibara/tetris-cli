@@ -62,7 +62,7 @@
 // Подмодули
 pub mod access;
 pub mod cache;
-pub mod constants;
+// constants больше не является отдельным файлом - используем ре-экспорт из crate::constants
 pub mod cycle;
 pub mod logic;
 pub mod mode_trait;
@@ -71,6 +71,10 @@ pub mod scoring;
 pub mod state;
 pub mod types;
 pub mod view;
+
+// Ре-экспорт констант для обратной совместимости (чтобы game::constants::FPS работал)
+// Публичный ре-экспорт для тестов и внешнего использования
+pub use crate::constants;
 
 // Подмодули scoring
 
