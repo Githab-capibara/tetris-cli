@@ -10,11 +10,8 @@ use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 use std::time::Instant;
 
-// Импорт трейта GameModeTrait
-use super::mode_trait::GameModeTrait;
-
-// Импорт констант из constants.rs
 use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
+use super::mode_trait::GameModeTrait;
 
 // ============================================================================
 // ТИПЫ ОШИБОК
@@ -161,59 +158,26 @@ impl GameMode {
 #[derive(Default, Clone)]
 pub struct GameStats {
     /// Количество фигур типа T.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) t_pieces: u32,
     /// Количество фигур типа L.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) l_pieces: u32,
     /// Количество фигур типа J.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) j_pieces: u32,
     /// Количество фигур типа S.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) s_pieces: u32,
     /// Количество фигур типа Z.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) z_pieces: u32,
     /// Количество фигур типа O.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) o_pieces: u32,
     /// Количество фигур типа I.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) i_pieces: u32,
     /// Максимальное комбо (одновременное удаление линий).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) max_combo: u32,
     /// Текущее комбо (последовательные удаления в нескольких ходах).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) combo_counter: u32,
     /// Время начала игры.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) start_time: Option<Instant>,
     /// Время окончания игры.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) end_time: Option<Instant>,
 }
 
@@ -410,12 +374,9 @@ pub struct GameState {
     /// # Исправление #9
     /// Заменён Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> на [[i8; GRID_WIDTH]; GRID_HEIGHT]
     /// для размещения данных на стеке вместо кучи (оптимизация производительности).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
-    #[allow(dead_code)] // Будет использоваться в будущей оптимизации
+    #[allow(dead_code)]
     pub(crate) filled_lines: u32,
 
     // ========================================================================
@@ -425,19 +386,10 @@ pub struct GameState {
     // Приоритет: Высокий
     // Срок: 1-2 недели
     /// Текущий счёт.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) score: u128,
     /// Текущий уровень.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) level: u32,
     /// Количество удалённых линий.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) lines_cleared: u32,
 
     // ========================================================================
@@ -447,29 +399,14 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Текущая фигура.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) next_shape: Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) held_shape: Option<Tetromino>,
     /// Можно ли ещё менять удержанную фигуру в этом ходу.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) can_hold: bool,
     /// Генератор фигур по системе 7-bag.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) bag: BagGenerator,
 
     // ========================================================================
@@ -479,47 +416,26 @@ pub struct GameState {
     // Приоритет: Средний
     // Срок: 2-3 недели
     /// Строки для анимации (мигание при очистке).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) is_hard_dropping: bool,
 
     // ========================================================================
     // === ИГРОВАЯ ЛОГИКА ===
     // ========================================================================
     /// Скорость падения.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
-    pub(crate) fall_spd: f32,
+    pub(crate) fall_speed: f32,
     /// Таймер приземления.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) land_timer: f64,
     /// Количество ячеек, пройденных при Soft Drop.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) soft_drop_distance: u32,
 
     // ========================================================================
     // === СТАТИСТИКА И РЕЖИМ ИГРЫ ===
     // ========================================================================
     /// Статистика игры.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) stats: GameStats,
     /// Режим игры (объект трейта).
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     /// Использует трейт GameModeTrait вместо enum для лучшей расширяемости.
     ///
     /// # Исправление #14
@@ -530,9 +446,6 @@ pub struct GameState {
     // === КЭШ ДЛЯ ОТРИСОВКИ ===
     // ========================================================================
     /// Кэш для оптимизации отрисовки.
-    ///
-    /// # Инкапсуляция
-    /// Поле pub(crate) для доступа из модулей game/.
     pub(crate) render_cache: RenderCache,
 }
 
@@ -593,7 +506,7 @@ impl GameState {
             next_shape,
             held_shape: None,
             can_hold: true,
-            fall_spd: INITIAL_FALL_SPD,
+            fall_speed: INITIAL_FALL_SPD,
             // Исправление #9: инициализация массива на стеке вместо Box
             blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             filled_lines: 0,
@@ -735,8 +648,18 @@ impl GameState {
 
     /// Получить скорость падения.
     #[must_use]
+    pub fn get_fall_speed(&self) -> f32 {
+        self.fall_speed
+    }
+
+    /// Получить скорость падения (устаревшее имя).
+    ///
+    /// # Устарело
+    /// Используйте [`get_fall_speed()`] вместо этого.
+    #[must_use]
+    #[deprecated(since = "23.96.15", note = "Используйте get_fall_speed()")]
     pub fn get_fall_spd(&self) -> f32 {
-        self.fall_spd
+        self.get_fall_speed()
     }
 
     /// Получить таймер приземления.
@@ -902,8 +825,17 @@ impl GameState {
     ///
     /// # Исправление #15
     /// Скорость падения должна быть в диапазоне [0.1, MAX_FALL_SPEED].
+    pub fn set_fall_speed(&mut self, spd: f32) {
+        self.fall_speed = spd.clamp(0.1, MAX_FALL_SPEED);
+    }
+
+    /// Установить скорость падения (устаревшее имя, для тестов).
+    ///
+    /// # Устарело
+    /// Используйте [`set_fall_speed()`] вместо этого.
+    #[deprecated(since = "23.96.15", note = "Используйте set_fall_speed()")]
     pub fn set_fall_spd(&mut self, spd: f32) {
-        self.fall_spd = spd.clamp(0.1, MAX_FALL_SPEED);
+        self.set_fall_speed(spd);
     }
 
     /// Установить таймер приземления (для тестов).

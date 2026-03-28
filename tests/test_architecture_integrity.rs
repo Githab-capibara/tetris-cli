@@ -331,7 +331,10 @@ mod tests {
 
         // Сначала проверяем что хотя бы один модуль существует
         let existing_modules = modules.iter().filter(|p| Path::new(p).exists()).count();
-        assert!(existing_modules > 0, "Хотя бы один модуль должен существовать");
+        assert!(
+            existing_modules > 0,
+            "Хотя бы один модуль должен существовать"
+        );
 
         // Проверяем размер модулей
         for module_path in &modules {

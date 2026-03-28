@@ -99,10 +99,10 @@ pub trait BoardMutable: BoardReadonly {
     fn set_block(&mut self, x: usize, y: usize, value: i8);
 
     /// Получить скорость падения.
-    fn get_fall_spd(&self) -> f32;
+    fn get_fall_speed(&self) -> f32;
 
     /// Установить скорость падения.
-    fn set_fall_spd(&mut self, spd: f32);
+    fn set_fall_speed(&mut self, spd: f32);
 
     /// Получить таймер приземления.
     fn get_land_timer(&self) -> f64;
@@ -217,12 +217,12 @@ impl BoardMutable for crate::game::state::GameState {
         self.blocks[y][x] = value;
     }
 
-    fn get_fall_spd(&self) -> f32 {
-        self.get_fall_spd()
+    fn get_fall_speed(&self) -> f32 {
+        self.get_fall_speed()
     }
 
-    fn set_fall_spd(&mut self, spd: f32) {
-        self.set_fall_spd(spd);
+    fn set_fall_speed(&mut self, spd: f32) {
+        self.set_fall_speed(spd);
     }
 
     fn get_land_timer(&self) -> f64 {

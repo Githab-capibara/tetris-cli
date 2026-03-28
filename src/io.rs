@@ -23,7 +23,9 @@ use crate::io_traits::{InputReader, Renderer};
 // ============================================================================
 // Централизация констант для устранения дублирования.
 // DISP_WIDTH и DISP_HEIGHT определены в game/constants.rs.
-pub use crate::game::constants::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+pub use crate::game::constants::{
+    DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH,
+};
 
 // ============================================================================
 // КОНСТАНТЫ ВВОДА/ВЫВОДА (локальные)

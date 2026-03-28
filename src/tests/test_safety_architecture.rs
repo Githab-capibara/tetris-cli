@@ -28,11 +28,11 @@ fn test_score_overflow_protection() {
     let multiplier = 3u128;
     let result = base.saturating_mul(multiplier);
     assert_eq!(result, u128::MAX, "Должно быть насыщение до MAX");
-    
+
     // Дополнительная проверка: умножение на 0
     let zero_result = u128::MAX.saturating_mul(0);
     assert_eq!(zero_result, 0, "Умножение на 0 должно дать 0");
-    
+
     // Проверка saturating_add
     let add_result = u128::MAX.saturating_add(1);
     assert_eq!(add_result, u128::MAX, "Сложение должно насыщаться до MAX");
@@ -55,17 +55,21 @@ fn test_score_overflow_protection() {
 #[test]
 fn test_leaderboard_entry_atomic_validation() {
     use crate::highscore::leaderboard::LeaderboardEntry;
-    
+
     let entry = LeaderboardEntry::new("Test", 1000);
-    
+
     // Атомарная проверка и получение
     let valid_score = entry.get_valid_score();
-    assert_eq!(valid_score, Some(1000), "Валидная запись должна вернуть score");
-    
+    assert_eq!(
+        valid_score,
+        Some(1000),
+        "Валидная запись должна вернуть score"
+    );
+
     // Проверка что score() тоже возвращает корректное значение
     let score = entry.score();
     assert_eq!(score, 1000, "score() должен вернуть 1000");
-    
+
     // Проверка что is_valid() возвращает true
     assert!(entry.is_valid(), "Запись должна быть валидной");
 }
@@ -88,22 +92,29 @@ fn test_leaderboard_entry_atomic_validation() {
 fn test_controls_config_uses_path_validator() {
     use crate::controls::ControlsConfig;
     use std::io;
-    
+
     // Попытка сохранить с невалидным путем (абсолютный путь)
     let config = ControlsConfig::default();
     let result = config.save_to_file("/etc/passwd");
-    
+
     assert!(result.is_err(), "Должна быть ошибка для абсолютного пути");
     let err = result.unwrap_err();
-    assert_eq!(err.kind(), io::ErrorKind::InvalidInput, "Ошибка должна быть InvalidInput");
-    
+    assert_eq!(
+        err.kind(),
+        io::ErrorKind::InvalidInput,
+        "Ошибка должна быть InvalidInput"
+    );
+
     // Дополнительная проверка: path traversal тоже блокируется
     let traversal_result = config.save_to_file("../../malicious.json");
-    assert!(traversal_result.is_err(), "Path traversal должен быть заблокирован");
+    assert!(
+        traversal_result.is_err(),
+        "Path traversal должен быть заблокирован"
+    );
     let traversal_err = traversal_result.unwrap_err();
     assert!(
-        traversal_err.to_string().contains("Path traversal") || 
-        traversal_err.kind() == io::ErrorKind::InvalidInput,
+        traversal_err.to_string().contains("Path traversal")
+            || traversal_err.kind() == io::ErrorKind::InvalidInput,
         "Path traversal должен вернуть ошибку валидации"
     );
 }
@@ -127,12 +138,12 @@ fn test_application_handles_invalid_highscore() {
     // Application должен обрабатывать невалидные рекорды без паники
     // Тест проверяет что конструктор работает с поврежденными данными
     use crate::app::application::Application;
-    
+
     // Создаём приложение (должно работать даже с невалидным highscore)
     // В реальной среде может не создаться из-за отсутствия терминала,
     // но это не паника, а ожидаемая ошибка
     let app_result = Application::new();
-    
+
     // Проверяем что нет паники - приложение либо создаётся, либо возвращает ошибку
     match app_result {
         Ok(_) => {
@@ -186,14 +197,14 @@ fn test_io_traits_available() {
 /// Интеграционный тест проверяющий что все механизмы безопасности работают вместе.
 #[test]
 fn test_all_safety_mechanisms_work_together() {
-    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::controls::ControlsConfig;
+    use crate::highscore::leaderboard::LeaderboardEntry;
     use crate::io_traits::{InputReader, Renderer};
-    
+
     // 1. Проверка защиты от переполнения
     let overflow_safe = u128::MAX.saturating_add(1);
     assert_eq!(overflow_safe, u128::MAX);
-    
+
     // 2. Проверка TOCTOU защиты
     let entry = LeaderboardEntry::new("Player", 5000);
     assert_eq!(entry.get_valid_score(), Some(5000));

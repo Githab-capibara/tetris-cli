@@ -342,14 +342,14 @@ mod game_tests {
     #[test]
     fn test_soft_drop_speed_increase() {
         let state = GameState::new();
-        let initial_fall_spd = state.fall_spd;
+        let initial_fall_spd = state.fall_speed;
 
         assert!(
             (initial_fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
             "Начальная скорость должна быть INITIAL_FALL_SPD"
         );
         assert!(
-            state.fall_spd > 0.0,
+            state.fall_speed > 0.0,
             "Скорость падения должна быть положительной"
         );
     }
