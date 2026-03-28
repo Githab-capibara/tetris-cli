@@ -321,7 +321,7 @@ impl Leaderboard {
     /// Загруженную таблицу лидеров или пустую при ошибке
     #[must_use]
     pub fn load() -> Self {
-        match load(&format!("{APP_NAME}_leaderboard")) {
+        match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
                 eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Используется пустая таблица.");
@@ -332,7 +332,7 @@ impl Leaderboard {
 
     /// Сохранить таблицу лидеров в файл конфигурации.
     pub fn save(&self) {
-        if let Err(e) = store(&format!("{APP_NAME}_leaderboard"), self) {
+        if let Err(e) = store(APP_NAME, Some("leaderboard"), self) {
             eprintln!("Ошибка сохранения таблицы лидеров: {e}");
         }
     }

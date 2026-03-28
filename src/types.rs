@@ -109,11 +109,94 @@ pub enum RotationDirection {
     CounterClockwise,
 }
 
+/// Позиция в пространстве (x, y).
+///
+/// Используется для представления координат в игре.
+/// Обеспечивает типобезопасность и удобство работы с координатами.
+///
+/// ## Пример использования
+/// ```
+/// use tetris_cli::types::Position;
+///
+/// let pos = Position::new(5, 10);
+/// assert_eq!(pos.x, 5);
+/// assert_eq!(pos.y, 10);
+///
+/// let tuple = pos.to_tuple();
+/// assert_eq!(tuple, (5, 10));
+///
+/// let from_tuple = Position::from_tuple((3, 7));
+/// assert_eq!(from_tuple.x, 3);
+/// assert_eq!(from_tuple.y, 7);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Position {
+    /// Координата X (горизонтальная позиция).
+    pub x: u16,
+    /// Координата Y (вертикальная позиция).
+    pub y: u16,
+}
+
+impl Position {
+    /// Создать новую позицию из координат x и y.
+    ///
+    /// # Аргументы
+    /// * `x` - горизонтальная координата
+    /// * `y` - вертикальная координата
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `Position`
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::types::Position;
+    /// let pos = Position::new(5, 10);
+    /// ```
+    pub fn new(x: u16, y: u16) -> Self {
+        Self { x, y }
+    }
+
+    /// Создать позицию из кортежа (x, y).
+    ///
+    /// # Аргументы
+    /// * `tuple` - кортеж с координатами (x, y)
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `Position`
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::types::Position;
+    /// let pos = Position::from_tuple((5, 10));
+    /// ```
+    pub fn from_tuple(tuple: (u16, u16)) -> Self {
+        Self {
+            x: tuple.0,
+            y: tuple.1,
+        }
+    }
+
+    /// Преобразовать позицию в кортеж (x, y).
+    ///
+    /// # Возвращает
+    /// Кортеж с координатами (x, y)
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::types::Position;
+    /// let pos = Position::new(5, 10);
+    /// assert_eq!(pos.to_tuple(), (5, 10));
+    /// ```
+    #[must_use]
+    pub fn to_tuple(self) -> (u16, u16) {
+        (self.x, self.y)
+    }
+}
+
 /// Состояние завершения обновления.
 ///
 /// Возвращается методами обновления игры для указания текущего состояния.
 #[derive(PartialEq, Clone, Copy, Debug)]
-#[allow(dead_code)]
 pub enum UpdateEndState {
     /// Выход из игры.
     Quit,

@@ -91,12 +91,12 @@ impl BagGenerator {
         self.bag = ALL_SHAPES;
 
         // Создаём rng локально для оптимизации использования памяти
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         // Алгоритм Fisher-Yates для перемешивания
         for i in (1..self.bag.len()).rev() {
             // Генерируем случайный индекс от 0 до i
-            let j = rng.gen_range(0..=i);
+            let j = rng.random_range(0..=i);
             self.bag.swap(i, j);
         }
 
@@ -291,7 +291,7 @@ impl Tetromino {
     #[deprecated(since = "23.96.11", note = "Используйте Tetromino::from_bag()")]
     #[allow(dead_code)]
     pub fn select() -> Self {
-        let shape = match rand::thread_rng().gen_range(0..7) {
+        let shape = match rand::rng().random_range(0..7) {
             0 => ShapeType::T,
             1 => ShapeType::L,
             2 => ShapeType::J,
@@ -299,7 +299,7 @@ impl Tetromino {
             4 => ShapeType::Z,
             5 => ShapeType::O,
             6 => ShapeType::I,
-            _ => unreachable!("gen_range(0..7) возвращает только значения 0-6"),
+            _ => unreachable!("random_range(0..7) возвращает только значения 0-6"),
         };
         Self {
             pos: (4.0, 0.0), // Начальная позиция по центру

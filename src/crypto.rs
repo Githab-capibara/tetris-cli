@@ -5,8 +5,9 @@
 //! - `generate_salt()` - генерация случайной соли
 //! - `keyed_hash()` - подпись с ключом (не настоящий HMAC!)
 
-use rand::rngs::OsRng;
+use rand::rngs::StdRng;
 use rand::RngCore;
+use rand::SeedableRng;
 
 /// Вычислить BLAKE3 хеш строки.
 ///
@@ -42,8 +43,10 @@ pub fn hash(data: &str) -> String {
 /// ```
 #[must_use = "Соль должна быть использована для хеширования"]
 pub fn generate_salt() -> String {
+    // Используем StdRng с случайным seed от OS
+    let mut rng = StdRng::from_os_rng();
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-    OsRng.fill_bytes(&mut bytes);
+    RngCore::fill_bytes(&mut rng, &mut bytes);
     hex::encode(bytes)
 }
 

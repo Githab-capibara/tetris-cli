@@ -5,6 +5,9 @@
 // Экспорт типов из модуля types
 pub use crate::types::{Direction, RotationDirection, UpdateEndState};
 
+// Экспорт основного типа ошибки
+pub use crate::errors::GameError;
+
 // Экспорт основных типов из модуля game
 pub use crate::game::state::{GameMode, GameState, GameStats};
 
