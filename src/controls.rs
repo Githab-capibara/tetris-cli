@@ -70,56 +70,6 @@ pub struct ControlsConfig {
     signature: String,
 }
 
-/// Проверить валидность пути для конфигурации.
-///
-/// # Аргументы
-/// * `path` - путь для проверки
-///
-/// # Возвращает
-/// - `Ok(())` если путь валиден
-/// - `Err(io::Error)` если путь невалиден
-///
-/// # Безопасность
-/// Защищает от symlink атак и path traversal.
-/// Использует `O_NOFOLLOW` при открытии файлов для защиты от symlink атак.
-///
-/// # Пример использования
-/// ```ignore
-/// use tetris_cli::controls::validate_config_path;
-/// validate_config_path("config.json").unwrap();
-/// ```
-///
-/// # Исправление #5 (HIGH)
-/// Функция полностью делегирует валидацию [`DEFAULT_PATH_VALIDATOR`].
-/// Устранено дублирование проверок - все проверки в PathValidator.
-#[track_caller]
-fn validate_config_path(path: &str) -> io::Result<()> {
-    let full_path = Path::new(path);
-
-    // Полное делегирование валидации PathValidator (Исправление #5)
-    DEFAULT_PATH_VALIDATOR
-        .validate_not_absolute(full_path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    DEFAULT_PATH_VALIDATOR
-        .validate_no_traversal(path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    DEFAULT_PATH_VALIDATOR
-        .validate(full_path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    // Проверка, что путь внутри директории (единственная локальная проверка)
-    let current_dir = std::env::current_dir()
-        .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
-    let joined_path = current_dir.join(full_path);
-
-    DEFAULT_PATH_VALIDATOR
-        .validate_within_directory(&joined_path, &current_dir)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
-
-    Ok(())
-}
 
 // ============================================================================
 // КОНФИГУРАЦИЯ УПРАВЛЕНИЯ
@@ -312,8 +262,27 @@ impl ControlsConfig {
             LAST_SAVE_TIMESTAMP.store(now, Ordering::Relaxed);
         }
 
-        // Валидация пути с использованием общей функции
-        validate_config_path(path)?;
+        // Валидация пути с использованием DEFAULT_PATH_VALIDATOR напрямую
+        let full_path = Path::new(path);
+        let current_dir = std::env::current_dir()
+            .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
+        let joined_path = current_dir.join(full_path);
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_not_absolute(full_path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_no_traversal(path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate(full_path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_within_directory(&joined_path, &current_dir)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
         // Генерируем новый ключ при сохранении
         let hmac_key = crate::crypto::generate_salt();
@@ -398,14 +367,29 @@ impl ControlsConfig {
     /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
     /// ```
     pub fn load_from_file(path: &str) -> io::Result<Self> {
-        // Валидация пути с использованием общей функции
-        validate_config_path(path)?;
+        // Валидация пути с использованием DEFAULT_PATH_VALIDATOR напрямую
+        let full_path = Path::new(path);
+        let current_dir = std::env::current_dir()
+            .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?;
+        let joined_path = current_dir.join(full_path);
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_not_absolute(full_path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_no_traversal(path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate(full_path)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+
+        DEFAULT_PATH_VALIDATOR
+            .validate_within_directory(&joined_path, &current_dir)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
         // Проверяем, что файл не является symlink
-        let joined_path = std::env::current_dir()
-            .map_err(|e| io::Error::other(format!("Не удалось получить текущую директорию: {e}")))?
-            .join(path);
-
         if let Ok(metadata) = std::fs::symlink_metadata(&joined_path) {
             if metadata.file_type().is_symlink() {
                 return Err(io::Error::new(

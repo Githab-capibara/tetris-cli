@@ -11,7 +11,7 @@ use std::{thread::sleep, time::Duration};
 use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS};
 use super::state::{GameState, UpdateEndState};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
-use crate::io::Canvas;
+use crate::io::{Canvas, KeyReader};
 use termion::color::Reset;
 
 // ============================================================================
@@ -133,7 +133,7 @@ pub enum InputResult {
 #[track_caller]
 pub fn handle_input(
     state: &mut GameState,
-    inp: &mut crate::io::KeyReader,
+    inp: &mut KeyReader,
     delta_time_ms: u64,
 ) -> InputResult {
     match update(state, inp, delta_time_ms) {
@@ -198,7 +198,7 @@ pub fn handle_game_over(cnv: &mut Canvas) {
 pub fn run_game_loop(
     state: &mut GameState,
     cnv: &mut Canvas,
-    inp: &mut crate::io::KeyReader,
+    inp: &mut KeyReader,
     high_score_display: &str,
 ) -> u128 {
     use std::time::Instant;
