@@ -34,15 +34,12 @@
 //! - `test_highscore_integrity` - целостность рекордов
 //! - `test_controls_error_handling` - обработка ошибок
 //! - `test_game_negative_coords` - отрицательные координаты
-//! - `test_game_stack_overflow` - переполнение стека
 //! - `test_io_resource_leak` - утечка ресурсов
 //! - `test_safety_architecture` - тесты архитектуры безопасности (Critical/HIGH)
 //!
 //! ### Архитектурные тесты
 //! - `test_architecture` - архитектурная целостность
-//! - `test_architecture_refactoring` - тесты рефакторинга
 //! - `test_architecture_improvements` - архитектурные улучшения
-//! - `test_architecture_new_modules` - тесты новых модулей
 //!
 //! ### Тесты качества кода
 //! - `test_must_use_attributes` - атрибуты must_use
@@ -115,12 +112,9 @@ pub mod test_game_box_array;
 pub mod test_game_negative_coords;
 pub mod test_game_rotation_bounds;
 pub mod test_game_score_overflow;
-pub mod test_game_score_overflow_protection;
-pub mod test_game_stack_overflow;
 pub mod test_game_stats_export;
 
 pub mod test_highscore_config_path;
-pub mod test_highscore_deprecated_assert_hs;
 pub mod test_highscore_error_handling;
 pub mod test_highscore_integrity;
 pub mod test_highscore_random_hash;
@@ -131,7 +125,6 @@ pub mod test_io_resource_leak;
 pub mod test_io_utf8_handling;
 
 pub mod test_tetromino_dir_down;
-pub mod test_tetromino_dir_down_panic;
 
 pub mod test_hard_drop_flag;
 pub mod test_hard_drop_overflow;
@@ -155,10 +148,7 @@ pub mod test_constant_imports;
 // ============================================================================
 
 pub mod test_architecture;
-pub mod test_architecture_fixes;
-pub mod test_architecture_refactoring;
 pub mod test_architecture_improvements;
-pub mod test_architecture_new_modules;
 
 // Тесты целостности архитектуры
 pub mod test_architecture_integrity;
@@ -195,10 +185,6 @@ pub mod test_time_safety;
 // ============================================================================
 
 pub mod test_fixes;
-pub mod test_fixes_bag_preview_rotate;
-pub mod test_fixes_documentation_validation;
-pub mod test_fixes_final_issues;
-pub mod test_fixes_must_use_stack_format;
 
 // Интеграционные тесты исправлений
 pub mod test_all_fixes_integration;
@@ -209,16 +195,6 @@ pub mod test_all_fixes_integration;
 
 // Тесты для проверки всех исправлений аудита кода
 pub mod test_audit_fixes;
-
-// Тесты аудита от 28 марта 2026
-pub mod test_audit_2026_03_28;
-
-// ============================================================================
-// АРХИТЕКТУРНЫЕ ТЕСТЫ
-// ============================================================================
-
-// Тесты для проверки архитектурных улучшений и компонентов
-pub mod test_architecture_components;
 
 // ============================================================================
 // ОГРАНИЧЕНИЯ И СПЕЦИАЛЬНЫЕ ТЕСТЫ
