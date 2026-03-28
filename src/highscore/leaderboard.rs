@@ -26,6 +26,7 @@ use crate::crypto::{self, hash};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
+use std::sync::Mutex;
 
 use super::sanitize::sanitize_player_name;
 
@@ -306,6 +307,125 @@ impl LeaderboardEntry {
     }
 }
 
+// ============================================================================
+// ПОТОКОБЕЗОПАСНАЯ ОБЁРТКА (ИСПРАВЛЕНИЕ #1 - TOCTOU)
+// ============================================================================
+
+/// Потокобезопасная обёртка для LeaderboardEntry.
+///
+/// Использует Mutex для защиты от TOCTOU уязвимости в многопоточном коде.
+/// Обеспечивает атомарный доступ к score и is_valid().
+///
+/// # Пример использования
+/// ```ignore
+/// use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
+///
+/// let entry = ThreadSafeLeaderboardEntry::new("Player", 1000);
+///
+/// // Поток 1
+/// let score = entry.score(); // Атомарная валидация и возврат
+///
+/// // Поток 2
+/// let is_valid = entry.is_valid(); // Атомарная проверка
+/// ```
+pub struct ThreadSafeLeaderboardEntry {
+    /// Внутренние данные, защищённые Mutex.
+    inner: Mutex<LeaderboardEntryData>,
+}
+
+/// Внутренние данные записи (для сериализации).
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct LeaderboardEntryData {
+    /// Имя игрока.
+    name: String,
+    /// Значение рекорда.
+    score_value: u128,
+    /// Соль для хэша.
+    salt: String,
+    /// Хэш записи.
+    hash: String,
+}
+
+impl ThreadSafeLeaderboardEntry {
+    /// Создать новую потокобезопасную запись.
+    ///
+    /// # Аргументы
+    /// * `name` - имя игрока
+    /// * `score` - значение рекорда
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `ThreadSafeLeaderboardEntry`
+    #[must_use]
+    pub fn new(name: &str, score: u128) -> Self {
+        let valid_name = sanitize_player_name(name);
+        let salt = crypto::generate_salt();
+        let mut salt_and_score = String::with_capacity(salt.len() + valid_name.len() + 21);
+        salt_and_score.push_str(&salt);
+        salt_and_score.push_str(&valid_name);
+        salt_and_score.push_str(&score.to_string());
+        let hash = hash(&salt_and_score);
+
+        Self {
+            inner: Mutex::new(LeaderboardEntryData {
+                name: valid_name,
+                score_value: score,
+                salt,
+                hash,
+            }),
+        }
+    }
+
+    /// Получить значение рекорда с атомарной валидацией.
+    ///
+    /// # Возвращает
+    /// Значение рекорда (u128) или 0 если валидация не прошла
+    ///
+    /// # Безопасность
+    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    /// Валидация и возврат значения выполняются атомарно под блокировкой.
+    #[must_use]
+    pub fn score(&self) -> u128 {
+        let guard = self.inner.lock().expect("Mutex poisoned");
+        let score_value = guard.score_value;
+        // Проверяем хэш для того же значения
+        let mut salt_and_score = String::with_capacity(guard.salt.len() + guard.name.len() + 21);
+        salt_and_score.push_str(&guard.salt);
+        salt_and_score.push_str(&guard.name);
+        salt_and_score.push_str(&score_value.to_string());
+        let test_hash = hash(&salt_and_score);
+        if guard.hash != test_hash {
+            eprintln!("Предупреждение: запись не прошла валидацию!");
+            return 0;
+        }
+        score_value
+    }
+
+    /// Проверить валидность записи.
+    ///
+    /// # Возвращает
+    /// `true` если хэш совпадает
+    ///
+    /// # Безопасность
+    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    #[must_use]
+    pub fn is_valid(&self) -> bool {
+        let guard = self.inner.lock().expect("Mutex poisoned");
+        let mut salt_and_score = String::with_capacity(guard.salt.len() + guard.name.len() + 21);
+        salt_and_score.push_str(&guard.salt);
+        salt_and_score.push_str(&guard.name);
+        salt_and_score.push_str(&guard.score_value.to_string());
+        let test_hash = hash(&salt_and_score);
+        guard.hash == test_hash
+    }
+
+    /// Получить имя игрока.
+    #[must_use]
+    pub fn name(&self) -> String {
+        let guard = self.inner.lock().expect("Mutex poisoned");
+        guard.name.clone()
+    }
+}
+
 /// Таблица лидеров - коллекция из топ-5 рекордов.
 /// Сохраняется в конфигурационном файле и защищена от подделки.
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -462,5 +582,226 @@ impl Leaderboard {
     #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.entries.clear();
+    }
+}
+
+// ============================================================================
+// ТЕСТЫ ДЛЯ THREADSAFELEADERBOARDENTRY (ИСПРАВЛЕНИЕ #1 - TOCTOU)
+// ============================================================================
+
+#[cfg(test)]
+mod thread_safe_tests {
+    use super::*;
+    use std::sync::Arc;
+    use std::thread;
+
+    /// Тест 1: Базовая функциональность ThreadSafeLeaderboardEntry
+    ///
+    /// Проверяет создание и базовые методы потокобезопасной записи.
+    #[test]
+    fn test_thread_safe_entry_basic() {
+        let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000);
+
+        assert_eq!(entry.name(), "Player1");
+        assert_eq!(entry.score(), 1000);
+        assert!(entry.is_valid());
+    }
+
+    /// Тест 2: Многопоточный доступ к score()
+    ///
+    /// Проверяет атомарность метода score() при доступе из нескольких потоков.
+    #[test]
+    fn test_thread_safe_entry_concurrent_score() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player2", 2000));
+        let mut handles = vec![];
+
+        // Создаём 10 потоков, каждый читает score
+        for _ in 0..10 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                let score = entry_clone.score();
+                assert_eq!(score, 2000, "score() должен возвращать корректное значение");
+            });
+            handles.push(handle);
+        }
+
+        // Ждём завершения всех потоков
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 3: Многопоточный доступ к is_valid()
+    ///
+    /// Проверяет атомарность метода is_valid() при доступе из нескольких потоков.
+    #[test]
+    fn test_thread_safe_entry_concurrent_is_valid() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player3", 3000));
+        let mut handles = vec![];
+
+        // Создаём 10 потоков, каждый проверяет валидность
+        for _ in 0..10 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                let valid = entry_clone.is_valid();
+                assert!(
+                    valid,
+                    "is_valid() должен возвращать true для валидной записи"
+                );
+            });
+            handles.push(handle);
+        }
+
+        // Ждём завершения всех потоков
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 4: Смешанный многопоточный доступ (score и is_valid)
+    ///
+    /// Проверяет корректную работу при одновременном вызове разных методов.
+    #[test]
+    fn test_thread_safe_entry_mixed_concurrent_access() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player4", 4000));
+        let mut handles = vec![];
+
+        // Половина потоков вызывает score(), половина - is_valid()
+        for i in 0..10 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                if i % 2 == 0 {
+                    let score = entry_clone.score();
+                    assert_eq!(score, 4000);
+                } else {
+                    let valid = entry_clone.is_valid();
+                    assert!(valid);
+                }
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 5: Атомарность валидации и возврата значения
+    ///
+    /// Проверяет что между проверкой хэша и возвратом значения нет гонки данных.
+    #[test]
+    fn test_thread_safe_entry_atomic_validation() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player5", 5000));
+        let mut handles = vec![];
+
+        // Многократные проверки должны всегда возвращать корректное значение
+        for _ in 0..20 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                // Многократные вызовы для проверки стабильности
+                for _ in 0..10 {
+                    let score = entry_clone.score();
+                    assert_eq!(score, 5000, "score() должен быть атомарным");
+
+                    let valid = entry_clone.is_valid();
+                    assert!(valid, "is_valid() должен быть атомарным");
+                }
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 6: ThreadSafeLeaderboardEntry с разными именами
+    ///
+    /// Проверяет корректную работу с различными именами игроков.
+    #[test]
+    fn test_thread_safe_entry_different_names() {
+        let names = ["Alice", "Bob", "Charlie", "Игрок", "Player_123"];
+
+        for name in names {
+            let entry = ThreadSafeLeaderboardEntry::new(name, 1000);
+            assert_eq!(entry.name(), name);
+            assert!(entry.is_valid());
+        }
+    }
+
+    /// Тест 7: ThreadSafeLeaderboardEntry с нулевым счётом
+    ///
+    /// Проверяет корректную работу с нулевым значением рекорда.
+    #[test]
+    fn test_thread_safe_entry_zero_score() {
+        let entry = ThreadSafeLeaderboardEntry::new("Player", 0);
+        assert_eq!(entry.score(), 0);
+        assert!(entry.is_valid());
+    }
+
+    /// Тест 8: ThreadSafeLeaderboardEntry с максимальным u128
+    ///
+    /// Проверяет работу с максимально возможным значением u128.
+    #[test]
+    fn test_thread_safe_entry_max_score() {
+        let max_score = u128::MAX;
+        let entry = ThreadSafeLeaderboardEntry::new("MaxPlayer", max_score);
+        assert_eq!(entry.score(), max_score);
+        assert!(entry.is_valid());
+    }
+
+    /// Тест 9: name() метод потокобезопасность
+    ///
+    /// Проверяет атомарность метода name() при доступе из нескольких потоков.
+    #[test]
+    fn test_thread_safe_entry_concurrent_name() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("TestPlayer", 1000));
+        let mut handles = vec![];
+
+        for _ in 0..10 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                let name = entry_clone.name();
+                assert_eq!(name, "TestPlayer");
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 10: Стресс-тест с большим количеством потоков
+    ///
+    /// Проверяет стабильность при высокой конкуренции за Mutex.
+    #[test]
+    fn test_thread_safe_entry_stress_test() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("StressPlayer", 9999));
+        let mut handles = vec![];
+
+        // Создаём 50 потоков для стресс-теста
+        for i in 0..50 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                for _ in 0..100 {
+                    let score = entry_clone.score();
+                    let valid = entry_clone.is_valid();
+                    let _name = entry_clone.name();
+
+                    assert_eq!(score, 9999);
+                    assert!(valid);
+                }
+                // Разные операции для разных потоков
+                if i % 5 == 0 {
+                    thread::yield_now();
+                }
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
     }
 }

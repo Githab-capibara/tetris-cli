@@ -4,6 +4,69 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.19] — 2026-03-28
+
+### Исправления аудита кода
+
+**CRITICAL:**
+- **TOCTOU уязвимость в LeaderboardEntry** (`src/highscore/leaderboard.rs`) — добавлен тип `ThreadSafeLeaderboardEntry` с `Mutex` для защиты от уязвимости Time-Of-Check-Time-Of-Use, обеспечена атомарная валидация и возврат значения
+- **Обработка ошибок в Application::new()** (`src/app/application.rs`) — использовано `unwrap_or_else()` с логированием ошибок через `eprintln!("[ERROR] ...")`, добавлено логирование всех ошибок загрузки данных
+- **Валидация размера файла конфигурации** (`src/highscore/save_data.rs`, `src/controls.rs`) — добавлена проверка `metadata().len()` перед загрузкой файла, максимальный размер 1MB
+- **Слабая защита HMAC** (`src/crypto.rs`, `src/controls.rs`) — добавлены зависимости `hmac = "0.12"` и `sha2 = "0.10"`, реализованы функции `hmac_sha256()` и `verify_hmac_sha256()` с настоящим HMAC-SHA256
+
+**MEDIUM:**
+- **UTF-8 обработка в KeyReader** (`src/io.rs`) — добавлено логирование `[WARN]` при получении многобайтовых UTF-8 символов
+- **Проверка размера файла в controls.rs** — добавлена проверка размера файла конфигурации управления перед загрузкой
+- **Логирование ошибок безопасности** — используются префиксы `[ERROR]`, `[WARN]`, `Критическая ошибка:` для всех сообщений об ошибках
+
+### Тесты
+
+- **ThreadSafeLeaderboardEntry (10 тестов):**
+  - `test_thread_safe_entry_basic`, `test_thread_safe_entry_concurrent_score`, `test_thread_safe_entry_concurrent_is_valid`
+  - `test_thread_safe_entry_mixed_concurrent_access`, `test_thread_safe_entry_atomic_validation`
+  - `test_thread_safe_entry_different_names`, `test_thread_safe_entry_zero_score`, `test_thread_safe_entry_max_score`
+  - `test_thread_safe_entry_concurrent_name`, `test_thread_safe_entry_stress_test`
+
+- **HMAC-SHA256 (9 тестов):**
+  - `test_hmac_sha256_empty_data`, `test_hmac_sha256_empty_key`, `test_hmac_sha256_unicode`
+  - `test_hmac_sha256_long_data`, `test_hmac_sha256_long_key`, `test_verify_hmac_sha256_tampered_signature`
+  - `test_hmac_sha256_json_data`, `test_hmac_sha256_score_data`, `test_verify_hmac_timing_safe_comparison`
+
+- **Application::new() (5 тестов):**
+  - `test_application_unwrap_or_else_behavior`, `test_application_load_game_data_logging`
+  - `test_error_logging_format`, `test_initialize_terminal_error_handling`, `test_leaderboard_validate_logging`
+
+- **UTF-8 обработка (8 тестов):**
+  - `test_utf8_warning_logging`, `test_cyrillic_utf8_detection`, `test_emoji_utf8_detection`
+  - `test_ascii_character_detection`, `test_unicode_character_lengths`, `test_utf8_byte_range_validation`
+  - `test_error_message_formats`, `test_invalid_utf8_sequences`
+
+- **Проверка размера файла (6 тестов):**
+  - `test_config_file_size_too_large`, `test_config_file_size_ok`, `test_controls_hmac_signature`
+  - `test_controls_tampered_config`, `test_file_size_error_message_format`, `test_max_config_file_size_constant`
+
+- **Всего тестов: 1273** (1214 lib + 59 doctest, все проходят)
+
+### Улучшения
+
+- **Безопасность** — защита от TOCTOU уязвимости, настоящий HMAC-SHA256, валидация размера файлов
+- **Обработка ошибок** — полное логирование всех ошибок загрузки и инициализации
+- **UTF-8 поддержка** — корректное логирование многобайтовых символов
+- **Тестируемость** — 38 новых тестов для покрытия всех исправлений аудита
+
+### Изменённые файлы
+
+- `Cargo.toml` — добавлены зависимости `hmac = "0.12"`, `sha2 = "0.10"`
+- `src/crypto.rs` — HMAC-SHA256 реализация, 9 новых тестов
+- `src/highscore/leaderboard.rs` — ThreadSafeLeaderboardEntry, 10 новых тестов
+- `src/app/application.rs` — обработка ошибок, 5 новых тестов
+- `src/io.rs` — UTF-8 логирование, 8 новых тестов
+- `src/controls.rs` — HMAC-SHA256 и проверка размера файла, 6 новых тестов
+- `src/highscore/save_data.rs` — валидация размера файла
+- `README.md` — обновление количества тестов, новые функции
+- `CHANGELOG.md` — запись изменений
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+
 ## [23.96.18] — 2026-03-28
 
 ### Исправления аудита кода

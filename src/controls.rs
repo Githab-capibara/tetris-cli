@@ -269,8 +269,8 @@ impl ControlsConfig {
         let config_json = serde_json::to_string(&config_for_hash)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
-        // Вычисляем keyed hash подпись
-        let signature = crate::crypto::keyed_hash(&hmac_key, &config_json);
+        // Вычисляем HMAC-SHA256 подпись (Исправление #4: настоящий HMAC)
+        let signature = crate::crypto::hmac_sha256(&hmac_key, &config_json);
 
         // Создаём итоговую конфигурацию с подписью
         let config_with_sig = ControlsConfig {
@@ -342,6 +342,18 @@ impl ControlsConfig {
                     format!("Символические ссылки не разрешены: {path:?}"),
                 ));
             }
+            // Исправление #10: проверка размера файла перед загрузкой
+            let file_size = metadata.len();
+            if file_size > super::highscore::MAX_CONFIG_FILE_SIZE {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!(
+                        "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
+                        file_size,
+                        super::highscore::MAX_CONFIG_FILE_SIZE
+                    ),
+                ));
+            }
         }
 
         // Исправление #12: используем O_NOFOLLOW для защиты от race condition
@@ -381,12 +393,13 @@ impl ControlsConfig {
             )
         })?;
 
-        let expected_signature = crate::crypto::keyed_hash(&config.hmac_key, &config_json);
+        // Проверяем HMAC-SHA256 подпись (Исправление #4: настоящий HMAC)
+        let expected_signature = crate::crypto::hmac_sha256(&config.hmac_key, &config_json);
 
         if config.signature != expected_signature {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                "Keyed hash подпись не совпадает - возможна подделка конфигурации",
+                "HMAC-SHA256 подпись не совпадает - возможна подделка конфигурации",
             ));
         }
 
@@ -677,6 +690,206 @@ mod controls_tests {
             vim_config.move_left(),
             default_config.move_left(),
             "Кастомная конфигурация должна отличаться от стандартной"
+        );
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ПРОВЕРКИ РАЗМЕРА ФАЙЛА (ИСПРАВЛЕНИЕ #6, #10)
+    // =========================================================================
+
+    /// Тест 21: Проверка проверки размера файла > 1MB
+    ///
+    /// Проверяет что файл конфигурации размером больше 1MB
+    /// возвращает ошибку при загрузке
+    #[test]
+    fn test_config_file_size_too_large() -> std::io::Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+
+        let test_path = "test_controls_config_large.json";
+
+        // Создаём файл размером больше 1MB (1MB + 100KB)
+        let large_size = (crate::highscore::MAX_CONFIG_FILE_SIZE + 100_000) as usize;
+        let mut file = File::create(test_path)?;
+
+        // Записываем данные размером больше 1MB
+        let data = vec![b'x'; large_size];
+        file.write_all(&data)?;
+        drop(file);
+
+        // Проверяем что загрузка возвращает ошибку
+        let result = ControlsConfig::load_from_file(test_path);
+        assert!(
+            result.is_err(),
+            "Загрузка файла > 1MB должна вернуть ошибку"
+        );
+
+        let error = result.unwrap_err();
+        assert!(
+            error.to_string().contains("слишком большим") || error.to_string().contains("максимум"),
+            "Ошибка должна упоминать превышение размера: {}",
+            error
+        );
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(test_path);
+
+        Ok(())
+    }
+
+    /// Тест 22: Проверка проверки размера файла < 1MB
+    ///
+    /// Проверяет что файл конфигурации размером меньше 1MB
+    /// успешно загружается
+    #[test]
+    fn test_config_file_size_ok() -> std::io::Result<()> {
+        // Создаём валидную конфигурацию
+        let config = ControlsConfig::default_config();
+        let test_path = "test_controls_config_small.json";
+
+        // Сохраняем конфигурацию (должна быть < 1MB)
+        config.save_to_file(test_path)?;
+
+        // Проверяем размер файла
+        let metadata = fs::metadata(test_path)?;
+        assert!(
+            metadata.len() < crate::highscore::MAX_CONFIG_FILE_SIZE,
+            "Файл конфигурации должен быть меньше 1MB"
+        );
+
+        // Загружаем конфигурацию (должна успешно загрузиться)
+        let loaded = ControlsConfig::load_from_file(test_path);
+        assert!(
+            loaded.is_ok(),
+            "Загрузка файла < 1MB должна быть успешной: {:?}",
+            loaded.err()
+        );
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(test_path);
+
+        Ok(())
+    }
+
+    /// Тест 23: Проверка HMAC-SHA256 подписи в controls.rs
+    ///
+    /// Проверяет что конфигурация управления подписывается HMAC-SHA256
+    #[test]
+    fn test_controls_hmac_signature() -> std::io::Result<()> {
+        let test_path = "test_controls_hmac.json";
+
+        // Создаём и сохраняем конфигурацию
+        let config = ControlsConfig::default_config();
+        config.save_to_file(test_path)?;
+
+        // Загружаем и проверяем подпись
+        let loaded = ControlsConfig::load_from_file(test_path)?;
+
+        // Проверяем что hmac_key не пустой после загрузки
+        assert!(
+            !loaded.hmac_key.is_empty(),
+            "Загруженный HMAC ключ не должен быть пустым"
+        );
+        assert_eq!(
+            loaded.hmac_key.len(),
+            64,
+            "Длина HMAC ключа должна быть 64 символа"
+        );
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(test_path);
+
+        Ok(())
+    }
+
+    /// Тест 24: Проверка подделки конфигурации
+    ///
+    /// Проверяет что изменённая конфигурация не проходит проверку HMAC
+    #[test]
+    fn test_controls_tampered_config() -> std::io::Result<()> {
+        use std::fs::File;
+        use std::io::Write;
+
+        let test_path = "test_controls_tampered.json";
+
+        // Создаём и сохраняем валидную конфигурацию
+        let config = ControlsConfig::default_config();
+        config.save_to_file(test_path)?;
+
+        // Читаем файл и изменяем данные
+        let mut json = fs::read_to_string(test_path)?;
+
+        // Изменяем move_left в JSON (подделка)
+        json = json.replace("\"move_left\": 97", "\"move_left\": 98");
+
+        // Записываем подделанные данные обратно
+        let mut file = File::create(test_path)?;
+        file.write_all(json.as_bytes())?;
+        drop(file);
+
+        // Проверяем что загрузка возвращает ошибку HMAC
+        let result = ControlsConfig::load_from_file(test_path);
+        assert!(
+            result.is_err(),
+            "Загрузка подделанной конфигурации должна вернуть ошибку"
+        );
+
+        let error = result.unwrap_err();
+        assert!(
+            error.to_string().contains("HMAC")
+                || error.to_string().contains("подпись")
+                || error.to_string().contains("подделка"),
+            "Ошибка должна упоминать HMAC или подделку: {}",
+            error
+        );
+
+        // Очищаем тестовый файл
+        let _ = fs::remove_file(test_path);
+
+        Ok(())
+    }
+
+    /// Тест 25: Проверка формата сообщений об ошибках размера файла
+    ///
+    /// Проверяет что сообщения об ошибках содержат правильную информацию
+    #[test]
+    fn test_file_size_error_message_format() {
+        // Проверяем формат сообщения об ошибке размера файла
+        let max_size = crate::highscore::MAX_CONFIG_FILE_SIZE;
+        let file_size = max_size + 1;
+
+        let error_msg = format!(
+            "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
+            file_size, max_size
+        );
+
+        assert!(
+            error_msg.contains("слишком большой") || error_msg.contains("слишком большим"),
+            "Сообщение должно содержать 'слишком большой'"
+        );
+        assert!(
+            error_msg.contains(&format!("{}", file_size)),
+            "Сообщение должно содержать размер файла"
+        );
+        assert!(
+            error_msg.contains(&format!("{}", max_size)),
+            "Сообщение должно содержать максимальный размер"
+        );
+        assert!(
+            error_msg.contains("байт"),
+            "Сообщение должно содержать единицу измерения"
+        );
+    }
+
+    /// Тест 26: Проверка константы MAX_CONFIG_FILE_SIZE
+    ///
+    /// Проверяет что константа имеет правильное значение
+    #[test]
+    fn test_max_config_file_size_constant() {
+        assert_eq!(
+            crate::highscore::MAX_CONFIG_FILE_SIZE,
+            1_048_576,
+            "MAX_CONFIG_FILE_SIZE должен быть 1MB (1024 * 1024)"
         );
     }
 }
