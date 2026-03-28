@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 1.0  
-**Дата:** 28 марта 2026  
-**Проект:** tetris-cli v23.96.18
+**Версия:** 1.1
+**Дата:** 28 марта 2026 (обновлено)
+**Проект:** tetris-cli v23.96.14
 
 ---
 
@@ -322,7 +322,7 @@ cargo test test_architecture_integrity
 
 ### DRY
 - Централизованная валидация
-- Общие константы
+- Общие константы (DISP_WIDTH, DISP_HEIGHT в game/constants.rs)
 - Криптография в crypto.rs
 
 ### KISS
