@@ -585,7 +585,7 @@ impl GameState {
         }
         // Создаём объект трейта из enum
         let mode_trait = mode.as_trait();
-        let mut state = Self {
+        let mut game_state = Self {
             score: 0,
             level: 1,
             lines_cleared: 0,
@@ -607,8 +607,8 @@ impl GameState {
             render_cache: RenderCache::new(),
         };
         // Инициализация кэша начальными значениями
-        state.render_cache.init_with_values(0, 1, 0, 0);
-        state
+        game_state.render_cache.init_with_values(0, 1, 0, 0);
+        game_state
     }
 
     // ========================================================================

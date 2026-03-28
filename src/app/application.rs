@@ -66,7 +66,7 @@ impl Application {
     /// Загрузить сохранённые данные и таблицу лидеров.
     ///
     /// # Возвращает
-    /// Кортеж (SaveData, Leaderboard)
+    /// Кортеж ([`SaveData`], [`Leaderboard`])
     fn load_game_data() -> (SaveData, Leaderboard) {
         let save = SaveData::load_config();
         let mut leaderboard = Leaderboard::load();
@@ -258,7 +258,7 @@ pub fn run() {
     let mut app = match Application::new() {
         Ok(app) => app,
         Err(e) => {
-            eprintln!("Критическая ошибка запуска: {}", e);
+            eprintln!("Критическая ошибка запуска: {e}");
             std::process::exit(1);
         }
     };

@@ -90,7 +90,7 @@ pub struct ControlsConfig {
 /// ```
 ///
 /// # Исправление #5 (HIGH)
-/// Функция полностью делегирует валидацию `DEFAULT_PATH_VALIDATOR`.
+/// Функция полностью делегирует валидацию [`DEFAULT_PATH_VALIDATOR`].
 /// Устранено дублирование проверок - все проверки в PathValidator.
 #[track_caller]
 fn validate_config_path(path: &str) -> io::Result<()> {
