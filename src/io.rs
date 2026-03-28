@@ -22,10 +22,8 @@ use crate::io_traits::{InputReader, Renderer};
 // ПЕРЕЭКСПОРТ КОНСТАНТ ИЗ game/constants.rs
 // ============================================================================
 // Централизация констант для устранения дублирования.
-// Эти константы определены в game/constants.rs и переэкспортируются здесь
-// для обратной совместимости.
-
-pub use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+// DISP_WIDTH и DISP_HEIGHT определены в game/constants.rs.
+pub use crate::game::constants::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 
 // ============================================================================
 // КОНСТАНТЫ ВВОДА/ВЫВОДА (локальные)
@@ -45,22 +43,6 @@ pub const KEY_ENTER: u8 = b'\n';
 /// Зарезервировано для будущей функциональности (локализация, макросы).
 #[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
-
-/// Полная ширина дисплея (с учётом границ).
-///
-/// Формула: (`SHAPE_WIDTH` * `GRID_WIDTH`) + 2 (границы)
-/// = (2 * 10) + 2 = 22 символа
-///
-/// Тип u16 используется для совместимости с terminal_size().
-pub const DISP_WIDTH: u16 = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
-
-/// Полная высота дисплея (с учётом границ и отступов).
-///
-/// Формула: `GRID_HEIGHT` + 5 (заголовки и границы)
-/// = 20 + 5 = 25 строк
-///
-/// Тип u16 используется для совместимости с terminal_size().
-pub const DISP_HEIGHT: u16 = GRID_HEIGHT as u16 + 5;
 
 /// Ошибка ввода/вывода терминала.
 #[derive(Debug)]

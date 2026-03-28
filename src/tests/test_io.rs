@@ -61,7 +61,7 @@ fn test_shape_width_constant() {
 #[test]
 fn test_disp_width_calculation() {
     // Формула: (SHAPE_WIDTH * GRID_WIDTH) + 2 (границы)
-    let expected_width = (SHAPE_WIDTH * GRID_WIDTH) as u16 + 2;
+    let expected_width = (SHAPE_WIDTH * GRID_WIDTH) + 2;
     assert_eq!(
         DISP_WIDTH, expected_width,
         "DISP_WIDTH должен быть (SHAPE_WIDTH * GRID_WIDTH) + 2 = {expected_width}"
@@ -139,7 +139,7 @@ fn test_field_dimensions() {
 #[test]
 fn test_disp_height_calculation() {
     // Формула: GRID_HEIGHT + 5 (заголовки и границы)
-    let expected_height = GRID_HEIGHT as u16 + 5;
+    let expected_height = GRID_HEIGHT + 5;
     assert_eq!(
         DISP_HEIGHT, expected_height,
         "DISP_HEIGHT должен быть GRID_HEIGHT + 5 = {expected_height}"
@@ -166,7 +166,7 @@ fn test_terminal_minimum_size() {
     );
 
     // Проверяем соотношение сторон
-    let aspect_ratio = f32::from(min_width) / f32::from(min_height);
+    let aspect_ratio = min_width as f32 / min_height as f32;
     assert!(
         aspect_ratio > 0.5 && aspect_ratio < 2.0,
         "Соотношение сторон должно быть разумным (0.5-2.0), получено {aspect_ratio}"
