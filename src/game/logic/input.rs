@@ -32,7 +32,7 @@ pub fn handle_input(
     let key = inp.get_key();
 
     // Сброс флага Hard Drop
-    state.is_hard_dropping = false;
+    state.set_is_hard_dropping(false);
 
     match key {
         Some(KEY_BACKSPACE) => return Some(UpdateEndState::Quit),
@@ -62,8 +62,14 @@ pub fn handle_input(
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
     if state.can_move_curr_shape_direction(dir) {
         match dir {
-            Direction::Left => state.curr_shape.pos.0 -= 1.0,
-            Direction::Right => state.curr_shape.pos.0 += 1.0,
+            Direction::Left => {
+                let curr_shape = state.get_curr_shape_mut();
+                curr_shape.pos.0 -= 1.0;
+            }
+            Direction::Right => {
+                let curr_shape = state.get_curr_shape_mut();
+                curr_shape.pos.0 += 1.0;
+            }
             // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
             Direction::Down => {}
         }
@@ -90,12 +96,12 @@ mod input_tests {
     #[test]
     fn test_handle_movement_left() {
         let mut state = GameState::new();
-        let initial_x = state.curr_shape.pos.0;
+        let initial_x = state.curr_shape().pos.0;
 
         handle_movement_input(&mut state, Direction::Left);
 
         assert!(
-            state.curr_shape.pos.0 <= initial_x,
+            state.curr_shape().pos.0 <= initial_x,
             "Фигура должна сдвинуться влево или остаться на месте"
         );
     }
@@ -103,12 +109,12 @@ mod input_tests {
     #[test]
     fn test_handle_movement_right() {
         let mut state = GameState::new();
-        let initial_x = state.curr_shape.pos.0;
+        let initial_x = state.curr_shape().pos.0;
 
         handle_movement_input(&mut state, Direction::Right);
 
         assert!(
-            state.curr_shape.pos.0 >= initial_x,
+            state.curr_shape().pos.0 >= initial_x,
             "Фигура должна сдвинуться вправо или остаться на месте"
         );
     }

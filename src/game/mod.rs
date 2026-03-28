@@ -218,12 +218,12 @@ impl GameState {
 
     /// Запустить таймер.
     pub fn start_timer(&mut self) {
-        self.stats.start_timer();
+        self.get_stats_mut().start_timer();
     }
 
     /// Остановить таймер.
     pub fn stop_timer(&mut self) {
-        self.stats.stop_timer();
+        self.get_stats_mut().stop_timer();
     }
 
     /// Проверить, может ли призрак двигаться в указанном направлении.
@@ -237,7 +237,8 @@ impl GameState {
     ///
     /// Используется в тестах для проверки обновления счетчика.
     pub fn increment_lines_cleared(&mut self) {
-        self.lines_cleared = self.lines_cleared.saturating_add(1);
+        let lines = self.lines_cleared().saturating_add(1);
+        self.set_lines_cleared(lines);
     }
 }
 
@@ -260,7 +261,7 @@ mod game_tests {
         let mut drop_height = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.curr_shape.pos.1 += 1.0;
+            state.get_curr_shape_mut().pos.1 += 1.0;
             drop_height += 1;
         }
 
@@ -274,13 +275,13 @@ mod game_tests {
     #[test]
     fn test_hard_drop_bonus_points() {
         let mut state = GameState::new();
-        let start_y = state.curr_shape.pos.1;
+        let start_y = state.curr_shape().pos.1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.curr_shape.pos.1 += 1.0;
+            state.get_curr_shape_mut().pos.1 += 1.0;
         }
 
-        let drop_distance = (state.curr_shape.pos.1 - start_y) as u64;
+        let drop_distance = (state.curr_shape().pos.1 - start_y) as u64;
 
         assert_eq!(
             HARD_DROP_POINTS, 2,
@@ -294,23 +295,23 @@ mod game_tests {
         let mut state = GameState::new();
 
         assert!(
-            !state.is_hard_dropping,
+            !state.is_hard_dropping(),
             "До Hard Drop флаг должен быть false"
         );
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.curr_shape.pos.1 += 1.0;
+            state.get_curr_shape_mut().pos.1 += 1.0;
         }
-        state.is_hard_dropping = true;
+        state.set_is_hard_dropping(true);
 
         assert!(
-            state.is_hard_dropping,
+            state.is_hard_dropping(),
             "После Hard Drop флаг должен быть true для анимации"
         );
 
-        state.is_hard_dropping = false;
+        state.set_is_hard_dropping(false);
         assert!(
-            !state.is_hard_dropping,
+            !state.is_hard_dropping(),
             "После анимации флаг должен сбрасываться"
         );
     }
@@ -318,14 +319,14 @@ mod game_tests {
     #[test]
     fn test_hard_drop_boundary() {
         let mut state = GameState::new();
-        let initial_y = state.curr_shape.pos.1;
+        let initial_y = state.curr_shape().pos.1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.curr_shape.pos.1 += 1.0;
+            state.get_curr_shape_mut().pos.1 += 1.0;
         }
 
         assert!(
-            state.curr_shape.pos.1 > initial_y,
+            state.curr_shape().pos.1 > initial_y,
             "Фигура должна опуститься после Hard Drop"
         );
         assert!(
@@ -333,7 +334,7 @@ mod game_tests {
             "Движение вниз должно быть заблокировано после приземления"
         );
         assert!(
-            state.curr_shape.pos.1 <= GRID_HEIGHT as f32,
+            state.curr_shape().pos.1 <= GRID_HEIGHT as f32,
             "Фигура не должна выходить за границы поля"
         );
     }
@@ -342,14 +343,14 @@ mod game_tests {
     #[test]
     fn test_soft_drop_speed_increase() {
         let state = GameState::new();
-        let initial_fall_spd = state.fall_speed;
+        let initial_fall_spd = state.fall_speed();
 
         assert!(
             (initial_fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
             "Начальная скорость должна быть INITIAL_FALL_SPD"
         );
         assert!(
-            state.fall_speed > 0.0,
+            state.fall_speed() > 0.0,
             "Скорость падения должна быть положительной"
         );
     }
@@ -377,7 +378,7 @@ mod game_tests {
         let mut soft_drop_moves = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.curr_shape.pos.1 += 1.0;
+            state.get_curr_shape_mut().pos.1 += 1.0;
             soft_drop_moves += 1;
         }
 
@@ -396,26 +397,29 @@ mod game_tests {
         let mut state = GameState::new();
 
         assert_eq!(
-            state.soft_drop_distance, 0,
+            state.soft_drop_distance(),
+            0,
             "Начальная дистанция Soft Drop должна быть 0"
         );
 
         let test_moves = 5;
         for _ in 0..test_moves {
             if state.can_move_curr_shape_direction(Direction::Down) {
-                state.curr_shape.pos.1 += 1.0;
-                state.soft_drop_distance += 1;
+                state.get_curr_shape_mut().pos.1 += 1.0;
+                state.set_soft_drop_distance(state.soft_drop_distance() + 1);
             }
         }
 
         assert_eq!(
-            state.soft_drop_distance, test_moves,
+            state.soft_drop_distance(),
+            test_moves,
             "Дистанция должна равняться количеству шагов"
         );
 
-        state.soft_drop_distance = 0;
+        state.set_soft_drop_distance(0);
         assert_eq!(
-            state.soft_drop_distance, 0,
+            state.soft_drop_distance(),
+            0,
             "После сброса дистанция должна быть 0"
         );
     }

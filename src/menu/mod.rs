@@ -52,9 +52,9 @@ pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameS
     draw::draw_game_stats(
         cnv,
         mode_str,
-        game_state.get_score(),
-        game_state.get_level(),
-        game_state.get_lines_cleared(),
+        game_state.score(),
+        game_state.level(),
+        game_state.lines_cleared(),
         stats.total_pieces(),
         stats.max_combo,
         stats.get_elapsed_time(),

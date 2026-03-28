@@ -31,10 +31,10 @@ use crate::types::RotationDirection;
 fn test_game_state_creation() {
     let state = GameState::new();
 
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
     assert_eq!(
-        state.get_lines_cleared(),
+        state.lines_cleared(),
         0,
         "Начальное количество линий должно быть 0"
     );
@@ -46,7 +46,7 @@ fn test_game_state_creation() {
 #[test]
 fn test_game_state_initial_piece_position() {
     let state = GameState::new();
-    let curr_shape = state.get_curr_shape();
+    let curr_shape = state.curr_shape();
 
     // Начальная позиция X должна быть по центру (4.0)
     assert!(
@@ -67,7 +67,7 @@ fn test_game_state_initial_piece_position() {
 #[test]
 fn test_game_state_next_shape_exists() {
     let state = GameState::new();
-    let next_shape = state.get_next_shape();
+    let next_shape = state.next_shape();
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
@@ -97,7 +97,7 @@ fn test_game_state_empty_field() {
 #[test]
 fn test_game_state_initial_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(
         (fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
@@ -237,7 +237,7 @@ fn test_movement_in_empty_field() {
 #[test]
 fn test_ghost_piece_boundary() {
     let state = GameState::new();
-    let ghost_shape = *state.get_curr_shape();
+    let ghost_shape = *state.curr_shape();
 
     // Призрачная фигура должна использовать ту же логику столкновений
     let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
@@ -587,7 +587,7 @@ fn test_sprint_timer() {
     std::thread::sleep(std::time::Duration::from_millis(100));
 
     // Получаем прошедшее время
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
     let elapsed = game_stats.get_elapsed_time();
 
     // Проверяем, что время больше 0
@@ -604,7 +604,7 @@ fn test_sprint_timer() {
 fn test_game_stats_in_different_modes() {
     // Классический режим
     let classic_state = GameState::new();
-    let classic_stats = classic_state.get_stats();
+    let classic_stats = classic_state.stats();
     assert_eq!(
         classic_stats.total_pieces(),
         1,
@@ -613,7 +613,7 @@ fn test_game_stats_in_different_modes() {
 
     // Режим спринт
     let sprint_state = GameState::new_sprint();
-    let sprint_stats = sprint_state.get_stats();
+    let sprint_stats = sprint_state.stats();
     assert_eq!(
         sprint_stats.total_pieces(),
         1,

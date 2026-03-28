@@ -34,15 +34,15 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
         state.add_lines_cleared(capped_remove_count);
 
         // Проверка повышения уровня (каждые 10 линий)
-        let new_level = (state.get_lines_cleared() / LINES_PER_LEVEL) + 1;
-        if new_level > state.get_level() {
+        let new_level = (state.lines_cleared() / LINES_PER_LEVEL) + 1;
+        if new_level > state.level() {
             state.set_level(new_level);
             // Бонус за повышение уровня
             state.add_score(LEVEL_BONUS_MULT.saturating_mul(u128::from(new_level - 1)));
         }
 
         // Увеличение скорости игры
-        state.set_fall_speed(state.get_fall_speed() + SPD_INC * capped_remove_count as f32);
+        state.set_fall_speed(state.fall_speed() + SPD_INC * capped_remove_count as f32);
 
         // Начисление очков за линии (lookup таблица)
         // Исправление C1: защита от переполнения при сложении очков
@@ -90,21 +90,22 @@ pub fn handle_hard_drop(state: &mut GameState) {
     use crate::game::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
 
-    let start_y = state.get_curr_shape().pos.1;
+    let start_y = state.curr_shape().pos.1;
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.curr_shape.pos.1 += 1.0;
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.pos.1 += 1.0;
     }
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast
     // Исправление #1 (CRITICAL): защита от NaN, Infinity и переполнения
-    let drop_distance_f32 = (state.curr_shape.pos.1 - start_y).abs();
+    let drop_distance_f32 = (state.curr_shape().pos.1 - start_y).abs();
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
     state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
-    state.land_timer = 0.0;
-    state.is_hard_dropping = true;
+    state.set_land_timer(0.0);
+    state.set_is_hard_dropping(true);
 }
 
 /// Обработать Soft Drop (ускоренное падение).
@@ -122,8 +123,10 @@ pub fn handle_soft_drop(state: &mut GameState) {
     use crate::types::Direction;
 
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.curr_shape.pos.1 += 1.0;
-        state.soft_drop_distance = state.soft_drop_distance.saturating_add(1);
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.pos.1 += 1.0;
+        let soft_drop_distance = state.soft_drop_distance();
+        state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // Исправление C1: saturating_mul для защиты от переполнения
         state.add_score(SOFT_DROP_POINTS);
@@ -135,20 +138,23 @@ pub fn handle_soft_drop(state: &mut GameState) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 pub fn handle_hold(state: &mut GameState) {
-    if state.can_hold {
-        let current_shape = state.curr_shape;
+    if state.can_hold() {
+        let current_shape = *state.curr_shape();
 
-        if let Some(held) = state.held_shape {
-            state.curr_shape = held;
-            state.held_shape = Some(current_shape);
+        let held_shape = *state.get_held_shape_ref();
+        if let Some(held) = held_shape {
+            state.set_curr_shape(held);
+            state.set_held_shape(Some(current_shape));
         } else {
-            state.held_shape = Some(current_shape);
-            state.curr_shape = state.next_shape;
-            state.next_shape = Tetromino::from_bag(&mut state.bag);
+            state.set_held_shape(Some(current_shape));
+            state.set_curr_shape(*state.next_shape());
+            let next_shape = Tetromino::from_bag(state.get_bag_mut());
+            state.set_next_shape(next_shape);
         }
 
-        state.curr_shape.pos = (4.0, 0.0);
-        state.can_hold = false;
+        let curr_shape = state.get_curr_shape_mut();
+        curr_shape.pos = (4.0, 0.0);
+        state.set_can_hold(false);
     }
 }
 
@@ -208,8 +214,8 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 fn check_game_over_condition(state: &GameState) -> bool {
     use crate::game::constants::MIN_Y;
 
-    let shape_block_y = state.curr_shape.pos.1 as i16;
-    state.curr_shape.coords.iter().any(|&(_, coord_y)| {
+    let shape_block_y = state.curr_shape().pos.1 as i16;
+    state.curr_shape().coords.iter().any(|&(_, coord_y)| {
         let block_y = coord_y + shape_block_y;
         block_y < MIN_Y
     })
@@ -234,7 +240,7 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     };
 
     // Расчёт бонуса за скорость падения
-    let limited_fall_spd = state.get_fall_speed().min(MAX_FALL_SPEED);
+    let limited_fall_spd = state.fall_speed().min(MAX_FALL_SPEED);
     let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
         .max(0.0)
         .min(u32::MAX as f32);
@@ -249,16 +255,17 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Начисление очков за Soft Drop
     // Исправление C1: saturating_mul для защиты от переполнения
-    if state.soft_drop_distance > 0 {
-        state.add_score(u128::from(state.soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
-        state.soft_drop_distance = 0;
+    let soft_drop_distance = state.soft_drop_distance();
+    if soft_drop_distance > 0 {
+        state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
+        state.set_soft_drop_distance(0);
     }
 
     // Сброс флага Hard Drop после завершения анимации
-    state.is_hard_dropping = false;
+    state.set_is_hard_dropping(false);
 
     // Сброс таймера приземления
-    state.land_timer = LAND_TIME_DELAY_S;
+    state.set_land_timer(LAND_TIME_DELAY_S);
 }
 
 /// Обновить счётчик комбо после удаления линий.
@@ -279,14 +286,22 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::game::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
-        state.stats.combo_counter = state.stats.combo_counter.saturating_add(1);
-        if state.stats.combo_counter > 1 {
-            // Инкапсуляция: используем add_score() вместо прямого доступа
-            // Исправление C1: saturating_mul для защиты от переполнения
-            state.add_score(COMBO_BONUS.saturating_mul(u128::from(state.stats.combo_counter - 1)));
+        let combo_bonus = {
+            let stats = state.get_stats_mut();
+            stats.combo_counter = stats.combo_counter.saturating_add(1);
+            if stats.combo_counter > 1 {
+                // Инкапсуляция: используем add_score() вместо прямого доступа
+                // Исправление C1: saturating_mul для защиты от переполнения
+                Some(COMBO_BONUS.saturating_mul(u128::from(stats.combo_counter - 1)))
+            } else {
+                None
+            }
+        };
+        if let Some(bonus) = combo_bonus {
+            state.add_score(bonus);
         }
     } else {
-        state.stats.combo_counter = 0;
+        state.get_stats_mut().combo_counter = 0;
     }
 }
 
@@ -298,12 +313,14 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn spawn_next_tetromino(state: &mut GameState) {
-    state.curr_shape = state.next_shape;
-    state.next_shape = crate::tetromino::Tetromino::from_bag(&mut state.bag);
-    state.can_hold = true;
+    state.set_curr_shape(*state.next_shape());
+    let next_shape = crate::tetromino::Tetromino::from_bag(state.get_bag_mut());
+    state.set_next_shape(next_shape);
+    state.set_can_hold(true);
 
     // Обновление статистики для новой фигуры
-    state.stats.add_piece(state.curr_shape.shape);
+    let shape = state.curr_shape().shape;
+    state.get_stats_mut().add_piece(shape);
 }
 
 /// Проверить условие окончания режима (спринт/марафон).
@@ -329,12 +346,12 @@ fn check_mode_completion(
     let mode_trait = state.get_mode_trait();
 
     if mode_trait.get_target_lines() == Some(40) && lines_cleared >= sprint_lines {
-        state.stats.stop_timer();
+        state.get_stats_mut().stop_timer();
         return Some(UpdateEndState::Won);
     }
 
     if mode_trait.get_target_lines() == Some(150) && lines_cleared >= marathon_lines {
-        state.stats.stop_timer();
+        state.get_stats_mut().stop_timer();
         return Some(UpdateEndState::Won);
     }
 
@@ -349,27 +366,24 @@ mod points_tests {
     #[test]
     fn test_update_score_and_level_basic() {
         let mut state = GameState::new();
-        let initial_score = state.get_score();
+        let initial_score = state.score();
 
         update_score_and_level(&mut state, 1);
 
-        assert!(state.get_score() > initial_score, "Счёт должен увеличиться");
-        assert_eq!(state.get_lines_cleared(), 1, "Должна быть очищена 1 линия");
+        assert!(state.score() > initial_score, "Счёт должен увеличиться");
+        assert_eq!(state.lines_cleared(), 1, "Должна быть очищена 1 линия");
     }
 
     #[test]
     fn test_handle_hold_basic() {
         let mut state = GameState::new();
-        let initial_shape = *state.get_curr_shape();
+        let initial_shape = *state.curr_shape();
 
         state.hold_shape();
 
-        assert!(
-            state.get_held_shape().is_some(),
-            "Фигура должна быть удержана"
-        );
+        assert!(state.held_shape().is_some(), "Фигура должна быть удержана");
         assert_ne!(
-            state.get_curr_shape().shape,
+            state.curr_shape().shape,
             initial_shape.shape,
             "Текущая фигура должна измениться"
         );
@@ -397,7 +411,7 @@ mod points_tests {
 
         // Счёт должен быть равен u128::MAX (насыщение)
         assert_eq!(
-            state.get_score(),
+            state.score(),
             u128::MAX,
             "Должна сработать защита от переполнения"
         );
@@ -411,13 +425,13 @@ mod points_tests {
         state.set_score(u128::MAX - 50);
 
         // Устанавливаем фигуру высоко для большого падения
-        state.curr_shape.pos.1 = 0.0;
+        state.get_curr_shape_mut().pos.1 = 0.0;
 
         // Выполняем Hard Drop
         handle_hard_drop(&mut state);
 
         // Счёт не должен переполниться
-        assert!(state.get_score() <= u128::MAX, "Переполнение при Hard Drop");
+        assert!(state.score() <= u128::MAX, "Переполнение при Hard Drop");
     }
 
     /// Тест на защиту от переполнения при Soft Drop.
@@ -433,7 +447,7 @@ mod points_tests {
         }
 
         // Счёт не должен переполниться
-        assert!(state.get_score() <= u128::MAX, "Переполнение при Soft Drop");
+        assert!(state.score() <= u128::MAX, "Переполнение при Soft Drop");
     }
 
     /// Тест на защиту от переполнения при обновлении счёта и уровня.
@@ -450,7 +464,7 @@ mod points_tests {
 
         // Счёт не должен переполниться
         assert!(
-            state.get_score() <= u128::MAX,
+            state.score() <= u128::MAX,
             "Переполнение при обновлении счёта"
         );
     }
@@ -464,16 +478,13 @@ mod points_tests {
         // Устанавливаем высокую скорость падения
         state.set_fall_speed(100.0);
         // Устанавливаем большое расстояние Soft Drop
-        state.soft_drop_distance = 1000;
+        state.set_soft_drop_distance(1000);
 
         // Тестируем calculate_landing_bonus напрямую (без save_tetromino)
         calculate_landing_bonus(&mut state);
 
         // Счёт не должен переполниться
-        assert!(
-            state.get_score() <= u128::MAX,
-            "Переполнение при приземлении"
-        );
+        assert!(state.score() <= u128::MAX, "Переполнение при приземлении");
     }
 
     /// Тест на защиту от переполнения комбо-бонуса.
@@ -483,12 +494,12 @@ mod points_tests {
         // Устанавливаем счёт близкий к максимальному
         state.set_score(u128::MAX - 10000);
         // Устанавливаем высокий комбо-счётчик
-        state.stats.combo_counter = 1000;
+        state.get_stats_mut().combo_counter = 1000;
 
         // Тестируем update_combo_on_clear напрямую (без save_tetromino)
         update_combo_on_clear(&mut state, 1);
 
         // Счёт не должен переполниться
-        assert!(state.get_score() <= u128::MAX, "Переполнение комбо-бонуса");
+        assert!(state.score() <= u128::MAX, "Переполнение комбо-бонуса");
     }
 }

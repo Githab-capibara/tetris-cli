@@ -13,7 +13,7 @@ fn test_hard_drop_flag_initial_state() {
     let state = GameState::new();
 
     assert!(
-        !state.is_hard_dropping,
+        !state.is_hard_dropping(),
         "Флаг is_hard_dropping должен быть false при создании игры"
     );
 }
@@ -29,7 +29,7 @@ fn test_hard_drop_flag_set_on_drop() {
 
     // Проверяем начальное состояние
     assert!(
-        !state.is_hard_dropping,
+        !state.is_hard_dropping(),
         "До Hard Drop флаг должен быть false"
     );
 
@@ -38,7 +38,7 @@ fn test_hard_drop_flag_set_on_drop() {
 
     // Проверяем, что флаг установлен
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "После Hard Drop флаг должен быть true для анимации"
     );
 }
@@ -55,19 +55,19 @@ fn test_hard_drop_flag_reset_after_landing() {
     // Выполняем Hard Drop
     handle_hard_drop(&mut state);
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "После Hard Drop флаг должен быть true"
     );
 
-    // Устанавливаем land_timer в 0 для немедленного приземления
-    state.land_timer = 0.0;
+    // Устанавливаем land_timer в 0 для немедленного приземления через сеттер
+    state.set_land_timer(0.0);
 
     // Обрабатываем приземление
     let _result = handle_landing(&mut state);
 
     // Проверяем, что флаг сброшен
     assert!(
-        !state.is_hard_dropping,
+        !state.is_hard_dropping(),
         "После приземления флаг должен быть сброшен в false"
     );
 }
@@ -86,7 +86,7 @@ fn test_hard_drop_flag_during_animation() {
 
     // Проверяем, что флаг установлен для анимации
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "Флаг должен быть true во время анимации Hard Drop"
     );
 
@@ -105,12 +105,12 @@ fn test_hard_drop_flag_multiple_drops() {
     // Первый Hard Drop
     handle_hard_drop(&mut state);
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "После 1-го Hard Drop флаг должен быть true"
     );
 
     // Сброс флага (симуляция окончания анимации)
-    state.is_hard_dropping = false;
+    state.set_is_hard_dropping(false);
 
     // Переход к следующей фигуре (симуляция)
     let _ = handle_landing(&mut state);
@@ -118,15 +118,15 @@ fn test_hard_drop_flag_multiple_drops() {
     // Второй Hard Drop
     handle_hard_drop(&mut state);
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "После 2-го Hard Drop флаг должен быть true"
     );
 
     // Третий Hard Drop (после сброса)
-    state.is_hard_dropping = false;
+    state.set_is_hard_dropping(false);
     handle_hard_drop(&mut state);
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "После 3-го Hard Drop флаг должен быть true"
     );
 }
@@ -139,28 +139,28 @@ fn test_hard_drop_flag_with_scoring() {
     use crate::game::scoring::handle_hard_drop;
 
     let mut state = GameState::new();
-    let initial_score = state.score;
+    let initial_score = state.score();
 
-    // Получаем начальную позицию
-    let start_y = state.curr_shape.pos.1;
+    // Получаем начальную позицию через геттер
+    let start_y = state.curr_shape().pos.1;
 
     // Выполняем Hard Drop
     handle_hard_drop(&mut state);
 
-    // Проверяем, что флаг установлен
+    // Проверяем, что флаг установлен через геттер
     assert!(
-        state.is_hard_dropping,
+        state.is_hard_dropping(),
         "Флаг должен быть true после Hard Drop"
     );
 
-    // Проверяем, что очки начислены
-    let drop_distance = (state.curr_shape.pos.1 - start_y) as u32;
+    // Проверяем, что очки начислены через геттеры
+    let drop_distance = (state.curr_shape().pos.1 - start_y) as u32;
     let expected_bonus = drop_distance as u128 * 2; // 2 очка за ячейку
 
     assert!(
-        state.score >= initial_score + expected_bonus,
+        state.score() >= initial_score + expected_bonus,
         "Очки за Hard Drop должны быть начислены: было {initial_score}, стало {}, ожидаемый бонус {expected_bonus}",
-        state.score
+        state.score()
     );
 }
 
@@ -175,16 +175,16 @@ fn test_hard_drop_flag_different_heights() {
     for test_num in 0..3 {
         let mut state = GameState::new();
 
-        // Поднимаем фигуру на разную высоту
+        // Поднимаем фигуру на разную высоту через геттер
         match test_num {
             0 => {} // Начальная позиция
             1 => {
                 // Поднимаем на 5 ячеек
-                state.curr_shape.pos.1 = 5.0;
+                state.get_curr_shape_mut().pos.1 = 5.0;
             }
             2 => {
                 // Поднимаем на 10 ячеек
-                state.curr_shape.pos.1 = 10.0;
+                state.get_curr_shape_mut().pos.1 = 10.0;
             }
             _ => unreachable!(),
         }
@@ -192,7 +192,7 @@ fn test_hard_drop_flag_different_heights() {
         handle_hard_drop(&mut state);
 
         assert!(
-            state.is_hard_dropping,
+            state.is_hard_dropping(),
             "Флаг должен быть true для теста {test_num}"
         );
     }

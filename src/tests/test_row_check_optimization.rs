@@ -14,7 +14,7 @@ fn test_find_full_rows_early_exit() {
     let state = GameState::new();
 
     // Пустое поле - все ячейки пустые
-    let (rows_mask, remove_count) = find_full_rows(&state.blocks);
+    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
 
     assert_eq!(
         rows_mask, 0,
@@ -38,22 +38,23 @@ fn test_remove_rows_correctness() {
 
     // Заполняем линию 10 (предпоследнюю)
     for x in 0..GRID_WIDTH {
-        state.blocks[10][x] = 0; // Устанавливаем блок
+        state.get_blocks_mut()[10][x] = 0; // Устанавливаем блок
     }
 
     // Находим заполненные линии
-    let (rows_mask, remove_count) = find_full_rows(&state.blocks);
+    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
 
     assert_eq!(remove_count, 1, "Должна быть найдена 1 заполненная линия");
     assert_eq!(rows_mask, 1 << 10, "Маска должна указывать на линию 10");
 
     // Удаляем линии
-    remove_rows(&mut state.blocks, rows_mask);
+    remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем, что линия 10 удалена (стала пустой)
     for x in 0..GRID_WIDTH {
         assert_eq!(
-            state.blocks[10][x], -1,
+            state.get_blocks_mut()[10][x],
+            -1,
             "Линия 10 должна быть пустой после удаления"
         );
     }
@@ -72,12 +73,12 @@ fn test_remove_multiple_rows() {
     // Заполняем линии 5, 7, 9
     for &y in &[5, 7, 9] {
         for x in 0..GRID_WIDTH {
-            state.blocks[y][x] = 1; // Устанавливаем блоки
+            state.get_blocks_mut()[y][x] = 1; // Устанавливаем блоки
         }
     }
 
     // Находим заполненные линии
-    let (rows_mask, remove_count) = find_full_rows(&state.blocks);
+    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
 
     assert_eq!(remove_count, 3, "Должны быть найдены 3 заполненные линии");
 
@@ -89,13 +90,14 @@ fn test_remove_multiple_rows() {
     );
 
     // Удаляем линии
-    remove_rows(&mut state.blocks, rows_mask);
+    remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем, что линии удалены
     for &y in &[5, 7, 9] {
         for x in 0..GRID_WIDTH {
             assert_eq!(
-                state.blocks[y][x], -1,
+                state.get_blocks_mut()[y][x],
+                -1,
                 "Линия {y} должна быть пустой после удаления"
             );
         }
@@ -159,26 +161,28 @@ fn test_rows_shift_after_removal() {
 
     // Заполняем линию 18 (почти дно)
     for x in 0..GRID_WIDTH {
-        state.blocks[18][x] = 2;
+        state.get_blocks_mut()[18][x] = 2;
     }
 
     // Устанавливаем блок в линии 15
-    state.blocks[15][5] = 3;
+    state.get_blocks_mut()[15][5] = 3;
 
     // Находим и удаляем заполненные линии
-    let (rows_mask, _) = find_full_rows(&state.blocks);
-    remove_rows(&mut state.blocks, rows_mask);
+    let (rows_mask, _) = find_full_rows(&state.get_blocks());
+    remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем, что блок из линии 15 сдвинулся вниз на 1 позицию
     // После удаления линии 18, линия 15 должна сдвинуться на линию 16
     assert_eq!(
-        state.blocks[16][5], 3,
+        state.get_blocks_mut()[16][5],
+        3,
         "Блок должен сдвинуться с линии 15 на линию 16 после удаления линии 18"
     );
 
     // Проверяем, что линия 15 теперь пустая (сдвинулась вниз)
     assert_eq!(
-        state.blocks[15][5], -1,
+        state.get_blocks_mut()[15][5],
+        -1,
         "Линия 15 должна быть пустой после сдвига"
     );
 }
@@ -196,21 +200,22 @@ fn test_top_rows_filled_empty() {
     // Заполняем все линии
     for y in 0..20 {
         for x in 0..GRID_WIDTH {
-            state.blocks[y][x] = 4;
+            state.get_blocks_mut()[y][x] = 4;
         }
     }
 
     // Находим и удаляем все линии
-    let (rows_mask, remove_count) = find_full_rows(&state.blocks);
+    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
     assert_eq!(remove_count, 20, "Должны быть найдены все 20 линий");
 
-    remove_rows(&mut state.blocks, rows_mask);
+    remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем, что все линии пустые
     for y in 0..20 {
         for x in 0..GRID_WIDTH {
             assert_eq!(
-                state.blocks[y][x], -1,
+                state.get_blocks_mut()[y][x],
+                -1,
                 "Все линии должны быть пустыми после удаления"
             );
         }
@@ -225,7 +230,7 @@ fn test_rows_mask_validity() {
     use crate::io::GRID_HEIGHT;
 
     let state = GameState::new();
-    let (rows_mask, _) = find_full_rows(&state.blocks);
+    let (rows_mask, _) = find_full_rows(&state.get_blocks());
 
     // Проверяем, что маска в пределах поля
     assert!(
@@ -242,18 +247,19 @@ fn test_remove_rows_extended() {
     let mut state = GameState::new();
     // Заполняем линию 10
     for x in 0..GRID_WIDTH {
-        state.blocks[10][x] = 1;
+        state.get_blocks_mut()[10][x] = 1;
     }
 
-    let (rows_mask, expected_count) = find_full_rows(&state.blocks);
+    let (rows_mask, expected_count) = find_full_rows(&state.get_blocks());
     assert_eq!(expected_count, 1, "Должна быть 1 строка для удаления");
 
-    remove_rows(&mut state.blocks, rows_mask);
+    remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем что линия 10 теперь пустая
     for x in 0..GRID_WIDTH {
         assert_eq!(
-            state.blocks[10][x], -1,
+            state.get_blocks_mut()[10][x],
+            -1,
             "Линия 10 должна быть пустой после удаления"
         );
     }
@@ -262,28 +268,27 @@ fn test_remove_rows_extended() {
     let mut state2 = GameState::new();
     // Заполняем линии 5, 7, 9
     for &y in &[5, 7, 9] {
+        let blocks = state2.get_blocks_mut();
         for x in 0..GRID_WIDTH {
-            state2.blocks[y][x] = 2;
+            blocks[y][x] = 2;
         }
     }
 
-    let (rows_mask2, expected_count2) = find_full_rows(&state2.blocks);
+    let (rows_mask2, expected_count2) = find_full_rows(state2.get_blocks());
     assert_eq!(expected_count2, 3, "Должно быть 3 строки для удаления");
 
-    remove_rows(&mut state2.blocks, rows_mask2);
+    remove_rows(state2.get_blocks_mut(), rows_mask2);
 
     // Проверяем что линии теперь пустые
     for &y in &[5, 7, 9] {
+        let blocks = state2.get_blocks();
         for x in 0..GRID_WIDTH {
-            assert_eq!(
-                state2.blocks[y][x], -1,
-                "Линия должна быть пустой после удаления"
-            );
+            assert_eq!(blocks[y][x], -1, "Линия должна быть пустой после удаления");
         }
     }
 
     // Тест 3: Невалидная маска не вызывает панику
     let invalid_mask = 1u32 << (GRID_HEIGHT + 1); // Выход за границы
-    remove_rows(&mut state.blocks, invalid_mask);
+    remove_rows(state.get_blocks_mut(), invalid_mask);
     // Функция должна просто вернуть 0 без паники
 }

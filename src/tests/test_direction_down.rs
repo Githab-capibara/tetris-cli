@@ -51,8 +51,8 @@ fn test_direction_down_soft_drop() {
     use crate::game::scoring::handle_soft_drop;
 
     let mut state = GameState::new();
-    let initial_y = state.curr_shape.pos.1;
-    let initial_score = state.score;
+    let initial_y = state.curr_shape().pos.1;
+    let initial_score = state.score();
 
     // Выполняем несколько Soft Drop
     let soft_drop_count = 5;
@@ -62,25 +62,25 @@ fn test_direction_down_soft_drop() {
         }
     }
 
-    // Проверяем, что фигура опустилась
+    // Проверяем, что фигура опустилась через геттер
     assert!(
-        state.curr_shape.pos.1 > initial_y,
+        state.curr_shape().pos.1 > initial_y,
         "После Soft Drop фигура должна опуститься"
     );
 
-    // Проверяем, что очки начислены (1 очко за ячейку)
-    let drop_distance = (state.curr_shape.pos.1 - initial_y) as u32;
+    // Проверяем, что очки начислены (1 очко за ячейку) через геттеры
+    let drop_distance = (state.curr_shape().pos.1 - initial_y) as u32;
     let expected_score = initial_score + (drop_distance as u128);
 
     assert!(
-        state.score >= expected_score,
+        state.score() >= expected_score,
         "Очки за Soft Drop должны быть начислены: было {initial_score}, стало {}, ожидаем {expected_score}",
-        state.score
+        state.score()
     );
 
-    // Проверяем, что soft_drop_distance отслеживается
+    // Проверяем, что soft_drop_distance отслеживается через геттер
     assert!(
-        state.soft_drop_distance > 0,
+        state.soft_drop_distance() > 0,
         "soft_drop_distance должен быть больше 0 после Soft Drop"
     );
 }
@@ -91,12 +91,12 @@ fn test_direction_down_soft_drop() {
 #[test]
 fn test_direction_down_movement_input() {
     let mut state = GameState::new();
-    let initial_x = state.curr_shape.pos.0;
+    let initial_x = state.curr_shape().pos.0;
 
     // Пытаемся двигаться вниз через handle_movement_input
     // (это должно игнорироваться, так как движение вниз управляется гравитацией)
     // handle_movement_input приватна, пропускаем тест
-    let _initial_x = state.curr_shape.pos.0;
+    let _initial_x = state.curr_shape().pos.0;
 }
 
 /// Тест 5: Проверка, что Direction::Down работает с проверкой коллизий
@@ -114,9 +114,9 @@ fn test_direction_down_collision_check() {
         "В начале игры движение вниз должно быть возможно"
     );
 
-    // Опускаем фигуру на дно
+    // Опускаем фигуру на дно через геттер
     while can_move_curr_shape_direction(&state, Direction::Down) {
-        state.curr_shape.pos.1 += 1.0;
+        state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Теперь движение вниз должно быть заблокировано

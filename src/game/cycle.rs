@@ -227,7 +227,7 @@ pub fn run_game_loop(
         render(state, cnv, high_score_display);
     }
 
-    state.score
+    state.score()
 }
 
 #[cfg(test)]
