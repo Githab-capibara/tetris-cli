@@ -365,24 +365,30 @@ impl Tetromino {
             return;
         }
 
-        // Вращение по указанному направлению
+        // Исправление #4 (CRITICAL): замена assert на явную проверку с saturating операциями
+        // Предотвращаем панику путём использования saturating_neg для отрицания
+        // и пропуска вращения если координаты выходят за безопасные пределы
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
-                RotationDirection::CounterClockwise => (y, -x), // Поворот против часовой
-                RotationDirection::Clockwise => (-y, x),        // Поворот по часовой
+                // Против часовой: (x, y) -> (y, -x)
+                RotationDirection::CounterClockwise => (y, x.saturating_neg()),
+                // По часовой: (x, y) -> (-y, x)
+                RotationDirection::Clockwise => (y.saturating_neg(), x),
             };
 
-            // Проверка границ в отладочном и релизном режиме
-            // Координаты должны оставаться в пределах i16 для предотвращения переполнения
-            assert!(
-                (i16::MIN / 2..=i16::MAX / 2).contains(&new_x),
-                "Координата X выходит за безопасные пределы после вращения"
-            );
-            assert!(
-                (i16::MIN / 2..=i16::MAX / 2).contains(&new_y),
-                "Координата Y выходит за безопасные пределы после вращения"
-            );
+            // Явная проверка границ вместо assert - предотвращает панику в релизном режиме
+            // Координаты должны оставаться в пределах безопасного диапазона
+            if !(i16::MIN / 2..=i16::MAX / 2).contains(&new_x)
+                || !(i16::MIN / 2..=i16::MAX / 2).contains(&new_y)
+            {
+                // Координаты вышли за безопасные пределы - пропускаем вращение
+                // Это предотвращает панику и сохраняет фигуру в безопасном состоянии
+                eprintln!(
+                    "[WARN] Вращение фигуры пропущено: координаты вышли за безопасные пределы"
+                );
+                return;
+            }
 
             self.coords[i] = (new_x, new_y);
         }
@@ -419,24 +425,26 @@ impl Tetromino {
             return;
         }
 
+        // Исправление #4 (CRITICAL): замена assert на явную проверку с saturating операциями
         // Вращение по указанному направлению
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
-                crate::types::Direction::Left => (y, -x), // Поворот против часовой
-                crate::types::Direction::Right => (-y, x), // Поворот по часовой
-                crate::types::Direction::Down => return,  // Игнорируем
+                // Против часовой: (x, y) -> (y, -x)
+                crate::types::Direction::Left => (y, x.saturating_neg()),
+                // По часовой: (x, y) -> (-y, x)
+                crate::types::Direction::Right => (y.saturating_neg(), x),
+                crate::types::Direction::Down => return, // Игнорируем
             };
 
-            // Проверка границ в отладочном и релизном режиме
-            assert!(
-                (i16::MIN / 2..=i16::MAX / 2).contains(&new_x),
-                "Координата X выходит за безопасные пределы после вращения"
-            );
-            assert!(
-                (i16::MIN / 2..=i16::MAX / 2).contains(&new_y),
-                "Координата Y выходит за безопасные пределы после вращения"
-            );
+            // Явная проверка границ вместо assert - предотвращает панику в релизном режиме
+            if !(i16::MIN / 2..=i16::MAX / 2).contains(&new_x)
+                || !(i16::MIN / 2..=i16::MAX / 2).contains(&new_y)
+            {
+                // Координаты вышли за безопасные пределы - пропускаем вращение
+                eprintln!("[WARN] Вращение фигуры пропущено (rotate_old): координаты вышли за безопасные пределы");
+                return;
+            }
 
             self.coords[i] = (new_x, new_y);
         }

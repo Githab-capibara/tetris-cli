@@ -114,8 +114,24 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 #[must_use = "Результат проверки должен быть использован"]
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_hash = hmac_sha256(key, data);
-    // Постоянное по времени сравнение для предотвращения timing-атак
-    actual_hash.as_bytes() == expected_hash.as_bytes()
+    // Исправление #2 (CRITICAL): постоянное по времени сравнение через XOR накопление
+    // Предотвращает timing-атаки путём выполнения одинакового количества операций
+    // независимо от позиции первого несовпадающего байта
+    let actual_bytes = actual_hash.as_bytes();
+    let expected_bytes = expected_hash.as_bytes();
+
+    // Проверяем длину - разная длина сразу возвращает false
+    if actual_bytes.len() != expected_bytes.len() {
+        return false;
+    }
+
+    // XOR накопление - выполняем сравнение за постоянное время
+    let mut result: u8 = 0;
+    for (a, b) in actual_bytes.iter().zip(expected_bytes.iter()) {
+        result |= a ^ b;
+    }
+
+    result == 0
 }
 
 /// Вычислить keyed_hash (ключ + данные) используя BLAKE3.

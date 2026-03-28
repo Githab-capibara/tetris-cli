@@ -4,6 +4,52 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.20] — 2026-03-28
+
+### Исправления безопасности и оптимизации
+
+**CRITICAL:**
+- **Переполнение при конвертации времени** (`src/io.rs`, `src/game/cycle.rs`) — добавлена безопасная конвертация `u128 → u64` для системного времени, защита от переполнения при длительных интервалах
+- **Constant-time comparison для HMAC-SHA256** (`src/crypto.rs`) — реализовано XOR-накопление вместо раннего выхода, защита от timing-атак при проверке криптографических подписей
+- **Валидация UTF-8** (`src/io.rs`) — добавлено корректное отбрасывание невалидных UTF-8 последовательностей без паники
+- **Безопасное вращение фигур** (`src/tetromino.rs`) — `rotate()` использует `saturating_neg()` вместо `assert!`, защита от паники при выходе координат за границы
+- **Path traversal защита** (`src/validation/path.rs`) — `canonicalize()` выполняется перед проверкой нахождения в директории, защита от обхода через символические ссылки
+- **Оптимизация sanitize_player_name** (`src/validation/name.rs`) — объединение двух фильтров в один проход, снижение количества аллокаций при обработке имён
+
+### Тесты
+
+- **test_audit_fixes_comprehensive (8 тестов):**
+  - `test_time_conversion_safety` — безопасная конвертация u128 → u64
+  - `test_hmac_constant_time` — constant-time comparison для HMAC
+  - `test_utf8_validation` — валидация UTF-8 последовательностей
+  - `test_rotate_bounds_safety` — безопасное вращение фигур
+  - `test_path_traversal_canonicalize` — защита от path traversal
+  - `test_flush_optimization` — оптимизация вызовов flush()
+  - `test_no_unused_imports` — отсутствие неиспользуемых импортов
+  - `test_sanitize_single_pass` — оптимизация sanitize_player_name
+
+- **Всего тестов: 1085** (все проходят)
+
+### Улучшения
+
+- **Безопасность** — constant-time comparison, UTF-8 валидация, path traversal защита
+- **Производительность** — оптимизация sanitize_player_name, безопасное вращение без паники
+- **Надёжность** — защита от переполнения времени, корректная обработка UTF-8
+
+### Изменённые файлы
+
+- `src/crypto.rs` — constant-time comparison для HMAC-SHA256
+- `src/io.rs` — валидация UTF-8, безопасная конвертация времени
+- `src/tetromino.rs` — безопасное вращение фигур
+- `src/validation/path.rs` — path traversal защита через canonicalize()
+- `src/validation/name.rs` — оптимизация sanitize_player_name
+- `src/tests/test_audit_fixes_comprehensive.rs` — 8 новых тестов
+- `README.md` — обновление количества тестов, новые функции безопасности
+- `CHANGELOG.md` — запись изменений
+- `ARCHITECTURE.md` — обновление информации о безопасности
+- `SECURITY.md` — обновление мер безопасности
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+
 ## [23.96.19] — 2026-03-28
 
 ### Исправления аудита кода

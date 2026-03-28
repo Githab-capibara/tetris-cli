@@ -14,7 +14,7 @@ fn test_find_full_rows_early_exit() {
     let state = GameState::new();
 
     // Пустое поле - все ячейки пустые
-    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
+    let (rows_mask, remove_count) = find_full_rows(state.get_blocks());
 
     assert_eq!(
         rows_mask, 0,
@@ -42,7 +42,7 @@ fn test_remove_rows_correctness() {
     }
 
     // Находим заполненные линии
-    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
+    let (rows_mask, remove_count) = find_full_rows(state.get_blocks());
 
     assert_eq!(remove_count, 1, "Должна быть найдена 1 заполненная линия");
     assert_eq!(rows_mask, 1 << 10, "Маска должна указывать на линию 10");
@@ -78,7 +78,7 @@ fn test_remove_multiple_rows() {
     }
 
     // Находим заполненные линии
-    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
+    let (rows_mask, remove_count) = find_full_rows(state.get_blocks());
 
     assert_eq!(remove_count, 3, "Должны быть найдены 3 заполненные линии");
 
@@ -168,7 +168,7 @@ fn test_rows_shift_after_removal() {
     state.get_blocks_mut()[15][5] = 3;
 
     // Находим и удаляем заполненные линии
-    let (rows_mask, _) = find_full_rows(&state.get_blocks());
+    let (rows_mask, _) = find_full_rows(state.get_blocks());
     remove_rows(state.get_blocks_mut(), rows_mask);
 
     // Проверяем, что блок из линии 15 сдвинулся вниз на 1 позицию
@@ -205,7 +205,7 @@ fn test_top_rows_filled_empty() {
     }
 
     // Находим и удаляем все линии
-    let (rows_mask, remove_count) = find_full_rows(&state.get_blocks());
+    let (rows_mask, remove_count) = find_full_rows(state.get_blocks());
     assert_eq!(remove_count, 20, "Должны быть найдены все 20 линий");
 
     remove_rows(state.get_blocks_mut(), rows_mask);
@@ -230,7 +230,7 @@ fn test_rows_mask_validity() {
     use crate::io::GRID_HEIGHT;
 
     let state = GameState::new();
-    let (rows_mask, _) = find_full_rows(&state.get_blocks());
+    let (rows_mask, _) = find_full_rows(state.get_blocks());
 
     // Проверяем, что маска в пределах поля
     assert!(
@@ -250,7 +250,7 @@ fn test_remove_rows_extended() {
         state.get_blocks_mut()[10][x] = 1;
     }
 
-    let (rows_mask, expected_count) = find_full_rows(&state.get_blocks());
+    let (rows_mask, expected_count) = find_full_rows(state.get_blocks());
     assert_eq!(expected_count, 1, "Должна быть 1 строка для удаления");
 
     remove_rows(state.get_blocks_mut(), rows_mask);

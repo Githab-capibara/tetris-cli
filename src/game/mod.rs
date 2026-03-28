@@ -84,38 +84,18 @@ pub use crate::constants;
 pub use state::GameState;
 
 // Re-export GameStats для lib.rs и тестов
-#[allow(unused_imports, dead_code)]
-pub use state::GameStats;
 
 // Re-export GameMode для тестов и обратной совместимости
-#[allow(unused_imports, dead_code)]
-pub use state::GameMode;
 
 // Re-export констант из constants.rs (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use constants::{
-    BORDER, BORDER_COLOR, COMBO_BONUS, DISP_HEIGHT, DISP_WIDTH, FPS, GRID_HEIGHT, GRID_WIDTH,
-    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINE_SCORES, MAX_CONFIG_FILE_SIZE,
-    MAX_FALL_SPEED, MAX_LEADERBOARD_ENTRIES, SHAPE_STR, SHAPE_WIDTH, SPD_INC,
-};
+pub use constants::FPS;
 
 // Константы для тестов (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use constants::{
-    ANIMATION_FRAME_SKIP, BELL, GAME_OVER, GAME_OVER_DELAY_MS, HARD_DROP_ANIM_INTERVAL_MS,
-    HARD_DROP_POINTS, LINES_PER_LEVEL, MARATHON_LINES, MAX_LINES_PER_CLEAR, MIN_Y,
-    PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS, SPRINT_LINES,
-};
 
 // Re-export трейтов и типов для тестов (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use access::{BoardMutable, BoardReadonly, GameBoardAccess, ScoreAccess};
-#[allow(unused_imports, dead_code)]
-pub use state::{GameError, GameResult};
+pub use access::ScoreAccess;
 
 // Re-export типов из types.rs (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use types::{Level, LinesCount, Position, Score};
 
 pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
@@ -126,16 +106,10 @@ pub use scoring::{find_full_rows, handle_hold, remove_rows};
 pub use render::check_rows;
 
 // Экспорт GameView для отрисовки (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use view::GameView;
 
 // Экспорт StringCache для кэширования (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use cache::StringCache;
 
 // Экспорт игрового цикла (обратная совместимость)
-#[allow(unused_imports, dead_code)]
-pub use cycle::run_game_loop;
 
 // ============================================================================
 // МЕТОДЫ ДЛЯ GameState
@@ -255,6 +229,10 @@ impl GameState {
 #[cfg(test)]
 mod game_tests {
     use super::*;
+    use crate::constants::{
+        COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINE_SCORES, SOFT_DROP_POINTS,
+    };
+    use crate::game::state::GameStats;
     use crate::io::GRID_HEIGHT;
     use crate::types::Direction;
 

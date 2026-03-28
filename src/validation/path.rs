@@ -138,12 +138,13 @@ impl PathValidator {
     /// Валидировать путь полностью (все проверки).
     ///
     /// Выполняет все проверки:
-    /// 1. Проверка длины
-    /// 2. Проверка символов
-    /// 3. Проверка на symlink
-    /// 4. Проверка на абсолютный путь
-    /// 5. Проверка на path traversal
-    /// 6. Проверка нахождения внутри директории
+    /// 1. Проверка на абсолютный путь
+    /// 2. Проверка на path traversal (..)
+    /// 3. Проверка длины
+    /// 4. Проверка символов
+    /// 5. Проверка на symlink
+    /// 6. Canonicalize пути для защиты от обхода через symlink
+    /// 7. Проверка нахождения внутри директории
     ///
     /// # Аргументы
     /// * `path` - путь для проверки (строка)
@@ -156,8 +157,8 @@ impl PathValidator {
     /// # Errors
     /// Возвращает `PathError` если путь не проходит любую из проверок.
     ///
-    /// # Исправление H1
-    /// Этот метод заменяет дублирующуюся валидацию в controls.rs.
+    /// # Исправление #5 (CRITICAL)
+    /// Canonicalize выполняется для надёжной защиты от symlink атак.
     #[track_caller]
     pub fn validate_all(
         &self,
@@ -167,12 +168,49 @@ impl PathValidator {
         let full_path = Path::new(path);
         let joined_path = current_dir.join(full_path);
 
+        // Сначала проверяем абсолютный путь и базовые ограничения
         self.validate_not_absolute(full_path)?;
-        self.validate_no_traversal(path)?;
-        self.validate(full_path)?;
-        self.validate_within_directory(&joined_path, current_dir)?;
 
-        Ok(joined_path)
+        // Исправление #5: проверка на path traversal ПЕРЕД canonicalize
+        // Это даёт понятное сообщение об ошибке для пользователя
+        self.validate_no_traversal(path)?;
+
+        self.validate_length(full_path)?;
+        self.validate_characters(full_path)?;
+
+        // Canonicalize для защиты от symlink атак
+        let canonical_path = if joined_path.exists() {
+            joined_path.canonicalize().map_err(|e| PathError {
+                message: format!("Неверный путь {}: {}", joined_path.display(), e),
+                kind: PathErrorKind::InvalidPath,
+            })?
+        } else {
+            // Если файл не существует, canonicalize родительской директории
+            // Это позволяет создавать новые файлы в валидной директории
+            joined_path
+                .parent()
+                .and_then(|p| p.canonicalize().ok())
+                .unwrap_or_else(|| current_dir.to_path_buf())
+                .join(joined_path.file_name().unwrap_or_default())
+        };
+
+        // Проверка на symlink после canonicalize
+        self.validate_no_symlinks(&joined_path)?;
+
+        // Проверка что путь находится внутри разрешённой директории
+        // Это дополнительная защита от обхода директории
+        self.validate_within_directory(
+            &canonical_path,
+            &current_dir.canonicalize().map_err(|e| PathError {
+                message: format!(
+                    "Не удалось получить canonical путь текущей директории: {}",
+                    e
+                ),
+                kind: PathErrorKind::InvalidPath,
+            })?,
+        )?;
+
+        Ok(canonical_path)
     }
 
     /// Проверить максимальную длину пути.
