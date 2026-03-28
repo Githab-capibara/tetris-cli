@@ -87,7 +87,7 @@ fn test_falling_speed() {
     let state = GameState::new();
 
     // Проверяем начальную скорость падения
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
     assert!(
         (fall_spd - 0.9).abs() < f32::EPSILON,
         "Начальная скорость падения должна быть 0.9"

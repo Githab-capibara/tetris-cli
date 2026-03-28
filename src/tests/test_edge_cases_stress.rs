@@ -73,7 +73,7 @@ fn test_edge_cases_max_fall_speed() {
         state.increment_lines_cleared();
     }
 
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
     assert!(fall_spd > 0.0, "Скорость должна быть положительной");
     assert!(fall_spd < 100.0, "Скорость должна быть разумной");
 }

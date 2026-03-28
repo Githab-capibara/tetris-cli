@@ -9,9 +9,7 @@
 //!
 //! Все тесты проверяют взаимодействие между компонентами системы.
 
-#![allow(deprecated)]
-
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 use crate::types::RotationDirection;
@@ -75,18 +73,6 @@ fn test_all_piece_types_appear_in_game() {
     for (i, &found) in found_shapes.iter().enumerate() {
         assert!(found, "Фигура типа {i:?} должна появиться в игре");
     }
-}
-
-/// Тест 5: Вращение фигуры в `GameState`
-#[test]
-fn test_piece_rotation_in_gamestate() {
-    let state = GameState::new();
-
-    // Проверяем, что вращение возможно
-    let _can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-
-    // В начале игры вращение должно быть возможно
-    // Тест успешно завершён, если код достиг этой строки
 }
 
 /// Тест 6: Движение фигуры в `GameState`
@@ -236,7 +222,7 @@ fn test_savedata_loads_score() {
 fn test_leaderboard_validates_entries() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("Player", 1000);
+    let _ = leaderboard.add_score("Player", 1000);
 
     for entry in leaderboard.get_entries() {
         assert!(entry.is_valid(), "Запись должна быть валидной");
@@ -249,8 +235,8 @@ fn test_classic_mode_saves_score() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
+        state.get_mode_trait().name(),
+        "Классика",
         "Режим должен быть Classic"
     );
 
@@ -265,8 +251,8 @@ fn test_sprint_mode_does_not_save_score() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
+        state.get_mode_trait().name(),
+        "Спринт",
         "Режим должен быть Sprint"
     );
 
@@ -280,8 +266,8 @@ fn test_marathon_mode_saves_score() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Marathon,
+        state.get_mode_trait().name(),
+        "Марафон",
         "Режим должен быть Marathon"
     );
 
@@ -293,9 +279,9 @@ fn test_marathon_mode_saves_score() {
 fn test_leaderboard_sorts_scores() {
     let mut leaderboard = Leaderboard::default();
 
-    leaderboard.add_score("P1", 100);
-    leaderboard.add_score("P2", 300);
-    leaderboard.add_score("P3", 200);
+    let _ = leaderboard.add_score("P1", 100);
+    let _ = leaderboard.add_score("P2", 300);
+    let _ = leaderboard.add_score("P3", 200);
 
     let entries = leaderboard.get_entries();
 
@@ -321,7 +307,7 @@ fn test_leaderboard_max_size_integration() {
 
     // Добавляем 10 рекордов
     for i in 0..10 {
-        leaderboard.add_score(&format!("P{i}"), u128::from(i as u64 * 100));
+        let _ = leaderboard.add_score(&format!("P{i}"), u128::from(i as u64 * 100));
     }
 
     assert_eq!(
@@ -529,7 +515,7 @@ fn test_game_has_empty_field() {
 #[test]
 fn test_game_has_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(fall_spd > 0.0, "Скорость падения должна быть положительной");
 }
@@ -539,7 +525,7 @@ fn test_game_has_fall_speed() {
 fn test_game_has_mode() {
     let state = GameState::new();
 
-    assert_eq!(state.get_mode(), GameMode::Classic);
+    assert_eq!(state.get_mode_trait().name(), "Классика");
 }
 
 /// Тест 37: Sprint игра имеет цель
@@ -547,7 +533,7 @@ fn test_game_has_mode() {
 fn test_sprint_game_has_goal() {
     let state = GameState::new_sprint();
 
-    assert_eq!(state.get_mode(), GameMode::Sprint);
+    assert_eq!(state.get_mode_trait().name(), "Спринт");
 }
 
 /// Тест 38: Marathon игра имеет цель
@@ -555,7 +541,7 @@ fn test_sprint_game_has_goal() {
 fn test_marathon_game_has_goal() {
     let state = GameState::new_marathon();
 
-    assert_eq!(state.get_mode(), GameMode::Marathon);
+    assert_eq!(state.get_mode_trait().name(), "Марафон");
 }
 
 /// Тест 39: Игра имеет статистику
@@ -602,10 +588,11 @@ fn test_fast_gamestate_creation() {
 /// Тест 42: Быстрое создание Tetromino
 #[test]
 fn test_fast_tetromino_creation() {
+    let mut bag = BagGenerator::new();
     let start = std::time::Instant::now();
 
     for _ in 0..1000 {
-        let _t = Tetromino::select();
+        let _t = Tetromino::from_bag(&mut bag);
     }
 
     let duration = start.elapsed();
@@ -729,7 +716,7 @@ fn test_fast_leaderboard_add() {
     let start = std::time::Instant::now();
 
     for i in 0..100 {
-        leaderboard.add_score(&format!("P{i}"), u128::from(i as u64));
+        let _ = leaderboard.add_score(&format!("P{i}"), u128::from(i as u64));
     }
 
     let duration = start.elapsed();

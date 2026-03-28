@@ -650,7 +650,7 @@ fn test_soft_drop_speed() {
     let state = GameState::new();
 
     // Проверяем, что скорость падения положительная
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
     assert!(
         fall_spd > 0.0,
         "Скорость падения должна быть положительной: {fall_spd}"

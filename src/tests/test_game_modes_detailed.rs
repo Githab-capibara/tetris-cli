@@ -108,7 +108,7 @@ fn test_classic_mode_score_saved() {
 #[test]
 fn test_classic_mode_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(
         fall_spd > 0.0,
@@ -228,7 +228,7 @@ fn test_sprint_mode_win_at_40_lines() {
 #[test]
 fn test_sprint_mode_fall_speed() {
     let state = GameState::new_sprint();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(
         fall_spd > 0.0,
@@ -344,7 +344,7 @@ fn test_marathon_mode_score_saved() {
 #[test]
 fn test_marathon_mode_fall_speed() {
     let state = GameState::new_marathon();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(
         fall_spd > 0.0,

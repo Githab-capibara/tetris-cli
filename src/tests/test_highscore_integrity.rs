@@ -18,7 +18,7 @@ use crate::highscore::SaveData;
 ///
 /// Проверяет, что валидный рекорд проходит проверку целостности.
 #[test]
-fn test_целостность_с_валидными_данными() {
+fn test_integrity_with_valid_data() {
     // Создаём валидный рекорд
     let save = SaveData::from_value(5000);
 
@@ -41,7 +41,7 @@ fn test_целостность_с_валидными_данными() {
 ///
 /// Проверяет, что модификация рекорда обнаруживается через `verify_and_get_score()`.
 #[test]
-fn test_обнаружение_подделки_рекорда() {
+fn test_record_forgery_detection() {
     // Создаём валидный рекорд
     let save = SaveData::from_value(1000);
 
@@ -75,7 +75,7 @@ fn test_обнаружение_подделки_рекорда() {
 ///
 /// Проверяет, что `is_valid()` корректно работает для записей.
 #[test]
-fn test_целостность_записи_таблицы_лидеров() {
+fn test_leaderboard_entry_integrity() {
     // Тест 1: Валидная запись
     let entry = LeaderboardEntry::new("Player", 5000);
     assert!(entry.is_valid(), "Новая запись должна быть валидной");

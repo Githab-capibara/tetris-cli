@@ -125,116 +125,35 @@ fn test_collision_left_at_right_wall() {
     );
 }
 
-/// Тест 7: Проверка столкновения для T-фигуры с левой стеной
+/// Тест 7: Проверка столкновения для всех фигур с левой стеной (параметризованный тест)
 #[test]
-fn test_collision_t_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::T;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::T as usize];
+fn test_collision_all_shapes_left_wall() {
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::I,
+        ShapeType::O,
+        ShapeType::S,
+        ShapeType::Z,
+    ];
 
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+    for shape_type in shapes {
+        let mut state = GameState::new();
+        state.get_curr_shape_mut().shape = shape_type;
+        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape_type as usize];
+
+        for _ in 0..10 {
+            if state.can_move_curr_shape_direction(Direction::Left) {
+                state.get_curr_shape_mut().pos.0 -= 1.0;
+            }
         }
+
+        assert!(
+            !state.can_move_curr_shape_direction(Direction::Left),
+            "Фигура {shape_type:?} должна столкнуться с левой стеной"
+        );
     }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 8: Проверка столкновения для L-фигуры с левой стеной
-#[test]
-fn test_collision_l_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::L;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::L as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 9: Проверка столкновения для J-фигуры с левой стеной
-#[test]
-fn test_collision_j_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::J;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::J as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 10: Проверка столкновения для I-фигуры с левой стеной
-#[test]
-fn test_collision_i_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::I;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 11: Проверка столкновения для O-фигуры с левой стеной
-#[test]
-fn test_collision_o_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::O;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 12: Проверка столкновения для S-фигуры с левой стеной
-#[test]
-fn test_collision_s_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::S;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::S as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-}
-
-/// Тест 13: Проверка столкновения для Z-фигуры с левой стеной
-#[test]
-fn test_collision_z_left_wall() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::Z;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::Z as usize];
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
 }
 
 /// Тест 14: Проверка что фигура не выходит за левую границу
@@ -451,36 +370,6 @@ fn test_collision_down_blocked_by_piece() {
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
-/// Тест 28: Проверка что движение влево возможно при фигуре внизу
-#[test]
-fn test_collision_left_with_piece_below() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру на пол
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Движение влево должно быть возможно (если не у стены)
-    let can_left = state.can_move_curr_shape_direction(Direction::Left);
-    let _ = can_left;
-}
-
-/// Тест 29: Проверка что движение вправо возможно при фигуре внизу
-#[test]
-fn test_collision_right_with_piece_below() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру на пол
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Движение вправо должно быть возможно (если не у стены)
-    let can_right = state.can_move_curr_shape_direction(Direction::Right);
-    let _ = can_right;
-}
-
 /// Тест 30: Проверка столкновения при приземлении на фигуру
 #[test]
 fn test_collision_landing_on_piece() {
@@ -493,38 +382,6 @@ fn test_collision_landing_on_piece() {
 
     // Фигура должна быть на полу
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 31: Проверка что вращение возможно при фигуре рядом
-#[test]
-fn test_collision_rotation_with_piece_nearby() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру близко к полу
-    for _ in 0..15 {
-        if state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
-        }
-    }
-
-    // Вращение должно быть возможно
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise)
-        || state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 32: Проверка что столкновение работает для всех направлений
-#[test]
-fn test_collision_all_directions() {
-    let state = GameState::new();
-
-    // Проверяем все направления
-    let down = state.can_move_curr_shape_direction(Direction::Down);
-    let left = state.can_move_curr_shape_direction(Direction::Left);
-    let right = state.can_move_curr_shape_direction(Direction::Right);
-
-    // В начале игры все направления должны быть доступны (кроме границ)
-    let _ = (down, left, right);
 }
 
 /// Тест 33: Проверка что столкновение срабатывает корректно
@@ -570,100 +427,8 @@ fn test_collision_exact_boundary() {
 }
 
 // ============================================================================
-// ГРУППА ТЕСТОВ 36-45: Вращения и столкновения
+// ГРУППА ТЕСТОВ 43-50: Вращения и столкновения
 // ============================================================================
-
-/// Тест 36: Проверка что вращение блокируется у левой стены
-#[test]
-fn test_collision_rotation_blocked_left() {
-    let mut state = GameState::new();
-
-    // Двигаем к левой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    // Вращение может быть заблокировано
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 37: Проверка что вращение блокируется у правой стены
-#[test]
-fn test_collision_rotation_blocked_right() {
-    let mut state = GameState::new();
-
-    // Двигаем к правой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
-        }
-    }
-
-    // Вращение может быть заблокировано
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 38: Проверка что вращение блокируется на полу
-#[test]
-fn test_collision_rotation_blocked_floor() {
-    let mut state = GameState::new();
-
-    // Опускаем на пол
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Вращение всё ещё может быть возможно
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 39: Проверка что `can_rotate_curr_shape` использует `check_collision`
-#[test]
-fn test_collision_rotation_uses_check() {
-    let state = GameState::new();
-
-    // Проверяем что метод работает
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 40: Проверка вращения с проверкой столкновений для T
-#[test]
-fn test_collision_rotation_check_t() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::T;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::T as usize];
-
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 41: Проверка вращения с проверкой столкновений для L
-#[test]
-fn test_collision_rotation_check_l() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::L;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::L as usize];
-
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
-
-/// Тест 42: Проверка вращения с проверкой столкновений для I
-#[test]
-fn test_collision_rotation_check_i() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::I;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
-
-    let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let _ = can_rotate;
-}
 
 /// Тест 43: Проверка что вращение не вызывает паники при столкновении
 #[test]

@@ -71,6 +71,9 @@
 // БАЗОВЫЕ ТЕСТЫ КОМПОНЕНТОВ
 // ============================================================================
 
+// Общие фикстуры и хелперы
+pub mod fixtures;
+
 pub mod test_controls;
 pub mod test_game_logic;
 pub mod test_highscore;
@@ -89,7 +92,6 @@ pub mod test_edge_cases;
 pub mod test_edge_cases_stress;
 pub mod test_game_movement;
 pub mod test_game_rotation;
-pub mod test_scoring;
 pub mod test_statistics;
 pub mod test_tetromino_shapes;
 

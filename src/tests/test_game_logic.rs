@@ -97,7 +97,7 @@ fn test_game_state_empty_field() {
 #[test]
 fn test_game_state_initial_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_spd();
+    let fall_spd = state.get_fall_speed();
 
     assert!(
         (fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,

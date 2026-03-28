@@ -249,7 +249,7 @@ fn test_game_state_getters() {
     let _next_shape = state.get_next_shape();
     let _held_shape = state.get_held_shape_ref();
     let _stats = state.get_stats();
-    let _fall_spd = state.get_fall_spd();
+    let _fall_spd = state.get_fall_speed();
 
     // Проверяем, что геттеры возвращают корректные начальные значения
     assert_eq!(_score, 0, "Начальный счёт должен быть 0");
@@ -441,7 +441,7 @@ fn test_leaderboard_independence() {
     use crate::highscore::Leaderboard;
 
     let mut leaderboard = Leaderboard::load();
-    leaderboard.add_score("Тест", 1000);
+    let _ = leaderboard.add_score("Тест", 1000);
 
     let entries = leaderboard.get_entries();
     assert!(!entries.is_empty());

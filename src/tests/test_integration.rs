@@ -8,14 +8,11 @@
 //!
 //! Интеграционные тесты проверяют совместную работу модулей.
 
-#![allow(deprecated)]
-
 use crate::controls::ControlsConfig;
-use crate::game::{GameMode, GameState};
+use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
-use crate::types::Direction;
-use crate::types::RotationDirection;
+use crate::types::{Direction, RotationDirection};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Полный игровой цикл
@@ -37,8 +34,8 @@ fn test_full_game_initialization() {
         "Начальные линии должны быть 0"
     );
     assert_eq!(
-        state.get_mode(),
-        GameMode::Classic,
+        state.get_mode_trait().name(),
+        "Классика",
         "Режим по умолчанию - Classic"
     );
 
@@ -61,8 +58,8 @@ fn test_sprint_game_initialization() {
     let mut state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_mode(),
-        GameMode::Sprint,
+        state.get_mode_trait().name(),
+        "Спринт",
         "Режим должен быть Sprint"
     );
 
@@ -302,7 +299,7 @@ fn test_save_data_leaderboard_interaction() {
 
     // Создаём Leaderboard
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Player", 3000);
+    let _ = leaderboard.add_score("Player", 3000);
 
     assert_eq!(
         leaderboard.get_best_score(),
@@ -432,12 +429,13 @@ fn test_performance_collision_detection() {
 /// Проверяет, что вращение фигур происходит быстро.
 #[test]
 fn test_performance_rotation() {
-    let mut tetromino = Tetromino::select();
+    let mut bag = BagGenerator::new();
+    let mut tetromino = Tetromino::from_bag(&mut bag);
     let start = std::time::Instant::now();
 
     // Выполняем 10000 вращений
     for _ in 0..10_000 {
-        tetromino.rotate_old(Direction::Right);
+        tetromino.rotate(RotationDirection::Clockwise);
     }
 
     let duration = start.elapsed();
@@ -459,7 +457,7 @@ fn test_performance_leaderboard() {
 
     // Добавляем 1000 рекордов
     for i in 0..1000 {
-        leaderboard.add_score(&format!("Player{i}"), i * 100);
+        let _ = leaderboard.add_score(&format!("Player{i}"), i * 100);
     }
 
     let duration = start.elapsed();

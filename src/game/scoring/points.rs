@@ -406,8 +406,6 @@ mod points_tests {
     /// Тест на защиту от переполнения при Hard Drop.
     #[test]
     fn test_hard_drop_overflow_protection() {
-        use crate::types::Direction;
-
         let mut state = GameState::new();
         // Устанавливаем счёт близкий к максимальному
         state.set_score(u128::MAX - 50);
