@@ -560,6 +560,9 @@ mod tests {
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;
 
+    // Тесты верификации исправлений (C1, L1, L2, L3, M4) - 13 тестов
+    pub mod test_fixes_verification;
+
     // Тесты для всех 24 исправлений из отчета аудита (24 теста)
     // pub mod test_all_24_fixes; // REMOVED: дублирование
 

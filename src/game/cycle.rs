@@ -95,10 +95,8 @@ pub struct DefaultFPSControl;
 impl FPSControl for DefaultFPSControl {
     fn maintain_fps(&self, frame_start: std::time::Instant, target_fps: u64) {
         let interval_ms = 1_000 / target_fps;
-        // Исправление: используем saturating_cast для безопасного cast u128 -> u64
-        #[allow(clippy::cast_possible_truncation)]
-        // as_millis() возвращает u128, но для FPS контроля достаточно u64
-        // Интервал FPS обычно < 1000ms, поэтому переполнение невозможно
+        // Безопасный cast u128 -> u64
+        // Переполнение невозможно: интервал FPS обычно < 1000ms, что намного меньше u64::MAX
         let elapsed_ms = frame_start.elapsed().as_millis() as u64;
         if elapsed_ms < interval_ms {
             sleep(Duration::from_millis(interval_ms - elapsed_ms));
@@ -205,10 +203,8 @@ pub fn run_game_loop(
     loop {
         // Поддержание стабильного FPS
         let now = Instant::now();
-        // Исправление: безопасный cast u128 -> u64
-        #[allow(clippy::cast_possible_truncation)]
-        // as_millis() возвращает u128, но для FPS контроля достаточно u64
-        // Интервал FPS обычно < 1000ms, поэтому переполнение невозможно
+        // Безопасный cast u128 -> u64
+        // Переполнение невозможно: интервал FPS обычно < 1000ms, что намного меньше u64::MAX
         let delta_time_ms = now.duration_since(last_time).as_millis() as u64;
         if delta_time_ms < interval_ms {
             sleep(Duration::from_millis(interval_ms - delta_time_ms));
@@ -218,14 +214,13 @@ pub fn run_game_loop(
 
         // Обработка ввода и обновления состояния
         match handle_input(state, inp, delta_time_ms) {
-            InputResult::Continue => {}
+            InputResult::Continue | InputResult::Pause => {}
             InputResult::Quit => return 0,
             InputResult::GameOver => {
                 handle_game_over(cnv);
                 break;
             }
             InputResult::Won => break,
-            InputResult::Pause => {} // Уже обработано в handle_input
         }
 
         // Отрисовка кадра

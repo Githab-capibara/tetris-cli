@@ -9,7 +9,9 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты фигур.
 
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS};
+use crate::tetromino::{
+    BagGenerator, RotationDirection, ShapeType, Tetromino, SHAPE_COLORS, SHAPE_COORDS,
+};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-3: Создание фигур (параметризованные тесты)
