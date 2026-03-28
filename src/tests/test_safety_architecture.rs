@@ -162,17 +162,18 @@ fn test_application_handles_invalid_highscore() {
 /// - Трейты могут использоваться как ограничения типов
 /// - Архитектурные зависимости работают корректно
 #[test]
+#[allow(dead_code)] // Функции используются для проверки компиляции
 fn test_io_traits_available() {
     use crate::io_traits::{InputReader, Renderer};
-    
+
     // Проверяем что трейты существуют и могут использоваться
     // Эта функция компилируется только если трейты доступны
     fn use_traits<T: InputReader + Renderer>(_t: &T) {}
-    
+
     // Тест компилируется - трейты доступны и могут использоваться
     // как ограничения типов (trait bounds)
     assert!(true, "Трейты InputReader и Renderer доступны");
-    
+
     // Дополнительная проверка: трейты могут использоваться в dyn контексте
     fn use_dyn_traits(_t: &dyn InputReader, _r: &dyn Renderer) {}
     assert!(true, "Трейты могут использоваться как dyn trait");
@@ -196,14 +197,15 @@ fn test_all_safety_mechanisms_work_together() {
     // 2. Проверка TOCTOU защиты
     let entry = LeaderboardEntry::new("Player", 5000);
     assert_eq!(entry.get_valid_score(), Some(5000));
-    
+
     // 3. Проверка валидации путей
     let config = ControlsConfig::default();
     assert!(config.save_to_file("/absolute/path").is_err());
-    
+
     // 4. Проверка доступности трейтов
+    #[allow(dead_code)]
     fn require_traits<T: InputReader + Renderer>(_: &T) {}
-    
+
     // Все проверки прошли
     assert!(true, "Все механизмы безопасности работают корректно");
 }

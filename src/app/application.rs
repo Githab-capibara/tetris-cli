@@ -45,12 +45,14 @@ impl Application {
         let (save, leaderboard) = Self::load_game_data();
 
         // Проверка целостности рекорда
-        let high_score = save.verify_and_get_score().unwrap_or_else(|| {
-            eprintln!(
-                "Предупреждение: обнаружена попытка подделки рекорда! Используется значение 0."
-            );
-            0
-        });
+        // Исправление C3: замена unwrap_or_else на match с подробным логированием
+        let high_score = match save.verify_and_get_score() {
+            Some(score) => score,
+            None => {
+                eprintln!("Ошибка: рекорд не прошёл валидацию. Используется 0.");
+                0
+            }
+        };
 
         // Проверка терминала и инициализация ввода/вывода
         let (canvas, input) = Self::initialize_terminal()?;

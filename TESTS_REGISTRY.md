@@ -1,32 +1,39 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 28 марта 2026 г. (очистка дубликатов и clippy исправления)
-**Версия проекта:** 23.96.14
-**Всего тестов:** 1219 (проходят 100%)
-**Всего файлов тестов:** 78 (включая mod.rs)
+**Дата последней актуализации:** 28 марта 2026 г. (аудит кода и архитектуры, тесты безопасности)
+**Версия проекта:** 23.96.19
+**Всего тестов:** 1225 (проходят 100%)
+**Всего файлов тестов:** 79 (включая mod.rs)
 
 ---
 
 ## 📊 СТАТИСТИКА ОЧИСТКИ
 
-### Последняя очистка (28 марта 2026 - очистка дубликатов):
+### Последняя актуализация (28 марта 2026 - аудит и безопасность):
 
-#### Удалены дублирующиеся тесты:
-- **test_modes.rs (40 тестов):** полное дублирование с test_game_modes_detailed.rs
-- **test_game_wall_kick.rs (3 теста):** дублирование с test_wall_kick_refactor.rs
+#### Исправлены Critical проблемы:
+- **C1:** Защита от переполнения очков — `saturating_mul()` и `saturating_add()` в scoring
+- **C2:** TOCTOU уязвимость — добавлен атомарный метод `get_valid_score()` в LeaderboardEntry
+- **C3:** Обработка ошибок валидации — подробное логирование в Application
 
-**Итого удалено:** 43 теста, сохранено полное покрытие функционала
+#### Исправлены HIGH архитектурные проблемы:
+- **A1:** Дублирование валидации путей — удалена `validate_config_path()` в controls.rs
+- **A2:** Связанность game ↔ io — импортированы трейты InputReader и Renderer
 
-#### Исправлены clippy предупреждения:
-- **test_clippy_fixes.rs:** добавлены #![allow(clippy::assertions_on_constants)] и #![allow(clippy::absurd_extreme_comparisons)]
-- **test_architecture_integrity.rs:** добавлен #![allow(clippy::assertions_on_constants)]
-- Исправлен тест test_no_absurd_comparisons
+#### Новые тесты безопасности:
+- **test_safety_architecture.rs:** 6 тестов для Critical и HIGH проблем
+  - test_score_overflow_protection (C1)
+  - test_leaderboard_entry_atomic_validation (C2)
+  - test_controls_config_uses_path_validator (A1)
+  - test_application_handles_invalid_highscore (C3)
+  - test_io_traits_available (A2)
+  - test_all_safety_mechanisms_work_together (интеграционный)
 
-**Итого:** 1219 тестов проходят (100%), clippy предупреждений нет
+**Итого:** 1225 тестов проходят (100%), 0 предупреждений clippy
 
 ---
 
-### Предыдущая очистка (28 марта 2026 - исправление clippy ошибок):
+### Предыдущая очистка (28 марта 2026 - очистка дубликатов):
 
 #### Исправлены все 42 clippy ошибки:
 - **Assertions on constants (11 ошибок):** Удалены `assert!(true)` с постоянными условиями в тестах

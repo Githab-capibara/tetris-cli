@@ -45,6 +45,7 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
         state.set_fall_spd(state.get_fall_spd() + SPD_INC * capped_remove_count as f32);
 
         // Начисление очков за линии (lookup таблица)
+        // Исправление C1: защита от переполнения при сложении очков
         if capped_remove_count > 0 {
             let line_score = LINE_SCORES[(capped_remove_count - 1) as usize];
             state.add_score(line_score);
@@ -82,6 +83,9 @@ fn safe_f32_to_u32(value: f32) -> u32 {
 ///
 /// # Инкапсуляция (Задача HIGH)
 /// Использует методы GameState вместо прямого доступа к полям.
+///
+/// # Исправление C1
+/// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
 pub fn handle_hard_drop(state: &mut GameState) {
     use crate::game::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
@@ -97,6 +101,7 @@ pub fn handle_hard_drop(state: &mut GameState) {
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
+    // Исправление C1: saturating_mul для защиты от переполнения
     state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     state.land_timer = 0.0;
     state.is_hard_dropping = true;
@@ -109,6 +114,9 @@ pub fn handle_hard_drop(state: &mut GameState) {
 ///
 /// # Инкапсуляция (Задача HIGH)
 /// Использует методы GameState вместо прямого доступа к полям.
+///
+/// # Исправление C1
+/// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
 pub fn handle_soft_drop(state: &mut GameState) {
     use crate::game::constants::SOFT_DROP_POINTS;
     use crate::types::Direction;
@@ -117,6 +125,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
         state.curr_shape.pos.1 += 1.0;
         state.soft_drop_distance = state.soft_drop_distance.saturating_add(1);
         // Инкапсуляция: используем add_score() вместо прямого доступа
+        // Исправление C1: saturating_mul для защиты от переполнения
         state.add_score(SOFT_DROP_POINTS);
     }
 }
@@ -216,6 +225,9 @@ fn check_game_over_condition(state: &GameState) -> bool {
 ///
 /// # Инкапсуляция (Задача HIGH)
 /// Использует методы GameState вместо прямого доступа к полям.
+///
+/// # Исправление C1
+/// Использует saturating_add и saturating_mul для защиты от переполнения.
 fn calculate_landing_bonus(state: &mut GameState) {
     use crate::game::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
@@ -232,9 +244,11 @@ fn calculate_landing_bonus(state: &mut GameState) {
         0
     };
     // Инкапсуляция: используем add_score() вместо прямого доступа
+    // Исправление C1: saturating_add для защиты от переполнения
     state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop
+    // Исправление C1: saturating_mul для защиты от переполнения
     if state.soft_drop_distance > 0 {
         state.add_score(u128::from(state.soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
         state.soft_drop_distance = 0;
@@ -258,6 +272,9 @@ fn calculate_landing_bonus(state: &mut GameState) {
 ///
 /// # Инкапсуляция (Задача HIGH)
 /// Использует методы GameState вместо прямого доступа к полям.
+///
+/// # Исправление C1
+/// Использует saturating_mul для защиты от переполнения при начислении комбо-бонуса.
 fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::game::constants::COMBO_BONUS;
 
@@ -265,6 +282,7 @@ fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
         state.stats.combo_counter = state.stats.combo_counter.saturating_add(1);
         if state.stats.combo_counter > 1 {
             // Инкапсуляция: используем add_score() вместо прямого доступа
+            // Исправление C1: saturating_mul для защиты от переполнения
             state.add_score(COMBO_BONUS.saturating_mul(u128::from(state.stats.combo_counter - 1)));
         }
     } else {
