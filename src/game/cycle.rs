@@ -95,11 +95,13 @@ pub struct DefaultFPSControl;
 impl FPSControl for DefaultFPSControl {
     fn maintain_fps(&self, frame_start: std::time::Instant, target_fps: u64) {
         let interval_ms = 1_000 / target_fps;
-        // Безопасный cast u128 -> u64
-        // Переполнение невозможно: интервал FPS обычно < 1000ms, что намного меньше u64::MAX
-        let elapsed_ms = frame_start.elapsed().as_millis() as u64;
+        // Исправление #1 (CRITICAL): безопасная конвертация u128 -> u64
+        // Используем min() для предотвращения переполнения при cast
+        let elapsed_ms = std::cmp::min(frame_start.elapsed().as_millis(), u64::MAX as u128) as u64;
         if elapsed_ms < interval_ms {
-            sleep(Duration::from_millis(interval_ms - elapsed_ms));
+            sleep(Duration::from_millis(
+                interval_ms.saturating_sub(elapsed_ms),
+            ));
         }
     }
 }
@@ -203,11 +205,14 @@ pub fn run_game_loop(
     loop {
         // Поддержание стабильного FPS
         let now = Instant::now();
-        // Безопасный cast u128 -> u64
-        // Переполнение невозможно: интервал FPS обычно < 1000ms, что намного меньше u64::MAX
-        let delta_time_ms = now.duration_since(last_time).as_millis() as u64;
+        // Исправление #1 (CRITICAL): безопасная конвертация u128 -> u64
+        // Используем min() для предотвращения переполнения при cast
+        let delta_time_ms =
+            std::cmp::min(now.duration_since(last_time).as_millis(), u64::MAX as u128) as u64;
         if delta_time_ms < interval_ms {
-            sleep(Duration::from_millis(interval_ms - delta_time_ms));
+            sleep(Duration::from_millis(
+                interval_ms.saturating_sub(delta_time_ms),
+            ));
             continue;
         }
         last_time = now;

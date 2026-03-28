@@ -94,17 +94,20 @@ pub fn is_valid_name_char(c: char) -> bool {
 ///
 /// # Исправление #18
 /// Использует функцию `is_forbidden_char()` для улучшения читаемости.
+///
+/// # Исправление #8 (HIGH)
+/// Объединяет два фильтра в один проход для оптимизации.
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
-    // Оптимизация: используем filter() + take() + collect() вместо ручного цикла
+    // Исправление #8: объединяем фильтры в один проход для оптимизации
+    // Вместо двух отдельных filter() используем один с комбинированным условием
     let validated: String = trimmed
         .chars()
-        .filter(|&c| !is_forbidden_char(c))
-        .filter(|&c| is_valid_name_char(c))
+        .filter(|&c| !is_forbidden_char(c) && is_valid_name_char(c))
         .take(20)
         .collect();
 

@@ -514,6 +514,9 @@ mod tests {
     // Тесты ограничения UTF-8 в KeyReader (7 тестов)
     pub mod test_utf8_limitation;
 
+    // Комплексные тесты для всех исправлений аудита — УДАЛЕНЫ (тесты перемещены в другие файлы)
+    // pub mod test_audit_fixes_comprehensive; // УДАЛЁН: тесты перемещены в test_security_fixes.rs и test_time_safety.rs
+
     // Тесты для Задач 12-15 (30 тестов)
     pub mod test_task13_coverage;
 

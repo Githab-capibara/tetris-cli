@@ -498,6 +498,19 @@ impl KeyReader {
                     return None;
                 }
 
+                // Исправление #3 (CRITICAL): проверка валидности UTF-8 через std::str::from_utf8()
+                // Собираем все байты символа для валидации
+                let mut utf8_bytes = [0u8; 4];
+                utf8_bytes[0] = first_byte;
+                utf8_bytes[1..=bytes_to_read].copy_from_slice(&remaining[..bytes_to_read]);
+
+                // Проверяем валидность UTF-8 последовательности
+                if std::str::from_utf8(&utf8_bytes[..=bytes_to_read]).is_err() {
+                    // Невалидный UTF-8 - отбрасываем
+                    eprintln!("[WARN] Получен невалидный UTF-8 символ в get_key().");
+                    return None;
+                }
+
                 // Исправление #8: логирование предупреждения при получении UTF-8 символа
                 eprintln!("[WARN] Получен многобайтовый UTF-8 символ (не поддерживается в get_key()). Используйте get_key_unicode().");
 
