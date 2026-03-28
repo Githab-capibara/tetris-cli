@@ -77,7 +77,6 @@ fn test_hard_drop_flag_reset_after_landing() {
 /// Проверяем, что флаг остаётся true во время анимации.
 #[test]
 fn test_hard_drop_flag_during_animation() {
-
     use crate::game::scoring::handle_hard_drop;
 
     let mut state = GameState::new();

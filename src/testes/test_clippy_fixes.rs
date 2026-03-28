@@ -27,7 +27,7 @@ mod clippy_fixes_tests {
     fn test_range_contains() {
         let value = 2.5_f32;
         assert!((-2.0..=3.0).contains(&value));
-        
+
         let outside = 5.0_f32;
         assert!(!(-2.0..=3.0).contains(&outside));
     }
@@ -36,12 +36,12 @@ mod clippy_fixes_tests {
     #[test]
     fn test_iterator_instead_of_range_loop() {
         let mut array = [0; 10];
-        
+
         // Правильный способ с итератором
         for (i, elem) in array.iter_mut().enumerate() {
             *elem = i as i32;
         }
-        
+
         assert_eq!(array[0], 0);
         assert_eq!(array[9], 9);
     }
@@ -59,7 +59,7 @@ mod clippy_fixes_tests {
         let value = 50;
         // Правильно: просто value вместо value * 1
         assert_eq!(value, 50);
-        
+
         let zero = 0;
         // Правильно: просто 0 вместо value * 0
         assert_eq!(zero, 0);

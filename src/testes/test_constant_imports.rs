@@ -146,11 +146,7 @@ fn test_level_bonus_mult_constant() {
     );
 
     // Проверяем расчёт бонусов для разных уровней
-    assert_eq!(
-        LEVEL_BONUS_MULT,
-        500,
-        "Бонус за уровень 2 должен быть 500"
-    );
+    assert_eq!(LEVEL_BONUS_MULT, 500, "Бонус за уровень 2 должен быть 500");
     assert_eq!(
         LEVEL_BONUS_MULT * 2,
         1000,
