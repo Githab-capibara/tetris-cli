@@ -419,7 +419,7 @@ pub const FRAME_DELAY_MS: u64 = 16;
 // Тесты разбиты по категориям для лучшей организации.
 
 #[cfg(test)]
-mod testes {
+mod tests {
     // Оригинальные тесты (160 тестов)
     // pub mod test_achievements; // REMOVED: Achievement system removed
     pub mod test_controls;
@@ -590,4 +590,4 @@ mod testes {
     pub mod test_clippy_fixes;
 }
 
-// Тесты больше не объявляются здесь - они в модуле testes
+// Тесты больше не объявляются здесь - они в модуле tests

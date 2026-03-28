@@ -162,6 +162,9 @@ pub mod test_architecture_refactoring;
 pub mod test_architecture_improvements;
 pub mod test_architecture_new_modules;
 
+// Тесты целостности архитектуры
+pub mod test_architecture_integrity;
+
 // ============================================================================
 // ТЕСТЫ КАЧЕСТВА КОДА
 // ============================================================================
