@@ -42,19 +42,19 @@ pub fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Lea
 /// # Аргументы
 /// * `cnv` - канвас для отрисовки
 /// * `inp` - читатель нажатий клавиш
-/// * `state` - состояние игры для отображения статистики
+/// * `game_state` - состояние игры для отображения статистики
 #[track_caller]
-pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, state: &GameState) {
-    let stats = state.get_stats();
-    let mode_trait = state.get_mode_trait();
+pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameState) {
+    let stats = game_state.get_stats();
+    let mode_trait = game_state.get_mode_trait();
     let mode_str = mode_trait.name();
 
     draw::draw_game_stats(
         cnv,
         mode_str,
-        state.get_score(),
-        state.get_level(),
-        state.get_lines_cleared(),
+        game_state.get_score(),
+        game_state.get_level(),
+        game_state.get_lines_cleared(),
         stats.total_pieces(),
         stats.max_combo,
         stats.get_elapsed_time(),

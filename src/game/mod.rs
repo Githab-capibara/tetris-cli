@@ -1,16 +1,16 @@
 //! Основной игровой модуль Tetris CLI.
 //!
 //! Этот модуль содержит всю игровую логику Tetris и разделён на подмодули:
-//! - [`state`] — структуры состояния игры (GameState, GameStats, GameMode)
-//! - [`components`] — компоненты состояния (GameBoard, ScoreBoard, FigureManager, AnimationState)
+//! - [`state`] — структуры состояния игры ([`GameState`], [`GameStats`], [`GameMode`])
+//! - [`components`] — компоненты состояния ([`GameBoard`], [`ScoreBoard`], [`FigureManager`], [`AnimationState`])
 //! - [`logic`] — игровая логика (физика, коллизии, движение, ввод)
 //! - [`scoring`] — система очков и уровней
 //! - [`render`] — отрисовка и анимации
-//! - [`view`] — представление игры для отрисовки (GameView)
-//! - [`access`] — трейты доступа к состоянию игры (GameBoardAccess)
-//! - [`cache`] — кэширование строк для отрисовки (StringCache)
+//! - [`view`] — представление игры для отрисовки ([`GameView`])
+//! - [`access`] — трейты доступа к состоянию игры ([`GameBoardAccess`])
+//! - [`cache`] — кэширование строк для отрисовки ([`StringCache`])
 //! - [`cycle`] — игровой цикл (FPS, ввод, отрисовка)
-//! - [`mode_trait`] — трейт режима игры (GameModeTrait)
+//! - [`mode_trait`] — трейт режима игры ([`GameModeTrait`])
 //!
 //! ## Архитектурные заметки
 //! ## Исправление #26: Зависимости модулей
@@ -32,7 +32,7 @@
 //!
 //! ## Порядок инициализации
 //! 1. `constants.rs` - централизованные константы
-//! 2. `types.rs` - типобезопасные обёртки (Score, Level, LinesCount)
+//! 2. `types.rs` - типобезопасные обёртки ([`Score`], [`Level`], [`LinesCount`])
 //! 3. `state.rs` - базовые структуры и константы
 //! 4. `components.rs` - компоненты состояния
 //! 5. `mode_trait.rs` - трейты режимов
