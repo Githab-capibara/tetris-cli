@@ -157,7 +157,7 @@ fn test_name_whitelist_works() {
 fn test_max_name_length_checked() {
     use crate::highscore::leaderboard::LeaderboardEntry;
     let long_name = "VeryLongNameThatShouldBeTruncatedToTwentyCharacters";
-    let entry = LeaderboardEntry::new(&long_name.to_string(), 1000);
+    let entry = LeaderboardEntry::new(long_name, 1000);
     assert_eq!(entry.name().chars().count(), 20);
 }
 

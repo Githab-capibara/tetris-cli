@@ -16,7 +16,7 @@ fn test_game_error_enum_variants() {
     use crate::game::GameError;
 
     // Проверяем, что все варианты ошибок компилируются
-    let _io_error = GameError::Io(std::io::Error::new(std::io::ErrorKind::Other, "тест"));
+    let _io_error = GameError::Io(std::io::Error::other("тест"));
 
     let _terminal_error = GameError::Terminal("тест".to_string());
     let _config_error = GameError::Config("тест".to_string());
@@ -29,10 +29,7 @@ fn test_game_error_enum_variants() {
 fn test_game_error_display() {
     use crate::game::GameError;
 
-    let error = GameError::Io(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "ошибка ввода/вывода",
-    ));
+    let error = GameError::Io(std::io::Error::other("ошибка ввода/вывода"));
 
     let msg = format!("{error}");
     assert!(
@@ -59,7 +56,7 @@ fn test_game_error_trait() {
 fn test_game_error_from_io() {
     use crate::game::GameError;
 
-    let io_error = std::io::Error::new(std::io::ErrorKind::Other, "io error");
+    let io_error = std::io::Error::other("io error");
     let game_error: GameError = io_error.into();
 
     match game_error {

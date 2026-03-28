@@ -585,6 +585,9 @@ mod testes {
 
     // Комплексные тесты для всех исправлений аудита (Critical, High, Medium, Low)
     // pub mod audit_fixes_comprehensive; // REMOVED: дублирование
+
+    // Тесты для исправлений clippy ошибок (8 тестов)
+    pub mod test_clippy_fixes;
 }
 
 // Тесты больше не объявляются здесь - они в модуле testes

@@ -707,6 +707,7 @@ impl Renderer for Canvas {
     /// Сбросить терминал в исходное состояние.
     ///
     /// Делегирует вызов методу `Canvas::reset()`.
+    #[allow(dead_code)]
     fn reset(&mut self) {
         self.reset();
     }

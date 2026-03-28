@@ -34,7 +34,7 @@ fn test_f32_to_u32_conversion_with_clamp() {
 
     // Конвертация должна быть безопасной
     let drop_distance: u32 = drop_distance_f32.clamp(0.0, u32::MAX as f32).trunc() as u32;
-    assert!(drop_distance >= 0, "Дистанция должна быть неотрицательной");
+    // drop_distance - позитивное число, всегда >= 0
 }
 
 /// Тест 2: Проверка обработки NaN
@@ -158,7 +158,7 @@ fn test_negative_distance_handling() {
         abs_distance.clamp(0.0, u32::MAX as f32).trunc() as u32
     };
 
-    assert!(result >= 0, "Результат должен быть неотрицательным");
+    // u32::MAX всегда >= 0
 }
 
 /// Тест 7: Проверка очень большой дистанции
@@ -176,7 +176,7 @@ fn test_very_large_distance_clamp() {
     );
 
     let result = clamped.trunc() as u32;
-    assert!(result <= u32::MAX, "Результат должен быть <= u32::MAX");
+    // u32 не может быть больше u32::MAX
 }
 
 /// Тест 8: Проверка is_finite() перед конвертацией

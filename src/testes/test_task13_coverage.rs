@@ -409,8 +409,8 @@ fn test_find_filled_lines_single_line() {
     let mut blocks = [[-1i8; GRID_WIDTH]; GRID_HEIGHT];
 
     // Заполняем линию 10
-    for x in 0..GRID_WIDTH {
-        blocks[10][x] = 1;
+    for block in &mut blocks[10][..GRID_WIDTH] {
+        *block = 1;
     }
 
     let filled = find_filled_lines(&blocks);
@@ -426,8 +426,8 @@ fn test_find_filled_lines_multiple_lines() {
 
     // Заполняем линии 5, 10, 15
     for &y in &[5, 10, 15] {
-        for x in 0..GRID_WIDTH {
-            blocks[y][x] = 1;
+        for block in &mut blocks[y][..GRID_WIDTH] {
+            *block = 1;
         }
     }
 
@@ -445,9 +445,9 @@ fn test_find_filled_lines_full_field() {
     let mut blocks = [[-1i8; GRID_WIDTH]; GRID_HEIGHT];
 
     // Заполняем всё поле
-    for y in 0..GRID_HEIGHT {
-        for x in 0..GRID_WIDTH {
-            blocks[y][x] = 1;
+    for row in &mut blocks[..GRID_HEIGHT] {
+        for block in &mut row[..GRID_WIDTH] {
+            *block = 1;
         }
     }
 
@@ -462,8 +462,8 @@ fn test_find_filled_lines_partial_line() {
     let mut blocks = [[-1i8; GRID_WIDTH]; GRID_HEIGHT];
 
     // Заполняем только половину линии 10
-    for x in 0..(GRID_WIDTH / 2) {
-        blocks[10][x] = 1;
+    for block in &mut blocks[10][..(GRID_WIDTH / 2)] {
+        *block = 1;
     }
 
     let filled = find_filled_lines(&blocks);
@@ -480,8 +480,8 @@ fn test_find_filled_lines_different_block_values() {
     let mut blocks = [[-1i8; GRID_WIDTH]; GRID_HEIGHT];
 
     // Заполняем линию 7 разными значениями (разные цвета фигур)
-    for x in 0..GRID_WIDTH {
-        blocks[7][x] = (x % 7) as i8; // Значения 0-6
+    for (x, block) in blocks[7][..GRID_WIDTH].iter_mut().enumerate() {
+        *block = (x % 7) as i8; // Значения 0-6
     }
 
     let filled = find_filled_lines(&blocks);

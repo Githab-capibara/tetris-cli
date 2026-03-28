@@ -62,7 +62,6 @@
 // Подмодули
 pub mod access;
 pub mod cache;
-pub mod components;
 pub mod constants;
 pub mod cycle;
 pub mod logic;
@@ -79,10 +78,6 @@ pub mod view;
 
 // Re-export основных типов для обратной совместимости
 pub use state::GameState;
-
-// Re-export компонентов для обратной совместимости
-#[allow(unused_imports, dead_code)]
-pub use components::{AnimationState, FigureManager, GameBoard, ScoreBoard};
 
 // Re-export GameStats для lib.rs и тестов
 #[allow(unused_imports, dead_code)]

@@ -408,7 +408,7 @@ mod tests {
 
     #[test]
     fn test_terminal_error_display() {
-        let io_err = TerminalError::Io(io::Error::new(io::ErrorKind::Other, "test"));
+        let io_err = TerminalError::Io(io::Error::other("test"));
         assert!(io_err.to_string().contains("Ошибка ввода/вывода"));
 
         let init_err = TerminalError::Initialization("test".into());
