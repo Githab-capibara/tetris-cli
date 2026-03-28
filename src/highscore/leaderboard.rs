@@ -2,6 +2,25 @@
 //!
 //! Предоставляет структуры для хранения и управления таблицей лидеров
 //! (топ-5 результатов) с защитой от подделки.
+//!
+//! # Потокобезопасность
+//! ## Исправление #7 (СРЕДНИЙ ПРИОРИТЕТ)
+//!
+//! Типы в этом модуле НЕ являются потокобезопасными по умолчанию:
+//! - [`LeaderboardEntry`] использует `PhantomData<*mut ()>` для явного указания `!Send + !Sync`
+//! - [`Leaderboard`] не реализует `Send` или `Sync`
+//!
+//! Для использования в многопоточном коде оборачивайте типы в `Arc<Mutex<>>` или `Arc<RwLock<>>`:
+//! ```ignore
+//! use std::sync::{Arc, Mutex};
+//! use tetris_cli::highscore::Leaderboard;
+//!
+//! let leaderboard = Arc::new(Mutex::new(Leaderboard::default()));
+//! // Теперь безопасно использовать из нескольких потоков
+//! leaderboard.lock().unwrap().add_score("Player", 1000);
+//! ```
+
+#![deny(clippy::mut_mutex_lock)]
 
 use crate::crypto::{self, hash};
 use confy::{load, store};
@@ -113,6 +132,7 @@ pub struct LeaderboardEntry {
 
 impl LeaderboardEntry {
     /// Получить имя игрока.
+    #[must_use]
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -200,6 +220,7 @@ impl LeaderboardEntry {
     ///
     /// # Примечания
     /// Метод используется в тестах для проверки уникальности хэшей.
+    #[must_use]
     #[allow(dead_code)]
     pub fn hash(&self) -> &str {
         &self.hash
@@ -225,6 +246,7 @@ impl LeaderboardEntry {
     ///
     /// # Исправление #9
     /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
+    #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
 
@@ -297,6 +319,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
+    #[must_use]
     pub fn load() -> Self {
         match load(&format!("{APP_NAME}_leaderboard")) {
             Ok(leaderboard) => leaderboard,
@@ -330,6 +353,7 @@ impl Leaderboard {
     /// # Исправление #23: Rate limiting
     /// Добавлена проверка на максимальное количество записей от одного имени
     /// (максимум 3 записи на одного игрока для предотвращения спама).
+    #[must_use]
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         // Исправление #24: валидация имени игрока
         let valid_name = sanitize_player_name(name);
@@ -389,6 +413,7 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Срез записей таблицы лидеров
+    #[must_use]
     pub fn get_entries(&self) -> &[LeaderboardEntry] {
         &self.entries
     }

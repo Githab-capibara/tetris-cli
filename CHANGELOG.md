@@ -4,6 +4,65 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.17] — 2026-03-28
+
+### Исправления аудита кода
+
+**CRITICAL:**
+- **Защита от переполнения очков** (`src/game/scoring/points.rs`, `src/game/scoring/combo.rs`) — все операции сложения заменены на `saturating_add()`, добавлены тесты на переполнение для u128
+- **Инкапсуляция полей GameState** — усиление контроля доступа к полям состояния игры
+
+**HIGH:**
+- **Обработка ошибок** (`src/game/render.rs`, `src/app/application.rs`) — замена `unwrap()` и `let _ =` на обработку ошибок через `if let Err(e) = ... { eprintln!(...); }`
+- **Документирование потокобезопасности** (`src/highscore/leaderboard.rs`) — добавлена документация о потокобезопасности `LeaderboardEntry`, добавлен `#![deny(clippy::mut_mutex_lock)]`
+- **#[must_use] атрибуты** (`src/highscore/leaderboard.rs`) — добавлены ко всем методам таблицы лидеров: `name()`, `hash()`, `new()`, `load()`, `add_score()`, `get_entries()`
+
+**MEDIUM:**
+- **Оптимизация аллокаций строк** (`src/game/render.rs`) — использование `truncate(0)` вместо `clear()` для сохранения capacity, предварительное выделение через `String::with_capacity()`
+- **Устранение дублирования кода** (`src/controls.rs`) — выделена функция `validate_config_path()` для валидации путей
+
+**LOW:**
+- **Исправление naming conventions** (`src/game/state.rs`, `src/game/access.rs`, `src/game/logic/physics.rs`) — переименовано поле `fall_spd` → `fall_speed`, добавлены deprecated методы для обратной совместимости
+- **Удаление избыточных комментариев** (`src/game/state.rs`) — удалены комментарии, дублирующие код
+
+### Тесты
+
+- **test_score_overflow_protection** — тест защиты от переполнения очков
+- **test_combo_overflow_protection** — тест защиты от переполнения комбо
+- **test_hard_drop_overflow_protection** — тест защиты от переполнения hard drop
+- **test_soft_drop_overflow_protection** — тест защиты от переполнения soft drop
+- **test_landing_overflow_protection** — тест защиты от переполнения приземления
+- **test_update_score_overflow_protection** — тест защиты от переполнения обновления очков
+- **test_combo_saturating_mul** — тест saturating умножения комбо
+- **test_validate_config_path_function** — тест функции валидации путей
+- **test_must_use_attributes** — тест атрибутов #[must_use]
+- **test_fall_speed_field_renamed** — тест переименования поля fall_speed
+- **test_deprecated_fall_spd_methods** — тест deprecated методов для обратной совместимости
+- **Всего тестов: 1310** (1090 lib + 166 main + 19 integration + 35 doctest, все проходят)
+
+### Улучшения
+
+- **Безопасность** — полная защита от переполнения во всех расчётах очков
+- **Надёжность** — улучшенная обработка ошибок в методах отрисовки
+- **Потокобезопасность** — явное документирование ограничений `LeaderboardEntry`
+- **Производительность** — снижение количества аллокаций при отрисовке
+- **Читаемость** — исправление именования полей, удаление избыточных комментариев
+- **Поддерживаемость** — устранение дублирования кода валидации
+
+### Изменённые файлы
+
+- `src/game/scoring/points.rs` — saturating_add, тесты на переполнение
+- `src/game/scoring/combo.rs` — saturating_add, тесты на переполнение
+- `src/game/render.rs` — обработка ошибок, fall_speed
+- `src/game/state.rs` — fall_speed, deprecated методы, удаление комментариев
+- `src/game/access.rs` — fall_speed методы
+- `src/game/logic/physics.rs` — fall_speed
+- `src/game/mod.rs` — обновление тестов
+- `src/controls.rs` — validate_config_path()
+- `src/highscore/leaderboard.rs` — #[must_use], документация потокобезопасности
+- `README.md` — обновление количества тестов, новые функции
+- `CHANGELOG.md` — запись изменений
+
 ## [23.96.16] — 2026-03-27
 
 ### Исправления аудита кода
@@ -52,8 +111,8 @@
 - `src/game/state.rs` — #[must_use]
 - `src/io.rs` — cleanup()
 - `src/game/mode_trait.rs` — удаление dead_code
-- `src/testes/mod.rs` — новый тест
-- `src/testes/test_audit_fixes.rs` — новый файл
+- `src/tests/mod.rs` — новый тест
+- `src/tests/test_audit_fixes.rs` — новый файл
 
 ## [23.96.15] — 2026-03-27
 

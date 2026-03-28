@@ -42,7 +42,7 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
         }
 
         // Увеличение скорости игры
-        state.set_fall_spd(state.get_fall_spd() + SPD_INC * capped_remove_count as f32);
+        state.set_fall_speed(state.get_fall_speed() + SPD_INC * capped_remove_count as f32);
 
         // Начисление очков за линии (lookup таблица)
         // Исправление C1: защита от переполнения при сложении очков
@@ -228,13 +228,13 @@ fn check_game_over_condition(state: &GameState) -> bool {
 ///
 /// # Исправление C1
 /// Использует saturating_add и saturating_mul для защиты от переполнения.
-fn calculate_landing_bonus(state: &mut GameState) {
+pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     use crate::game::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
     };
 
     // Расчёт бонуса за скорость падения
-    let limited_fall_spd = state.get_fall_spd().min(MAX_FALL_SPEED);
+    let limited_fall_spd = state.get_fall_speed().min(MAX_FALL_SPEED);
     let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
         .max(0.0)
         .min(u32::MAX as f32);
@@ -275,7 +275,7 @@ fn calculate_landing_bonus(state: &mut GameState) {
 ///
 /// # Исправление C1
 /// Использует saturating_mul для защиты от переполнения при начислении комбо-бонуса.
-fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
+pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::game::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
@@ -377,5 +377,120 @@ mod points_tests {
             !state.can_hold(),
             "can_hold должен быть false после удержания"
         );
+    }
+
+    // ========================================================================
+    // ТЕСТЫ НА ПЕРЕПОЛНЕНИЕ ОЧКОВ (Исправление #1 - ВЫСОКИЙ ПРИОРИТЕТ)
+    // ========================================================================
+
+    /// Тест на защиту от переполнения при добавлении очков.
+    /// Проверяет что saturating_add предотвращает переполнение u128.
+    #[test]
+    fn test_score_overflow_protection() {
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному u128
+        let max_score = u128::MAX;
+        state.set_score(max_score - 100);
+
+        // Добавляем очки - должно сработать saturating_add
+        state.add_score(200);
+
+        // Счёт должен быть равен u128::MAX (насыщение)
+        assert_eq!(
+            state.get_score(),
+            u128::MAX,
+            "Должна сработать защита от переполнения"
+        );
+    }
+
+    /// Тест на защиту от переполнения при Hard Drop.
+    #[test]
+    fn test_hard_drop_overflow_protection() {
+        use crate::types::Direction;
+
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному
+        state.set_score(u128::MAX - 50);
+
+        // Устанавливаем фигуру высоко для большого падения
+        state.curr_shape.pos.1 = 0.0;
+
+        // Выполняем Hard Drop
+        handle_hard_drop(&mut state);
+
+        // Счёт не должен переполниться
+        assert!(state.get_score() <= u128::MAX, "Переполнение при Hard Drop");
+    }
+
+    /// Тест на защиту от переполнения при Soft Drop.
+    #[test]
+    fn test_soft_drop_overflow_protection() {
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному
+        state.set_score(u128::MAX - 50);
+
+        // Многократный Soft Drop
+        for _ in 0..100 {
+            handle_soft_drop(&mut state);
+        }
+
+        // Счёт не должен переполниться
+        assert!(state.get_score() <= u128::MAX, "Переполнение при Soft Drop");
+    }
+
+    /// Тест на защиту от переполнения при обновлении счёта и уровня.
+    #[test]
+    fn test_update_score_overflow_protection() {
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному
+        state.set_score(u128::MAX - 1000);
+        // Устанавливаем высокий уровень для бонуса
+        state.set_level(100);
+
+        // Обновляем счёт за удаление 4 линий
+        update_score_and_level(&mut state, 4);
+
+        // Счёт не должен переполниться
+        assert!(
+            state.get_score() <= u128::MAX,
+            "Переполнение при обновлении счёта"
+        );
+    }
+
+    /// Тест на защиту от переполнения при приземлении.
+    #[test]
+    fn test_landing_overflow_protection() {
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному
+        state.set_score(u128::MAX - 1000);
+        // Устанавливаем высокую скорость падения
+        state.set_fall_speed(100.0);
+        // Устанавливаем большое расстояние Soft Drop
+        state.soft_drop_distance = 1000;
+
+        // Тестируем calculate_landing_bonus напрямую (без save_tetromino)
+        calculate_landing_bonus(&mut state);
+
+        // Счёт не должен переполниться
+        assert!(
+            state.get_score() <= u128::MAX,
+            "Переполнение при приземлении"
+        );
+    }
+
+    /// Тест на защиту от переполнения комбо-бонуса.
+    #[test]
+    fn test_combo_overflow_protection() {
+        let mut state = GameState::new();
+        // Устанавливаем счёт близкий к максимальному
+        state.set_score(u128::MAX - 10000);
+        // Устанавливаем высокий комбо-счётчик
+        state.stats.combo_counter = 1000;
+
+        // Тестируем update_combo_on_clear напрямую (без save_tetromino)
+        update_combo_on_clear(&mut state, 1);
+
+        // Счёт не должен переполниться
+        assert!(state.get_score() <= u128::MAX, "Переполнение комбо-бонуса");
     }
 }

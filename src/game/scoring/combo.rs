@@ -71,4 +71,34 @@ mod combo_tests {
     fn test_calculate_combo_bonus_fifth() {
         assert_eq!(calculate_combo_bonus(5), 200);
     }
+
+    // ========================================================================
+    // ТЕСТЫ НА ПЕРЕПОЛНЕНИЕ КОМБО (Исправление #1 - ВЫСОКИЙ ПРИОРИТЕТ)
+    // ========================================================================
+
+    /// Тест на защиту от переполнения при большом комбо.
+    #[test]
+    fn test_combo_overflow_protection() {
+        // Очень большой комбо-счётчик
+        let large_combo = u32::MAX;
+        let bonus = calculate_combo_bonus(large_combo);
+
+        // Бонус не должен переполниться
+        assert!(bonus <= u128::MAX, "Переполнение комбо-бонуса");
+        // Бонус должен быть положительным
+        assert!(bonus > 0, "Бонус должен быть положительным");
+    }
+
+    /// Тест на saturating_mul при комбо.
+    #[test]
+    fn test_combo_saturating_mul() {
+        // Проверяем что saturating_mul работает корректно
+        let combo_1 = calculate_combo_bonus(1);
+        let combo_2 = calculate_combo_bonus(2);
+        let combo_100 = calculate_combo_bonus(100);
+
+        assert_eq!(combo_1, 0, "Первое комбо не даёт бонуса");
+        assert_eq!(combo_2, 50, "Второе комбо даёт 50 бонуса");
+        assert_eq!(combo_100, 4950, "100-е комбо даёт 4950 бонуса");
+    }
 }

@@ -185,23 +185,29 @@ fn update_cached_strings(state: &mut GameState) {
 
     if state.score != state.render_cache.last_cached_score {
         state.render_cache.cached_score_str.truncate(0);
-        let _ = write!(state.render_cache.cached_score_str, "{:10}", state.score);
+        if let Err(e) = write!(state.render_cache.cached_score_str, "{:10}", state.score) {
+            eprintln!("Ошибка записи кэша счёта: {e}");
+        }
         state.render_cache.last_cached_score = state.score;
     }
 
     if state.level != state.render_cache.last_cached_level {
         state.render_cache.cached_level_str.truncate(0);
-        let _ = write!(state.render_cache.cached_level_str, "{:10}", state.level);
+        if let Err(e) = write!(state.render_cache.cached_level_str, "{:10}", state.level) {
+            eprintln!("Ошибка записи кэша уровня: {e}");
+        }
         state.render_cache.last_cached_level = state.level;
     }
 
     if state.lines_cleared != state.render_cache.last_cached_lines {
         state.render_cache.cached_lines_str.truncate(0);
-        let _ = write!(
+        if let Err(e) = write!(
             state.render_cache.cached_lines_str,
             "{:10}",
             state.lines_cleared
-        );
+        ) {
+            eprintln!("Ошибка записи кэша линий: {e}");
+        }
         state.render_cache.last_cached_lines = state.lines_cleared;
     }
 }
@@ -583,7 +589,7 @@ pub fn check_rows(state: &mut GameState) -> u32 {
 
     // Увеличение скорости игры
     use super::constants::SPD_INC;
-    state.fall_spd += SPD_INC * remove_count as f32;
+    state.fall_speed += SPD_INC * remove_count as f32;
 
     remove_count
 }

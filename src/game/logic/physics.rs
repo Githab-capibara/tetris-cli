@@ -23,7 +23,7 @@ use crate::types::Direction;
 /// - `false` - фигура ещё падает
 pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.curr_shape.pos.1 += state.fall_spd * (delta_time_ms as f32 / MILLIS_PER_SECOND);
+        state.curr_shape.pos.1 += state.fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
         false
     } else if state.land_timer > 0.0 {
         state.land_timer -= delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);

@@ -131,11 +131,7 @@ pub enum InputResult {
 /// # Возвращает
 /// Результат обработки ввода
 #[track_caller]
-pub fn handle_input(
-    state: &mut GameState,
-    inp: &mut KeyReader,
-    delta_time_ms: u64,
-) -> InputResult {
+pub fn handle_input(state: &mut GameState, inp: &mut KeyReader, delta_time_ms: u64) -> InputResult {
     match update(state, inp, delta_time_ms) {
         UpdateEndState::Continue => InputResult::Continue,
         UpdateEndState::Quit => InputResult::Quit,
