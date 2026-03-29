@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия документа:** 16.0
+**Версия документа:** 17.0
 **Последнее обновление:** 29 марта 2026 г.
-**Версия проекта:** 23.96.20+
+**Версия проекта:** 23.96.22+
 
 ---
 
@@ -2844,7 +2844,7 @@ impl HmacValidator {
 **Метрики:**
 - **Модулей:** 18 (src/*)
 - **Подмодулей:** 35+ (src/game/*, src/game/logic/*, src/game/scoring/*)
-- **Тестов:** 1500+ (unit + integration + architecture)
+- **Тестов:** 1086 (unit + integration + architecture)
 - **Покрытие тестами:** ~85%
 - **Циклических зависимостей:** 0
 - **Нарушений SOLID:** минимальные (документированы)
@@ -2853,5 +2853,87 @@ impl HmacValidator {
 - **Краткосрочно:** Завершить рефакторинг трейтов фаз в `cycle.rs`
 - **Среднесрочно:** Рассмотреть разделение `GameState` на компоненты
 - **Долгосрочно:** Оптимизировать зависимости констант (разделить на подмодули)
+
+---
+
+## 🏗️ Архитектурные улучшения (v23.96.22+)
+
+### Централизация wall kick логики
+
+**Проблема:** Дублирование логики wall kick между `rotation.rs` и `wall_kick.rs`.
+
+**Решение:** Централизована вся логика wall kick в `wall_kick.rs`:
+- `can_rotate_with_wall_kick()` — проверка возможности вращения
+- `rotate_with_wall_kick()` — выполнение вращения с wall kick
+- `try_wall_kick_offsets()` — проверка смещений wall kick
+
+**Файлы:**
+- `src/game/logic/wall_kick.rs` — централизованная логика
+- `src/game/logic/collision.rs` — делегирование в `wall_kick::can_rotate_with_wall_kick()`
+
+### HMAC ключи из переменных окружения
+
+**Проблема:** Хардкод HMAC ключей в коде (`HMAC_KEY` константы).
+
+**Решение:** Использованы переменные окружения с fallback:
+```rust
+fn get_hmac_key() -> &'static str {
+    option_env!("TETRIS_HMAC_KEY").unwrap_or("fallback-key")
+}
+```
+
+**Файлы:**
+- `src/highscore/leaderboard.rs` — `get_hmac_key()` для таблицы лидеров
+- `src/highscore/save_data.rs` — `get_hmac_key()` для сохранений
+
+### Удаление неиспользуемых трейтов
+
+**Проблема:** В `cycle.rs` определены неиспользуемые трейты `InputHandler`, `GameUpdater`, `GameRenderer`.
+
+**Решение:** Удалены неиспользуемые трейты (YAGNI принцип):
+- Оставлен только `FPSControl` для управления FPS
+- `DefaultFPSControl` — реализация по умолчанию
+
+**Файлы:**
+- `src/game/cycle.rs` — удалены трейты
+
+### Документирование констант UI
+
+**Проблема:** Магические числа в позициях UI без комментариев.
+
+**Решение:** Добавлены подробные комментарии с обоснованием значений:
+- `MENU_TITLE_X`, `MENU_TITLE_Y` — позиция заголовка меню
+- `MENU_AUTHOR_X` — позиция автора
+- `MENU_CONTROLS_X` — позиция управления
+- `MENU_RECORD_X` — позиция рекорда
+
+**Файлы:**
+- `src/menu/constants.rs` — документированные константы
+
+### Удаление устаревших функций crypto
+
+**Проблема:** Устаревшие функции `keyed_hash()` и `verify_keyed_hash()` в коде.
+
+**Решение:** Удалены устаревшие функции:
+- Оставлены `hmac_sha256()` и `verify_hmac_sha256()`
+- Обновлены экспорты в `exports.rs` и `lib.rs`
+
+**Файлы:**
+- `src/crypto.rs` — удалены устаревшие функции
+- `src/exports.rs` — обновлены экспорты
+- `src/lib.rs` — обновлена документация
+
+### Тесты архитектурной целостности
+
+**Добавлено:** 7 новых тестов для проверки архитектурных ограничений:
+- `test_wall_kick_logic_centralization` — централизация wall kick
+- `test_hmac_key_usage` — использование HMAC ключей
+- `test_no_unused_traits_in_cycle` — отсутствие неиспользуемых трейтов
+- `test_menu_constants_documented` — документирование констант
+- `test_deprecated_game_mode_documented` — документация deprecated enum
+- `test_removed_deprecated_crypto_functions` — удаление устаревших функций
+- `test_architecture_integrity_after_refactoring` — комплексный тест
+
+**Файл:** `src/tests/test_architecture.rs`
 
 ---

@@ -166,8 +166,20 @@ pub(crate) fn try_wall_kick_offsets(
 #[must_use]
 #[allow(dead_code)]
 pub fn can_rotate_with_wall_kick(state: &GameState, dir: crate::types::RotationDirection) -> bool {
-    // Прямое вращение
-    if super::collision::can_rotate_curr_shape(state, dir) {
+    // Прямое вращение - проверяем напрямую без рекурсии
+    let mut temp_shape = *state.curr_shape();
+    temp_shape.rotate(dir);
+
+    // Проверяем может ли фигура с новыми координатами существовать без коллизий
+    if !temp_shape.coords.iter().any(|&(x, y)| {
+        let new_x = state.curr_shape().pos.0 as i16 + x;
+        let new_y = state.curr_shape().pos.1 as i16 + y;
+        new_x < 0
+            || new_x >= crate::io::GRID_WIDTH as i16
+            || new_y < 0
+            || new_y >= crate::io::GRID_HEIGHT as i16
+            || state.get_blocks()[new_y as usize][new_x as usize] != 0
+    }) {
         return true;
     }
 

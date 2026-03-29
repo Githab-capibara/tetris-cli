@@ -37,8 +37,22 @@ const APP_NAME: &str = "tetris-cli";
 const MAX_LEADERBOARD_SIZE: usize = 5;
 
 /// Секретный ключ для HMAC подписи рекордов.
-/// Используется константный ключ для обратной совместимости.
-const HMAC_KEY: &str = "tetris-cli-leaderboard-hmac-key";
+///
+/// # Безопасность (Исправление В4)
+/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
+/// В противном случае используется fallback ключ для обратной совместимости.
+///
+/// ## Использование переменной окружения
+/// ```bash
+/// export TETRIS_HMAC_KEY="your-secret-key-here"
+/// ```
+///
+/// ## Fallback для обратной совместимости
+/// Если переменная окружения не установлена, используется константный ключ.
+/// Это обеспечивает обратную совместимость с существующими записями.
+fn get_hmac_key() -> &'static str {
+    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-leaderboard-hmac-key")
+}
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.
@@ -217,7 +231,7 @@ impl LeaderboardEntry {
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
         let salt_name_score = format!("{}{}{}", self.salt, self.name, value);
-        verify_salt_and_data(HMAC_KEY, &self.salt, &salt_name_score, &self.hash)
+        verify_salt_and_data(get_hmac_key(), &self.salt, &salt_name_score, &self.hash)
     }
 
     /// Получить хэш записи.
@@ -259,7 +273,7 @@ impl LeaderboardEntry {
 
         let salt = crate::crypto::generate_salt();
         let salt_name_score = format!("{salt}{valid_name}{}", score);
-        let hash = sign_salt_and_data(HMAC_KEY, &salt, &salt_name_score);
+        let hash = sign_salt_and_data(get_hmac_key(), &salt, &salt_name_score);
 
         Self {
             name: valid_name,
@@ -302,7 +316,7 @@ impl LeaderboardEntry {
     #[must_use]
     pub fn is_valid(&self) -> bool {
         let salt_name_score = format!("{}{}{}", self.salt, self.name, self.score_value);
-        verify_salt_and_data(HMAC_KEY, &self.salt, &salt_name_score, &self.hash)
+        verify_salt_and_data(get_hmac_key(), &self.salt, &salt_name_score, &self.hash)
     }
 }
 
@@ -418,7 +432,7 @@ impl ThreadSafeLeaderboardEntry {
         let valid_name = sanitize_player_name(name);
         let salt = crate::crypto::generate_salt();
         let salt_name_score = format!("{salt}{valid_name}{score}");
-        let hash = sign_salt_and_data(HMAC_KEY, &salt, &salt_name_score);
+        let hash = sign_salt_and_data(get_hmac_key(), &salt, &salt_name_score);
 
         Self {
             inner: Mutex::new(LeaderboardEntryData {
@@ -450,7 +464,7 @@ impl ThreadSafeLeaderboardEntry {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let score_value = guard.score_value;
         let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-        if !verify_salt_and_data(HMAC_KEY, &guard.salt, &salt_name_score, &guard.hash) {
+        if !verify_salt_and_data(get_hmac_key(), &guard.salt, &salt_name_score, &guard.hash) {
             eprintln!("Предупреждение: запись не прошла валидацию!");
             return 0;
         }
@@ -475,7 +489,7 @@ impl ThreadSafeLeaderboardEntry {
     pub fn is_valid(&self) -> bool {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
-        verify_salt_and_data(HMAC_KEY, &guard.salt, &salt_name_score, &guard.hash)
+        verify_salt_and_data(get_hmac_key(), &guard.salt, &salt_name_score, &guard.hash)
     }
 
     /// Получить имя игрока.

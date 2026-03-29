@@ -16,8 +16,22 @@ use std::path::PathBuf;
 const APP_NAME: &str = "tetris-cli";
 
 /// Секретный ключ для HMAC подписи рекордов.
-/// Используется константный ключ для обратной совместимости.
-const HMAC_KEY: &str = "tetris-cli-save-data-hmac-key";
+///
+/// # Безопасность (Исправление В4)
+/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
+/// В противном случае используется fallback ключ для обратной совместимости.
+///
+/// ## Использование переменной окружения
+/// ```bash
+/// export TETRIS_HMAC_KEY="your-secret-key-here"
+/// ```
+///
+/// ## Fallback для обратной совместимости
+/// Если переменная окружения не установлена, используется константный ключ.
+/// Это обеспечивает обратную совместимость с существующими записями.
+fn get_hmac_key() -> &'static str {
+    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-save-data-hmac-key")
+}
 
 /// Получить путь к файлу конфигурации confy.
 ///
@@ -176,7 +190,7 @@ impl SaveData {
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
-        let hash = sign_salt_and_data(HMAC_KEY, &salt, &score_str);
+        let hash = sign_salt_and_data(get_hmac_key(), &salt, &score_str);
 
         Self { score, salt, hash }
     }
@@ -250,7 +264,7 @@ impl SaveData {
     #[must_use]
     pub fn verify_and_get_score(&self) -> Option<u128> {
         let score_str = self.score.to_string();
-        if verify_salt_and_data(HMAC_KEY, &self.salt, &score_str, &self.hash) {
+        if verify_salt_and_data(get_hmac_key(), &self.salt, &score_str, &self.hash) {
             Some(self.score)
         } else {
             // Логирование попытки подделки

@@ -201,21 +201,16 @@ pub fn check_rotation_collision<T: BoardReadonly>(
 /// # Возвращает
 /// `true` если вращение возможно (прямое или с wall kick)
 ///
-/// ## Исправление #4 (HIGH)
-/// Функция делегирует логику wall kick в модуль `wall_kick.rs`.
-/// Прямая проверка вращения без использования wall kick.
+/// ## Исправление #4 (HIGH) - Устранение дублирования
+/// Функция полностью делегирует логику в `wall_kick::can_rotate_with_wall_kick`
+/// для централизации всей логики wall kick в одном модуле.
+///
+/// ## Архитектурные заметки
+/// Эта функция является обёрткой для wall_kick::can_rotate_with_wall_kick
+/// и может быть удалена в будущем при прямом использовании wall_kick модуля.
 pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
-    // Сначала проверяем прямое вращение (без wall kick)
-    let mut temp_shape = *state.curr_shape();
-    temp_shape.rotate(dir);
-
-    if check_rotation_collision(state, &temp_shape.coords, temp_shape.pos) {
-        return true;
-    }
-
-    // Делегируем проверку wall kick в специализированный модуль
-    // Исправление #4: устранено дублирование try_rotation_with_kicks
-    super::wall_kick::try_wall_kick_offsets(state, dir).is_some()
+    // Исправление В2: полное делегирование в wall_kick модуль для устранения дублирования
+    super::wall_kick::can_rotate_with_wall_kick(state, dir)
 }
 
 #[cfg(test)]
