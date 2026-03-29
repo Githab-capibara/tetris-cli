@@ -290,7 +290,7 @@ mod validator_tests {
         let data = "test_data";
         let wrong_signature = "invalid";
 
-        assert_eq!(validator.verify_and_return(data, &wrong_signature), None);
+        assert_eq!(validator.verify_and_return(data, wrong_signature), None);
     }
 
     #[test]
@@ -341,7 +341,7 @@ mod validator_tests {
         let data = "test_data";
         let wrong_signature = "invalid";
 
-        assert!(!verify_salt_and_data(key, salt, data, &wrong_signature));
+        assert!(!verify_salt_and_data(key, salt, data, wrong_signature));
     }
 
     #[test]

@@ -536,8 +536,14 @@ fn test_all_pieces_distribution_statistics() {
     }
 
     // Проверяем, что все фигуры встречаются примерно одинаково
-    let min_count = counts.iter().min().expect("Минимальное значение должно существовать");
-    let max_count = counts.iter().max().expect("Максимальное значение должно существовать");
+    let min_count = counts
+        .iter()
+        .min()
+        .expect("Минимальное значение должно существовать");
+    let max_count = counts
+        .iter()
+        .max()
+        .expect("Максимальное значение должно существовать");
 
     // Разница между мин и макс не должна превышать 50
     assert!(

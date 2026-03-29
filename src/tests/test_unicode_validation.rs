@@ -56,7 +56,8 @@ fn test_unicode_zwj_u200d() {
 fn test_unicode_variation_selectors_range() {
     // Проверяем весь диапазон variation selectors
     for vs in 0xFE00..=0xFE0F {
-        let ch = char::from_u32(vs).expect("Failed to convert variation selector codepoint to char");
+        let ch =
+            char::from_u32(vs).expect("Failed to convert variation selector codepoint to char");
         let name = format!("Player{}Name", ch);
         let entry = LeaderboardEntry::new(&name, 1000);
 

@@ -28,11 +28,7 @@ fn test_full_game_initialization() {
     // Проверяем все основные поля
     assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(
-        state.lines_cleared(),
-        0,
-        "Начальные линии должны быть 0"
-    );
+    assert_eq!(state.lines_cleared(), 0, "Начальные линии должны быть 0");
     assert_eq!(
         state.get_mode_trait().name(),
         "Классика",

@@ -352,11 +352,7 @@ fn test_game_board_access_lines_cleared() {
 
     // Установка количества линий
     state.set_lines_cleared(15);
-    assert_eq!(
-        state.lines_cleared(),
-        15,
-        "Количество линий должно быть 15"
-    );
+    assert_eq!(state.lines_cleared(), 15, "Количество линий должно быть 15");
 }
 
 /// Тест 17: Проверка получения и установки скорости падения

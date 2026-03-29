@@ -84,158 +84,6 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
     }
 }
 
-#[cfg(test)]
-mod lines_tests {
-    use super::*;
-
-    #[test]
-    fn test_find_full_rows_empty() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let (mask, count) = find_full_rows(&blocks);
-        assert_eq!(mask, 0);
-        assert_eq!(count, 0);
-    }
-
-    #[test]
-    fn test_remove_rows_single() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        // Заполняем последнюю строку
-        blocks[GRID_HEIGHT - 1] = [1i8; crate::io::GRID_WIDTH];
-
-        remove_rows(&mut blocks, 1u32 << (GRID_HEIGHT - 1));
-
-        // Последняя строка должна быть пустой
-        assert!(blocks[GRID_HEIGHT - 1].iter().all(|&c| c == -1));
-    }
-
-    // ========================================================================
-    // ТЕСТЫ ДЛЯ M8: find_filled_lines() С SmallVec - ОПТИМИЗАЦИЯ
-    // ========================================================================
-
-    /// Тест M8: проверка что find_filled_lines использует SmallVec
-    #[test]
-    fn test_fix_m8_find_filled_lines_returns_smallvec() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
-
-        // Проверка типа возвращаемого значения - SmallVec<[usize; 4]>
-        // Это проверяется на этапе компиляции
-        let _: SmallVec<[usize; 4]> = filled;
-    }
-
-    /// Тест M8: проверка find_filled_lines с заполненными линиями
-    #[test]
-    fn test_fix_m8_find_filled_lines_with_full_rows() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-
-        // Заполняем несколько линий
-        blocks[5] = [1i8; crate::io::GRID_WIDTH];
-        blocks[10] = [2i8; crate::io::GRID_WIDTH];
-        blocks[15] = [3i8; crate::io::GRID_WIDTH];
-
-        let filled = find_filled_lines(&blocks);
-
-        assert_eq!(filled.len(), 3, "Должно быть найдено 3 заполненные линии");
-        assert!(filled.contains(&5));
-        assert!(filled.contains(&10));
-        assert!(filled.contains(&15));
-    }
-
-    /// Тест M8: проверка SmallVec capacity оптимизации
-    #[test]
-    fn test_fix_m8_smallvec_capacity_optimization() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
-
-        // SmallVec<[usize; 4]> должен иметь capacity 4 для хранения в стеке
-        // Это оптимально для тетриса (максимум 4 линии за раз)
-        assert!(
-            filled.capacity() >= 4,
-            "SmallVec должен иметь capacity >= 4"
-        );
-    }
-
-    /// Тест M8: проверка find_filled_lines с максимальным количеством линий (4)
-    #[test]
-    fn test_fix_m8_find_filled_lines_max_tetris_lines() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-
-        // Заполняем 4 линии (максимум для тетриса)
-        blocks[16] = [1i8; crate::io::GRID_WIDTH];
-        blocks[17] = [2i8; crate::io::GRID_WIDTH];
-        blocks[18] = [3i8; crate::io::GRID_WIDTH];
-        blocks[19] = [4i8; crate::io::GRID_WIDTH];
-
-        let filled = find_filled_lines(&blocks);
-
-        assert_eq!(filled.len(), 4, "Должно быть найдено 4 заполненные линии");
-        assert!(filled.contains(&16));
-        assert!(filled.contains(&17));
-        assert!(filled.contains(&18));
-        assert!(filled.contains(&19));
-    }
-
-    /// Тест M8: проверка что SmallVec не требует аллокации для 0-4 элементов
-    #[test]
-    fn test_fix_m8_smallvec_no_allocation_for_typical_case() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-
-        // Тест для 0 линий
-        let filled_empty = find_filled_lines(&blocks);
-        assert_eq!(filled_empty.len(), 0);
-
-        // Тест для 1 линии
-        blocks[10] = [1i8; crate::io::GRID_WIDTH];
-        let filled_one = find_filled_lines(&blocks);
-        assert_eq!(filled_one.len(), 1);
-
-        // Тест для 2 линий
-        blocks[11] = [2i8; crate::io::GRID_WIDTH];
-        let filled_two = find_filled_lines(&blocks);
-        assert_eq!(filled_two.len(), 2);
-
-        // Тест для 3 линий
-        blocks[12] = [3i8; crate::io::GRID_WIDTH];
-        let filled_three = find_filled_lines(&blocks);
-        assert_eq!(filled_three.len(), 3);
-
-        // Тест для 4 линий (максимум для тетриса)
-        blocks[13] = [4i8; crate::io::GRID_WIDTH];
-        let filled_four = find_filled_lines(&blocks);
-        assert_eq!(filled_four.len(), 4);
-
-        // Все SmallVec должны хранить данные в стеке (без аллокации)
-        // Это проверяется через capacity - если capacity >= 4, данные в стеке
-        assert!(filled_empty.capacity() >= 4);
-        assert!(filled_one.capacity() >= 4);
-        assert!(filled_two.capacity() >= 4);
-        assert!(filled_three.capacity() >= 4);
-        assert!(filled_four.capacity() >= 4);
-    }
-
-    /// Тест M8: проверка производительности SmallVec vs Vec
-    #[test]
-    fn test_fix_m8_smallvec_performance_characteristics() {
-        // SmallVec<[usize; 4]> оптимизирован для случая до 4 элементов
-        // Для 0-4 элементов данные хранятся в стеке без аллокации в куче
-
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
-
-        // Проверка что SmallVec корректно работает
-        assert_eq!(filled.len(), 0);
-
-        // SmallVec поддерживает те же операции что и Vec
-        let mut mutable_filled = filled;
-        mutable_filled.push(5);
-        assert_eq!(mutable_filled.len(), 1);
-        assert_eq!(mutable_filled[0], 5);
-
-        mutable_filled.clear();
-        assert_eq!(mutable_filled.len(), 0);
-    }
-}
-
 // ============================================================================
 // ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ ОБРАБОТКИ ЛИНИЙ
 // ============================================================================
@@ -398,5 +246,161 @@ fn update_score_for_lines(
     } else {
         // Сброс комбо если линии не удалены
         *combo_counter = 0;
+    }
+}
+
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
+#[cfg(test)]
+mod lines_tests {
+    use super::*;
+
+    #[test]
+    fn test_find_full_rows_empty() {
+        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let (mask, count) = find_full_rows(&blocks);
+        assert_eq!(mask, 0);
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_remove_rows_single() {
+        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        // Заполняем последнюю строку
+        blocks[GRID_HEIGHT - 1] = [1i8; crate::io::GRID_WIDTH];
+
+        remove_rows(&mut blocks, 1u32 << (GRID_HEIGHT - 1));
+
+        // Последняя строка должна быть пустой
+        assert!(blocks[GRID_HEIGHT - 1].iter().all(|&c| c == -1));
+    }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ M8: find_filled_lines() С SmallVec - ОПТИМИЗАЦИЯ
+    // ========================================================================
+
+    /// Тест M8: проверка что find_filled_lines использует SmallVec
+    #[test]
+    fn test_fix_m8_find_filled_lines_returns_smallvec() {
+        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let filled = find_filled_lines(&blocks);
+
+        // Проверка типа возвращаемого значения - SmallVec<[usize; 4]>
+        // Это проверяется на этапе компиляции
+        let _: SmallVec<[usize; 4]> = filled;
+    }
+
+    /// Тест M8: проверка find_filled_lines с заполненными линиями
+    #[test]
+    fn test_fix_m8_find_filled_lines_with_full_rows() {
+        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+
+        // Заполняем несколько линий
+        blocks[5] = [1i8; crate::io::GRID_WIDTH];
+        blocks[10] = [2i8; crate::io::GRID_WIDTH];
+        blocks[15] = [3i8; crate::io::GRID_WIDTH];
+
+        let filled = find_filled_lines(&blocks);
+
+        assert_eq!(filled.len(), 3, "Должно быть найдено 3 заполненные линии");
+        assert!(filled.contains(&5));
+        assert!(filled.contains(&10));
+        assert!(filled.contains(&15));
+    }
+
+    /// Тест M8: проверка SmallVec capacity оптимизации
+    #[test]
+    fn test_fix_m8_smallvec_capacity_optimization() {
+        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let filled = find_filled_lines(&blocks);
+
+        // SmallVec<[usize; 4]> должен иметь capacity 4 для хранения в стеке
+        // Это оптимально для тетриса (максимум 4 линии за раз)
+        assert!(
+            filled.capacity() >= 4,
+            "SmallVec должен иметь capacity >= 4"
+        );
+    }
+
+    /// Тест M8: проверка find_filled_lines с максимальным количеством линий (4)
+    #[test]
+    fn test_fix_m8_find_filled_lines_max_tetris_lines() {
+        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+
+        // Заполняем 4 линии (максимум для тетриса)
+        blocks[16] = [1i8; crate::io::GRID_WIDTH];
+        blocks[17] = [2i8; crate::io::GRID_WIDTH];
+        blocks[18] = [3i8; crate::io::GRID_WIDTH];
+        blocks[19] = [4i8; crate::io::GRID_WIDTH];
+
+        let filled = find_filled_lines(&blocks);
+
+        assert_eq!(filled.len(), 4, "Должно быть найдено 4 заполненные линии");
+        assert!(filled.contains(&16));
+        assert!(filled.contains(&17));
+        assert!(filled.contains(&18));
+        assert!(filled.contains(&19));
+    }
+
+    /// Тест M8: проверка что SmallVec не требует аллокации для 0-4 элементов
+    #[test]
+    fn test_fix_m8_smallvec_no_allocation_for_typical_case() {
+        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+
+        // Тест для 0 линий
+        let filled_empty = find_filled_lines(&blocks);
+        assert_eq!(filled_empty.len(), 0);
+
+        // Тест для 1 линии
+        blocks[10] = [1i8; crate::io::GRID_WIDTH];
+        let filled_one = find_filled_lines(&blocks);
+        assert_eq!(filled_one.len(), 1);
+
+        // Тест для 2 линий
+        blocks[11] = [2i8; crate::io::GRID_WIDTH];
+        let filled_two = find_filled_lines(&blocks);
+        assert_eq!(filled_two.len(), 2);
+
+        // Тест для 3 линий
+        blocks[12] = [3i8; crate::io::GRID_WIDTH];
+        let filled_three = find_filled_lines(&blocks);
+        assert_eq!(filled_three.len(), 3);
+
+        // Тест для 4 линий (максимум для тетриса)
+        blocks[13] = [4i8; crate::io::GRID_WIDTH];
+        let filled_four = find_filled_lines(&blocks);
+        assert_eq!(filled_four.len(), 4);
+
+        // Все SmallVec должны хранить данные в стеке (без аллокации)
+        // Это проверяется через capacity - если capacity >= 4, данные в стеке
+        assert!(filled_empty.capacity() >= 4);
+        assert!(filled_one.capacity() >= 4);
+        assert!(filled_two.capacity() >= 4);
+        assert!(filled_three.capacity() >= 4);
+        assert!(filled_four.capacity() >= 4);
+    }
+
+    /// Тест M8: проверка производительности SmallVec vs Vec
+    #[test]
+    fn test_fix_m8_smallvec_performance_characteristics() {
+        // SmallVec<[usize; 4]> оптимизирован для случая до 4 элементов
+        // Для 0-4 элементов данные хранятся в стеке без аллокации в куче
+
+        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let filled = find_filled_lines(&blocks);
+
+        // Проверка что SmallVec корректно работает
+        assert_eq!(filled.len(), 0);
+
+        // SmallVec поддерживает те же операции что и Vec
+        let mut mutable_filled = filled;
+        mutable_filled.push(5);
+        assert_eq!(mutable_filled.len(), 1);
+        assert_eq!(mutable_filled[0], 5);
+
+        mutable_filled.clear();
+        assert_eq!(mutable_filled.len(), 0);
     }
 }

@@ -57,8 +57,7 @@ fn test_safe_time_conversion() {
     let large_duration = Duration::from_secs(1_000_000_000_000);
     let large_secs = large_duration.as_secs();
     assert_eq!(
-        large_secs,
-        1_000_000_000_000,
+        large_secs, 1_000_000_000_000,
         "Конвертация больших значений должна работать"
     );
 
@@ -66,8 +65,7 @@ fn test_safe_time_conversion() {
     let millis_duration = Duration::from_millis(5000);
     let millis_secs = millis_duration.as_secs();
     assert_eq!(
-        millis_secs,
-        5,
+        millis_secs, 5,
         "Конвертация из миллисекунд должна округлять до секунд"
     );
 }
@@ -82,8 +80,7 @@ fn test_safe_time_conversion() {
 #[test]
 fn test_leaderboard_entry_thread_safety_docs() {
     let leaderboard_path = "src/highscore/leaderboard.rs";
-    let content = fs::read_to_string(leaderboard_path)
-        .expect("Failed to read leaderboard.rs");
+    let content = fs::read_to_string(leaderboard_path).expect("Failed to read leaderboard.rs");
 
     // Проверка 1: Документация о TOCTOU присутствует
     assert!(
@@ -93,7 +90,9 @@ fn test_leaderboard_entry_thread_safety_docs() {
 
     // Проверка 2: Документация о потокобезопасности
     assert!(
-        content.contains("Потокобезопасность") || content.contains("!Send") || content.contains("!Sync"),
+        content.contains("Потокобезопасность")
+            || content.contains("!Send")
+            || content.contains("!Sync"),
         "Документация должна содержать информацию о потокобезопасности"
     );
 
@@ -164,8 +163,7 @@ fn test_unicode_validation() {
     let russian_name = "Игрок123";
     let sanitized_russian = sanitize_player_name(russian_name);
     assert_eq!(
-        sanitized_russian,
-        "Игрок123",
+        sanitized_russian, "Игрок123",
         "Кириллические символы должны быть разрешены"
     );
 
@@ -173,8 +171,7 @@ fn test_unicode_validation() {
     let only_invalid = "😀🎉🚀";
     let sanitized_invalid = sanitize_player_name(only_invalid);
     assert_eq!(
-        sanitized_invalid,
-        "Anonymous",
+        sanitized_invalid, "Anonymous",
         "Только невалидные символы должны заменяться на Anonymous"
     );
 }
@@ -230,10 +227,9 @@ fn test_string_allocation_optimization() {
 #[test]
 fn test_collision_early_exit() {
     let logic_path = "src/game/logic/collision.rs";
-    
+
     if Path::new(logic_path).exists() {
-        let content = fs::read_to_string(logic_path)
-            .expect("Failed to read collision.rs");
+        let content = fs::read_to_string(logic_path).expect("Failed to read collision.rs");
 
         // Проверка 1: .any() используется для раннего выхода
         assert!(
@@ -254,7 +250,7 @@ fn test_collision_early_exit() {
             for entry in fs::read_dir(game_logic_dir).expect("Failed to read logic dir") {
                 let entry = entry.expect("Failed to read entry");
                 let path = entry.path();
-                
+
                 if path.extension().and_then(|s| s.to_str()) == Some("rs") {
                     let content = fs::read_to_string(&path).expect("Failed to read file");
                     if content.contains(".any(") {
@@ -281,12 +277,12 @@ fn test_collision_early_exit() {
 #[test]
 fn test_canonicalize_caching() {
     let path_validator_path = "src/validation/path.rs";
-    let content = fs::read_to_string(path_validator_path)
-        .expect("Failed to read path.rs");
+    let content = fs::read_to_string(path_validator_path).expect("Failed to read path.rs");
 
     // Проверка 1: canonicalize вызывается и результат сохраняется
     assert!(
-        content.contains("canonicalize()") && (content.contains("let canonical") || content.contains("canonical_path")),
+        content.contains("canonicalize()")
+            && (content.contains("let canonical") || content.contains("canonical_path")),
         "path.rs должен кэшировать результат canonicalize"
     );
 
@@ -321,9 +317,9 @@ fn test_canonicalize_caching() {
 fn test_constants_centralization() {
     // Проверка 1: FRAME_DELAY_MS определён в constants.rs
     let constants_path = "src/constants.rs";
-    let constants_content = fs::read_to_string(constants_path)
-        .expect("Failed to read constants.rs");
-    
+    let constants_content =
+        fs::read_to_string(constants_path).expect("Failed to read constants.rs");
+
     assert!(
         constants_content.contains("pub const FRAME_DELAY_MS"),
         "FRAME_DELAY_MS должен быть определён в constants.rs"
@@ -331,9 +327,8 @@ fn test_constants_centralization() {
 
     // Проверка 2: FRAME_DELAY_MS импортируется в lib.rs
     let lib_path = "src/lib.rs";
-    let lib_content = fs::read_to_string(lib_path)
-        .expect("Failed to read lib.rs");
-    
+    let lib_content = fs::read_to_string(lib_path).expect("Failed to read lib.rs");
+
     assert!(
         lib_content.contains("FRAME_DELAY_MS") || lib_content.contains("constants::"),
         "lib.rs должен импортировать FRAME_DELAY_MS из constants.rs"
@@ -342,9 +337,8 @@ fn test_constants_centralization() {
     // Проверка 3: Проверка что константы не дублируются в game/mod.rs
     let game_mod_path = "src/game/mod.rs";
     if Path::new(game_mod_path).exists() {
-        let game_content = fs::read_to_string(game_mod_path)
-            .expect("Failed to read game/mod.rs");
-        
+        let game_content = fs::read_to_string(game_mod_path).expect("Failed to read game/mod.rs");
+
         // Константа может быть ре-экспортирована, но не переопределена
         if game_content.contains("const FRAME_DELAY_MS") {
             assert!(
@@ -366,9 +360,8 @@ fn test_constants_centralization() {
 fn test_must_use_attributes() {
     // Проверка 1: ControlsConfig::default_config имеет #[must_use]
     let controls_path = "src/controls.rs";
-    let controls_content = fs::read_to_string(controls_path)
-        .expect("Failed to read controls.rs");
-    
+    let controls_content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");
+
     assert!(
         controls_content.contains("#[must_use") && controls_content.contains("default_config"),
         "ControlsConfig::default_config должен иметь #[must_use]"
@@ -376,9 +369,8 @@ fn test_must_use_attributes() {
 
     // Проверка 2: PathValidator::validate имеет #[must_use]
     let path_validator_path = "src/validation/path.rs";
-    let path_content = fs::read_to_string(path_validator_path)
-        .expect("Failed to read path.rs");
-    
+    let path_content = fs::read_to_string(path_validator_path).expect("Failed to read path.rs");
+
     assert!(
         path_content.contains("#[must_use") && path_content.contains("validate"),
         "PathValidator::validate должен иметь #[must_use]"
@@ -386,9 +378,9 @@ fn test_must_use_attributes() {
 
     // Проверка 3: LeaderboardEntry::score имеет #[must_use]
     let leaderboard_path = "src/highscore/leaderboard.rs";
-    let leaderboard_content = fs::read_to_string(leaderboard_path)
-        .expect("Failed to read leaderboard.rs");
-    
+    let leaderboard_content =
+        fs::read_to_string(leaderboard_path).expect("Failed to read leaderboard.rs");
+
     assert!(
         leaderboard_content.contains("#[must_use") && leaderboard_content.contains("fn score"),
         "LeaderboardEntry::score должен иметь #[must_use]"
@@ -396,9 +388,8 @@ fn test_must_use_attributes() {
 
     // Проверка 4: sanitize_player_name имеет #[must_use] (опционально)
     let name_validator_path = "src/validation/name.rs";
-    let name_content = fs::read_to_string(name_validator_path)
-        .expect("Failed to read name.rs");
-    
+    let name_content = fs::read_to_string(name_validator_path).expect("Failed to read name.rs");
+
     // sanitize_player_name может не иметь #[must_use] так как это helper функция
     // Проверяем что она возвращает String (должна быть использована)
     assert!(
@@ -419,9 +410,8 @@ fn test_public_api_documentation() {
     // Проверка 1: GameState имеет документацию
     let state_path = "src/game/state.rs";
     if Path::new(state_path).exists() {
-        let state_content = fs::read_to_string(state_path)
-            .expect("Failed to read state.rs");
-        
+        let state_content = fs::read_to_string(state_path).expect("Failed to read state.rs");
+
         assert!(
             state_content.contains("///") && state_content.contains("pub struct GameState"),
             "GameState должен иметь документацию"
@@ -430,9 +420,8 @@ fn test_public_api_documentation() {
 
     // Проверка 2: ControlsConfig имеет документацию
     let controls_path = "src/controls.rs";
-    let controls_content = fs::read_to_string(controls_path)
-        .expect("Failed to read controls.rs");
-    
+    let controls_content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");
+
     assert!(
         controls_content.contains("///") && controls_content.contains("pub struct ControlsConfig"),
         "ControlsConfig должен иметь документацию"
@@ -440,19 +429,19 @@ fn test_public_api_documentation() {
 
     // Проверка 3: LeaderboardEntry имеет документацию
     let leaderboard_path = "src/highscore/leaderboard.rs";
-    let leaderboard_content = fs::read_to_string(leaderboard_path)
-        .expect("Failed to read leaderboard.rs");
-    
+    let leaderboard_content =
+        fs::read_to_string(leaderboard_path).expect("Failed to read leaderboard.rs");
+
     assert!(
-        leaderboard_content.contains("///") && leaderboard_content.contains("pub struct LeaderboardEntry"),
+        leaderboard_content.contains("///")
+            && leaderboard_content.contains("pub struct LeaderboardEntry"),
         "LeaderboardEntry должен иметь документацию"
     );
 
     // Проверка 4: PathValidator имеет документацию
     let path_validator_path = "src/validation/path.rs";
-    let path_content = fs::read_to_string(path_validator_path)
-        .expect("Failed to read path.rs");
-    
+    let path_content = fs::read_to_string(path_validator_path).expect("Failed to read path.rs");
+
     assert!(
         path_content.contains("///") && path_content.contains("pub struct PathValidator"),
         "PathValidator должен иметь документацию"
@@ -470,9 +459,9 @@ fn test_public_api_documentation() {
 fn test_deprecated_attributes() {
     // Проверяем наличие deprecated атрибутов в проекте
     // Это warning тест - допускаем отсутствие deprecated если нет устаревших методов
-    
+
     let mut deprecated_count = 0;
-    
+
     let files_to_check = vec![
         "src/controls.rs",
         "src/highscore/leaderboard.rs",
@@ -482,9 +471,8 @@ fn test_deprecated_attributes() {
 
     for file_path in files_to_check {
         if Path::new(file_path).exists() {
-            let content = fs::read_to_string(file_path)
-                .expect("Failed to read file");
-            
+            let content = fs::read_to_string(file_path).expect("Failed to read file");
+
             if content.contains("#[deprecated") {
                 deprecated_count += 1;
             }
@@ -498,9 +486,8 @@ fn test_deprecated_attributes() {
     // Если deprecated есть, проверяем что они имеют сообщение
     if deprecated_count > 0 {
         // Проверяем что deprecated имеют сообщение с альтернативой
-        let controls_content = fs::read_to_string("src/controls.rs")
-            .unwrap_or_default();
-        
+        let controls_content = fs::read_to_string("src/controls.rs").unwrap_or_default();
+
         if controls_content.contains("#[deprecated") {
             assert!(
                 controls_content.contains("use ") || controls_content.contains("instead"),
@@ -524,8 +511,7 @@ fn test_deprecated_attributes() {
 #[test]
 fn test_named_constants() {
     let constants_path = "src/constants.rs";
-    let content = fs::read_to_string(constants_path)
-        .expect("Failed to read constants.rs");
+    let content = fs::read_to_string(constants_path).expect("Failed to read constants.rs");
 
     // Проверка 1: KEY_BACKSPACE существует
     assert!(
@@ -575,7 +561,7 @@ fn test_named_constants() {
 fn test_todo_comments_for_dead_code() {
     let mut dead_code_with_todo = 0;
     let mut dead_code_without_todo = 0;
-    
+
     let files_to_check = vec![
         "src/constants.rs",
         "src/controls.rs",
@@ -585,18 +571,18 @@ fn test_todo_comments_for_dead_code() {
 
     for file_path in files_to_check {
         if Path::new(file_path).exists() {
-            let content = fs::read_to_string(file_path)
-                .expect("Failed to read file");
-            
+            let content = fs::read_to_string(file_path).expect("Failed to read file");
+
             // Ищем #[allow(dead_code)]
             for (idx, line) in content.lines().enumerate() {
                 if line.contains("#[allow(dead_code)]") || line.contains("#[allow(dead_code") {
                     // Проверяем есть ли TODO в соседних строках (±5 строк)
                     let start = idx.saturating_sub(5);
                     let end = (idx + 5).min(content.lines().count());
-                    let context: Vec<&str> = content.lines().skip(start).take(end - start).collect();
+                    let context: Vec<&str> =
+                        content.lines().skip(start).take(end - start).collect();
                     let has_todo = context.iter().any(|l| l.contains("TODO"));
-                    
+
                     if has_todo {
                         dead_code_with_todo += 1;
                     } else {
@@ -609,7 +595,10 @@ fn test_todo_comments_for_dead_code() {
 
     // Выводим статистику
     println!("📝 #[allow(dead_code)] с TODO: {}", dead_code_with_todo);
-    println!("📝 #[allow(dead_code)] без TODO: {}", dead_code_without_todo);
+    println!(
+        "📝 #[allow(dead_code)] без TODO: {}",
+        dead_code_without_todo
+    );
 
     // Тест проходит всегда - это informational тест
     // Предупреждаем если много dead_code без TODO
@@ -628,8 +617,7 @@ fn test_todo_comments_for_dead_code() {
 fn test_imports_style() {
     // Проверка 1: Базовые модули импортируются в начале lib.rs
     let lib_path = "src/lib.rs";
-    let lib_content = fs::read_to_string(lib_path)
-        .expect("Failed to read lib.rs");
+    let lib_content = fs::read_to_string(lib_path).expect("Failed to read lib.rs");
 
     // Проверяем что модули объявлены (просто наличие, порядок не критичен)
     assert!(
@@ -648,8 +636,7 @@ fn test_imports_style() {
     // Проверка 2: Импорты в game/mod.rs используют pub use
     let game_mod_path = "src/game/mod.rs";
     if Path::new(game_mod_path).exists() {
-        let game_content = fs::read_to_string(game_mod_path)
-            .expect("Failed to read game/mod.rs");
+        let game_content = fs::read_to_string(game_mod_path).expect("Failed to read game/mod.rs");
 
         // Проверяем что ре-экспорты используют pub use
         assert!(
@@ -661,8 +648,8 @@ fn test_imports_style() {
     // Проверка 3: Импорты в highscore/mod.rs сгруппированы
     let highscore_mod_path = "src/highscore/mod.rs";
     if Path::new(highscore_mod_path).exists() {
-        let highscore_content = fs::read_to_string(highscore_mod_path)
-            .expect("Failed to read highscore/mod.rs");
+        let highscore_content =
+            fs::read_to_string(highscore_mod_path).expect("Failed to read highscore/mod.rs");
 
         // Проверяем что импорты сгруппированы
         assert!(
@@ -697,7 +684,7 @@ fn test_critical_fixes_integration() {
     // Тест 2: TOCTOU документация + Unicode валидация
     let leaderboard_path = "src/highscore/leaderboard.rs";
     let content = fs::read_to_string(leaderboard_path).unwrap();
-    
+
     assert!(content.contains("TOCTOU") || content.contains("Time-Of-Check-Time-Of-Use"));
     assert!(content.contains("sanitize_player_name"));
 }
