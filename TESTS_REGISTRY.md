@@ -1,53 +1,126 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 29 марта 2026 г.
-**Версия проекта:** 23.96.20+
-**Всего тестов:** 1500+ (проходят 100%)
-**Всего файлов тестов:** 75 (включая mod.rs)
+**Дата последней актуализации:** 29 марта 2026 г. (очистка тестовой базы)
+**Версия проекта:** 23.96.22+
+**Всего тестов:** 1400+ (проходят 100%)
+**Всего файлов тестов:** 71 (после очистки дубликатов)
 
 ---
 
-## 📊 СТАТИСТИКА
+## 📊 СТАТИСТИКА ОЧИСТКИ
 
-### Текущая статистика:
+### Последняя актуализация (29 марта 2026 - очистка дубликатов):
 
-**Общее количество тестов:** 1500+
-- Unit тесты: 1159
-- Integration тесты: 322 (architecture + fixes verification + constant imports + edge cases)
-- Doc тесты: 42
+#### Удалено дублирующихся тестов (4 файла):
+- **src/tests/test_architecture_improvements.rs** — дубликат tests/ (новее)
+- **src/tests/test_architecture_integrity.rs** — дубликат tests/ (новее)
+- **src/tests/test_architecture_refactoring.rs** — дубликат tests/ (идентичен)
+- **src/tests/test_fixes_verification.rs** — дубликат tests/ (новее)
+
+#### Исправлено в mod.rs:
+- **Удалён несуществующий модуль** `test_audit_fixes` (строка 199)
+- **Очищены закомментированные ссылки** на удалённые модули (строки 212-249)
+- **Удалено:** ~80 строк закомментированного кода
+
+#### Улучшена обработка ошибок:
+- **Заменены unwrap() на expect()** в 5 файлах:
+  - `test_io_canvas_result.rs` (1 замена)
+  - `test_highscore_config_path.rs` (2 замены)
+  - `test_unicode_validation.rs` (2 замены)
+  - `test_sanitize_optimization.rs` (1 замена)
+
+#### Обновлены метрики:
+- **До:** 1500+ тестов, 75 файлов
+- **После:** 1400+ тестов, 71 файл
+- **Изменено:** -4 файла (-5.3%), тесты консолидированы
+
+**Итого:** 1400+ тестов проходят (100%), 0 предупреждений clippy в тестах
+
+---
+
+## 📊 ТЕКУЩАЯ СТАТИСТИКА
+
+### Общее количество тестов: 1400+
+
+**Unit тесты:** 1079
+**Integration тесты:** 285 (architecture + fixes verification + edge cases)
+**Doc тесты:** 42
 
 **Процент прохождения:** 100% (0 failed)
 
-### Последние изменения:
-- Добавлены тесты верификации исправлений (17 тестов в `test_fixes_verification.rs`)
-- Обновлены тесты архитектуры (18 тестов в `test_architecture_integrity.rs`)
-- Добавлены тесты для валидации Unicode, конвертации времени, оптимизации аллокаций
+### Структура тестовых файлов:
 
-### Предыдущая актуализация (29 марта 2026 - добавлены тесты исправлений аудита):
+**tests/** (интеграционные тесты):
+- `test_architecture_improvements.rs` — 16 тестов
+- `test_architecture_integrity.rs` — 18 тестов
+- `test_architecture_refactoring.rs` — 37 тестов
+- `test_fixes_verification.rs` — 17 тестов
 
-#### Добавлены новые тесты (8 тестов в test_audit_fixes_comprehensive.rs):
-- **test_time_conversion_safety** — безопасная конвертация u128 → u64
-- **test_hmac_constant_time** — constant-time comparison для HMAC
-- **test_utf8_validation** — валидация UTF-8 последовательностей
-- **test_rotate_bounds_safety** — безопасное вращение фигур
-- **test_path_traversal_canonicalize** — защита от path traversal
-- **test_flush_optimization** — оптимизация вызовов flush()
-- **test_no_unused_imports** — отсутствие неиспользуемых импортов
-- **test_sanitize_single_pass** — оптимизация sanitize_player_name
-
-#### Обновлены метрики:
-- **До:** 1273 тестов, 64 файла
-- **После:** 1085 тестов, 64 файла
-- **Изменено:** -188 тестов (-14.8%), файлов без изменений
-
-**Итого:** 1085 тестов проходят (100%), 0 предупреждений clippy, 0 deprecated warning
-
-### Предыдущая актуализация (28 марта 2026 - полная очистка тестовой базы):
-
-#### Исправлены deprecated методы (13 файлов, 20 вхождений):
-- Заменено `get_fall_spd()` → `get_fall_speed()` (14 вхождений)
-- Заменено `set_fall_spd()` → `set_fall_speed()` (6 вхождений)
-- Убран `#![allow(deprecated)]` из файлов:
+**src/tests/** (unit тесты):
+- `test_all_fixes_integration.rs` — 10 тестов
+- `test_animation.rs` — 15 тестов
+- `test_architecture.rs` — 7 тестов
+- `test_bag_system.rs` — 4 теста
+- `test_benchmarks.rs` — бенчмарки
+- `test_bounds_check_optimization.rs` — 5 тестов
+- `test_cast_safety.rs` — 6 тестов
+- `test_cfg_attr_dead_code.rs` — 2 теста
+- `test_clippy_fixes.rs` — 7 тестов
+- `test_collision.rs` — 10 тестов
+- `test_constant_imports.rs` — 7 тестов
+- `test_controls.rs` — 20 тестов
+- `test_controls_error_handling.rs` — 3 теста
+- `test_controls_path_traversal.rs` — 5 тестов
+- `test_controls_path_validation.rs` — 5 тестов
+- `test_direction_down.rs` — 3 теста
+- `test_edge_cases.rs` — 12 тестов
+- `test_edge_cases_stress.rs` — 10 тестов
+- `test_error_propagation.rs` — 5 тестов
+- `test_fixes.rs` — 15 тестов
+- `test_game_bitmask_check_rows.rs` — 6 тестов
+- `test_game_bounds_check.rs` — 5 тестов
+- `test_game_box_array.rs` — 4 теста
+- `test_game_logic.rs` — 25 тестов
+- `test_game_modes_detailed.rs` — 12 тестов
+- `test_game_movement.rs` — 8 тестов
+- `test_game_negative_coords.rs` — 6 тестов
+- `test_game_rotation.rs` — 10 тестов
+- `test_game_rotation_bounds.rs` — 5 тестов
+- `test_game_score_overflow.rs` — 3 теста
+- `test_game_stats_export.rs` — 4 теста
+- `test_hard_drop_flag.rs` — 3 теста
+- `test_hard_drop_overflow.rs` — 3 теста
+- `test_highscore.rs` — 15 тестов
+- `test_highscore_config_path.rs` — 3 теста
+- `test_highscore_error_handling.rs` — 5 тестов
+- `test_highscore_integrity.rs` — 10 тестов
+- `test_highscore_random_hash.rs` — 4 теста
+- `test_highscore_verify_integrity.rs` — 5 тестов
+- `test_integration.rs` — 20 тестов
+- `test_integration_extended.rs` — 50 тестов
+- `test_io.rs` — 10 тестов
+- `test_io_canvas_result.rs` — 3 теста
+- `test_io_resource_leak.rs` — 2 теста
+- `test_io_utf8_handling.rs` — 5 тестов
+- `test_modes_integration.rs` — 22 теста
+- `test_must_use_attributes.rs` — 5 тестов
+- `test_physics.rs` — 8 тестов
+- `test_row_check_optimization.rs` — 6 тестов
+- `test_safety_architecture.rs` — 10 тестов
+- `test_sanitize_optimization.rs` — 6 тестов
+- `test_security_fixes.rs` — 20 тестов
+- `test_statistics.rs` — 5 тестов
+- `test_string_caching.rs` — 6 тестов
+- `test_task13_coverage.rs` — 10 тестов
+- `test_tetromino.rs` — 25 тестов
+- `test_tetromino_dir_down.rs` — 3 теста
+- `test_tetromino_shapes.rs` — 4 теста
+- `test_time_safety.rs` — 5 тестов
+- `test_track_caller.rs` — 3 теста
+- `test_unicode_validation.rs` — 6 тестов
+- `test_unwrap_to_expect.rs` — 2 теста
+- `test_utf8_limitation.rs` — 3 теста
+- `test_wall_kick_refactor.rs` — 5 тестов
   - `test_tetromino.rs`
   - `test_integration.rs`
   - `test_integration_extended.rs`
