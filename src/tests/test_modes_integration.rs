@@ -29,9 +29,9 @@ fn test_modes_integration_classic_creation() {
         "Классика",
         "Режим должен быть Классика"
     );
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(state.get_lines_cleared(), 0, "Линии должны быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.lines_cleared(), 0, "Линии должны быть 0");
 }
 
 /// Тест 2: Проверка что Sprint режим создаётся корректно
@@ -46,9 +46,9 @@ fn test_modes_integration_sprint_creation() {
         "Спринт",
         "Режим должен быть Спринт"
     );
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(state.get_lines_cleared(), 0, "Линии должны быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.lines_cleared(), 0, "Линии должны быть 0");
 }
 
 /// Тест 3: Проверка что Marathon режим создаётся корректно
@@ -63,9 +63,9 @@ fn test_modes_integration_marathon_creation() {
         "Марафон",
         "Режим должен быть Марафон"
     );
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(state.get_lines_cleared(), 0, "Линии должны быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.lines_cleared(), 0, "Линии должны быть 0");
 }
 
 /// Тест 4: Проверка что все режимы имеют одинаковую начальную скорость

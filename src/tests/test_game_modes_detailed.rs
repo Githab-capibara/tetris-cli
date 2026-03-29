@@ -34,7 +34,7 @@ fn test_classic_mode_initial_score() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_score(),
+        state.score(),
         0,
         "Начальный счёт в Classic должен быть 0"
     );
@@ -46,7 +46,7 @@ fn test_classic_mode_initial_level() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_level(),
+        state.level(),
         1,
         "Начальный уровень в Classic должен быть 1"
     );
@@ -58,7 +58,7 @@ fn test_classic_mode_initial_lines() {
     let state = GameState::new();
 
     assert_eq!(
-        state.get_lines_cleared(),
+        state.lines_cleared(),
         0,
         "Начальное количество линий должно быть 0"
     );
@@ -171,7 +171,7 @@ fn test_sprint_mode_initial_score() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_score(),
+        state.score(),
         0,
         "Начальный счёт в Sprint должен быть 0"
     );
@@ -183,7 +183,7 @@ fn test_sprint_mode_initial_level() {
     let state = GameState::new_sprint();
 
     assert_eq!(
-        state.get_level(),
+        state.level(),
         1,
         "Начальный уровень в Sprint должен быть 1"
     );
@@ -289,7 +289,7 @@ fn test_marathon_mode_initial_score() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_score(),
+        state.score(),
         0,
         "Начальный счёт в Marathon должен быть 0"
     );
@@ -301,7 +301,7 @@ fn test_marathon_mode_initial_level() {
     let state = GameState::new_marathon();
 
     assert_eq!(
-        state.get_level(),
+        state.level(),
         1,
         "Начальный уровень в Marathon должен быть 1"
     );

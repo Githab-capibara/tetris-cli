@@ -508,87 +508,43 @@ fn test_distribution_in_sequence() {
 // ГРУППА ТЕСТОВ 25-30: Статистические тесты распределения
 // ============================================================================
 
-/// Тест 25: Статистика распределения T-фигур
+/// Тест 25: Статистика распределения всех типов фигур
 #[test]
-fn test_t_piece_distribution_statistics() {
-    let mut bag = BagGenerator::new();
-    let mut t_count = 0;
+fn test_all_pieces_distribution_statistics() {
+    use crate::tetromino::ShapeType;
 
-    for _ in 0..700 {
-        if bag.next_shape() == ShapeType::T {
-            t_count += 1;
-        }
-    }
-
-    // Ожидаем ~100 T-фигур (700/7)
-    // Допускаем отклонение до 20%
-    assert!(
-        (70..=130).contains(&t_count),
-        "T-фигур должно быть около 100 (получено {t_count})"
-    );
-}
-
-/// Тест 26: Статистика распределения I-фигур
-#[test]
-fn test_i_piece_distribution_statistics() {
-    let mut bag = BagGenerator::new();
-    let mut i_count = 0;
-
-    for _ in 0..700 {
-        if bag.next_shape() == ShapeType::I {
-            i_count += 1;
-        }
-    }
-
-    assert!(
-        (70..=130).contains(&i_count),
-        "I-фигур должно быть около 100 (получено {i_count})"
-    );
-}
-
-/// Тест 27: Статистика распределения O-фигур
-#[test]
-fn test_o_piece_distribution_statistics() {
-    let mut bag = BagGenerator::new();
-    let mut o_count = 0;
-
-    for _ in 0..700 {
-        if bag.next_shape() == ShapeType::O {
-            o_count += 1;
-        }
-    }
-
-    assert!(
-        (70..=130).contains(&o_count),
-        "O-фигур должно быть около 100 (получено {o_count})"
-    );
-}
-
-/// Тест 28: Общее статистическое распределение
-#[test]
-fn test_overall_statistical_distribution() {
     let mut bag = BagGenerator::new();
     let mut counts = [0; 7];
 
+    // Генерируем 700 фигур для статистики
     for _ in 0..700 {
         let shape = bag.next_shape();
         counts[shape as usize] += 1;
     }
 
-    // Проверяем, что все фигуры встречаются примерно одинаково
-    let min_count = counts
-        .iter()
-        .min()
-        .expect("Минимальное значение должно существовать");
-    let max_count = counts
-        .iter()
-        .max()
-        .expect("Максимальное значение должно существовать");
+    // Проверяем распределение для T, I, O фигур
+    // Ожидаем ~100 фигур каждого типа (700/7)
+    // Допускаем отклонение до 30% (70-130)
+    for &shape in &[ShapeType::T, ShapeType::I, ShapeType::O] {
+        let count = counts[shape as usize];
+        assert!(
+            (70..=130).contains(&count),
+            "{:?}-фигур должно быть около 100 (получено {})",
+            shape,
+            count
+        );
+    }
 
-    // Разница между мин и макс не должна превышать 30%
+    // Проверяем, что все фигуры встречаются примерно одинаково
+    let min_count = counts.iter().min().expect("Минимальное значение должно существовать");
+    let max_count = counts.iter().max().expect("Максимальное значение должно существовать");
+
+    // Разница между мин и макс не должна превышать 50
     assert!(
         max_count - min_count < 50,
-        "Разница между мин и макс должна быть меньше 50 (мин={min_count}, макс={max_count})"
+        "Разница между мин и макс должна быть меньше 50 (мин={}, макс={})",
+        min_count,
+        max_count
     );
 }
 

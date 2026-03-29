@@ -26,10 +26,10 @@ fn test_full_game_initialization() {
     let state = GameState::new();
 
     // Проверяем все основные поля
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
     assert_eq!(
-        state.get_lines_cleared(),
+        state.lines_cleared(),
         0,
         "Начальные линии должны быть 0"
     );

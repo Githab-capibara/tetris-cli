@@ -127,7 +127,7 @@ fn test_correct_score_calculation() {
     let mut state = GameState::new();
 
     // Проверяем начальный счёт
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 
     // Симулируем начисление очков за линию (через проверку констант)
     let line_points = LINE_SCORES[0];
@@ -162,7 +162,7 @@ fn test_correct_score_calculation() {
     // Создаём состояние и проверяем что счёт корректен
     let state = GameState::new();
     assert_eq!(
-        state.get_score(),
+        state.score(),
         0,
         "Новое состояние должно иметь счёт 0"
     );

@@ -55,10 +55,10 @@ fn test_cfg_attr_enum_no_warnings() {
             assert_eq!(v, 0, "Значение VariantA должно быть 0");
         }
         TestEnumForTests::VariantB(_) => {
-            panic!("Неправильный вариант");
+            unreachable!("Неправильный вариант");
         }
         TestEnumForTests::VariantC { .. } => {
-            panic!("Неправильный вариант");
+            unreachable!("Неправильный вариант");
         }
     }
 }
@@ -138,7 +138,7 @@ fn test_cfg_attr_only_in_test_mode() {
 
     // Создаём GameState для проверки
     let state = GameState::new();
-    assert_eq!(state.get_score(), 0, "Счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Счёт должен быть 0");
 }
 
 /// Тест 7: Проверка сложных тестовых структур

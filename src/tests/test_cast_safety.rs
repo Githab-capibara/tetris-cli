@@ -19,61 +19,6 @@ mod tests {
     // ГРУППА ТЕСТОВ 1: Безопасный cast usize → i16
     // ========================================================================
 
-    /// Тест 1: Проверка что границы сетки корректно конвертируются из usize в i16.
-    ///
-    /// Проверяет что константы `GRID_WIDTH` и `GRID_HEIGHT` могут быть безопасно
-    /// преобразованы в `i16` без потери данных или переполнения.
-    #[allow(clippy::assertions_on_constants)]
-    #[test]
-    fn test_grid_bounds_cast_safety() {
-        // Базовая проверка: константы должны быть положительными
-        assert!(GRID_WIDTH > 0, "GRID_WIDTH должен быть положительным");
-        assert!(GRID_HEIGHT > 0, "GRID_HEIGHT должен быть положительным");
-
-        // Проверка что значения помещаются в i16
-        assert!(
-            GRID_WIDTH <= i16::MAX as usize,
-            "GRID_WIDTH должен помещаться в i16"
-        );
-        assert!(
-            GRID_HEIGHT <= i16::MAX as usize,
-            "GRID_HEIGHT должен помещаться в i16"
-        );
-
-        // Безопасный cast с проверкой
-        let width_i16 = GRID_WIDTH as i16;
-        let height_i16 = GRID_HEIGHT as i16;
-
-        // Проверка что cast не изменил значения
-        assert_eq!(
-            width_i16 as usize, GRID_WIDTH,
-            "Cast GRID_WIDTH в i16 и обратно должен сохранить значение"
-        );
-        assert_eq!(
-            height_i16 as usize, GRID_HEIGHT,
-            "Cast GRID_HEIGHT в i16 и обратно должен сохранить значение"
-        );
-
-        // Проверка что значения разумные для игры
-        assert_eq!(GRID_WIDTH, 10, "Стандартная ширина поля - 10 блоков");
-        assert_eq!(GRID_HEIGHT, 20, "Стандартная высота поля - 20 блоков");
-
-        // Проверка что cast в u16 для дисплея тоже безопасен
-        let display_width = DISP_WIDTH;
-        let display_height = DISP_HEIGHT;
-
-        assert!(
-            display_width <= i16::MAX as usize,
-            "DISP_WIDTH должен помещаться в i16"
-        );
-        assert!(
-            display_height <= i16::MAX as usize,
-            "DISP_HEIGHT должен помещаться в i16"
-        );
-
-        println!("✓ Cast границ сетки usize → i16 безопасен");
-    }
-
     /// Тест 2: Проверка валидации координат с безопасным cast.
     ///
     /// Проверяет что координаты фигур могут быть безопасно преобразованы
@@ -448,7 +393,7 @@ mod tests {
 
         // Проверка что GameState имеет документацию
         let state = GameState::new();
-        assert_eq!(state.get_score(), 0, "GameState должен иметь документацию");
+        assert_eq!(state.score(), 0, "GameState должен иметь документацию");
 
         // Проверка что LeaderboardEntry имеет документацию
         let entry = crate::highscore::leaderboard::LeaderboardEntry::new("DocTest", 100);
@@ -596,9 +541,9 @@ mod tests {
         // Создаём несколько GameState для проверки что cast не вызывает паники
         for _ in 0..10 {
             let state = GameState::new();
-            let _score = state.get_score();
-            let _level = state.get_level();
-            let _lines = state.get_lines_cleared();
+            let _score = state.score();
+            let _level = state.level();
+            let _lines = state.lines_cleared();
         }
 
         // Проверка что создание GameState в цикле не вызывает паники

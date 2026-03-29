@@ -238,7 +238,7 @@ mod tests {
     fn test_l2_game_continues_after_pause() {
         // Создаём состояние игры
         let mut state = GameState::new();
-        let initial_score = state.get_score();
+        let initial_score = state.score();
 
         // Проверяем что состояние игры корректно после "паузы"
         // (в тесте симулируем через создание нового состояния)
@@ -246,7 +246,7 @@ mod tests {
 
         // Проверка что состояние игры валидно
         assert_eq!(
-            state_after_pause.get_score(),
+            state_after_pause.score(),
             initial_score,
             "Счёт должен быть одинаковым для новых игр"
         );
@@ -370,39 +370,6 @@ mod tests {
     // ========================================================================
     // ГРУППА M4: ТЕСТЫ НА НЕИСПОЛЬЗУЕМЫЙ КОД
     // ========================================================================
-
-    /// Тест M4.1: Проверка наличия TODO комментариев.
-    ///
-    /// Проверяет, что в коде присутствуют TODO комментарии для будущей рефакторизации.
-    ///
-    /// # Ожидания
-    /// - TODO комментарии должны присутствовать в cycle.rs
-    /// - TODO должны относиться к архитектурным улучшениям
-    #[test]
-    fn test_m4_todo_comments_exist() {
-        // Проверяем наличие TODO через проверку трейтов которые имеют TODO в документации
-        use crate::game::cycle::{FPSControl, GameRenderer, GameUpdater, InputHandler};
-
-        // Эти трейты имеют TODO комментарии в документации
-        // Проверяем что они существуют (компиляция подтверждает наличие)
-
-        // FPSControl имеет TODO: "Реализовать в отдельном модуле `fps_controller.rs`"
-        let _fps_control: Option<&dyn FPSControl> = None;
-
-        // InputHandler имеет TODO: "Реализовать в отдельном модуле `input_handler.rs`"
-        let _input_handler: Option<&dyn InputHandler<InputResult = InputResult>> = None;
-
-        // GameUpdater имеет TODO: "Реализовать в отдельном модуле `game_updater.rs`"
-        let _game_updater: Option<&dyn GameUpdater> = None;
-
-        // GameRenderer имеет TODO: "Реализовать в отдельном модуле `game_renderer.rs`"
-        let _game_renderer: Option<&dyn GameRenderer> = None;
-
-        // Проверка что трейты скомпилированы (подтверждает наличие TODO в коде)
-        assert!(true, "TODO комментарии присутствуют в документации трейтов");
-
-        println!("✓ M4.1: TODO комментарии существуют в коде");
-    }
 
     /// Тест M4.2: Проверка что константы с #[allow(dead_code)] существуют.
     ///

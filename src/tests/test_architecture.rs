@@ -240,9 +240,9 @@ fn test_game_state_getters() {
     let state = GameState::new();
 
     // Проверка существования геттеров
-    let _score = state.get_score();
-    let _level = state.get_level();
-    let _lines = state.get_lines_cleared();
+    let _score = state.score();
+    let _level = state.level();
+    let _lines = state.lines_cleared();
     let _mode = state.get_mode_trait().name();
     let _blocks = state.get_blocks();
     let _curr_shape = state.get_curr_shape();
@@ -270,13 +270,13 @@ fn test_game_state_mutable_getters() {
 
     // Проверяем наличие сеттеров для тестов
     state.set_score(100);
-    assert_eq!(state.get_score(), 100);
+    assert_eq!(state.score(), 100);
 
     state.set_level(5);
-    assert_eq!(state.get_level(), 5);
+    assert_eq!(state.level(), 5);
 
     state.set_lines_cleared(25);
-    assert_eq!(state.get_lines_cleared(), 25);
+    assert_eq!(state.lines_cleared(), 25);
 }
 
 // ============================================================================
