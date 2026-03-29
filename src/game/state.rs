@@ -125,6 +125,7 @@ impl GameMode {
     }
 }
 
+#[allow(deprecated)]
 impl GameMode {
     /// Проверить условие победы для текущего режима.
     ///
@@ -304,21 +305,25 @@ impl Default for GameState {
 
 impl GameState {
     /// Создать новое состояние игры.
+    #[allow(deprecated)]
     pub fn new() -> Self {
         Self::new_internal(GameMode::Classic, false)
     }
 
     /// Создать новое состояние игры для режима спринт.
+    #[allow(deprecated)]
     pub fn new_sprint() -> Self {
         Self::new_internal(GameMode::Sprint, true)
     }
 
     /// Создать новое состояние игры для режима марафон.
+    #[allow(deprecated)]
     pub fn new_marathon() -> Self {
         Self::new_internal(GameMode::Marathon, true)
     }
 
     /// Внутренний метод создания состояния игры.
+    #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
         let mut bag = BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);
@@ -451,6 +456,7 @@ impl GameState {
     /// Использует get_mode_trait() для получения режима.
     #[must_use]
     #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
+    #[allow(deprecated)]
     pub fn get_mode(&self) -> GameMode {
         // Используем name() трейта для определения режима
         match self.get_mode_trait().name() {
@@ -750,6 +756,7 @@ impl GameState {
 
     /// Получить удержанную фигуру (ссылка на ссылку).
     #[must_use]
+    #[allow(clippy::ref_option)]
     pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
         &self.held_shape
     }

@@ -9,7 +9,9 @@ pub use crate::types::{Direction, RotationDirection, UpdateEndState};
 pub use crate::errors::GameError;
 
 // Экспорт основных типов из модуля game
-pub use crate::game::state::{GameMode, GameState};
+#[allow(deprecated)]
+pub use crate::game::state::GameMode;
+pub use crate::game::state::GameState;
 pub use crate::game::stats::GameStats;
 
 // Экспорт типов из модуля tetromino

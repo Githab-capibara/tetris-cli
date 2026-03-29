@@ -57,7 +57,7 @@ fn test_render_cache_update_score() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -79,7 +79,7 @@ fn test_render_cache_update_level() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -101,7 +101,7 @@ fn test_render_cache_update_lines() {
         25,  // lines_cleared
         "0", // high_score_display
         0,   // combo
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -123,7 +123,7 @@ fn test_render_cache_update_combo() {
         0,   // lines_cleared
         "0", // high_score_display
         3,   // combo (комбо x3)
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -146,7 +146,7 @@ fn test_render_cache_no_update_without_changes() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -160,7 +160,7 @@ fn test_render_cache_no_update_without_changes() {
         0,   // lines_cleared (не изменился)
         "0", // high_score_display (не изменился)
         0,   // combo (не изменился)
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 
@@ -187,7 +187,7 @@ fn test_render_cache_clear() {
         50,     // lines_cleared
         "5000", // high_score_display
         5,      // combo
-        crate::game::state::GameMode::Classic,
+        &crate::game::mode_trait::ClassicMode,
         &GameStats::default(),
     );
 

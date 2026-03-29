@@ -82,10 +82,17 @@ pub(crate) use crate::constants;
 // Подмодули logic
 
 // Re-export основных типов для обратной совместимости
-pub use state::{GameError, GameMode, GameResult, GameState};
+pub use state::GameError;
+#[allow(deprecated, unused_imports)]
+pub use state::GameMode;
+#[allow(unused_imports)]
+pub use state::GameResult;
+pub use state::GameState;
+#[allow(unused_imports)]
 pub use stats::GameStats;
 
 // Re-export констант из constants.rs (обратная совместимость)
+#[allow(unused_imports)]
 pub use constants::{
     ANIMATION_FRAME_SKIP, COMBO_BONUS, FPS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS,
     INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
@@ -94,11 +101,15 @@ pub use constants::{
 };
 
 // Re-export трейтов и типов из access
+#[allow(unused_imports)]
 pub use access::{BoardMutable, BoardReadonly, GameBoardAccess};
 
 // Re-export GameView и StringCache для отрисовки и кэширования
+#[allow(unused_imports)]
 pub use cache::StringCache;
+#[allow(unused_imports)]
 pub use scoring::lines::find_filled_lines;
+#[allow(unused_imports)]
 pub use view::GameView;
 
 // Константы для тестов (обратная совместимость)
@@ -112,6 +123,7 @@ pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
 };
 
+#[allow(unused_imports)]
 pub use scoring::{check_rows, find_full_rows, handle_hold, remove_rows};
 
 // Экспорт GameView для отрисовки (обратная совместимость)
@@ -239,7 +251,14 @@ impl GameState {
     ///
     /// # Паника
     /// Паникует если индекс линии выходит за пределы поля
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let mut state = GameState::new();
+    /// state.fill_line_for_bench(10); // Заполнить линию 10
+    /// ```
     #[cfg(feature = "bench")]
+    #[allow(clippy::missing_panics_doc)]
     pub fn fill_line_for_bench(&mut self, line: usize) {
         use crate::io::GRID_HEIGHT;
         assert!(

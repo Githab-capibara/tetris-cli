@@ -435,6 +435,9 @@ impl ThreadSafeLeaderboardEntry {
     /// # Возвращает
     /// Значение рекорда (u128) или 0 если валидация не прошла
     ///
+    /// # Паника
+    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    ///
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     /// Валидация и возврат значения выполняются атомарно под блокировкой.
@@ -442,6 +445,7 @@ impl ThreadSafeLeaderboardEntry {
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let score_value = guard.score_value;
@@ -458,12 +462,16 @@ impl ThreadSafeLeaderboardEntry {
     /// # Возвращает
     /// `true` если хэш совпадает
     ///
+    /// # Паника
+    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    ///
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::validator`.
     #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn is_valid(&self) -> bool {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
@@ -471,7 +479,14 @@ impl ThreadSafeLeaderboardEntry {
     }
 
     /// Получить имя игрока.
+    ///
+    /// # Возвращает
+    /// Имя игрока в виде String
+    ///
+    /// # Паника
+    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
     #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn name(&self) -> String {
         let guard = self.inner.lock().expect("Mutex poisoned");
         guard.name.clone()

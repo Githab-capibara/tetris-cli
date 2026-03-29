@@ -6,7 +6,7 @@
 //! ## Архитектурные заметки
 //! Выделено из `state.rs` для улучшения организации кода и разделения ответственности.
 
-use super::state::GameMode;
+use super::mode_trait::GameModeTrait;
 use super::stats::GameStats;
 use std::fmt::Write;
 
@@ -77,7 +77,7 @@ impl StringCache {
         lines_cleared: u32,
         high_score_display: &str,
         combo: u32,
-        mode: GameMode,
+        mode: &'_ dyn GameModeTrait,
         stats: &GameStats,
     ) {
         // Обновление счёта
@@ -117,7 +117,7 @@ impl StringCache {
         }
 
         // Обновление таймера (только для режима спринт)
-        if mode == GameMode::Sprint {
+        if mode.get_target_lines() == Some(40) {
             let elapsed = stats.get_elapsed_time();
             if (elapsed - self.last_timer).abs() > f64::EPSILON {
                 self.timer_str = format!("Время: {elapsed:.2}с");
