@@ -24,7 +24,7 @@ fn test_benchmarks_compile() {
 
     // Проверяем что GameState можно создать
     let state = GameState::new();
-    assert_eq!(state.get_score(), 0, "Новое состояние должно иметь счёт 0");
+    assert_eq!(state.score(), 0, "Новое состояние должно иметь счёт 0");
 
     // Проверяем что Tetromino можно создать
     let tetromino = Tetromino {

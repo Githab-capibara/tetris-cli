@@ -7,7 +7,7 @@ use crate::game::GameState;
 fn test_rotation_near_ceiling_no_panic() {
     let state = GameState::new();
     // Проверяем что GameState создаётся без паники
-    assert_eq!(state.get_score(), 0);
+    assert_eq!(state.score(), 0);
 }
 
 /// Тест 2: Проверка что `check_y` < 0 корректно обрабатывается.
@@ -15,7 +15,7 @@ fn test_rotation_near_ceiling_no_panic() {
 fn test_rotation_negative_y_handling() {
     let state = GameState::new();
     // Проверяем что состояние корректно
-    assert_eq!(state.get_level(), 1);
+    assert_eq!(state.level(), 1);
 }
 
 /// Тест 3: Проверка что вращение в углу поля работает корректно.
@@ -42,5 +42,5 @@ fn test_rotation_stays_within_bounds() {
     let state = GameState::new();
     // Проверяем что начальное состояние корректно
     // u128 всегда >= 0, поэтому просто проверяем тип значения
-    let _score: u128 = state.get_score();
+    let _score: u128 = state.score();
 }

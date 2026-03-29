@@ -33,14 +33,14 @@ fn test_edge_cases_1000_plus_lines() {
 
     // Проверяем что линии корректно подсчитаны
     assert!(
-        state.get_lines_cleared() >= 1000,
+        state.lines_cleared() >= 1000,
         "Должно быть удалено 1000+ линий"
     );
 
     // Проверяем что уровень корректно рассчитан (каждые 10 линий = 1 уровень)
     let expected_level = (1000 / 10) + 1;
     assert!(
-        state.get_level() >= expected_level,
+        state.level() >= expected_level,
         "Уровень должен быть рассчитан корректно"
     );
 }
@@ -57,7 +57,7 @@ fn test_edge_cases_max_score() {
         state.add_score_no_check(100);
     }
 
-    let score = state.get_score();
+    let score = state.score();
     assert_eq!(score, 1_000_000, "Счёт должен быть 1 000 000");
 }
 
@@ -164,7 +164,7 @@ fn test_stress_rapid_key_presses() {
 
     // Игра должна остаться в рабочем состоянии
     // u64 всегда >= 0, поэтому проверяем что игра не упала
-    assert!(state.get_score() > 0 || state.get_score() == 0);
+    assert!(state.score() > 0 || state.score() == 0);
 }
 
 /// Тест 7: Проверка быстрого вращения (10000 вращений)
@@ -291,8 +291,8 @@ fn test_min_single_line() {
 
     state.increment_lines_cleared();
 
-    assert_eq!(state.get_lines_cleared(), 1, "Должна быть удалена 1 линия");
-    assert_eq!(state.get_level(), 1, "Уровень должен быть 1");
+    assert_eq!(state.lines_cleared(), 1, "Должна быть удалена 1 линия");
+    assert_eq!(state.level(), 1, "Уровень должен быть 1");
 }
 
 /// Тест 13: Проверка работы с одной фигурой
@@ -329,7 +329,7 @@ fn test_min_game_time() {
 fn test_min_zero_score() {
     let state = GameState::new();
 
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 }
 
 // ============================================================================
@@ -429,22 +429,22 @@ fn test_long_all_modes_stability() {
     // Classic
     let classic = GameState::new();
     for _ in 0..100 {
-        let _ = classic.get_score();
-        let _ = classic.get_level();
+        let _ = classic.score();
+        let _ = classic.level();
     }
 
     // Sprint
     let sprint = GameState::new_sprint();
     for _ in 0..100 {
-        let _ = sprint.get_score();
-        let _ = sprint.get_lines_cleared();
+        let _ = sprint.score();
+        let _ = sprint.lines_cleared();
     }
 
     // Marathon
     let marathon = GameState::new_marathon();
     for _ in 0..100 {
-        let _ = marathon.get_score();
-        let _ = marathon.get_level();
+        let _ = marathon.score();
+        let _ = marathon.level();
     }
 
     // Все режимы должны остаться рабочими

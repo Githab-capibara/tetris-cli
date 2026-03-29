@@ -162,7 +162,7 @@ fn test_gamestate_can_save_score() {
     let mut state = GameState::new();
     state.add_score_no_check(500); // Добавляем очки для теста
 
-    let score = state.get_score();
+    let score = state.score();
 
     // Сохраняем рекорд
     SaveData::save_value(score);
@@ -241,7 +241,7 @@ fn test_classic_mode_saves_score() {
     );
 
     // Classic режим поддерживает сохранение рекорда
-    let score = state.get_score();
+    let score = state.score();
     SaveData::save_value(score);
 }
 
@@ -418,7 +418,7 @@ fn test_pause_in_game() {
     let state = GameState::new();
 
     // Проверяем, что игра может быть на паузе
-    assert_eq!(state.get_level(), 1, "Уровень должен быть 1");
+    assert_eq!(state.level(), 1, "Уровень должен быть 1");
 }
 
 /// Тест 27: Выход из игры
@@ -428,7 +428,7 @@ fn test_quit_game() {
 
     // Проверяем, что игра может быть завершена
     // u64 всегда >= 0, проверяем что счёт корректный
-    assert_eq!(state.get_score(), 0, "Счёт должен быть 0 в начале игры");
+    assert_eq!(state.score(), 0, "Счёт должен быть 0 в начале игры");
 }
 
 /// Тест 28: Hold фигура
@@ -471,9 +471,9 @@ fn test_game_statistics() {
 fn test_game_starts_correctly() {
     let state = GameState::new();
 
-    assert_eq!(state.get_score(), 0);
-    assert_eq!(state.get_level(), 1);
-    assert_eq!(state.get_lines_cleared(), 0);
+    assert_eq!(state.score(), 0);
+    assert_eq!(state.level(), 1);
+    assert_eq!(state.lines_cleared(), 0);
 }
 
 /// Тест 32: Игра имеет фигуру
@@ -751,7 +751,7 @@ fn test_overall_system_performance() {
     }
 
     // Сохраняем рекорд
-    SaveData::save_value(state.get_score());
+    SaveData::save_value(state.score());
 
     let duration = start.elapsed();
     assert!(

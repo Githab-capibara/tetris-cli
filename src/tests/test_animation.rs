@@ -118,19 +118,6 @@ fn test_animation_hard_drop_all_shapes() {
 }
 
 /// Тест 7: Проверка что Hard Drop не вызывает паники
-#[test]
-fn test_animation_hard_drop_no_panic() {
-    let mut state = GameState::new();
-
-    // Симулируем Hard Drop
-    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Не должно вызывать панику
-    // Тест компиляции - проверяет что код работает
-}
-
 /// Тест 8: Проверка что Hard Drop работает в разных позициях X
 #[test]
 fn test_animation_hard_drop_different_x_positions() {
@@ -176,22 +163,6 @@ fn test_animation_hard_drop_marathon_mode() {
 // ============================================================================
 // ГРУППА ТЕСТОВ 11-20: Анимация очистки линий
 // ============================================================================
-
-/// Тест 11: Проверка что `animating_rows` пуст по умолчанию
-#[test]
-fn test_animation_animating_rows_empty() {
-    let _state = GameState::new();
-    // animating_rows - приватное поле
-    // Тест компиляции - проверяет что GameState создан корректно
-}
-
-/// Тест 12: Проверка что очистка линий работает
-#[test]
-fn test_animation_line_clear_works() {
-    let _state = GameState::new();
-    // check_rows - приватный метод
-    // Тест компиляции - проверяет что GameState создан корректно
-}
 
 /// Тест 13: Проверка что анимация не вызывает паники
 #[test]
@@ -349,49 +320,19 @@ fn test_animation_after_rotation() {
 // ГРУППА ТЕСТОВ 21-30: Анимация призрачной фигуры
 // ============================================================================
 
-/// Тест 21: Проверка что призрачная фигура имеет ту же позицию X
+/// Тест 21: Проверка что призрачная фигура является копией текущей
 #[test]
-fn test_animation_ghost_same_x() {
+fn test_animation_ghost_is_copy() {
     let state = GameState::new();
-    let ghost = *state.get_curr_shape();
+    let current = state.get_curr_shape();
+    let ghost = *current;
 
-    assert_eq!(ghost.pos.0, state.get_curr_shape().pos.0);
-}
-
-/// Тест 22: Проверка что призрачная фигура имеет ту же позицию Y
-#[test]
-fn test_animation_ghost_same_y() {
-    let state = GameState::new();
-    let ghost = *state.get_curr_shape();
-
-    assert_eq!(ghost.pos.1, state.get_curr_shape().pos.1);
-}
-
-/// Тест 23: Проверка что призрачная фигура имеет те же координаты
-#[test]
-fn test_animation_ghost_same_coords() {
-    let state = GameState::new();
-    let ghost = *state.get_curr_shape();
-
-    assert_eq!(ghost.coords, state.get_curr_shape().coords);
-}
-
-/// Тест 24: Проверка что призрачная фигура имеет тот же тип
-#[test]
-fn test_animation_ghost_same_type() {
-    let state = GameState::new();
-    let ghost = *state.get_curr_shape();
-
-    assert_eq!(ghost.shape, state.get_curr_shape().shape);
-}
-
-/// Тест 25: Проверка что призрачная фигура имеет тот же цвет
-#[test]
-fn test_animation_ghost_same_color() {
-    let state = GameState::new();
-    let ghost = *state.get_curr_shape();
-
-    assert_eq!(ghost.fg, state.get_curr_shape().fg);
+    // Призрачная фигура должна быть копией текущей фигуры
+    assert_eq!(ghost.pos.0, current.pos.0, "Позиция X должна совпадать");
+    assert_eq!(ghost.pos.1, current.pos.1, "Позиция Y должна совпадать");
+    assert_eq!(ghost.coords, current.coords, "Координаты должны совпадать");
+    assert_eq!(ghost.shape, current.shape, "Тип фигуры должен совпадать");
+    assert_eq!(ghost.fg, current.fg, "Цвет должен совпадать");
 }
 
 /// Тест 26: Проверка что `can_move_ghost_shape` работает

@@ -61,7 +61,7 @@ fn test_game_error_from_io() {
 
     match game_error {
         GameError::Io(_) => (), // Ожидаем Io вариант
-        _ => panic!("Ожидался вариант GameError::Io"),
+        _ => unreachable!("Ожидался вариант GameError::Io"),
     }
 }
 
@@ -91,9 +91,9 @@ fn test_game_state_fields_private() {
     // let _ = state.score; // Ошибка компиляции!
 
     // Вместо этого используем геттеры:
-    let _score = state.get_score();
-    let _level = state.get_level();
-    let _lines = state.get_lines_cleared();
+    let _score = state.score();
+    let _level = state.level();
+    let _lines = state.lines_cleared();
 
     // Если этот тест компилируется, значит поля инкапсулированы
 }
@@ -106,9 +106,9 @@ fn test_game_state_getters_encapsulation() {
     let state = GameState::new();
 
     // Проверяем все основные геттеры
-    assert_eq!(state.get_score(), 0);
-    assert_eq!(state.get_level(), 1);
-    assert_eq!(state.get_lines_cleared(), 0);
+    assert_eq!(state.score(), 0);
+    assert_eq!(state.level(), 1);
+    assert_eq!(state.lines_cleared(), 0);
     assert_eq!(state.get_mode_trait().name(), "Классика");
 
     // Проверяем геттеры для фигур
@@ -148,13 +148,13 @@ fn test_game_state_setters_encapsulation() {
 
     // Тестируем сеттеры
     state.set_score(1000);
-    assert_eq!(state.get_score(), 1000);
+    assert_eq!(state.score(), 1000);
 
     state.set_level(5);
-    assert_eq!(state.get_level(), 5);
+    assert_eq!(state.level(), 5);
 
     state.set_lines_cleared(50);
-    assert_eq!(state.get_lines_cleared(), 50);
+    assert_eq!(state.lines_cleared(), 50);
 }
 
 // ============================================================================
@@ -206,19 +206,19 @@ fn test_game_board_access_methods() {
     assert_eq!(blocks_mut[0][0], 1);
 
     // Тестируем get_score / add_score
-    assert_eq!(state.get_score(), 0);
+    assert_eq!(state.score(), 0);
     state.add_score(100);
-    assert_eq!(state.get_score(), 100);
+    assert_eq!(state.score(), 100);
 
     // Тестируем get_level / set_level
-    assert_eq!(state.get_level(), 1);
+    assert_eq!(state.level(), 1);
     state.set_level(3);
-    assert_eq!(state.get_level(), 3);
+    assert_eq!(state.level(), 3);
 
     // Тестируем get_lines_cleared / set_lines_cleared
-    assert_eq!(state.get_lines_cleared(), 0);
+    assert_eq!(state.lines_cleared(), 0);
     state.set_lines_cleared(10);
-    assert_eq!(state.get_lines_cleared(), 10);
+    assert_eq!(state.lines_cleared(), 10);
 
     // Тестируем get_fall_speed / set_fall_speed
     let initial_spd = state.get_fall_speed();
@@ -246,7 +246,7 @@ fn test_game_board_access_reduces_coupling() {
     let score = process_board(&mut state);
 
     assert_eq!(score, 50, "Функция должна работать через трейт");
-    assert_eq!(state.get_score(), 50);
+    assert_eq!(state.score(), 50);
 }
 
 // ============================================================================
@@ -263,11 +263,11 @@ fn test_architecture_improvements_backward_compatibility() {
 
     // Используем старый API (геттеры/сеттеры)
     state.set_score(100);
-    assert_eq!(state.get_score(), 100);
+    assert_eq!(state.score(), 100);
 
     // Используем новый API (GameBoardAccess)
     state.add_score(50);
-    assert_eq!(state.get_score(), 150);
+    assert_eq!(state.score(), 150);
 
     // Оба API работают корректно
 }
@@ -297,9 +297,9 @@ fn test_encapsulation_doesnt_break_tests() {
     state.set_level(3);
     state.set_lines_cleared(30);
 
-    assert_eq!(state.get_score(), 500);
-    assert_eq!(state.get_level(), 3);
-    assert_eq!(state.get_lines_cleared(), 30);
+    assert_eq!(state.score(), 500);
+    assert_eq!(state.level(), 3);
+    assert_eq!(state.lines_cleared(), 30);
 
     // Тесты работают через публичный API
 }

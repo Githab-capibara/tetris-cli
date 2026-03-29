@@ -81,7 +81,7 @@ fn test_edge_cases_max_combo_zero() {
 #[test]
 fn test_edge_cases_total_lines_zero() {
     let state = GameState::new();
-    assert_eq!(state.get_lines_cleared(), 0);
+    assert_eq!(state.lines_cleared(), 0);
 }
 
 // ============================================================================

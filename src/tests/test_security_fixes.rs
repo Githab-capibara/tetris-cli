@@ -110,14 +110,14 @@ fn test_score_saturating_add() {
     let mut state = GameState::new();
 
     // Проверяем что счёт начинается с 0
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 
     // Добавляем очки обычным способом
     state.add_score_no_check(100);
-    assert!(state.get_score() >= 100, "Счёт должен увеличиться на 100");
+    assert!(state.score() >= 100, "Счёт должен увеличиться на 100");
 
     // Проверяем что тип счёта u128 (очень большой диапазон)
-    let score: u128 = state.get_score();
+    let score: u128 = state.score();
     assert!(score >= 100, "Счёт должен быть типа u128");
 
     // Тест на saturating_add: проверяем что при добавлении к максимальному
@@ -127,7 +127,7 @@ fn test_score_saturating_add() {
     state.add_score_no_check(max_test_value);
 
     // Проверяем что счёт корректно увеличился
-    let new_score = state.get_score();
+    let new_score = state.score();
     assert!(
         new_score >= max_test_value,
         "Счёт должен корректно увеличиться"
@@ -135,7 +135,7 @@ fn test_score_saturating_add() {
 
     // Добавляем ещё раз - должно сработать saturating_add
     state.add_score_no_check(max_test_value);
-    let _final_score = state.get_score();
+    let _final_score = state.score();
 
     // Проверяем что не произошло переполнения (паники)
     // saturating_add гарантирует что значение не превысит u128::MAX
@@ -336,7 +336,7 @@ fn test_all_security_fixes_integration() {
     use crate::game::GameState;
     let mut state = GameState::new();
     state.add_score_no_check(100);
-    assert!(state.get_score() >= 100);
+    assert!(state.score() >= 100);
 
     // Тест 4: Highscore allocation optimization
     use crate::highscore::leaderboard::LeaderboardEntry;

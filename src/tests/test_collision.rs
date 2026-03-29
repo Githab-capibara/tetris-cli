@@ -239,102 +239,37 @@ fn test_collision_not_through_floor() {
     );
 }
 
-/// Тест 19: Проверка столкновения с полом для T-фигуры
+/// Тест 19: Проверка столкновения с полом для всех типов фигур
 #[test]
-fn test_collision_t_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::T;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::T as usize];
+fn test_collision_all_shapes_floor() {
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::O,
+        ShapeType::I,
+    ];
+
+    for &shape in &shapes {
+        let mut state = GameState::new();
+        state.get_curr_shape_mut().shape = shape;
+        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
+
+        // Опускаем до упора
+        while state.can_move_curr_shape_direction(Direction::Down) {
+            state.get_curr_shape_mut().pos.1 += 1.0;
+        }
+
+        assert!(
+            !state.can_move_curr_shape_direction(Direction::Down),
+            "Движение вниз должно быть заблокировано на полу для фигуры {:?}",
+            shape
+        );
     }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 20: Проверка столкновения с полом для L-фигуры
-#[test]
-fn test_collision_l_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::L;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::L as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 21: Проверка столкновения с полом для J-фигуры
-#[test]
-fn test_collision_j_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::J;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::J as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 22: Проверка столкновения с полом для I-фигуры
-#[test]
-fn test_collision_i_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::I;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 23: Проверка столкновения с полом для O-фигуры
-#[test]
-fn test_collision_o_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::O;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 24: Проверка столкновения с полом для S-фигуры
-#[test]
-fn test_collision_s_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::S;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::S as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 25: Проверка столкновения с полом для Z-фигуры
-#[test]
-fn test_collision_z_floor() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::Z;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::Z as usize];
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
 // ============================================================================

@@ -29,7 +29,7 @@ fn test_track_caller_error_handling() {
     let state = GameState::new();
 
     // Проверяем, что методы работают корректно
-    let score = state.get_score();
+    let score = state.score();
     assert_eq!(score, 0, "Счёт должен быть 0");
 
     // Если дошли сюда - ошибки обработаны корректно
@@ -59,8 +59,8 @@ fn test_track_caller_debug_assert() {
     let state = GameState::new();
 
     // debug_assert должен работать в тестах
-    debug_assert!(state.get_score() == 0, "Счёт должен быть 0");
-    debug_assert!(state.get_level() == 1, "Уровень должен быть 1");
+    debug_assert!(state.score() == 0, "Счёт должен быть 0");
+    debug_assert!(state.level() == 1, "Уровень должен быть 1");
 }
 
 /// Тест 5: Проверка expect с track_caller
@@ -121,8 +121,8 @@ fn test_track_caller_performance() {
 
     for _ in 0..iterations {
         let state = GameState::new();
-        let _score = state.get_score();
-        let _level = state.get_level();
+        let _score = state.score();
+        let _level = state.level();
     }
 
     let elapsed = start.elapsed();

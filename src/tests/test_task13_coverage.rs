@@ -308,15 +308,15 @@ fn test_game_board_access_score() {
     let mut state = GameState::new();
 
     // Начальный счёт
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 
     // Установка счёта
     state.add_score(500);
-    assert_eq!(state.get_score(), 500, "Счёт должен быть 500");
+    assert_eq!(state.score(), 500, "Счёт должен быть 500");
 
     // Добавление очков
     state.add_score(250);
-    assert_eq!(state.get_score(), 750, "Счёт должен быть 750");
+    assert_eq!(state.score(), 750, "Счёт должен быть 750");
 }
 
 /// Тест 15: Проверка получения и установки уровня
@@ -325,11 +325,11 @@ fn test_game_board_access_level() {
     let mut state = GameState::new();
 
     // Начальный уровень
-    assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
 
     // Установка уровня
     state.set_level(5);
-    assert_eq!(state.get_level(), 5, "Уровень должен быть 5");
+    assert_eq!(state.level(), 5, "Уровень должен быть 5");
 }
 
 /// Тест 16: Проверка получения и установки линий
@@ -339,7 +339,7 @@ fn test_game_board_access_lines_cleared() {
 
     // Начальное количество линий
     assert_eq!(
-        state.get_lines_cleared(),
+        state.lines_cleared(),
         0,
         "Начальное количество линий должно быть 0"
     );
@@ -347,7 +347,7 @@ fn test_game_board_access_lines_cleared() {
     // Установка количества линий
     state.set_lines_cleared(15);
     assert_eq!(
-        state.get_lines_cleared(),
+        state.lines_cleared(),
         15,
         "Количество линий должно быть 15"
     );
@@ -507,7 +507,7 @@ fn test_toctou_marker_game_state_single_threaded() {
     let state = GameState::new();
 
     // Проверяем что GameState существует и работает
-    assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 
     // Этот тест документирует намерение: GameState должен использоваться
     // только в одном потоке для предотвращения TOCTOU уязвимостей
@@ -539,7 +539,7 @@ fn test_toctou_marker_closure_compilation() {
     // Проверяем что можно создать замыкание которое принимает GameState
     let _closure = |state: &GameState| {
         // Используем state чтобы избежать предупреждения
-        let _ = state.get_score();
+        let _ = state.score();
     };
 
     let state = GameState::new();
@@ -567,7 +567,7 @@ fn test_toctou_marker_no_explicit_send() {
     let state = GameState::new();
 
     // Проверяем что GameState работает корректно
-    assert_eq!(state.get_score(), 0);
+    assert_eq!(state.score(), 0);
 }
 
 /// Тест 30: Проверка что GameState не имеет явной реализации Sync
@@ -579,5 +579,5 @@ fn test_toctou_marker_no_explicit_sync() {
     let state = GameState::new();
 
     // Проверяем что GameState работает корректно
-    assert_eq!(state.get_score(), 0);
+    assert_eq!(state.score(), 0);
 }

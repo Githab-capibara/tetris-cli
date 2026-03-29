@@ -431,43 +431,4 @@ mod tests {
             "Неиспользуемая зависимость fs2 должна быть удалена"
         );
     }
-
-    // ========================================================================
-    // КОМПЛЕКСНЫЕ ТЕСТЫ АРХИТЕКТУРЫ
-    // ========================================================================
-
-    #[test]
-    fn test_architecture_integrity_comprehensive() {
-        // Комплексный тест целостности архитектуры
-
-        // 1. Проверяем отсутствие циклических зависимостей
-        test_no_circular_dependencies_game_constants();
-        test_no_circular_dependencies_io_game();
-        test_constants_module_independence();
-
-        // 2. Проверяем соблюдение границ модулей
-        test_game_logic_does_not_import_render();
-        test_game_scoring_does_not_import_render();
-        test_validation_module_independence();
-
-        // 3. Проверяем инкапсуляцию
-        test_game_state_has_getters();
-        test_game_state_has_setters_with_validation();
-        test_game_state_uses_saturating_arithmetic();
-
-        // 4. Проверяем отсутствие дублирования
-        test_no_duplicate_validation_logic();
-        test_crypto_module_reuse();
-
-        // 5. Проверяем SOLID принципы
-        test_single_responsibility_controls_config();
-        test_dependency_inversion_game_cycle();
-        test_interface_segregation_game_access();
-
-        // 6. Проверяем именование
-        test_module_naming_consistency();
-        test_unused_dependencies_removed();
-
-        assert!(true, "Все архитектурные тесты прошли успешно");
-    }
 }

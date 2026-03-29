@@ -7,39 +7,39 @@ use crate::game::GameState;
 use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::highscore::SaveData;
 
-/// Тест 1: Проверка #[must_use] на get_score()
+/// Тест 1: Проверка #[must_use] на score()
 ///
-/// Проверяем, что get_score() имеет #[must_use].
+/// Проверяем, что score() имеет #[must_use].
 #[test]
 fn test_must_use_get_score() {
     let state = GameState::new();
 
     // Используем результат - не должно быть предупреждений
-    let score = state.get_score();
+    let score = state.score();
     assert_eq!(score, 0, "Начальный счёт должен быть 0");
 }
 
-/// Тест 2: Проверка #[must_use] на get_level()
+/// Тест 2: Проверка #[must_use] на level()
 ///
-/// Проверяем, что get_level() имеет #[must_use].
+/// Проверяем, что level() имеет #[must_use].
 #[test]
 fn test_must_use_get_level() {
     let state = GameState::new();
 
     // Используем результат
-    let level = state.get_level();
+    let level = state.level();
     assert_eq!(level, 1, "Начальный уровень должен быть 1");
 }
 
-/// Тест 3: Проверка #[must_use] на get_lines_cleared()
+/// Тест 3: Проверка #[must_use] на lines_cleared()
 ///
-/// Проверяем, что get_lines_cleared() имеет #[must_use].
+/// Проверяем, что lines_cleared() имеет #[must_use].
 #[test]
 fn test_must_use_get_lines_cleared() {
     let state = GameState::new();
 
     // Используем результат
-    let lines = state.get_lines_cleared();
+    let lines = state.lines_cleared();
     assert_eq!(lines, 0, "Начальное количество линий должно быть 0");
 }
 
@@ -136,9 +136,9 @@ fn test_must_use_compilation() {
     let state = GameState::new();
 
     // Все результаты используются - не должно быть предупреждений
-    let _score = state.get_score();
-    let _level = state.get_level();
-    let _lines = state.get_lines_cleared();
+    let _score = state.score();
+    let _level = state.level();
+    let _lines = state.lines_cleared();
     let _mode = state.get_mode_trait().name();
 }
 
