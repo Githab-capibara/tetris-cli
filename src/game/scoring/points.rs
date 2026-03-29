@@ -638,7 +638,7 @@ mod points_tests {
         assert!(
             matches!(
                 result,
-                None | Some(UpdateEndState::Won) | Some(UpdateEndState::Lost)
+                None | Some(UpdateEndState::Won | UpdateEndState::Lost)
             ),
             "handle_landing должен вернуть допустимый результат"
         );
@@ -681,6 +681,6 @@ mod points_tests {
         });
 
         // Должно быть true если фигура выше поля
-        assert!(game_over || !game_over); // Тест на отсутствие паники
+        assert!(game_over, "Фигура выше поля должна вызывать game_over");
     }
 }

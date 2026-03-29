@@ -789,7 +789,7 @@ mod tests {
 
         // Копирование должно быть быстрым (маленький размер)
         let copied = tetromino; // Copy семантика
-        let cloned = tetromino.clone(); // Clone семантика
+        let cloned = tetromino; // Copy семантика (clone избыточен для Copy типа)
 
         assert_eq!(copied.shape, cloned.shape);
         assert_eq!(copied.pos, cloned.pos);

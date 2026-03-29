@@ -360,18 +360,4 @@ mod collision_tests {
             "Движение вниз при коллизии должно быть невозможно"
         );
     }
-
-    /// Тест M22: проверка что .any() возвращает false при первой коллизии
-    #[test]
-    fn test_fix_m22_any_returns_false_on_first_collision() {
-        let mut state = GameState::new();
-
-        // Устанавливаем фигуру у правой стены
-        state.get_curr_shape_mut().pos.0 = 8.0;
-
-        // Движение вправо должно проверить коллизию и вернуть false
-        let can_move = can_move_curr_shape_direction(&state, Direction::Right);
-        // Результат зависит от фигуры, но функция должна корректно обработать
-        assert!(can_move || !can_move); // Тест на отсутствие паники
-    }
 }

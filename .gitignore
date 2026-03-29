@@ -22,3 +22,6 @@ htmlcov/
 *.so
 *.dylib
 *.rs.bk
+
+# Python virtual environment
+.venv/

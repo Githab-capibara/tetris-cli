@@ -54,8 +54,7 @@ fn contains_all_patterns(content: &str, patterns: &[&str]) -> bool {
 /// - TODO должен упоминать разделение на компоненты
 #[test]
 fn test_game_state_architecture_todo_comments() {
-    let content = read_src_file("game/state.rs")
-        .expect("Не удалось прочитать файл state.rs");
+    let content = read_src_file("game/state.rs").expect("Не удалось прочитать файл state.rs");
 
     // Проверяем наличие TODO комментариев о разделении
     let has_todo = contains_pattern(&content, "TODO")
@@ -76,8 +75,7 @@ fn test_game_state_architecture_todo_comments() {
 
     // Дополнительная проверка: файл должен упоминать разделение
     assert!(
-        contains_pattern(&content, "GameStats")
-            && contains_pattern(&content, "RenderCache"),
+        contains_pattern(&content, "GameStats") && contains_pattern(&content, "RenderCache"),
         "state.rs должен упоминать GameStats и RenderCache как отдельные компоненты"
     );
 }
@@ -93,8 +91,7 @@ fn test_game_state_architecture_todo_comments() {
 /// - Файл view.rs должен содержать метод draw_shape
 #[test]
 fn test_game_view_has_draw_methods() {
-    let content = read_src_file("game/view.rs")
-        .expect("Не удалось прочитать файл view.rs");
+    let content = read_src_file("game/view.rs").expect("Не удалось прочитать файл view.rs");
 
     // Проверяем наличие метода draw_field
     assert!(
@@ -125,8 +122,7 @@ fn test_game_view_has_draw_methods() {
 /// - Файл render.rs должен вызывать view.draw_shape()
 #[test]
 fn test_render_uses_game_view_methods() {
-    let content = read_src_file("game/render.rs")
-        .expect("Не удалось прочитать файл render.rs");
+    let content = read_src_file("game/render.rs").expect("Не удалось прочитать файл render.rs");
 
     // Проверяем что render.rs использует методы GameView
     // Методы могут вызываться как view.draw_field() или через GameView
@@ -166,8 +162,7 @@ fn test_render_uses_game_view_methods() {
 /// - cycle.rs должен содержать трейт GameRenderer с документацией
 #[test]
 fn test_cycle_traits_documentation() {
-    let content = read_src_file("game/cycle.rs")
-        .expect("Не удалось прочитать файл cycle.rs");
+    let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
 
     // Проверяем наличие трейта FPSControl
     assert!(
@@ -226,8 +221,8 @@ fn test_cycle_traits_documentation() {
 /// - Не должно быть прямого использования &GameState в проверках коллизий
 #[test]
 fn test_collision_uses_board_readonly_trait() {
-    let content = read_src_file("game/logic/collision.rs")
-        .expect("Не удалось прочитать файл collision.rs");
+    let content =
+        read_src_file("game/logic/collision.rs").expect("Не удалось прочитать файл collision.rs");
 
     // Проверяем импорт трейта BoardReadonly
     assert!(
@@ -267,8 +262,7 @@ fn test_collision_uses_board_readonly_trait() {
 /// - Константы должны быть организованы по категориям
 #[test]
 fn test_constants_grouped_by_category() {
-    let content = read_src_file("constants.rs")
-        .expect("Не удалось прочитать файл constants.rs");
+    let content = read_src_file("constants.rs").expect("Не удалось прочитать файл constants.rs");
 
     // Проверяем наличие разделов с константами
     let has_ui_section = contains_pattern(&content, "UI")
@@ -321,8 +315,8 @@ fn test_constants_grouped_by_category() {
 /// - Должны быть архитектурные комментарии о причинах такого доступа
 #[test]
 fn test_scoring_module_has_architecture_comments() {
-    let content = read_src_file("game/scoring/points.rs")
-        .expect("Не удалось прочитать файл points.rs");
+    let content =
+        read_src_file("game/scoring/points.rs").expect("Не удалось прочитать файл points.rs");
 
     // Проверяем наличие pub(crate) функций
     let has_pub_crate = contains_pattern(&content, "pub(crate) fn");
@@ -362,8 +356,7 @@ fn test_scoring_module_has_architecture_comments() {
 /// - Внутренние зависимости не должны быть публичными
 #[test]
 fn test_internal_dependencies_use_pub_crate() {
-    let content = read_src_file("game/mod.rs")
-        .expect("Не удалось прочитать файл game/mod.rs");
+    let content = read_src_file("game/mod.rs").expect("Не удалось прочитать файл game/mod.rs");
 
     // Проверяем что constants импортируется как pub(crate)
     let uses_pub_crate_constants = contains_pattern(&content, "pub(crate) use crate::constants")
@@ -437,8 +430,7 @@ fn test_thread_safe_leaderboard_entry_documentation() {
 /// - Должны быть комментарии о YAGNI принципе
 #[test]
 fn test_cycle_traits_have_todo_comments() {
-    let content = read_src_file("game/cycle.rs")
-        .expect("Не удалось прочитать файл cycle.rs");
+    let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
 
     // Проверяем наличие TODO комментариев
     let has_todo = contains_pattern(&content, "TODO")
@@ -492,10 +484,7 @@ fn test_all_architecture_improvements_applied() {
 
     for file_path in &required_files {
         let full_path = Path::new(&src_path).join(file_path);
-        assert!(
-            full_path.exists(),
-            "Файл {file_path} должен существовать"
-        );
+        assert!(full_path.exists(), "Файл {file_path} должен существовать");
     }
 
     // Проверяем что все файлы содержат архитектурные комментарии
@@ -542,7 +531,11 @@ fn test_no_regressions_after_improvements() {
     // Проверяем базовую функциональность
     assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
     assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(state.lines_cleared(), 0, "Начальное количество линий должно быть 0");
+    assert_eq!(
+        state.lines_cleared(),
+        0,
+        "Начальное количество линий должно быть 0"
+    );
 
     // Проверяем что методы отрисовки доступны
     let _view = tetris_cli::game::GameView::from_game_state(&state);

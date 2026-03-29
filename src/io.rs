@@ -32,7 +32,7 @@ pub use crate::constants::{
 // ============================================================================
 // Исправление L1: константы клавиш перемещены в crate::constants.rs
 // Используйте crate::constants::KEY_BACKSPACE вместо локальных констант.
-pub use crate::constants::{KEY_BACKSPACE};
+pub use crate::constants::KEY_BACKSPACE;
 
 /// Ошибка ввода/вывода терминала.
 #[derive(Debug)]
@@ -640,14 +640,13 @@ impl KeyReader {
     ///
     /// let mut reader = KeyReader::new();
     /// // ... использование reader
-    /// reader.cleanup(); // Явный сброс терминала
+    /// KeyReader::cleanup(); // Явный сброс терминала
     /// ```
     ///
     /// ## Исправление #13
     /// Метод предназначен для будущего использования в API.
     #[allow(dead_code)]
-    #[allow(clippy::unused_self)]
-    pub fn cleanup(&mut self) {
+    pub fn cleanup() {
         let mut stdout = std::io::stdout();
 
         // Показываем курсор
@@ -750,7 +749,7 @@ impl MockCanvas {
     }
 
     /// Проверить что канвас является stub (всегда true для MockCanvas).
-    pub fn is_stub(&self) -> bool {
+    pub fn is_stub() -> bool {
         true
     }
 
@@ -794,6 +793,7 @@ impl MockCanvas {
     }
 
     /// Сбросить терминал (no-op для MockCanvas).
+    #[allow(clippy::unused_self)]
     pub fn reset(&mut self) {
         // No-op для тестов
     }

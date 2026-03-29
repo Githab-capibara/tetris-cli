@@ -33,11 +33,7 @@ fn test_classic_mode_creation() {
 fn test_classic_mode_initial_score() {
     let state = GameState::new();
 
-    assert_eq!(
-        state.score(),
-        0,
-        "Начальный счёт в Classic должен быть 0"
-    );
+    assert_eq!(state.score(), 0, "Начальный счёт в Classic должен быть 0");
 }
 
 /// Тест 3: Classic режим - начальный уровень 1
@@ -170,11 +166,7 @@ fn test_sprint_mode_goal() {
 fn test_sprint_mode_initial_score() {
     let state = GameState::new_sprint();
 
-    assert_eq!(
-        state.score(),
-        0,
-        "Начальный счёт в Sprint должен быть 0"
-    );
+    assert_eq!(state.score(), 0, "Начальный счёт в Sprint должен быть 0");
 }
 
 /// Тест 14: Sprint режим - начальный уровень 1
@@ -182,11 +174,7 @@ fn test_sprint_mode_initial_score() {
 fn test_sprint_mode_initial_level() {
     let state = GameState::new_sprint();
 
-    assert_eq!(
-        state.level(),
-        1,
-        "Начальный уровень в Sprint должен быть 1"
-    );
+    assert_eq!(state.level(), 1, "Начальный уровень в Sprint должен быть 1");
 }
 
 /// Тест 15: Sprint режим - таймер
@@ -288,11 +276,7 @@ fn test_marathon_mode_goal() {
 fn test_marathon_mode_initial_score() {
     let state = GameState::new_marathon();
 
-    assert_eq!(
-        state.score(),
-        0,
-        "Начальный счёт в Marathon должен быть 0"
-    );
+    assert_eq!(state.score(), 0, "Начальный счёт в Marathon должен быть 0");
 }
 
 /// Тест 24: Marathon режим - начальный уровень 1
