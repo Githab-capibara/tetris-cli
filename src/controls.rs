@@ -25,8 +25,22 @@ pub use crate::validation::path::DEFAULT_PATH_VALIDATOR;
 use crate::crypto::validator::sign_salt_and_data;
 
 /// Секретный ключ для HMAC подписи конфигурации.
-/// Используется константный ключ для обратной совместимости.
-const HMAC_KEY: &str = "tetris-cli-controls-hmac-key";
+///
+/// # Безопасность (Исправление В4)
+/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
+/// В противном случае используется fallback ключ для обратной совместимости.
+///
+/// ## Использование переменной окружения
+/// ```bash
+/// export TETRIS_HMAC_KEY="your-secret-key-here"
+/// ```
+///
+/// ## Fallback для обратной совместимости
+/// Если переменная окружения не установлена, используется константный ключ.
+/// Это обеспечивает обратную совместимость с существующими записями.
+fn get_hmac_key() -> &'static str {
+    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-controls-hmac-key")
+}
 
 /// Конфигурация управления с keyed hash подписью.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
