@@ -97,6 +97,10 @@ impl PathValidator {
     ///
     /// # Возвращает
     /// Новый экземпляр `PathValidator`
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Валидатор должен быть использован для проверки путей"]
     #[allow(dead_code)] // Может быть использовано для кастомных валидаторов
     pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
         Self {
@@ -127,6 +131,10 @@ impl PathValidator {
     ///
     /// # Исправление #18
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Результат валидации пути должен быть обработан"]
     #[track_caller]
     pub fn validate(&self, path: &Path) -> Result<(), PathError> {
         self.validate_length(path)?;
@@ -162,6 +170,10 @@ impl PathValidator {
     ///
     /// # Исправление H7 (HIGH)
     /// Кэширует результат canonicalize для предотвращения повторных вызовов.
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Результат валидации пути должен быть обработан"]
     #[track_caller]
     pub fn validate_all(
         &self,
@@ -231,6 +243,10 @@ impl PathValidator {
     ///
     /// # Исправление #18
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Результат проверки длины пути должен быть обработан"]
     #[track_caller]
     pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
@@ -264,6 +280,10 @@ impl PathValidator {
     ///
     /// # Исправление #18
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Результат проверки символов пути должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
@@ -300,6 +320,10 @@ impl PathValidator {
     ///
     /// # Исправление #18
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    ///
+    /// # Исправление M4 (MEDIUM)
+    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    #[must_use = "Результат проверки symlink должен быть обработан"]
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[track_caller]

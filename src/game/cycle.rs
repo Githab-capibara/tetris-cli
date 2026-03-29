@@ -8,7 +8,7 @@
 
 use std::{thread::sleep, time::Duration};
 
-use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS};
+use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE};
 use super::state::{GameState, UpdateEndState};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io::{Canvas, KeyReader};
@@ -24,6 +24,7 @@ use termion::color::Reset;
 ///
 /// Отвечает за поддержание стабильной частоты кадров.
 /// TODO (#архитектура): Реализовать в отдельном модуле `fps_controller.rs`
+/// TODO (#L2): Удалить или использовать в будущей рефакторизации
 #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
 pub trait FPSControl {
     /// Поддержать стабильный FPS.
@@ -38,6 +39,7 @@ pub trait FPSControl {
 ///
 /// Отвечает за обработку ввода пользователя.
 /// TODO (#архитектура): Реализовать в отдельном модуле `input_handler.rs`
+/// TODO (#L2): Удалить или использовать в будущей рефакторизации
 #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
 pub trait InputHandler {
     /// Тип результата обработки ввода.
@@ -58,6 +60,7 @@ pub trait InputHandler {
 ///
 /// Отвечает за обновление игрового состояния.
 /// TODO (#архитектура): Реализовать в отдельном модуле `game_updater.rs`
+/// TODO (#L2): Удалить или использовать в будущей рефакторизации
 #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
 pub trait GameUpdater {
     /// Обновить состояние игры.
@@ -72,6 +75,7 @@ pub trait GameUpdater {
 ///
 /// Отвечает за отрисовку текущего кадра.
 /// TODO (#архитектура): Реализовать в отдельном модуле `game_renderer.rs`
+/// TODO (#L2): Удалить или использовать в будущей рефакторизации
 #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
 pub trait GameRenderer {
     /// Отрисовать кадр игры.
@@ -89,15 +93,20 @@ pub trait GameRenderer {
 // TODO (#архитектура): Переместить эти реализации в отдельные модули
 
 /// Реализация [`FPSControl`] по умолчанию.
+/// TODO (#L2): Удалить или использовать в будущей рефакторизации
 #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
 pub struct DefaultFPSControl;
 
 impl FPSControl for DefaultFPSControl {
     fn maintain_fps(&self, frame_start: std::time::Instant, target_fps: u64) {
         let interval_ms = 1_000 / target_fps;
-        // Исправление #1 (CRITICAL): безопасная конвертация u128 -> u64
-        // Используем min() для предотвращения переполнения при cast
-        let elapsed_ms = std::cmp::min(frame_start.elapsed().as_millis(), u64::MAX as u128) as u64;
+        // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
+        // Используем try_into() с unwrap_or(u64::MAX) для предотвращения переполнения
+        let elapsed_ms: u64 = frame_start
+            .elapsed()
+            .as_millis()
+            .try_into()
+            .unwrap_or(u64::MAX);
         if elapsed_ms < interval_ms {
             sleep(Duration::from_millis(
                 interval_ms.saturating_sub(elapsed_ms),
@@ -113,6 +122,7 @@ pub enum InputResult {
     /// Выход в меню.
     Quit,
     /// Пауза (ожидание снятия).
+    /// TODO (#L2): Удалить или использовать в будущей рефакторизации
     #[allow(dead_code)]
     Pause,
     /// Игра окончена.
@@ -143,7 +153,7 @@ pub fn handle_input(state: &mut GameState, inp: &mut KeyReader, delta_time_ms: u
                 let key = inp.get_key();
                 match key {
                     Some(b'p') => break,
-                    Some(127) => return InputResult::Quit, // Backspace
+                    Some(KEY_BACKSPACE) => return InputResult::Quit, // Backspace
                     Some(_) | None => {}
                 }
                 sleep(Duration::from_millis(1_000 / FPS));
@@ -205,10 +215,13 @@ pub fn run_game_loop(
     loop {
         // Поддержание стабильного FPS
         let now = Instant::now();
-        // Исправление #1 (CRITICAL): безопасная конвертация u128 -> u64
-        // Используем min() для предотвращения переполнения при cast
-        let delta_time_ms =
-            std::cmp::min(now.duration_since(last_time).as_millis(), u64::MAX as u128) as u64;
+        // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
+        // Используем try_into() с unwrap_or(u64::MAX) для предотвращения переполнения
+        let delta_time_ms: u64 = now
+            .duration_since(last_time)
+            .as_millis()
+            .try_into()
+            .unwrap_or(u64::MAX);
         if delta_time_ms < interval_ms {
             sleep(Duration::from_millis(
                 interval_ms.saturating_sub(delta_time_ms),

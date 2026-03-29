@@ -7,13 +7,21 @@
 //!
 //! ## Исправление #10 (menu.rs разделение)
 //! Выделено из `menu.rs` для улучшения читаемости и разделения ответственности.
+//!
+//! ## Исправление M2 (MEDIUM): Централизация констант
+//! Константа FRAME_DELAY_MS перемещена в `crate::constants.rs` для устранения дублирования.
+//! Используйте `crate::constants::FRAME_DELAY_MS` вместо локальной константы.
+//!
+//! ## Экспортируемые константы
+//! Для использования в других модулях:
+//! ```ignore
+//! use crate::constants::FRAME_DELAY_MS; // вместо menu::constants::FRAME_DELAY_MS
+//! ```
 
+// Исправление M2: переэкспорт FRAME_DELAY_MS из crate::constants
+pub use crate::constants::FRAME_DELAY_MS;
 use crate::io::DISP_HEIGHT;
 use termion::color::White;
-
-/// Задержка между кадрами для поддержания 60 FPS (в миллисекундах).
-#[allow(dead_code)]
-pub const FRAME_DELAY_MS: u64 = 16;
 
 // ============================================================================
 // КОНСТАНТЫ ПОЗИЦИЙ ЭЛЕМЕНТОВ МЕНЮ
