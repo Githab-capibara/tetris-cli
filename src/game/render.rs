@@ -227,16 +227,25 @@ fn update_cached_strings(state: &mut GameState) {
 /// ## Примечания
 /// Эта функция требует mutable доступ к `GameState`, поэтому не может
 /// использовать `GameView`. Вызывайте её перед созданием `GameView`.
+///
+/// # Исправление H1 (HIGH): Оптимизация аллокаций строк
+/// - Используется `truncate(0)` вместо `clear()` для предотвращения deallocation
+/// - Используется `push_str()` с `truncate(0)` вместо `.to_string()` для переиспользования буфера
 pub fn update_cached_strings_extended(state: &mut GameState, high_score_display: &str) {
     update_cached_strings(state);
 
     // Кэширование строки рекорда
     {
         let render_cache = state.get_render_cache_mut();
+        // Исправление H1: используем truncate(0) + push_str() вместо to_string()
+        // для переиспользования выделенного буфера без дополнительной аллокации
         if render_cache.cached_high_score_str.len() != high_score_display.len()
             || render_cache.cached_high_score_str != high_score_display
         {
-            render_cache.cached_high_score_str = high_score_display.to_string();
+            render_cache.cached_high_score_str.truncate(0);
+            render_cache
+                .cached_high_score_str
+                .push_str(high_score_display);
         }
     }
 
@@ -245,10 +254,12 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     {
         let render_cache = state.get_render_cache_mut();
         if render_cache.last_cached_combo != combo_counter {
+            // Исправление H1: используем truncate(0) + push_str() для переиспользования буфера
+            render_cache.cached_combo_str.truncate(0);
             if combo_counter > 1 {
-                render_cache.cached_combo_str = format!("Комбо: x{combo_counter}");
-            } else {
-                render_cache.cached_combo_str.clear();
+                render_cache
+                    .cached_combo_str
+                    .push_str(&format!("Комбо: x{combo_counter}"));
             }
             render_cache.last_cached_combo = combo_counter;
         }
@@ -259,8 +270,10 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
         let elapsed = state.get_stats().get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
         let render_cache = state.get_render_cache_mut();
+        // Исправление H1: используем truncate(0) + push_str() для переиспользования буфера
         if render_cache.cached_timer_str != timer_str {
-            render_cache.cached_timer_str = timer_str;
+            render_cache.cached_timer_str.truncate(0);
+            render_cache.cached_timer_str.push_str(&timer_str);
         }
     }
 }

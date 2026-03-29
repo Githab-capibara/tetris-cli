@@ -381,3 +381,30 @@ pub const SOFT_DROP_POINTS: u128 = 1;
 
 /// Очки за ячейку при Hard Drop.
 pub const HARD_DROP_POINTS: u128 = 2;
+
+// ============================================================================
+// КОНСТАНТЫ КЛАВИШ (ИСПРАВЛЕНИЕ L1)
+// ============================================================================
+// Эти константы заменяют магические числа в коде игры.
+
+/// Код клавиши Backspace для выхода.
+pub const KEY_BACKSPACE: u8 = 127;
+
+/// Код клавиши Enter (перевод строки).
+pub const KEY_ENTER: u8 = b'\n';
+
+/// Код клавиши Enter (возврат каретки).
+#[allow(dead_code)]
+pub const KEY_ENTER_CR: u8 = b'\r';
+
+/// Код клавиши Escape.
+#[allow(dead_code)]
+pub const KEY_ESCAPE: u8 = 27;
+
+/// Код клавиши Tab.
+#[allow(dead_code)]
+pub const KEY_TAB: u8 = 9;
+
+/// Код клавиши Space (пробел).
+#[allow(dead_code)]
+pub const KEY_SPACE: u8 = b' ';

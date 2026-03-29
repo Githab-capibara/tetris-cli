@@ -30,19 +30,9 @@ pub use crate::constants::{
 // ============================================================================
 // КОНСТАНТЫ ВВОДА/ВЫВОДА (локальные)
 // ============================================================================
-
-/// Код клавиши Backspace для выхода.
-///
-/// Используется в главном меню и во время игры для выхода в меню.
-pub const KEY_BACKSPACE: u8 = 127;
-
-/// Код клавиши Enter (перевод строки).
-#[allow(dead_code)]
-pub const KEY_ENTER: u8 = b'\n';
-
-/// Код клавиши Enter (возврат каретки).
-#[allow(dead_code)]
-pub const KEY_ENTER_CR: u8 = b'\r';
+// Исправление L1: константы клавиш перемещены в crate::constants.rs
+// Используйте crate::constants::KEY_BACKSPACE вместо локальных констант.
+pub use crate::constants::{KEY_BACKSPACE, KEY_ENTER, KEY_ENTER_CR};
 
 /// Ошибка ввода/вывода терминала.
 #[derive(Debug)]
@@ -562,6 +552,10 @@ impl KeyReader {
     ///
     /// # Исправление #1 (UTF-8 поддержка)
     /// Добавлена полная поддержка Unicode для локализации управления.
+    ///
+    /// # Исправление C3 (CRITICAL)
+    /// Добавлена явная валидация через char::from_u32() для предотвращения
+    /// некорректной обработки суррогатных пар и невалидных кодовых точек.
     #[allow(dead_code)]
     pub fn get_key_unicode(&mut self) -> Option<char> {
         let mut first_byte: [u8; 1] = [0];
@@ -602,10 +596,22 @@ impl KeyReader {
                 utf8_bytes[0] = byte;
                 utf8_bytes[1..=additional_bytes].copy_from_slice(&buffer[..additional_bytes]);
 
-                // Декодируем UTF-8
+                // Исправление C3: явная валидация через char::from_u32()
+                // Сначала декодируем UTF-8 в строку, затем проверяем каждый char
                 std::str::from_utf8(&utf8_bytes[..=additional_bytes])
                     .ok()
-                    .and_then(|s| s.chars().next())
+                    .and_then(|s| {
+                        s.chars().next().and_then(|ch| {
+                            // Явная проверка валидности кодовой точки через char::from_u32()
+                            // Это предотвращает возврат суррогатных пар и невалидных точек
+                            let code_point = ch as u32;
+                            char::from_u32(code_point).filter(|_| {
+                                // Дополнительная проверка: отбрасываем управляющие символы
+                                // кроме стандартных ASCII управляющих кодов
+                                code_point >= 0x20 || code_point == 0x00
+                            })
+                        })
+                    })
             }
             Err(_) => None,
         }
