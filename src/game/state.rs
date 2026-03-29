@@ -191,6 +191,17 @@ impl GameMode {
 /// - `ScoreBoard` - состояние очков (score, level, lines_cleared)
 /// - `FigureManager` - состояние фигур (curr_shape, next_shape, held_shape, bag)
 /// - `AnimationState` - состояние анимаций (animating_rows_mask, is_hard_dropping)
+///
+/// ## Архитектурные заметки
+///
+/// **TODO (#архитектура, ARCH-1):** Рассмотреть разделение на компоненты:
+/// - `GameBoard` - состояние поля (blocks, filled_lines)
+/// - `ScoreBoard` - очки (score, level, lines_cleared)
+/// - `FigureManager` - фигуры (curr_shape, next_shape, held_shape, bag)
+/// - `AnimationState` - анимации (animating_rows_mask, is_hard_dropping)
+///
+/// Текущая структура нарушает Single Responsibility Principle.
+/// Разделение запланировано на версию 24.x.x
 pub struct GameState {
     // ========================================================================
     // === СОСТОЯНИЕ ПОЛЯ (будущий GameBoard) ===

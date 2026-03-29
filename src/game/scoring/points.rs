@@ -9,6 +9,14 @@
 //! - [`state.rs`](crate::game::state): константы очков, `GameState`
 //! - [`tetromino.rs`](crate::tetromino): `Tetromino`
 //! - [`lines.rs`](super::lines): удаление линий
+//!
+//! ## Архитектурные заметки (COHESION-1)
+//!
+//! Используется прямой доступ к полям `GameState` вместо сеттеров
+//! по соображениям производительности (внутренняя логика одного модуля).
+//!
+//! **TODO (#архитектура, COHESION-1):** Рассмотреть использование сеттеров
+//! в будущей рефакторизации.
 
 use crate::game::constants::{
     LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,

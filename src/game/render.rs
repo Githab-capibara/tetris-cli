@@ -80,6 +80,11 @@ use termion::color::Reset;
 /// - Функция принимает `GameView` вместо `GameState` для уменьшения coupling
 /// - Кэшированные строки должны быть обновлены до создания `GameView`
 /// - Используйте `update_cached_strings_extended()` перед созданием `GameView`
+///
+/// ## Архитектурные заметки (ARCH-2)
+/// Основная логика отрисовки перемещена в методы `GameView`:
+/// - `view.draw_field()` - отрисовка игрового поля
+/// - `view.draw_shape()` - отрисовка текущей фигуры
 pub fn draw(view: &GameView, cnv: &mut Canvas) {
     cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
@@ -99,65 +104,14 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
         cnv.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
     }
 
-    // Отрисовка зафиксированных фигур
-    let millis = (view.elapsed_time * 1000.0) as u16;
-    let show_animation = (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP);
-
-    for y in 0..GRID_HEIGHT {
-        let is_animating = (view.animating_rows & (1 << y)) != 0;
-
-        for x in 0..GRID_WIDTH {
-            if view.blocks[y][x] != -1 {
-                if is_animating && !show_animation {
-                    continue;
-                }
-
-                cnv.draw_strs(
-                    &[SHAPE_STR],
-                    (
-                        (x * SHAPE_WIDTH + 2) as u16,
-                        (y + SHAPE_DRAW_OFFSET as usize) as u16,
-                    ),
-                    SHAPE_COLORS[view.blocks[y][x] as usize],
-                    &Reset,
-                );
-            }
-        }
-    }
+    // Отрисовка игрового поля (ARCH-2: используется метод GameView)
+    view.draw_field(cnv);
 
     // Отрисовка призрачной фигуры
     draw_ghost_shape(view, cnv);
 
-    // Отрисовка текущей падающей фигуры с анимацией Hard Drop
-    let shape_display_char = if view.is_hard_dropping {
-        if (millis / HARD_DROP_ANIM_INTERVAL_MS).is_multiple_of(ANIMATION_FRAME_SKIP) {
-            SHAPE_STR
-        } else {
-            "░░"
-        }
-    } else {
-        SHAPE_STR
-    };
-
-    let (shape_x, shape_y) = view.curr_shape.pos;
-    let shape_block_x = shape_x as i16;
-    let shape_block_y = shape_y as i16;
-    let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
-
-    for coord in view.curr_shape.coords {
-        let (coord_x, coord_y) = coord;
-        let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X;
-        let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
-
-        if x >= 0 {
-            cnv.draw_strs(
-                &[shape_display_char],
-                (x as u16, y as u16),
-                SHAPE_COLORS[view.curr_shape.fg],
-                &Reset,
-            );
-        }
-    }
+    // Отрисовка текущей фигуры (ARCH-2: используется метод GameView)
+    view.draw_shape(cnv);
 
     // Отрисовка следующей фигуры
     draw_next_shape(view, cnv);

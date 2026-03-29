@@ -337,34 +337,41 @@ impl<'a> GameView<'a> {
     // Эти методы предоставляют готовую отрисовку через Renderer,
     // уменьшая связанность между render.rs и GameView.
 
-    /// Отрисовать игровое поле.
+    /// Отрисовать игровое поле на canvas.
+    ///
+    /// ## Архитектурные заметки
+    /// Этот метод перемещён из `render.rs` для уменьшения Feature Envy.
     ///
     /// # Аргументы
-    /// * `renderer` - объект для отрисовки
+    /// * `canvas` - холст для отрисовки
+    /// * `blocks` - сетка игрового поля
     ///
     /// # Пример
     /// ```ignore
     /// let view = GameView::from_game_state(&state);
-    /// view.draw_field(&mut canvas);
+    /// view.draw_field(&mut canvas, view.blocks);
     /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
-    pub fn draw_field<R>(&self, renderer: &mut R)
-    where
-        R: crate::io_traits::Renderer,
-    {
-        use crate::game::constants::{BORDER, BORDER_COLOR};
+    pub fn draw_field(&self, canvas: &mut crate::io::Canvas) {
+        use crate::io::{SHAPE_STR, SHAPE_WIDTH};
+        use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
-        // Отрисовка границ
-        renderer.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
-
-        // Отрисовка блоков поля
         for y in 0..GRID_HEIGHT {
+            let is_animating = (self.animating_rows & (1 << y)) != 0;
             for x in 0..GRID_WIDTH {
-                let block = self.get_block(x, y);
-                if block >= 0 {
-                    // Отрисовка блока с цветом
-                    // Для этого нужен доступ к таблице цветов
+                if self.blocks[y][x] != -1 {
+                    let color_idx = self.blocks[y][x] as usize;
+                    if color_idx < SHAPE_COLORS.len() {
+                        canvas.draw_strs(
+                            &[SHAPE_STR],
+                            (
+                                (x * SHAPE_WIDTH + 2) as u16,
+                                (y + 5) as u16, // SHAPE_DRAW_OFFSET = 5
+                            ),
+                            SHAPE_COLORS[color_idx],
+                            &Reset,
+                        );
+                    }
                 }
             }
         }
@@ -372,21 +379,41 @@ impl<'a> GameView<'a> {
 
     /// Отрисовать текущую фигуру.
     ///
+    /// ## Архитектурные заметки
+    /// Этот метод перемещён из `render.rs` для уменьшения Feature Envy.
+    ///
     /// # Аргументы
-    /// * `renderer` - объект для отрисовки
+    /// * `canvas` - холст для отрисовки
     ///
     /// # Пример
     /// ```ignore
     /// let view = GameView::from_game_state(&state);
     /// view.draw_shape(&mut canvas);
     /// ```
-    #[allow(dead_code, clippy::unused_self)]
-    pub fn draw_shape<R>(&self, _renderer: &mut R)
-    where
-        R: crate::io_traits::Renderer,
-    {
-        // Отрисовка текущей фигуры
-        // Требуется доступ к таблице цветов и координатам фигуры
+    pub fn draw_shape(&self, canvas: &mut crate::io::Canvas) {
+        use crate::io::{SHAPE_STR, SHAPE_WIDTH};
+        use crate::tetromino::SHAPE_COLORS;
+        use termion::color::Reset;
+
+        let (shape_x, shape_y) = self.curr_shape.pos;
+        let shape_block_x = shape_x as i16;
+        let shape_block_y = shape_y as i16;
+        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
+
+        for coord in self.curr_shape.coords {
+            let (coord_x, coord_y) = coord;
+            let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X = 2
+            let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y = 5 + 0
+
+            if x >= 0 {
+                canvas.draw_strs(
+                    &[SHAPE_STR],
+                    (x as u16, y as u16),
+                    SHAPE_COLORS[self.curr_shape.fg],
+                    &Reset,
+                );
+            }
+        }
     }
 
     /// Отрисовать UI (счёт, уровень, линии, комбо, рекорд).
