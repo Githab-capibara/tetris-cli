@@ -890,7 +890,7 @@ fn test_menu_no_game_logic() {
 
     // Проверяем что константы меню доступны
     assert!(!MENU.is_empty(), "Меню не должно быть пустым");
-    assert!(MENU.len() > 0, "Меню должно содержать строки");
+    assert!(!MENU.is_empty(), "Меню должно содержать строки");
 
     // menu::draw и menu::input работают только с Canvas и KeyReader
     // а не с GameState напрямую

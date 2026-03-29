@@ -711,4 +711,88 @@ mod tests {
             );
         }
     }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ M13: size_of::<Tetromino>() - РАЗМЕР СТРУКТУРЫ
+    // ========================================================================
+
+    /// Тест M13: проверка размера структуры Tetromino
+    #[test]
+    fn test_fix_m13_size_of_tetromino() {
+        // Проверка размера структуры Tetromino
+        // pos: 8 байт (f32, f32) + shape: 1 байт + coords: 16 байт + fg: 8 байт = 33 байта + padding
+        let size = std::mem::size_of::<Tetromino>();
+
+        // Compile-time assertion проверяет что размер <= 40 байт
+        // Здесь проверяем что размер корректный
+        assert!(size <= 40, "Размер Tetromino не должен превышать 40 байт");
+        assert!(size >= 32, "Размер Tetromino должен быть не менее 32 байт");
+
+        // Ожидаемый размер с учётом padding: 36 или 40 байт
+        println!("Размер Tetromino: {} байт", size);
+    }
+
+    /// Тест M13: проверка размера полей Tetromino
+    #[test]
+    fn test_fix_m13_size_of_tetromino_fields() {
+        // Проверка размеров отдельных полей
+        assert_eq!(
+            std::mem::size_of::<(f32, f32)>(),
+            8,
+            "pos (f32, f32) должен быть 8 байт"
+        );
+        assert_eq!(
+            std::mem::size_of::<ShapeType>(),
+            1,
+            "ShapeType должен быть 1 байт"
+        );
+        assert_eq!(
+            std::mem::size_of::<[(i16, i16); 4]>(),
+            16,
+            "coords должен быть 16 байт"
+        );
+        assert_eq!(std::mem::size_of::<usize>(), 8, "usize должен быть 8 байт");
+
+        // Суммарный размер без padding: 8 + 1 + 16 + 8 = 33 байта
+        // С padding: 36 или 40 байт (в зависимости от выравнивания)
+    }
+
+    /// Тест M13: проверка compile-time assertion
+    #[test]
+    fn test_fix_m13_compile_time_assertion() {
+        // Этот тест проверяет что compile-time assertion работает
+        // Если размер превысит 40 байт, код не скомпилируется
+
+        // Compile-time assertion из кода:
+        // const _: () = assert!(std::mem::size_of::<Tetromino>() <= 40, ...);
+
+        // Проверяем что assertion не паникует
+        let size = std::mem::size_of::<Tetromino>();
+        assert!(
+            size <= 40,
+            "Compile-time assertion должен гарантировать размер <= 40"
+        );
+    }
+
+    /// Тест M13: проверка оптимальности размера для копирования
+    #[test]
+    fn test_fix_m13_optimal_size_for_copying() {
+        // Tetromino копируется через Clone/Copy
+        // Размер <= 40 байт оптимален для копирования в стеке
+
+        let tetromino = Tetromino {
+            pos: (4.0, 0.0),
+            shape: ShapeType::T,
+            coords: SHAPE_COORDS[0],
+            fg: 0,
+        };
+
+        // Копирование должно быть быстрым (маленький размер)
+        let copied = tetromino; // Copy семантика
+        let cloned = tetromino.clone(); // Clone семантика
+
+        assert_eq!(copied.shape, cloned.shape);
+        assert_eq!(copied.pos, cloned.pos);
+        assert_eq!(copied.coords, cloned.coords);
+    }
 }

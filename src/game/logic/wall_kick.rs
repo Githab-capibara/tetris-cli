@@ -220,4 +220,87 @@ mod wall_kick_tests {
             RotationDirection::Clockwise
         ));
     }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ H4: WALL_KICK_OFFSETS С ДОКУМЕНТАЦИЕЙ
+    // ========================================================================
+
+    /// Тест H4: проверка документации каждого смещения WALL_KICK_OFFSETS
+    #[test]
+    fn test_fix_h4_wall_kick_offsets_documentation() {
+        // Проверка что каждое смещение имеет ожидаемые значения
+        // Индекс 0: (-1, 0) - Влево на 1: базовая коррекция у правой стены
+        assert_eq!(WALL_KICK_OFFSETS[0], (-1, 0));
+
+        // Индекс 1: (1, 0) - Вправо на 1: базовая коррекция у левой стены
+        assert_eq!(WALL_KICK_OFFSETS[1], (1, 0));
+
+        // Индекс 2: (-2, 0) - Влево на 2: для фигур I и S/Z у правой стены
+        assert_eq!(WALL_KICK_OFFSETS[2], (-2, 0));
+
+        // Индекс 3: (2, 0) - Вправо на 2: для фигур I и S/Z у левой стены
+        assert_eq!(WALL_KICK_OFFSETS[3], (2, 0));
+
+        // Индекс 4: (0, -1) - Вверх на 1: когда фигура упирается в пол
+        assert_eq!(WALL_KICK_OFFSETS[4], (0, -1));
+
+        // Индекс 5: (-1, -1) - Влево-вверх: комбинированная коррекция для левого угла
+        assert_eq!(WALL_KICK_OFFSETS[5], (-1, -1));
+
+        // Индекс 6: (1, -1) - Вправо-вверх: комбинированная коррекция для правого угла
+        assert_eq!(WALL_KICK_OFFSETS[6], (1, -1));
+
+        // Индекс 7: (0, 1) - Вниз на 1: для случаев у потолка (редко)
+        assert_eq!(WALL_KICK_OFFSETS[7], (0, 1));
+    }
+
+    /// Тест H4: проверка приоритета смещений wall kick
+    #[test]
+    fn test_fix_h4_wall_kick_offset_priority() {
+        // Проверка что смещения проверяются в правильном порядке приоритета:
+        // 1. Простые смещения влево/вправо (±1) - индексы 0, 1
+        // 2. Двойные смещения (±2) - индексы 2, 3
+        // 3. Смещения вверх - индекс 4
+        // 4. Комбинированные смещения - индексы 5, 6
+        // 5. Смещение вниз - индекс 7
+
+        // Простые смещения должны быть первыми
+        assert!(WALL_KICK_OFFSETS[0].0.abs() == 1 && WALL_KICK_OFFSETS[0].1 == 0);
+        assert!(WALL_KICK_OFFSETS[1].0.abs() == 1 && WALL_KICK_OFFSETS[1].1 == 0);
+
+        // Двойные смещения должны быть вторыми
+        assert!(WALL_KICK_OFFSETS[2].0.abs() == 2 && WALL_KICK_OFFSETS[2].1 == 0);
+        assert!(WALL_KICK_OFFSETS[3].0.abs() == 2 && WALL_KICK_OFFSETS[3].1 == 0);
+
+        // Смещение вверх должно быть третьим
+        assert_eq!(WALL_KICK_OFFSETS[4], (0, -1));
+
+        // Комбинированные смещения должны быть четвёртыми
+        assert_eq!(WALL_KICK_OFFSETS[5], (-1, -1));
+        assert_eq!(WALL_KICK_OFFSETS[6], (1, -1));
+
+        // Смещение вниз должно быть последним
+        assert_eq!(WALL_KICK_OFFSETS[7], (0, 1));
+    }
+
+    /// Тест H4: проверка что wall kick работает для всех направлений вращения
+    #[test]
+    fn test_fix_h4_wall_kick_both_rotation_directions() {
+        let mut state = GameState::new();
+
+        // Проверка вращения по часовой стрелке
+        assert!(rotate_with_wall_kick(
+            &mut state,
+            RotationDirection::Clockwise
+        ));
+
+        // Сброс состояния
+        state = GameState::new();
+
+        // Проверка вращения против часовой стрелки
+        assert!(rotate_with_wall_kick(
+            &mut state,
+            RotationDirection::CounterClockwise
+        ));
+    }
 }

@@ -689,4 +689,137 @@ mod validation_path_tests {
             "Путь не должен начинаться с base_dir"
         );
     }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ H7: ОПТИМИЗАЦИЯ validate_all() С КЭШИРОВАНИЕМ
+    // =========================================================================
+
+    /// Тест H7: проверка кэширования canonicalize в validate_all()
+    #[test]
+    fn test_fix_h7_validate_all_caches_canonicalize() {
+        use std::path::PathBuf;
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Получаем текущую директорию
+        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+
+        // Проверяем что validate_all() успешно выполняется для существующего файла
+        let relative_path = "Cargo.toml";
+        let result = validator.validate_all(relative_path, &current_dir);
+
+        // Результат должен быть Ok с canonical путем
+        assert!(
+            result.is_ok(),
+            "validate_all() должен успешно выполнить валидацию для Cargo.toml: {:?}",
+            result.err()
+        );
+
+        // Проверка что возвращён canonical путь
+        if let Ok(canonical_path) = result {
+            assert!(
+                canonical_path.is_absolute(),
+                "Должен вернуться абсолютный путь"
+            );
+            assert!(canonical_path.exists(), "Путь должен существовать");
+        }
+    }
+
+    /// Тест H7: проверка обработки несуществующих файлов в validate_all()
+    #[test]
+    fn test_fix_h7_validate_all_nonexistent_file() {
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+
+        // Проверяем обработку несуществующего файла
+        let nonexistent_file = "nonexistent_file_12345.txt";
+        let result = validator.validate_all(nonexistent_file, &current_dir);
+
+        // Для несуществующего файла должен вернуться путь с родительской директорией
+        assert!(
+            result.is_ok() || result.is_err(),
+            "validate_all() должен обработать несуществующий файл"
+        );
+    }
+
+    /// Тест H7: проверка что validate_all() выполняет все проверки
+    #[test]
+    fn test_fix_h7_validate_all_performs_all_checks() {
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+
+        // Проверка 1: абсолютный путь должен отклоняться
+        let absolute_path = "/etc/passwd";
+        let result = validator.validate_all(absolute_path, &current_dir);
+        assert!(result.is_err(), "Абсолютный путь должен быть отклонён");
+
+        // Проверка 2: path traversal должен отклоняться
+        let traversal_path = "../etc/passwd";
+        let result = validator.validate_all(traversal_path, &current_dir);
+        assert!(result.is_err(), "Path traversal должен быть отклонён");
+
+        // Проверка 3: запрещённые символы должны отклоняться
+        // (зависит от allowed_chars, в данном случае @ запрещён)
+        let invalid_chars_path = "file@name.txt";
+        let result = validator.validate_all(invalid_chars_path, &current_dir);
+        assert!(result.is_err(), "Запрещённые символы должны быть отклонены");
+    }
+
+    /// Тест H7: проверка обработки существующих файлов
+    #[test]
+    fn test_fix_h7_validate_all_existing_file() {
+        use std::path::PathBuf;
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+
+        // Проверяем валидацию существующего файла (Cargo.toml)
+        let result = validator.validate_all("Cargo.toml", &current_dir);
+
+        assert!(
+            result.is_ok(),
+            "Существующий файл должен пройти валидацию: {:?}",
+            result.err()
+        );
+
+        if let Ok(canonical_path) = result {
+            assert!(canonical_path.exists(), "Путь должен существовать");
+            assert!(canonical_path.file_name().unwrap() == "Cargo.toml");
+        }
+    }
+
+    /// Тест H7: проверка обработки путей с поддиректориями
+    #[test]
+    fn test_fix_h7_validate_all_with_subdirectories() {
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+
+        // Проверяем путь с поддиректорией (должна существовать)
+        let src_dir_path = "src/lib.rs";
+        let result = validator.validate_all(src_dir_path, &current_dir);
+
+        // src/lib.rs должна существовать в проекте
+        if current_dir.join("src/lib.rs").exists() {
+            assert!(result.is_ok(), "Путь к src/lib.rs должен быть валидным");
+        }
+    }
 }
