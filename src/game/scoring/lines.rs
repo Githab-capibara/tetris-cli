@@ -9,6 +9,8 @@
 //! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
 
+use smallvec::SmallVec;
+
 use super::super::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
@@ -133,7 +135,7 @@ mod lines_tests {
 /// - Уменьшения связанности между модулями
 /// - Улучшения тестируемости логики удаления линий
 pub fn check_rows(state: &mut GameState) -> u32 {
-    // Поиск заполненных линий
+    // Поиск заполненных линий - используем SmallVec для оптимизации
     let filled_rows = find_filled_lines(state.get_blocks());
     let remove_count = filled_rows.len() as u32;
 
@@ -181,14 +183,22 @@ pub fn check_rows(state: &mut GameState) -> u32 {
 /// * `blocks` - игровое поле (только чтение)
 ///
 /// # Возвращает
-/// Вектор с индексами заполненных линий
+/// SmallVec с индексами заполненных линий.
+/// SmallVec<[usize; 4]> оптимизирован для случая до 4 линий (максимум в тетрисе).
 ///
-/// # Архитектурные заметки
-/// Эта функция была перемещена из `render.rs` в `scoring::lines`.
-/// Сделана публичной для использования в тестах.
+/// # Производительность
+/// - Использует SmallVec для предотвращения аллокаций в куче
+/// - Для типичного случая (0-4 линии) данные хранятся в стеке
+/// - O(n) сложность где n = `GRID_HEIGHT` (20 итераций)
+///
+/// # Исправление M8 (MEDIUM)
+/// Использует SmallVec<[usize; 4]> вместо Vec<usize> для оптимизации.
+/// SmallVec хранит до 4 элементов в стеке без аллокации в куче.
+/// Это оптимально для тетриса, где максимум 4 линии за раз.
 #[must_use]
-pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> Vec<usize> {
-    let mut filled = Vec::new();
+pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> SmallVec<[usize; 4]> {
+    // SmallVec с capacity 4 - оптимизировано для максимального количества линий в тетрисе
+    let mut filled = SmallVec::<[usize; 4]>::new();
 
     for (y, row) in blocks.iter().enumerate() {
         // Проверка: линия заполнена если все ячейки не пустые (!= -1)
@@ -205,7 +215,7 @@ pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) ->
 ///
 /// # Аргументы
 /// * `blocks` - игровое поле (изменяемое)
-/// * `rows` - срез с индексами удаляемых линий
+/// * `rows` - срез с индексами удаляемых линий (SmallVec или &[usize])
 fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows: &[usize]) {
     // Преобразуем список строк в битовую маску для совместимости с remove_rows()
     let mut rows_mask: u32 = 0;
