@@ -64,14 +64,14 @@ fn test_animation_hard_drop_resets_flag() {
 #[test]
 fn test_animation_hard_drop_changes_position() {
     let mut state = GameState::new();
-    let start_y = state.get_curr_shape().pos.1;
+    let start_y = state.curr_shape().pos.1;
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let end_y = state.get_curr_shape().pos.1;
+    let end_y = state.curr_shape().pos.1;
     assert!(end_y > start_y);
 }
 
@@ -324,7 +324,7 @@ fn test_animation_after_rotation() {
 #[test]
 fn test_animation_ghost_is_copy() {
     let state = GameState::new();
-    let current = state.get_curr_shape();
+    let current = state.curr_shape();
     let ghost = *current;
 
     // Призрачная фигура должна быть копией текущей фигуры
@@ -339,7 +339,7 @@ fn test_animation_ghost_is_copy() {
 #[test]
 fn test_animation_can_move_ghost_shape_direction() {
     let state = GameState::new();
-    let ghost = *state.get_curr_shape();
+    let ghost = *state.curr_shape();
 
     let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
     assert!(can_move);
@@ -365,7 +365,7 @@ fn test_animation_ghost_all_shapes() {
         state.get_curr_shape_mut().shape = shape;
         state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
 
-        let ghost = *state.get_curr_shape();
+        let ghost = *state.curr_shape();
         let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
 
         assert!(can_move);
@@ -382,7 +382,7 @@ fn test_animation_ghost_after_movement() {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
 
-    let ghost = *state.get_curr_shape();
+    let ghost = *state.curr_shape();
     let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
 
     assert!(can_move);
@@ -400,7 +400,7 @@ fn test_animation_ghost_after_rotation() {
             .rotate(RotationDirection::Clockwise);
     }
 
-    let ghost = *state.get_curr_shape();
+    let ghost = *state.curr_shape();
     let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
 
     assert!(can_move);
@@ -416,7 +416,7 @@ fn test_animation_ghost_on_floor() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let ghost = *state.get_curr_shape();
+    let ghost = *state.curr_shape();
     let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
 
     assert!(!can_move);

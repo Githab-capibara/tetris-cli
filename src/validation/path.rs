@@ -721,8 +721,6 @@ mod validation_path_tests {
     /// Тест H7: проверка кэширования canonicalize в validate_all()
     #[test]
     fn test_fix_h7_validate_all_caches_canonicalize() {
-        use std::path::PathBuf;
-
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
@@ -803,8 +801,6 @@ mod validation_path_tests {
     /// Тест H7: проверка обработки существующих файлов
     #[test]
     fn test_fix_h7_validate_all_existing_file() {
-        use std::path::PathBuf;
-
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",

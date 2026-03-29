@@ -32,7 +32,7 @@ pub use crate::constants::{
 // ============================================================================
 // Исправление L1: константы клавиш перемещены в crate::constants.rs
 // Используйте crate::constants::KEY_BACKSPACE вместо локальных констант.
-pub use crate::constants::{KEY_BACKSPACE, KEY_ENTER, KEY_ENTER_CR};
+pub use crate::constants::{KEY_BACKSPACE};
 
 /// Ошибка ввода/вывода терминала.
 #[derive(Debug)]

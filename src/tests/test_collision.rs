@@ -167,7 +167,7 @@ fn test_collision_not_beyond_left_boundary() {
         }
     }
 
-    let x = state.get_curr_shape().pos.0;
+    let x = state.curr_shape().pos.0;
     assert!(x >= 0.0, "Фигура не должна выходить за левую границу");
 }
 
@@ -182,7 +182,7 @@ fn test_collision_not_beyond_right_boundary() {
         }
     }
 
-    let x = state.get_curr_shape().pos.0;
+    let x = state.curr_shape().pos.0;
     assert!(
         x < GRID_WIDTH as f32,
         "Фигура не должна выходить за правую границу"
@@ -213,13 +213,13 @@ fn test_collision_floor() {
 #[test]
 fn test_collision_reaches_floor() {
     let mut state = GameState::new();
-    let start_y = state.get_curr_shape().pos.1;
+    let start_y = state.curr_shape().pos.1;
 
     while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let end_y = state.get_curr_shape().pos.1;
+    let end_y = state.curr_shape().pos.1;
     assert!(end_y > start_y, "Фигура должна опуститься");
 }
 
@@ -232,7 +232,7 @@ fn test_collision_not_through_floor() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let y = state.get_curr_shape().pos.1;
+    let y = state.curr_shape().pos.1;
     assert!(
         y < GRID_HEIGHT as f32,
         "Фигура не должна проходить сквозь пол"
@@ -457,7 +457,7 @@ fn test_collision_bottom_right_corner() {
 #[test]
 fn test_collision_ghost_piece() {
     let state = GameState::new();
-    let ghost = *state.get_curr_shape();
+    let ghost = *state.curr_shape();
 
     let can_move = state.can_move_ghost_shape_direction(Direction::Down);
     assert!(

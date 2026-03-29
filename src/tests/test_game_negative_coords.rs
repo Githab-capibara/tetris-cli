@@ -23,7 +23,7 @@ fn test_negative_y_coords_handling() {
     let game = GameState::new();
 
     // Получаем начальную позицию фигуры
-    let initial_pos = game.get_curr_shape().pos;
+    let initial_pos = game.curr_shape().pos;
     let (_initial_x, initial_y) = initial_pos;
 
     // Проверяем что начальная Y координата неотрицательная
@@ -69,7 +69,7 @@ fn test_negative_x_coords_handling() {
     let game = GameState::new();
 
     // Получаем текущую фигуру
-    let curr_shape = game.get_curr_shape();
+    let curr_shape = game.curr_shape();
     let (shape_x, shape_y) = curr_shape.pos;
 
     // Проверяем что начальная X координата неотрицательная

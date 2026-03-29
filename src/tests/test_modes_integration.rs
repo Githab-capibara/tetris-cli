@@ -101,15 +101,15 @@ fn test_modes_integration_held_shape_consistency() {
     let marathon = GameState::new_marathon();
 
     assert!(
-        classic.get_held_shape().is_none(),
+        classic.held_shape().is_none(),
         "Classic: удержанная фигура должна быть None"
     );
     assert!(
-        sprint.get_held_shape().is_none(),
+        sprint.held_shape().is_none(),
         "Sprint: удержанная фигура должна быть None"
     );
     assert!(
-        marathon.get_held_shape().is_none(),
+        marathon.held_shape().is_none(),
         "Marathon: удержанная фигура должна быть None"
     );
 }
@@ -219,9 +219,9 @@ fn test_modes_integration_ghost_piece_in_all_modes() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
-    let ghost_classic = *classic.get_curr_shape();
-    let ghost_sprint = *sprint.get_curr_shape();
-    let ghost_marathon = *marathon.get_curr_shape();
+    let ghost_classic = *classic.curr_shape();
+    let ghost_sprint = *sprint.curr_shape();
+    let ghost_marathon = *marathon.curr_shape();
 
     assert!(
         classic.can_move_ghost_shape_direction(Direction::Down),
@@ -246,9 +246,9 @@ fn test_modes_integration_next_shape_in_all_modes() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
-    let classic_next = classic.get_next_shape();
-    let sprint_next = sprint.get_next_shape();
-    let marathon_next = marathon.get_next_shape();
+    let classic_next = classic.next_shape();
+    let sprint_next = sprint.next_shape();
+    let marathon_next = marathon.next_shape();
 
     assert!(
         (classic_next.shape as usize) < 7,
@@ -392,7 +392,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         let mut classic = GameState::new();
         classic.get_curr_shape_mut().shape = shape;
         assert_eq!(
-            classic.get_curr_shape().shape,
+            classic.curr_shape().shape,
             shape,
             "Classic: фигура {shape:?} должна быть доступна"
         );
@@ -400,7 +400,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         let mut sprint = GameState::new_sprint();
         sprint.get_curr_shape_mut().shape = shape;
         assert_eq!(
-            sprint.get_curr_shape().shape,
+            sprint.curr_shape().shape,
             shape,
             "Sprint: фигура {shape:?} должна быть доступна"
         );
@@ -408,7 +408,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         let mut marathon = GameState::new_marathon();
         marathon.get_curr_shape_mut().shape = shape;
         assert_eq!(
-            marathon.get_curr_shape().shape,
+            marathon.curr_shape().shape,
             shape,
             "Marathon: фигура {shape:?} должна быть доступна"
         );

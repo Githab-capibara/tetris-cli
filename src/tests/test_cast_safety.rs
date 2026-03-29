@@ -13,7 +13,7 @@
 #[cfg(test)]
 mod tests {
     use crate::game::GameState;
-    use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH};
+    use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
     // ========================================================================
     // ГРУППА ТЕСТОВ 1: Безопасный cast usize → i16
@@ -28,7 +28,7 @@ mod tests {
         let state = GameState::new();
 
         // Получаем текущую фигуру
-        let curr_shape = state.get_curr_shape();
+        let curr_shape = state.curr_shape();
         let shape_x = curr_shape.pos.0;
         let shape_y = curr_shape.pos.1;
 
@@ -432,18 +432,18 @@ mod tests {
         );
 
         // Тест 2: Проверка cast при движении фигуры
-        let _initial_y = state.get_curr_shape().pos.1;
+        let _initial_y = state.curr_shape().pos.1;
         state.add_score_no_check(0); // Вызываем для проверки что состояние корректно
 
         // Тест 3: Проверка cast при вращении
-        let initial_x = state.get_curr_shape().pos.0;
+        let initial_x = state.curr_shape().pos.0;
         assert!(
             initial_x >= 0.0 && initial_x < GRID_WIDTH as f32,
             "Начальная X координата должна быть в пределах поля"
         );
 
         // Тест 4: Проверка cast при проверке столкновений
-        let curr_shape = state.get_curr_shape();
+        let curr_shape = state.curr_shape();
         for &(x, y) in curr_shape.coords.iter() {
             // Координаты блоков относительные и могут быть отрицательными
             // Проверяем что cast из i8 в f32 работает корректно
@@ -552,7 +552,7 @@ mod tests {
 
         // Проверка что cast координат не вызывает паники
         for state in &states {
-            let shape = state.get_curr_shape();
+            let shape = state.curr_shape();
             let _x = shape.pos.0 as i16;
             let _y = shape.pos.1 as i16;
         }
