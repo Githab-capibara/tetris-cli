@@ -457,8 +457,8 @@ mod tests {
         let mut leaderboard = Leaderboard::default();
 
         // Добавляем валидные записи
-        leaderboard.add_score("Player1", 1000);
-        leaderboard.add_score("Player2", 2000);
+        let _ = leaderboard.add_score("Player1", 1000);
+        let _ = leaderboard.add_score("Player2", 2000);
 
         let initial_count = leaderboard.len();
         leaderboard.validate();

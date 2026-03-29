@@ -564,6 +564,9 @@ mod tests {
     // Тесты на архитектурную целостность (20 тестов)
     pub mod test_architecture_integrity;
 
+    // Тесты на архитектурный рефакторинг (37 тестов)
+    pub mod test_architecture_refactoring;
+
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;
 

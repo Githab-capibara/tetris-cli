@@ -2,16 +2,22 @@
 //!
 //! Модуль содержит основные структуры данных:
 //! - `GameState` - основное состояние игры
-//! - `GameStats` - статистика прошедшей игры
 //! - `GameModeTrait` - трейт режима игры
 //! - Константы игры
+//!
+//! ## Архитектурные заметки
+//! ## Исправление #1 (Разделение GameState)
+//! - `GameStats` перемещён в отдельный модуль [`super::stats`]
+//! - `RenderCache` перемещён в отдельный модуль [`super::cache`]
+//! - `GameState` использует композицию: содержит `stats: GameStats`, `cache: RenderCache`
 
 use crate::io::GRID_HEIGHT;
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
-use std::time::Instant;
+use crate::tetromino::{BagGenerator, Tetromino};
 
-use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
+use super::cache::RenderCache;
+use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use super::mode_trait::GameModeTrait;
+pub use super::stats::GameStats;
 
 // ============================================================================
 // ТИПЫ ОШИБОК
@@ -77,6 +83,10 @@ pub type GameResult<T> = Result<T, GameError>;
 ///
 /// ## Конвертация в трейт
 /// Используйте метод `as_trait()` для получения объекта трейта.
+///
+/// # Устарело
+/// Используйте [`GameModeTrait`] напрямую вместо enum.
+#[deprecated(since = "23.96.17", note = "Используйте GameModeTrait напрямую")]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum GameMode {
     /// Классический режим — игра до проигрыша.
@@ -91,6 +101,7 @@ pub enum GameMode {
 // МЕТОДЫ ДЛЯ GAMEMODE
 // ============================================================================
 
+#[allow(deprecated)]
 impl GameMode {
     /// Преобразовать enum в объект трейта GameModeTrait.
     ///
@@ -138,317 +149,6 @@ impl GameMode {
     #[must_use]
     pub fn get_target_lines(self) -> Option<u32> {
         self.as_trait().get_target_lines()
-    }
-}
-
-// ============================================================================
-// СТАТИСТИКА ИГРЫ
-// ============================================================================
-
-/// Статистика игры.
-///
-/// Содержит подробную информацию о прошедшей игре:
-/// - Количество использованных фигур каждого типа
-/// - Общее количество очищенных линий
-/// - Максимальное комбо
-/// - Время игры
-///
-/// # Инкапсуляция (Задача 4 CRITICAL)
-/// Поля структуры сделаны приватными для улучшения инкапсуляции.
-/// Доступ к полям осуществляется через геттеры/сеттеры ниже.
-#[derive(Default, Clone)]
-pub struct GameStats {
-    /// Количество фигур типа T.
-    pub(crate) t_pieces: u32,
-    /// Количество фигур типа L.
-    pub(crate) l_pieces: u32,
-    /// Количество фигур типа J.
-    pub(crate) j_pieces: u32,
-    /// Количество фигур типа S.
-    pub(crate) s_pieces: u32,
-    /// Количество фигур типа Z.
-    pub(crate) z_pieces: u32,
-    /// Количество фигур типа O.
-    pub(crate) o_pieces: u32,
-    /// Количество фигур типа I.
-    pub(crate) i_pieces: u32,
-    /// Максимальное комбо (одновременное удаление линий).
-    pub(crate) max_combo: u32,
-    /// Текущее комбо (последовательные удаления в нескольких ходах).
-    pub(crate) combo_counter: u32,
-    /// Время начала игры.
-    pub(crate) start_time: Option<Instant>,
-    /// Время окончания игры.
-    pub(crate) end_time: Option<Instant>,
-}
-
-impl GameStats {
-    /// Создать новую статистику.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    // ========================================================================
-    // ГЕТТЕРЫ ДЛЯ ПОЛЕЙ (Задача 4 CRITICAL)
-    // ========================================================================
-
-    /// Получить количество фигур типа T.
-    #[must_use]
-    pub fn t_pieces(&self) -> u32 {
-        self.t_pieces
-    }
-
-    /// Получить количество фигур типа L.
-    #[must_use]
-    pub fn l_pieces(&self) -> u32 {
-        self.l_pieces
-    }
-
-    /// Получить количество фигур типа J.
-    #[must_use]
-    pub fn j_pieces(&self) -> u32 {
-        self.j_pieces
-    }
-
-    /// Получить количество фигур типа S.
-    #[must_use]
-    pub fn s_pieces(&self) -> u32 {
-        self.s_pieces
-    }
-
-    /// Получить количество фигур типа Z.
-    #[must_use]
-    pub fn z_pieces(&self) -> u32 {
-        self.z_pieces
-    }
-
-    /// Получить количество фигур типа O.
-    #[must_use]
-    pub fn o_pieces(&self) -> u32 {
-        self.o_pieces
-    }
-
-    /// Получить количество фигур типа I.
-    #[must_use]
-    pub fn i_pieces(&self) -> u32 {
-        self.i_pieces
-    }
-
-    /// Получить максимальное комбо.
-    #[must_use]
-    pub fn max_combo(&self) -> u32 {
-        self.max_combo
-    }
-
-    /// Получить текущее комбо.
-    #[must_use]
-    pub fn combo_counter(&self) -> u32 {
-        self.combo_counter
-    }
-
-    /// Получить время начала игры.
-    #[must_use]
-    pub fn start_time(&self) -> Option<Instant> {
-        self.start_time
-    }
-
-    /// Получить время окончания игры.
-    #[must_use]
-    pub fn end_time(&self) -> Option<Instant> {
-        self.end_time
-    }
-
-    // ========================================================================
-    // СЕТТЕРЫ ДЛЯ ПОЛЕЙ (Задача 4 CRITICAL)
-    // ========================================================================
-    // Сеттеры предназначены для внутреннего использования и тестов.
-    // Для нового кода рекомендуется использовать специализированные методы
-    /// Установить количество фигур типа T.
-    pub fn set_t_pieces(&mut self, value: u32) {
-        self.t_pieces = value;
-    }
-
-    /// Установить количество фигур типа L.
-    pub fn set_l_pieces(&mut self, value: u32) {
-        self.l_pieces = value;
-    }
-
-    /// Установить количество фигур типа J.
-    pub fn set_j_pieces(&mut self, value: u32) {
-        self.j_pieces = value;
-    }
-
-    /// Установить количество фигур типа S.
-    pub fn set_s_pieces(&mut self, value: u32) {
-        self.s_pieces = value;
-    }
-
-    /// Установить количество фигур типа Z.
-    pub fn set_z_pieces(&mut self, value: u32) {
-        self.z_pieces = value;
-    }
-
-    /// Установить количество фигур типа O.
-    pub fn set_o_pieces(&mut self, value: u32) {
-        self.o_pieces = value;
-    }
-
-    /// Установить количество фигур типа I.
-    pub fn set_i_pieces(&mut self, value: u32) {
-        self.i_pieces = value;
-    }
-
-    /// Установить максимальное комбо.
-    pub fn set_max_combo(&mut self, value: u32) {
-        self.max_combo = value;
-    }
-
-    /// Установить текущее комбо.
-    pub fn set_combo_counter(&mut self, value: u32) {
-        self.combo_counter = value;
-    }
-
-    /// Установить время начала игры.
-    pub fn set_start_time(&mut self, value: Option<Instant>) {
-        self.start_time = value;
-    }
-
-    /// Установить время окончания игры.
-    pub fn set_end_time(&mut self, value: Option<Instant>) {
-        self.end_time = value;
-    }
-
-    /// Увеличить счётчик для указанной фигуры.
-    pub fn add_piece(&mut self, piece_type: ShapeType) {
-        match piece_type {
-            ShapeType::T => self.t_pieces += 1,
-            ShapeType::L => self.l_pieces += 1,
-            ShapeType::J => self.j_pieces += 1,
-            ShapeType::S => self.s_pieces += 1,
-            ShapeType::Z => self.z_pieces += 1,
-            ShapeType::O => self.o_pieces += 1,
-            ShapeType::I => self.i_pieces += 1,
-        }
-    }
-
-    /// Получить общее количество использованных фигур.
-    #[must_use]
-    pub fn total_pieces(&self) -> u32 {
-        self.t_pieces
-            + self.l_pieces
-            + self.j_pieces
-            + self.s_pieces
-            + self.z_pieces
-            + self.o_pieces
-            + self.i_pieces
-    }
-
-    /// Обновить максимальное комбо.
-    pub fn update_max_combo(&mut self, lines: u32) {
-        if lines > self.max_combo {
-            self.max_combo = lines;
-        }
-    }
-
-    /// Получить время игры в секундах.
-    #[must_use]
-    pub fn get_elapsed_time(&self) -> f64 {
-        match (self.start_time, self.end_time) {
-            (Some(start), Some(end)) => end.duration_since(start).as_secs_f64(),
-            (Some(start), None) => Instant::now().duration_since(start).as_secs_f64(),
-            _ => 0.0,
-        }
-    }
-
-    /// Начать отсчёт времени.
-    pub fn start_timer(&mut self) {
-        self.start_time = Some(Instant::now());
-    }
-
-    /// Остановить отсчёт времени.
-    pub fn stop_timer(&mut self) {
-        self.end_time = Some(Instant::now());
-    }
-}
-
-// ============================================================================
-// КЭШ ДЛЯ ОТРИСОВКИ
-// ============================================================================
-
-/// Кэш для оптимизации отрисовки.
-///
-/// Содержит кэшированные строки для отображения игровой информации
-/// и последние закэшированные значения для сравнения.
-///
-/// # Архитектурные заметки
-/// Выделено из GameState для улучшения организации кода и уменьшения
-/// размера основной структуры.
-pub struct RenderCache {
-    /// Кэшированная строка счёта для оптимизации отрисовки.
-    pub cached_score_str: String,
-    /// Кэшированная строка уровня для оптимизации отрисовки.
-    pub cached_level_str: String,
-    /// Кэшированная строка количества линий для оптимизации отрисовки.
-    pub cached_lines_str: String,
-    /// Кэшированная строка рекорда для оптимизации отрисовки.
-    pub cached_high_score_str: String,
-    /// Кэшированная строка комбо для оптимизации отрисовки.
-    pub cached_combo_str: String,
-    /// Кэшированная строка таймера для оптимизации отрисовки.
-    pub cached_timer_str: String,
-
-    /// Последнее закэшированное значение счёта.
-    pub last_cached_score: u128,
-    /// Последнее закэшированное значение уровня.
-    pub last_cached_level: u32,
-    /// Последнее закэшированное значение количества линий.
-    pub last_cached_lines: u32,
-    /// Последнее закэшированное значение рекорда.
-    pub last_cached_high_score: u128,
-    /// Последнее закэшированное значение комбо.
-    pub last_cached_combo: u32,
-}
-
-impl RenderCache {
-    /// Создать новый кэш для отрисовки.
-    pub fn new() -> Self {
-        Self {
-            cached_score_str: String::with_capacity(16),
-            cached_level_str: String::with_capacity(16),
-            cached_lines_str: String::with_capacity(16),
-            cached_high_score_str: String::with_capacity(16),
-            cached_combo_str: String::with_capacity(16),
-            cached_timer_str: String::with_capacity(16),
-            last_cached_score: 0,
-            last_cached_level: 0,
-            last_cached_lines: 0,
-            last_cached_high_score: 0,
-            last_cached_combo: 0,
-        }
-    }
-
-    /// Инициализация кэша начальными значениями.
-    ///
-    /// # Аргументы
-    /// * `score` - начальный счёт
-    /// * `level` - начальный уровень
-    /// * `lines` - начальное количество линий
-    /// * `high_score` - начальный рекорд
-    pub fn init_with_values(&mut self, score: u128, level: u32, lines: u32, high_score: u128) {
-        self.last_cached_score = score;
-        self.last_cached_level = level;
-        self.last_cached_lines = lines;
-        self.last_cached_high_score = high_score;
-        self.cached_score_str = score.to_string();
-        self.cached_level_str = level.to_string();
-        self.cached_lines_str = lines.to_string();
-        self.cached_high_score_str = high_score.to_string();
-    }
-}
-
-impl Default for RenderCache {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -708,6 +408,12 @@ impl GameState {
         &mut self.stats
     }
 
+    /// Получить статистику игры (для обратной совместимости).
+    #[must_use]
+    pub fn stats(&self) -> &GameStats {
+        &self.stats
+    }
+
     /// Получить режим игры (объект трейта).
     ///
     /// # Возвращает
@@ -804,11 +510,123 @@ impl GameState {
         self.held_shape()
     }
 
-    /// Получить удержанную фигуру (ссылка на Option).
+    /// Получить скорость падения.
     #[must_use]
-    #[allow(clippy::ref_option)]
-    pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
-        &self.held_shape
+    pub fn fall_speed(&self) -> f32 {
+        self.fall_speed
+    }
+
+    /// Получить скорость падения (для обратной совместимости).
+    #[must_use]
+    pub fn get_fall_speed(&self) -> f32 {
+        self.fall_speed()
+    }
+
+    /// Получить таймер приземления.
+    #[must_use]
+    pub fn land_timer(&self) -> f64 {
+        self.land_timer
+    }
+
+    /// Получить таймер приземления (для обратной совместимости).
+    #[must_use]
+    pub fn get_land_timer(&self) -> f64 {
+        self.land_timer()
+    }
+
+    /// Получить расстояние Soft Drop.
+    #[must_use]
+    pub fn soft_drop_distance(&self) -> u32 {
+        self.soft_drop_distance
+    }
+
+    /// Получить флаг Hard Drop.
+    #[must_use]
+    pub fn is_hard_dropping(&self) -> bool {
+        self.is_hard_dropping
+    }
+
+    /// Получить флаг возможности удержания.
+    #[must_use]
+    pub fn can_hold(&self) -> bool {
+        self.can_hold
+    }
+
+    /// Получить кэш для отрисовки.
+    #[must_use]
+    pub fn get_render_cache(&self) -> &RenderCache {
+        &self.render_cache
+    }
+
+    /// Получить кэш для отрисовки (мутуабельная ссылка).
+    #[must_use]
+    pub fn get_render_cache_mut(&mut self) -> &mut RenderCache {
+        &mut self.render_cache
+    }
+
+    /// Получить кэш для отрисовки (для обратной совместимости).
+    #[must_use]
+    pub fn render_cache(&self) -> &RenderCache {
+        &self.render_cache
+    }
+
+    // ========================================================================
+    // СЕТТЕРЫ ДЛЯ ПОЛЕЙ
+    // ========================================================================
+
+    /// Установить счёт.
+    pub fn set_score(&mut self, value: u128) {
+        self.score = value;
+    }
+
+    /// Установить уровень.
+    pub fn set_level(&mut self, value: u32) {
+        self.level = value;
+    }
+
+    /// Установить количество удалённых линий.
+    pub fn set_lines_cleared(&mut self, value: u32) {
+        self.lines_cleared = value;
+    }
+
+    /// Установить скорость падения.
+    pub fn set_fall_speed(&mut self, value: f32) {
+        self.fall_speed = value;
+    }
+
+    /// Установить таймер приземления.
+    pub fn set_land_timer(&mut self, value: f64) {
+        self.land_timer = value;
+    }
+
+    /// Установить расстояние Soft Drop.
+    pub fn set_soft_drop_distance(&mut self, value: u32) {
+        self.soft_drop_distance = value;
+    }
+
+    /// Установить флаг Hard Drop.
+    pub fn set_is_hard_dropping(&mut self, value: bool) {
+        self.is_hard_dropping = value;
+    }
+
+    /// Установить флаг возможности удержания.
+    pub fn set_can_hold(&mut self, value: bool) {
+        self.can_hold = value;
+    }
+
+    /// Установить текущую фигуру.
+    pub fn set_curr_shape(&mut self, value: Tetromino) {
+        self.curr_shape = value;
+    }
+
+    /// Установить следующую фигуру.
+    pub fn set_next_shape(&mut self, value: Tetromino) {
+        self.next_shape = value;
+    }
+
+    /// Установить удержанную фигуру.
+    pub fn set_held_shape(&mut self, value: Option<Tetromino>) {
+        self.held_shape = value;
     }
 
     /// Получить текущую фигуру (мутуабельная ссылка).
@@ -823,83 +641,10 @@ impl GameState {
         &mut self.next_shape
     }
 
-    /// Получить скорость падения.
+    /// Получить удержанную фигуру (мутуабельная ссылка).
     #[must_use]
-    pub fn fall_speed(&self) -> f32 {
-        self.fall_speed
-    }
-
-    /// Получить скорость падения (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`fall_speed()`] вместо этого.
-    #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте fall_speed()")]
-    pub fn get_fall_speed(&self) -> f32 {
-        self.fall_speed()
-    }
-
-    /// Получить скорость падения (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`fall_speed()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.15",
-        note = "Используйте get_fall_speed(), затем fall_speed()"
-    )]
-    pub fn get_fall_spd(&self) -> f32 {
-        self.fall_speed()
-    }
-
-    /// Получить таймер приземления.
-    #[must_use]
-    pub fn land_timer(&self) -> f64 {
-        self.land_timer
-    }
-
-    /// Получить таймер приземления (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`land_timer()`] вместо этого.
-    #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте land_timer()")]
-    pub fn get_land_timer(&self) -> f64 {
-        self.land_timer()
-    }
-
-    /// Получить флаг возможности удержания фигуры.
-    #[must_use]
-    pub fn can_hold(&self) -> bool {
-        self.can_hold
-    }
-
-    /// Получить флаг анимации Hard Drop.
-    #[must_use]
-    pub fn is_hard_dropping(&self) -> bool {
-        self.is_hard_dropping
-    }
-
-    /// Получить расстояние Soft Drop.
-    #[must_use]
-    pub fn soft_drop_distance(&self) -> u32 {
-        self.soft_drop_distance
-    }
-
-    /// Получить расстояние Soft Drop (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`soft_drop_distance()`] вместо этого.
-    #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте soft_drop_distance()")]
-    pub fn get_soft_drop_distance(&self) -> u32 {
-        self.soft_drop_distance()
-    }
-
-    /// Получить маску анимации строк.
-    #[must_use]
-    pub fn get_animating_rows_mask(&self) -> u32 {
-        self.animating_rows_mask
+    pub fn get_held_shape_mut(&mut self) -> &mut Option<Tetromino> {
+        &mut self.held_shape
     }
 
     /// Получить генератор фигур.
@@ -912,6 +657,43 @@ impl GameState {
     #[must_use]
     pub fn get_bag_mut(&mut self) -> &mut BagGenerator {
         &mut self.bag
+    }
+
+    /// Получить маску анимации строк.
+    #[must_use]
+    pub fn animating_rows_mask(&self) -> u32 {
+        self.animating_rows_mask
+    }
+
+    /// Установить маску анимации строк.
+    pub fn set_animating_rows_mask(&mut self, value: u32) {
+        self.animating_rows_mask = value;
+    }
+
+    /// Получить маску заполненных линий.
+    #[must_use]
+    pub fn filled_lines(&self) -> u32 {
+        self.filled_lines
+    }
+
+    /// Установить маску заполненных линий.
+    pub fn set_filled_lines(&mut self, value: u32) {
+        self.filled_lines = value;
+    }
+
+    /// Добавить очки к текущему счёту.
+    pub fn add_score(&mut self, points: u128) {
+        self.score = self.score.saturating_add(points);
+    }
+
+    /// Добавить очки к текущему счёту без проверки (для тестов).
+    pub fn add_score_no_check(&mut self, points: u128) {
+        self.score = self.score.saturating_add(points);
+    }
+
+    /// Добавить количество очищенных линий.
+    pub fn add_lines_cleared(&mut self, lines: u32) {
+        self.lines_cleared = self.lines_cleared.saturating_add(lines);
     }
 
     /// Получить кэшированную строку счёта.
@@ -950,415 +732,21 @@ impl GameState {
         &self.render_cache.cached_timer_str
     }
 
-    /// Получить битовую маску заполненных линий.
+    /// Получить удержанную фигуру (ссылка на ссылку).
+    #[must_use]
+    pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
+        &self.held_shape
+    }
+
+    /// Получить маску анимации строк (для view).
+    #[must_use]
+    pub fn get_animating_rows_mask(&self) -> u32 {
+        self.animating_rows_mask
+    }
+
+    /// Получить заполненные линии (для access.rs).
     #[must_use]
     pub fn get_filled_lines(&self) -> u32 {
         self.filled_lines
-    }
-
-    /// Получить кэш для отрисовки (ссылка).
-    #[must_use]
-    pub fn get_render_cache(&self) -> &RenderCache {
-        &self.render_cache
-    }
-
-    /// Получить кэш для отрисовки (мутуабельная ссылка).
-    #[must_use]
-    pub fn get_render_cache_mut(&mut self) -> &mut RenderCache {
-        &mut self.render_cache
-    }
-
-    // ========================================================================
-    // ТЕСТОВЫЕ ГЕТТЕРЫ (#[cfg(test)])
-    // ========================================================================
-
-    /// Получить игровое поле (для тестов).
-    #[cfg(test)]
-    pub fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &self.blocks
-    }
-
-    /// Получить статистику игры (для тестов).
-    #[cfg(test)]
-    pub fn stats(&self) -> &GameStats {
-        &self.stats
-    }
-
-    /// Получить кэш для отрисовки (для тестов).
-    #[cfg(test)]
-    pub fn render_cache(&self) -> &RenderCache {
-        &self.render_cache
-    }
-
-    // ========================================================================
-    // СЕТТЕРЫ ДЛЯ ИЗМЕНЕНИЯ ПОЛЕЙ (ДЛЯ ТЕСТОВ) С ВАЛИДАЦИЕЙ
-    // ========================================================================
-
-    /// Установить счёт (для тестов).
-    #[track_caller]
-    pub fn set_score(&mut self, score: u128) {
-        self.score = score;
-    }
-
-    /// Установить уровень (для тестов).
-    ///
-    /// Уровень должен быть >= 1.
-    #[track_caller]
-    pub fn set_level(&mut self, level: u32) {
-        self.level = level.max(1);
-    }
-
-    /// Установить количество удалённых линий (для тестов).
-    #[track_caller]
-    pub fn set_lines_cleared(&mut self, lines: u32) {
-        self.lines_cleared = lines;
-    }
-
-    /// Установить режим игры через трейт (для тестов).
-    ///
-    /// # Аргументы
-    /// * `mode_trait` - объект трейта GameModeTrait
-    ///
-    /// # Пример использования
-    /// ```ignore
-    /// use crate::game::mode_trait::{ClassicMode, GameModeTrait};
-    /// let mut state = GameState::new();
-    /// state.set_mode_trait(Box::new(ClassicMode));
-    /// ```
-    #[track_caller]
-    pub fn set_mode_trait(&mut self, mode_trait: Box<dyn GameModeTrait>) {
-        self.mode_trait = mode_trait;
-    }
-
-    /// Установить режим игры через enum (для обратной совместимости).
-    ///
-    /// # Аргументы
-    /// * `mode` - значение enum GameMode
-    ///
-    /// # Архитектурные заметки
-    /// Устарело, используйте set_mode_trait() для нового кода.
-    ///
-    /// # Исправление #14
-    /// Метод обновлён для работы только с mode_trait (поле mode удалено).
-    #[deprecated(since = "23.96.14", note = "Используйте set_mode_trait() вместо enum")]
-    #[track_caller]
-    pub fn set_mode(&mut self, mode: GameMode) {
-        self.mode_trait = mode.as_trait();
-    }
-
-    /// Добавить линии (для тестов).
-    #[track_caller]
-    pub fn add_lines_cleared(&mut self, count: u32) {
-        self.lines_cleared = self.lines_cleared.saturating_add(count);
-    }
-
-    /// Установить текущую фигуру (для тестов).
-    #[track_caller]
-    pub fn set_curr_shape(&mut self, shape: Tetromino) {
-        self.curr_shape = shape;
-    }
-
-    /// Установить следующую фигуру (для тестов).
-    #[track_caller]
-    pub fn set_next_shape(&mut self, shape: Tetromino) {
-        self.next_shape = shape;
-    }
-
-    /// Установить удержанную фигуру (для тестов).
-    #[track_caller]
-    pub fn set_held_shape(&mut self, shape: Option<Tetromino>) {
-        self.held_shape = shape;
-    }
-
-    /// Установить флаг возможности удержания (для тестов).
-    #[track_caller]
-    pub fn set_can_hold(&mut self, can_hold: bool) {
-        self.can_hold = can_hold;
-    }
-
-    /// Установить скорость падения (для тестов).
-    ///
-    /// Скорость падения должна быть в диапазоне [0.1, MAX_FALL_SPEED].
-    #[track_caller]
-    pub fn set_fall_speed(&mut self, spd: f32) {
-        self.fall_speed = spd.clamp(0.1, MAX_FALL_SPEED);
-    }
-
-    /// Установить скорость падения (устаревшее имя, для тестов).
-    ///
-    /// # Устарело
-    /// Используйте [`set_fall_speed()`] вместо этого.
-    #[deprecated(since = "23.96.15", note = "Используйте set_fall_speed()")]
-    #[track_caller]
-    pub fn set_fall_spd(&mut self, spd: f32) {
-        self.set_fall_speed(spd);
-    }
-
-    /// Установить таймер приземления (для тестов).
-    ///
-    /// Таймер должен быть >= 0.
-    #[track_caller]
-    pub fn set_land_timer(&mut self, timer: f64) {
-        self.land_timer = timer.max(0.0);
-    }
-
-    /// Установить флаг Hard Drop (для тестов).
-    #[track_caller]
-    pub fn set_is_hard_dropping(&mut self, dropping: bool) {
-        self.is_hard_dropping = dropping;
-    }
-
-    /// Установить расстояние Soft Drop (для тестов).
-    #[track_caller]
-    pub fn set_soft_drop_distance(&mut self, distance: u32) {
-        self.soft_drop_distance = distance;
-    }
-
-    /// Установить маску анимации строк (для тестов).
-    #[track_caller]
-    pub fn set_animating_rows_mask(&mut self, mask: u32) {
-        self.animating_rows_mask = mask;
-    }
-
-    /// Удалить заполненные линии (для тестов).
-    #[track_caller]
-    pub fn remove_full_rows(&mut self) {
-        let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
-        crate::game::remove_rows(&mut self.blocks, rows_mask);
-    }
-
-    /// Добавить очки без проверки (для тестов).
-    ///
-    /// # Аргументы
-    /// * `score` - Количество очков для добавления
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let mut state = GameState::new();
-    /// state.add_score_no_check(100);
-    /// assert_eq!(state.get_score(), 100);
-    /// ```
-    #[track_caller]
-    pub fn add_score_no_check(&mut self, score: u128) {
-        self.score = self.score.saturating_add(score);
-    }
-
-    /// Добавить очки (для тестов и через трейт `GameBoardAccess`).
-    #[track_caller]
-    pub fn add_score(&mut self, points: u128) {
-        self.score = self.score.saturating_add(points);
-    }
-
-    // ========================================================================
-    // МЕТОДЫ ДЛЯ БЕНЧМАРКОВ
-    // ========================================================================
-
-    /// Заполнить линию для бенчмарков.
-    ///
-    /// Заполняет указанную линию блоками для теста очистки линий.
-    /// Используется только при компиляции с feature = "bench".
-    ///
-    /// # Аргументы
-    /// * `line` - номер линии для заполнения (0-19)
-    #[cfg(feature = "bench")]
-    pub fn fill_line_for_bench(&mut self, line: usize) {
-        // Заполняем указанную линию блоками цвета 0
-        for x in 0..GRID_WIDTH {
-            self.blocks[line][x] = 0;
-        }
-    }
-
-    /// Очистить линии для бенчмарков.
-    ///
-    /// Выполняет очистку заполненных линий для теста производительности.
-    /// Используется только при компиляции с feature = "bench".
-    #[cfg(feature = "bench")]
-    pub fn clear_lines_for_bench(&mut self) {
-        let (rows_mask, _) = crate::game::find_full_rows(&self.blocks);
-        crate::game::remove_rows(&mut self.blocks, rows_mask);
-    }
-
-    /// Сохранить фигуру для бенчмарков.
-    ///
-    /// Сохраняет текущую фигуру в hold для теста механики hold.
-    /// Используется только при компиляции с feature = "bench".
-    #[cfg(feature = "bench")]
-    pub fn save_tetromino_for_bench(&mut self) {
-        if self.can_hold {
-            self.held_shape = Some(self.curr_shape);
-            self.can_hold = false;
-        }
-    }
-
-    /// Установить текущую фигуру для бенчмарков.
-    ///
-    /// Создаёт новую фигуру из мешка и устанавливает её как текущую.
-    /// Используется только при компиляции с feature = "bench".
-    #[cfg(feature = "bench")]
-    pub fn set_curr_shape_for_bench(&mut self) {
-        self.curr_shape = self.next_shape;
-        self.next_shape = Tetromino::from_bag(&mut self.bag);
-        self.stats.add_piece(self.curr_shape.shape);
-    }
-}
-
-// ============================================================================
-// ТЕСТЫ ДЛЯ БЕНЧМАРК-МЕТОДОВ
-// ============================================================================
-
-#[cfg(test)]
-mod tests {
-    #[allow(unused_imports)]
-    use super::*;
-
-    /// Тест для fill_line_for_bench()
-    /// Проверяет, что метод заполняет указанную линию блоками
-    #[test]
-    #[cfg(feature = "bench")]
-    fn test_fill_line_for_bench() {
-        let mut state = GameState::new();
-        let line = 5;
-
-        // Заполняем линию 5
-        state.fill_line_for_bench(line);
-
-        // Проверяем, что все ячейки в линии 5 заполнены блоками цвета 0
-        for x in 0..GRID_WIDTH {
-            assert_eq!(
-                state.blocks[line][x], 0,
-                "Ячейка [{}][{}] должна быть заполнена блоком цвета 0",
-                line, x
-            );
-        }
-
-        // Проверяем, что другие линии остались пустыми
-        for y in 0..GRID_HEIGHT {
-            if y != line {
-                for x in 0..GRID_WIDTH {
-                    assert_eq!(
-                        state.blocks[y][x], -1,
-                        "Ячейка [{}][{}] должна оставаться пустой",
-                        y, x
-                    );
-                }
-            }
-        }
-    }
-
-    /// Тест для clear_lines_for_bench()
-    /// Проверяет, что метод очищает заполненные линии
-    #[test]
-    #[cfg(feature = "bench")]
-    fn test_clear_lines_for_bench() {
-        let mut state = GameState::new();
-
-        // Заполняем линии 3, 5 и 7
-        state.fill_line_for_bench(3);
-        state.fill_line_for_bench(5);
-        state.fill_line_for_bench(7);
-
-        // Проверяем, что линии заполнены
-        for &line in &[3, 5, 7] {
-            for x in 0..GRID_WIDTH {
-                assert_eq!(
-                    state.blocks[line][x], 0,
-                    "Линия {} должна быть заполнена перед очисткой",
-                    line
-                );
-            }
-        }
-
-        // Очищаем линии
-        state.clear_lines_for_bench();
-
-        // Проверяем, что линии очищены (сдвинуты вниз)
-        // После очистки заполненные линии должны исчезнуть, а верхние сдвинуться
-        let mut empty_lines_count = 0;
-        for y in 0..GRID_HEIGHT {
-            let is_line_empty = (0..GRID_WIDTH).all(|x| state.blocks[y][x] == -1);
-            if is_line_empty {
-                empty_lines_count += 1;
-            }
-        }
-
-        // После очистки 3 линий должно быть как минимум 3 пустых линии
-        assert!(
-            empty_lines_count >= 3,
-            "После очистки должно быть как минимум 3 пустых линии"
-        );
-    }
-
-    /// Тест для save_tetromino_for_bench()
-    /// Проверяет, что метод сохраняет текущую фигуру в hold
-    #[test]
-    #[cfg(feature = "bench")]
-    fn test_save_tetromino_for_bench() {
-        let mut state = GameState::new();
-
-        // Запоминаем текущую фигуру
-        let original_shape = state.curr_shape.shape;
-
-        // Сохраняем фигуру в hold
-        state.save_tetromino_for_bench();
-
-        // Проверяем, что фигура сохранена в hold
-        assert!(
-            state.held_shape.is_some(),
-            "Фигура должна быть сохранена в hold"
-        );
-        assert_eq!(
-            state.held_shape.unwrap().shape,
-            original_shape,
-            "Сохранённая фигура должна совпадать с исходной"
-        );
-
-        // Проверяем, что can_hold установлен в false
-        assert!(
-            !state.can_hold,
-            "После удержания фигуры can_hold должен быть false"
-        );
-    }
-
-    /// Тест для set_curr_shape_for_bench()
-    /// Проверяет, что метод устанавливает следующую фигуру как текущую
-    #[test]
-    #[cfg(feature = "bench")]
-    fn test_set_curr_shape_for_bench() {
-        let mut state = GameState::new();
-
-        // Запоминаем следующую фигуру
-        let next_shape = state.next_shape.shape;
-
-        // Устанавливаем следующую фигуру как текущую
-        state.set_curr_shape_for_bench();
-
-        // Проверяем, что текущая фигура стала той, которая была следующей
-        assert_eq!(
-            state.curr_shape.shape, next_shape,
-            "Текущая фигура должна стать следующей"
-        );
-
-        // Проверяем, что следующая фигура обновилась (новая из мешка)
-        // Новая фигура должна отличаться от предыдущей (с высокой вероятностью)
-        // или быть любой из 7 типов
-        assert!(
-            matches!(
-                state.next_shape.shape,
-                ShapeType::T
-                    | ShapeType::L
-                    | ShapeType::J
-                    | ShapeType::S
-                    | ShapeType::Z
-                    | ShapeType::O
-                    | ShapeType::I
-            ),
-            "Следующая фигура должна быть одного из 7 типов"
-        );
-
-        // Проверяем, что статистика обновилась
-        assert!(
-            state.stats.total_pieces() >= 2,
-            "В статистике должно быть как минимум 2 фигуры"
-        );
     }
 }

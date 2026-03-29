@@ -69,6 +69,7 @@ pub mod mode_trait;
 pub mod render;
 pub mod scoring;
 pub mod state;
+pub mod stats;
 pub mod types;
 pub mod view;
 
@@ -81,7 +82,8 @@ pub use crate::constants;
 // Подмодули logic
 
 // Re-export основных типов для обратной совместимости
-pub use state::{GameError, GameMode, GameResult, GameState, GameStats};
+pub use state::{GameError, GameMode, GameResult, GameState};
+pub use stats::GameStats;
 
 // Re-export констант из constants.rs (обратная совместимость)
 pub use constants::{
