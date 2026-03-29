@@ -3,6 +3,9 @@
 //! Проверяют совместную работу всех исправлений и отсутствие регрессий.
 
 #![allow(deprecated)] // Для обратной совместимости
+// Разрешаем needless_range_loop для тестов: индексация нагляднее итераторов
+// в тестах, так как явно показывает работу с индексами строк и столбцов
+#![allow(clippy::needless_range_loop)]
 
 use crate::game::GameState;
 use crate::types::{Direction, RotationDirection};

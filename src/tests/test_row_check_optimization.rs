@@ -2,6 +2,10 @@
 //!
 //! Проверяют ранний выход при пустой ячейке и корректность удаления линий.
 
+// Разрешаем needless_range_loop для тестов: индексация нагляднее итераторов
+// в тестах, так как явно показывает работу с индексами строк и столбцов
+#![allow(clippy::needless_range_loop)]
+
 use crate::game::scoring::{find_full_rows, remove_rows};
 use crate::game::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
