@@ -75,7 +75,7 @@ pub mod view;
 
 // Ре-экспорт констант для обратной совместимости (чтобы game::constants::FPS работал)
 // Публичный ре-экспорт для тестов и внешнего использования
-pub use crate::constants;
+pub(crate) use crate::constants;
 
 // Подмодули scoring
 

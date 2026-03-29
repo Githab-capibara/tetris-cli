@@ -9,7 +9,13 @@
 //!
 //! ## Исправление C2
 //! Используется Range для проверки границ вместо множественных сравнений.
+//!
+//! ## Архитектурные заметки (SOLID-1)
+//! Функции используют трейт `BoardReadonly` для уменьшения связанности:
+//! - `check_block_collision()` работает с любым типом, реализующим `BoardReadonly`
+//! - Это позволяет тестировать функции отдельно от `GameState`
 
+use crate::game::access::BoardReadonly;
 use crate::game::GameState;
 use crate::io::GRID_WIDTH;
 use crate::types::Direction;
@@ -21,13 +27,17 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// Проверить столкновение одного блока с границами или другими блоками.
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `board` - объект с доступом только на чтение к полю
 /// * `check_x` - координата X блока для проверки
 /// * `check_y` - координата Y блока для проверки
 /// * `ignore_above_field` - игнорировать блоки выше поля (Y < 0)
 ///
 /// # Возвращает
 /// `true` если блок не сталкивается ни с чем
+///
+/// # Архитектурные заметки (SOLID-1)
+/// Использует трейт `BoardReadonly` вместо прямого доступа к `GameState`.
+/// Это позволяет использовать функцию с любыми типами, реализующими этот трейт.
 ///
 /// # Исправление #3 (DRY)
 /// Общая функция для устранения дублирования между:
@@ -42,8 +52,8 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// - Проверка заполненных ячеек: `cell == -1` означает пусто
 /// - Игнорирование `Y < 0` полезно для вращения (блоки могут быть выше поля)
 #[must_use]
-fn check_block_collision(
-    state: &GameState,
+fn check_block_collision<T: BoardReadonly>(
+    board: &T,
     check_x: i16,
     check_y: i16,
     ignore_above_field: bool,
@@ -61,7 +71,7 @@ fn check_block_collision(
     }
 
     // Проверка наличия блока в сетке
-    if state
+    if board
         .get_blocks()
         .get(check_y as usize)
         .and_then(|row| row.get(check_x as usize))
@@ -76,13 +86,16 @@ fn check_block_collision(
 /// Проверить возможность движения фигуры в заданном направлении.
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `board` - объект с доступом только на чтение к полю
 /// * `coords` - координаты блоков фигуры
 /// * `pos` - позиция фигуры (x, y)
 /// * `dir` - направление движения
 ///
 /// # Возвращает
 /// `true` если движение возможно
+///
+/// # Архитектурные заметки (SOLID-1)
+/// Использует трейт `BoardReadonly` вместо прямого доступа к `GameState`.
 ///
 /// # Исправление #8
 /// Используется `.get()` с ранним выходом вместо множественных проверок границ.
@@ -93,8 +106,8 @@ fn check_block_collision(
 /// # Исправление M22 (MEDIUM)
 /// Используется `.any()` с ранним выходом для оптимизации проверки коллизий.
 /// Вместо цикла с return false используется итератор с .any() для раннего прерывания.
-fn check_collision_direction(
-    state: &GameState,
+fn check_collision_direction<T: BoardReadonly>(
+    board: &T,
     coords: &[(i16, i16)],
     pos: (f32, f32),
     dir: Direction,
@@ -120,7 +133,7 @@ fn check_collision_direction(
         // Для движения вниз не игнорируем блоки выше поля (check_y < 0 блокирует движение)
         let ignore_above_field = false;
         // Инвертируем результат: check_block_collision возвращает true если нет коллизии
-        !check_block_collision(state, check_x, check_y, ignore_above_field)
+        !check_block_collision(board, check_x, check_y, ignore_above_field)
     })
 }
 
@@ -141,18 +154,25 @@ pub fn can_move_curr_shape_direction(state: &GameState, dir: Direction) -> bool 
 /// Проверить возможность вращения фигуры (без смещения).
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `board` - объект с доступом только на чтение к полю
 /// * `coords` - координаты блоков повёрнутой фигуры
 /// * `pos` - позиция фигуры
 ///
 /// # Возвращает
 /// `true` если вращение возможно
 ///
+/// # Архитектурные заметки (SOLID-1)
+/// Использует трейт `BoardReadonly` вместо прямого доступа к `GameState`.
+///
 /// # Исправление #8
 /// Используется `.get()` с ранним выходом вместо множественных проверок границ.
 /// # Исправление бага
 /// Блоки выше поля (отрицательный Y) допустимы при вращении.
-pub fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (f32, f32)) -> bool {
+pub fn check_rotation_collision<T: BoardReadonly>(
+    board: &T,
+    coords: &[(i16, i16)],
+    pos: (f32, f32),
+) -> bool {
     let (shape_x, shape_y) = pos;
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
@@ -165,7 +185,7 @@ pub fn check_rotation_collision(state: &GameState, coords: &[(i16, i16)], pos: (
         // Исправление #3 (DRY): используем общую функцию check_block_collision
         // Для вращения игнорируем блоки выше поля (check_y < 0 допустимо)
         let ignore_above_field = true;
-        if !check_block_collision(state, check_x, check_y, ignore_above_field) {
+        if !check_block_collision(board, check_x, check_y, ignore_above_field) {
             return false;
         }
     }
