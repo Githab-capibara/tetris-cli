@@ -56,7 +56,7 @@ fn test_unicode_zwj_u200d() {
 fn test_unicode_variation_selectors_range() {
     // Проверяем весь диапазон variation selectors
     for vs in 0xFE00..=0xFE0F {
-        let ch = char::from_u32(vs).unwrap();
+        let ch = char::from_u32(vs).expect("Failed to convert variation selector codepoint to char");
         let name = format!("Player{}Name", ch);
         let entry = LeaderboardEntry::new(&name, 1000);
 
@@ -142,7 +142,7 @@ fn test_unicode_disallowed_emoji() {
 fn test_unicode_disallowed_control_chars() {
     // Проверяем control characters U+0000-U+001F
     for cc in 0x0000..=0x001F {
-        let ch = char::from_u32(cc).unwrap();
+        let ch = char::from_u32(cc).expect("Failed to convert control character codepoint to char");
 
         // Пропускаем некоторые разрешённые (табуляция, новая строка)
         if ch == '\t' || ch == '\n' || ch == '\r' {

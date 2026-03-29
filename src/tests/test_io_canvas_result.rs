@@ -28,8 +28,8 @@ fn test_canvas_new_success() {
         result.is_ok(),
         "Canvas::new() должен вернуть Ok в нормальном терминале"
     );
-    
-    let canvas = result.unwrap();
+
+    let canvas = result.expect("Failed to create Canvas in normal terminal");
     
     // Проверяем что канвас не паникует при использовании
     // (просто создаём и сразу уничтожаем через drop)

@@ -28,8 +28,8 @@ fn test_get_configuration_path_via_directories() {
         proj_dirs.is_some(),
         "ProjectDirs должен определить директорию конфигурации для tetris-cli"
     );
-    
-    let proj_dirs = proj_dirs.unwrap();
+
+    let proj_dirs = proj_dirs.expect("Failed to get project directories for tetris-cli");
     let config_dir = proj_dirs.config_dir();
     
     // Проверяем, что путь не пустой
@@ -62,7 +62,7 @@ fn test_get_configuration_path_via_directories() {
 #[test]
 fn test_create_configuration_directory() {
     // Получаем путь к директории конфигурации
-    let proj_dirs = ProjectDirs::from("", "", "tetris-cli").unwrap();
+    let proj_dirs = ProjectDirs::from("", "", "tetris-cli").expect("Failed to get project directories");
     let config_dir = proj_dirs.config_dir();
     
     // Проверяем, что директория существует или может быть создана
