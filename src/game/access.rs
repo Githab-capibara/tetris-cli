@@ -234,9 +234,7 @@ impl BoardMutable for crate::game::state::GameState {
     }
 
     fn set_filled_lines(&mut self, value: u32) {
-        // filled_lines теперь private, используем геттер если нужен
-        // В текущей реализации filled_lines не имеет сеттера
-        let _ = value; // заглушка
+        self.set_filled_lines(value);
     }
 }
 

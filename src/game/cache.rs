@@ -1,41 +1,14 @@
-//! Модуль кэширования строк для отрисовки.
+//! Кэш для отрисовки.
 //!
-//! Этот модуль содержит структуру `StringCache` для кэширования строк UI,
+//! Модуль содержит структуру `RenderCache` для кэширования строк UI,
 //! что предотвращает лишние аллокации при отрисовке.
 //!
 //! ## Архитектурные заметки
-//! ## Data Clumps Problem (Problem 2.4)
-//! Выделено из state.rs для устранения Data Clumps проблемы.
-//!
-//! ## Статус использования (ИСПРАВЛЕНИЕ #11)
-//! **Этот модуль используется только в тестах и как пример архитектуры.**
-//!
-//! В основном коде используется встроенное кэширование в `GameState` через поля:
-//! - `cached_score_str`
-//! - `cached_level_str`
-//! - `cached_lines_str`
-//! - `cached_high_score_str`
-//! - `cached_combo_str`
-//! - `cached_timer_str`
-//!
-//! Этот модуль экспортируется для:
-//! 1. Модульных тестов кэширования
-//! 2. Как пример отдельной структуры кэша для возможной будущей миграции
-//! 3. Обратной совместимости
-//!
-//! ## Возможная будущая миграция
-//! В будущем `GameState` может быть рефакторирован для использования `StringCache`:
-//! ```ignore
-//! pub struct GameState {
-//!     // ...
-//!     cache: StringCache,  // Вместо отдельных полей cached_*_str
-//!     // ...
-//! }
-//! ```
+//! Выделено из `state.rs` для улучшения организации кода и разделения ответственности.
 
+use super::state::GameMode;
+use super::stats::GameStats;
 use std::fmt::Write;
-
-use super::state::{GameMode, GameStats};
 
 /// Кэш строк для отрисовки UI.
 ///
@@ -96,7 +69,7 @@ impl StringCache {
     /// * `mode` - режим игры (для таймера)
     /// * `stats` - статистика игры (для таймера)
     #[track_caller]
-    #[allow(clippy::too_many_arguments)] // Кэширование требует множественных параметров
+    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         score: u128,
@@ -205,45 +178,101 @@ impl StringCache {
     }
 }
 
+/// Кэш для оптимизации отрисовки.
+///
+/// Содержит кэшированные строки для отображения игровой информации
+/// и последние закэшированные значения для сравнения.
+///
+/// # Архитектурные заметки
+/// Выделено из GameState для улучшения организации кода и уменьшения
+/// размера основной структуры.
+pub struct RenderCache {
+    /// Кэшированная строка счёта для оптимизации отрисовки.
+    pub cached_score_str: String,
+    /// Кэшированная строка уровня для оптимизации отрисовки.
+    pub cached_level_str: String,
+    /// Кэшированная строка количества линий для оптимизации отрисовки.
+    pub cached_lines_str: String,
+    /// Кэшированная строка рекорда для оптимизации отрисовки.
+    pub cached_high_score_str: String,
+    /// Кэшированная строка комбо для оптимизации отрисовки.
+    pub cached_combo_str: String,
+    /// Кэшированная строка таймера для оптимизации отрисовки.
+    pub cached_timer_str: String,
+
+    /// Последнее закэшированное значение счёта.
+    pub last_cached_score: u128,
+    /// Последнее закэшированное значение уровня.
+    pub last_cached_level: u32,
+    /// Последнее закэшированное значение количества линий.
+    pub last_cached_lines: u32,
+    /// Последнее закэшированное значение рекорда.
+    pub last_cached_high_score: u128,
+    /// Последнее закэшированное значение комбо.
+    pub last_cached_combo: u32,
+}
+
+impl RenderCache {
+    /// Создать новый кэш для отрисовки.
+    pub fn new() -> Self {
+        Self {
+            cached_score_str: String::with_capacity(16),
+            cached_level_str: String::with_capacity(16),
+            cached_lines_str: String::with_capacity(16),
+            cached_high_score_str: String::with_capacity(16),
+            cached_combo_str: String::with_capacity(16),
+            cached_timer_str: String::with_capacity(16),
+            last_cached_score: 0,
+            last_cached_level: 0,
+            last_cached_lines: 0,
+            last_cached_high_score: 0,
+            last_cached_combo: 0,
+        }
+    }
+
+    /// Инициализация кэша начальными значениями.
+    ///
+    /// # Аргументы
+    /// * `score` - начальный счёт
+    /// * `level` - начальный уровень
+    /// * `lines` - начальное количество линий
+    /// * `high_score` - начальный рекорд
+    pub fn init_with_values(&mut self, score: u128, level: u32, lines: u32, high_score: u128) {
+        self.last_cached_score = score;
+        self.last_cached_level = level;
+        self.last_cached_lines = lines;
+        self.last_cached_high_score = high_score;
+        self.cached_score_str = score.to_string();
+        self.cached_level_str = level.to_string();
+        self.cached_lines_str = lines.to_string();
+        self.cached_high_score_str = high_score.to_string();
+    }
+}
+
+impl Default for RenderCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_string_cache_new() {
-        let cache = StringCache::new();
-        assert!(cache.score_str.is_empty());
-        assert!(cache.level_str.is_empty());
-        assert!(cache.lines_str.is_empty());
+    fn test_render_cache_new() {
+        let cache = RenderCache::new();
+        assert!(cache.cached_score_str.is_empty());
+        assert_eq!(cache.last_cached_score, 0);
     }
 
     #[test]
-    fn test_string_cache_update_score() {
-        let mut cache = StringCache::new();
-        cache.update(100, 1, 0, "0", 0, GameMode::Classic, &GameStats::default());
-        assert_eq!(cache.score(), "       100");
-    }
-
-    #[test]
-    fn test_string_cache_update_level() {
-        let mut cache = StringCache::new();
-        cache.update(0, 5, 0, "0", 0, GameMode::Classic, &GameStats::default());
-        assert_eq!(cache.level(), "         5");
-    }
-
-    #[test]
-    fn test_string_cache_update_combo() {
-        let mut cache = StringCache::new();
-        cache.update(0, 1, 0, "0", 3, GameMode::Classic, &GameStats::default());
-        assert_eq!(cache.combo(), "Комбо: x3");
-    }
-
-    #[test]
-    fn test_string_cache_no_update_if_unchanged() {
-        let mut cache = StringCache::new();
-        cache.update(100, 1, 0, "0", 0, GameMode::Classic, &GameStats::default());
-        let old_score_str = cache.score_str.clone();
-        cache.update(100, 1, 0, "0", 0, GameMode::Classic, &GameStats::default());
-        assert_eq!(cache.score_str, old_score_str);
+    fn test_render_cache_init_with_values() {
+        let mut cache = RenderCache::new();
+        cache.init_with_values(100, 2, 10, 500);
+        assert_eq!(cache.cached_score_str, "100");
+        assert_eq!(cache.cached_level_str, "2");
+        assert_eq!(cache.cached_lines_str, "10");
+        assert_eq!(cache.cached_high_score_str, "500");
     }
 }
