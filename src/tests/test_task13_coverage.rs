@@ -10,7 +10,7 @@ use crate::game::access::{BoardMutable, BoardReadonly};
 use crate::game::cache::StringCache;
 use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::scoring::lines::find_filled_lines;
-use crate::game::state::{GameMode, GameState, GameStats};
+use crate::game::state::{GameState, GameStats};
 
 // ============================================================================
 // ТЕСТЫ ДЛЯ RENDER CACHE (StringCache)
@@ -48,6 +48,7 @@ fn test_render_cache_new() {
 
 /// Тест 2: Проверка обновления кэша счёта
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_update_score() {
     let mut cache = StringCache::new();
     cache.update(
@@ -56,7 +57,7 @@ fn test_render_cache_update_score() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -69,6 +70,7 @@ fn test_render_cache_update_score() {
 
 /// Тест 3: Проверка обновления кэша уровня
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_update_level() {
     let mut cache = StringCache::new();
     cache.update(
@@ -77,7 +79,7 @@ fn test_render_cache_update_level() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -90,6 +92,7 @@ fn test_render_cache_update_level() {
 
 /// Тест 4: Проверка обновления кэша линий
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_update_lines() {
     let mut cache = StringCache::new();
     cache.update(
@@ -98,7 +101,7 @@ fn test_render_cache_update_lines() {
         25,  // lines_cleared
         "0", // high_score_display
         0,   // combo
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -111,6 +114,7 @@ fn test_render_cache_update_lines() {
 
 /// Тест 5: Проверка обновления кэша комбо
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_update_combo() {
     let mut cache = StringCache::new();
     cache.update(
@@ -119,7 +123,7 @@ fn test_render_cache_update_combo() {
         0,   // lines_cleared
         "0", // high_score_display
         3,   // combo (комбо x3)
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -131,6 +135,7 @@ fn test_render_cache_update_combo() {
 
 /// Тест 6: Проверка что кэш не обновляется без изменений
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_no_update_without_changes() {
     let mut cache = StringCache::new();
 
@@ -141,7 +146,7 @@ fn test_render_cache_no_update_without_changes() {
         0,   // lines_cleared
         "0", // high_score_display
         0,   // combo
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -155,7 +160,7 @@ fn test_render_cache_no_update_without_changes() {
         0,   // lines_cleared (не изменился)
         "0", // high_score_display (не изменился)
         0,   // combo (не изменился)
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 
@@ -171,6 +176,7 @@ fn test_render_cache_no_update_without_changes() {
 
 /// Тест 7: Проверка очистки кэша
 #[test]
+#[allow(deprecated)]
 fn test_render_cache_clear() {
     let mut cache = StringCache::new();
 
@@ -181,7 +187,7 @@ fn test_render_cache_clear() {
         50,     // lines_cleared
         "5000", // high_score_display
         5,      // combo
-        GameMode::Classic,
+        crate::game::state::GameMode::Classic,
         &GameStats::default(),
     );
 

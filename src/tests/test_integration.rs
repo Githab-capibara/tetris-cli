@@ -41,11 +41,11 @@ fn test_full_game_initialization() {
 
     // Проверяем наличие фигур
     assert!(
-        (state.get_curr_shape().shape as usize) < 7,
+        (state.curr_shape().shape as usize) < 7,
         "Текущая фигура должна быть валидной"
     );
     assert!(
-        (state.get_next_shape().shape as usize) < 7,
+        (state.next_shape().shape as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
 }
@@ -154,7 +154,7 @@ fn test_rotation_in_game_context() {
 
     // Вращение должно быть возможно хотя бы в одном направлении
     // (кроме O-фигуры которая не вращается)
-    if state.get_curr_shape().shape != ShapeType::O {
+    if state.curr_shape().shape != ShapeType::O {
         assert!(
             can_rotate_right || can_rotate_left,
             "Хотя бы одно направление вращения должно быть доступно"
@@ -174,7 +174,7 @@ fn test_game_state_tetromino_interaction() {
     let state = GameState::new();
 
     // Получаем текущую фигуру
-    let curr = state.get_curr_shape();
+    let curr = state.curr_shape();
 
     // Проверяем, что у фигуры правильная структура
     assert_eq!(curr.coords.len(), 4, "У фигуры должно быть 4 блока");

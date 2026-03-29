@@ -39,7 +39,7 @@ fn test_types_no_cyclic_dependencies() {
 /// не импортируя другие модули проекта.
 #[test]
 fn test_crypto_only_external_dependencies() {
-    use crate::crypto::{generate_salt, hash, keyed_hash, verify_keyed_hash};
+    use crate::crypto::{generate_salt, hash, hmac_sha256, verify_hmac_sha256};
 
     // Проверяем базовую функциональность
     let h = hash("тест");
@@ -48,8 +48,8 @@ fn test_crypto_only_external_dependencies() {
     let salt = generate_salt();
     assert_eq!(salt.len(), 64, "Длина соли должна быть 64 символа");
 
-    let signature = keyed_hash("ключ", "данные");
-    assert!(verify_keyed_hash("ключ", "данные", &signature));
+    let signature = hmac_sha256("ключ", "данные");
+    assert!(verify_hmac_sha256("ключ", "данные", &signature));
 }
 
 /// Проверка, что game/ подмодули не создают циклов.
@@ -245,8 +245,8 @@ fn test_game_state_getters() {
     let _lines = state.lines_cleared();
     let _mode = state.get_mode_trait().name();
     let _blocks = state.get_blocks();
-    let _curr_shape = state.get_curr_shape();
-    let _next_shape = state.get_next_shape();
+    let _curr_shape = state.curr_shape();
+    let _next_shape = state.next_shape();
     let _held_shape = state.get_held_shape_ref();
     let _stats = state.get_stats();
     let _fall_spd = state.get_fall_speed();
@@ -314,9 +314,8 @@ fn test_module_boundaries() {
     // Трейты используются через bounds
 
     // game/ экспортирует игровые структуры
-    use crate::game::{GameMode, GameState};
+    use crate::game::GameState;
     let _ = GameState::new();
-    let _ = GameMode::Classic;
 
     // highscore экспортирует таблицу лидеров
     use crate::highscore::Leaderboard;
@@ -370,15 +369,15 @@ fn test_no_deprecated_calls() {
     assert_eq!(salt.len(), 64, "Соль должна быть 64 символа");
 
     // Проверяем, что crypto модуль предоставляет все необходимые функции
-    use crate::crypto::{hash, keyed_hash, verify_keyed_hash};
+    use crate::crypto::{hash, hmac_sha256, verify_hmac_sha256};
 
     let data = "тестовые данные";
     let h = hash(data);
     assert_eq!(h.len(), 64);
 
     let key = "ключ";
-    let signature = keyed_hash(key, data);
-    assert!(verify_keyed_hash(key, data, &signature));
+    let signature = hmac_sha256(key, data);
+    assert!(verify_hmac_sha256(key, data, &signature));
 }
 
 /// Проверка, что crypto функции являются каноническими.

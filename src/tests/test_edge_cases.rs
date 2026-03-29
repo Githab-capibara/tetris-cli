@@ -42,7 +42,7 @@ fn test_edge_cases_bag_empty() {
 #[test]
 fn test_edge_cases_held_shape_none() {
     let state = GameState::new();
-    assert!(state.get_held_shape().is_none());
+    assert!(state.held_shape().is_none());
 }
 
 /// Тест: Проверка что `start_time` None при создании
@@ -99,7 +99,7 @@ fn test_edge_cases_right_boundary() {
         }
     }
 
-    let x = state.get_curr_shape().pos.0;
+    let x = state.curr_shape().pos.0;
     assert!(x < GRID_WIDTH as f32);
 }
 
@@ -114,7 +114,7 @@ fn test_edge_cases_left_boundary() {
         }
     }
 
-    let x = state.get_curr_shape().pos.0;
+    let x = state.curr_shape().pos.0;
     assert!(x >= 0.0);
 }
 
@@ -127,7 +127,7 @@ fn test_edge_cases_bottom_boundary() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let y = state.get_curr_shape().pos.1;
+    let y = state.curr_shape().pos.1;
     assert!(y < GRID_HEIGHT as f32);
 }
 
@@ -231,7 +231,7 @@ fn test_edge_cases_o_no_rotate() {
     state.get_curr_shape_mut().shape = ShapeType::O;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
 
-    let original_coords = state.get_curr_shape().coords;
+    let original_coords = state.curr_shape().coords;
 
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
         state
@@ -239,7 +239,7 @@ fn test_edge_cases_o_no_rotate() {
             .rotate(RotationDirection::Clockwise);
     }
 
-    assert_eq!(state.get_curr_shape().coords, original_coords);
+    assert_eq!(state.curr_shape().coords, original_coords);
 }
 
 /// Тест 22: Проверка что I-фигура вращается
@@ -249,7 +249,7 @@ fn test_edge_cases_i_rotates() {
     state.get_curr_shape_mut().shape = ShapeType::I;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
 
-    let original_coords = state.get_curr_shape().coords;
+    let original_coords = state.curr_shape().coords;
 
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
         state
@@ -257,7 +257,7 @@ fn test_edge_cases_i_rotates() {
             .rotate(RotationDirection::Clockwise);
     }
 
-    assert_ne!(state.get_curr_shape().coords, original_coords);
+    assert_ne!(state.curr_shape().coords, original_coords);
 }
 
 /// Тест 23: Проверка что все 7 фигур встречаются в `BagGenerator`
@@ -292,8 +292,8 @@ fn test_edge_cases_shapes_within_bounds() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let x = state.get_curr_shape().pos.0;
-    let y = state.get_curr_shape().pos.1;
+    let x = state.curr_shape().pos.0;
+    let y = state.curr_shape().pos.1;
 
     assert!(x >= 0.0 && x < GRID_WIDTH as f32);
     assert!(y >= 0.0 && y < GRID_HEIGHT as f32);
@@ -319,14 +319,14 @@ fn test_edge_cases_position_resets_after_hold() {
     state.get_curr_shape_mut().pos = (2.0, 5.0);
     state.hold_shape();
 
-    assert_eq!(state.get_curr_shape().pos, (4.0, 0.0));
+    assert_eq!(state.curr_shape().pos, (4.0, 0.0));
 }
 
 /// Тест 27: Проверка что следующая фигура не None
 #[test]
 fn test_edge_cases_next_shape_not_none() {
     let state = GameState::new();
-    let next = state.get_next_shape();
+    let next = state.next_shape();
 
     assert!((next.shape as usize) < 7);
 }
@@ -335,7 +335,7 @@ fn test_edge_cases_next_shape_not_none() {
 #[test]
 fn test_edge_cases_curr_shape_not_none() {
     let state = GameState::new();
-    let curr = state.get_curr_shape();
+    let curr = state.curr_shape();
 
     assert!((curr.shape as usize) < 7);
 }
@@ -444,7 +444,7 @@ fn test_edge_cases_get_stats_no_panic() {
 #[test]
 fn test_edge_cases_get_next_shape_no_panic() {
     let state = GameState::new();
-    let _next = state.get_next_shape();
+    let _next = state.next_shape();
     // Тест успешно завершён, если код достиг этой строки
 }
 
@@ -452,7 +452,7 @@ fn test_edge_cases_get_next_shape_no_panic() {
 #[test]
 fn test_edge_cases_get_curr_shape_no_panic() {
     let state = GameState::new();
-    let _curr = state.get_curr_shape();
+    let _curr = state.curr_shape();
     // Тест успешно завершён, если код достиг этой строки
 }
 
@@ -460,7 +460,7 @@ fn test_edge_cases_get_curr_shape_no_panic() {
 #[test]
 fn test_edge_cases_get_held_shape_no_panic() {
     let state = GameState::new();
-    let _held = state.get_held_shape();
+    let _held = state.held_shape();
     // Тест успешно завершён, если код достиг этой строки
 }
 

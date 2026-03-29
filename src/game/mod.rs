@@ -227,6 +227,44 @@ impl GameState {
         let lines = self.lines_cleared().saturating_add(1);
         self.set_lines_cleared(lines);
     }
+
+    // ========================================================================
+    // МЕТОДЫ ДЛЯ БЕНЧМАРКОВ (feature = "bench")
+    // ========================================================================
+
+    /// Заполнить указанную линию для бенчмарков.
+    ///
+    /// # Аргументы
+    /// * `line` - индекс линии (0..GRID_HEIGHT)
+    ///
+    /// # Паника
+    /// Паникует если индекс линии выходит за пределы поля
+    #[cfg(feature = "bench")]
+    pub fn fill_line_for_bench(&mut self, line: usize) {
+        use crate::io::GRID_HEIGHT;
+        assert!(
+            line < GRID_HEIGHT,
+            "Индекс линии должен быть меньше {}",
+            GRID_HEIGHT
+        );
+        self.get_blocks_mut()[line] = [1i8; crate::io::GRID_WIDTH];
+    }
+
+    /// Очистить заполненные линии для бенчмарков.
+    ///
+    /// Использует `check_rows()` для удаления заполненных линий.
+    #[cfg(feature = "bench")]
+    pub fn clear_lines_for_bench(&mut self) {
+        self.check_rows();
+    }
+
+    /// Сохранить текущую фигуру для бенчмарков.
+    ///
+    /// Использует `save_tetromino()` для сохранения фигуры в поле.
+    #[cfg(feature = "bench")]
+    pub fn save_tetromino_for_bench(&mut self) {
+        self.save_tetromino();
+    }
 }
 
 // Импортируем типы из state для использования в impl
