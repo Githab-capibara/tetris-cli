@@ -111,7 +111,7 @@ impl Application {
         let canvas = Canvas::new().map_err(|e| {
             let msg = format!("Ошибка инициализации терминала: {e}");
             eprintln!("{msg}");
-            GameError::Io(std::io::Error::new(std::io::ErrorKind::Other, msg))
+            GameError::Io(std::io::Error::other(msg))
         })?;
 
         let input = KeyReader::new();

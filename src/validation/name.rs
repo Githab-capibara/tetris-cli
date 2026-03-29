@@ -318,4 +318,82 @@ mod validation_name_tests {
         assert!(!is_forbidden_char('я'));
         assert!(!is_forbidden_char('ё'));
     }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ H6: ОПТИМИЗАЦИЯ sanitize_player_name()
+    // =========================================================================
+
+    /// Тест H6: проверка оптимизации с filter_map - один проход
+    #[test]
+    fn test_fix_h6_sanitize_single_pass_filter_map() {
+        // Проверка что filter_map корректно объединяет фильтрацию и маппинг
+        let name = "Pl@yer!_1";
+        let sanitized = sanitize_player_name(name);
+        // Все невалидные символы должны быть удалены за один проход
+        assert_eq!(sanitized, "Plyer_1");
+    }
+
+    /// Тест H6: проверка оптимизации с with_capacity - предотвращение реаллокаций
+    #[test]
+    fn test_fix_h6_sanitize_with_capacity_optimization() {
+        // Проверка что имя длиной 20 символов не требует реаллокации
+        let exactly_20_chars = "abcdefghijklmnopqrst";
+        let sanitized = sanitize_player_name(exactly_20_chars);
+        assert_eq!(sanitized.len(), 20);
+        assert_eq!(sanitized, exactly_20_chars);
+    }
+
+    /// Тест H6: проверка обработки имён с mixed valid/invalid символами
+    #[test]
+    fn test_fix_h6_sanitize_mixed_valid_invalid_chars() {
+        // Смешанное имя с разрешёнными и запрещёнными символами
+        let mixed_name = "Valid_123-Test";
+        let sanitized = sanitize_player_name(mixed_name);
+        assert_eq!(sanitized, "Valid_123-Test");
+
+        // Имя с запрещёнными символами
+        let invalid_name = "Invalid@#Test!";
+        let sanitized_invalid = sanitize_player_name(invalid_name);
+        assert_eq!(sanitized_invalid, "InvalidTest");
+    }
+
+    /// Тест H6: проверка обработки имён с пробелами
+    #[test]
+    fn test_fix_h6_sanitize_names_with_spaces() {
+        // Имя с пробелами (пробелы разрешены)
+        let name_with_spaces = "Player Name";
+        let sanitized = sanitize_player_name(name_with_spaces);
+        assert_eq!(sanitized, "Player Name");
+
+        // Имя с пробелами по краям (trim)
+        let name_with_trim_spaces = "  Player  ";
+        let sanitized_trimmed = sanitize_player_name(name_with_trim_spaces);
+        assert_eq!(sanitized_trimmed, "Player");
+    }
+
+    /// Тест H6: проверка обработки русских имён
+    #[test]
+    fn test_fix_h6_sanitize_cyrillic_names() {
+        let russian_name = "Игрок123";
+        let sanitized = sanitize_player_name(russian_name);
+        assert_eq!(sanitized, "Игрок123");
+
+        let mixed_name = "Player1Игрок2";
+        let sanitized_mixed = sanitize_player_name(mixed_name);
+        assert_eq!(sanitized_mixed, "Player1Игрок2");
+    }
+
+    /// Тест H6: проверка обработки special characters
+    #[test]
+    fn test_fix_h6_sanitize_special_characters() {
+        // Разрешённые специальные символы
+        let special_name = "Player_Name-123";
+        let sanitized = sanitize_player_name(special_name);
+        assert_eq!(sanitized, "Player_Name-123");
+
+        // Запрещённые специальные символы
+        let invalid_special = "Player@Name#Test$";
+        let sanitized_invalid = sanitize_player_name(invalid_special);
+        assert_eq!(sanitized_invalid, "PlayerNameTest");
+    }
 }

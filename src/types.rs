@@ -25,7 +25,7 @@
 /// }
 /// ```
 ///
-/// ## Исправление #4 (Direction vs RotationDirection)
+/// ## Исправление #4 (Direction vs `RotationDirection`)
 /// Для конвертации в направление вращения используйте метод
 /// [`to_rotation_direction()`](Self::to_rotation_direction).
 ///
@@ -74,7 +74,7 @@ impl Direction {
     /// направление вращения через `RotationDirection`.
     ///
     /// # Исправление 1.3
-    /// Direction::Down больше не конвертируется в RotationDirection::Clockwise.
+    /// `Direction::Down` больше не конвертируется в `RotationDirection::Clockwise`.
     #[must_use]
     #[allow(dead_code)]
     pub const fn to_rotation_direction(self) -> Option<RotationDirection> {
@@ -152,6 +152,7 @@ impl Position {
     /// use tetris_cli::types::Position;
     /// let pos = Position::new(5, 10);
     /// ```
+    #[must_use]
     pub fn new(x: u16, y: u16) -> Self {
         Self { x, y }
     }
@@ -169,6 +170,7 @@ impl Position {
     /// use tetris_cli::types::Position;
     /// let pos = Position::from_tuple((5, 10));
     /// ```
+    #[must_use]
     pub fn from_tuple(tuple: (u16, u16)) -> Self {
         Self {
             x: tuple.0,
