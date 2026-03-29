@@ -2,11 +2,11 @@
 //!
 //! Предоставляет структуру Application для управления жизненным циклом приложения.
 
+use crate::game::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
 use crate::menu::run_game_mode;
-use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use termion::terminal_size;
@@ -33,14 +33,14 @@ impl Application {
     /// Инициализировать приложение.
     ///
     /// # Возвращает
-    /// `Result<Self, Box<dyn Error>>` при ошибке инициализации
+    /// `Result<Self, GameError>` при ошибке инициализации
     ///
     /// # Errors
     /// Возвращает ошибку если:
     /// - Не удалось загрузить данные
     /// - Терминал не соответствует минимальным требованиям
     /// - Не удалось инициализировать Canvas/KeyReader
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new() -> Result<Self, GameError> {
         // Загрузка сохранённых данных с обработкой ошибок
         let (save, leaderboard) = Self::load_game_data();
 
@@ -82,37 +82,36 @@ impl Application {
     /// Инициализировать терминал и создать Canvas/KeyReader.
     ///
     /// # Возвращает
-    /// `Result<(Canvas, KeyReader), Box<dyn Error>>`
+    /// `Result<(Canvas, KeyReader), GameError>`
     ///
     /// # Errors
     /// Возвращает ошибку если терминал не соответствует минимальным требованиям
-    fn initialize_terminal() -> Result<(Canvas, KeyReader), Box<dyn Error>> {
+    fn initialize_terminal() -> Result<(Canvas, KeyReader), GameError> {
         // Проверка размера терминала
         let (width, height) = terminal_size().map_err(|e| {
-            eprintln!(
+            let msg = format!(
                 "Ошибка: не удалось получить размер терминала: {e}.\n\
                  Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов."
             );
-            e
+            eprintln!("{msg}");
+            GameError::Validation(msg)
         })?;
 
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
-            let err = std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                format!(
-                    "Окно терминала слишком маленькое!\n\
-                     Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов.\n\
-                     Текущий размер: {width}x{height} символов."
-                ),
+            let msg = format!(
+                "Окно терминала слишком маленькое!\n\
+                 Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов.\n\
+                 Текущий размер: {width}x{height} символов."
             );
-            eprintln!("{err}");
-            return Err(err.into());
+            eprintln!("{msg}");
+            return Err(GameError::Validation(msg));
         }
 
         // Инициализация Canvas и KeyReader
         let canvas = Canvas::new().map_err(|e| {
-            eprintln!("Ошибка инициализации терминала: {e}");
-            e
+            let msg = format!("Ошибка инициализации терминала: {e}");
+            eprintln!("{msg}");
+            GameError::Io(std::io::Error::new(std::io::ErrorKind::Other, msg))
         })?;
 
         let input = KeyReader::new();

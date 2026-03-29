@@ -6,10 +6,17 @@
 //! ## Исправление #3 (DRY - Don't Repeat Yourself)
 //! Выделена общая функция `check_block_collision()` для устранения дублирования кода
 //! между проверкой движения и проверкой вращения.
+//!
+//! ## Исправление C2
+//! Используется Range для проверки границ вместо множественных сравнений.
 
 use crate::game::GameState;
 use crate::io::GRID_WIDTH;
 use crate::types::Direction;
+
+/// Допустимый диапазон координат X для блоков на поле.
+/// Используется для проверки границ в проверке коллизий.
+const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 
 /// Проверить столкновение одного блока с границами или другими блоками.
 ///
@@ -27,6 +34,9 @@ use crate::types::Direction;
 /// - `check_collision_direction()` - проверка движения
 /// - `check_rotation_collision()` - проверка вращения
 ///
+/// # Исправление C2
+/// Используется Range::contains для проверки границ вместо множественных сравнений.
+///
 /// # Примечания
 /// - Проверка границ X: `0 <= check_x < GRID_WIDTH`
 /// - Проверка заполненных ячеек: `cell == -1` означает пусто
@@ -38,13 +48,8 @@ fn check_block_collision(
     check_y: i16,
     ignore_above_field: bool,
 ) -> bool {
-    // Проверка левой границы
-    if check_x < 0 {
-        return false;
-    }
-
-    // Проверка правой границы
-    if check_x >= GRID_WIDTH as i16 {
+    // Исправление C2: используем Range::contains для проверки границ X
+    if !VALID_X_RANGE.contains(&check_x) {
         return false;
     }
 
@@ -84,6 +89,10 @@ fn check_block_collision(
 /// # Исправление бага
 /// Проверка `check_y < 0` должна выполняться только для `Direction::Down`.
 /// Блоки выше поля (отрицательный Y) не должны блокировать движение влево/вправо.
+///
+/// # Исправление M22 (MEDIUM)
+/// Используется `.any()` с ранним выходом для оптимизации проверки коллизий.
+/// Вместо цикла с return false используется итератор с .any() для раннего прерывания.
 fn check_collision_direction(
     state: &GameState,
     coords: &[(i16, i16)],
@@ -94,8 +103,10 @@ fn check_collision_direction(
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
-    for coord in coords {
-        let (coord_x, coord_y) = coord;
+    // Исправление M22: используем any() для раннего выхода при обнаружении коллизии
+    // any() возвращает true если хотя бы один блок имеет коллизию
+    // !any() возвращает true если все блоки свободны (нет коллизий)
+    !coords.iter().any(|&(coord_x, coord_y)| {
         let mut check_x = coord_x + shape_block_x;
         let mut check_y = coord_y + shape_block_y;
 
@@ -108,11 +119,9 @@ fn check_collision_direction(
         // Исправление #3 (DRY): используем общую функцию check_block_collision
         // Для движения вниз не игнорируем блоки выше поля (check_y < 0 блокирует движение)
         let ignore_above_field = false;
-        if !check_block_collision(state, check_x, check_y, ignore_above_field) {
-            return false;
-        }
-    }
-    true
+        // Инвертируем результат: check_block_collision возвращает true если нет коллизии
+        !check_block_collision(state, check_x, check_y, ignore_above_field)
+    })
 }
 
 /// Проверить возможность движения текущей фигуры.

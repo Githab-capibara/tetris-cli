@@ -63,17 +63,28 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
 /// - `0` если значение NaN, отрицательное или бесконечное
 /// - `u32::MAX` если значение превышает максимальное
 ///
-/// # Исправление #1 (CRITICAL)
-/// Использует clamp + cast для безопасной конвертации без паники.
+/// # Исправление C1 (CRITICAL)
+/// Использует явную проверку границ вместо clamp для избежания потери точности.
+/// Проблема: `u32::MAX as f32` теряет точность из-за представления float.
 /// Защита от NaN, Infinity, отрицательных значений и переполнения.
 #[inline]
 fn safe_f32_to_u32(value: f32) -> u32 {
+    // Проверка на NaN и бесконечность
     if !value.is_finite() {
         return 0;
     }
-    // clamp гарантирует что значение в диапазоне [0, u32::MAX]
-    // cast безопасен после clamp
-    value.clamp(0.0, u32::MAX as f32) as u32
+    // Проверка на отрицательные значения
+    if value < 0.0 {
+        return 0;
+    }
+    // Проверка на переполнение - используем явное сравнение
+    // u32::MAX = 4294967295, но u32::MAX as f32 = 4294967296.0 (потеря точности)
+    // Поэтому сравниваем с u32::MAX as f32 и возвращаем MAX при превышении
+    if value >= u32::MAX as f32 {
+        return u32::MAX;
+    }
+    // Конвертация безопасна - значение в диапазоне [0, u32::MAX)
+    value as u32
 }
 
 /// Обработать Hard Drop (мгновенное падение).
@@ -174,10 +185,15 @@ pub fn handle_hold(state: &mut GameState) {
 /// - `calculate_landing_bonus()` - расчёт бонуса за приземление
 /// - `spawn_next_tetromino()` - переход к следующей фигуре
 /// - `check_mode_completion()` - проверка окончания режима
+///
+/// # Исправление M6 (MEDIUM)
+/// Использует ранний выход (early return) для проверки проигрыша
+/// и явный возврат результата для улучшения читаемости.
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
     use crate::game::constants::{MARATHON_LINES, SPRINT_LINES};
 
     // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
+    // Исправление M6: ранний выход для улучшения читаемости
     if check_game_over_condition(state) {
         return Some(UpdateEndState::Lost);
     }
@@ -198,6 +214,7 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
     spawn_next_tetromino(state);
 
     // Проверка окончания режима (Исправление #24: вынесено в подфункцию)
+    // Исправление M6: явный возврат результата
     check_mode_completion(state, lines_cleared, SPRINT_LINES, MARATHON_LINES)
 }
 

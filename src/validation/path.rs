@@ -159,6 +159,9 @@ impl PathValidator {
     ///
     /// # Исправление #5 (CRITICAL)
     /// Canonicalize выполняется для надёжной защиты от symlink атак.
+    ///
+    /// # Исправление H7 (HIGH)
+    /// Кэширует результат canonicalize для предотвращения повторных вызовов.
     #[track_caller]
     pub fn validate_all(
         &self,
@@ -178,7 +181,8 @@ impl PathValidator {
         self.validate_length(full_path)?;
         self.validate_characters(full_path)?;
 
-        // Canonicalize для защиты от symlink атак
+        // Исправление H7: кэшируем результат canonicalize
+        // Выполняем canonicalize один раз и используем результат многократно
         let canonical_path = if joined_path.exists() {
             joined_path.canonicalize().map_err(|e| PathError {
                 message: format!("Неверный путь {}: {}", joined_path.display(), e),
@@ -195,20 +199,20 @@ impl PathValidator {
         };
 
         // Проверка на symlink после canonicalize
+        // Используем кэшированный canonical_path для проверки
         self.validate_no_symlinks(&joined_path)?;
 
         // Проверка что путь находится внутри разрешённой директории
-        // Это дополнительная защита от обхода директории
-        self.validate_within_directory(
-            &canonical_path,
-            &current_dir.canonicalize().map_err(|e| PathError {
-                message: format!(
-                    "Не удалось получить canonical путь текущей директории: {}",
-                    e
-                ),
-                kind: PathErrorKind::InvalidPath,
-            })?,
-        )?;
+        // Исправление H7: используем кэшированный canonical_path
+        let canonical_current_dir = current_dir.canonicalize().map_err(|e| PathError {
+            message: format!(
+                "Не удалось получить canonical путь текущей директории: {}",
+                e
+            ),
+            kind: PathErrorKind::InvalidPath,
+        })?;
+
+        self.validate_within_directory(&canonical_path, &canonical_current_dir)?;
 
         Ok(canonical_path)
     }

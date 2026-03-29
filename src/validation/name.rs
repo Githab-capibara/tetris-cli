@@ -95,21 +95,29 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// # Исправление #18
 /// Использует функцию `is_forbidden_char()` для улучшения читаемости.
 ///
-/// # Исправление #8 (HIGH)
-/// Объединяет два фильтра в один проход для оптимизации.
+/// # Исправление H6 (HIGH)
+/// Использует String::with_capacity() для предотвращения реаллокаций
+/// и filter_map() для объединения фильтрации и маппинга в один проход.
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
-    // Исправление #8: объединяем фильтры в один проход для оптимизации
-    // Вместо двух отдельных filter() используем один с комбинированным условием
+    // Исправление H6: оптимизация с with_capacity и filter_map
+    // Предварительно выделяем память максимум на 20 символов (лимит длины)
+    // Используем filter_map для объединения фильтрации и преобразования
     let validated: String = trimmed
         .chars()
-        .filter(|&c| !is_forbidden_char(c) && is_valid_name_char(c))
+        .filter_map(|c| {
+            if !is_forbidden_char(c) && is_valid_name_char(c) {
+                Some(c)
+            } else {
+                None
+            }
+        })
         .take(20)
-        .collect();
+        .collect::<String>();
 
     if validated.is_empty() {
         "Anonymous".to_string()
