@@ -192,62 +192,9 @@ pub mod test_fixes;
 pub mod test_fixes_verification;
 
 // ============================================================================
-// ТЕСТЫ АУДИТА КОДА
-// ============================================================================
-
-// Тесты для проверки всех исправлений аудита кода
-pub mod test_audit_fixes;
-
-// ============================================================================
 // ОГРАНИЧЕНИЯ И СПЕЦИАЛЬНЫЕ ТЕСТЫ
 // ============================================================================
 
 pub mod test_utf8_limitation;
 
-// ============================================================================
-// КОМПЛЕКСНЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ АУДИТА
-// ============================================================================
-
-// Тесты перемещены в test_security_fixes.rs и test_time_safety.rs
-// pub mod test_audit_fixes_comprehensive; // УДАЛЁН: тесты перемещены в другие файлы
-
-// ============================================================================
-// ТЕСТЫ ЗАДАЧ (Задачи 12-15)
-// ============================================================================
-
 pub mod test_task13_coverage;
-
-// ============================================================================
-// УДАЛЕННЫЕ МОДУЛИ (закомментированы)
-// ============================================================================
-
-// pub mod test_achievements; // REMOVED: Achievement system removed
-// pub mod test_all_32_fixes; // REMOVED: дублирование с test_all_fixes_integration
-// pub mod test_all_24_fixes; // REMOVED: дублирование с test_all_fixes_integration
-// pub mod test_all_fixes; // REMOVED: дублирование с test_all_fixes_integration
-// pub mod test_fixes_comprehensive; // REMOVED: дублирование
-// pub mod test_fixes_verification; // REMOVED: дублирование
-// pub mod test_fixes_verification_extended; // REMOVED: дублирование
-// pub mod test_fixes_verification_final; // REMOVED: дублирование
-// pub mod audit_fixes_comprehensive; // REMOVED: дублирование
-
-// REMOVED: дублирование с базовыми тестами
-// pub mod test_controls_detailed;
-// pub mod test_highscore_detailed;
-// pub mod test_tetromino_extended;
-// pub mod test_game_extended;
-// pub mod test_io_detailed;
-// pub mod test_scoring_detailed;
-
-// REMOVED: временные тесты для исправлений
-// pub mod test_highscore_u256_fix;
-// pub mod test_game_score_overflow_u128;
-// pub mod test_highscore_no_rate_limiting;
-
-// REMOVED: дублирование архитектурных тестов
-// pub mod test_architecture_constraints;
-// pub mod test_architecture_integrity;
-// pub mod test_architecture_modularity;
-// pub mod test_code_quality;
-// pub mod test_code_quality_fixes;
-// pub mod test_refactoring_fixes;

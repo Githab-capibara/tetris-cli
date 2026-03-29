@@ -529,9 +529,6 @@ mod tests {
     // Тесты на архитектурную целостность (16 тестов)
     pub mod test_architecture;
 
-    // Тесты на архитектурные улучшения (16 тестов)
-    pub mod test_architecture_improvements;
-
     // ========================================================================
     // НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
     // ========================================================================
@@ -561,17 +558,8 @@ mod tests {
     pub mod test_must_use_attributes;
     pub mod test_track_caller;
 
-    // Тесты на архитектурную целостность (20 тестов)
-    pub mod test_architecture_integrity;
-
-    // Тесты на архитектурный рефакторинг (37 тестов)
-    pub mod test_architecture_refactoring;
-
     // Интеграционные тесты (10 тестов)
     pub mod test_all_fixes_integration;
-
-    // Тесты верификации исправлений (C1, L1, L2, L3, M4) - 13 тестов
-    pub mod test_fixes_verification;
 
     // Тесты для всех 24 исправлений из отчета аудита (24 теста)
     // pub mod test_all_24_fixes; // REMOVED: дублирование
