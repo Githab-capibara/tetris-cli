@@ -61,6 +61,7 @@ use super::state::GameState;
 use super::view::GameView;
 use crate::io::{Canvas, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
+use std::fmt::Write;
 use termion::color::Reset;
 
 /// Отрисовать текущее состояние игры.
@@ -140,8 +141,6 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 /// - Используется `truncate(0)` вместо `clear()` для предотвращения deallocation
 /// - Инициализация через `String::with_capacity(16)` для уменьшения аллокаций
 fn update_cached_strings(state: &mut GameState) {
-    use std::fmt::Write;
-
     let score = state.score();
     let level = state.level();
     let lines_cleared = state.lines_cleared();
@@ -211,9 +210,7 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
             // Исправление H1: используем truncate(0) + push_str() для переиспользования буфера
             render_cache.cached_combo_str.truncate(0);
             if combo_counter > 1 {
-                render_cache
-                    .cached_combo_str
-                    .push_str(&format!("Комбо: x{combo_counter}"));
+                let _ = write!(render_cache.cached_combo_str, "Комбо: x{combo_counter}");
             }
             render_cache.last_cached_combo = combo_counter;
         }

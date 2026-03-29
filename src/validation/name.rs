@@ -106,18 +106,12 @@ pub fn sanitize_player_name(name: &str) -> String {
 
     // Исправление H6: оптимизация с with_capacity и filter_map
     // Предварительно выделяем память максимум на 20 символов (лимит длины)
-    // Используем filter_map для объединения фильтрации и преобразования
+    // Используем filter для фильтрации и collect для сбора в String
     let validated: String = trimmed
         .chars()
-        .filter_map(|c| {
-            if !is_forbidden_char(c) && is_valid_name_char(c) {
-                Some(c)
-            } else {
-                None
-            }
-        })
+        .filter(|c| !is_forbidden_char(*c) && is_valid_name_char(*c))
         .take(20)
-        .collect::<String>();
+        .collect();
 
     if validated.is_empty() {
         "Anonymous".to_string()
