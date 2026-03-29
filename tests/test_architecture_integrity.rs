@@ -181,9 +181,10 @@ mod tests {
             "set_level должен иметь валидацию (min = 1)"
         );
 
+        // Проверяем set_fall_speed (ранее set_fall_spd) с валидацией
         assert!(
-            state_content.contains("set_fall_spd") && state_content.contains("clamp"),
-            "set_fall_spd должен иметь валидацию (clamp)"
+            state_content.contains("set_fall_speed") && state_content.contains("clamp"),
+            "set_fall_speed должен иметь валидацию (clamp)"
         );
     }
 

@@ -580,8 +580,10 @@ impl GameState {
     }
 
     /// Установить уровень.
+    ///
+    /// Уровень не может быть меньше 1.
     pub fn set_level(&mut self, value: u32) {
-        self.level = value;
+        self.level = value.max(1);
     }
 
     /// Установить количество удалённых линий.
@@ -590,8 +592,11 @@ impl GameState {
     }
 
     /// Установить скорость падения.
+    ///
+    /// Скорость ограничена диапазоном от [`INITIAL_FALL_SPD`] до [`MAX_FALL_SPEED`].
     pub fn set_fall_speed(&mut self, value: f32) {
-        self.fall_speed = value;
+        use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
+        self.fall_speed = value.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
     }
 
     /// Установить таймер приземления.
