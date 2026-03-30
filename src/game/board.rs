@@ -11,75 +11,8 @@
 
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
-/// Трейт для чтения состояния поля.
-///
-/// Предоставляет только чтение для доступа к состоянию поля.
-pub trait BoardReadonly {
-    /// Получить значение ячейки поля.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X (0..GRID_WIDTH)
-    /// * `y` - координата Y (0..GRID_HEIGHT)
-    ///
-    /// # Возвращает
-    /// - `Some(i8)` - значение ячейки (-1 = пусто, 0-6 = цвет)
-    /// - `None` - если координаты выходят за пределы поля
-    fn get_block(&self, x: usize, y: usize) -> Option<i8>;
-
-    /// Получить битовую маску заполненных линий.
-    ///
-    /// # Возвращает
-    /// Битовая маска где каждый бит соответствует линии поля.
-    /// Бит установлен в 1 если линия заполнена.
-    fn get_filled_lines_mask(&self) -> u32;
-
-    /// Получить количество заполненных линий.
-    ///
-    /// # Возвращает
-    /// Количество линий, которые необходимо удалить.
-    fn get_filled_lines_count(&self) -> u32;
-
-    /// Получить ссылку на внутренний массив поля.
-    ///
-    /// # Возвращает
-    /// Ссылка на двумерный массив [[i8; GRID_WIDTH]; GRID_HEIGHT]
-    fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
-}
-
-/// Трейт для изменения состояния поля.
-///
-/// Предоставляет мутуабельный доступ для изменения поля.
-pub trait BoardMutable: BoardReadonly {
-    /// Установить значение ячейки поля.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X (0..GRID_WIDTH)
-    /// * `y` - координата Y (0..GRID_HEIGHT)
-    /// * `value` - значение (-1 = пусто, 0-6 = цвет)
-    ///
-    /// # Возвращает
-    /// - `Some(())` - если ячейка успешно установлена
-    /// - `None` - если координаты выходят за пределы поля
-    fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()>;
-
-    /// Очистить заполненные линии.
-    ///
-    /// # Возвращает
-    /// Количество очищенных линий.
-    fn clear_filled_lines(&mut self) -> u32;
-
-    /// Установить битовую маску заполненных линий.
-    ///
-    /// # Аргументы
-    /// * `mask` - битовая маска заполненных линий
-    fn set_filled_lines_mask(&mut self, mask: u32);
-
-    /// Получить мутуабельную ссылку на внутренний массив поля.
-    ///
-    /// # Возвращает
-    /// Мутуабельная ссылка на [[i8; GRID_WIDTH]; GRID_HEIGHT]
-    fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
-}
+// Переэкспорт трейтов доступа из access.rs для удобства
+pub use super::access::{BoardMutable, BoardReadonly};
 
 /// Состояние игрового поля.
 ///
@@ -220,53 +153,57 @@ impl GameBoard {
 
 impl BoardReadonly for GameBoard {
     #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn get_block(&self, x: usize, y: usize) -> Option<i8> {
-        self.get_block(x, y)
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn get_filled_lines_mask(&self) -> u32 {
-        self.get_filled_lines_mask()
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn get_filled_lines_count(&self) -> u32 {
-        self.get_filled_lines_count()
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        self.get_blocks()
+        &self.blocks
+    }
+
+    #[inline]
+    fn get_block(&self, x: usize, y: usize) -> i8 {
+        self.blocks[y][x]
+    }
+
+    #[inline]
+    fn is_block_empty(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] == -1
+    }
+
+    #[inline]
+    fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+        self.blocks[y][x] != -1
+    }
+
+    #[inline]
+    fn get_filled_lines_mask(&self) -> u32 {
+        self.filled_lines
+    }
+
+    #[inline]
+    fn get_filled_lines_count(&self) -> u32 {
+        self.filled_lines.count_ones()
     }
 }
 
 impl BoardMutable for GameBoard {
     #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
-        self.set_block(x, y, value)
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn clear_filled_lines(&mut self) -> u32 {
-        self.clear_filled_lines()
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn set_filled_lines_mask(&mut self, mask: u32) {
-        self.set_filled_lines_mask(mask);
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        self.get_blocks_mut()
+        &mut self.blocks
+    }
+
+    #[inline]
+    fn set_block(&mut self, x: usize, y: usize, value: i8) {
+        self.blocks[y][x] = value;
+    }
+
+    #[inline]
+    fn set_filled_lines_mask(&mut self, mask: u32) {
+        self.filled_lines = mask;
+    }
+
+    #[inline]
+    fn clear_filled_lines(&mut self) -> u32 {
+        let count = self.filled_lines.count_ones();
+        self.filled_lines = 0;
+        count
     }
 }
 

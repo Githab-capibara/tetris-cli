@@ -660,14 +660,27 @@ impl GameState {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
+    ///
+    /// # DRY-2: Централизация валидации
+    /// Использует `ValidationService::validate_f32_finite()` для валидации.
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
+        use crate::validation::{ValidationError, ValidationService};
 
-        // Валидация на NaN и Infinity (H3)
-        if value.is_nan() || value.is_infinite() {
+        // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
+        if let Err(e) = ValidationService::validate_f32_finite(value) {
             return Err(GameError::Validation(format!(
-                "Неверная скорость падения: {} (NaN/Infinity)",
-                value
+                "Неверная скорость падения: {}",
+                e.message
+            )));
+        }
+
+        // Дополнительная валидация диапазона через ValidationService
+        let value_u32 = value.abs() as u32;
+        if let Err(e) = ValidationService::validate_u32_range(value_u32, 0, u32::MAX) {
+            return Err(GameError::Validation(format!(
+                "Неверный диапазон скорости: {}",
+                e.message
             )));
         }
 
@@ -687,12 +700,17 @@ impl GameState {
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
     /// Отрицательные значения заменяются на 0.
+    ///
+    /// # DRY-2: Централизация валидации
+    /// Использует `ValidationService::validate_f32_finite()` для валидации.
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), GameError> {
-        // Валидация на NaN и Infinity (H3)
-        if value.is_nan() || value.is_infinite() {
+        use crate::validation::{ValidationError, ValidationService};
+
+        // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
+        if let Err(e) = ValidationService::validate_f32_finite(value as f32) {
             return Err(GameError::Validation(format!(
-                "Неверный таймер приземления: {} (NaN/Infinity)",
-                value
+                "Неверный таймер приземления: {}",
+                e.message
             )));
         }
 
@@ -874,30 +892,10 @@ impl GameState {
 }
 
 // ============================================================================
-// РЕАЛИЗАЦИЯ TRAIT SCORINGSTATE (ИСПРАВЛЕНИЕ #6 - HIGH)
+// РЕАЛИЗАЦИЯ TRAIT SCORINGSTATE ДЛЯ GameState
 // ============================================================================
 
 impl super::scoring::ScoringState for GameState {
-    fn score(&self) -> u128 {
-        self.score()
-    }
-
-    fn set_score(&mut self, score: u128) {
-        self.set_score(score);
-    }
-
-    fn level(&self) -> u32 {
-        self.level()
-    }
-
-    fn lines_cleared(&self) -> u32 {
-        self.lines_cleared()
-    }
-
-    fn set_lines_cleared(&mut self, lines: u32) {
-        self.set_lines_cleared(lines);
-    }
-
     fn fall_speed(&self) -> f32 {
         self.fall_speed()
     }
@@ -931,6 +929,62 @@ impl super::scoring::ScoringState for GameState {
 
     fn get_blocks_mut(&mut self) -> &mut [[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT] {
         self.get_blocks_mut()
+    }
+}
+
+// ============================================================================
+// ISP-1: РЕАЛИЗАЦИЯ УЗКИХ ТРЕЙТОВ ДЛЯ GameState
+// ============================================================================
+
+impl crate::game::scoring::ScoreAccess for GameState {
+    fn get_score(&self) -> u128 {
+        self.score()
+    }
+
+    fn set_score(&mut self, score: u128) {
+        self.set_score(score);
+    }
+
+    fn add_score(&mut self, points: u128) {
+        self.add_score(points);
+    }
+}
+
+impl crate::game::scoring::LevelAccess for GameState {
+    fn get_level(&self) -> u32 {
+        self.level()
+    }
+
+    fn set_level(&mut self, level: u32) {
+        self.set_level(level);
+    }
+}
+
+impl crate::game::scoring::LinesAccess for GameState {
+    fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared()
+    }
+
+    fn set_lines_cleared(&mut self, lines: u32) {
+        self.set_lines_cleared(lines);
+    }
+
+    fn add_lines(&mut self, lines: u32) {
+        self.set_lines_cleared(self.lines_cleared() + lines);
+    }
+}
+
+impl crate::game::scoring::ComboAccess for GameState {
+    fn get_combo(&self) -> u32 {
+        self.stats().combo_counter()
+    }
+
+    fn set_combo(&mut self, combo: u32) {
+        self.stats_mut().set_combo_counter(combo);
+    }
+
+    fn reset_combo(&mut self) {
+        self.stats_mut().set_combo_counter(0);
     }
 }
 

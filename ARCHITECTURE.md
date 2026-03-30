@@ -1,7 +1,7 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 2.2
-**Дата:** 30 марта 2026 (новые тесты)
+**Версия:** 2.3
+**Дата:** 30 марта 2026 (архитектурные улучшения)
 **Проект:** tetris-cli v23.96.26+
 
 ---
@@ -230,20 +230,70 @@ pub trait GameModeTrait {
 
 ### 7. Validation Module (`validation/`)
 
-**Ответственность:** Валидация данных
+**Ответственность:** Централизованная валидация данных
 
 **Компоненты:**
+- `ValidationService` — сервис централизованной валидации
 - `PathValidator` — валидация путей
 - `sanitize_player_name()` — валидация имён
+- `ValidationError` — типизированные ошибки валидации
 
 **Принципы:**
-- Централизованная валидация
-- Типизированные ошибки
+- Централизованная валидация через `ValidationService`
+- Типизированные ошибки (`ValidationErrorKind`)
 - Whitelist-фильтрация Unicode
+- Валидация f32 на NaN/Infinity
+- Валидация диапазонов u32
+
+**Примеры использования:**
+```rust
+use crate::validation::{ValidationService, ValidationError};
+
+// Валидация f32 на конечность
+ValidationService::validate_f32_finite(1.0)?;
+
+// Валидация диапазона u32
+ValidationService::validate_u32_range(5, 1, 10)?;
+```
 
 ---
 
-### 8. Crypto Module (`crypto/`)
+### 8. Access Traits (`game/access.rs`)
+
+**Ответственность:** Трейты доступа для снижения связанности и соблюдения ISP
+
+**Трейты:**
+- `BoardReadonly` — только чтение игрового поля
+- `BoardMutable` — чтение и запись игрового поля
+- `ScoreAccess` — доступ к очкам (get_score, set_score, add_score)
+- `LevelAccess` — доступ к уровням (get_level, set_level)
+- `LinesAccess` — доступ к линиям (get_lines_cleared, set_lines_cleared, add_lines)
+- `ComboAccess` — доступ к комбо (get_combo, set_combo, reset_combo)
+- `GameBoardAccess` — объединённый трейт для поля
+
+**Принципы:**
+- Interface Segregation Principle (ISP) — узкие трейты
+- Снижение связанности через абстракции
+- Возможность тестирования через моки
+
+**Примеры использования:**
+```rust
+use crate::game::access::{ScoreAccess, LevelAccess};
+
+// Функция работает с любым типом реализующим ScoreAccess
+fn add_bonus<S: ScoreAccess>(scoreable: &mut S, bonus: u128) {
+    scoreable.add_score(bonus);
+}
+
+// Функция работает с любым типом реализующим LevelAccess
+fn set_target_level<L: LevelAccess>(levelable: &mut L, level: u32) {
+    levelable.set_level(level);
+}
+```
+
+---
+
+### 9. Crypto Module (`crypto/`)
 
 **Ответственность:** Криптографические утилиты
 
@@ -337,7 +387,7 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 | **Средний размер модуля** | ~350 строк | ✅ |
 | **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1160+ тестов | ✅ |
+| **Покрытие тестами** | 1227+ тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
 | **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
 
@@ -364,6 +414,13 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 - `test_architecture_integrity.rs` — 19 тестов целостности
 
 ### Architectural Tests (`src/tests/`)
+- `test_architecture_components.rs` — 7 тестов на отсутствие мёртвого кода
+- `test_architecture_traits.rs` — 8 тестов на консолидацию трейтов
+- `test_architecture_validation.rs` — 12 тестов на централизацию валидации
+- `test_architecture_separation.rs` — 9 тестов на разделение render/logic
+- `test_architecture_isp.rs` — 13 тестов на Interface Segregation Principle
+- `test_architecture_coupling.rs` — 11 тестов на снижение связанности
+- `test_architecture_integrity.rs` — 23 теста целостности архитектуры
 - `test_architecture_constraints` — границы модулей
 - `test_architecture_integrity` — отсутствие циклов
 - `test_module_naming_consistency` — именование
@@ -389,7 +446,7 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1160+ тестов** (unit + integration + architecture)
+**ВСЕГО: 1227+ тестов** (unit + integration + architecture)
 
 ---
 
@@ -422,14 +479,14 @@ cargo bench --features bench  # Бенчмарки
 
 ## 🎯 Оценка архитектуры
 
-**Текущая оценка: 9.2/10**
+**Текущая оценка: 9.4/10**
 
 **Сильные стороны:**
 - ✅ Модульная структура с чётким разделением ответственности
 - ✅ Отсутствие циклических зависимостей
 - ✅ Разделение render/scoring/logic на подмодули
 - ✅ Трейты для абстракции (GameModeTrait, TerminalBackend, InputReader, Renderer)
-- ✅ Обширное тестирование (1160+ тестов, включая security-тесты)
+- ✅ Обширное тестирование (1227+ тестов, включая security-тесты)
 - ✅ Защита от переполнения (saturating операции)
 - ✅ TOCTOU защита в LeaderboardEntry
 - ✅ Централизованная валидация путей с защитой от symlink
@@ -447,6 +504,11 @@ cargo bench --features bench  # Бенчмарки
 - ✅ **Тесты безопасности HMAC** (18 тестов)
 - ✅ **Тесты безопасной конвертации** (14 тестов)
 - ✅ **Тесты обработки ошибок Application** (15 тестов)
+- ✅ **Новые трейты доступа** (ScoreAccess, LevelAccess, LinesAccess, ComboAccess)
+- ✅ **ValidationService** для централизованной валидации
+- ✅ **Разделение ответственности** render/logic/scoring
+- ✅ **Interface Segregation Principle** через узкие трейты
+- ✅ **Low Coupling** через публичный API и трейты
 
 **Области улучшения:**
 - ⚠️ GameState — крупный модуль (требует дальнейшего разделения)
