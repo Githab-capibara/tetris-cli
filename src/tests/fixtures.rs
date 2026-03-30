@@ -19,9 +19,9 @@
 //! }
 //! ```
 
+use crate::controls::ControlsConfig;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::controls::ControlsConfig;
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::Direction;
 
@@ -554,10 +554,7 @@ pub fn assert_all_shape_types_present(shapes: &[ShapeType]) {
         found[shape as usize] = true;
     }
     for (i, &is_found) in found.iter().enumerate() {
-        assert!(
-            is_found,
-            "Фигура типа {i:?} должна присутствовать в списке"
-        );
+        assert!(is_found, "Фигура типа {i:?} должна присутствовать в списке");
     }
 }
 
@@ -573,7 +570,7 @@ pub fn assert_all_shape_types_present(shapes: &[ShapeType]) {
 /// ```
 pub fn assert_piece_in_bounds(piece: &Tetromino) {
     use crate::io::{GRID_HEIGHT, GRID_WIDTH};
-    
+
     // Проверяем что позиция в пределах поля
     assert!(
         piece.pos.0 >= 0.0 && piece.pos.0 < GRID_WIDTH as f32,
@@ -683,10 +680,7 @@ pub fn assert_all_keys_unique(config: &ControlsConfig) {
 /// assert_config_valid(&config);
 /// ```
 pub fn assert_config_valid(config: &ControlsConfig) {
-    assert!(
-        config.validate(),
-        "Конфигурация должна быть валидной"
-    );
+    assert!(config.validate(), "Конфигурация должна быть валидной");
 }
 
 // ============================================================================

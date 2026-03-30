@@ -48,7 +48,11 @@ fn test_error_logging() {
 
     // Проверяем что verify_and_get_score() работает
     let result = save.verify_and_get_score();
-    assert_eq!(result, Some(5000), "Валидный рекорд должен вернуть Some(5000)");
+    assert_eq!(
+        result,
+        Some(5000),
+        "Валидный рекорд должен вернуть Some(5000)"
+    );
 
     // Создаём рекорд с подделанным значением
     save.high_score = 99999; // Меняем значение но не хэш
@@ -65,7 +69,10 @@ fn test_error_logging() {
     let entries = leaderboard.get_entries();
 
     // Таблица может быть пустой или содержать записи
-    assert!(entries.len() <= 5, "Таблица лидеров должна содержать максимум 5 записей");
+    assert!(
+        entries.len() <= 5,
+        "Таблица лидеров должна содержать максимум 5 записей"
+    );
 }
 
 /// Тест 3: Проверка default значения при ошибке
@@ -132,7 +139,10 @@ fn test_leaderboard_error_handling() {
 
     // Проверяем что загрузка прошла без паники
     let entries = leaderboard.get_entries();
-    assert!(entries.len() <= 5, "Таблица должна содержать максимум 5 записей");
+    assert!(
+        entries.len() <= 5,
+        "Таблица должна содержать максимум 5 записей"
+    );
 
     // Проверяем что можно сохранить таблицу
     leaderboard.save();

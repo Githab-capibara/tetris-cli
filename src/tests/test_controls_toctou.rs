@@ -48,7 +48,7 @@ fn test_symlink_rejected_on_load() {
 
         let err = load_result.unwrap_err();
         assert!(
-            err.to_string().contains("Символические ссылки") 
+            err.to_string().contains("Символические ссылки")
                 || err.to_string().contains("symlink")
                 || err.kind() == io::ErrorKind::InvalidInput,
             "Ошибка должна упоминать символические ссылки: {err}"
@@ -76,14 +76,18 @@ fn test_symlink_rejected_on_save() {
 
     // Создаём реальный файл
     let save_result = config.save_to_file(real_file);
-    assert!(save_result.is_ok(), "Создание целевого файла должно быть успешным");
+    assert!(
+        save_result.is_ok(),
+        "Создание целевого файла должно быть успешным"
+    );
 
     // Создаём symlink на реальный файл
     let symlink_result = symlink(real_file, symlink_file);
 
     if symlink_result.is_ok() {
         // Пытаемся сохранить конфигурацию через symlink
-        let new_config = ControlsConfig::custom(b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9');
+        let new_config =
+            ControlsConfig::custom(b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9');
         let save_result = new_config.save_to_file(symlink_file);
 
         // Сохранение через symlink должно быть заблокировано или перезаписать symlink
@@ -91,7 +95,7 @@ fn test_symlink_rejected_on_save() {
         if save_result.is_err() {
             let err = save_result.unwrap_err();
             assert!(
-                err.kind() == io::ErrorKind::AlreadyExists 
+                err.kind() == io::ErrorKind::AlreadyExists
                     || err.to_string().contains("symlink")
                     || err.to_string().contains("Символические"),
                 "Ошибка должна быть связана с symlink: {err}"
@@ -253,7 +257,10 @@ fn test_toctou_protection_integration() {
 
     // Шаг 1: Создаём реальный файл
     let save_result = config.save_to_file(real_file);
-    assert!(save_result.is_ok(), "Шаг 1: Сохранение должно быть успешным");
+    assert!(
+        save_result.is_ok(),
+        "Шаг 1: Сохранение должно быть успешным"
+    );
 
     // Шаг 2: Создаём symlink
     let symlink_result = symlink(real_file, symlink_file);
@@ -298,18 +305,21 @@ fn test_regular_files_work_correctly() {
 
     // Сохраняем
     let save_result = config.save_to_file(test_file);
-    assert!(save_result.is_ok(), "Сохранение обычного файла должно работать");
+    assert!(
+        save_result.is_ok(),
+        "Сохранение обычного файла должно работать"
+    );
 
     // Загружаем
     let load_result = ControlsConfig::load_from_file(test_file);
-    assert!(load_result.is_ok(), "Загрузка обычного файла должна работать");
+    assert!(
+        load_result.is_ok(),
+        "Загрузка обычного файла должна работать"
+    );
 
     // Проверяем совпадение
     let loaded = load_result.unwrap();
-    assert!(
-        config.keys_match(&loaded),
-        "Конфигурация должна совпадать"
-    );
+    assert!(config.keys_match(&loaded), "Конфигурация должна совпадать");
 
     // Удаляем
     let _ = fs::remove_file(test_file);
@@ -367,10 +377,7 @@ fn test_toctou_protection_no_panic() {
     let config = ControlsConfig::default_config();
 
     // Тест с различными путями не должен вызывать паник
-    let test_paths = [
-        "test_normal.json",
-        "test_with_dots/../test_normal2.json",
-    ];
+    let test_paths = ["test_normal.json", "test_with_dots/../test_normal2.json"];
 
     for path in &test_paths {
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

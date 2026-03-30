@@ -66,15 +66,21 @@ fn test_integration_with_multiple_expect() {
     let data: Vec<i32> = vec![1, 2, 3, 4, 5];
 
     // Получаем первый элемент с expect
-    let first = data.first().expect("Вектор должен содержать первый элемент");
+    let first = data
+        .first()
+        .expect("Вектор должен содержать первый элемент");
     assert_eq!(first, &1, "Первый элемент должен быть 1");
 
     // Получаем последний элемент с expect
-    let last = data.last().expect("Вектор должен содержать последний элемент");
+    let last = data
+        .last()
+        .expect("Вектор должен содержать последний элемент");
     assert_eq!(last, &5, "Последний элемент должен быть 5");
 
     // Получаем элемент по индексу с expect
-    let third = data.get(2).expect("Вектор должен содержать элемент по индексу 2");
+    let third = data
+        .get(2)
+        .expect("Вектор должен содержать элемент по индексу 2");
     assert_eq!(third, &3, "Третий элемент должен быть 3");
 
     // Тест с map и expect
@@ -86,14 +92,14 @@ fn test_integration_with_multiple_expect() {
         .map(|opt| opt.expect("Умножение не должно переполняться"))
         .collect();
 
-    assert_eq!(doubled, vec![2, 4, 6, 8, 10], "Удвоенные значения должны совпадать");
+    assert_eq!(
+        doubled,
+        vec![2, 4, 6, 8, 10],
+        "Удвоенные значения должны совпадать"
+    );
 
     // Тест с фильтрацией и expect
-    let evens: Vec<i32> = data
-        .iter()
-        .filter(|&&x| x % 2 == 0)
-        .copied()
-        .collect();
+    let evens: Vec<i32> = data.iter().filter(|&&x| x % 2 == 0).copied().collect();
 
     assert_eq!(evens.len(), 2, "Должно быть 2 чётных числа");
     assert_eq!(evens[0], 2, "Первое чётное число должно быть 2");

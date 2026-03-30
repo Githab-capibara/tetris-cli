@@ -37,7 +37,11 @@ fn test_error_propagation() {
 
     // Тест с ошибкой
     let error = propagate_error(-5);
-    assert_eq!(error, Err("Отрицательное значение"), "? должен propagate ошибку");
+    assert_eq!(
+        error,
+        Err("Отрицательное значение"),
+        "? должен propagate ошибку"
+    );
 
     // Тест с цепочкой ? операторов
     fn chain_operations(x: i32) -> Result<i32, &'static str> {
@@ -53,7 +57,11 @@ fn test_error_propagation() {
 
     // Ошибка в цепочке
     let chain_error = chain_operations(-1);
-    assert_eq!(chain_error, Err("Отрицательное значение"), "Цепочка ? должна propagate ошибку");
+    assert_eq!(
+        chain_error,
+        Err("Отрицательное значение"),
+        "Цепочка ? должна propagate ошибку"
+    );
 }
 
 /// Тест 2: Проверка unwrap_or_else
@@ -68,7 +76,10 @@ fn test_unwrap_or_else() {
 
     let none_value: Option<i32> = None;
     let result2 = none_value.unwrap_or_else(|| 100);
-    assert_eq!(result2, 100, "unwrap_or_else должен вернуть значение по умолчанию для None");
+    assert_eq!(
+        result2, 100,
+        "unwrap_or_else должен вернуть значение по умолчанию для None"
+    );
 
     // Тест с Result
     let ok_result: Result<i32, &str> = Ok(50);
@@ -80,7 +91,10 @@ fn test_unwrap_or_else() {
         assert_eq!(e, "error", "Closure должен получить ошибку");
         200
     });
-    assert_eq!(result4, 200, "unwrap_or_else должен вернуть значение по умолчанию для Err");
+    assert_eq!(
+        result4, 200,
+        "unwrap_or_else должен вернуть значение по умолчанию для Err"
+    );
 
     // Тест с вычислением значения по умолчанию
     let compute_default = || -> i32 {
@@ -90,7 +104,10 @@ fn test_unwrap_or_else() {
 
     let none: Option<i32> = None;
     let result5 = none.unwrap_or_else(compute_default);
-    assert_eq!(result5, 60, "unwrap_or_else должен вычислить значение по умолчанию");
+    assert_eq!(
+        result5, 60,
+        "unwrap_or_else должен вычислить значение по умолчанию"
+    );
 }
 
 /// Тест 3: Проверка контекста ошибок
@@ -126,7 +143,10 @@ fn test_error_context() {
     match error {
         Err(e) => {
             assert_eq!(e.context, "Обработка значения", "Контекст должен совпадать");
-            assert_eq!(e.source, "Отрицательное значение", "Источник ошибки должен совпадать");
+            assert_eq!(
+                e.source, "Отрицательное значение",
+                "Источник ошибки должен совпадать"
+            );
         }
         Ok(_) => panic!("Должна быть ошибка"),
     }
@@ -189,7 +209,10 @@ fn test_integration_question_and_unwrap_or_else() {
     assert_eq!(chain1, 8, "Цепочка должна работать для успешных значений");
 
     let chain2 = process_chain(-5);
-    assert_eq!(chain2, 4, "Цепочка должна использовать значения по умолчанию");
+    assert_eq!(
+        chain2, 4,
+        "Цепочка должна использовать значения по умолчанию"
+    );
 }
 
 /// Тест 5: Проверка что ? работает с разными типами ошибок

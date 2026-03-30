@@ -80,8 +80,7 @@ fn test_verify_returns_none_for_tampered_record() {
     // Проверяем что подделка обнаружена
     let result = save.verify_and_get_score();
     assert_eq!(
-        result,
-        None,
+        result, None,
         "verify_and_get_score() должен вернуть None для подделанного рекорда"
     );
 
@@ -91,8 +90,7 @@ fn test_verify_returns_none_for_tampered_record() {
 
     let result2 = save2.verify_and_get_score();
     assert_eq!(
-        result2,
-        None,
+        result2, None,
         "verify_and_get_score() должен вернуть None для подделки"
     );
 
@@ -102,8 +100,7 @@ fn test_verify_returns_none_for_tampered_record() {
 
     let result3 = save3.verify_and_get_score();
     assert_eq!(
-        result3,
-        None,
+        result3, None,
         "verify_and_get_score() должен вернуть None для невалидного хэша"
     );
 }
@@ -127,11 +124,7 @@ fn test_tampering_logs_warning() {
     let tampered_result = save.verify_and_get_score();
 
     // Проверяем что обнаружена подделка
-    assert_eq!(
-        tampered_result,
-        None,
-        "Подделка должна быть обнаружена"
-    );
+    assert_eq!(tampered_result, None, "Подделка должна быть обнаружена");
 
     // Проверяем что хэш не совпадает (создаём валидный рекорд для сравнения)
     let valid_save = SaveData::from_value(1000);
@@ -189,9 +182,5 @@ fn test_salt_tampering_detected() {
 
     // Проверяем что подделка обнаружена
     let result = save.verify_and_get_score();
-    assert_eq!(
-        result,
-        None,
-        "Подделка соли должна быть обнаружена"
-    );
+    assert_eq!(result, None, "Подделка соли должна быть обнаружена");
 }

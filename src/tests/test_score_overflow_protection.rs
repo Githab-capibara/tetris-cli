@@ -9,8 +9,8 @@
 //! В модуле `game/scoring/lines.rs` используется константа `MAX_SCORE = u128::MAX / 2`
 //! и функция `saturating_add()` для защиты от переполнения.
 
-use crate::game::GameState;
 use crate::game::scoring::lines::{update_score_for_lines, MAX_SCORE};
+use crate::game::GameState;
 use crate::game::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES};
 
 // ============================================================================
@@ -41,7 +41,11 @@ fn test_score_does_not_exceed_max() {
     );
 
     // Проверяем что MAX_SCORE действительно u128::MAX / 2
-    assert_eq!(MAX_SCORE, u128::MAX / 2, "MAX_SCORE должен быть u128::MAX / 2");
+    assert_eq!(
+        MAX_SCORE,
+        u128::MAX / 2,
+        "MAX_SCORE должен быть u128::MAX / 2"
+    );
 }
 
 /// Тест 2: Проверка saturating_add при нормальных значениях
@@ -71,7 +75,10 @@ fn test_saturating_add_normal_values() {
     // Начисляем бонус за уровень
     let level_bonus = LEVEL_BONUS_MULT.saturating_mul((10 - 1) as u128);
     score = score.saturating_add(level_bonus);
-    assert_eq!(score, 4900, "После бонуса за уровень 10 счёт должен быть 4900");
+    assert_eq!(
+        score, 4900,
+        "После бонуса за уровень 10 счёт должен быть 4900"
+    );
 }
 
 /// Тест 3: Проверка saturating_add при переполнении
@@ -118,7 +125,10 @@ fn test_saturating_add_overflow_protection() {
     // Тест что нормальные значения работают корректно
     let normal_score = 1000;
     let result5 = normal_score.saturating_add(500);
-    assert_eq!(result5, 1500, "saturating_add должен корректно складывать нормальные значения");
+    assert_eq!(
+        result5, 1500,
+        "saturating_add должен корректно складывать нормальные значения"
+    );
 }
 
 // ============================================================================
@@ -202,10 +212,7 @@ fn test_extreme_level_and_combo_combined() {
     );
 
     // Проверяем что saturating_add предотвратил переполнение
-    assert!(
-        score < u128::MAX,
-        "Счёт должен быть меньше u128::MAX"
-    );
+    assert!(score < u128::MAX, "Счёт должен быть меньше u128::MAX");
 }
 
 /// Тест 7: Стресс-тест с множеством начислений
@@ -224,8 +231,7 @@ fn test_stress_many_score_additions() {
 
     // Счёт должен быть ограничен MAX_SCORE
     assert_eq!(
-        score,
-        MAX_SCORE,
+        score, MAX_SCORE,
         "После 10000 начислений счёт должен достичь MAX_SCORE"
     );
 }
@@ -302,7 +308,10 @@ fn test_max_score_constant() {
 
     // Проверяем что MAX_SCORE имеет разумное значение для защиты от переполнения
     // Он должен быть достаточно большим для нормальных игр
-    assert!(MAX_SCORE > 1_000_000_000_000, "MAX_SCORE должен быть достаточно большим");
+    assert!(
+        MAX_SCORE > 1_000_000_000_000,
+        "MAX_SCORE должен быть достаточно большим"
+    );
 }
 
 // ============================================================================
@@ -353,5 +362,8 @@ fn test_no_panic_at_extreme_values() {
     }
 
     // Финальная проверка
-    assert!(score <= u128::MAX, "Финальный счёт не должен превышать u128::MAX");
+    assert!(
+        score <= u128::MAX,
+        "Финальный счёт не должен превышать u128::MAX"
+    );
 }

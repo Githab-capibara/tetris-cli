@@ -7,7 +7,7 @@
 //!
 //! Исправление: использование directories crate для получения пути к конфигурации
 
-use crate::highscore::{check_config_directory_writable, ConfigError, SaveData, Leaderboard};
+use crate::highscore::{check_config_directory_writable, ConfigError, Leaderboard, SaveData};
 use directories::ProjectDirs;
 
 // ============================================================================
@@ -22,7 +22,7 @@ use directories::ProjectDirs;
 fn test_get_configuration_path_via_directories() {
     // Получаем путь к директории конфигурации через directories crate
     let proj_dirs = ProjectDirs::from("", "", "tetris-cli");
-    
+
     // ProjectDirs должен вернуть Some для приложения с именем "tetris-cli"
     assert!(
         proj_dirs.is_some(),
@@ -31,13 +31,13 @@ fn test_get_configuration_path_via_directories() {
 
     let proj_dirs = proj_dirs.expect("Failed to get project directories for tetris-cli");
     let config_dir = proj_dirs.config_dir();
-    
+
     // Проверяем, что путь не пустой
     assert!(
         !config_dir.as_os_str().is_empty(),
         "Путь к директории конфигурации не должен быть пустым"
     );
-    
+
     // Проверяем, что путь содержит имя приложения
     let config_path_str = config_dir.to_string_lossy();
     assert!(
@@ -45,7 +45,7 @@ fn test_get_configuration_path_via_directories() {
         "Путь к конфигурации должен содержать 'tetris-cli': {}",
         config_path_str
     );
-    
+
     // Проверяем, что SaveData::load_config() не паникует
     // (это косвенная проверка что путь к конфигурации работает)
     let save_data = SaveData::load_config();
@@ -62,17 +62,18 @@ fn test_get_configuration_path_via_directories() {
 #[test]
 fn test_create_configuration_directory() {
     // Получаем путь к директории конфигурации
-    let proj_dirs = ProjectDirs::from("", "", "tetris-cli").expect("Failed to get project directories");
+    let proj_dirs =
+        ProjectDirs::from("", "", "tetris-cli").expect("Failed to get project directories");
     let config_dir = proj_dirs.config_dir();
-    
+
     // Проверяем, что директория существует или может быть создана
     // (confy автоматически создаёт директорию при первом сохранении)
-    
+
     // Создаём тестовую запись в таблице лидеров
     // Это должно создать директорию конфигурации если она не существует
     let mut leaderboard = Leaderboard::default();
     let add_result = leaderboard.add_score("TestUser", 1000);
-    
+
     // Добавление должно быть успешным (или false если rate limiting)
     // Важно: не должно быть паники или ошибки создания директории
     assert!(
@@ -101,7 +102,7 @@ fn test_directory_unavailable_error_handling() {
     // Тест 1: Проверяем что check_config_directory_writable() работает
     // (возвращает Ok или Err, но не паникует)
     let result = check_config_directory_writable();
-    
+
     // Результат должен быть либо Ok, либо Err с понятным сообщением
     match result {
         Ok(()) => {
@@ -109,10 +110,7 @@ fn test_directory_unavailable_error_handling() {
         }
         Err(ConfigError::DirectoryNotWritable(msg)) => {
             // Директория недоступна - проверяем сообщение об ошибке
-            assert!(
-                !msg.is_empty(),
-                "Сообщение об ошибке не должно быть пустым"
-            );
+            assert!(!msg.is_empty(), "Сообщение об ошибке не должно быть пустым");
             assert!(
                 msg.contains("Директория") || msg.contains("недоступна"),
                 "Сообщение должно содержать информацию о директории: {}",
@@ -127,17 +125,17 @@ fn test_directory_unavailable_error_handling() {
             );
         }
     }
-    
+
     // Тест 2: Проверяем что SaveData::load_config() обрабатывает ошибки
     // (не паникует при недоступности конфигурации)
     let save_data = SaveData::load_config();
-    
+
     // Даже при ошибке загрузки должен вернуться валидный SaveData
     assert!(
         save_data.verify_and_get_score().is_some(),
         "SaveData::load_config() должен вернуть валидные данные даже при ошибке"
     );
-    
+
     // Тест 3: Проверяем что Leaderboard::load() обрабатывает ошибки
     let leaderboard = Leaderboard::load();
 
@@ -157,13 +155,13 @@ fn test_directory_unavailable_error_handling() {
 fn test_directories_integration() {
     // Получаем ProjectDirs для tetris-cli
     let proj_dirs = ProjectDirs::from("", "", "tetris-cli");
-    
+
     if let Some(proj) = proj_dirs {
         // Проверяем основные пути
         let config_dir = proj.config_dir();
         let data_dir = proj.data_dir();
         let cache_dir = proj.cache_dir();
-        
+
         // Все пути должны быть определены
         assert!(
             !config_dir.as_os_str().is_empty(),
@@ -177,11 +175,12 @@ fn test_directories_integration() {
             !cache_dir.as_os_str().is_empty(),
             "cache_dir не должен быть пустым"
         );
-        
+
         // Проверяем что пути содержат имя приложения
         let config_str = config_dir.to_string_lossy();
         assert!(
-            config_str.to_lowercase().contains("tetris") || config_str.to_lowercase().contains("cli"),
+            config_str.to_lowercase().contains("tetris")
+                || config_str.to_lowercase().contains("cli"),
             "Путь конфигурации должен содержать имя приложения: {}",
             config_str
         );
