@@ -19,11 +19,24 @@ use crate::game::GameState;
 #[test]
 fn test_scoring_state_trait_implemented() {
     // Создаём GameState
-    let state = GameState::new();
+    let mut state = GameState::new();
 
     // Проверяем что GameState реализует ScoringState через проверку методов
     fn assert_scoring_state<T: ScoringState>() {}
     assert_scoring_state::<GameState>();
+
+    // Проверяем что trait методы работают
+    let initial_score = state.score();
+    assert_eq!(initial_score, 0, "Начальный счёт должен быть 0");
+
+    state.set_score(100);
+    assert_eq!(state.score(), 100, "Счёт должен измениться через set_score");
+
+    let level = state.level();
+    assert!(level >= 1, "Уровень должен быть >= 1");
+
+    let lines = state.lines_cleared();
+    assert_eq!(lines, 0, "Начальное количество линий должно быть 0");
 }
 
 /// Тест 2: Проверка метода score()

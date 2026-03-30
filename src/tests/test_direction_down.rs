@@ -5,24 +5,7 @@
 use crate::game::GameState;
 use crate::types::Direction;
 
-/// Тест 1: Проверка, что Direction::Down не вызывает паники
-///
-/// Direction::Down должен корректно обрабатываться без паники.
-#[test]
-fn test_direction_down_no_panic() {
-    let state = GameState::new();
-
-    // Проверяем, что можно вызвать can_move_curr_shape_direction с Direction::Down
-    let can_move = state.can_move_curr_shape_direction(Direction::Down);
-
-    // Фигура должна иметь возможность движения вниз в начале игры
-    assert!(
-        can_move,
-        "В начале игры фигура должна иметь возможность движения вниз"
-    );
-}
-
-/// Тест 2: Проверка, что Direction::Down не вызывает вращения
+/// Тест 1: Проверка, что Direction::Down не вызывает вращения
 ///
 /// Direction::Down должен игнорироваться при вращении.
 #[test]

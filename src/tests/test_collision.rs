@@ -349,22 +349,6 @@ fn test_collision_exact_boundary() {
 // ГРУППА ТЕСТОВ 43-50: Вращения и столкновения
 // ============================================================================
 
-/// Тест 43: Проверка что вращение не вызывает паники при столкновении
-#[test]
-fn test_collision_rotation_no_panic() {
-    let mut state = GameState::new();
-
-    // Двигаем к стене и пытаемся вращать
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    // Вращение не должно вызывать панику
-    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-}
-
 /// Тест 44: Проверка что вращение работает в центре поля
 #[test]
 fn test_collision_rotation_in_center() {

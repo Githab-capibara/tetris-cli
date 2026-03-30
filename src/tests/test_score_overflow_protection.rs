@@ -53,7 +53,7 @@ fn test_score_does_not_exceed_max() {
 /// Проверяет, что saturating_add корректно работает
 /// при нормальных значениях очков.
 #[test]
-fn test_saturating_add_normal_values() {
+fn test_score_overflow_saturating_add_normal_values() {
     let mut score: u128 = 0;
 
     // Начисляем очки за линию (100)

@@ -513,7 +513,7 @@ fn test_figure_manager_public_methods() {
 /// - Базовые модули не зависят от модулей верхнего уровня
 /// - Нет циклов между game/, tetromino/, io/
 #[test]
-fn test_no_circular_dependencies() {
+fn test_arch_fixes_no_circular_dependencies() {
     use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH};
     use crate::errors::GameError;
     use crate::types::{Direction, RotationDirection};
@@ -563,7 +563,7 @@ fn test_no_circular_dependencies() {
 /// - Модули имеют чёткие границы ответственности
 /// - Нет нарушения инкапсуляции
 #[test]
-fn test_module_boundaries() {
+fn test_arch_fixes_module_boundaries() {
     use crate::game::access::{BoardMutable, BoardReadonly};
     use crate::game::board::{
         BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait,

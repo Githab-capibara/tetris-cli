@@ -20,9 +20,21 @@ use crate::tetromino::{BagGenerator, ShapeType};
 fn test_bag_generator_creation() {
     let mut bag = BagGenerator::new();
 
-    // Проверяем, что генератор создан
-    // (внутренние поля приватны, проверяем через методы)
-    let _shape = bag.next_shape();
+    // Проверяем, что генератор создан и не пуст
+    let shape = bag.next_shape();
+    assert!(
+        matches!(
+            shape,
+            ShapeType::T
+                | ShapeType::L
+                | ShapeType::J
+                | ShapeType::S
+                | ShapeType::Z
+                | ShapeType::O
+                | ShapeType::I
+        ),
+        "Bag должен содержать валидную фигуру"
+    );
 }
 
 /// Тест 2: Первый мешок содержит все 7 фигур

@@ -104,7 +104,7 @@ mod tests {
     }
 
     #[test]
-    fn test_controls_uses_path_validator() {
+    fn test_arch_ref_controls_uses_path_validator() {
         // Проверяем, что controls.rs использует PathValidator
         let controls_path = "src/controls.rs";
         let content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");

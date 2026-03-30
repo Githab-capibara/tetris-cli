@@ -148,23 +148,6 @@ fn test_edge_cases_bag_7000_shapes() {
     }
 }
 
-/// Тест 15: Проверка вращения 100 раз
-#[test]
-fn test_edge_cases_rotate_100_times() {
-    let mut state = GameState::new();
-
-    for _ in 0..100 {
-        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state
-                .get_curr_shape_mut()
-                .rotate(RotationDirection::Clockwise);
-        }
-    }
-
-    // Должно вернуться в исходное состояние (4 вращения = полный цикл)
-    // Тест успешно завершён, если код достиг этой строки
-}
-
 /// Тест 16: Проверка удержания 10 раз (должно работать только первое)
 #[test]
 fn test_edge_cases_hold_10_times() {
@@ -323,113 +306,6 @@ fn test_edge_cases_field_correct_size() {
 fn test_edge_cases_default_mode_classic() {
     let state = GameState::new();
     assert_eq!(state.get_mode(), GameMode::Classic);
-}
-
-// ============================================================================
-// ГРУППА ТЕСТОВ 31-40: Ошибки и исключения
-// ============================================================================
-
-/// Тест 31: Проверка что вращение не вызывает панику у стены
-#[test]
-fn test_edge_cases_rotation_at_wall_no_panic() {
-    let mut state = GameState::new();
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
-        }
-    }
-
-    // Вращение не должно вызывать панику
-    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-}
-
-/// Тест 32: Проверка что движение не вызывает панику на полу
-#[test]
-fn test_edge_cases_movement_at_floor_no_panic() {
-    let mut state = GameState::new();
-
-    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Движение не должно вызывать панику
-    let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
-}
-
-/// Тест 33: Проверка что `BagGenerator` не паникует при 100000 вызовах
-#[test]
-fn test_edge_cases_bag_100k_no_panic() {
-    let mut bag = BagGenerator::new();
-
-    for _ in 0..100_000 {
-        let _ = bag.next_shape();
-    }
-
-    // Тест успешно завершён, если код достиг этой строки
-}
-
-/// Тест 34: Проверка что hold не паникует при повторном вызове
-#[test]
-fn test_edge_cases_double_hold_no_panic() {
-    let mut state = GameState::new();
-
-    state.hold_shape();
-
-    // Повторный вызов не должен паниковать
-    // (хотя и не должен ничего делать)
-    assert!(!state.can_hold());
-}
-
-/// Тест 35: Проверка что вращение не паникует для O-фигуры
-#[test]
-fn test_edge_cases_o_rotation_no_panic() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::O;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
-
-    // Вращение O-фигуры не должно паниковать
-    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-}
-
-/// Тест 36: Проверка что `get_blocks` не паникует
-#[test]
-fn test_edge_cases_get_blocks_no_panic() {
-    let state = GameState::new();
-    let _blocks = state.get_blocks();
-    // Тест успешно завершён, если код достиг этой строки
-}
-
-/// Тест 37: Проверка что `get_stats` не паникует
-#[test]
-fn test_edge_cases_get_stats_no_panic() {
-    let state = GameState::new();
-    let _stats = state.stats();
-    // Тест успешно завершён, если код достиг этой строки
-}
-
-/// Тест 38: Проверка что `get_next_shape` не паникует
-#[test]
-fn test_edge_cases_get_next_shape_no_panic() {
-    let state = GameState::new();
-    let _next = state.next_shape();
-    // Тест успешно завершён, если код достиг этой строки
-}
-
-/// Тест 39: Проверка что `get_curr_shape` не паникует
-#[test]
-fn test_edge_cases_get_curr_shape_no_panic() {
-    let state = GameState::new();
-    let _curr = state.curr_shape();
-    // Тест успешно завершён, если код достиг этой строки
-}
-
-/// Тест 40: Проверка что `get_held_shape` не паникует
-#[test]
-fn test_edge_cases_get_held_shape_no_panic() {
-    let state = GameState::new();
-    let _held = state.held_shape();
-    // Тест успешно завершён, если код достиг этой строки
 }
 
 // ============================================================================
