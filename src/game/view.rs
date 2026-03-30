@@ -409,7 +409,7 @@ impl<'a> GameView<'a> {
                 canvas.draw_strs(
                     &[SHAPE_STR],
                     (x as u16, y as u16),
-                    SHAPE_COLORS[self.curr_shape.fg],
+                    SHAPE_COLORS[self.curr_shape.fg as usize],
                     &Reset,
                 );
             }

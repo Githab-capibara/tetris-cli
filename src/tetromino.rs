@@ -248,9 +248,13 @@ pub enum ShapeType {
 /// - `coords` - координаты блоков относительно центра
 /// - `fg` - индекс цвета (0-6)
 ///
+/// ## Исправление #20 (LOW)
+/// Поля переупорядочены для уменьшения padding: `fg` изменён на `u8` и перемещён
+/// ближе к `shape` для оптимального выравнивания.
+///
 /// ## Исправление M13 (MEDIUM)
 /// Добавлена compile-time проверка размера структуры для контроля памяти.
-/// Размер Tetromino не должен превышать 40 байт для оптимального копирования.
+/// Размер Tetromino не должен превышать 32 байт для оптимального копирования.
 ///
 /// ## Пример использования
 /// ```
@@ -272,23 +276,25 @@ pub struct Tetromino {
     ///
     /// Определяет форму и цвет фигуры.
     pub shape: ShapeType,
+    /// Индекс цвета (0-6).
+    ///
+    /// Соответствует индексу фигуры в `SHAPE_COLORS`.
+    ///
+    /// # Исправление #20 (LOW)
+    /// Используется `u8` вместо `usize` для экономии памяти (1 байт вместо 8).
+    pub fg: u8,
     /// Координаты блоков относительно центра.
     ///
     /// Массив из 4 пар координат (x, y).
     /// Изменяется при вращении фигуры.
     pub coords: [(i16, i16); 4],
-    /// Индекс цвета (0-6).
-    ///
-    /// Соответствует индексу фигуры в `SHAPE_COLORS`.
-    pub fg: usize,
 }
 
-// Исправление M13: compile-time проверка размера Tetromino
-// Размер структуры не должен превышать 40 байт для оптимального копирования
-// pos: 8 байт + shape: 1 байт + coords: 16 байт + fg: 8 байт = 33 байта + padding
+// Исправление #20: compile-time проверка размера Tetromino
+// Размер структуры оптимизирован: pos: 8 байт + shape: 1 байт + fg: 1 байт + coords: 16 байт = 26 байт + padding = 32 байта
 const _: () = assert!(
-    std::mem::size_of::<Tetromino>() <= 40,
-    "Размер Tetromino не должен превышать 40 байт"
+    std::mem::size_of::<Tetromino>() <= 32,
+    "Размер Tetromino не должен превышать 32 байт"
 );
 
 impl Tetromino {
@@ -317,7 +323,7 @@ impl Tetromino {
             pos: (4.0, 0.0), // Начальная позиция по центру
             shape,
             coords: SHAPE_COORDS[shape as usize],
-            fg: shape as usize,
+            fg: shape as u8,
         }
     }
 
@@ -336,7 +342,7 @@ impl Tetromino {
             pos: (4.0, 0.0), // Начальная позиция по центру
             shape,
             coords: SHAPE_COORDS[shape as usize],
-            fg: shape as usize,
+            fg: shape as u8,
         }
     }
 
@@ -571,7 +577,7 @@ mod tests {
         let mut shapes_found = [false; 7];
         for _ in 0..100 {
             let t = Tetromino::select();
-            shapes_found[t.fg] = true;
+            shapes_found[t.fg as usize] = true;
         }
         for found in &shapes_found {
             assert!(*found, "Не все типы фигур были сгенерированы");
@@ -720,15 +726,16 @@ mod tests {
     #[test]
     fn test_fix_m13_size_of_tetromino() {
         // Проверка размера структуры Tetromino
-        // pos: 8 байт (f32, f32) + shape: 1 байт + coords: 16 байт + fg: 8 байт = 33 байта + padding
+        // Исправление #20: fg изменён на u8 для экономии памяти
+        // pos: 8 байт (f32, f32) + shape: 1 байт + fg: 1 байт + coords: 16 байт = 26 байт + padding = 32 байта
         let size = std::mem::size_of::<Tetromino>();
 
-        // Compile-time assertion проверяет что размер <= 40 байт
+        // Compile-time assertion проверяет что размер <= 32 байт
         // Здесь проверяем что размер корректный
-        assert!(size <= 40, "Размер Tetromino не должен превышать 40 байт");
-        assert!(size >= 32, "Размер Tetromino должен быть не менее 32 байт");
+        assert!(size <= 32, "Размер Tetromino не должен превышать 32 байт");
+        assert!(size >= 24, "Размер Tetromino должен быть не менее 24 байт");
 
-        // Ожидаемый размер с учётом padding: 36 или 40 байт
+        // Ожидаемый размер с учётом padding: 32 байта
         println!("Размер Tetromino: {} байт", size);
     }
 

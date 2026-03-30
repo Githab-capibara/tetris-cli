@@ -3,42 +3,44 @@
 //! Предоставляет функции для валидации и очистки имён игроков
 //! перед сохранением в таблицу лидеров.
 //!
+//! # Безопасность
+//!
+//! ## Whitelist подход
+//! Модуль использует whitelist подход: разрешены только известные безопасные символы.
+//! Это предотвращает:
+//! - **XSS-атаки**: запрещены специальные символы и скрипты
+//! - **Injection-атаки**: запрещены символы пути '/', '\\'
+//! - **Unicode-атаки**: запрещены управляющие символы через `is_control()`
+//! - **Bidi-атаки**: запрещены bidirectional control characters
+//!
+//! ## Разрешённые символы
+//! - ASCII буквы (a-z, A-Z)
+//! - ASCII цифры (0-9)
+//! - Специальные символы: '_', '-', ' ' (пробел)
+//! - Русские буквы (а-я, А-Я, ё, Ё)
+//!
+//! ## Запрещённые символы
+//! - Управляющие символы (is_control)
+//! - Символы пути (/, \\)
+//! - Все остальные Unicode символы (эмодзи, специальные символы)
+//!
+//! ## Ограничение длины
+//! Максимальная длина имени: 20 символов.
+//! Это предотвращает:
+//! - Переполнение буфера
+//! - DoS через длинные строки
+//! - Повреждение UI
+//!
 //! ## Функции
-//! - [`is_forbidden_char`] — проверка запрещённых Unicode-символов
-//! - [`is_valid_name_char`] — проверка допустимости символа имени
+//! - [`is_valid_name_char`] — проверка допустимости символа имени (whitelist)
 //! - [`sanitize_player_name`] — санитаризация имени игрока
 
-/// Проверить запрещённые Unicode-символы.
-///
-/// Запрещены:
-/// - Bidirectional control characters (U+200E, U+200F, U+202A-U+202E, U+2066-U+2069)
-/// - Zero-width joiners (U+200C, U+200D)
-/// - Variation selectors (U+FE00-U+FE0F)
-///
-/// # Аргументы
-/// * `c` - символ для проверки
-///
-/// # Возвращает
-/// `true` если символ запрещён
-///
-/// # Исправление #18
-/// Выделена из `sanitize_player_name()` для улучшения читаемости и тестируемости.
-fn is_forbidden_char(c: char) -> bool {
-    matches!(c,
-        '\u{200E}' | '\u{200F}' |  // Bidi
-        '\u{202A}'..='\u{202E}' |  // Bidi formatting
-        '\u{2066}'..='\u{2069}' |  // Bidi isolate
-        '\u{200C}' | '\u{200D}' |  // Zero-width joiners
-        '\u{FE00}'..='\u{FE0F}'    // Variation selectors
-    )
-}
-
-/// Проверить допустимость символа имени.
+/// Проверить допустимость символа имени (whitelist подход).
 ///
 /// Разрешены только:
 /// - ASCII буквы (a-z, A-Z)
 /// - ASCII цифры (0-9)
-/// - Специальные символы: '_', '-', ' '
+/// - Специальные символы: '_', '-', ' ' (пробел)
 /// - Русские буквы (а-я, А-Я, ё, Ё)
 ///
 /// # Аргументы
@@ -48,34 +50,29 @@ fn is_forbidden_char(c: char) -> bool {
 /// `true` если символ допустим
 ///
 /// # Безопасность
-/// Расширенная валидация Unicode для поддержки международных имён.
-/// Запрещены управляющие символы и эмодзи через `is_control()`.
+/// Whitelist подход: разрешены только безопасные символы.
+/// Запрещены управляющие символы через `is_control()`.
 ///
-/// # Исправление #9
-/// Используется `matches!` макрос с диапазонами для более читаемой проверки.
+/// # Исправление #6 (LOW)
+/// Используется `matches!` макрос с диапазонами для читаемой whitelist проверки.
+#[inline]
 pub fn is_valid_name_char(c: char) -> bool {
-    // Исправление #9: используем matches! макрос с диапазонами для читаемости
+    // Whitelist подход: разрешаем только безопасные символы
     !c.is_control()
-        && c != '/'
-        && c != '\\'
-        && (matches!(c,
+        && matches!(c,
             'a'..='z' | 'A'..='Z' | '0'..='9' |  // ASCII буквы и цифры
             'а'..='я' | 'А'..='Я' | 'ё' | 'Ё' |  // Русские буквы
-            '_' | '-' | ' '  // Специальные символы (включая пробел)
-        ))
+            '_' | '-' | ' '  // Специальные символы
+        )
 }
 
 /// Санитизировать имя игрока для таблицы лидеров.
 ///
 /// Правила:
 /// - trim
-/// - разрешены только ASCII буквы/цифры и символы: '_', '-', ' '
+/// - whitelist разрешённых символов через `is_valid_name_char()`
 /// - максимум 20 символов
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
-/// - запрещены опасные Unicode-символы (эмодзи, контрольные символы)
-/// - запрещены bidirectional control characters (U+200E, U+200F)
-/// - запрещены zero-width joiners (U+200C, U+200D) и variation selectors (U+FE00-U+FE0F)
-/// - используется whitelist разрешённых символов
 ///
 /// # Аргументы
 /// * `name` - имя для санитаризации
@@ -84,32 +81,22 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// Безопасное имя для таблицы лидеров
 ///
 /// # Безопасность
-/// Использует итераторы с `filter()` и `take()` для эффективной фильтрации.
-/// Добавлена защита от Unicode-атак:
-/// - Bidirectional control characters отбрасываются через `is_forbidden_char()`
-/// - Zero-width joiners отбрасываются через `is_forbidden_char()`
-/// - Variation selectors отбрасываются через `is_forbidden_char()`
-/// - Emojis и другие опасные символы фильтруются
-/// - Whitelist разрешённых символов через `is_valid_name_char()`
+/// Использует whitelist подход: разрешены только ASCII буквы/цифры,
+/// специальные символы '_', '-', ' ' и русские буквы.
 ///
-/// # Исправление #18
-/// Использует функцию `is_forbidden_char()` для улучшения читаемости.
-///
-/// # Исправление H6 (HIGH)
-/// Использует String::with_capacity() для предотвращения реаллокаций
-/// и filter_map() для объединения фильтрации и маппинга в один проход.
+/// # Исправление #6 (LOW)
+/// Упрощённая реализация: используется только `is_valid_name_char()`
+/// с whitelist подходом через `matches!` макрос.
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return "Anonymous".to_string();
     }
 
-    // Исправление H6: оптимизация с with_capacity и filter_map
-    // Предварительно выделяем память максимум на 20 символов (лимит длины)
-    // Используем filter для фильтрации и collect для сбора в String
+    // Whitelist фильтрация: оставляем только разрешённые символы
     let validated: String = trimmed
         .chars()
-        .filter(|c| !is_forbidden_char(*c) && is_valid_name_char(*c))
+        .filter(|&c| is_valid_name_char(c))
         .take(20)
         .collect();
 
@@ -267,50 +254,6 @@ mod validation_name_tests {
         assert!(!is_valid_name_char('!'));
         assert!(!is_valid_name_char('\n'));
         assert!(!is_valid_name_char('\t'));
-    }
-
-    // =========================================================================
-    // ТЕСТЫ ДЛЯ is_forbidden_char()
-    // =========================================================================
-
-    /// Тест: проверка is_forbidden_char для bidi символов
-    #[test]
-    fn test_is_forbidden_char_bidirectional() {
-        assert!(is_forbidden_char('\u{200E}'));
-        assert!(is_forbidden_char('\u{200F}'));
-        assert!(is_forbidden_char('\u{202A}'));
-        assert!(is_forbidden_char('\u{202E}'));
-        assert!(is_forbidden_char('\u{2066}'));
-        assert!(is_forbidden_char('\u{2069}'));
-    }
-
-    /// Тест: проверка is_forbidden_char для zero-width joiners
-    #[test]
-    fn test_is_forbidden_char_zero_width() {
-        assert!(is_forbidden_char('\u{200C}'));
-        assert!(is_forbidden_char('\u{200D}'));
-    }
-
-    /// Тест: проверка is_forbidden_char для variation selectors
-    #[test]
-    fn test_is_forbidden_char_variation_selectors() {
-        assert!(is_forbidden_char('\u{FE00}'));
-        assert!(is_forbidden_char('\u{FE0F}'));
-        assert!(is_forbidden_char('\u{FE05}'));
-    }
-
-    /// Тест: проверка is_forbidden_char для обычных символов
-    #[test]
-    fn test_is_forbidden_char_normal_chars() {
-        assert!(!is_forbidden_char('a'));
-        assert!(!is_forbidden_char('A'));
-        assert!(!is_forbidden_char('0'));
-        assert!(!is_forbidden_char('_'));
-        assert!(!is_forbidden_char('-'));
-        assert!(!is_forbidden_char(' '));
-        assert!(!is_forbidden_char('а'));
-        assert!(!is_forbidden_char('я'));
-        assert!(!is_forbidden_char('ё'));
     }
 
     // =========================================================================

@@ -520,22 +520,69 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Загруженную таблицу лидеров или пустую при ошибке
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлена обработка ошибок с попыткой загрузки из backup файла.
     #[must_use]
     pub fn load() -> Self {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
-                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Используется пустая таблица.");
-                Self::default()
+                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup...");
+                // Попытка загрузить из backup файла
+                match load(APP_NAME, Some("leaderboard_backup")) {
+                    Ok(backup_leaderboard) => {
+                        eprintln!("Информация: успешно загружено из backup файла.");
+                        backup_leaderboard
+                    }
+                    Err(backup_e) => {
+                        eprintln!("Предупреждение: не удалось загрузить backup: {backup_e}. Используется пустая таблица.");
+                        Self::default()
+                    }
+                }
             }
         }
     }
 
     /// Сохранить таблицу лидеров в файл конфигурации.
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
     pub fn save(&self) {
         if let Err(e) = store(APP_NAME, Some("leaderboard"), self) {
-            eprintln!("Ошибка сохранения таблицы лидеров: {e}");
+            eprintln!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
+            // Попытка сохранить в backup файл
+            if let Err(backup_e) = store(APP_NAME, Some("leaderboard_backup"), self) {
+                eprintln!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+            } else {
+                eprintln!("Информация: успешно сохранено в backup файл.");
+            }
         }
+    }
+
+    /// Сохранить таблицу лидеров с явным указанием backup режима.
+    ///
+    /// # Аргументы
+    /// * `use_backup` - если true, сохраняет в backup файл
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если сохранение успешно
+    /// - `Err(String)` если произошла ошибка сохранения конфигурации
+    ///
+    /// # Errors
+    /// Возвращает ошибку если не удалось сохранить конфигурацию через confy::store()
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлен метод для явного сохранения в backup файл.
+    pub fn save_with_backup(&self, use_backup: bool) -> Result<(), String> {
+        let config_name = if use_backup {
+            "leaderboard_backup"
+        } else {
+            "leaderboard"
+        };
+
+        store(APP_NAME, Some(config_name), self)
+            .map_err(|e| format!("Ошибка сохранения {}: {e}", config_name))
     }
 
     /// Добавить новый рекорд в таблицу лидеров.

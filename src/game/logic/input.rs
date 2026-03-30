@@ -25,6 +25,10 @@ use crate::types::{Direction, RotationDirection};
 /// - `Some(UpdateEndState::Quit)` - выход в меню
 /// - `Some(UpdateEndState::Pause)` - пауза
 /// - `None` - продолжить обработку
+///
+/// # Исправление #14 (MEDIUM SEVERITY)
+/// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
+/// Это позволяет отслеживать проблемы с вводом во время отладки.
 pub fn handle_input(
     state: &mut GameState,
     inp: &mut crate::io::KeyReader,
@@ -35,8 +39,14 @@ pub fn handle_input(
     state.set_is_hard_dropping(false);
 
     match key {
-        Some(KEY_BACKSPACE) => return Some(UpdateEndState::Quit),
-        Some(b'p') => return Some(UpdateEndState::Pause),
+        Some(KEY_BACKSPACE) => {
+            eprintln!("[INFO] Получена клавиша выхода (Backspace)");
+            return Some(UpdateEndState::Quit);
+        }
+        Some(b'p') => {
+            eprintln!("[INFO] Получена клавиша паузы (P)");
+            return Some(UpdateEndState::Pause);
+        }
         Some(b'a') => handle_movement_input(state, Direction::Left),
         Some(b'd') => handle_movement_input(state, Direction::Right),
         Some(b'q') => handle_rotation_input(state, RotationDirection::CounterClockwise),
@@ -44,7 +54,18 @@ pub fn handle_input(
         Some(b'w') => super::super::scoring::handle_hard_drop(state),
         Some(b's') => super::super::scoring::handle_soft_drop(state),
         Some(b'c' | b'C') => super::super::scoring::handle_hold(state),
-        Some(_) | None => {}
+        Some(other_key) => {
+            // Логирование неизвестной клавиши для отладки
+            eprintln!(
+                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
+                char::from_u32(other_key as u32).unwrap_or('?'),
+                other_key
+            );
+        }
+        None => {
+            // Клавиша не была нажата или произошла ошибка чтения
+            // Не логируем чтобы не спамить в консоль каждый кадр
+        }
     }
 
     None

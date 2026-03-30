@@ -71,7 +71,7 @@ fn test_game_state_next_shape_exists() {
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        next_shape.shape as usize, next_shape.fg,
+        next_shape.shape as u8, next_shape.fg,
         "Индекс цвета должен соответствовать типу фигуры"
     );
 }
@@ -379,7 +379,7 @@ fn test_all_tetromino_rotate() {
             pos: (4.0, 0.0),
             shape: *shape_type,
             coords: crate::tetromino::SHAPE_COORDS[*shape_type as usize],
-            fg: *shape_type as usize,
+            fg: *shape_type as u8,
         };
 
         let original_coords = tetromino.coords;

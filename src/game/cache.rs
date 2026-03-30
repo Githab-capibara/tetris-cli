@@ -214,14 +214,18 @@ pub struct RenderCache {
 
 impl RenderCache {
     /// Создать новый кэш для отрисовки.
+    ///
+    /// # Исправление #4 (LOW)
+    /// Используется `String::with_capacity(32)` для всех кэшированных строк
+    /// для предотвращения лишних аллокаций при форматировании.
     pub fn new() -> Self {
         Self {
-            cached_score_str: String::with_capacity(16),
-            cached_level_str: String::with_capacity(16),
-            cached_lines_str: String::with_capacity(16),
-            cached_high_score_str: String::with_capacity(16),
-            cached_combo_str: String::with_capacity(16),
-            cached_timer_str: String::with_capacity(16),
+            cached_score_str: String::with_capacity(32),
+            cached_level_str: String::with_capacity(32),
+            cached_lines_str: String::with_capacity(32),
+            cached_high_score_str: String::with_capacity(32),
+            cached_combo_str: String::with_capacity(32),
+            cached_timer_str: String::with_capacity(32),
             last_cached_score: 0,
             last_cached_level: 0,
             last_cached_lines: 0,

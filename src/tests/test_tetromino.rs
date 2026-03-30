@@ -255,12 +255,12 @@ fn test_shape_color_index_match() {
             pos: (4.0, 0.0),
             shape,
             coords: SHAPE_COORDS[index],
-            fg: index,
+            fg: index as u8,
         };
 
         // Проверяем, что индекс цвета совпадает с индексом фигуры
         assert_eq!(
-            t.fg, index,
+            t.fg, index as u8,
             "Индекс цвета должен совпадать с индексом фигуры для {shape:?}"
         );
     }
@@ -277,7 +277,7 @@ fn test_random_shape_distribution() {
 
     for _ in 0..700 {
         let t = Tetromino::from_bag(&mut bag);
-        counts[t.fg] += 1;
+        counts[t.fg as usize] += 1;
     }
 
     // Проверяем, что все типы встретились хотя бы 50 раз

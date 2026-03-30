@@ -178,7 +178,7 @@ fn test_game_state_tetromino_interaction() {
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        curr.shape as usize, curr.fg,
+        curr.shape as u8, curr.fg,
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
 }
@@ -325,7 +325,7 @@ fn test_all_shapes_in_game() {
             pos: (4.0, 0.0),
             shape: shape_type,
             coords: crate::tetromino::SHAPE_COORDS[shape_type as usize],
-            fg: shape_type as usize,
+            fg: shape_type as u8,
         };
 
         // Проверяем, что фигура валидна

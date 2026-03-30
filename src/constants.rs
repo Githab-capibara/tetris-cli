@@ -26,7 +26,6 @@ pub const FPS: u64 = 60;
 
 /// Задержка между кадрами в миллисекундах.
 /// Вычисляется как 1000 / FPS ≈ 16.67 мс.
-#[allow(dead_code)]
 pub const FRAME_DELAY_MS: u64 = 1000 / FPS;
 
 /// Миллисекунд в секунде.
@@ -399,17 +398,13 @@ pub const KEY_BACKSPACE: u8 = 127;
 pub const KEY_ENTER: u8 = b'\n';
 
 /// Код клавиши Enter (возврат каретки).
-#[allow(dead_code)]
 pub const KEY_ENTER_CR: u8 = b'\r';
 
 /// Код клавиши Escape.
-#[allow(dead_code)]
 pub const KEY_ESCAPE: u8 = 27;
 
 /// Код клавиши Tab.
-#[allow(dead_code)]
 pub const KEY_TAB: u8 = 9;
 
 /// Код клавиши Space (пробел).
-#[allow(dead_code)]
 pub const KEY_SPACE: u8 = b' ';

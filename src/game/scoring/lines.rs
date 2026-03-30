@@ -9,8 +9,6 @@
 //! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
 
-use smallvec::SmallVec;
-
 use super::super::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
@@ -26,9 +24,9 @@ use crate::io::GRID_HEIGHT;
 /// O(n) сложность где n = `GRID_HEIGHT` (20 итераций).
 /// Используется `.all()` с ранним выходом при обнаружении пустой ячейки.
 ///
-/// # Исправление #6
-/// Исправлено: не требуется .take() так как `row` имеет тип `[i8; GRID_WIDTH]`
-/// и итерация происходит по всем элементам массива фиксированного размера.
+/// # Исправление #11 (LOW)
+/// Возвращает битовую маску `u32` для оптимизации использования памяти.
+/// Это устраняет необходимость в SmallVec и аллокациях.
 #[must_use]
 pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
@@ -110,15 +108,8 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 /// - Уменьшения связанности между модулями
 /// - Улучшения тестируемости логики удаления линий
 pub fn check_rows(state: &mut GameState) -> u32 {
-    // Поиск заполненных линий - используем SmallVec для оптимизации
-    let filled_rows = find_filled_lines(state.get_blocks());
-    let remove_count = filled_rows.len() as u32;
-
-    // Преобразуем в битовую маску для анимации
-    let mut rows_mask: u32 = 0;
-    for &row in &filled_rows {
-        rows_mask |= 1u32 << row;
-    }
+    // Поиск заполненных линий - используем битовую маску для оптимизации
+    let (rows_mask, remove_count) = find_filled_lines(state.get_blocks());
 
     // Анимация и звук для каждой линии
     // Примечание: анимация упрощена до установки флага и звукового сигнала
@@ -129,14 +120,14 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     }
 
     // Удаление линий и сдвиг поля
-    remove_lines(state.get_blocks_mut(), &filled_rows);
+    remove_lines(state.get_blocks_mut(), rows_mask);
 
     // Обновление счёта, уровня и комбо
     let mut score = state.score();
     let level = state.level();
     let mut combo_counter = state.get_stats().combo_counter();
 
-    update_score_for_lines(&mut score, level, filled_rows.len(), &mut combo_counter);
+    update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter);
 
     state.set_score(score);
     state.get_stats_mut().set_combo_counter(combo_counter);
@@ -158,49 +149,28 @@ pub fn check_rows(state: &mut GameState) -> u32 {
 /// * `blocks` - игровое поле (только чтение)
 ///
 /// # Возвращает
-/// SmallVec с индексами заполненных линий.
-/// SmallVec<[usize; 4]> оптимизирован для случая до 4 линий (максимум в тетрисе).
+/// Битовую маску заполненных линий и количество заполненных линий
 ///
 /// # Производительность
-/// - Использует SmallVec для предотвращения аллокаций в куче
-/// - Для типичного случая (0-4 линии) данные хранятся в стеке
+/// - Использует битовую маску `u32` для хранения до 32 линий
 /// - O(n) сложность где n = `GRID_HEIGHT` (20 итераций)
+/// - Без аллокаций в куче
 ///
-/// # Исправление M8 (MEDIUM)
-/// Использует SmallVec<[usize; 4]> вместо Vec<usize> для оптимизации.
-/// SmallVec хранит до 4 элементов в стеке без аллокации в куче.
-/// Это оптимально для тетриса, где максимум 4 линии за раз.
+/// # Исправление #11 (LOW)
+/// Возвращает битовую маску `u32` вместо SmallVec<[usize; 4]> для оптимизации.
+/// Битовая маска занимает 4 байта вместо 24+ байт для SmallVec.
 #[must_use]
-pub fn find_filled_lines(
-    blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT],
-) -> SmallVec<[usize; 4]> {
-    // SmallVec с capacity 4 - оптимизировано для максимального количества линий в тетрисе
-    let mut filled = SmallVec::<[usize; 4]>::new();
-
-    for (y, row) in blocks.iter().enumerate() {
-        // Проверка: линия заполнена если все ячейки не пустые (!= -1)
-        let row_full = row.iter().all(|&cell| cell != -1);
-        if row_full {
-            filled.push(y);
-        }
-    }
-
-    filled
+pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
+    find_full_rows(blocks)
 }
 
 /// Удаление линий и сдвиг поля (вспомогательная функция).
 ///
 /// # Аргументы
 /// * `blocks` - игровое поле (изменяемое)
-/// * `rows` - срез с индексами удаляемых линий (SmallVec или &[usize])
-fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows: &[usize]) {
-    // Преобразуем список строк в битовую маску для совместимости с remove_rows()
-    let mut rows_mask: u32 = 0;
-    for &row in rows {
-        rows_mask |= 1u32 << row;
-    }
-
-    // Используем существующую функцию удаления
+/// * `rows_mask` - битовая маска удаляемых линий
+fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
+    // Используем существующую функцию удаления с битовой маской
     remove_rows(blocks, rows_mask);
 }
 
@@ -278,23 +248,24 @@ mod lines_tests {
     }
 
     // ========================================================================
-    // ТЕСТЫ ДЛЯ M8: find_filled_lines() С SmallVec - ОПТИМИЗАЦИЯ
+    // ТЕСТЫ ДЛЯ #11: find_filled_lines() С БИТОВОЙ МАСКОЙ - ОПТИМИЗАЦИЯ
     // ========================================================================
 
-    /// Тест M8: проверка что find_filled_lines использует SmallVec
+    /// Тест #11: проверка что find_filled_lines возвращает битовую маску
     #[test]
-    fn test_fix_m8_find_filled_lines_returns_smallvec() {
+    fn test_fix_11_find_filled_lines_returns_bitmask() {
         let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
+        let (mask, count) = find_filled_lines(&blocks);
 
-        // Проверка типа возвращаемого значения - SmallVec<[usize; 4]>
-        // Это проверяется на этапе компиляции
-        let _: SmallVec<[usize; 4]> = filled;
+        // Проверка типа возвращаемого значения - (u32, u32)
+        let _: (u32, u32) = (mask, count);
+        assert_eq!(mask, 0);
+        assert_eq!(count, 0);
     }
 
-    /// Тест M8: проверка find_filled_lines с заполненными линиями
+    /// Тест #11: проверка find_filled_lines с заполненными линиями
     #[test]
-    fn test_fix_m8_find_filled_lines_with_full_rows() {
+    fn test_fix_11_find_filled_lines_with_full_rows() {
         let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем несколько линий
@@ -302,31 +273,17 @@ mod lines_tests {
         blocks[10] = [2i8; crate::io::GRID_WIDTH];
         blocks[15] = [3i8; crate::io::GRID_WIDTH];
 
-        let filled = find_filled_lines(&blocks);
+        let (mask, count) = find_filled_lines(&blocks);
 
-        assert_eq!(filled.len(), 3, "Должно быть найдено 3 заполненные линии");
-        assert!(filled.contains(&5));
-        assert!(filled.contains(&10));
-        assert!(filled.contains(&15));
+        assert_eq!(count, 3, "Должно быть найдено 3 заполненные линии");
+        assert_ne!(mask & (1 << 5), 0, "Должна быть найдена линия 5");
+        assert_ne!(mask & (1 << 10), 0, "Должна быть найдена линия 10");
+        assert_ne!(mask & (1 << 15), 0, "Должна быть найдена линия 15");
     }
 
-    /// Тест M8: проверка SmallVec capacity оптимизации
+    /// Тест #11: проверка битовой маски с максимальным количеством линий (4)
     #[test]
-    fn test_fix_m8_smallvec_capacity_optimization() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
-
-        // SmallVec<[usize; 4]> должен иметь capacity 4 для хранения в стеке
-        // Это оптимально для тетриса (максимум 4 линии за раз)
-        assert!(
-            filled.capacity() >= 4,
-            "SmallVec должен иметь capacity >= 4"
-        );
-    }
-
-    /// Тест M8: проверка find_filled_lines с максимальным количеством линий (4)
-    #[test]
-    fn test_fix_m8_find_filled_lines_max_tetris_lines() {
+    fn test_fix_11_find_filled_lines_max_tetris_lines() {
         let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем 4 линии (максимум для тетриса)
@@ -335,72 +292,53 @@ mod lines_tests {
         blocks[18] = [3i8; crate::io::GRID_WIDTH];
         blocks[19] = [4i8; crate::io::GRID_WIDTH];
 
-        let filled = find_filled_lines(&blocks);
+        let (mask, count) = find_filled_lines(&blocks);
 
-        assert_eq!(filled.len(), 4, "Должно быть найдено 4 заполненные линии");
-        assert!(filled.contains(&16));
-        assert!(filled.contains(&17));
-        assert!(filled.contains(&18));
-        assert!(filled.contains(&19));
+        assert_eq!(count, 4, "Должно быть найдено 4 заполненные линии");
+        assert_ne!(mask & (1 << 16), 0);
+        assert_ne!(mask & (1 << 17), 0);
+        assert_ne!(mask & (1 << 18), 0);
+        assert_ne!(mask & (1 << 19), 0);
     }
 
-    /// Тест M8: проверка что SmallVec не требует аллокации для 0-4 элементов
+    /// Тест #11: проверка что битовая маска не требует аллокаций
     #[test]
-    fn test_fix_m8_smallvec_no_allocation_for_typical_case() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-
-        // Тест для 0 линий
-        let filled_empty = find_filled_lines(&blocks);
-        assert_eq!(filled_empty.len(), 0);
-
-        // Тест для 1 линии
-        blocks[10] = [1i8; crate::io::GRID_WIDTH];
-        let filled_one = find_filled_lines(&blocks);
-        assert_eq!(filled_one.len(), 1);
-
-        // Тест для 2 линий
-        blocks[11] = [2i8; crate::io::GRID_WIDTH];
-        let filled_two = find_filled_lines(&blocks);
-        assert_eq!(filled_two.len(), 2);
-
-        // Тест для 3 линий
-        blocks[12] = [3i8; crate::io::GRID_WIDTH];
-        let filled_three = find_filled_lines(&blocks);
-        assert_eq!(filled_three.len(), 3);
-
-        // Тест для 4 линий (максимум для тетриса)
-        blocks[13] = [4i8; crate::io::GRID_WIDTH];
-        let filled_four = find_filled_lines(&blocks);
-        assert_eq!(filled_four.len(), 4);
-
-        // Все SmallVec должны хранить данные в стеке (без аллокации)
-        // Это проверяется через capacity - если capacity >= 4, данные в стеке
-        assert!(filled_empty.capacity() >= 4);
-        assert!(filled_one.capacity() >= 4);
-        assert!(filled_two.capacity() >= 4);
-        assert!(filled_three.capacity() >= 4);
-        assert!(filled_four.capacity() >= 4);
-    }
-
-    /// Тест M8: проверка производительности SmallVec vs Vec
-    #[test]
-    fn test_fix_m8_smallvec_performance_characteristics() {
-        // SmallVec<[usize; 4]> оптимизирован для случая до 4 элементов
-        // Для 0-4 элементов данные хранятся в стеке без аллокации в куче
+    fn test_fix_11_bitmask_no_allocation() {
+        // Битовая маска u32 занимает 4 байта и не требует аллокаций в куче
+        // Это оптимально для тетриса (максимум 4 линии за раз)
 
         let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
-        let filled = find_filled_lines(&blocks);
+        let (mask, count) = find_filled_lines(&blocks);
 
-        // Проверка что SmallVec корректно работает
-        assert_eq!(filled.len(), 0);
+        // Проверка что битовая маска корректно работает
+        assert_eq!(count, 0);
+        assert_eq!(mask, 0);
 
-        // SmallVec поддерживает те же операции что и Vec
-        let mut mutable_filled = filled;
-        mutable_filled.push(5);
-        assert_eq!(mutable_filled.len(), 1);
-        assert_eq!(mutable_filled[0], 5);
+        // Проверка операций с битовой маской
+        let mut mutable_mask = mask;
+        mutable_mask |= 1 << 5;
+        assert_ne!(mutable_mask & (1 << 5), 0);
 
-        mutable_filled.clear();
-        assert_eq!(mutable_filled.len(), 0);
+        mutable_mask &= !(1 << 5);
+        assert_eq!(mutable_mask & (1 << 5), 0);
+    }
+
+    /// Тест #11: проверка производительности битовой маски
+    #[test]
+    fn test_fix_11_bitmask_performance_characteristics() {
+        // Битовая маска u32 оптимизирована:
+        // - 4 байта памяти вместо 24+ байт для SmallVec
+        // - Быстрые битовые операции
+        // - Нет аллокаций в куче
+
+        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let (mask, count) = find_filled_lines(&blocks);
+
+        // Проверка что битовая маска корректно работает
+        assert_eq!(count, 0);
+        assert_eq!(mask, 0);
+
+        // Проверка битовых операций
+        assert_eq!(mask.count_ones(), 0);
     }
 }
