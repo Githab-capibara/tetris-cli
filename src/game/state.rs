@@ -32,9 +32,11 @@
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};
 
+use super::board::GameBoard;
 use super::cache::RenderCache;
 use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use super::mode_trait::GameModeTrait;
+use super::scoreboard::ScoreBoard;
 pub use super::stats::GameStats;
 
 // ============================================================================
@@ -258,24 +260,70 @@ impl GameMode {
 /// - `AnimationState` - анимации (animating_rows_mask, is_hard_dropping)
 ///
 /// Текущая структура нарушает Single Responsibility Principle.
+///
+/// ## Исправление A1 (HIGH) - Разделение ответственности
+/// Начиная с версии 23.96.18, `GameState` использует композицию:
+/// - `board: GameBoard` - инкапсуляция состояния поля
+/// - `scoreboard: ScoreBoard` - инкапсуляция состояния очков
+///
+/// Старые поля (`blocks`, `filled_lines`, `score`, `level`, `lines_cleared`)
+/// сохранены как deprecated для обратной совместимости и делегируют вызовы
+/// новым компонентам.
 pub struct GameState {
+    // ========================================================================
+    // === НОВЫЕ КОМПОНЕНТЫ (A1: Разделение ответственности) ===
+    // ========================================================================
+    /// Состояние игрового поля.
+    ///
+    /// Инкапсулирует состояние поля (blocks, filled_lines).
+    /// Новый способ доступа к полю - используйте `board()` и `board_mut()`.
+    board: GameBoard,
+    /// Состояние счёта и уровней.
+    ///
+    /// Инкапсулирует состояние очков (score, level, lines_cleared).
+    /// Новый способ доступа к очкам - используйте `scoreboard()` и `scoreboard_mut()`.
+    scoreboard: ScoreBoard,
+
     // ========================================================================
     // === СОСТОЯНИЕ ПОЛЯ (будущий GameBoard) ===
     // ========================================================================
     /// Двумерный массив игрового поля 10x20.
     /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
+    ///
+    /// # Устарело
+    /// Используйте `board.get_blocks()` вместо прямого доступа.
+    #[deprecated(since = "23.96.18", note = "Используйте board.get_blocks()")]
     blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
     /// Битовая маска заполненных линий (для будущей оптимизации).
+    ///
+    /// # Устарело
+    /// Используйте `board.get_filled_lines_mask()` вместо прямого доступа.
+    #[deprecated(since = "23.96.18", note = "Используйте board.get_filled_lines_mask()")]
     filled_lines: u32,
 
     // ========================================================================
     // === СОСТОЯНИЕ ОЧКОВ (будущий ScoreBoard) ===
     // ========================================================================
     /// Текущий счёт.
+    ///
+    /// # Устарело
+    /// Используйте `scoreboard.get_score()` вместо прямого доступа.
+    #[deprecated(since = "23.96.18", note = "Используйте scoreboard.get_score()")]
     score: u128,
     /// Текущий уровень.
+    ///
+    /// # Устарело
+    /// Используйте `scoreboard.get_level()` вместо прямого доступа.
+    #[deprecated(since = "23.96.18", note = "Используйте scoreboard.get_level()")]
     level: u32,
     /// Количество удалённых линий.
+    ///
+    /// # Устарело
+    /// Используйте `scoreboard.get_lines_cleared()` вместо прямого доступа.
+    #[deprecated(
+        since = "23.96.18",
+        note = "Используйте scoreboard.get_lines_cleared()"
+    )]
     lines_cleared: u32,
 
     // ========================================================================
@@ -378,7 +426,17 @@ impl GameState {
         }
         // Создаём объект трейта из enum
         let mode_trait = mode.as_trait();
+
+        // Создаём новые компоненты
+        let board = GameBoard::new();
+        let scoreboard = ScoreBoard::new();
+
         let mut game_state = Self {
+            // Новые компоненты
+            board,
+            scoreboard,
+
+            // Старые поля для обратной совместимости (deprecated)
             score: 0,
             level: 1,
             lines_cleared: 0,
@@ -408,21 +466,30 @@ impl GameState {
     // ========================================================================
 
     /// Получить текущий счёт.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
     pub fn score(&self) -> u128 {
-        self.score
+        self.scoreboard.get_score()
     }
 
     /// Получить текущий уровень.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
     pub fn level(&self) -> u32 {
-        self.level
+        self.scoreboard.get_level()
     }
 
     /// Получить количество удалённых линий.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
     pub fn lines_cleared(&self) -> u32 {
-        self.lines_cleared
+        self.scoreboard.get_lines_cleared()
     }
 
     /// Получить текущий счёт (устаревшее имя).
@@ -489,6 +556,58 @@ impl GameState {
         &*self.mode_trait
     }
 
+    // ========================================================================
+    // НОВЫЕ МЕТОДЫ ДЛЯ КОМПОНЕНТОВ (A1: Разделение ответственности)
+    // ========================================================================
+
+    /// Получить доступ к игровому полю.
+    ///
+    /// # Возвращает
+    /// Ссылка на `GameBoard`
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let state = GameState::new();
+    /// let block = state.board().get_block(5, 10);
+    /// ```
+    #[must_use]
+    pub fn board(&self) -> &GameBoard {
+        &self.board
+    }
+
+    /// Получить мутуабельный доступ к игровому полю.
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `GameBoard`
+    #[must_use]
+    pub fn board_mut(&mut self) -> &mut GameBoard {
+        &mut self.board
+    }
+
+    /// Получить доступ к состоянию счёта.
+    ///
+    /// # Возвращает
+    /// Ссылка на `ScoreBoard`
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let state = GameState::new();
+    /// let score = state.scoreboard().get_score();
+    /// ```
+    #[must_use]
+    pub fn scoreboard(&self) -> &ScoreBoard {
+        &self.scoreboard
+    }
+
+    /// Получить мутуабельный доступ к состоянию счёта.
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `ScoreBoard`
+    #[must_use]
+    pub fn scoreboard_mut(&mut self) -> &mut ScoreBoard {
+        &mut self.scoreboard
+    }
+
     /// Получить режим игры (enum для обратной совместимости).
     ///
     /// # Возвращает
@@ -511,15 +630,21 @@ impl GameState {
     }
 
     /// Получить игровое поле.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `GameBoard`.
     #[must_use]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &self.blocks
+        self.board.get_blocks()
     }
 
     /// Получить игровое поле (мутуабельная ссылка).
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `GameBoard`.
     #[must_use]
     pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        &mut self.blocks
+        self.board.get_blocks_mut()
     }
 
     /// Получить текущую фигуру.
@@ -635,20 +760,35 @@ impl GameState {
     // ========================================================================
 
     /// Установить счёт.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn set_score(&mut self, value: u128) {
-        self.score = value;
+        self.scoreboard.set_score(value);
+        self.score = value; // Для обратной совместимости
     }
 
     /// Установить уровень.
     ///
     /// Уровень не может быть меньше 1.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn set_level(&mut self, value: u32) {
-        self.level = value.max(1);
+        self.scoreboard.set_level(value);
+        self.level = value.max(1); // Для обратной совместимости
     }
 
     /// Установить количество удалённых линий.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn set_lines_cleared(&mut self, value: u32) {
-        self.lines_cleared = value;
+        self.scoreboard.set_lines_cleared(value);
+        self.lines_cleared = value; // Для обратной совместимости
     }
 
     /// Установить скорость падения.
@@ -736,29 +876,63 @@ impl GameState {
     }
 
     /// Получить маску заполненных линий.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `GameBoard`.
     #[must_use]
     pub fn filled_lines(&self) -> u32 {
-        self.filled_lines
+        self.board.get_filled_lines_mask()
     }
 
     /// Установить маску заполненных линий.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `GameBoard`.
+    #[allow(deprecated)]
     pub fn set_filled_lines(&mut self, value: u32) {
-        self.filled_lines = value;
+        self.board.set_filled_lines_mask(value);
+        self.filled_lines = value; // Для обратной совместимости
     }
 
     /// Добавить очки к текущему счёту.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn add_score(&mut self, points: u128) {
-        self.score = self.score.saturating_add(points);
+        self.scoreboard.add_score(points);
+        self.score = self.score.saturating_add(points); // Для обратной совместимости
     }
 
     /// Добавить очки к текущему счёту без проверки (для тестов).
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn add_score_no_check(&mut self, points: u128) {
-        self.score = self.score.saturating_add(points);
+        self.scoreboard.add_score(points);
+        self.score = self.score.saturating_add(points); // Для обратной совместимости
     }
 
     /// Добавить количество очищенных линий.
+    ///
+    /// # Архитектурные заметки (A1)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    #[allow(deprecated)]
     pub fn add_lines_cleared(&mut self, lines: u32) {
-        self.lines_cleared = self.lines_cleared.saturating_add(lines);
+        self.scoreboard.add_lines_cleared(lines);
+        self.lines_cleared = self.lines_cleared.saturating_add(lines); // Для обратной совместимости
+    }
+
+    /// Увеличить уровень на 1.
+    ///
+    /// # Возвращает
+    /// Новый уровень после увеличения.
+    ///
+    /// # Архитектурные заметки (A3)
+    /// Делегирует вызов компоненту `ScoreBoard`.
+    pub fn increment_level(&mut self) -> u32 {
+        self.scoreboard.increment_level()
     }
 
     /// Получить кэшированную строку счёта.
@@ -812,6 +986,7 @@ impl GameState {
 
     /// Получить заполненные линии (для access.rs).
     #[must_use]
+    #[allow(deprecated)]
     pub fn get_filled_lines(&self) -> u32 {
         self.filled_lines
     }

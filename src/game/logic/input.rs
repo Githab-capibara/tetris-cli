@@ -10,28 +10,37 @@
 //! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
 //! - [`scoring.rs`](super::super::scoring): функции начисления очков
 //! - [`types.rs`](crate::types): `Direction`, `RotationDirection`
+//!
+//! ## Архитектурные заметки (A7: DIP)
+//! Функция `handle_input()` использует трейт `InputReader` вместо конкретного типа `KeyReader`
+//! для соблюдения Dependency Inversion Principle.
 
 use crate::game::state::{GameState, UpdateEndState};
 use crate::io::KEY_BACKSPACE;
+use crate::io_traits::InputReader;
 use crate::types::{Direction, RotationDirection};
 
 /// Обработать пользовательский ввод.
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `inp` - читатель нажатий клавиш
+/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
 ///
 /// # Возвращает
 /// - `Some(UpdateEndState::Quit)` - выход в меню
 /// - `Some(UpdateEndState::Pause)` - пауза
 /// - `None` - продолжить обработку
 ///
+/// # Архитектурные заметки (A7: DIP)
+/// Использует трейт `InputReader` вместо конкретного типа `KeyReader`
+/// для соблюдения Dependency Inversion Principle.
+///
 /// # Исправление #14 (MEDIUM SEVERITY)
 /// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
 /// Это позволяет отслеживать проблемы с вводом во время отладки.
-pub fn handle_input(
+pub fn handle_input<T: crate::io_traits::InputReader>(
     state: &mut GameState,
-    inp: &mut crate::io::KeyReader,
+    inp: &mut T,
 ) -> Option<UpdateEndState> {
     let key = inp.get_key();
 

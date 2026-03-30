@@ -10,21 +10,28 @@
 //! - [`input.rs`](super::input): `handle_input`
 //! - [`physics.rs`](super::physics): `handle_falling`
 //! - [`scoring.rs`](crate::game::scoring): `handle_landing`
+//!
+//! ## Архитектурные заметки (A7: DIP)
+//! Функция `update()` использует трейт `InputReader` вместо конкретного типа `KeyReader`.
 
 use crate::game::state::{GameState, UpdateEndState};
+use crate::io_traits::InputReader;
 
 /// Обновить состояние игры за один кадр.
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `inp` - читатель нажатий клавиш
+/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
 /// * `delta_time_ms` - время, прошедшее с последнего кадра (мс)
 ///
 /// # Возвращает
 /// Состояние завершения обновления
-pub fn update(
+///
+/// # Архитектурные заметки (A7: DIP)
+/// Использует трейт `InputReader` вместо конкретного типа `KeyReader`.
+pub fn update<T: InputReader>(
     state: &mut GameState,
-    inp: &mut crate::io::KeyReader,
+    inp: &mut T,
     delta_time_ms: u64,
 ) -> UpdateEndState {
     // Обработка ввода

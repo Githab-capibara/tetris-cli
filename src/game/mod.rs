@@ -58,12 +58,14 @@
 
 // Подмодули
 pub mod access;
+pub mod board;
 pub mod cache;
 // constants больше не является отдельным файлом - используем ре-экспорт из crate::constants
 pub mod cycle;
 pub mod logic;
 pub mod mode_trait;
 pub mod render;
+pub mod scoreboard;
 pub mod scoring;
 pub mod state;
 pub mod stats;
@@ -101,6 +103,16 @@ pub use constants::{
 #[allow(unused_imports)]
 pub use access::{BoardMutable, BoardReadonly, GameBoardAccess};
 
+// Re-export трейтов и типов из board
+#[allow(unused_imports)]
+pub use board::{
+    BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait, GameBoard,
+};
+
+// Re-export трейтов и типов из scoreboard
+#[allow(unused_imports)]
+pub use scoreboard::{ScoreAccess, ScoreBoard, ScoreMutable};
+
 // Re-export GameView и StringCache для отрисовки и кэширования
 #[allow(unused_imports)]
 pub use cache::StringCache;
@@ -110,9 +122,6 @@ pub use scoring::lines::find_filled_lines;
 pub use view::GameView;
 
 // Константы для тестов (обратная совместимость)
-
-// Re-export трейтов и типов для тестов (обратная совместимость)
-pub use access::ScoreAccess;
 
 // Re-export типов из types.rs (обратная совместимость)
 
@@ -144,20 +153,26 @@ impl GameState {
     /// * `high_score_display` - строка для отображения рекорда
     ///
     /// # Возвращает
-    /// Финальный счёт игрока
+    /// - `Ok(u128)` - финальный счёт игрока
+    /// - `Err(GameError)` - ошибка во время игрового цикла
     ///
-    /// # Архитектурные заметки
+    /// # Errors
+    /// Возвращает ошибку `GameError` при сбое ввода/вывода, ошибке терминала или других критических ошибках во время игрового цикла.
+    ///
+    /// # Архитектурные заметки (A8)
     /// Метод делегирует логику игрового цикла модулю [`cycle`]:
     /// - `handle_fps_control()` - поддержание стабильного FPS
     /// - `handle_input()` - обработка ввода пользователя
     /// - `render()` - отрисовка текущего кадра
     /// - `handle_game_over()` - обработка конца игры
+    ///
+    /// Возвращает `Result` для явной обработки ошибок.
     pub fn play(
         &mut self,
         cnv: &mut crate::io::Canvas,
         inp: &mut crate::io::KeyReader,
         high_score_display: &str,
-    ) -> u128 {
+    ) -> Result<u128, state::GameError> {
         cycle::run_game_loop(self, cnv, inp, high_score_display)
     }
 
