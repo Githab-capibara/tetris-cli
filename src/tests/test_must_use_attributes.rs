@@ -150,7 +150,7 @@ fn test_must_use_get_stats() {
     let state = GameState::new();
 
     // Используем результат
-    let stats = state.get_stats();
+    let stats = state.stats();
     // Первая фигура уже добавлена в статистику при создании GameState
     assert_eq!(
         stats.total_pieces(),

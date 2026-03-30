@@ -73,7 +73,7 @@ fn test_edge_cases_max_fall_speed() {
         state.increment_lines_cleared();
     }
 
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
     assert!(fall_spd > 0.0, "Скорость должна быть положительной");
     assert!(fall_spd < 100.0, "Скорость должна быть разумной");
 }
@@ -301,7 +301,7 @@ fn test_min_single_line() {
 #[test]
 fn test_min_single_piece() {
     let state = GameState::new();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     // В начале игры должна быть 1 фигура
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 фигура");
@@ -318,7 +318,7 @@ fn test_min_game_time() {
     // Сразу останавливаем
     state.stop_timer();
 
-    let elapsed = state.get_stats().get_elapsed_time();
+    let elapsed = state.stats().get_elapsed_time();
     assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
 }
 
@@ -347,7 +347,7 @@ fn test_long_timer_10_seconds() {
     // Ждём 100мс (для скорости тестов)
     std::thread::sleep(std::time::Duration::from_millis(100));
 
-    let elapsed = state.get_stats().get_elapsed_time();
+    let elapsed = state.stats().get_elapsed_time();
     assert!(elapsed >= 0.1, "Время должно быть >= 0.1 секунды");
     assert!(elapsed < 1.0, "Время должно быть < 1 секунды");
 }

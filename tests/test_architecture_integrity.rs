@@ -151,20 +151,36 @@ mod tests {
         let state_path = "src/game/state.rs";
         let state_content = fs::read_to_string(state_path).expect("Failed to read state.rs");
 
-        // Проверяем наличие геттеров
+        // Проверяем наличие геттеров (после рефакторинга используются новые имена)
         assert!(
-            state_content.contains("pub fn get_score(&self)"),
-            "GameState должен иметь get_score()"
+            state_content.contains("pub fn score(&self)"),
+            "GameState должен иметь score()"
         );
 
         assert!(
-            state_content.contains("pub fn get_level(&self)"),
-            "GameState должен иметь get_level()"
+            state_content.contains("pub fn level(&self)"),
+            "GameState должен иметь level()"
         );
 
         assert!(
-            state_content.contains("pub fn get_lines_cleared(&self)"),
-            "GameState должен иметь get_lines_cleared()"
+            state_content.contains("pub fn lines_cleared(&self)"),
+            "GameState должен иметь lines_cleared()"
+        );
+
+        // Также проверяем наличие других геттеров
+        assert!(
+            state_content.contains("pub fn board(&self)"),
+            "GameState должен иметь board()"
+        );
+
+        assert!(
+            state_content.contains("pub fn scoreboard(&self)"),
+            "GameState должен иметь scoreboard()"
+        );
+
+        assert!(
+            state_content.contains("pub fn stats(&self)"),
+            "GameState должен иметь stats()"
         );
     }
 
@@ -191,12 +207,15 @@ mod tests {
     #[test]
     fn test_game_state_uses_saturating_arithmetic() {
         // Проверяем использование saturating arithmetic для очков
-        let state_path = "src/game/state.rs";
-        let state_content = fs::read_to_string(state_path).expect("Failed to read state.rs");
+        // После рефакторинга логика счёта вынесена в ScoreBoard
+        let scoreboard_path = "src/game/scoreboard.rs";
+        let scoreboard_content =
+            fs::read_to_string(scoreboard_path).expect("Failed to read scoreboard.rs");
 
         assert!(
-            state_content.contains("saturating_add") || state_content.contains("saturating_sub"),
-            "GameState должен использовать saturating arithmetic для защиты от переполнения"
+            scoreboard_content.contains("saturating_add")
+                || scoreboard_content.contains("saturating_sub"),
+            "ScoreBoard должен использовать saturating arithmetic для защиты от переполнения"
         );
     }
 

@@ -93,9 +93,9 @@ fn safe_f32_to_u32(value: f32) -> u32 {
         return 0;
     }
     // Проверка на переполнение - используем точную границу
-    // u32::MAX = 4294967295, используем явное значение для избежания потери точности
+    // u32::MAX = 4_294_967_295, используем явное значение для избежания потери точности
     // Исправление аудита 2026-03-30: точная граница вместо u32::MAX as f32
-    const MAX_SAFE_F32_FOR_U32: f32 = 4294967295.0;
+    const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
     if value >= MAX_SAFE_F32_FOR_U32 {
         return u32::MAX;
     }
@@ -322,9 +322,9 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
 
     if lines_cleared > 0 {
         let combo_bonus = {
-            let stats = state.get_stats_mut();
-            let new_combo = stats.combo_counter().saturating_add(1);
-            stats.set_combo_counter(new_combo);
+            let stats_mut_ref = state.stats_mut();
+            let new_combo = stats_mut_ref.combo_counter().saturating_add(1);
+            stats_mut_ref.set_combo_counter(new_combo);
             if new_combo > 1 {
                 // Инкапсуляция: используем add_score() вместо прямого доступа
                 // Исправление C1: saturating_mul для защиты от переполнения
@@ -337,7 +337,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
             state.add_score(bonus);
         }
     } else {
-        state.get_stats_mut().set_combo_counter(0);
+        state.stats_mut().set_combo_counter(0);
     }
 }
 
@@ -356,7 +356,7 @@ fn spawn_next_tetromino(state: &mut GameState) {
 
     // Обновление статистики для новой фигуры
     let shape = state.curr_shape().shape;
-    state.get_stats_mut().add_piece(shape);
+    state.stats_mut().add_piece(shape);
 }
 
 /// Проверить условие окончания режима (спринт/марафон).
@@ -382,12 +382,12 @@ fn check_mode_completion(
     let mode_trait = state.get_mode_trait();
 
     if mode_trait.get_target_lines() == Some(40) && lines_cleared >= sprint_lines {
-        state.get_stats_mut().stop_timer();
+        state.stats_mut().stop_timer();
         return Some(UpdateEndState::Won);
     }
 
     if mode_trait.get_target_lines() == Some(150) && lines_cleared >= marathon_lines {
-        state.get_stats_mut().stop_timer();
+        state.stats_mut().stop_timer();
         return Some(UpdateEndState::Won);
     }
 
@@ -530,7 +530,7 @@ mod points_tests {
         // Устанавливаем счёт близкий к максимальному
         state.set_score(u128::MAX - 10000);
         // Устанавливаем высокий комбо-счётчик
-        state.get_stats_mut().set_combo_counter(1000);
+        state.stats_mut().set_combo_counter(1000);
 
         // Тестируем update_combo_on_clear напрямую (без save_tetromino)
         update_combo_on_clear(&mut state, 1);

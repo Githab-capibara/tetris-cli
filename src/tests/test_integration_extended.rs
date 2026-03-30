@@ -457,7 +457,7 @@ fn test_next_piece_preview() {
 #[test]
 fn test_game_statistics() {
     let state = GameState::new();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     assert_eq!(stats.total_pieces(), 1, "В начале должна быть 1 фигура");
 }
@@ -515,7 +515,7 @@ fn test_game_has_empty_field() {
 #[test]
 fn test_game_has_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(fall_spd > 0.0, "Скорость падения должна быть положительной");
 }
@@ -548,7 +548,7 @@ fn test_marathon_game_has_goal() {
 #[test]
 fn test_game_has_statistics() {
     let state = GameState::new();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     assert_eq!(stats.total_pieces(), 1);
 }
@@ -559,7 +559,7 @@ fn test_game_has_timer() {
     let mut state = GameState::new();
 
     state.start_timer();
-    let stats = state.get_stats();
+    let stats = state.stats();
     let elapsed = stats.get_elapsed_time();
 
     assert!(elapsed >= 0.0, "Время должно быть неотрицательным");

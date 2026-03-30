@@ -36,6 +36,10 @@
 //! ## Разделение ответственности (Problem 2.3, 2.9)
 //! Этот модуль отвечает ТОЛЬКО за начисление очков и управление линиями.
 //!
+//! ## Исправление #6 (HIGH): Trait ScoringState
+//! Добавлен trait `ScoringState` для инкапсуляции изменений состояния.
+//! Это предотвращает прямой доступ к полям GameState и улучшает инкапсуляцию.
+//!
 //! TODO (#архитектура): Избегать прямого изменения полей GameState.
 //! В настоящее время используется прямой доступ к полям для производительности.
 //! Рассмотреть возможность использования методов GameState для модификации.
@@ -55,3 +59,66 @@ pub use lines::{check_rows, find_full_rows, remove_rows};
 
 // Публичные экспорты из points
 pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};
+
+// ============================================================================
+// TRAIT SCORINGSTATE (ИСПРАВЛЕНИЕ #6 - HIGH)
+// ============================================================================
+
+/// Trait для изменения состояния счёта в игре.
+///
+/// # Назначение
+/// Предоставляет методы для безопасного изменения состояния счёта,
+/// уровня, линий и других игровых параметров.
+///
+/// # Исправление #6 (HIGH)
+/// Добавлен для предотвращения прямого доступа к полям GameState
+/// из модуля scoring. Обеспечивает инкапсуляцию и контролируемую модификацию.
+///
+/// # Пример использования
+/// ```ignore
+/// use tetris_cli::game::scoring::ScoringState;
+///
+/// fn update_score(state: &mut impl ScoringState, new_score: u128) {
+///     state.set_score(new_score);
+/// }
+/// ```
+pub trait ScoringState {
+    /// Получить текущий счёт.
+    fn score(&self) -> u128;
+
+    /// Установить новый счёт.
+    fn set_score(&mut self, score: u128);
+
+    /// Получить текущий уровень.
+    fn level(&self) -> u32;
+
+    /// Получить количество очищенных линий.
+    fn lines_cleared(&self) -> u32;
+
+    /// Установить количество очищенных линий.
+    fn set_lines_cleared(&mut self, lines: u32);
+
+    /// Получить скорость падения.
+    fn fall_speed(&self) -> f32;
+
+    /// Установить скорость падения.
+    fn set_fall_speed(&mut self, speed: f32) -> Result<(), &'static str>;
+
+    /// Получить маску анимируемых строк.
+    fn animating_rows_mask(&self) -> u32;
+
+    /// Установить маску анимируемых строк.
+    fn set_animating_rows_mask(&mut self, mask: u32);
+
+    /// Получить ссылку на статистику.
+    fn stats(&self) -> &crate::game::stats::GameStats;
+
+    /// Получить изменяемую ссылку на статистику.
+    fn stats_mut(&mut self) -> &mut crate::game::stats::GameStats;
+
+    /// Получить игровое поле (только чтение).
+    fn get_blocks(&self) -> &[[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
+
+    /// Получить игровое поле (изменяемое).
+    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
+}

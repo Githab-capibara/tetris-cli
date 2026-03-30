@@ -236,11 +236,11 @@ impl BoardMutable for crate::game::state::GameState {
     }
 
     fn get_filled_lines(&self) -> u32 {
-        self.get_filled_lines()
+        self.lines_cleared()
     }
 
     fn set_filled_lines(&mut self, value: u32) {
-        self.set_filled_lines(value);
+        self.set_lines_cleared(value);
     }
 }
 

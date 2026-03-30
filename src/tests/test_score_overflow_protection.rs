@@ -253,7 +253,7 @@ fn test_game_state_score_overflow() {
     // Начисляем ещё очков через игровую логику
     let mut score = state.score();
     let level = state.level();
-    let mut combo_counter = state.get_stats().combo_counter();
+    let mut combo_counter = state.stats().combo_counter();
 
     // Начисляем много очков
     for _ in 0..100 {

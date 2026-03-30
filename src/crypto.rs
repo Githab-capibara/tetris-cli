@@ -3,8 +3,6 @@
 //! Модуль предоставляет криптографические функции для защиты данных:
 //! - `hash()` - хеширование BLAKE3 (быстрое и безопасное)
 //! - `generate_salt()` - генерация криптографически стойкой соли
-//! - `hmac_sha256()` - HMAC-SHA256 для подписи данных (RFC 2104)
-//! - `verify_hmac_sha256()` - проверка HMAC с защитой от timing-атак
 //! - `validator` - модуль валидации HMAC подписей
 //!
 //! # Безопасность
@@ -32,9 +30,16 @@
 //! - Не используйте один ключ для разных целей
 
 // Подмодули
+pub mod hmac;
 pub mod validator;
 
-use hmac::{Hmac, Mac};
+// Ре-экспорт основных функций из hmac для удобства
+pub use hmac::{hmac_sign, hmac_sign_with_salt, hmac_verify, hmac_verify_with_salt};
+
+// Ре-экспорт основных функций из validator для удобства
+pub use validator::{sign_salt_and_data, verify_salt_and_data};
+
+use ::hmac::{Hmac, Mac};
 use rand::rngs::StdRng;
 use rand::RngCore;
 use rand::SeedableRng;

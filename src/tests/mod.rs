@@ -121,8 +121,10 @@ pub mod test_highscore_config_path;
 pub mod test_highscore_error_handling;
 pub mod test_highscore_random_hash;
 pub mod test_highscore_verify_integrity;
+pub mod test_leaderboard_toctou;
 
 pub mod test_io_canvas_result;
+pub mod test_io_drop;
 pub mod test_io_resource_leak;
 pub mod test_io_utf8_handling;
 
@@ -153,10 +155,14 @@ pub mod test_architecture;
 // Тесты целостности архитектуры
 pub mod test_architecture_integrity;
 
+// Тесты исправленных архитектурных проблем
+pub mod test_architecture_fixes;
+
 // ============================================================================
 // ТЕСТЫ КАЧЕСТВА КОДА
 // ============================================================================
 
+pub mod macros;
 pub mod test_cast_safety;
 pub mod test_cfg_attr_dead_code;
 pub mod test_must_use_attributes;
@@ -170,6 +176,7 @@ pub mod test_unicode_validation;
 pub mod test_bounds_check_optimization;
 pub mod test_row_check_optimization;
 pub mod test_sanitize_optimization;
+pub mod test_scoring_state;
 
 // ============================================================================
 // ТЕСТЫ БЕЗОПАСНОСТИ

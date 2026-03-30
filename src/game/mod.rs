@@ -116,10 +116,7 @@ pub use scoreboard::{ScoreAccess, ScoreBoard, ScoreMutable};
 
 // Re-export трейтов и типов из components
 #[allow(unused_imports)]
-pub use components::{
-    AnimationAccess, AnimationMutable, AnimationState, FigureAccess, FigureManager, FigureMutable,
-    GamePhase, GamePhaseAccess, GamePhaseMutable,
-};
+pub use components::{AnimationState, FigureManager, GamePhase};
 
 // Re-export GameView и StringCache для отрисовки и кэширования
 #[allow(unused_imports)]
@@ -237,12 +234,12 @@ impl GameState {
 
     /// Запустить таймер.
     pub fn start_timer(&mut self) {
-        self.get_stats_mut().start_timer();
+        self.stats_mut().start_timer();
     }
 
     /// Остановить таймер.
     pub fn stop_timer(&mut self) {
-        self.get_stats_mut().stop_timer();
+        self.stats_mut().stop_timer();
     }
 
     /// Проверить, может ли призрак двигаться в указанном направлении.
