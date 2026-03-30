@@ -5,11 +5,40 @@
 //! - Проверка разрешённых символов
 //! - Защита от symlink атак
 //! - Защита от path traversal (..)
+//! - Проверка на null байты (\0)
 //!
 //! ## Структуры
 //! - [`PathValidator`] — валидатор путей
 //! - [`PathError`] — ошибка валидации
 //! - [`PathErrorKind`] — тип ошибки валидации
+//!
+//! ## Ограничения и важные замечания
+//!
+//! ### URL-encoding ограничение
+//! **ВНИМАНИЕ**: Этот валидатор НЕ поддерживает URL-encoded пути.
+//! Пути вида `config%2Ejson` или `..%2F..%2Fetc%2Fpasswd` НЕ будут распознаны
+//! как path traversal атаки. Если ваше приложение принимает пути из HTTP-запросов
+//! или других источников с URL-encoding, вы должны декодировать их ПЕРЕД валидацией.
+//!
+//! ### Null байты
+//! Валидатор автоматически отклоняет пути содержащие null байты (\0).
+//! Это предотвращает атаки типа null byte injection когда путь обрывается
+//! на середине строки (например: `config.json\0.exe`).
+//!
+//! ### Unicode нормализация
+//! Валидатор НЕ выполняет Unicode нормализацию. Пути в разной Unicode-форме
+//! (NFC, NFD, NFKC, NFKD) могут проходить валидацию по-разному. Если ваше
+//! приложение работает с Unicode путями, рассмотрите предварительную нормализацию.
+//!
+//! ## Пример использования
+//! ```ignore
+//! use tetris_cli::validation::PathValidator;
+//! use std::path::Path;
+//!
+//! let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-");
+//! let path = Path::new("config.json");
+//! validator.validate(path).unwrap();
+//! ```
 
 use std::io;
 use std::path::Path;
@@ -40,6 +69,11 @@ pub enum PathErrorKind {
     AbsolutePath,
     /// Неверный путь.
     InvalidPath,
+    /// Путь содержит null байт (\0).
+    ///
+    /// Null байты могут использоваться для атак типа null byte injection,
+    /// когда путь обрывается на середине строки.
+    NullByte,
 }
 
 impl std::fmt::Display for PathError {
@@ -212,7 +246,7 @@ impl PathValidator {
             // Это позволяет создавать новые файлы в валидной директории
             joined_path
                 .parent()
-                .and_then(|p| p.canonicalize().ok())
+                .and_then(|p: &Path| p.canonicalize().ok())
                 .unwrap_or_else(|| current_dir.to_path_buf())
                 .join(joined_path.file_name().unwrap_or_default())
         };
@@ -276,7 +310,7 @@ impl PathValidator {
     ///
     /// # Возвращает
     /// - `Ok(())` если символы допустимы
-    /// - `Err(PathError)` если есть запрещённые символы
+    /// - `Err(PathError)` если есть запрещённые символы или null байт
     ///
     /// # Errors
     /// Возвращает `PathError` если путь содержит символы, не входящие в `allowed_chars`.
@@ -286,6 +320,9 @@ impl PathValidator {
     ///
     /// # Исправление M4 (MEDIUM)
     /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    ///
+    /// # Исправление аудита 2026-03-30
+    /// Добавлена проверка на null байты для предотвращения null byte injection атак.
     #[must_use = "Результат проверки символов пути должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
@@ -293,6 +330,15 @@ impl PathValidator {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
             kind: PathErrorKind::InvalidPath,
         })?;
+
+        // Исправление аудита 2026-03-30: проверка на null байты
+        // Null байты могут использоваться для атак типа null byte injection
+        if path_str.contains('\0') {
+            return Err(PathError {
+                message: "Путь содержит null байт (\\0)".to_string(),
+                kind: PathErrorKind::NullByte,
+            });
+        }
 
         // Проверяем каждый символ
         for ch in path_str.chars() {
@@ -375,7 +421,7 @@ impl PathValidator {
             })?
         } else {
             path.parent()
-                .and_then(|p| p.canonicalize().ok())
+                .and_then(|p: &Path| p.canonicalize().ok())
                 .unwrap_or_else(|| dir.to_path_buf())
         };
 

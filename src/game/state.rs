@@ -351,6 +351,7 @@ impl GameState {
     }
 
     /// Внутренний метод создания состояния игры.
+    #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
         let mut bag = BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);

@@ -14,6 +14,7 @@ use termion::{
     screen::ToMainScreen,
     AsyncReader,
 };
+use thiserror::Error;
 
 // Импорт трейтов для реализации
 use crate::io_traits::{InputReader, Renderer};
@@ -35,35 +36,40 @@ pub use crate::constants::{
 pub use crate::constants::KEY_BACKSPACE;
 
 /// Ошибка ввода/вывода терминала.
-#[derive(Debug)]
+///
+/// Использует thiserror для типизированной обработки ошибок.
+///
+/// ## Варианты ошибок
+/// - `RawMode` - не удалось перейти в raw-режим терминала
+/// - `Clear` - не удалось очистить экран
+/// - `Cursor` - не удалось скрыть/показать курсор
+/// - `Flush` - ошибка flush буфера
+/// - `Draw` - ошибка отрисовки
+/// - `Initialization` - критическая ошибка инициализации Canvas
+#[derive(Error, Debug)]
 #[allow(clippy::enum_variant_names)]
 pub enum IoError {
     /// Не удалось перейти в raw-режим терминала.
+    #[error("Ошибка raw-режима: {0}")]
     RawMode(String),
     /// Не удалось очистить экран.
+    #[error("Ошибка очистки экрана: {0}")]
     Clear(String),
     /// Не удалось скрыть/показать курсор.
+    #[error("Ошибка курсора: {0}")]
     Cursor(String),
     /// Ошибка flush буфера.
+    #[error("Ошибка flush: {0}")]
     Flush(String),
     /// Ошибка отрисовки.
-    #[allow(dead_code)]
+    #[error("Ошибка отрисовки: {0}")]
     Draw(String),
+    /// Критическая ошибка инициализации Canvas.
+    ///
+    /// Возникает когда не удалось создать ни основной Canvas, ни fallback stub.
+    #[error("Критическая ошибка инициализации терминала: {0}")]
+    Initialization(String),
 }
-
-impl std::fmt::Display for IoError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            IoError::RawMode(msg) => write!(f, "Ошибка raw-режима: {msg}"),
-            IoError::Clear(msg) => write!(f, "Ошибка очистки экрана: {msg}"),
-            IoError::Cursor(msg) => write!(f, "Ошибка курсора: {msg}"),
-            IoError::Flush(msg) => write!(f, "Ошибка flush: {msg}"),
-            IoError::Draw(msg) => write!(f, "Ошибка отрисовки: {msg}"),
-        }
-    }
-}
-
-impl std::error::Error for IoError {}
 
 impl From<std::io::Error> for IoError {
     fn from(err: std::io::Error) -> Self {
@@ -135,19 +141,58 @@ impl Drop for Canvas {
 impl Default for Canvas {
     /// Возвращает Canvas по умолчанию.
     ///
+    /// # Важность
+    /// Этот метод может паниковать если терминал полностью недоступен.
+    /// Для безопасной обработки ошибок используйте [`Canvas::try_default()`].
+    ///
     /// # Примечания
     /// При ошибке инициализации создаёт fallback canvas с заглушкой.
     /// Если и stub не удаётся создать - паникует с понятным сообщением.
+    ///
+    /// # Паникует
+    /// Если не удалось инициализировать ни основной Canvas, ни fallback stub.
     fn default() -> Self {
-        Self::new().unwrap_or_else(|_| {
-            Self::new_stub().unwrap_or_else(|e| {
-                panic!("Критическая ошибка: не удалось инициализировать терминал: {e}");
-            })
+        Self::try_default().unwrap_or_else(|e| {
+            panic!("Критическая ошибка: не удалось инициализировать терминал: {e}")
         })
     }
 }
 
 impl Canvas {
+    /// Попытаться создать Canvas по умолчанию с обработкой ошибок.
+    ///
+    /// # Возвращает
+    /// - `Ok(Canvas)` - успешно созданный Canvas (основной или fallback stub)
+    /// - `Err(IoError)` - критическая ошибка инициализации терминала
+    ///
+    /// # Errors
+    /// Возвращает [`IoError::Initialization`] если не удалось создать ни основной Canvas,
+    /// ни fallback stub.
+    ///
+    /// # Примечания
+    /// Этот метод безопаснее чем [`Canvas::default()`] так как возвращает Result
+    /// вместо паники. Используйте его когда нужна graceful error handling.
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::io::Canvas;
+    ///
+    /// let canvas = Canvas::try_default().unwrap_or_else(|e| {
+    ///     eprintln!("Не удалось инициализировать терминал: {}", e);
+    ///     std::process::exit(1);
+    /// });
+    /// ```
+    pub fn try_default() -> Result<Self, IoError> {
+        Self::new().or_else(|_| {
+            // При ошибке основного Canvas пробуем создать fallback stub
+            Self::new_stub().map_err(|e| {
+                IoError::Initialization(format!(
+                    "не удалось создать Canvas (основной режим и fallback недоступны): {e}"
+                ))
+            })
+        })
+    }
+
     /// Создать новый канвас и подготовить терминал.
     ///
     /// # Возвращает

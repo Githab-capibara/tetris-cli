@@ -337,7 +337,7 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 | **Средний размер модуля** | ~350 строк | ✅ |
 | **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1510+ тестов | ✅ |
+| **Покрытие тестами** | 1160+ тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
 | **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
 
@@ -389,7 +389,7 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1510+ тестов** (unit + integration + architecture)
+**ВСЕГО: 1160+ тестов** (unit + integration + architecture)
 
 ---
 
@@ -429,7 +429,7 @@ cargo bench --features bench  # Бенчмарки
 - ✅ Отсутствие циклических зависимостей
 - ✅ Разделение render/scoring/logic на подмодули
 - ✅ Трейты для абстракции (GameModeTrait, TerminalBackend, InputReader, Renderer)
-- ✅ Обширное тестирование (1510+ тестов, включая security-тесты)
+- ✅ Обширное тестирование (1160+ тестов, включая security-тесты)
 - ✅ Защита от переполнения (saturating операции)
 - ✅ TOCTOU защита в LeaderboardEntry
 - ✅ Централизованная валидация путей с защитой от symlink
@@ -443,6 +443,10 @@ cargo bench --features bench  # Бенчмарки
 - ✅ **Тесты защиты от переполнения очков** (12 тестов)
 - ✅ **Тесты валидации fall_speed/land_timer** (15 тестов)
 - ✅ **Тесты TOCTOU защиты controls** (10 тестов)
+- ✅ **Тесты инициализации Canvas** (15 тестов)
+- ✅ **Тесты безопасности HMAC** (18 тестов)
+- ✅ **Тесты безопасной конвертации** (14 тестов)
+- ✅ **Тесты обработки ошибок Application** (15 тестов)
 
 **Области улучшения:**
 - ⚠️ GameState — крупный модуль (требует дальнейшего разделения)
