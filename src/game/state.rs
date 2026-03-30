@@ -830,14 +830,40 @@ impl GameState {
     /// Установить скорость падения.
     ///
     /// Скорость ограничена диапазоном от [`INITIAL_FALL_SPD`] до [`MAX_FALL_SPEED`].
+    ///
+    /// # Валидация (H3)
+    /// Проверяет значение на NaN и Infinity. Неверные значения игнорируются.
     pub fn set_fall_speed(&mut self, value: f32) {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
+
+        // Валидация на NaN и Infinity (H3)
+        if value.is_nan() || value.is_infinite() {
+            eprintln!(
+                "[ERROR] Неверная скорость падения: {} (NaN/Infinity)",
+                value
+            );
+            return;
+        }
+
         self.fall_speed = value.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
     }
 
     /// Установить таймер приземления.
+    ///
+    /// # Валидация (H3)
+    /// Проверяет значение на NaN и Infinity. Неверные значения игнорируются.
+    /// Отрицательные значения заменяются на 0.
     pub fn set_land_timer(&mut self, value: f64) {
-        self.land_timer = value;
+        // Валидация на NaN и Infinity (H3)
+        if value.is_nan() || value.is_infinite() {
+            eprintln!(
+                "[ERROR] Неверный таймер приземления: {} (NaN/Infinity)",
+                value
+            );
+            return;
+        }
+
+        self.land_timer = value.max(0.0);
     }
 
     /// Установить расстояние Soft Drop.

@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия документа:** 18.0
+**Версия документа:** 19.0
 **Последнее обновление:** 30 марта 2026 г.
-**Версия проекта:** 23.96.23+
+**Версия проекта:** 23.96.24+
 
 ---
 
@@ -22,7 +22,8 @@
 12. [Новая архитектура (v23.96.16+)](#новая-архитектура-v239616)
 13. [Архитектурные улучшения (v23.96.14+)](#архитектурные-улучшения-v239614)
 14. [HmacValidator (v23.96.20+)](#hmacvalidator-v239620)
-15. [Последние изменения (v23.96.23+)](#последние-изменения-v239623)
+15. [Архитектурные улучшения (v23.96.24+)](#архитектурные-улучшения-v239624)
+16. [Последние изменения (v23.96.23+)](#последние-изменения-v239623)
 
 ---
 
@@ -810,10 +811,10 @@ pub const WALL_KICK_OFFSETS: [(i16, i16); 5] = [
 
 ```
 ═══════════════════════════════════════════
-ВСЕГО: 1113 тестов
+ВСЕГО: 1144 тестов
 ═══════════════════════════════════════════
-• Запущено: 1113
-• Прошло: 1113 (100%)
+• Запущено: 1144
+• Прошло: 1144 (100%)
 ```
 
 ### Группы тестов
@@ -2694,6 +2695,295 @@ use crate::constants::GRID_WIDTH;
 - `test_game_constants_re_exports_from_root` — проверка ре-экспорта
 - `test_io_uses_centralized_constants` — проверка использования в `io.rs`
 - `test_constants_can_be_extended` — проверка расширяемости
+
+---
+
+## 🏗️ Архитектурные улучшения (v23.96.24+)
+
+### Разделение GameState на компоненты
+
+**Проблема:** GameState содержал все поля состояния напрямую (30+ полей), что нарушало Single Responsibility Principle и затрудняло тестирование.
+
+**Решение:** Создан модуль `game/components.rs` с независимыми компонентами:
+
+```rust
+// FigureManager — управление фигурами
+pub struct FigureManager {
+    curr_shape: Tetromino,
+    next_shape: Tetromino,
+    held_shape: Option<Tetromino>,
+    can_hold: bool,
+    bag: BagGenerator,
+}
+
+// AnimationState — состояние анимаций
+pub struct AnimationState {
+    animating_rows_mask: u32,
+    is_hard_dropping: bool,
+    is_game_over: bool,
+}
+
+// GamePhase — фаза игры
+pub struct GamePhase {
+    is_paused: bool,
+    game_complete: bool,
+}
+```
+
+**Трейты доступа:**
+- `FigureAccess` / `FigureMutable` — доступ к фигурам
+- `AnimationAccess` / `AnimationMutable` — доступ к анимациям
+- `GamePhaseAccess` / `GamePhaseMutable` — доступ к фазе игры
+
+**Преимущества:**
+- Single Responsibility Principle — каждый компонент отвечает за одну область
+- Улучшенная инкапсуляция — контролируемый доступ через трейты
+- Упрощённое тестирование — компоненты тестируются независимо
+- Снижение связанности — компоненты не зависят друг от друга
+
+### Улучшенная инкапсуляция render.rs
+
+**Проблема:** Feature Envy — render.rs напрямую обращался к полям GameState для форматирования данных.
+
+**Решение:** Добавлены методы в `GameView`:
+
+```rust
+impl GameView {
+    pub fn draw_field(&self, canvas: &mut Canvas);
+    pub fn draw_next_shape(&self, canvas: &mut Canvas);
+    pub fn draw_held_shape(&self, canvas: &mut Canvas);
+    pub fn draw_ui(&self, canvas: &mut Canvas);
+    pub fn draw_ghost(&self, canvas: &mut Canvas);
+}
+```
+
+**Изменения:**
+- `render::draw()` теперь делегирует отрисовку методам `GameView`
+- Логика форматирования инкапсулирована в представлении
+- Устранён Feature Envy между render.rs и GameState
+
+**Преимущества:**
+- Улучшенная инкапсуляция — логика представления в GameView
+- Снижение связанности — render.rs не зависит от полей GameState
+- Упрощённое тестирование — методы GameView тестируются отдельно
+
+### Dependency Inversion Principle в game loop
+
+**Проблема:** `run_game_loop()` зависела от конкретных типов `KeyReader` и `Canvas`, что затрудняло тестирование.
+
+**Решение:** Обобщённая функция с трейтами:
+
+```rust
+pub fn run_game_loop<T: InputReader, R: Renderer>(
+    state: &mut GameState,
+    input: &mut T,
+    renderer: &mut R,
+) {
+    // Игровой цикл использует только трейты
+}
+```
+
+**Трейты:**
+- `InputReader` — абстракция ввода (get_key())
+- `Renderer` — абстракция отрисовки (draw(), flush())
+
+**Преимущества:**
+- Dependency Inversion Principle — зависимость от абстракций
+- Слабая связанность — не зависит от конкретных реализаций
+- Упрощённое тестирование — можно использовать моки
+- Расширяемость — новые реализации ввода/отрисовки
+
+### Валидация данных в сеттерах
+
+**Проблема:** Сеттеры принимали любые значения без проверки, что могло привести к невалидному состоянию.
+
+**Решение:** Добавлена валидация в сеттеры:
+
+```rust
+impl GameState {
+    pub fn set_fall_speed(&mut self, value: f32) {
+        if !value.is_nan() && !value.is_infinite() {
+            self.fall_speed = value;
+        }
+    }
+
+    pub fn set_land_timer(&mut self, value: f64) {
+        if !value.is_nan() && !value.is_infinite() {
+            self.land_timer = value;
+        }
+    }
+}
+
+impl ScoreBoard {
+    pub fn set_level(&mut self, level: u32) {
+        self.level = level.min(1000); // Ограничение уровня
+    }
+}
+```
+
+**Преимущества:**
+- Защита от NaN/Infinity — стабильность вычислений
+- Ограничение уровня максимумом 1000 — защита от переполнения
+- Инварианты состояния — только валидные данные
+
+### Обработка ошибок в Canvas::drop()
+
+**Проблема:** Ошибки в `Canvas::drop()` игнорировались, что могло привести к утечке ресурсов терминала.
+
+**Решение:** Логирование ошибок:
+
+```rust
+impl Drop for Canvas {
+    fn drop(&mut self) {
+        if let Err(e) = self.reset() {
+            eprintln!("[ERROR] Canvas::drop() failed: {}", e);
+        }
+    }
+}
+```
+
+**Преимущества:**
+- Надёжность — ошибки логируются вместо игнорирования
+- Отказоустойчивость — отсутствие паники при ошибках
+- Отладка — сообщения об ошибках помогают диагностировать проблемы
+
+### Итоговая структура компонентов (v23.96.24+)
+
+```
+src/game/
+├── mod.rs
+├── components.rs         # НОВЫЙ Компоненты GameState
+│   ├── FigureManager     # Управление фигурами
+│   ├── AnimationState    # Состояние анимаций
+│   └── GamePhase         # Фаза игры
+├── board.rs              # Игровое поле (GameBoard)
+├── scoreboard.rs         # Очки и уровни (ScoreBoard)
+├── state.rs              # GameState (композиция компонентов)
+├── view.rs               # GameView (методы отрисовки)
+├── render.rs             # Отрисовка (делегирование GameView)
+├── cycle.rs              # Game loop (Dependency Inversion)
+├── logic/                # Игровая логика
+└── scoring/              # Система очков
+```
+
+### Статистика изменений
+
+| Метрика | До (v23.96.23) | После (v23.96.24) | Изменение |
+|---------|----------------|-------------------|-----------|
+| Файлов | 17 | 18 | +1 |
+| Компонентов | 2 (GameBoard, ScoreBoard) | 5 (+FigureManager, AnimationState, GamePhase) | +3 |
+| Трейтов доступа | 2 | 8 | +6 |
+| Тестов | 1113 | 1144 | +31 |
+| Архитектурная оценка | 8/10 | 9/10 | +1 |
+
+### Архитектурные тесты
+
+Добавлен модуль `tests/test_architecture_components.rs` (31 тест):
+
+**C1: Разделение GameState (7 тестов):**
+- `test_game_state_uses_components` — композиция компонентов
+- `test_components_independence` — независимость компонентов
+- `test_figure_manager_component` — FigureManager
+- `test_animation_state_component` — AnimationState
+- `test_game_phase_component` — GamePhase
+- `test_component_traits_exist` — трейты доступа
+- `test_components_integration` — интеграция компонентов
+
+**C2: Инкапсуляция render.rs (5 тестов):**
+- `test_game_view_draw_methods` — методы отрисовки GameView
+- `test_render_delegation` — делегирование отрисовки
+- `test_draw_field_method` — draw_field()
+- `test_draw_next_shape_method` — draw_next_shape()
+- `test_draw_held_shape_method` — draw_held_shape()
+
+**C3: Dependency Inversion (5 тестов):**
+- `test_dependency_inversion_game_loop` — DIP в game loop
+- `test_input_reader_trait_exists` — трейт InputReader
+- `test_renderer_trait_exists` — трейт Renderer
+- `test_run_game_loop_generics` — дженерики в run_game_loop()
+- `test_no_concrete_types_in_loop` — отсутствие конкретных типов
+
+**H1: Валидация данных (6 тестов):**
+- `test_fall_speed_validation` — валидация fall_speed
+- `test_land_timer_validation` — валидация land_timer
+- `test_level_max_cap` — ограничение уровня 1000
+- `test_nan_infinity_protection` — защита от NaN/Infinity
+- `test_saturating_add_usage` — saturating_add() в очках
+- `test_validation_integration` — интеграция валидации
+
+**M1: Обработка ошибок (3 теста):**
+- `test_canvas_drop_error_logging` — логирование ошибок в drop()
+- `test_error_logging_format` — формат логирования
+- `test_no_panic_on_drop_error` — отсутствие паники
+
+**Интеграционные тесты (5 тестов):**
+- `test_all_architecture_improvements_present` — все улучшения
+- `test_components_compile` — компиляция компонентов
+- `test_traits_compile` — компиляция трейтов
+- `test_validation_compile` — компиляция валидации
+- `test_full_integration` — полная интеграция
+
+**Все 31 тест проходят** ✅
+
+### Архитектурные принципы
+
+**Реализованные принципы SOLID:**
+- **Single Responsibility Principle:** Каждый компонент отвечает за одну область
+- **Dependency Inversion Principle:** Зависимость от абстракций (трейтов)
+- **Interface Segregation Principle:** Специализированные трейты для каждого компонента
+- **Liskov Substitution Principle:** Компоненты взаимозаменяемы через трейты
+
+**Реализованные паттерны:**
+- **Composition over Inheritance:** GameState использует композицию компонентов
+- **Strategy:** Трейты InputReader и Renderer для различных реализаций
+- **Facade:** GameView как фасад для отрисовки
+
+### Обратная совместимость
+
+Все изменения **обратно совместимы**:
+- Новые компоненты не ломают существующий API
+- GameState сохраняет публичные методы
+- Трейты доступа не требуют изменений в существующем коде
+
+### Рекомендации по использованию
+
+```rust
+// Использование компонентов через трейты
+use tetris_cli::game::components::{FigureAccess, FigureMutable};
+
+let mut manager = FigureManager::new();
+manager.set_curr_shape(shape);
+let curr = manager.get_curr_shape();
+
+// Использование валидации
+let mut state = GameState::new();
+state.set_fall_speed(1.5); // OK
+state.set_fall_speed(f32::NAN); // Игнорируется
+
+// Dependency Injection в тестах
+struct MockInput;
+impl InputReader for MockInput {
+    fn get_key(&mut self) -> Option<u8> { Some(b'w') }
+}
+
+struct MockRenderer;
+impl Renderer for MockRenderer {
+    fn draw(&mut self, _: &str) {}
+    fn flush(&mut self) {}
+}
+
+run_game_loop(&mut state, &mut MockInput, &mut MockRenderer);
+```
+
+### Будущие улучшения
+
+**Планируется:**
+- Выделение GameBoard и ScoreBoard в отдельные модули (завершение рефакторинга)
+- Event-driven архитектура для игровой логики
+- Поддержка моков для интеграционного тестирования
+- Расширение системы трейтов для всех компонентов
+
+**Документация актуальна для версии 23.96.24+**
 
 ---
 

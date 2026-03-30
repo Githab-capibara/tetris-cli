@@ -20,6 +20,8 @@
 
 // Исправление M2: переэкспорт FRAME_DELAY_MS из crate::constants
 pub use crate::constants::FRAME_DELAY_MS;
+// Исправление C3: переэкспорт MAX_LEADERBOARD_ENTRIES из crate::constants
+pub use crate::constants::MAX_LEADERBOARD_ENTRIES;
 use crate::io::DISP_HEIGHT;
 use termion::color::White;
 
@@ -149,5 +151,4 @@ pub const MENU_COLOR: &dyn termion::color::Color = &White;
 /// Максимальная длина имени игрока.
 pub const MAX_NAME_LEN: usize = 10;
 
-/// Максимальное количество записей в таблице лидеров.
-pub const MAX_LEADERBOARD_ENTRIES: usize = 5;
+// Примечание: MAX_LEADERBOARD_ENTRIES переэкспортирован из crate::constants.rs
