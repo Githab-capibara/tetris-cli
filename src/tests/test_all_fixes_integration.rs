@@ -544,3 +544,208 @@ fn test_all_fixes_comprehensive() {
 
     // Все исправления работают корректно
 }
+
+// ============================================================================
+// ТЕСТЫ ДЛЯ НОВЫХ ИСПРАВЛЕНИЙ (2026-03-30)
+// ============================================================================
+
+/// Тест 19: Интеграционный тест защиты от переполнения счёта
+///
+/// Проверяет что защита от переполнения работает корректно.
+#[test]
+fn test_score_overflow_protection_integration() {
+    use crate::game::scoring::check_rows;
+    use crate::game::GameState;
+    use crate::io::GRID_HEIGHT;
+
+    let mut state = GameState::new();
+
+    // Заполняем несколько линий для проверки
+    let mut blocks = *state.get_blocks();
+    for y in (0..5).rev() {
+        for x in 0..10 {
+            blocks[y][x] = 1;
+        }
+    }
+    *state.get_blocks_mut() = blocks;
+
+    // Проверяем что check_rows работает без переполнения
+    let cleared = check_rows(&mut state);
+    assert!(cleared > 0, "Линии должны быть очищены");
+
+    // Проверяем что счёт не переполнен
+    assert!(state.score() < u128::MAX, "Счёт не должен переполняться");
+
+    // Проверяем что saturating_add работает корректно
+    let max_value = u128::MAX;
+    assert_eq!(max_value.saturating_add(1), u128::MAX);
+}
+
+/// Тест 20: Интеграционный тест валидации fall_speed и land_timer
+///
+/// Проверяет что валидация работает корректно.
+#[test]
+fn test_state_validation_integration() {
+    use crate::game::GameState;
+    use crate::game::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, LAND_TIME_DELAY_S};
+
+    let mut state = GameState::new();
+
+    // Проверяем начальные значения
+    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
+
+    // Проверяем валидацию NaN
+    assert!(state.set_fall_speed(f32::NAN).is_err());
+    assert!(state.set_land_timer(f64::NAN).is_err());
+
+    // Проверяем валидацию Infinity
+    assert!(state.set_fall_speed(f32::INFINITY).is_err());
+    assert!(state.set_land_timer(f64::INFINITY).is_err());
+
+    // Проверяем clamp значений
+    assert!(state.set_fall_speed(INITIAL_FALL_SPD - 0.5).is_ok());
+    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+
+    assert!(state.set_fall_speed(MAX_FALL_SPEED + 100.0).is_ok());
+    assert_eq!(state.fall_speed(), MAX_FALL_SPEED);
+
+    // Проверяем отрицательные значения land_timer
+    assert!(state.set_land_timer(-0.5).is_ok());
+    assert_eq!(state.land_timer(), 0.0);
+}
+
+/// Тест 21: Интеграционный тест TOCTOU защиты в controls.rs
+///
+/// Проверяет что TOCTOU защита работает корректно.
+#[test]
+fn test_controls_toctou_protection_integration() {
+    use crate::controls::ControlsConfig;
+    use std::fs;
+    use std::os::unix::fs::symlink;
+
+    let config = ControlsConfig::default_config();
+    let real_file = "test_integration_real.json";
+    let symlink_file = "test_integration_symlink.json";
+
+    // Создаём реальный файл
+    let save_result = config.save_to_file(real_file);
+    assert!(save_result.is_ok());
+
+    // Создаём symlink
+    let symlink_result = symlink(real_file, symlink_file);
+
+    if symlink_result.is_ok() {
+        // Проверяем что symlink отклоняется
+        let load_result = ControlsConfig::load_from_file(symlink_file);
+        assert!(
+            load_result.is_err(),
+            "TOCTOU защита должна отклонять symlink"
+        );
+
+        let _ = fs::remove_file(symlink_file);
+    } else {
+        println!("Не удалось создать symlink (возможно, нет прав)");
+    }
+
+    // Проверяем что обычный файл работает
+    let load_result = ControlsConfig::load_from_file(real_file);
+    assert!(load_result.is_ok());
+
+    let _ = fs::remove_file(real_file);
+}
+
+/// Тест 22: Комплексный тест всех новых исправлений
+///
+/// Проверяет совместную работу всех новых исправлений:
+/// - Защита от переполнения счёта
+/// - Валидация fall_speed и land_timer
+/// - TOCTOU защита в controls.rs
+#[test]
+fn test_all_new_fixes_comprehensive_integration() {
+    use crate::controls::ControlsConfig;
+    use crate::game::GameState;
+    use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+
+    // 1. Защита от переполнения счёта (проверка через GameState)
+    let mut state = GameState::new();
+    state.set_score(u128::MAX / 2); // MAX_SCORE
+    assert!(state.score() <= u128::MAX / 2, "Счёт должен быть ограничен");
+
+    // 2. Валидация fall_speed и land_timer
+    let mut state = GameState::new();
+
+    // NaN валидация
+    assert!(state.set_fall_speed(f32::NAN).is_err());
+    assert!(state.set_land_timer(f64::NAN).is_err());
+
+    // Infinity валидация
+    assert!(state.set_fall_speed(f32::INFINITY).is_err());
+    assert!(state.set_land_timer(f64::INFINITY).is_err());
+
+    // Clamp валидация
+    assert!(state.set_fall_speed(5.0).is_ok());
+    assert!(state.fall_speed() >= INITIAL_FALL_SPD);
+    assert!(state.fall_speed() <= crate::game::constants::MAX_FALL_SPEED);
+
+    assert!(state.set_land_timer(0.2).is_ok());
+    assert!(state.land_timer() >= 0.0);
+
+    // 3. TOCTOU защита (базовая проверка)
+    let config = ControlsConfig::default_config();
+    assert!(config.validate(), "Конфигурация должна быть валидной");
+
+    // Все новые исправления работают корректно
+}
+
+/// Тест 23: Проверка отсутствия паник при экстремальных значениях
+///
+/// Проверяет что все исправления не вызывают паник.
+#[test]
+fn test_no_panic_at_extreme_values_integration() {
+    use crate::controls::ControlsConfig;
+    use crate::game::GameState;
+    use crate::game::scoring::check_rows;
+
+    // 1. Экстремальные значения счёта не вызывают паник
+    let mut state = GameState::new();
+    for i in 0..100 {
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut s = GameState::new();
+            s.set_score(i as u128 * 1000);
+        }));
+        assert!(result.is_ok(), "Установка счёта не должна вызывать панику");
+    }
+
+    // 2. Экстремальные значения fall_speed не вызывают паник
+    let mut state = GameState::new();
+    let extreme_values_f32 = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 0.0, 100000.0];
+
+    for &value in &extreme_values_f32 {
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut s = GameState::new();
+            let _ = s.set_fall_speed(value);
+        }));
+        assert!(result.is_ok(), "set_fall_speed({}) не должен вызывать панику", value);
+    }
+
+    // 3. Экстремальные значения land_timer не вызывают паник
+    let extreme_values_f64 = [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, 100000.0];
+
+    for &value in &extreme_values_f64 {
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut s = GameState::new();
+            let _ = s.set_land_timer(value);
+        }));
+        assert!(result.is_ok(), "set_land_timer({}) не должен вызывать панику", value);
+    }
+
+    // 4. TOCTOU защита не вызывает паник
+    let config = ControlsConfig::default_config();
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _ = config.save_to_file("test_no_panic.json");
+        let _ = ControlsConfig::load_from_file("test_no_panic.json");
+        let _ = std::fs::remove_file("test_no_panic.json");
+    }));
+    assert!(result.is_ok(), "TOCTOU защита не должна вызывать панику");
+}

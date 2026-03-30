@@ -93,7 +93,7 @@ mod tests {
         let mut state = GameState::new();
 
         // Устанавливаем fall_speed для теста
-        state.set_fall_speed(15.5);
+        let _ = state.set_fall_speed(15.5);
 
         // Проверяем что fall_speed установлен корректно
         assert_eq!(state.fall_speed(), 15.5, "Fall speed должен быть 15.5");
@@ -248,7 +248,7 @@ mod tests {
 
         // 2. Консистентное safe_f32_to_u32
         let mut state = GameState::new();
-        state.set_fall_speed(20.0);
+        let _ = state.set_fall_speed(20.0);
         assert_eq!(
             state.fall_speed(),
             20.0,

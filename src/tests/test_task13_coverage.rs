@@ -368,7 +368,7 @@ fn test_game_board_access_fall_spd() {
     );
 
     // Установка скорости
-    state.set_fall_speed(2.5);
+    let _ = state.set_fall_speed(2.5);
     assert_eq!(state.get_fall_speed(), 2.5, "Скорость должна быть 2.5");
 }
 
@@ -385,7 +385,7 @@ fn test_game_board_access_land_timer() {
     );
 
     // Установка таймера
-    state.set_land_timer(0.5);
+    let _ = state.set_land_timer(0.5);
     assert_eq!(state.get_land_timer(), 0.5, "Таймер должен быть 0.5");
 }
 

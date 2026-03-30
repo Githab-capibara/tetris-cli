@@ -60,7 +60,7 @@ fn test_hard_drop_flag_reset_after_landing() {
     );
 
     // Устанавливаем land_timer в 0 для немедленного приземления через сеттер
-    state.set_land_timer(0.0);
+    let _ = state.set_land_timer(0.0);
 
     // Обрабатываем приземление
     let _result = handle_landing(&mut state);
