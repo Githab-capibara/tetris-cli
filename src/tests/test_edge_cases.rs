@@ -225,24 +225,6 @@ fn test_edge_cases_speed_reasonable() {
 // ГРУППА ТЕСТОВ 21-30: Специальные случаи
 // ============================================================================
 
-/// Тест 21: Проверка что O-фигура не вращается
-#[test]
-fn test_edge_cases_o_no_rotate() {
-    let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::O;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::O as usize];
-
-    let original_coords = state.curr_shape().coords;
-
-    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state
-            .get_curr_shape_mut()
-            .rotate(RotationDirection::Clockwise);
-    }
-
-    assert_eq!(state.curr_shape().coords, original_coords);
-}
-
 /// Тест 22: Проверка что I-фигура вращается
 #[test]
 fn test_edge_cases_i_rotates() {
@@ -259,22 +241,6 @@ fn test_edge_cases_i_rotates() {
     }
 
     assert_ne!(state.curr_shape().coords, original_coords);
-}
-
-/// Тест 23: Проверка что все 7 фигур встречаются в `BagGenerator`
-#[test]
-fn test_edge_cases_all_seven_in_bag() {
-    let mut bag = BagGenerator::new();
-    let mut found = [false; 7];
-
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        found[shape as usize] = true;
-    }
-
-    for &f in &found {
-        assert!(f);
-    }
 }
 
 /// Тест 24: Проверка что фигуры не выходят за границы

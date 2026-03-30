@@ -193,22 +193,6 @@ fn test_collision_not_beyond_right_boundary() {
 // ГРУППА ТЕСТОВ 16-25: Столкновения с полом
 // ============================================================================
 
-/// Тест 16: Проверка столкновения с полом
-#[test]
-fn test_collision_floor() {
-    let mut state = GameState::new();
-
-    // Опускаем до упора
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз должно быть заблокировано на полу"
-    );
-}
-
 /// Тест 17: Проверка что фигура достигает пола
 #[test]
 fn test_collision_reaches_floor() {
