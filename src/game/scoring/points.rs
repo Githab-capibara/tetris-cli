@@ -50,7 +50,8 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
         }
 
         // Увеличение скорости игры
-        state.set_fall_speed(state.fall_speed() + SPD_INC * capped_remove_count as f32);
+        // Игнорируем ошибку, так как значение вычисляется корректно
+        let _ = state.set_fall_speed(state.fall_speed() + SPD_INC * capped_remove_count as f32);
 
         // Начисление очков за линии (lookup таблица)
         // Исправление C1: защита от переполнения при сложении очков
@@ -131,7 +132,8 @@ pub fn handle_hard_drop(state: &mut GameState) {
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
     state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
-    state.set_land_timer(0.0);
+    // Игнорируем ошибку, так как 0.0 - валидное значение
+    let _ = state.set_land_timer(0.0);
     state.set_is_hard_dropping(true);
 }
 
@@ -297,7 +299,8 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     state.set_is_hard_dropping(false);
 
     // Сброс таймера приземления
-    state.set_land_timer(LAND_TIME_DELAY_S);
+    // Игнорируем ошибку, так как LAND_TIME_DELAY_S - константное валидное значение
+    let _ = state.set_land_timer(LAND_TIME_DELAY_S);
 }
 
 /// Обновить счётчик комбо после удаления линий.
@@ -509,7 +512,7 @@ mod points_tests {
         // Устанавливаем счёт близкий к максимальному
         state.set_score(u128::MAX - 1000);
         // Устанавливаем высокую скорость падения
-        state.set_fall_speed(100.0);
+        let _ = state.set_fall_speed(100.0);
         // Устанавливаем большое расстояние Soft Drop
         state.set_soft_drop_distance(1000);
 

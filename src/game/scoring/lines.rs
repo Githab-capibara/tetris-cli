@@ -15,6 +15,10 @@ use super::super::constants::{
 use super::super::state::GameState;
 use crate::io::GRID_HEIGHT;
 
+/// Максимально допустимый счёт для защиты от переполнения.
+/// Установлен в u128::MAX / 2 для безопасного начисления очков.
+const MAX_SCORE: u128 = u128::MAX / 2;
+
 /// Найти все заполненные линии.
 ///
 /// # Возвращает
@@ -138,7 +142,8 @@ pub fn check_rows(state: &mut GameState) -> u32 {
 
     // Увеличение скорости игры
     let fall_speed = state.fall_speed();
-    state.set_fall_speed(fall_speed + SPD_INC * remove_count as f32);
+    // Игнорируем ошибку, так как значение вычисляется корректно
+    let _ = state.set_fall_speed(fall_speed + SPD_INC * remove_count as f32);
 
     remove_count
 }
@@ -187,6 +192,9 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
 /// - Бонус за комбо: COMBO_BONUS × (combo_counter - 1)
 /// - Бонус за уровень: LEVEL_BONUS_MULT × (level - 1)
+///
+/// # Защита от переполнения
+/// Если счёт превышает MAX_SCORE, он устанавливается в MAX_SCORE.
 fn update_score_for_lines(
     score: &mut u128,
     level: u32,
@@ -213,6 +221,11 @@ fn update_score_for_lines(
         // Бонус за уровень (каждые 10 линий)
         let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
         *score = score.saturating_add(level_bonus);
+
+        // Защита от переполнения: если счёт превышает MAX_SCORE, устанавливаем в MAX_SCORE
+        if *score > MAX_SCORE {
+            *score = MAX_SCORE;
+        }
     } else {
         // Сброс комбо если линии не удалены
         *combo_counter = 0;
@@ -381,7 +394,7 @@ mod lines_tests {
         let _lines = state.lines_cleared();
         state.set_lines_cleared(5);
         let _fall_speed = state.fall_speed();
-        state.set_fall_speed(1.0);
+        let _ = state.set_fall_speed(1.0);
 
         // Если код компилируется - все методы публичны
         assert!(

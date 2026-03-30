@@ -106,6 +106,7 @@ pub mod test_integration_extended;
 pub mod test_controls_error_handling;
 pub mod test_controls_path_traversal;
 pub mod test_controls_path_validation;
+pub mod test_controls_toctou;
 
 pub mod test_game_bitmask_check_rows;
 pub mod test_game_bounds_check;
@@ -114,6 +115,8 @@ pub mod test_game_negative_coords;
 pub mod test_game_rotation_bounds;
 pub mod test_game_score_overflow;
 pub mod test_game_stats_export;
+pub mod test_score_overflow_protection;
+pub mod test_state_validation;
 
 pub mod test_highscore_config_path;
 pub mod test_highscore_error_handling;
