@@ -4,7 +4,53 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
-## [23.96.20] — 2026-03-28
+## [23.96.23] — 2026-03-30
+
+### Улучшения обработки ошибок и новые возможности
+
+**CRITICAL:**
+- **Улучшена обработка ошибок ввода** (`src/io.rs`) — `KeyReader::get_key()` теперь возвращает `io::Result<Option<u8>>` для корректной обработки ошибок ввода
+- **Добавлен RotationDirection::NoRotation** (`src/types.rs`) — новый вариант для представления отсутствия вращения
+- **Улучшена обработка Direction::Down** (`src/types.rs`, `src/controls.rs`) — `Direction::Down.to_rotation_direction()` теперь возвращает `Some(RotationDirection::NoRotation)`
+- **Добавлена константа ANONYMOUS_NAME** (`src/validation/name.rs`) — централизованная константа для имени по умолчанию
+
+**MEDIUM:**
+- **Улучшена документация Leaderboard** (`src/highscore/leaderboard.rs`) — явное документирование `!Send + !Sync` для многопоточной безопасности
+- **Deprecated методы get_*** (`src/game/state.rs`) — методы `get_*` помечены как deprecated в пользу новых геттеров
+
+### Тесты
+
+- **test_io_errors.rs** — тесты для обработки ошибок ввода (8 тестов)
+- **test_direction_down.rs** — тесты для Direction::Down и NoRotation (5 тестов)
+- **test_validation_name.rs** — тесты для константы ANONYMOUS_NAME (6 тестов)
+- **test_deprecated_methods.rs** — тесты для deprecated методов get_* (4 теста)
+- **test_hmac_keys.rs** — тесты для HMAC ключей (7 тестов)
+- **test_scoring_encapsulation.rs** — тесты для инкапсуляции scoring модуля (5 тестов)
+
+- **Всего тестов: 1113** (все проходят)
+
+### Улучшения
+
+- **Обработка ошибок** — корректная обработка ошибок ввода через `io::Result`
+- **Типизация** — улучшенная типизация направлений вращения
+- **Документация** — явная документация о потокобезопасности Leaderboard
+- **Тестируемость** — 23 новых теста для критических функций
+
+### Изменённые файлы
+
+- `src/io.rs` — улучшенная обработка ошибок ввода
+- `src/types.rs` — добавлен RotationDirection::NoRotation
+- `src/controls.rs` — улучшена обработка Direction::Down
+- `src/validation/name.rs` — добавлена константа ANONYMOUS_NAME
+- `src/highscore/leaderboard.rs` — улучшена документация
+- `src/game/state.rs` — deprecated методы get_*
+- `src/tests/` — 6 новых файлов тестов
+- `README.md` — обновление количества тестов
+- `CHANGELOG.md` — запись изменений
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+- `docs/ARCHITECTURE.md` — обновление документации архитектуры
+
+## [23.96.22] — 2026-03-28
 
 ### Исправления безопасности и оптимизации
 

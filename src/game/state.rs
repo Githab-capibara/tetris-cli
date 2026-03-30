@@ -496,8 +496,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`score()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте score()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_score(&self) -> u128 {
         self.score()
     }
@@ -506,8 +512,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`level()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте level()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_level(&self) -> u32 {
         self.level()
     }
@@ -516,8 +528,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`lines_cleared()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте lines_cleared()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared()
     }
@@ -669,8 +687,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`curr_shape()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте curr_shape()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_curr_shape(&self) -> &Tetromino {
         self.curr_shape()
     }
@@ -679,8 +703,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`next_shape()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте next_shape()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_next_shape(&self) -> &Tetromino {
         self.next_shape()
     }
@@ -689,8 +719,14 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`held_shape()`] вместо этого.
+    ///
+    /// # Планируется к удалению
+    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
-    #[deprecated(since = "23.96.16", note = "Используйте held_shape()")]
+    #[deprecated(
+        since = "23.96.14",
+        note = "Используйте score(), board(), level() вместо get_*"
+    )]
     pub fn get_held_shape(&self) -> Option<&Tetromino> {
         self.held_shape()
     }
@@ -989,5 +1025,45 @@ impl GameState {
     #[allow(deprecated)]
     pub fn get_filled_lines(&self) -> u32 {
         self.filled_lines
+    }
+}
+
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
+#[cfg(test)]
+mod state_tests {
+    use super::*;
+
+    /// Тест: проверка что deprecated методы всё ещё работают
+    ///
+    /// Проверяет что устаревшие методы помечены корректно
+    /// и всё ещё функционируют для обратной совместимости.
+    #[test]
+    #[allow(deprecated)]
+    fn test_deprecated_methods_still_work() {
+        // Проверка что deprecated методы всё ещё работают
+        // и помечены корректно
+        let state = GameState::new();
+
+        // Тест deprecated методов get_*
+        let _score = state.get_score();
+        let _level = state.get_level();
+        let _lines = state.get_lines_cleared();
+
+        // Проверка что методы возвращают корректные значения
+        assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+        assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
+        assert_eq!(
+            state.get_lines_cleared(),
+            0,
+            "Начальное количество линий должно быть 0"
+        );
+
+        // Проверка что новые методы возвращают те же значения
+        assert_eq!(state.score(), state.get_score());
+        assert_eq!(state.level(), state.get_level());
+        assert_eq!(state.lines_cleared(), state.get_lines_cleared());
     }
 }

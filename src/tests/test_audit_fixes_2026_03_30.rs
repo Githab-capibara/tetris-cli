@@ -24,16 +24,16 @@ mod tests {
         // u32::MAX = 4294967295
         // u32::MAX as f32 = 4294967296.0 (потеря точности!)
         // Используем точную границу 4294967295.0
-        
+
         // Тест значений вокруг границы
         // Примечание: f32 теряет точность для больших чисел, поэтому тестируем
         // только значения которые могут быть точно представлены в f32
         let test_cases: Vec<(f32, u32)> = vec![
-            (4294967295.0, u32::MAX),     // Точная граница
-            (4294967296.0, u32::MAX),     // Больше границы (u32::MAX as f32)
-            (f32::MAX, u32::MAX),         // Максимальный f32
-            (1000000000.0, 1000000000),   // Меньше границы (точное представление)
-            (0.0, 0),                      // Ноль
+            (4294967295.0, u32::MAX),   // Точная граница
+            (4294967296.0, u32::MAX),   // Больше границы (u32::MAX as f32)
+            (f32::MAX, u32::MAX),       // Максимальный f32
+            (1000000000.0, 1000000000), // Меньше границы (точное представление)
+            (0.0, 0),                   // Ноль
         ];
 
         for (input, expected) in test_cases {
@@ -66,8 +66,11 @@ mod tests {
         // NaN, Infinity, Neg Infinity все возвращают !is_finite() = true
         assert!(!f32::NAN.is_finite(), "NaN должен быть не-finite");
         assert!(!f32::INFINITY.is_finite(), "Infinity должен быть не-finite");
-        assert!(!f32::NEG_INFINITY.is_finite(), "Negative Infinity должен быть не-finite");
-        
+        assert!(
+            !f32::NEG_INFINITY.is_finite(),
+            "Negative Infinity должен быть не-finite"
+        );
+
         // Проверяем что safe_f32_to_u32 логика работает для не-finite значений
         let test_values = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY];
         for &val in &test_values {
@@ -126,21 +129,18 @@ mod tests {
     #[test]
     fn test_canvas_drop_no_panic() {
         use crate::io::Canvas;
-        
+
         // Создаём Canvas (может вернуть ошибку если терминал недоступен)
         let canvas_result = Canvas::new();
-        
+
         if let Ok(mut canvas) = canvas_result {
             // Drop должен быть безопасным даже при панике внутри
             let drop_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 drop(canvas);
             }));
-            
+
             // Drop не должен паниковать
-            assert!(
-                drop_result.is_ok(),
-                "Canvas Drop не должен паниковать"
-            );
+            assert!(drop_result.is_ok(), "Canvas Drop не должен паниковать");
         } else {
             // Если Canvas не создан, тест всё равно проходит
             println!("✓ Canvas не создан (терминал недоступен), тест пропускается");
@@ -159,12 +159,12 @@ mod tests {
         // Симуляция ошибки terminal_size
         let io_error = std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
-            "Тестовая ошибка терминала"
+            "Тестовая ошибка терминала",
         );
-        
+
         // Преобразование в GameError::Io для сохранения оригинальной ошибки
         let game_error = GameError::Io(io_error);
-        
+
         // Проверяем что ошибка сохранена
         match &game_error {
             GameError::Io(e) => {
@@ -180,7 +180,7 @@ mod tests {
             }
             _ => panic!("Ожидался GameError::Io"),
         }
-        
+
         println!("✓ Сохранение оригинальной ошибки работает корректно");
     }
 
@@ -240,22 +240,27 @@ mod tests {
         } else {
             boundary_test as u32
         };
-        assert_eq!(boundary_result, u32::MAX, "Граница должна работать корректно");
+        assert_eq!(
+            boundary_result,
+            u32::MAX,
+            "Граница должна работать корректно"
+        );
 
         // 2. Консистентное safe_f32_to_u32
         let mut state = GameState::new();
         state.set_fall_speed(20.0);
-        assert_eq!(state.fall_speed(), 20.0, "Fall speed должен быть установлен");
+        assert_eq!(
+            state.fall_speed(),
+            20.0,
+            "Fall speed должен быть установлен"
+        );
 
         // 3. Drop безопасность (проверяется автоматически при выходе из scope)
         let _drop_test = GameState::new();
         // Drop вызывается автоматически
 
         // 4. Сохранение ошибки
-        let io_error = std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Интеграционный тест"
-        );
+        let io_error = std::io::Error::new(std::io::ErrorKind::Other, "Интеграционный тест");
         let _game_error = GameError::Io(io_error);
 
         // 5. Потокобезопасность (проверяется документацией)

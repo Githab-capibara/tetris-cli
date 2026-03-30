@@ -35,6 +35,11 @@
 //! - [`is_valid_name_char`] — проверка допустимости символа имени (whitelist)
 //! - [`sanitize_player_name`] — санитаризация имени игрока
 
+/// Имя по умолчанию для анонимных игроков.
+///
+/// Используется когда имя пустое или после фильтрации не осталось валидных символов.
+const ANONYMOUS_NAME: &str = "Anonymous";
+
 /// Проверить допустимость символа имени (whitelist подход).
 ///
 /// Разрешены только:
@@ -93,7 +98,7 @@ pub fn is_valid_name_char(c: char) -> bool {
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
-        return "Anonymous".to_string();
+        return ANONYMOUS_NAME.to_string();
     }
 
     // Whitelist фильтрация: оставляем только разрешённые символы
@@ -103,10 +108,8 @@ pub fn sanitize_player_name(name: &str) -> String {
         .take(20)
         .collect();
 
-    // Примечание аудита 2026-03-30: дублирование "Anonymous".to_string()
-    // Не исправлено так как не критично для производительности
     if validated.is_empty() {
-        "Anonymous".to_string()
+        ANONYMOUS_NAME.to_string()
     } else {
         validated
     }
@@ -337,5 +340,16 @@ mod validation_name_tests {
         let invalid_special = "Player@Name#Test$";
         let sanitized_invalid = sanitize_player_name(invalid_special);
         assert_eq!(sanitized_invalid, "PlayerNameTest");
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ПРОВЕРКИ КОНСТАНТЫ ANONYMOUS_NAME
+    // =========================================================================
+
+    /// Тест: проверка что константа ANONYMOUS_NAME существует и равна "Anonymous"
+    #[test]
+    fn test_anonymous_constant() {
+        // Проверка что константа ANONYMOUS_NAME существует и равна "Anonymous"
+        assert_eq!(ANONYMOUS_NAME, "Anonymous");
     }
 }

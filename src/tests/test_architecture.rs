@@ -29,7 +29,7 @@ fn test_types_no_cyclic_dependencies() {
     // Проверяем, что типы работают независимо
     let dir = Direction::Left;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, Some(RotationDirection::CounterClockwise));
+    assert_eq!(rotation, RotationDirection::CounterClockwise);
 
     let state = UpdateEndState::Continue;
     assert_eq!(format!("{:?}", state), "Continue");
@@ -340,16 +340,16 @@ fn test_types_independence() {
     // Direction должен работать независимо от game модуля
     let dir = Direction::Left;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, Some(RotationDirection::CounterClockwise));
+    assert_eq!(rotation, RotationDirection::CounterClockwise);
 
     let dir = Direction::Right;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, Some(RotationDirection::Clockwise));
+    assert_eq!(rotation, RotationDirection::Clockwise);
 
-    // Direction::Down теперь возвращает None
+    // Direction::Down теперь возвращает RotationDirection::NoRotation
     let dir = Direction::Down;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, None);
+    assert_eq!(rotation, RotationDirection::NoRotation);
 }
 
 // ============================================================================

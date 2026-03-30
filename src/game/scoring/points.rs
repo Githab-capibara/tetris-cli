@@ -280,7 +280,7 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     // Исправление аудита 2026-03-30: используем safe_f32_to_u32() для консистентности
     let fall_bonus_u32 = safe_f32_to_u32(limited_fall_spd * PIECE_SCORE_FALL_MULT);
     let fall_bonus_u128 = u128::from(fall_bonus_u32);
-    
+
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
     state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));

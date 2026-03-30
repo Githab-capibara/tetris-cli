@@ -51,7 +51,7 @@ impl Direction {
     /// # Возвращает
     /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
     /// - [`RotationDirection::Clockwise`] для [`Direction::Right`]
-    /// - `None` для [`Direction::Down`] (не является направлением вращения)
+    /// - [`RotationDirection::NoRotation`] для [`Direction::Down`]
     ///
     /// # Пример
     /// ```
@@ -59,13 +59,16 @@ impl Direction {
     ///
     /// assert_eq!(
     ///     Direction::Left.to_rotation_direction(),
-    ///     Some(RotationDirection::CounterClockwise)
+    ///     RotationDirection::CounterClockwise
     /// );
     /// assert_eq!(
     ///     Direction::Right.to_rotation_direction(),
-    ///     Some(RotationDirection::Clockwise)
+    ///     RotationDirection::Clockwise
     /// );
-    /// assert_eq!(Direction::Down.to_rotation_direction(), None);
+    /// assert_eq!(
+    ///     Direction::Down.to_rotation_direction(),
+    ///     RotationDirection::NoRotation
+    /// );
     /// ```
     ///
     /// # Примечания
@@ -75,13 +78,20 @@ impl Direction {
     ///
     /// # Исправление 1.3
     /// `Direction::Down` больше не конвертируется в `RotationDirection::Clockwise`.
+    ///
+    /// # Исправление аудита 2026-03-30
+    /// Возвращает `RotationDirection::NoRotation` для `Direction::Down`
+    /// для явного указания отсутствия вращения.
+    ///
+    /// # Panics
+    /// Никогда не паникует — все варианты `Direction` обрабатываются корректно.
     #[must_use]
     #[allow(dead_code)]
-    pub const fn to_rotation_direction(self) -> Option<RotationDirection> {
+    pub const fn to_rotation_direction(self) -> RotationDirection {
         match self {
-            Direction::Left => Some(RotationDirection::CounterClockwise),
-            Direction::Right => Some(RotationDirection::Clockwise),
-            Direction::Down => None,
+            Direction::Left => RotationDirection::CounterClockwise,
+            Direction::Right => RotationDirection::Clockwise,
+            Direction::Down => RotationDirection::NoRotation,
         }
     }
 }
@@ -99,14 +109,21 @@ impl Direction {
 /// match rotation {
 ///     RotationDirection::Clockwise => println!("Вращение по часовой"),
 ///     RotationDirection::CounterClockwise => println!("Вращение против часовой"),
+///     RotationDirection::NoRotation => println!("Без вращения"),
 /// }
 /// ```
+///
+/// ## Исправление аудита 2026-03-30
+/// Добавлен вариант `NoRotation` для явного указания отсутствия вращения
+/// при конвертации из `Direction::Down`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RotationDirection {
     /// По часовой стрелке (90° вправо).
     Clockwise,
     /// Против часовой стрелки (90° влево).
     CounterClockwise,
+    /// Без вращения (используется для `Direction::Down`).
+    NoRotation,
 }
 
 /// Позиция в пространстве (x, y).
@@ -226,7 +243,10 @@ mod types_tests {
             Direction::Right.to_rotation_direction(),
             Some(RotationDirection::Clockwise)
         );
-        assert_eq!(Direction::Down.to_rotation_direction(), None);
+        assert_eq!(
+            Direction::Down.to_rotation_direction(),
+            Some(RotationDirection::NoRotation)
+        );
     }
 
     #[test]
@@ -243,6 +263,7 @@ mod types_tests {
             format!("{:?}", RotationDirection::CounterClockwise),
             "CounterClockwise"
         );
+        assert_eq!(format!("{:?}", RotationDirection::NoRotation), "NoRotation");
     }
 
     #[test]
@@ -252,5 +273,26 @@ mod types_tests {
         assert_eq!(format!("{:?}", UpdateEndState::Continue), "Continue");
         assert_eq!(format!("{:?}", UpdateEndState::Pause), "Pause");
         assert_eq!(format!("{:?}", UpdateEndState::Won), "Won");
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ПРОВЕРКИ DIRECTION::DOWN И NOROTATION (ИСПРАВЛЕНИЕ АУДИТА)
+    // =========================================================================
+
+    /// Тест: проверка что Direction::Down возвращает RotationDirection::NoRotation
+    #[test]
+    fn test_direction_down_returns_no_rotation() {
+        // Проверка что Direction::Down возвращает RotationDirection::NoRotation
+        assert_eq!(
+            Direction::Down.to_rotation_direction(),
+            RotationDirection::NoRotation
+        );
+    }
+
+    /// Тест: проверка что NoRotation существует
+    #[test]
+    fn test_rotation_direction_no_rotation() {
+        // Проверка что NoRotation существует
+        let _ = RotationDirection::NoRotation;
     }
 }

@@ -498,11 +498,11 @@ fn test_no_circular_dependencies() {
     // Direction должен работать независимо
     let dir = Direction::Left;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, Some(RotationDirection::CounterClockwise));
+    assert_eq!(rotation, RotationDirection::CounterClockwise);
 
     let dir = Direction::Right;
     let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, Some(RotationDirection::Clockwise));
+    assert_eq!(rotation, RotationDirection::Clockwise);
 
     // UpdateEndState должен работать независимо
     let state = UpdateEndState::Continue;

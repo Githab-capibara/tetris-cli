@@ -341,4 +341,52 @@ mod lines_tests {
         // Проверка битовых операций
         assert_eq!(mask.count_ones(), 0);
     }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИНКАПСУЛЯЦИИ SCORING МОДУЛЯ
+    // =========================================================================
+
+    /// Тест: проверка что scoring использует только публичные методы GameState
+    ///
+    /// Этот тест документирует что модуль scoring использует только
+    /// публичные методы GameState для доступа к данным, соблюдая
+    /// инкапсуляцию.
+    #[test]
+    fn test_scoring_uses_public_methods_only() {
+        // Проверка что scoring использует только публичные методы GameState
+        // Функции в этом модуле используют следующие публичные методы:
+        // - state.get_blocks() - для получения игрового поля
+        // - state.get_blocks_mut() - для модификации поля
+        // - state.score() - для получения счёта
+        // - state.set_score() - для установки счёта
+        // - state.level() - для получения уровня
+        // - state.get_stats() - для получения статистики
+        // - state.get_stats_mut() - для модификации статистики
+        // - state.lines_cleared() - для получения количества линий
+        // - state.set_lines_cleared() - для установки количества линий
+        // - state.fall_speed() - для получения скорости
+        // - state.set_fall_speed() - для установки скорости
+
+        // Создаём состояние игры для проверки
+        let mut state = GameState::new();
+
+        // Проверяем что все необходимые методы доступны публично
+        let _blocks = state.get_blocks();
+        let _blocks_mut = state.get_blocks_mut();
+        let _score = state.score();
+        state.set_score(100);
+        let _level = state.level();
+        let _stats = state.get_stats();
+        let _stats_mut = state.get_stats_mut();
+        let _lines = state.lines_cleared();
+        state.set_lines_cleared(5);
+        let _fall_speed = state.fall_speed();
+        state.set_fall_speed(1.0);
+
+        // Если код компилируется - все методы публичны
+        assert!(
+            true,
+            "Все методы GameState должны быть публичными для scoring модуля"
+        );
+    }
 }

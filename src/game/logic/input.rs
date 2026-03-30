@@ -48,22 +48,22 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
     state.set_is_hard_dropping(false);
 
     match key {
-        Some(KEY_BACKSPACE) => {
+        Ok(Some(KEY_BACKSPACE)) => {
             eprintln!("[INFO] Получена клавиша выхода (Backspace)");
             return Some(UpdateEndState::Quit);
         }
-        Some(b'p') => {
+        Ok(Some(b'p')) => {
             eprintln!("[INFO] Получена клавиша паузы (P)");
             return Some(UpdateEndState::Pause);
         }
-        Some(b'a') => handle_movement_input(state, Direction::Left),
-        Some(b'd') => handle_movement_input(state, Direction::Right),
-        Some(b'q') => handle_rotation_input(state, RotationDirection::CounterClockwise),
-        Some(b'e') => handle_rotation_input(state, RotationDirection::Clockwise),
-        Some(b'w') => super::super::scoring::handle_hard_drop(state),
-        Some(b's') => super::super::scoring::handle_soft_drop(state),
-        Some(b'c' | b'C') => super::super::scoring::handle_hold(state),
-        Some(other_key) => {
+        Ok(Some(b'a')) => handle_movement_input(state, Direction::Left),
+        Ok(Some(b'd')) => handle_movement_input(state, Direction::Right),
+        Ok(Some(b'q')) => handle_rotation_input(state, RotationDirection::CounterClockwise),
+        Ok(Some(b'e')) => handle_rotation_input(state, RotationDirection::Clockwise),
+        Ok(Some(b'w')) => super::super::scoring::handle_hard_drop(state),
+        Ok(Some(b's')) => super::super::scoring::handle_soft_drop(state),
+        Ok(Some(b'c' | b'C')) => super::super::scoring::handle_hold(state),
+        Ok(Some(other_key)) => {
             // Логирование неизвестной клавиши для отладки
             eprintln!(
                 "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
@@ -71,9 +71,13 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
                 other_key
             );
         }
-        None => {
-            // Клавиша не была нажата или произошла ошибка чтения
+        Ok(None) => {
+            // Клавиша не была нажата
             // Не логируем чтобы не спамить в консоль каждый кадр
+        }
+        Err(e) => {
+            // Ошибка чтения ввода
+            eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
         }
     }
 
