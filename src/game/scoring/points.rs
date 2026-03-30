@@ -78,6 +78,8 @@ pub fn update_score_and_level(state: &mut GameState, remove_count: u32) {
 ///
 /// # Исправление #25 (HIGH)
 /// Использует корректную проверку диапазона перед конвертацией.
+/// # Исправление аудита 2026-03-30
+/// Использует точную границу 4294967295.0 вместо u32::MAX as f32 для избежания потери точности.
 #[inline]
 fn safe_f32_to_u32(value: f32) -> u32 {
     // Исправление #25 (HIGH): корректная проверка диапазона перед конвертацией
@@ -89,10 +91,10 @@ fn safe_f32_to_u32(value: f32) -> u32 {
     if value < 0.0 {
         return 0;
     }
-    // Проверка на переполнение - используем явное сравнение
-    // u32::MAX = 4294967295, но u32::MAX as f32 = 4294967296.0 (потеря точности)
-    // Поэтому используем безопасную границу для конвертации
-    const MAX_SAFE_F32_FOR_U32: f32 = u32::MAX as f32;
+    // Проверка на переполнение - используем точную границу
+    // u32::MAX = 4294967295, используем явное значение для избежания потери точности
+    // Исправление аудита 2026-03-30: точная граница вместо u32::MAX as f32
+    const MAX_SAFE_F32_FOR_U32: f32 = 4294967295.0;
     if value >= MAX_SAFE_F32_FOR_U32 {
         return u32::MAX;
     }
@@ -265,6 +267,9 @@ fn check_game_over_condition(state: &GameState) -> bool {
 ///
 /// # Исправление C1
 /// Использует saturating_add и saturating_mul для защиты от переполнения.
+///
+/// # Исправление аудита 2026-03-30
+/// Использует safe_f32_to_u32() для консистентности вместо ручного clamp.
 pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     use crate::game::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
@@ -272,14 +277,10 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Расчёт бонуса за скорость падения
     let limited_fall_spd = state.fall_speed().min(MAX_FALL_SPEED);
-    let fall_bonus = (limited_fall_spd * PIECE_SCORE_FALL_MULT)
-        .max(0.0)
-        .min(u32::MAX as f32);
-    let fall_bonus_u128 = if fall_bonus.is_finite() {
-        fall_bonus as u128
-    } else {
-        0
-    };
+    // Исправление аудита 2026-03-30: используем safe_f32_to_u32() для консистентности
+    let fall_bonus_u32 = safe_f32_to_u32(limited_fall_spd * PIECE_SCORE_FALL_MULT);
+    let fall_bonus_u128 = u128::from(fall_bonus_u32);
+    
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
     state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
