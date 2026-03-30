@@ -428,7 +428,6 @@ pub const FRAME_DELAY_MS: u64 = 16;
 #[cfg(test)]
 mod tests {
     // Оригинальные тесты (160 тестов)
-    // pub mod test_achievements; // REMOVED: Achievement system removed
     pub mod test_controls;
     pub mod test_game_logic;
     pub mod test_highscore;
@@ -442,10 +441,7 @@ mod tests {
     pub mod test_animation;
     pub mod test_collision;
     pub mod test_edge_cases;
-    // pub mod test_game_extended; // REMOVED: дублирование
-    // pub mod test_scoring; // REMOVED: удалён при очистке
     pub mod test_statistics;
-    // pub mod test_tetromino_extended; // REMOVED: дублирование
 
     // Стресс-тесты и граничные случаи (20 тестов)
     pub mod test_edge_cases_stress;
@@ -455,33 +451,24 @@ mod tests {
 
     // Новые детальные тесты (375 тестов)
     pub mod test_bag_system;
-    // pub mod test_controls_detailed; // REMOVED: дублирование
     pub mod test_game_modes_detailed;
     pub mod test_game_movement;
     pub mod test_game_rotation;
-    // pub mod test_highscore_detailed; // REMOVED: дублирование
     pub mod test_integration_extended;
-    // pub mod test_io_detailed; // REMOVED: дублирование
-    // pub mod test_scoring_detailed; // REMOVED: дублирование
     pub mod test_tetromino_shapes;
 
     // Тесты исправленных проблем (18 тестов)
     pub mod test_controls_path_validation;
     pub mod test_game_bounds_check;
-    // pub mod test_highscore_integrity; // REMOVED: дублирование с test_highscore_verify_integrity
-    // pub mod test_highscore_u256_fix; // REMOVED: временный тест
 
     // Тесты верификации всех исправлений аудита (27 тестов)
-    // pub mod test_fixes_verification; // REMOVED: дублирование
 
     // Тесты критических проблем (20 тестов)
     pub mod test_controls_error_handling;
     pub mod test_game_negative_coords;
-    // pub mod test_highscore_no_rate_limiting; // REMOVED: rate limiting удален
     pub mod test_io_resource_leak;
 
     // Комплексные тесты для всех 12 исправленных проблем (36 тестов)
-    // pub mod test_fixes_comprehensive; // REMOVED: дублирование
 
     // Новые тесты для 26 исправленных проблем (90 тестов)
     pub mod test_controls_path_traversal;
@@ -494,44 +481,34 @@ mod tests {
     pub mod test_audit_fixes_2026_03_30;
 
     // Комплексные тесты всех 18 исправлений (54 теста)
-    // pub mod test_all_fixes; // REMOVED: дублирование
 
     // Расширенные тесты верификации всех 13 исправлений (39 тестов)
-    // pub mod test_fixes_verification_extended; // REMOVED: дублирование
 
     // Тесты качества кода (24 теста - по 3 на каждую из 8 категорий)
-    // pub mod test_code_quality; // REMOVED: дублирование
 
     // Финальная верификация всех 25 исправлений (75 тестов - по 3 на каждую проблему)
-    // pub mod test_fixes_verification_final; // REMOVED: дублирование
 
     // Тесты исправлений безопасности и оптимизаций (7 тестов - 6 основных + 1 интеграционный)
     pub mod test_safety_architecture;
     pub mod test_security_fixes;
 
     // Тесты качества кода для 6 исправлений (6 тестов + 1 интеграционный)
-    // pub mod test_code_quality_fixes; // REMOVED: дублирование
 
     // Тесты верификации 17 исправленных проблем аудита (19 тестов - по 1 на каждую проблему + интеграционный)
-    // pub mod test_audit_fixes_verification; // Времено отключен - файл отсутствует
 
     // Тесты для всех исправленных проблем аудита (10 тестов + 1 интеграционный)
-    // pub mod test_audit_fixes; // Времено отключен - файл отсутствует
 
     // Тесты ограничения UTF-8 в KeyReader (7 тестов)
     pub mod test_utf8_limitation;
 
     // Комплексные тесты для всех исправлений аудита — УДАЛЕНЫ (тесты перемещены в другие файлы)
-    // pub mod test_audit_fixes_comprehensive; // УДАЛЁН: тесты перемещены в test_security_fixes.rs и test_time_safety.rs
 
     // Тесты для Задач 12-15 (30 тестов)
     pub mod test_task13_coverage;
 
     // Комплексные тесты для всех 32 исправлений (32 теста + 2 интеграционных)
-    // pub mod test_all_32_fixes; // REMOVED: дублирование
 
     // Тесты аудита кода и исправлений найденных проблем (3 теста)
-    // pub mod test_code_audit_fixes; // Времено отключен - файл отсутствует
 
     // Тесты на архитектурную целостность (16 тестов)
     pub mod test_architecture;
@@ -569,13 +546,10 @@ mod tests {
     pub mod test_all_fixes_integration;
 
     // Тесты для всех 24 исправлений из отчета аудита (24 теста)
-    // pub mod test_all_24_fixes; // REMOVED: дублирование
 
     // Тесты для всех исправлений рефакторинга (55 тестов)
-    // pub mod test_refactoring_fixes; // REMOVED: дублирование
 
     // Комплексные тесты для всех исправлений аудита (Critical, High, Medium, Low)
-    // pub mod audit_fixes_comprehensive; // REMOVED: дублирование
 
     // Тесты для исправлений clippy ошибок (8 тестов)
     pub mod test_clippy_fixes;

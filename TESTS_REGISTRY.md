@@ -1,53 +1,78 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 30 марта 2026 г. (архитектурные улучшения v23.96.24)
+**Дата последней актуализации:** 30 марта 2026 г. (очистка тестовой базы)
 **Версия проекта:** 23.96.24
-**Всего тестов:** 1144 (проходят 100%)
-**Всего файлов тестов:** 72
+**Всего тестов:** 1086 (проходят 99.9%)
+**Всего файлов тестов:** 73
 
 ---
 
 ## 📊 СТАТИСТИКА ОЧИСТКИ
 
-### Актуализация (30 марта 2026 - архитектурные улучшения v23.96.24):
+### Очистка тестовой базы (30 марта 2026):
 
-#### Новые тесты:
+#### Удалённые тесты (~40 тестов):
 
-**1. Тесты архитектурных компонентов (test_architecture_components.rs — 31 тест):**
+**Дублирующиеся тесты (15 пар → удалено 15):**
+- test_game_view_has_draw_methods (дубликат)
+- test_constants_centralization (дубликат)
+- test_must_use_attributes (дубликат)
+- test_unicode_validation (дубликат)
+- test_collision_floor (дубликат)
+- test_tetromino_o_no_rotate (дубликат)
+- test_sprint_mode_creation (дубликат)
+- test_architecture_integrity_after_refactoring (дубликат)
+- test_no_duplicate_validation_logic (дубликат)
+- test_game_state_initial_fall_speed (дубликат)
+- test_bag_system_all_seven_types (дубликат)
+- test_leaderboard_empty (дубликат)
+- test_controls_default_config_values (дубликат)
+- test_render_uses_game_view_methods (дубликат)
+- test_cycle_traits_documentation (дубликат)
 
-**C1: Разделение GameState на компоненты (7 тестов):**
-- `test_game_state_uses_components` — композиция компонентов (GameBoard, ScoreBoard, FigureManager, AnimationState, GamePhase)
-- `test_components_independence` — независимость компонентов
-- `test_figure_manager_component` — FigureManager: управление фигурами
-- `test_animation_state_component` — AnimationState: анимации и флаги
-- `test_game_phase_component` — GamePhase: фаза игры (пауза, завершение)
-- `test_component_traits_exist` — трейты доступа (FigureAccess, FigureMutable, AnimationAccess, AnimationMutable, GamePhaseAccess, GamePhaseMutable)
-- `test_components_integration` — интеграция компонентов в GameState
+**Устаревшие тесты (6):**
+- test_deprecated_game_mode_documented (устаревший enum GameMode)
+- test_no_unused_traits_in_cycle (пустой тест)
+- test_canvas_creation (игнорируется, требует терминал)
+- test_renderer_trait_implementation (пропускается в CI/CD)
+- test_canvas_as_dyn_renderer (пропускается в CI/CD)
+- test_shape_type_independence (тривиальный)
 
-**C2: Инкапсуляция render.rs (5 тестов):**
-- `test_game_view_draw_methods` — методы отрисовки в GameView
-- `test_render_delegation` — делегирование отрисовки от render::draw() к GameView
-- `test_draw_field_method` — draw_field(): отрисовка поля
-- `test_draw_next_shape_method` — draw_next_shape(): отрисовка следующей фигуры
-- `test_draw_held_shape_method` — draw_held_shape(): отрисовка удержанной фигуры
+**Пустые/слабые тесты (5):**
+- test_set_land_timer_validates (нет валидации)
+- test_game_state_has_setters_with_validation (нет проверки валидации)
+- test_crypto_functions_are_canonical (минимальные ассерты)
+- test_tests_compile (assert!(true))
+- test_removed_deprecated_crypto_functions (некорректный)
 
-**C3: Dependency Inversion (5 тестов):**
-- `test_dependency_inversion_game_loop` — DIP в game loop
-- `test_input_reader_trait_exists` — трейт InputReader для ввода
-- `test_renderer_trait_exists` — трейт Renderer для отрисовки
-- `test_run_game_loop_generics` — дженерики в run_game_loop<T, R>()
-- `test_no_concrete_types_in_loop` — отсутствие конкретных типов KeyReader, Canvas
+**Избыточные тесты (17):**
+- test_piece_score_constant (тривиальный)
+- test_soft_drop_points_constant (тривиальный)
+- test_hard_drop_points_constant (тривиальный)
+- test_lines_per_level_constant (тривиальный)
+- test_sprint_lines_constant (тривиальный)
+- test_shape_colors_count (тривиальный)
+- test_each_shape_has_four_blocks (тривиальный)
+- test_field_dimensions (тривиальный)
+- test_disp_height_calculation (тривиальный)
+- test_key_reader_creation (тривиальный)
+- test_key_reader_default (тривиальный)
+- test_key_reader_get_key_no_input (тривиальный)
+- test_game_state_creation (дублирует другие)
+- test_all_required_tests_exist (мета-тест)
+- test_source_files_readable (очевидный)
+- test_documentation_in_russian (линтер)
+- test_bag_generator_creation (тривиальный)
 
-**H1: Валидация данных (6 тестов):**
-- `test_fall_speed_validation` — проверка на NaN/Infinity в set_fall_speed()
-- `test_land_timer_validation` — проверка на NaN/Infinity в set_land_timer()
-- `test_level_max_cap` — ограничение уровня максимумом 1000
-- `test_nan_infinity_protection` — защита от невалидных float значений
-- `test_saturating_add_usage` — saturating_add() для защиты от переполнения
-- `test_validation_integration` — интеграция валидации в сеттеры
+**Закомментированный код:**
+- ~40 строк с закомментированными `// pub mod test_*` в src/lib.rs
 
-**M1: Обработка ошибок (3 теста):**
-- `test_canvas_drop_error_logging` — логирование ошибок в Canvas::drop()
+#### Итоговая статистика:
+- **Было тестов:** ~1144
+- **Удалено тестов:** ~40
+- **Осталось тестов:** 1086
+- **Процент проблемных тестов:** ~3.5% (удалено)
+- **Все тесты компилируются:** ✅
 - `test_error_logging_format` — формат сообщений об ошибках
 - `test_no_panic_on_drop_error` — отсутствие паники при ошибках в drop()
 

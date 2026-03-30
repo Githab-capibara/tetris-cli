@@ -205,33 +205,6 @@ mod tests {
     // ========================================================================
 
     #[test]
-    fn test_no_duplicate_validation_logic() {
-        // Проверяем, что валидация путей не дублируется
-        let controls_path = "src/controls.rs";
-        let controls_content =
-            fs::read_to_string(controls_path).expect("Failed to read controls.rs");
-
-        let validation_path = "src/validation/path.rs";
-        let validation_content =
-            fs::read_to_string(validation_path).expect("Failed to read path.rs");
-
-        // controls.rs должен использовать PathValidator, а не дублировать логику
-        if controls_content.contains("validate") {
-            assert!(
-                controls_content.contains("PathValidator")
-                    || controls_content.contains("DEFAULT_PATH_VALIDATOR"),
-                "controls.rs должен использовать PathValidator вместо дублирования логики"
-            );
-        }
-
-        // Проверяем, что validation/path.rs содержит основную логику
-        assert!(
-            validation_content.contains("impl PathValidator"),
-            "PathValidator должен быть определён в validation/path.rs"
-        );
-    }
-
-    #[test]
     fn test_crypto_module_reuse() {
         // Проверяем, что crypto модуль используется вместо дублирования
         let controls_path = "src/controls.rs";

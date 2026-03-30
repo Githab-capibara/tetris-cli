@@ -1,4 +1,14 @@
+# Rust coverage
+*.profraw
+*.profdata
+tarpaulin-report.html
+cobertura.xml
+lcov.info
 target/
+
+# Python ruff
+.ruff_cache/
+
 *.log
 
 # Файлы с конфигурацией Qwen (содержат токены)

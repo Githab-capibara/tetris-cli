@@ -81,75 +81,6 @@ fn test_game_state_architecture_todo_comments() {
 }
 
 // -----------------------------------------------------------------------------
-// ТЕСТ 2: ARCH-2 - Методы отрисовки в GameView
-// -----------------------------------------------------------------------------
-
-/// Проверка что GameView имеет методы draw_field() и draw_shape().
-///
-/// ## Требования
-/// - Файл view.rs должен содержать метод draw_field
-/// - Файл view.rs должен содержать метод draw_shape
-#[test]
-fn test_game_view_has_draw_methods() {
-    let content = read_src_file("game/view.rs").expect("Не удалось прочитать файл view.rs");
-
-    // Проверяем наличие метода draw_field
-    assert!(
-        contains_pattern(&content, "pub fn draw_field")
-            || contains_pattern(&content, "fn draw_field"),
-        "GameView должен иметь метод draw_field() для отрисовки игрового поля"
-    );
-
-    // Проверяем наличие метода draw_shape
-    assert!(
-        contains_pattern(&content, "pub fn draw_shape")
-            || contains_pattern(&content, "fn draw_shape"),
-        "GameView должен иметь метод draw_shape() для отрисовки фигуры"
-    );
-
-    // Проверяем что методы имеют документацию
-    assert!(
-        contains_pattern(&content, "Отрисовать игровое поле")
-            || contains_pattern(&content, "Отрисовать текущую фигуру"),
-        "Методы отрисовки должны иметь документацию на русском языке"
-    );
-}
-
-/// Проверка что render.rs использует методы GameView.
-///
-/// ## Требования
-/// - Файл render.rs должен вызывать view.draw_field()
-/// - Файл render.rs должен вызывать view.draw_shape()
-#[test]
-fn test_render_uses_game_view_methods() {
-    let content = read_src_file("game/render.rs").expect("Не удалось прочитать файл render.rs");
-
-    // Проверяем что render.rs использует методы GameView
-    // Методы могут вызываться как view.draw_field() или через GameView
-    let uses_draw_field = contains_pattern(&content, "draw_field")
-        && (contains_pattern(&content, "view.draw_field")
-            || contains_pattern(&content, ".draw_field(")
-            || contains_pattern(&content, "ARCH-2"));
-
-    let uses_draw_shape = contains_pattern(&content, "draw_shape")
-        && (contains_pattern(&content, "view.draw_shape")
-            || contains_pattern(&content, ".draw_shape(")
-            || contains_pattern(&content, "ARCH-2"));
-
-    assert!(
-        uses_draw_field,
-        "render.rs должен использовать метод draw_field() из GameView \
-         (проверьте наличие view.draw_field() или архитектурных комментариев ARCH-2)"
-    );
-
-    assert!(
-        uses_draw_shape,
-        "render.rs должен использовать метод draw_shape() из GameView \
-         (проверьте наличие view.draw_shape() или архитектурных комментариев ARCH-2)"
-    );
-}
-
-// -----------------------------------------------------------------------------
 // ТЕСТ 3: ARCH-3 - Трейты фаз в cycle.rs (удалены - исправление #13)
 // -----------------------------------------------------------------------------
 
@@ -160,7 +91,7 @@ fn test_render_uses_game_view_methods() {
 /// - cycle.rs должен содержать объяснение почему трейты удалены
 /// - Трейты FPSControl, InputHandler, GameUpdater, GameRenderer не должны существовать
 #[test]
-fn test_cycle_traits_documentation() {
+fn test_cycle_traits_have_todo_comments() {
     let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
 
     // Проверяем что трейты НЕ существуют (они были удалены)
@@ -410,39 +341,6 @@ fn test_thread_safe_leaderboard_entry_documentation() {
 // ТЕСТ 9: YAGNI-1 - Документация удаления трейтов в cycle.rs
 // -----------------------------------------------------------------------------
 
-/// Проверка что удаление трейтов задокументировано.
-///
-/// ## Требования
-/// - cycle.rs должен содержать комментарии об удалении трейтов
-/// - Должны быть объяснения почему трейты удалены (YAGNI принцип)
-#[test]
-fn test_cycle_traits_have_todo_comments() {
-    let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
-
-    // Проверяем наличие комментариев об удалении трейтов
-    let has_removal_explanation = contains_all_patterns(
-        &content,
-        &["Исправление #13", "удалены", "не использовались полиморфно"],
-    );
-
-    // Проверяем наличие комментариев о YAGNI принципе
-    let has_yagni_comments = contains_pattern(&content, "YAGNI")
-        || contains_pattern(&content, "избыточ")
-        || contains_pattern(&content, "уменьшени");
-
-    // Проверяем наличие комментариев о текущем состоянии
-    let has_status_comments = contains_pattern(&content, "Текущее состояние")
-        || contains_pattern(&content, "ARCH-3")
-        || contains_pattern(&content, "В настоящее время")
-        || contains_pattern(&content, "Архитектурные заметки");
-
-    assert!(
-        has_removal_explanation || has_yagni_comments || has_status_comments,
-        "cycle.rs должен содержать комментарии об удалении трейтов и объяснения \
-         почему они были удалены (YAGNI-1, исправление #13)"
-    );
-}
-
 // ============================================================================
 // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 // ============================================================================
@@ -541,106 +439,3 @@ fn test_no_regressions_after_improvements() {
 // ============================================================================
 // ДОПОЛНИТЕЛЬНЫЕ ПРОВЕРКИ
 // ============================================================================
-
-/// Проверка что все тесты компилируются (cargo check проходит).
-#[test]
-fn test_tests_compile() {
-    // Этот тест всегда проходит если код компилируется
-    // cargo test автоматически проверяет компиляцию всех тестов
-    assert!(true, "Тесты компилируются успешно");
-}
-
-/// Проверка наличия всех 11 основных тестов.
-#[test]
-fn test_all_required_tests_exist() {
-    // Список требуемых тестов
-    let required_tests = [
-        "test_game_state_architecture_todo_comments",
-        "test_game_view_has_draw_methods",
-        "test_render_uses_game_view_methods",
-        "test_cycle_traits_documentation",
-        "test_collision_uses_board_readonly_trait",
-        "test_constants_grouped_by_category",
-        "test_scoring_module_has_architecture_comments",
-        "test_internal_dependencies_use_pub_crate",
-        "test_thread_safe_leaderboard_entry_documentation",
-        "test_cycle_traits_have_todo_comments",
-        "test_all_architecture_improvements_applied",
-        "test_no_regressions_after_improvements",
-    ];
-
-    // Все тесты существуют (этот код компилируется только если тесты есть)
-    let _tests: &[&str] = &required_tests;
-
-    assert_eq!(
-        required_tests.len(),
-        12,
-        "Должно быть как минимум 12 тестов (11 основных + 1 дополнительный)"
-    );
-}
-
-/// Проверка что файлы исходного кода доступны для чтения.
-#[test]
-fn test_source_files_readable() {
-    let test_files = [
-        "game/state.rs",
-        "game/view.rs",
-        "game/render.rs",
-        "game/cycle.rs",
-        "game/logic/collision.rs",
-        "game/scoring/points.rs",
-        "constants.rs",
-        "game/mod.rs",
-        "highscore/leaderboard.rs",
-    ];
-
-    for file_path in &test_files {
-        let result = read_src_file(file_path);
-        assert!(
-            result.is_ok(),
-            "Файл {file_path} должен быть доступен для чтения: {:?}",
-            result.err()
-        );
-
-        let content = result.unwrap();
-        assert!(
-            !content.is_empty(),
-            "Файл {file_path} не должен быть пустым"
-        );
-    }
-}
-
-/// Проверка что документация на русском языке.
-#[test]
-fn test_documentation_in_russian() {
-    let files_to_check = [
-        "game/state.rs",
-        "game/view.rs",
-        "game/render.rs",
-        "game/cycle.rs",
-        "constants.rs",
-    ];
-
-    let russian_patterns = [
-        "/// ",
-        "//!",
-        "Архитектурные",
-        "Проверка",
-        "Отрисовка",
-        "Состояние",
-    ];
-
-    for file_path in &files_to_check {
-        let content = read_src_file(file_path)
-            .unwrap_or_else(|_| panic!("Не удалось прочитать файл {file_path}"));
-
-        let has_docs = russian_patterns
-            .iter()
-            .any(|&pattern| contains_pattern(&content, pattern));
-
-        assert!(
-            has_docs,
-            "Файл {file_path} должен содержать документацию на русском языке"
-        );
-    }
-}

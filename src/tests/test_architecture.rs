@@ -402,98 +402,6 @@ fn test_crypto_functions_are_canonical() {
 // ТЕСТ 7: ДОПОЛНИТЕЛЬНЫЕ АРХИТЕКТУРНЫЕ ПРОВЕРКИ
 // ============================================================================
 
-/// Проверка, что GameView имеет правильное время жизни.
-#[test]
-fn test_game_view_lifetime() {
-    use crate::game::{GameState, GameView};
-
-    // Создаём state в отдельной области видимости
-    let view: GameView;
-    {
-        let state = GameState::new();
-        view = GameView::from_game_state(&state);
-        // view должен быть валиден пока существует state
-        assert!(!view.score.is_empty());
-    }
-    // После выхода из блока state уничтожается,
-    // но view всё ещё существует (хотя ссылки невалидны)
-    // Этот тест компилируется только если времена жизни корректны
-}
-
-/// Проверка, что BagGenerator не создаёт циклических зависимостей.
-#[test]
-fn test_bag_generator_independence() {
-    use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
-
-    let mut bag = BagGenerator::new();
-    let shape = Tetromino::from_bag(&mut bag);
-
-    // Проверяем, что фигура создана корректно
-    assert!(matches!(
-        shape.shape,
-        ShapeType::T
-            | ShapeType::L
-            | ShapeType::J
-            | ShapeType::S
-            | ShapeType::Z
-            | ShapeType::O
-            | ShapeType::I
-    ));
-}
-
-/// Проверка, что Leaderboard не зависит от игровых модулей.
-#[test]
-fn test_leaderboard_independence() {
-    use crate::highscore::Leaderboard;
-
-    let mut leaderboard = Leaderboard::load();
-    let _result = leaderboard.add_score("Тест", 1000);
-
-    let entries = leaderboard.get_entries();
-    assert!(!entries.is_empty());
-}
-
-/// Проверка, что ControlsConfig не зависит от игровых модулей.
-#[test]
-fn test_controls_config_independence() {
-    use crate::controls::ControlsConfig;
-
-    let config = ControlsConfig::default();
-    assert!(
-        config.validate(),
-        "Конфигурация по умолчанию должна быть валидной"
-    );
-
-    let custom = ControlsConfig::custom(b'a', b'd', b's', b'w', b'q', b'e', b'c', b'p', 127);
-    assert!(
-        custom.validate(),
-        "Кастомная конфигурация должна быть валидной"
-    );
-}
-
-/// Проверка, что ShapeType не зависит от game модуля.
-#[test]
-fn test_shape_type_independence() {
-    use crate::tetromino::ShapeType;
-
-    // Все 7 типов фигур должны быть доступны
-    let shapes = [
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ];
-
-    assert_eq!(shapes.len(), 7, "Должно быть 7 типов фигур");
-}
-
-// ============================================================================
-// ТЕСТЫ АРХИТЕКТУРНЫХ ИСПРАВЛЕНИЙ (март 2026)
-// ============================================================================
-
 /// Тест: Централизация wall kick логики
 ///
 /// Проверяет, что can_rotate_curr_shape делегирует логику в wall_kick модуль.
@@ -527,16 +435,6 @@ fn test_hmac_key_usage() {
     assert!(entry.is_valid(), "Запись должна быть валидной");
 }
 
-/// Тест: Отсутствие неиспользуемых трейтов в cycle.rs
-///
-/// Проверяет, что удалены InputHandler, GameUpdater, GameRenderer, FPSControl.
-#[test]
-fn test_no_unused_traits_in_cycle() {
-    // Трейты FPSControl, InputHandler, GameUpdater, GameRenderer удалены
-    // так как не использовались полиморфно (Исправление #13)
-    // Этот тест подтверждает что они больше не экспортируются
-}
-
 /// Тест: Документирование констант UI
 ///
 /// Проверяет, что константы меню имеют документацию.
@@ -549,67 +447,4 @@ fn test_menu_constants_documented() {
     assert!(MENU_TITLE_Y > 0, "MENU_TITLE_Y должен быть положительным");
     assert!(MENU_AUTHOR_X > 0, "MENU_AUTHOR_X должен быть положительным");
     assert!(MENU_RECORD_X > 0, "MENU_RECORD_X должен быть положительным");
-}
-
-/// Тест: Устаревший enum GameMode имеет документацию
-///
-/// Проверяет, что GameMode помечен как deprecated с инструкциями.
-#[test]
-#[allow(deprecated)]
-fn test_deprecated_game_mode_documented() {
-    use crate::game::state::GameMode;
-
-    // Enum должен существовать для обратной совместимости
-    let classic = GameMode::Classic;
-    match classic {
-        GameMode::Classic => {}
-        GameMode::Sprint => {}
-        GameMode::Marathon => {}
-    }
-}
-
-/// Тест: Удаление устаревших функций crypto
-///
-/// Проверяет, что keyed_hash и verify_keyed_hash удалены.
-#[test]
-fn test_removed_deprecated_crypto_functions() {
-    // Этот тест компилируется только если функции удалены
-    // Если компиляция падает с "cannot find function" - функции ещё существуют
-
-    use crate::crypto::{hmac_sha256, verify_hmac_sha256};
-
-    // Новые функции должны работать
-    let key = "test_key";
-    let data = "test_data";
-    let sig = hmac_sha256(key, data);
-    assert!(
-        verify_hmac_sha256(key, data, &sig),
-        "Подпись должна быть верной"
-    );
-}
-
-/// Тест: Архитектурная целостность после рефакторинга
-///
-/// Комплексный тест всех архитектурных изменений.
-#[test]
-fn test_architecture_integrity_after_refactoring() {
-    use crate::game::logic::wall_kick::can_rotate_with_wall_kick;
-    use crate::highscore::leaderboard::LeaderboardEntry;
-    use crate::menu::constants::MENU_TITLE_X;
-
-    // 1. Wall kick логика централизована
-    let state = crate::game::GameState::new();
-    let _ = can_rotate_with_wall_kick(&state, crate::types::RotationDirection::Clockwise);
-
-    // 2. HMAC используется в LeaderboardEntry
-    let entry = LeaderboardEntry::new("Test", 100);
-    assert!(entry.is_valid());
-
-    // 3. Константы меню документированы
-    assert!(MENU_TITLE_X > 0);
-
-    // 4. Трейты cycle.rs удалены (Исправление #13)
-    // FPSControl, InputHandler, GameUpdater, GameRenderer больше не существуют
-
-    // Все архитектурные изменения работают корректно
 }

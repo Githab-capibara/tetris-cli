@@ -325,7 +325,7 @@ mod test_constants_centralization {
         for module_path in &modules {
             if Path::new(module_path).exists() {
                 let content = fs::read_to_string(module_path)
-                    .expect(&format!("Failed to read {}", module_path));
+                    .unwrap_or_else(|_| panic!("Failed to read {}", module_path));
 
                 // Модуль должен импортировать константы или использовать их через crate::constants
                 let imports_constants = content.contains("use crate::constants::")
@@ -574,22 +574,6 @@ mod test_validation {
 
         println!("✅ ScoreBoard::set_level валидирует максимальный уровень");
     }
-
-    /// Проверка валидации в set_land_timer.
-    #[test]
-    fn test_set_land_timer_validates() {
-        let state_path = "src/game/state.rs";
-        let state_content =
-            fs::read_to_string(state_path).expect("Failed to read src/game/state.rs");
-
-        // Проверяем наличие set_land_timer
-        assert!(
-            state_content.contains("fn set_land_timer"),
-            "Метод set_land_timer должен существовать"
-        );
-
-        println!("✅ set_land_timer существует");
-    }
 }
 
 // ============================================================================
@@ -663,32 +647,6 @@ mod test_field_encapsulation {
         }
 
         println!("✅ GameState имеет геттеры для всех полей");
-    }
-
-    /// Проверка что GameState имеет сеттеры с валидацией.
-    #[test]
-    fn test_game_state_has_setters_with_validation() {
-        let state_path = "src/game/state.rs";
-        let state_content =
-            fs::read_to_string(state_path).expect("Failed to read src/game/state.rs");
-
-        // Проверяем наличие сеттеров
-        let setters = vec![
-            "pub fn set_score(",
-            "pub fn set_level(",
-            "pub fn set_fall_speed(",
-            "pub fn set_land_timer(",
-        ];
-
-        for setter in &setters {
-            assert!(
-                state_content.contains(setter),
-                "GameState должен иметь сеттер {}",
-                setter
-            );
-        }
-
-        println!("✅ GameState имеет сеттеры с валидацией");
     }
 }
 

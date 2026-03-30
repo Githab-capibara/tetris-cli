@@ -993,11 +993,7 @@ mod thread_safe_tests {
         // Проверка что Leaderboard не реализует Send+Sync
         // Это компилируется только если тип !Send + !Sync
         // Функция требует Send, поэтому если тип не Send - код не скомпилируется
-        fn assert_not_send_sync<T: ?Sized>()
-        where
-            T: Send,
-        {
-        }
+        fn assert_not_send_sync<T: Send + ?Sized>() {}
 
         // Этот тест должен показать что Leaderboard требует внешней синхронизации
         // Закомментировано потому что Leaderboard намеренно не реализует Send
