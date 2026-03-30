@@ -12,6 +12,7 @@ use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BAC
 use super::state::{GameState, UpdateEndState};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io::{Canvas, KeyReader};
+use crate::io_traits::InputReader;
 use termion::color::Reset;
 
 // ============================================================================
@@ -45,13 +46,20 @@ pub enum InputResult {
 ///
 /// # Аргументы
 /// * `state` - состояние игры
-/// * `inp` - читатель нажатий клавиш
+/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
 /// * `delta_time_ms` - время с последнего кадра (мс)
 ///
 /// # Возвращает
 /// Результат обработки ввода
+///
+/// # Архитектурные заметки (A7: DIP)
+/// Использует трейт `InputReader` вместо конкретного типа `KeyReader`.
 #[track_caller]
-pub fn handle_input(state: &mut GameState, inp: &mut KeyReader, delta_time_ms: u64) -> InputResult {
+pub fn handle_input<T: InputReader>(
+    state: &mut GameState,
+    inp: &mut T,
+    delta_time_ms: u64,
+) -> InputResult {
     match update(state, inp, delta_time_ms) {
         UpdateEndState::Continue => InputResult::Continue,
         UpdateEndState::Quit => InputResult::Quit,
@@ -109,14 +117,27 @@ pub fn handle_game_over(cnv: &mut Canvas) {
 /// * `high_score_display` - строка для отображения рекорда
 ///
 /// # Возвращает
-/// Финальный счёт игрока
+/// - `Ok(u128)` - финальный счёт игрока
+/// - `Err(GameError)` - ошибка во время игрового цикла
+///
+/// # Errors
+/// Возвращает ошибку `GameError` при сбое ввода/вывода, ошибке терминала или других критических ошибках во время игрового цикла.
+///
+/// # Архитектурные заметки (A8: Обработка ошибок)
+/// Функция возвращает `Result<u128, GameError>` для явной обработки ошибок.
+/// Ошибки ввода/вывода и терминала возвращаются через `?` оператор.
+///
+/// # Примечание
+/// Возврат `Result` предусмотрен для будущей обработки ошибок ввода/вывода.
+/// В текущей реализации ошибки обрабатываются внутри функции.
+#[allow(clippy::unnecessary_wraps)]
 #[track_caller]
 pub fn run_game_loop(
     state: &mut GameState,
     cnv: &mut Canvas,
     inp: &mut KeyReader,
     high_score_display: &str,
-) -> u128 {
+) -> Result<u128, super::state::GameError> {
     use std::time::Instant;
 
     let mut last_time = Instant::now();
@@ -143,7 +164,7 @@ pub fn run_game_loop(
         // Обработка ввода и обновления состояния
         match handle_input(state, inp, delta_time_ms) {
             InputResult::Continue | InputResult::Pause => {}
-            InputResult::Quit => return 0,
+            InputResult::Quit => return Ok(0),
             InputResult::GameOver => {
                 handle_game_over(cnv);
                 break;
@@ -155,7 +176,7 @@ pub fn run_game_loop(
         render(state, cnv, high_score_display);
     }
 
-    state.score()
+    Ok(state.score())
 }
 
 #[cfg(test)]

@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 2.0
-**Дата:** 29 марта 2026 (обновлено)
-**Проект:** tetris-cli v23.96.20+
+**Версия:** 2.1
+**Дата:** 30 марта 2026 (архитектурные улучшения)
+**Проект:** tetris-cli v23.96.14+
 
 ---
 
@@ -18,7 +18,10 @@ tetris-cli/
 │   │   └── application.rs   # Application struct, игровой цикл
 │   ├── game/                # Игровая логика
 │   │   ├── mod.rs
-│   │   ├── state.rs         # GameState, GameStats, GameMode
+│   │   ├── state.rs         # GameState (фасад)
+│   │   ├── board.rs         # GameBoard (состояние поля)
+│   │   ├── scoreboard.rs    # ScoreBoard (очки и уровни)
+│   │   ├── stats.rs         # GameStats (статистика)
 │   │   ├── mode_trait.rs    # GameModeTrait
 │   │   ├── types.rs         # Типобезопасные обёртки (Score, Level, LinesCount)
 │   │   ├── view.rs          # GameView для отрисовки
@@ -32,7 +35,8 @@ tetris-cli/
 │   │   │   ├── physics.rs   # Физика и гравитация
 │   │   │   ├── collision.rs # Проверка коллизий
 │   │   │   ├── rotation.rs  # Вращение с wall kick
-│   │   │   └── update.rs    # Обновление состояния
+│   │   │   ├── update.rs    # Обновление состояния
+│   │   │   └── wall_kick.rs # Wall kick логика
 │   │   └── scoring/         # Система очков
 │   │       ├── mod.rs
 │   │       ├── lines.rs     # Поиск и удаление линий
@@ -48,7 +52,12 @@ tetris-cli/
 │   │   ├── leaderboard.rs
 │   │   ├── sanitize.rs
 │   │   └── save_data.rs
-│   ├── tetromino.rs         # Фигуры (7-bag система)
+│   ├── tetromino/           # Фигуры (7-bag система)
+│   │   ├── mod.rs
+│   │   ├── constants.rs     # SHAPE_COORDS, SHAPE_COLORS
+│   │   ├── shape_type.rs    # enum ShapeType
+│   │   ├── tetromino.rs     # struct Tetromino
+│   │   └── bag_generator.rs # struct BagGenerator
 │   ├── controls.rs          # Конфигурация управления
 │   ├── io.rs                # Ввод/вывод (Canvas, KeyReader)
 │   ├── io_traits.rs         # Трейты InputReader, Renderer
@@ -59,10 +68,10 @@ tetris-cli/
 │   │   ├── mod.rs
 │   │   ├── name.rs
 │   │   └── path.rs
-│   ├── terminal_backend.rs  # TerminalBackend трейт
-│   ├── types.rs             # Direction, RotationDirection
+│   ├── types.rs             # Direction, RotationDirection, Position
+│   ├── errors.rs            # GameError (thiserror)
 │   ├── constants.rs         # Глобальные константы
-│   └── tests/               # Интеграционные тесты (86 файлов)
+│   └── tests/               # Интеграционные тесты (67 файлов)
 ├── tests/                   # Integration tests
 │   └── test_architecture_integrity.rs
 ├── docs/

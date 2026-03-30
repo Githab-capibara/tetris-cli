@@ -192,8 +192,9 @@ fn test_edge_cases_create_1000_states() {
 /// Тест 18: Проверка создания 1000 Tetromino
 #[test]
 fn test_edge_cases_create_1000_tetromino() {
+    let mut bag = BagGenerator::new();
     for _ in 0..1000 {
-        let _t = Tetromino::select();
+        let _t = Tetromino::from_bag(&mut bag);
     }
     // Тест успешно завершён, если код достиг этой строки
 }
@@ -589,9 +590,10 @@ fn test_edge_cases_performance_get_stats_10k() {
 #[test]
 fn test_edge_cases_performance_select_100k() {
     let start = std::time::Instant::now();
+    let mut bag = BagGenerator::new();
 
     for _ in 0..100_000 {
-        let _t = Tetromino::select();
+        let _t = Tetromino::from_bag(&mut bag);
     }
 
     let duration = start.elapsed();

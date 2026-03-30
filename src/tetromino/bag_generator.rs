@@ -1,0 +1,169 @@
+//! Генератор фигур по системе 7-bag.
+//!
+//! Модуль определяет `BagGenerator` для гарантированного равномерного распределения фигур.
+
+use crate::tetromino::shape_type::ShapeType;
+use rand::Rng;
+
+/// Константный массив всех 7 типов фигур.
+/// Используется для инициализации мешка в `BagGenerator`.
+const ALL_SHAPES: [ShapeType; 7] = [
+    ShapeType::T,
+    ShapeType::L,
+    ShapeType::J,
+    ShapeType::S,
+    ShapeType::Z,
+    ShapeType::O,
+    ShapeType::I,
+];
+
+/// Генератор фигур по системе 7-bag.
+///
+/// Гарантирует, что каждые 7 фигур будут содержать все 7 типов.
+/// Использует алгоритм Fisher-Yates для перемешивания.
+///
+/// ## Как работает:
+/// 1. Создаётся "мешок" со всеми 7 типами фигур
+/// 2. Мешок перемешивается алгоритмом Fisher-Yates
+/// 3. Фигуры берутся из мешка по очереди
+/// 4. Когда мешок пуст, создаётся новый
+///
+/// ## Оптимизация:
+/// Используется фиксированный массив [`ShapeType`; 7] вместо Vec<ShapeType>
+/// для предотвращения аллокаций в куче и улучшения производительности.
+///
+/// ## Исправление #20
+/// rng удалён из структуры и создаётся локально при заполнении мешка
+/// для оптимизации использования памяти.
+#[derive(Clone)]
+pub struct BagGenerator {
+    /// Текущий мешок с фигурами.
+    bag: [ShapeType; 7],
+    /// Индекс текущей фигуры в мешке.
+    index: usize,
+}
+
+impl BagGenerator {
+    /// Создать новый генератор с пустым мешком.
+    pub fn new() -> Self {
+        let mut bag = Self {
+            bag: [ShapeType::T; 7], // Временная инициализация, заполнится в fill_bag()
+            index: 7, // Устанавливаем index=7, чтобы первый вызов next_shape() вызвал fill_bag()
+        };
+        bag.fill_bag(); // Заполняем мешок сразу при создании
+        bag
+    }
+
+    /// Заполнить мешок всеми 7 типами фигур и перемешать.
+    ///
+    /// Использует алгоритм Fisher-Yates для равномерного перемешивания:
+    /// 1. Создаётся массив со всеми 7 типами фигур
+    /// 2. Для каждой позиции i выбирается случайный индекс j от 0 до i
+    /// 3. Элементы на позициях i и j меняются местами
+    ///
+    /// Используется фиксированный массив вместо Vec
+    /// для предотвращения аллокаций в куче.
+    ///
+    /// rng создаётся локально для оптимизации памяти.
+    fn fill_bag(&mut self) {
+        // Заполнение фиксированного массива из константы
+        self.bag = ALL_SHAPES;
+
+        // Создаём rng локально для оптимизации использования памяти
+        let mut rng = rand::rng();
+
+        // Алгоритм Fisher-Yates для перемешивания
+        for i in (1..self.bag.len()).rev() {
+            // Генерируем случайный индекс от 0 до i
+            let j = rng.random_range(0..=i);
+            self.bag.swap(i, j);
+        }
+
+        self.index = 0;
+    }
+
+    /// Получить следующую фигуру из мешка.
+    ///
+    /// # Возвращает
+    /// Следующий тип фигуры из мешка
+    ///
+    /// # Примечания
+    /// - Если мешок пуст, автоматически заполняется новым набором
+    /// - Гарантирует равномерное распределение фигур
+    pub fn next_shape(&mut self) -> ShapeType {
+        // Если мешок пуст, заполняем новый
+        if self.index >= self.bag.len() {
+            self.fill_bag();
+        }
+
+        // Берём фигуру из мешка и увеличиваем индекс
+        let shape = self.bag[self.index];
+        self.index += 1;
+        shape
+    }
+
+    /// Получить текущий мешок фигур (для тестов).
+    #[cfg(test)]
+    #[must_use]
+    pub fn get_bag(&self) -> &[ShapeType; 7] {
+        &self.bag
+    }
+
+    /// Получить текущий индекс в мешке (для тестов).
+    #[cfg(test)]
+    #[must_use]
+    pub fn get_index(&self) -> usize {
+        self.index
+    }
+}
+
+impl Default for BagGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod bag_tests {
+    use super::*;
+
+    #[test]
+    fn test_bag_contains_all_shapes() {
+        let mut bag = BagGenerator::new();
+        bag.fill_bag();
+
+        assert_eq!(bag.get_bag().len(), 7, "Мешок должен содержать 7 фигур");
+        assert!(bag.get_bag().contains(&ShapeType::T));
+        assert!(bag.get_bag().contains(&ShapeType::L));
+        assert!(bag.get_bag().contains(&ShapeType::J));
+        assert!(bag.get_bag().contains(&ShapeType::S));
+        assert!(bag.get_bag().contains(&ShapeType::Z));
+        assert!(bag.get_bag().contains(&ShapeType::O));
+        assert!(bag.get_bag().contains(&ShapeType::I));
+    }
+
+    #[test]
+    fn test_bag_next_shape() {
+        let mut bag = BagGenerator::new();
+
+        // Получаем 7 фигур из мешка
+        for _ in 0..7 {
+            let shape = bag.next_shape();
+            // Все фигуры должны быть валидными
+            assert!((shape as usize) < 7);
+        }
+
+        // После 7 фигур индекс должен быть 7 (конец мешка)
+        // Следующий вызов next_shape() заполнит мешок заново и сбросит индекс в 0
+        assert_eq!(bag.get_index(), 7, "После 7 фигур индекс должен быть 7");
+
+        // Получаем ещё одну фигуру - мешок должен заполниться заново
+        let _ = bag.next_shape();
+        // Теперь индекс должен быть 1 (после первой фигуры нового мешка)
+        assert_eq!(
+            bag.get_index(),
+            1,
+            "После заполнения нового мешка индекс должен быть 1"
+        );
+    }
+}
