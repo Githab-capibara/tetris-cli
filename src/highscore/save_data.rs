@@ -128,11 +128,49 @@ impl SaveData {
     ///
     /// # Исправление #23
     /// Добавлена проверка размера файла перед загрузкой для защиты от атак через большие файлы.
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлена обработка ошибок с попыткой загрузки из backup файла.
     pub fn load_config() -> Self {
         Self::load_config_result().unwrap_or_else(|e| {
-            eprintln!("Предупреждение: {e}. Используется значение по умолчанию.");
-            Self::default()
+            eprintln!("Предупреждение: {e}. Попытка загрузки из backup...");
+            // Попытка загрузить из backup файла
+            match Self::load_backup_config() {
+                Ok(backup_data) => {
+                    eprintln!("Информация: успешно загружено из backup файла.");
+                    backup_data
+                }
+                Err(backup_e) => {
+                    eprintln!("Предупреждение: не удалось загрузить backup: {backup_e}. Используется значение по умолчанию.");
+                    Self::default()
+                }
+            }
         })
+    }
+
+    /// Загрузить конфигурацию из backup файла.
+    ///
+    /// # Возвращает
+    /// - `Ok(SaveData)` - успешно загруженные данные из backup
+    /// - `Err(String)` - ошибка загрузки
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлен метод для загрузки из backup файла.
+    fn load_backup_config() -> Result<Self, String> {
+        let data: Self = load::<Self>(APP_NAME, Some("config_backup"))
+            .map_err(|e| format!("Ошибка загрузки backup конфигурации: {e}"))?;
+
+        // Проверка целостности backup данных
+        match data.verify_and_get_score() {
+            Some(score) => {
+                if score > 0 {
+                    eprintln!("Информация: загружен backup рекорд со значением {score}");
+                }
+                Ok(data)
+            }
+            None if data.score != 0 => Err("Backup: обнаружена подделка рекорда".to_string()),
+            None => Err("Backup: рекорд не прошёл валидацию".to_string()),
+        }
     }
 
     /// Загрузить конфигурацию из файла с возвратом Result.
@@ -203,10 +241,19 @@ impl SaveData {
     /// # Ошибки
     /// При ошибке сохранения выводит сообщение в stderr
     /// Использует u128 для предотвращения переполнения.
+    ///
+    /// # Исправление #23 (MEDIUM SEVERITY)
+    /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
-        if let Err(e) = store(APP_NAME, Some("config"), save) {
-            eprintln!("Ошибка сохранения рекорда: {e}");
+        if let Err(e) = store(APP_NAME, Some("config"), save.clone()) {
+            eprintln!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
+            // Попытка сохранить в backup файл
+            if let Err(backup_e) = store(APP_NAME, Some("config_backup"), save) {
+                eprintln!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+            } else {
+                eprintln!("Информация: успешно сохранено в backup файл.");
+            }
         }
     }
 

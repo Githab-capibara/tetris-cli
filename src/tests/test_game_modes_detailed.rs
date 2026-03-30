@@ -467,7 +467,8 @@ fn test_sprint_mode_faster_win() {
     assert!(
         SPRINT_LINES < MARATHON_LINES,
         "Sprint должен быть короче Marathon ({} < {})",
-        SPRINT_LINES, MARATHON_LINES
+        SPRINT_LINES,
+        MARATHON_LINES
     );
 }
 

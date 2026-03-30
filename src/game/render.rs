@@ -137,9 +137,9 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
 /// Эта функция требует mutable доступ к `GameState`, поэтому не может
 /// использовать `GameView`. Вызывайте её перед созданием `GameView`.
 ///
-/// # Исправление #7: Оптимизация кэширования строк
-/// - Используется `truncate(0)` вместо `clear()` для предотвращения deallocation
-/// - Инициализация через `String::with_capacity(16)` для уменьшения аллокаций
+/// # Исправление #4 (LOW): Оптимизация кэширования строк
+/// - Используется `String::with_capacity(32)` в `RenderCache::new()` для предотвращения аллокаций
+/// - Используется `clear()` + `write!()` для переиспользования буфера без deallocation
 fn update_cached_strings(state: &mut GameState) {
     let score = state.score();
     let level = state.level();
@@ -147,7 +147,7 @@ fn update_cached_strings(state: &mut GameState) {
     let render_cache = state.get_render_cache_mut();
 
     if score != render_cache.last_cached_score {
-        render_cache.cached_score_str.truncate(0);
+        render_cache.cached_score_str.clear();
         if let Err(e) = write!(render_cache.cached_score_str, "{:10}", score) {
             eprintln!("Ошибка записи кэша счёта: {e}");
         }
@@ -155,7 +155,7 @@ fn update_cached_strings(state: &mut GameState) {
     }
 
     if level != render_cache.last_cached_level {
-        render_cache.cached_level_str.truncate(0);
+        render_cache.cached_level_str.clear();
         if let Err(e) = write!(render_cache.cached_level_str, "{:10}", level) {
             eprintln!("Ошибка записи кэша уровня: {e}");
         }
@@ -163,7 +163,7 @@ fn update_cached_strings(state: &mut GameState) {
     }
 
     if lines_cleared != render_cache.last_cached_lines {
-        render_cache.cached_lines_str.truncate(0);
+        render_cache.cached_lines_str.clear();
         if let Err(e) = write!(render_cache.cached_lines_str, "{:10}", lines_cleared) {
             eprintln!("Ошибка записи кэша линий: {e}");
         }
@@ -181,21 +181,18 @@ fn update_cached_strings(state: &mut GameState) {
 /// Эта функция требует mutable доступ к `GameState`, поэтому не может
 /// использовать `GameView`. Вызывайте её перед созданием `GameView`.
 ///
-/// # Исправление H1 (HIGH): Оптимизация аллокаций строк
-/// - Используется `truncate(0)` вместо `clear()` для предотвращения deallocation
-/// - Используется `push_str()` с `truncate(0)` вместо `.to_string()` для переиспользования буфера
+/// # Исправление #4 (LOW): Оптимизация кэширования строк
+/// - Используется `String::with_capacity(32)` в `RenderCache::new()` для предотвращения аллокаций
+/// - Используется `clear()` + `write!()` для переиспользования буфера без deallocation
 pub fn update_cached_strings_extended(state: &mut GameState, high_score_display: &str) {
     update_cached_strings(state);
 
     // Кэширование строки рекорда
     {
         let render_cache = state.get_render_cache_mut();
-        // Исправление H1: используем truncate(0) + push_str() вместо to_string()
-        // для переиспользования выделенного буфера без дополнительной аллокации
-        if render_cache.cached_high_score_str.len() != high_score_display.len()
-            || render_cache.cached_high_score_str != high_score_display
-        {
-            render_cache.cached_high_score_str.truncate(0);
+        // Исправление #4: используем clear() + push_str() для переиспользования буфера
+        if render_cache.cached_high_score_str != high_score_display {
+            render_cache.cached_high_score_str.clear();
             render_cache
                 .cached_high_score_str
                 .push_str(high_score_display);
@@ -207,8 +204,8 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     {
         let render_cache = state.get_render_cache_mut();
         if render_cache.last_cached_combo != combo_counter {
-            // Исправление H1: используем truncate(0) + push_str() для переиспользования буфера
-            render_cache.cached_combo_str.truncate(0);
+            // Исправление #4: используем clear() + write!() для переиспользования буфера
+            render_cache.cached_combo_str.clear();
             if combo_counter > 1 {
                 let _ = write!(render_cache.cached_combo_str, "Комбо: x{combo_counter}");
             }
@@ -221,9 +218,9 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
         let elapsed = state.get_stats().get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
         let render_cache = state.get_render_cache_mut();
-        // Исправление H1: используем truncate(0) + push_str() для переиспользования буфера
+        // Исправление #4: используем clear() + push_str() для переиспользования буфера
         if render_cache.cached_timer_str != timer_str {
-            render_cache.cached_timer_str.truncate(0);
+            render_cache.cached_timer_str.clear();
             render_cache.cached_timer_str.push_str(&timer_str);
         }
     }
@@ -276,7 +273,7 @@ fn draw_ghost_shape(view: &GameView, cnv: &mut Canvas) {
         cnv.draw_strs(
             &["░░"],
             (x as u16, y as u16),
-            SHAPE_COLORS[ghost_shape.fg],
+            SHAPE_COLORS[ghost_shape.fg as usize],
             &Reset,
         );
     }
@@ -350,7 +347,7 @@ fn draw_shape_preview(
             cnv.draw_strs(
                 &[display_char],
                 (x as u16, y as u16),
-                SHAPE_COLORS[shape.fg],
+                SHAPE_COLORS[shape.fg as usize],
                 &Reset,
             );
         }

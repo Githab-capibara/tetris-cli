@@ -10,6 +10,24 @@
 //! - `GameStats` перемещён в отдельный модуль [`super::stats`]
 //! - `RenderCache` перемещён в отдельный модуль [`super::cache`]
 //! - `GameState` использует композицию: содержит `stats: GameStats`, `cache: RenderCache`
+//!
+//! ## Исправление #12 (MEDIUM SEVERITY) - SOLID принципы
+//! Начато разделение GameState для соблюдения Single Responsibility Principle:
+//! - `GameBoard` (в процессе) - состояние поля (blocks, filled_lines)
+//! - `ScoreBoard` (в процессе) - состояние очков (score, level, lines_cleared)
+//! - `FigureManager` (в процессе) - состояние фигур (curr_shape, next_shape, held_shape, bag)
+//! - `AnimationState` (в процессе) - состояние анимаций (animating_rows_mask, is_hard_dropping)
+//!
+//! ### Выполнено:
+//! - ✅ `GameStats` вынесен в отдельный модуль `game/stats.rs`
+//! - ✅ `RenderCache` вынесен в отдельный модуль `game/cache.rs`
+//! - ✅ GameState использует композицию вместо наследования
+//!
+//! ### В процессе (TODO):
+//! - ⏳ Выделить `GameBoard` - инкапсуляция состояния поля
+//! - ⏳ Выделить `ScoreBoard` - инкапсуляция состояния очков
+//! - ⏳ Выделить `FigureManager` - управление фигурами
+//! - ⏳ Выделить `AnimationState` - управление анимациями
 
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};

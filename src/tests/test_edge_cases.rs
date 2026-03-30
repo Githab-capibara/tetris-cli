@@ -50,7 +50,7 @@ fn test_edge_cases_held_shape_none() {
 fn test_edge_cases_start_time_none() {
     let state = GameState::new();
     let game_stats = state.get_stats();
-    assert!(game_stats.start_time.is_none());
+    assert!(game_stats.start_time().is_none());
 }
 
 /// Тест: Проверка что `end_time` None при создании
@@ -58,7 +58,7 @@ fn test_edge_cases_start_time_none() {
 fn test_edge_cases_end_time_none() {
     let state = GameState::new();
     let game_stats = state.get_stats();
-    assert!(game_stats.end_time.is_none());
+    assert!(game_stats.end_time().is_none());
 }
 
 /// Тест: Проверка что `combo_counter` 0 при создании
@@ -66,7 +66,7 @@ fn test_edge_cases_end_time_none() {
 fn test_edge_cases_combo_counter_zero() {
     let state = GameState::new();
     let game_stats = state.get_stats();
-    assert_eq!(game_stats.combo_counter, 0);
+    assert_eq!(game_stats.combo_counter(), 0);
 }
 
 /// Тест: Проверка что `max_combo` 0 при создании
@@ -74,7 +74,7 @@ fn test_edge_cases_combo_counter_zero() {
 fn test_edge_cases_max_combo_zero() {
     let state = GameState::new();
     let game_stats = state.get_stats();
-    assert_eq!(game_stats.max_combo, 0);
+    assert_eq!(game_stats.max_combo(), 0);
 }
 
 /// Тест: Проверка что `total_lines` 0 при создании

@@ -150,7 +150,7 @@ impl PathValidator {
     /// 2. Проверка на path traversal (..)
     /// 3. Проверка длины
     /// 4. Проверка символов
-    /// 5. Проверка на symlink
+    /// 5. Проверка на symlink (ПЕРЕД canonicalize)
     /// 6. Canonicalize пути для защиты от обхода через symlink
     /// 7. Проверка нахождения внутри директории
     ///
@@ -171,6 +171,9 @@ impl PathValidator {
     /// # Исправление H7 (HIGH)
     /// Кэширует результат canonicalize для предотвращения повторных вызовов.
     ///
+    /// # Исправление H9 (HIGH)
+    /// Проверка symlink выполняется ПЕРЕД canonicalize() через symlink_metadata().
+    ///
     /// # Исправление M4 (MEDIUM)
     /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
     #[must_use = "Результат валидации пути должен быть обработан"]
@@ -187,11 +190,15 @@ impl PathValidator {
         self.validate_not_absolute(full_path)?;
 
         // Исправление #5: проверка на path traversal ПЕРЕД canonicalize
-        // Это даёт понятное сообщение об ошибке для пользователя
+        // Это даёт понятное сообщение об ошиббе для пользователя
         self.validate_no_traversal(path)?;
 
         self.validate_length(full_path)?;
         self.validate_characters(full_path)?;
+
+        // Исправление H9 (HIGH): проверка symlink ПЕРЕД canonicalize()
+        // Используем symlink_metadata() который не следует по symlink
+        self.validate_no_symlinks(&joined_path)?;
 
         // Исправление H7: кэшируем результат canonicalize
         // Выполняем canonicalize один раз и используем результат многократно
@@ -209,10 +216,6 @@ impl PathValidator {
                 .unwrap_or_else(|| current_dir.to_path_buf())
                 .join(joined_path.file_name().unwrap_or_default())
         };
-
-        // Проверка на symlink после canonicalize
-        // Используем кэшированный canonical_path для проверки
-        self.validate_no_symlinks(&joined_path)?;
 
         // Проверка что путь находится внутри разрешённой директории
         // Исправление H7: используем кэшированный canonical_path
@@ -323,17 +326,29 @@ impl PathValidator {
     ///
     /// # Исправление M4 (MEDIUM)
     /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    ///
+    /// # Исправление H9 (HIGH)
+    /// Используется symlink_metadata() ПЕРЕД canonicalize() для защиты от symlink атак.
+    /// Проверка выполняется без следования по symlink.
     #[must_use = "Результат проверки symlink должен быть обработан"]
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[track_caller]
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
-        if let Ok(metadata) = std::fs::symlink_metadata(path) {
-            if metadata.file_type().is_symlink() {
-                return Err(PathError {
-                    message: format!("Символические ссылки не разрешены: {}", path.display()),
-                    kind: PathErrorKind::Symlink,
-                });
+        // Исправление H9 (HIGH): проверяем symlink через symlink_metadata() ПЕРЕД canonicalize()
+        // symlink_metadata() не следует по symlink, в отличие от metadata()
+        match std::fs::symlink_metadata(path) {
+            Ok(metadata) => {
+                if metadata.file_type().is_symlink() {
+                    return Err(PathError {
+                        message: format!("Символические ссылки не разрешены: {}", path.display()),
+                        kind: PathErrorKind::Symlink,
+                    });
+                }
+            }
+            Err(_) => {
+                // Файл не существует - это нормально, проверка symlink не применима
+                // Файл будет проверен при попытке открытия с O_NOFOLLOW
             }
         }
         Ok(())

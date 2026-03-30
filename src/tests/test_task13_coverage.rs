@@ -397,10 +397,10 @@ fn test_game_board_access_land_timer() {
 #[test]
 fn test_find_filled_lines_empty_field() {
     let blocks = [[-1i8; GRID_WIDTH]; GRID_HEIGHT];
-    let filled = find_filled_lines(&blocks);
+    let (_, filled_count) = find_filled_lines(&blocks);
 
-    assert!(
-        filled.is_empty(),
+    assert_eq!(
+        filled_count, 0,
         "На пустом поле не должно быть заполненных линий"
     );
 }
@@ -415,10 +415,14 @@ fn test_find_filled_lines_single_line() {
         *block = 1;
     }
 
-    let filled = find_filled_lines(&blocks);
+    let (filled_mask, filled_count) = find_filled_lines(&blocks);
 
-    assert_eq!(filled.len(), 1, "Должна быть найдена 1 заполненная линия");
-    assert_eq!(filled[0], 10, "Заполненная линия должна быть на индексе 10");
+    assert_eq!(filled_count, 1, "Должна быть найдена 1 заполненная линия");
+    assert_ne!(
+        filled_mask & (1 << 10),
+        0,
+        "Заполненная линия должна быть на индексе 10"
+    );
 }
 
 /// Тест 21: Проверка поиска с несколькими заполненными линиями
@@ -433,12 +437,12 @@ fn test_find_filled_lines_multiple_lines() {
         }
     }
 
-    let filled = find_filled_lines(&blocks);
+    let (filled_mask, filled_count) = find_filled_lines(&blocks);
 
-    assert_eq!(filled.len(), 3, "Должно быть найдено 3 заполненные линии");
-    assert!(filled.contains(&5), "Должна быть найдена линия 5");
-    assert!(filled.contains(&10), "Должна быть найдена линия 10");
-    assert!(filled.contains(&15), "Должна быть найдена линия 15");
+    assert_eq!(filled_count, 3, "Должно быть найдено 3 заполненные линии");
+    assert_ne!(filled_mask & (1 << 5), 0, "Должна быть найдена линия 5");
+    assert_ne!(filled_mask & (1 << 10), 0, "Должна быть найдена линия 10");
+    assert_ne!(filled_mask & (1 << 15), 0, "Должна быть найдена линия 15");
 }
 
 /// Тест 22: Проверка поиска с полностью заполненным полем
@@ -453,9 +457,12 @@ fn test_find_filled_lines_full_field() {
         }
     }
 
-    let filled = find_filled_lines(&blocks);
+    let (_, filled_count) = find_filled_lines(&blocks);
 
-    assert_eq!(filled.len(), GRID_HEIGHT, "Должны быть найдены все линии");
+    assert_eq!(
+        filled_count, GRID_HEIGHT as u32,
+        "Должны быть найдены все линии"
+    );
 }
 
 /// Тест 23: Проверка поиска с частично заполненной линией
@@ -468,10 +475,10 @@ fn test_find_filled_lines_partial_line() {
         *block = 1;
     }
 
-    let filled = find_filled_lines(&blocks);
+    let (_, filled_count) = find_filled_lines(&blocks);
 
-    assert!(
-        filled.is_empty(),
+    assert_eq!(
+        filled_count, 0,
         "Частично заполненная линия не должна считаться заполненной"
     );
 }
@@ -486,10 +493,14 @@ fn test_find_filled_lines_different_block_values() {
         *block = (x % 7) as i8; // Значения 0-6
     }
 
-    let filled = find_filled_lines(&blocks);
+    let (filled_mask, filled_count) = find_filled_lines(&blocks);
 
-    assert_eq!(filled.len(), 1, "Должна быть найдена 1 заполненная линия");
-    assert_eq!(filled[0], 7, "Заполненная линия должна быть на индексе 7");
+    assert_eq!(filled_count, 1, "Должна быть найдена 1 заполненная линия");
+    assert_ne!(
+        filled_mask & (1 << 7),
+        0,
+        "Заполненная линия должна быть на индексе 7"
+    );
 }
 
 // ============================================================================

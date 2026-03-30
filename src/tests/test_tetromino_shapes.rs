@@ -472,7 +472,7 @@ fn test_all_pieces_spawn_at_center() {
             pos: (4.0, 0.0),
             shape: *shape,
             coords: SHAPE_COORDS[*shape as usize],
-            fg: *shape as usize,
+            fg: *shape as u8,
         };
 
         assert!(

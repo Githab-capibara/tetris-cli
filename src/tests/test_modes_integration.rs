@@ -277,8 +277,11 @@ fn test_modes_integration_stats_in_classic() {
     let stats = state.get_stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo, 0, "Комбо должно быть 0");
-    assert!(stats.start_time.is_none(), "Таймер не должен быть запущен");
+    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
+    assert!(
+        stats.start_time().is_none(),
+        "Таймер не должен быть запущен"
+    );
 }
 
 /// Тест 12: Проверка что статистика собирается в Sprint режиме
@@ -290,9 +293,9 @@ fn test_modes_integration_stats_in_sprint() {
     let stats = state.get_stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo, 0, "Комбо должно быть 0");
+    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
     assert!(
-        stats.start_time.is_some(),
+        stats.start_time().is_some(),
         "Таймер должен быть запущен для режима Sprint"
     );
 }
@@ -306,9 +309,9 @@ fn test_modes_integration_stats_in_marathon() {
     let stats = state.get_stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo, 0, "Комбо должно быть 0");
+    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
     assert!(
-        stats.start_time.is_some(),
+        stats.start_time().is_some(),
         "Таймер должен быть запущен для режима Marathon"
     );
 }

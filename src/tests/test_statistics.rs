@@ -16,60 +16,60 @@ use crate::tetromino::ShapeType;
 #[test]
 fn test_statistics_game_stats_creation() {
     let stats = GameStats::new();
-    assert_eq!(stats.t_pieces, 0);
-    assert_eq!(stats.l_pieces, 0);
-    assert_eq!(stats.j_pieces, 0);
-    assert_eq!(stats.s_pieces, 0);
-    assert_eq!(stats.z_pieces, 0);
-    assert_eq!(stats.o_pieces, 0);
-    assert_eq!(stats.i_pieces, 0);
+    assert_eq!(stats.t_pieces(), 0);
+    assert_eq!(stats.l_pieces(), 0);
+    assert_eq!(stats.j_pieces(), 0);
+    assert_eq!(stats.s_pieces(), 0);
+    assert_eq!(stats.z_pieces(), 0);
+    assert_eq!(stats.o_pieces(), 0);
+    assert_eq!(stats.i_pieces(), 0);
 }
 
 /// Тест: Проверка что `max_combo` равен 0 при создании
 #[test]
 fn test_statistics_max_combo_zero() {
     let stats = GameStats::new();
-    assert_eq!(stats.max_combo, 0);
+    assert_eq!(stats.max_combo(), 0);
 }
 
 /// Тест: Проверка что `combo_counter` равен 0 при создании
 #[test]
 fn test_statistics_combo_counter_zero() {
     let stats = GameStats::new();
-    assert_eq!(stats.combo_counter, 0);
+    assert_eq!(stats.combo_counter(), 0);
 }
 
 /// Тест: Проверка что `start_time` равен None при создании
 #[test]
 fn test_statistics_start_time_none() {
     let stats = GameStats::new();
-    assert!(stats.start_time.is_none());
+    assert!(stats.start_time().is_none());
 }
 
 /// Тест: Проверка что `end_time` равен None при создании
 #[test]
 fn test_statistics_end_time_none() {
     let stats = GameStats::new();
-    assert!(stats.end_time.is_none());
+    assert!(stats.end_time().is_none());
 }
 
 /// Тест: Проверка Clone для `GameStats`
 #[test]
 fn test_statistics_clone() {
     let mut original = GameStats::new();
-    original.t_pieces = 5;
-    original.l_pieces = 3;
+    original.set_t_pieces(5);
+    original.set_l_pieces(3);
 
     let cloned = original.clone();
-    assert_eq!(cloned.t_pieces, 5);
-    assert_eq!(cloned.l_pieces, 3);
+    assert_eq!(cloned.t_pieces(), 5);
+    assert_eq!(cloned.l_pieces(), 3);
 }
 
 /// Тест: Проверка Default для `GameStats`
 #[test]
 fn test_statistics_default() {
     let stats = GameStats::default();
-    assert_eq!(stats.t_pieces, 0);
+    assert_eq!(stats.t_pieces(), 0);
 }
 
 /// Тест: Проверка `add_piece` для T
@@ -77,7 +77,7 @@ fn test_statistics_default() {
 fn test_statistics_add_t_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::T);
-    assert_eq!(stats.t_pieces, 1);
+    assert_eq!(stats.t_pieces(), 1);
 }
 
 /// Тест: Проверка `add_piece` для L
@@ -85,7 +85,7 @@ fn test_statistics_add_t_piece() {
 fn test_statistics_add_l_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::L);
-    assert_eq!(stats.l_pieces, 1);
+    assert_eq!(stats.l_pieces(), 1);
 }
 
 /// Тест: Проверка `add_piece` для J
@@ -93,7 +93,7 @@ fn test_statistics_add_l_piece() {
 fn test_statistics_add_j_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::J);
-    assert_eq!(stats.j_pieces, 1);
+    assert_eq!(stats.j_pieces(), 1);
 }
 
 /// Тест: Проверка `add_piece` для S
@@ -101,7 +101,7 @@ fn test_statistics_add_j_piece() {
 fn test_statistics_add_s_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::S);
-    assert_eq!(stats.s_pieces, 1);
+    assert_eq!(stats.s_pieces(), 1);
 }
 
 /// Тест: Проверка `add_piece` для Z
@@ -109,7 +109,7 @@ fn test_statistics_add_s_piece() {
 fn test_statistics_add_z_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::Z);
-    assert_eq!(stats.z_pieces, 1);
+    assert_eq!(stats.z_pieces(), 1);
 }
 
 // ============================================================================
@@ -121,7 +121,7 @@ fn test_statistics_add_z_piece() {
 fn test_statistics_add_o_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::O);
-    assert_eq!(stats.o_pieces, 1);
+    assert_eq!(stats.o_pieces(), 1);
 }
 
 /// Тест: Проверка `add_piece` для I
@@ -129,7 +129,7 @@ fn test_statistics_add_o_piece() {
 fn test_statistics_add_i_piece() {
     let mut stats = GameStats::new();
     stats.add_piece(ShapeType::I);
-    assert_eq!(stats.i_pieces, 1);
+    assert_eq!(stats.i_pieces(), 1);
 }
 
 /// Тест: Проверка `total_pieces` с одной фигурой
@@ -187,7 +187,7 @@ fn test_statistics_add_piece_increments() {
     stats.add_piece(ShapeType::T);
     stats.add_piece(ShapeType::T);
 
-    assert_eq!(stats.t_pieces, 3);
+    assert_eq!(stats.t_pieces(), 3);
 }
 
 /// Тест: Проверка что `add_piece` не изменяет другие счётчики
@@ -197,9 +197,9 @@ fn test_statistics_add_piece_does_not_affect_others() {
 
     stats.add_piece(ShapeType::T);
 
-    assert_eq!(stats.l_pieces, 0);
-    assert_eq!(stats.j_pieces, 0);
-    assert_eq!(stats.s_pieces, 0);
+    assert_eq!(stats.l_pieces(), 0);
+    assert_eq!(stats.j_pieces(), 0);
+    assert_eq!(stats.s_pieces(), 0);
 }
 
 /// Тест: Проверка `total_pieces` после множественных добавлений
@@ -211,7 +211,7 @@ fn test_statistics_total_pieces_after_many_adds() {
         stats.add_piece(ShapeType::T);
     }
 
-    assert_eq!(stats.t_pieces, 100);
+    assert_eq!(stats.t_pieces(), 100);
     assert_eq!(stats.total_pieces(), 100);
 }
 
@@ -226,9 +226,9 @@ fn test_statistics_total_pieces_sum() {
     stats.add_piece(ShapeType::L);
     stats.add_piece(ShapeType::I);
 
-    assert_eq!(stats.t_pieces, 2);
-    assert_eq!(stats.l_pieces, 2);
-    assert_eq!(stats.i_pieces, 1);
+    assert_eq!(stats.t_pieces(), 2);
+    assert_eq!(stats.l_pieces(), 2);
+    assert_eq!(stats.i_pieces(), 1);
     assert_eq!(stats.total_pieces(), 5);
 }
 
@@ -241,7 +241,7 @@ fn test_statistics_total_pieces_sum() {
 fn test_statistics_update_max_combo_one() {
     let mut stats = GameStats::new();
     stats.update_max_combo(1);
-    assert_eq!(stats.max_combo, 1);
+    assert_eq!(stats.max_combo(), 1);
 }
 
 /// Тест: Проверка `update_max_combo` с 4 линиями
@@ -249,7 +249,7 @@ fn test_statistics_update_max_combo_one() {
 fn test_statistics_update_max_combo_four() {
     let mut stats = GameStats::new();
     stats.update_max_combo(4);
-    assert_eq!(stats.max_combo, 4);
+    assert_eq!(stats.max_combo(), 4);
 }
 
 /// Тест: Проверка `update_max_combo` сохраняет максимум
@@ -260,7 +260,7 @@ fn test_statistics_update_max_combo_keeps_max() {
     stats.update_max_combo(2);
     stats.update_max_combo(1); // Не должно изменить max_combo
 
-    assert_eq!(stats.max_combo, 2);
+    assert_eq!(stats.max_combo(), 2);
 }
 
 /// Тест: Проверка `start_timer` и `get_elapsed_time`

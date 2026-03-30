@@ -6,6 +6,10 @@
 //! - find_full_rows() - поиск заполненных линий
 //! - rotate() - вращение фигур
 //! - save_tetromino() - сохранение фигуры в поле
+//! - collision detection - проверка столкновений
+//! - wall kick - вращение со смещением
+//! - sanitize_player_name - валидация имён
+//! - string caching - кэширование строк отрисовки
 //!
 //! ## Примечание
 //! Бенчмарки доступны только при включённой фиче `bench`.
@@ -27,11 +31,18 @@
 //! - Время выполнения указано в наносекундах (ns) или миллисекундах (ms)
 //! - "Performance has regressed" означает ухудшение производительности
 //! - "Performance has improved" означает улучшение производительности
+//!
+//! ## Исправление #21 (LOW)
+//! Расширенные бенчмарки для проверки оптимизаций:
+//! - find_filled_lines с битовой маской
+//! - sanitize_player_name с whitelist
+//! - check_block_collision с inline
 
 use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::GameState;
 use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
 use tetris_cli::types::Direction;
+use tetris_cli::validation::sanitize_player_name;
 
 /// Главная функция для запуска бенчмарков.
 ///
@@ -46,6 +57,8 @@ fn main() {
     bench_save_tetromino(&mut c);
     bench_collision_detection(&mut c);
     bench_wall_kick(&mut c);
+    bench_sanitize_player_name(&mut c);
+    bench_string_caching(&mut c);
 }
 
 /// Бенчмарк для find_full_rows().
@@ -272,6 +285,96 @@ fn bench_wall_kick(c: &mut Criterion) {
         b.iter(|| {
             let mut state = GameState::new();
             black_box(state.rotate_with_wall_kick(RotationDirection::CounterClockwise));
+        });
+    });
+
+    group.finish();
+}
+
+/// Бенчмарк для sanitize_player_name().
+///
+/// Проверяет производительность санитаризации имён игроков.
+///
+/// # Исправление #21 (LOW)
+/// Новый бенчмарк для проверки оптимизации whitelist подхода.
+fn bench_sanitize_player_name(c: &mut Criterion) {
+    let mut group = c.benchmark_group("sanitize_player_name");
+
+    // Пустое имя
+    group.bench_function("empty_name", |b| {
+        b.iter(|| black_box(sanitize_player_name("")));
+    });
+
+    // Короткое валидное имя
+    group.bench_function("short_valid_name", |b| {
+        b.iter(|| black_box(sanitize_player_name("Player")));
+    });
+
+    // Длинное имя с обрезкой
+    group.bench_function("long_name_truncated", |b| {
+        b.iter(|| black_box(sanitize_player_name("VeryLongPlayerNameThatExceedsLimit")));
+    });
+
+    // Имя с невалидными символами
+    group.bench_function("name_with_invalid_chars", |b| {
+        b.iter(|| black_box(sanitize_player_name("Player@#$$Name!")));
+    });
+
+    // Русское имя
+    group.bench_function("cyrillic_name", |b| {
+        b.iter(|| black_box(sanitize_player_name("Игрок123")));
+    });
+
+    // Смешанное имя (ASCII + Cyrillic)
+    group.bench_function("mixed_name", |b| {
+        b.iter(|| black_box(sanitize_player_name("Player1Игрок2")));
+    });
+
+    group.finish();
+}
+
+/// Бенчмарк для кэширования строк.
+///
+/// Проверяет производительность кэширования строк отрисовки.
+///
+/// # Исправление #21 (LOW)
+/// Новый бенчмарк для проверки оптимизации с String::with_capacity(32).
+fn bench_string_caching(c: &mut Criterion) {
+    let mut group = c.benchmark_group("string_caching");
+
+    // Кэширование счёта
+    group.bench_function("cache_score", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            state.set_score(12345);
+            black_box(state);
+        });
+    });
+
+    // Кэширование уровня
+    group.bench_function("cache_level", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            state.set_level(15);
+            black_box(state);
+        });
+    });
+
+    // Кэширование линий
+    group.bench_function("cache_lines", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            state.set_lines_cleared(150);
+            black_box(state);
+        });
+    });
+
+    // Кэширование комбо
+    group.bench_function("cache_combo", |b| {
+        b.iter(|| {
+            let mut state = GameState::new();
+            state.get_stats_mut().set_combo_counter(10);
+            black_box(state);
         });
     });
 

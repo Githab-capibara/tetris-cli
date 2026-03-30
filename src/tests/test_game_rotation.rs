@@ -1005,7 +1005,7 @@ fn test_all_pieces_special_rotation() {
             pos: (4.0, 5.0),
             shape: *shape,
             coords: SHAPE_COORDS[*shape as usize],
-            fg: *shape as usize,
+            fg: *shape as u8,
         };
 
         let original_coords = t.coords;

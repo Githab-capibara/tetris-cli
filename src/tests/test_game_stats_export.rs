@@ -15,7 +15,8 @@ fn test_game_stats_export_available() {
 
     // Проверяем, что структура создана корректно
     assert_eq!(
-        stats.t_pieces, 0,
+        stats.t_pieces(),
+        0,
         "Начальное количество T фигур должно быть 0"
     );
     assert_eq!(
@@ -33,12 +34,13 @@ fn test_game_stats_t_pieces_field() {
     let mut stats = GameStats::new();
 
     // Проверяем начальное значение
-    assert_eq!(stats.t_pieces, 0, "Начальное t_pieces должно быть 0");
+    assert_eq!(stats.t_pieces(), 0, "Начальное t_pieces должно быть 0");
 
     // Добавляем T-фигуру
     stats.add_piece(ShapeType::T);
     assert_eq!(
-        stats.t_pieces, 1,
+        stats.t_pieces(),
+        1,
         "После добавления T t_pieces должно быть 1"
     );
 
@@ -46,7 +48,8 @@ fn test_game_stats_t_pieces_field() {
     stats.add_piece(ShapeType::T);
     stats.add_piece(ShapeType::T);
     assert_eq!(
-        stats.t_pieces, 3,
+        stats.t_pieces(),
+        3,
         "После добавления 3 T t_pieces должно быть 3"
     );
 }
@@ -58,11 +61,12 @@ fn test_game_stats_t_pieces_field() {
 fn test_game_stats_i_pieces_field() {
     let mut stats = GameStats::new();
 
-    assert_eq!(stats.i_pieces, 0, "Начальное i_pieces должно быть 0");
+    assert_eq!(stats.i_pieces(), 0, "Начальное i_pieces должно быть 0");
 
     stats.add_piece(ShapeType::I);
     assert_eq!(
-        stats.i_pieces, 1,
+        stats.i_pieces(),
+        1,
         "После добавления I i_pieces должно быть 1"
     );
 
@@ -71,7 +75,8 @@ fn test_game_stats_i_pieces_field() {
         stats.add_piece(ShapeType::I);
     }
     assert_eq!(
-        stats.i_pieces, 4,
+        stats.i_pieces(),
+        4,
         "После добавления 4 I i_pieces должно быть 4"
     );
 }
@@ -83,24 +88,26 @@ fn test_game_stats_i_pieces_field() {
 fn test_game_stats_max_combo_field() {
     let mut stats = GameStats::new();
 
-    assert_eq!(stats.max_combo, 0, "Начальное max_combo должно быть 0");
+    assert_eq!(stats.max_combo(), 0, "Начальное max_combo должно быть 0");
 
     // Обновляем максимальное комбо
     stats.update_max_combo(1);
     assert_eq!(
-        stats.max_combo, 1,
+        stats.max_combo(),
+        1,
         "После update_max_combo(1) max_combo должно быть 1"
     );
 
     stats.update_max_combo(4);
     assert_eq!(
-        stats.max_combo, 4,
+        stats.max_combo(),
+        4,
         "После update_max_combo(4) max_combo должно быть 4"
     );
 
     // Меньшее значение не должно обновлять max_combo
     stats.update_max_combo(2);
-    assert_eq!(stats.max_combo, 4, "max_combo не должно уменьшаться");
+    assert_eq!(stats.max_combo(), 4, "max_combo не должно уменьшаться");
 }
 
 /// Тест 5: Проверка поля combo_counter
@@ -111,28 +118,38 @@ fn test_game_stats_combo_counter_field() {
     let mut stats = GameStats::new();
 
     assert_eq!(
-        stats.combo_counter, 0,
+        stats.combo_counter(),
+        0,
         "Начальное combo_counter должно быть 0"
     );
 
     // Увеличиваем комбо
-    stats.combo_counter += 1;
+    stats.set_combo_counter(stats.combo_counter() + 1);
     assert_eq!(
-        stats.combo_counter, 1,
+        stats.combo_counter(),
+        1,
         "После инкремента combo_counter должно быть 1"
     );
 
-    stats.combo_counter += 1;
-    stats.combo_counter += 1;
+    stats.set_combo_counter(stats.combo_counter() + 1);
     assert_eq!(
-        stats.combo_counter, 3,
+        stats.combo_counter(),
+        2,
+        "После 2 инкрементов combo_counter должно быть 2"
+    );
+
+    stats.set_combo_counter(stats.combo_counter() + 1);
+    assert_eq!(
+        stats.combo_counter(),
+        3,
         "После 3 инкрементов combo_counter должно быть 3"
     );
 
     // Сброс комбо
-    stats.combo_counter = 0;
+    stats.set_combo_counter(0);
     assert_eq!(
-        stats.combo_counter, 0,
+        stats.combo_counter(),
+        0,
         "После сброса combo_counter должно быть 0"
     );
 }
@@ -180,21 +197,24 @@ fn test_game_stats_timer_fields() {
 
     // Проверяем начальное состояние
     assert!(
-        stats.start_time.is_none(),
+        stats.start_time().is_none(),
         "start_time должен быть None до старта"
     );
     assert!(
-        stats.end_time.is_none(),
+        stats.end_time().is_none(),
         "end_time должен быть None до остановки"
     );
 
     // Запускаем таймер
     stats.start_timer();
     assert!(
-        stats.start_time.is_some(),
+        stats.start_time().is_some(),
         "start_time должен быть Some после старта"
     );
-    assert!(stats.end_time.is_none(), "end_time должен оставаться None");
+    assert!(
+        stats.end_time().is_none(),
+        "end_time должен оставаться None"
+    );
 
     // Получаем elapsed time (должно работать)
     let elapsed = stats.get_elapsed_time();
@@ -210,26 +230,30 @@ fn test_game_stats_clone() {
     stats.add_piece(ShapeType::T);
     stats.add_piece(ShapeType::I);
     stats.update_max_combo(4);
-    stats.combo_counter = 2;
+    stats.set_combo_counter(2);
 
     // Клонируем статистику
     let stats_clone = stats.clone();
 
     // Проверяем, что клон корректен
     assert_eq!(
-        stats_clone.t_pieces, stats.t_pieces,
+        stats_clone.t_pieces(),
+        stats.t_pieces(),
         "t_pieces должны совпадать"
     );
     assert_eq!(
-        stats_clone.i_pieces, stats.i_pieces,
+        stats_clone.i_pieces(),
+        stats.i_pieces(),
         "i_pieces должны совпадать"
     );
     assert_eq!(
-        stats_clone.max_combo, stats.max_combo,
+        stats_clone.max_combo(),
+        stats.max_combo(),
         "max_combo должны совпадать"
     );
     assert_eq!(
-        stats_clone.combo_counter, stats.combo_counter,
+        stats_clone.combo_counter(),
+        stats.combo_counter(),
         "combo_counter должны совпадать"
     );
 }
