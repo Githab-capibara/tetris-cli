@@ -100,13 +100,19 @@ pub trait BoardMutable: BoardReadonly {
     fn get_fall_speed(&self) -> f32;
 
     /// Установить скорость падения.
-    fn set_fall_speed(&mut self, spd: f32);
+    ///
+    /// # Errors
+    /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
+    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::game::state::GameError>;
 
     /// Получить таймер приземления.
     fn get_land_timer(&self) -> f64;
 
     /// Установить таймер приземления.
-    fn set_land_timer(&mut self, timer: f64);
+    ///
+    /// # Errors
+    /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
+    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::game::state::GameError>;
 
     /// Получить количество заполненных линий.
     fn get_filled_lines(&self) -> u32;
@@ -217,16 +223,16 @@ impl BoardMutable for crate::game::state::GameState {
         self.fall_speed()
     }
 
-    fn set_fall_speed(&mut self, spd: f32) {
-        self.set_fall_speed(spd);
+    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::game::state::GameError> {
+        self.set_fall_speed(spd)
     }
 
     fn get_land_timer(&self) -> f64 {
         self.land_timer()
     }
 
-    fn set_land_timer(&mut self, timer: f64) {
-        self.set_land_timer(timer);
+    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::game::state::GameError> {
+        self.set_land_timer(timer)
     }
 
     fn get_filled_lines(&self) -> u32 {

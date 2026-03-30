@@ -293,6 +293,7 @@ impl ControlsConfig {
             .map_err(|e| io::Error::other(e.to_string()))?;
 
         // Используем O_NOFOLLOW для защиты от symlink атак при записи
+        // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -364,6 +365,7 @@ impl ControlsConfig {
 
         // Исправление #12: используем O_NOFOLLOW для защиты от race condition
         // между проверкой symlink и открытием файла
+        // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
         let mut file = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_NOFOLLOW)

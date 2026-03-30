@@ -496,9 +496,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`score()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -512,9 +509,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`level()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -528,9 +522,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`lines_cleared()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -687,9 +678,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`curr_shape()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -703,9 +691,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`next_shape()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -719,9 +704,6 @@ impl GameState {
     ///
     /// # Устарело
     /// Используйте [`held_shape()`] вместо этого.
-    ///
-    /// # Планируется к удалению
-    /// Будет удалён в версии 24.x.x после завершения миграции на новые методы.
     #[must_use]
     #[deprecated(
         since = "23.96.14",
@@ -831,39 +813,53 @@ impl GameState {
     ///
     /// Скорость ограничена диапазоном от [`INITIAL_FALL_SPD`] до [`MAX_FALL_SPEED`].
     ///
+    /// # Возвращает
+    /// - `Ok(())` если значение установлено успешно
+    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity)
+    ///
+    /// # Errors
+    /// Возвращает [`GameError::Validation`] если значение является NaN или Infinity.
+    ///
     /// # Валидация (H3)
-    /// Проверяет значение на NaN и Infinity. Неверные значения игнорируются.
-    pub fn set_fall_speed(&mut self, value: f32) {
+    /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
+    pub fn set_fall_speed(&mut self, value: f32) -> Result<(), GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
 
         // Валидация на NaN и Infinity (H3)
         if value.is_nan() || value.is_infinite() {
-            eprintln!(
-                "[ERROR] Неверная скорость падения: {} (NaN/Infinity)",
+            return Err(GameError::Validation(format!(
+                "Неверная скорость падения: {} (NaN/Infinity)",
                 value
-            );
-            return;
+            )));
         }
 
         self.fall_speed = value.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
+        Ok(())
     }
 
     /// Установить таймер приземления.
     ///
+    /// # Возвращает
+    /// - `Ok(())` если значение установлено успешно
+    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity)
+    ///
+    /// # Errors
+    /// Возвращает [`GameError::Validation`] если значение является NaN или Infinity.
+    ///
     /// # Валидация (H3)
-    /// Проверяет значение на NaN и Infinity. Неверные значения игнорируются.
+    /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
     /// Отрицательные значения заменяются на 0.
-    pub fn set_land_timer(&mut self, value: f64) {
+    pub fn set_land_timer(&mut self, value: f64) -> Result<(), GameError> {
         // Валидация на NaN и Infinity (H3)
         if value.is_nan() || value.is_infinite() {
-            eprintln!(
-                "[ERROR] Неверный таймер приземления: {} (NaN/Infinity)",
+            return Err(GameError::Validation(format!(
+                "Неверный таймер приземления: {} (NaN/Infinity)",
                 value
-            );
-            return;
+            )));
         }
 
         self.land_timer = value.max(0.0);
+        Ok(())
     }
 
     /// Установить расстояние Soft Drop.
