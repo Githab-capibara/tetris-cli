@@ -59,7 +59,8 @@ use super::constants::{
 };
 use super::state::GameState;
 use super::view::GameView;
-use crate::io::{Canvas, DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::io_traits::Renderer;
 use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use std::fmt::Write;
 use termion::color::Reset;
@@ -82,14 +83,20 @@ use termion::color::Reset;
 /// - Кэшированные строки должны быть обновлены до создания `GameView`
 /// - Используйте `update_cached_strings_extended()` перед созданием `GameView`
 ///
-/// ## Архитектурные заметки (ARCH-2)
-/// Основная логика отрисовки перемещена в методы `GameView`:
+/// ## Архитектурные заметки (ARCH-2, C2, H1)
+/// Основная логика отрисовки делегирована методам `GameView`:
 /// - `view.draw_field()` - отрисовка игрового поля
 /// - `view.draw_shape()` - отрисовка текущей фигуры
-pub fn draw(view: &GameView, cnv: &mut Canvas) {
+/// - `view.draw_ghost()` - отрисовка призрачной фигуры
+/// - `view.draw_next_shape()` - отрисовка следующей фигуры
+/// - `view.draw_held_shape()` - отрисовка удержанной фигуры
+///
+/// ## Dependency Inversion (H1)
+/// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
+pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
     cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
-    // Отрисовка счёта и рекорда
+    // Отрисовка UI (счёт, уровень, линии, комбо, рекорд)
     cnv.draw_string(view.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
     cnv.draw_string(
         view.high_score,
@@ -100,25 +107,25 @@ pub fn draw(view: &GameView, cnv: &mut Canvas) {
     cnv.draw_string(view.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
     cnv.draw_string(view.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
 
-    // Отрисовка счётчика комбо (ИСПРАВЛЕНИЕ #9: именованные константы)
+    // Отрисовка счётчика комбо
     if let Some(combo) = view.combo {
         cnv.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
     }
 
-    // Отрисовка игрового поля (ARCH-2: используется метод GameView)
+    // Отрисовка игрового поля (C2: используется метод GameView)
     view.draw_field(cnv);
 
-    // Отрисовка призрачной фигуры
-    draw_ghost_shape(view, cnv);
+    // Отрисовка призрачной фигуры (C2: используется метод GameView)
+    view.draw_ghost(cnv);
 
-    // Отрисовка текущей фигуры (ARCH-2: используется метод GameView)
+    // Отрисовка текущей фигуры (C2: используется метод GameView)
     view.draw_shape(cnv);
 
-    // Отрисовка следующей фигуры
-    draw_next_shape(view, cnv);
+    // Отрисовка следующей фигуры (C2: используется метод GameView)
+    view.draw_next_shape(cnv);
 
-    // Отрисовка удержанной фигуры
-    draw_held_shape(view, cnv);
+    // Отрисовка удержанной фигуры (C2: используется метод GameView)
+    view.draw_held_shape(cnv);
 
     // Отрисовка таймера для режима спринт (цель 40 линий)
     if view.mode.get_target_lines() == Some(40) {
@@ -226,140 +233,15 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     }
 }
 
-/// Отрисовать призрачную фигуру (точку приземления).
-///
-/// # Аргументы
-/// * `view` - представление игры
-/// * `cnv` - канвас для отрисовки
-fn draw_ghost_shape(view: &GameView, cnv: &mut Canvas) {
-    let mut ghost_shape = *view.curr_shape;
-
-    let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
-    let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
-
-    // Вычисляем расстояние до препятствия напрямую
-    let ghost_block_y = ghost_shape.pos.1 as i16;
-    let mut max_drop_distance = grid_height_i16;
-
-    for &(coord_x, coord_y) in &ghost_shape.coords {
-        let block_y = coord_y + ghost_block_y;
-        let dist_to_floor = grid_height_i16 - 1 - block_y;
-
-        let mut dist_to_block = dist_to_floor;
-        for y in (block_y + 1)..grid_height_i16 {
-            let x = coord_x + ghost_shape.pos.0 as i16;
-            if x >= 0 && x < grid_width_i16 && view.blocks[y as usize][x as usize] != -1 {
-                dist_to_block = y - block_y - 1;
-                break;
-            }
-        }
-
-        max_drop_distance = max_drop_distance.min(dist_to_block);
-    }
-
-    ghost_shape.pos.1 += f32::from(max_drop_distance);
-
-    // Отрисовка призрачной фигуры (полупрозрачная)
-    let (shape_x, shape_y) = ghost_shape.pos;
-    let shape_block_x = shape_x as i16;
-    let shape_block_y = shape_y as i16;
-    let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
-
-    for coord in ghost_shape.coords {
-        let (coord_x, coord_y) = coord;
-        let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X;
-        let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y;
-
-        cnv.draw_strs(
-            &["░░"],
-            (x as u16, y as u16),
-            SHAPE_COLORS[ghost_shape.fg as usize],
-            &Reset,
-        );
-    }
-}
-
-/// Отрисовать следующую фигуру (предпросмотр справа от поля).
-///
-/// # Аргументы
-/// * `view` - представление игры
-/// * `cnv` - канвас для отрисовки
-fn draw_next_shape(view: &GameView, cnv: &mut Canvas) {
-    draw_shape_preview(cnv, view.next_shape, PREVIEW_X, PREVIEW_Y, "След:", false);
-}
-
-/// Отрисовать удержанную фигуру (слева от поля).
-///
-/// # Аргументы
-/// * `view` - представление игры
-/// * `cnv` - канвас для отрисовки
-fn draw_held_shape(view: &GameView, cnv: &mut Canvas) {
-    if let Some(held) = view.held_shape {
-        // Примечание: can_hold не доступен в GameView, так как это внутреннее состояние
-        // Для полной поддержки можно добавить can_hold в GameView если нужно
-        let is_faded = false;
-        draw_shape_preview(
-            cnv,
-            held,
-            HOLD_PREVIEW_X,
-            HOLD_PREVIEW_Y,
-            "Удерж:",
-            is_faded,
-        );
-    }
-}
-
-/// Отрисовать предпросмотр фигуры.
-///
-/// # Аргументы
-/// * `cnv` - канвас для отрисовки
-/// * `shape` - фигура для отрисовки
-/// * `pos_x` - позиция по X
-/// * `pos_y` - позиция по Y
-/// * `title` - заголовок
-/// * `is_faded` - если true, рисовать тусклым цветом
-///
-/// # Исправление #25
-/// Добавлена проверка всех границ экрана для предотвращения выхода за пределы канваса.
-fn draw_shape_preview(
-    cnv: &mut Canvas,
-    shape: &Tetromino,
-    pos_x: u16,
-    pos_y: u16,
-    title: &str,
-    is_faded: bool,
-) {
-    cnv.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
-
-    let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
-
-    // Исправление #25: используем константы DISP_WIDTH и DISP_HEIGHT для проверки границ
-    for coord in shape.coords {
-        let (coord_x, coord_y) = coord;
-        let x = pos_x.cast_signed() + coord_x * shape_width_i16 + DRAW_OFFSET_X;
-        let y = pos_y.cast_signed() + coord_y + 1;
-
-        // Исправление #25: полная проверка всех границ
-        // x >= 0 && y >= 0 - проверка на отрицательные координаты
-        // x < DISP_WIDTH && y < DISP_HEIGHT - проверка на выход за пределы экрана
-        if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
-            let display_char = if is_faded { "░░" } else { SHAPE_STR };
-            cnv.draw_strs(
-                &[display_char],
-                (x as u16, y as u16),
-                SHAPE_COLORS[shape.fg as usize],
-                &Reset,
-            );
-        }
-    }
-}
-
 /// Отрисовать таймер для режима спринт.
 ///
 /// # Аргументы
 /// * `view` - представление игры
-/// * `cnv` - канвас для отрисовки
-fn draw_sprint_timer(view: &GameView, cnv: &mut Canvas) {
+/// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
+///
+/// ## Dependency Inversion (H1)
+/// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
+fn draw_sprint_timer<R: Renderer>(view: &GameView, cnv: &mut R) {
     // Форматируем таймер на лету из elapsed_time (ИСПРАВЛЕНИЕ #9: именованные константы)
     let timer_str = format!("Время: {:.2}с", view.elapsed_time);
     cnv.draw_string(&timer_str, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);

@@ -113,13 +113,21 @@ impl Drop for Canvas {
     ///
     /// # Исправление аудита 2026-03-30
     /// Обёрнуто в catch_unwind для предотвращения паники при панике.
+    ///
+    /// # M3: Обработка ошибок
+    /// Добавлено логирование ошибок для отладки проблем с терминалом.
     fn drop(&mut self) {
         // Минимальный сброс: только показ курсора и flush
         // Используем write_all для атомарности записи
         // Исправление аудита 2026-03-30: catch_unwind для предотвращения паники
+        // M3: логирование ошибок
         let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = write!(self.out, "{Show}");
-            let _ = self.out.flush();
+            if let Err(e) = write!(self.out, "{Show}") {
+                eprintln!("[ERROR] Не удалось показать курсор в Drop: {}", e);
+            }
+            if let Err(e) = self.out.flush() {
+                eprintln!("[ERROR] Не удалось сбросить буфер в Drop: {}", e);
+            }
         }));
     }
 }

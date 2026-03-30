@@ -12,7 +12,7 @@ use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BAC
 use super::state::{GameState, UpdateEndState};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io::{Canvas, KeyReader};
-use crate::io_traits::InputReader;
+use crate::io_traits::{InputReader, Renderer};
 use termion::color::Reset;
 
 // ============================================================================
@@ -85,10 +85,13 @@ pub fn handle_input<T: InputReader>(
 ///
 /// # Аргументы
 /// * `state` - состояние игры
-/// * `cnv` - канвас для отрисовки
+/// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
 /// * `high_score_display` - строка рекорда
+///
+/// # Архитектурные заметки (H1: DIP)
+/// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 #[track_caller]
-pub fn render(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str) {
+pub fn render<R: Renderer>(state: &mut GameState, cnv: &mut R, high_score_display: &str) {
     // Обновляем кэшированные строки перед созданием GameView
     update_cached_strings_extended(state, high_score_display);
     // Создаём GameView для отрисовки
@@ -100,9 +103,12 @@ pub fn render(state: &mut GameState, cnv: &mut Canvas, high_score_display: &str)
 /// Обработать конец игры.
 ///
 /// # Аргументы
-/// * `cnv` - канвас для отрисовки
+/// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
+///
+/// # Архитектурные заметки (H1: DIP)
+/// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 #[track_caller]
-pub fn handle_game_over(cnv: &mut Canvas) {
+pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
     cnv.draw_strs(&GAME_OVER, (10, 12), BORDER_COLOR, &Reset);
     cnv.flush();
     sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
@@ -112,8 +118,8 @@ pub fn handle_game_over(cnv: &mut Canvas) {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `cnv` - канвас для отрисовки
-/// * `inp` - читатель нажатий клавиш
+/// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
+/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
 /// * `high_score_display` - строка для отображения рекорда
 ///
 /// # Возвращает
@@ -123,19 +129,28 @@ pub fn handle_game_over(cnv: &mut Canvas) {
 /// # Errors
 /// Возвращает ошибку `GameError` при сбое ввода/вывода, ошибке терминала или других критических ошибках во время игрового цикла.
 ///
-/// # Архитектурные заметки (A8: Обработка ошибок)
+/// # Архитектурные заметки (A8: Обработка ошибок, H1: DIP)
 /// Функция возвращает `Result<u128, GameError>` для явной обработки ошибок.
-/// Ошибки ввода/вывода и терминала возвращаются через `?` оператор.
+/// Использует трейты `InputReader` и `Renderer` для зависимости от абстракций.
 ///
-/// # Примечание
-/// Возврат `Result` предусмотрен для будущей обработки ошибок ввода/вывода.
-/// В текущей реализации ошибки обрабатываются внутри функции.
+/// # Пример использования
+/// ```ignore
+/// use tetris_cli::game::{GameState, cycle::run_game_loop};
+/// use tetris_cli::io::{Canvas, KeyReader};
+///
+/// let mut state = GameState::new();
+/// let mut canvas = Canvas::new().unwrap();
+/// let mut input = KeyReader::new();
+/// let high_score = "1000";
+///
+/// let result = run_game_loop(&mut state, &mut canvas, &mut input, high_score);
+/// ```
 #[allow(clippy::unnecessary_wraps)]
 #[track_caller]
-pub fn run_game_loop(
+pub fn run_game_loop<T: InputReader, R: Renderer>(
     state: &mut GameState,
-    cnv: &mut Canvas,
-    inp: &mut KeyReader,
+    cnv: &mut R,
+    inp: &mut T,
     high_score_display: &str,
 ) -> Result<u128, super::state::GameError> {
     use std::time::Instant;

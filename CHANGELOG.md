@@ -4,6 +4,101 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.24] — 2026-03-30
+
+### Архитектурные улучшения
+
+**CRITICAL:**
+- **Разделение GameState на компоненты** (`src/game/components.rs`) — созданы специализированные компоненты: `FigureManager`, `AnimationState`, `GamePhase` для соблюдения Single Responsibility Principle
+- **Dependency Inversion Principle в game loop** (`src/game/cycle.rs`) — `run_game_loop<T: InputReader, R: Renderer>()` использует трейты вместо конкретных типов `KeyReader` и `Canvas`
+- **Валидация NaN/Infinity в сеттерах** (`src/game/scoreboard.rs`, `src/game/components.rs`) — `set_fall_speed()`, `set_land_timer()`, `ScoreBoard::set_level()` проверяют входные данные на NaN/Infinity и ограничивают уровень максимумом 1000
+
+**HIGH:**
+- **Feature Envy исправлен в render.rs** — добавлены методы `GameView::draw_field()`, `draw_next_shape()`, `draw_held_shape()`, `draw_ui()`, `draw_ghost()` для улучшения инкапсуляции
+- **Логирование ошибок в Canvas::drop()** (`src/io.rs`) — ошибки теперь логируются через `eprintln!()` вместо игнорирования
+
+### Тесты
+
+- **test_architecture_components.rs** — 31 архитектурный тест для проверки новых компонентов:
+  - **C1: Разделение GameState (7 тестов):**
+    - `test_game_state_uses_components` — композиция компонентов
+    - `test_components_independence` — независимость компонентов
+    - `test_figure_manager_component` — FigureManager
+    - `test_animation_state_component` — AnimationState
+    - `test_game_phase_component` — GamePhase
+    - `test_component_traits_exist` — трейты доступа
+    - `test_components_integration` — интеграция компонентов
+  
+  - **C2: Инкапсуляция render.rs (5 тестов):**
+    - `test_game_view_draw_methods` — методы отрисовки GameView
+    - `test_render_delegation` — делегирование отрисовки
+    - `test_draw_field_method` — draw_field()
+    - `test_draw_next_shape_method` — draw_next_shape()
+    - `test_draw_held_shape_method` — draw_held_shape()
+  
+  - **C3: Dependency Inversion (5 тестов):**
+    - `test_dependency_inversion_game_loop` — DIP в game loop
+    - `test_input_reader_trait_exists` — трейт InputReader
+    - `test_renderer_trait_exists` — трейт Renderer
+    - `test_run_game_loop_generics` — дженерики в run_game_loop()
+    - `test_no_concrete_types_in_loop` — отсутствие конкретных типов
+  
+  - **H1: Валидация данных (6 тестов):**
+    - `test_fall_speed_validation` — валидация fall_speed
+    - `test_land_timer_validation` — валидация land_timer
+    - `test_level_max_cap` — ограничение уровня 1000
+    - `test_nan_infinity_protection` — защита от NaN/Infinity
+    - `test_saturating_add_usage` — saturating_add() в очках
+    - `test_validation_integration` — интеграция валидации
+  
+  - **M1: Обработка ошибок (3 теста):**
+    - `test_canvas_drop_error_logging` — логирование ошибок в drop()
+    - `test_error_logging_format` — формат логирования
+    - `test_no_panic_on_drop_error` — отсутствие паники
+  
+  - **Интеграционные тесты (5 тестов):**
+    - `test_all_architecture_improvements_present` — все улучшения
+    - `test_components_compile` — компиляция компонентов
+    - `test_traits_compile` — компиляция трейтов
+    - `test_validation_compile` — компиляция валидации
+    - `test_full_integration` — полная интеграция
+
+- **game/components.rs** — тесты компонентов (9 тестов):
+  - `test_figure_manager_new` — создание FigureManager
+  - `test_figure_manager_setters` — сеттеры фигур
+  - `test_figure_manager_get_next_from_bag` — получение из мешка
+  - `test_animation_state_new` — создание AnimationState
+  - `test_animation_state_row_mask` — маска строк
+  - `test_animation_state_flags` — флаги анимации
+  - `test_game_phase_new` — создание GamePhase
+  - `test_game_phase_pause_resume` — пауза/возобновление
+  - `test_game_phase_complete` — завершение игры
+
+- **Всего тестов: 1144** (все проходят)
+
+### Улучшения
+
+- **Архитектура** — разделение GameState на независимые компоненты
+- **Инкапсуляция** — улучшена через трейты доступа и методы GameView
+- **Безопасность** — валидация NaN/Infinity, ограничение уровня
+- **Надёжность** — логирование ошибок вместо игнорирования
+- **Тестируемость** — 31 новый архитектурный тест
+
+### Изменённые файлы
+
+- `src/game/components.rs` — новый файл (компоненты GameState)
+- `src/game/cycle.rs` — Dependency Inversion в game loop
+- `src/game/render.rs` — делегирование методам GameView
+- `src/game/view.rs` — новые методы отрисовки
+- `src/game/scoreboard.rs` — валидация в сеттерах
+- `src/io.rs` — логирование ошибок в Canvas::drop()
+- `tests/test_architecture_components.rs` — 31 новый тест
+- `src/game/components.rs` — 9 тестов компонентов
+- `README.md` — обновление версии и количества тестов
+- `CHANGELOG.md` — запись изменений
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+- `docs/ARCHITECTURE.md` — обновление документации архитектуры
+
 ## [23.96.23] — 2026-03-30
 
 ### Улучшения обработки ошибок и новые возможности

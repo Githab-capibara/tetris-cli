@@ -237,15 +237,15 @@ mod types_tests {
     fn test_direction_to_rotation_direction() {
         assert_eq!(
             Direction::Left.to_rotation_direction(),
-            Some(RotationDirection::CounterClockwise)
+            RotationDirection::CounterClockwise
         );
         assert_eq!(
             Direction::Right.to_rotation_direction(),
-            Some(RotationDirection::Clockwise)
+            RotationDirection::Clockwise
         );
         assert_eq!(
             Direction::Down.to_rotation_direction(),
-            Some(RotationDirection::NoRotation)
+            RotationDirection::NoRotation
         );
     }
 
