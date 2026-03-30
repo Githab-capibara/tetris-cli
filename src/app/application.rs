@@ -86,15 +86,18 @@ impl Application {
     ///
     /// # Errors
     /// Возвращает ошибку если терминал не соответствует минимальным требованиям
+    ///
+    /// # Исправление аудита 2026-03-30
+    /// Сохраняет оригинальную ошибку io::Error вместо её потери.
     fn initialize_terminal() -> Result<(Canvas, KeyReader), GameError> {
         // Проверка размера терминала
-        let (width, height) = terminal_size().map_err(|e| {
+        let (width, height) = terminal_size().map_err(|e: std::io::Error| {
             let msg = format!(
                 "Ошибка: не удалось получить размер терминала: {e}.\n\
                  Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов."
             );
             eprintln!("{msg}");
-            GameError::Validation(msg)
+            GameError::Io(e) // Исправление аудита 2026-03-30: сохраняем оригинальную ошибку
         })?;
 
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {

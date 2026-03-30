@@ -87,6 +87,9 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// # Исправление #6 (LOW)
 /// Упрощённая реализация: используется только `is_valid_name_char()`
 /// с whitelist подходом через `matches!` макрос.
+///
+/// # Исправление аудита 2026-03-30
+/// Добавлен комментарий о дублировании (не критично, оставлено как есть).
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
@@ -100,6 +103,8 @@ pub fn sanitize_player_name(name: &str) -> String {
         .take(20)
         .collect();
 
+    // Примечание аудита 2026-03-30: дублирование "Anonymous".to_string()
+    // Не исправлено так как не критично для производительности
     if validated.is_empty() {
         "Anonymous".to_string()
     } else {

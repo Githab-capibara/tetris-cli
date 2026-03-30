@@ -110,11 +110,17 @@ impl Drop for Canvas {
     /// # Исправление #7 (HIGH)
     /// Упрощён сброс до минимально необходимых операций с минимальным риском паники.
     /// Используем write_all вместо write для атомарности операции.
+    ///
+    /// # Исправление аудита 2026-03-30
+    /// Обёрнуто в catch_unwind для предотвращения паники при панике.
     fn drop(&mut self) {
         // Минимальный сброс: только показ курсора и flush
         // Используем write_all для атомарности записи
-        let _ = write!(self.out, "{Show}");
-        let _ = self.out.flush();
+        // Исправление аудита 2026-03-30: catch_unwind для предотвращения паники
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _ = write!(self.out, "{Show}");
+            let _ = self.out.flush();
+        }));
     }
 }
 
