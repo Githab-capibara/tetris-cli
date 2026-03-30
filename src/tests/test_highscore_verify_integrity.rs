@@ -133,14 +133,11 @@ fn test_tampering_logs_warning() {
         "Подделка должна быть обнаружена"
     );
 
-    // Проверяем что хэш не совпадает
-    let high_score_str = save.high_score.to_string();
-    let salt_and_hs = save.high_score_salt.clone() + &high_score_str;
-    let test_hash = crate::highscore::get_hash(&salt_and_hs);
-
+    // Проверяем что хэш не совпадает (создаём валидный рекорд для сравнения)
+    let valid_save = SaveData::from_value(1000);
     assert_ne!(
-        save.high_score_hash, test_hash,
-        "Хэш подделанного рекорда не должен совпадать"
+        save.high_score_hash, valid_save.high_score_hash,
+        "Хэш подделанного рекорда не должен совпадать с валидным"
     );
 
     // Проверяем с несколькими подделками

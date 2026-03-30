@@ -467,7 +467,7 @@ mod tests {
     // Тесты исправленных проблем (18 тестов)
     pub mod test_controls_path_validation;
     pub mod test_game_bounds_check;
-    pub mod test_highscore_integrity;
+    // pub mod test_highscore_integrity; // REMOVED: дублирование с test_highscore_verify_integrity
     // pub mod test_highscore_u256_fix; // REMOVED: временный тест
 
     // Тесты верификации всех исправлений аудита (27 тестов)
