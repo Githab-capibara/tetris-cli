@@ -119,9 +119,8 @@ fn test_no_duplicate_traits_in_board_rs() {
     
     board.set_block(3, 3, 1);
     assert_eq!(board.get_block(3, 3), Some(1));
-    
+
     // Если код компилируется - нет дублирования трейтов
-    assert!(true, "board.rs не должен дублировать трейты из access.rs");
 }
 
 /// Тест что `board.rs` импортирует трейты из `access.rs`.
@@ -133,8 +132,6 @@ fn test_board_rs_imports_traits_from_access() {
     // Эти импорты должны работать - board.rs переэкспортирует трейты
     let _: fn(&dyn BoardReadonlyTrait) = |_| {};
     let _: fn(&mut dyn BoardMutableTrait) = |_| {};
-    
-    assert!(true, "board.rs должен переэкспортировать трейты из access.rs");
 }
 
 // ============================================================================
@@ -171,8 +168,6 @@ fn test_traits_reexported_from_access() {
     let _: &mut dyn AccessBoardMutable = &mut state;
     let _: &mut dyn BoardBoardMutable = &mut state;
     let _: &mut dyn ComponentsBoardMutable = &mut state;
-    
-    assert!(true, "Все переэкспорты трейтов должны работать");
 }
 
 // ============================================================================
@@ -232,9 +227,8 @@ fn test_no_duplicate_traits_in_scoreboard_rs() {
     assert_eq!(scoreboard.get_score(), 0);
     scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
-    
+
     // Если код компилируется - нет дублирования трейтов
-    assert!(true, "scoreboard.rs не должен дублировать трейты из access.rs");
 }
 
 // ============================================================================
@@ -273,10 +267,9 @@ fn test_all_access_traits_consolidated_in_access() {
     
     // GameBoardAccess (объединённый трейт)
     let _: &dyn access::GameBoardAccess = &state;
-    
+
     // Все трейты консолидированы в access.rs
     assert_eq!(expected_traits.len(), 4, "Должно быть 4 основных трейта");
-    assert!(true, "Все трейты консолидированы в access.rs");
 }
 
 // ============================================================================
@@ -306,7 +299,6 @@ fn test_traits_not_duplicated_in_other_modules() {
     let _blocks = state.get_blocks(); // BoardReadonly
     state.set_block(0, 0, 1); // BoardMutable
     let _score = state.get_score(); // ScoreAccess
-    
+
     // Нет конфликтов имён - трейты не дублируются
-    assert!(true, "Трейты не дублируются в других модулях");
 }

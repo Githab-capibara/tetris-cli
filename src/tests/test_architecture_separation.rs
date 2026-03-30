@@ -47,9 +47,8 @@ fn test_check_rows_not_called_in_render_rs() {
     
     // check_rows() вызывается из scoring::lines, а не из render
     let _cleared = check_rows(&mut state);
-    
+
     // render.rs функции не содержат check_rows
-    assert!(true, "check_rows() НЕ вызывается в render.rs");
 }
 
 /// Тест что `render.rs` НЕ импортирует `check_rows()`.
@@ -68,9 +67,8 @@ fn test_render_rs_does_not_import_check_rows() {
     
     // render.rs НЕ должен импортировать:
     // - scoring::lines::check_rows
-    
+
     // Если бы render.rs импортировал check_rows, был бы конфликт
-    assert!(true, "render.rs НЕ импортирует check_rows()");
 }
 
 // ============================================================================
@@ -99,10 +97,9 @@ fn test_render_function_does_not_contain_line_clearing_logic() {
     // Проверяем что draw() не изменяет состояние игры
     // draw() принимает &GameView (только чтение), а не &mut GameState
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
-    
+
     // Если бы draw() содержала логику удаления линий, она бы принимала
     // &mut GameState вместо &GameView
-    assert!(true, "render() НЕ содержит логики удаления линий");
 }
 
 /// Тест что `render.rs` НЕ содержит функций для удаления линий.
@@ -132,8 +129,6 @@ fn test_render_rs_does_not_contain_line_removal_functions() {
     
     let blocks_mut = state.get_blocks_mut();
     remove_rows(blocks_mut, 0);
-    
-    assert!(true, "Функции удаления линий в scoring::lines.rs");
 }
 
 // ============================================================================
@@ -171,14 +166,12 @@ fn test_line_logic_in_scoring_lines_rs() {
     let mut state = GameState::new();
     let cleared = check_rows(&mut state);
     assert_eq!(cleared, 0, "Новое поле не имеет линий для удаления");
-    
+
     // update_score_for_lines() также в scoring/lines.rs
     // (функция приватная, проверяем что она существует через модуль)
     // let mut score = 0u128;
     // let mut combo = 0u32;
     // update_score_for_lines(&mut score, 1, 0, &mut combo);
-    
-    assert!(true, "Логика линий находится в scoring/lines.rs");
 }
 
 /// Тест что `scoring/lines.rs` содержит `check_rows()`.
@@ -192,8 +185,6 @@ fn test_check_rows_in_scoring_lines_rs() {
     
     // check_rows() должна возвращать количество удалённых линий
     assert_eq!(result, 0, "Новое поле не имеет линий");
-    
-    assert!(true, "check_rows() находится в scoring/lines.rs");
 }
 
 // ============================================================================
@@ -213,13 +204,11 @@ fn test_logic_update_rs_coordinates_line_logic() {
     // update() координирует логику игры
     let mut state = GameState::new();
     let mut reader = crate::io::KeyReader::default();
-    
+
     let _result = update(&mut state, &mut reader, 100);
-    
+
     // update() вызывает handle_landing() который вызывает check_rows()
     // Но сама логика линий находится в scoring/lines.rs
-    
-    assert!(true, "logic/update.rs координирует логику линий");
 }
 
 /// Тест что `handle_landing()` вызывает `check_rows()`.
@@ -235,11 +224,9 @@ fn test_handle_landing_calls_check_rows() {
     // Устанавливаем фигуру на поле
     state.get_curr_shape_mut().pos.1 = 10.0;
     state.save_tetromino();
-    
+
     // handle_landing() вызывает check_rows() внутри
     let _result = handle_landing(&mut state);
-    
-    assert!(true, "handle_landing() вызывает check_rows()");
 }
 
 // ============================================================================
@@ -275,8 +262,6 @@ fn test_render_and_logic_are_separated() {
     // render::draw() отрисовывает состояние
     // (не можем вызвать без Canvas, но проверяем что функция существует)
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
-    
-    assert!(true, "render и logic разделены");
 }
 
 /// Тест что `render.rs` использует `GameView` для уменьшения связанности.
@@ -295,11 +280,9 @@ fn test_render_uses_gameview_for_decoupling() {
     // view содержит только данные для отрисовки
     assert!(!view.score.is_empty());
     assert!(!view.level.is_empty());
-    
+
     // draw() не может изменять состояние через GameView
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
-    
-    assert!(true, "render.rs использует GameView для уменьшения связанности");
 }
 
 // ============================================================================
@@ -341,5 +324,4 @@ fn test_render_logic_separation_architecture() {
     let _ = update_score_and_level;
 
     assert_eq!(architecture.len(), 4, "Должно быть 4 модуля");
-    assert!(true, "Разделение render/logic соблюдается");
 }

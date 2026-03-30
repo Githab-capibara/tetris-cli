@@ -891,16 +891,15 @@ fn test_no_circular_dependencies_between_modules() {
     
     // update() вызывает handle_landing()
     let _ = update(&mut state, &mut reader, 100);
-    
+
     // handle_landing() использует scoring логику
     let _ = handle_landing(&mut state);
-    
+
     // Tetromino работает независимо
     let mut bag = crate::tetromino::BagGenerator::new();
     let _tetromino = Tetromino::from_bag(&mut bag);
-    
+
     // Нет циклических зависимостей
-    assert!(true, "Нет циклических зависимостей между модулями");
 }
 
 // ============================================================================
@@ -937,9 +936,8 @@ fn test_module_hierarchy_respected() {
     
     let mut bag = crate::tetromino::BagGenerator::new();
     let _tetromino = Tetromino::from_bag(&mut bag);
-    
+
     // Иерархия соблюдается
-    assert!(true, "Иерархия модулей соблюдается");
 }
 
 // ============================================================================
@@ -976,8 +974,6 @@ fn test_no_forbidden_imports() {
     // Проверяем что logic не импортирует из render
     use crate::game::logic::update::update;
     // update() не использует функции отрисовки
-    
-    assert!(true, "Нет запрещённых импортов между модулями");
 }
 
 // ============================================================================
@@ -1039,7 +1035,6 @@ fn test_architectural_integrity_final() {
     
     let view = GameView::from_game_state(&state);
     let _ = draw::<MockRenderer>;
-    
+
     // Все проверки пройдены
-    assert!(true, "Архитектурная целостность соблюдается");
 }

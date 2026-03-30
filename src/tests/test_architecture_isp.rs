@@ -67,8 +67,6 @@ fn test_score_access_contains_only_score_methods() {
     
     use_score_access_mut(&mut state);
     assert_eq!(state.get_score(), 300);
-    
-    assert!(true, "ScoreAccess содержит только методы очков");
 }
 
 /// Тест что `ScoreAccess` не содержит методов уровней.
@@ -88,8 +86,6 @@ fn test_score_access_does_not_contain_level_methods() {
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_level() // Не доступно через ScoreAccess
     // state.set_level(5) // Не доступно через ScoreAccess
-    
-    assert!(true, "ScoreAccess не содержит методов уровней");
 }
 
 /// Тест что `ScoreAccess` не содержит методов линий.
@@ -104,8 +100,6 @@ fn test_score_access_does_not_contain_lines_methods() {
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_lines_cleared() // Не доступно через ScoreAccess
     // state.add_lines(5) // Не доступно через ScoreAccess
-    
-    assert!(true, "ScoreAccess не содержит методов линий");
 }
 
 /// Тест что `ScoreAccess` не содержит методов комбо.
@@ -120,8 +114,6 @@ fn test_score_access_does_not_contain_combo_methods() {
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_combo() // Не доступно через ScoreAccess
     // state.reset_combo() // Не доступно через ScoreAccess
-    
-    assert!(true, "ScoreAccess не содержит методов комбо");
 }
 
 // ============================================================================
@@ -161,8 +153,6 @@ fn test_level_access_contains_only_level_methods() {
     
     use_level_access_mut(&mut state);
     assert_eq!(state.get_level(), 10);
-    
-    assert!(true, "LevelAccess содержит только методы уровней");
 }
 
 /// Тест что `LevelAccess` не содержит методов очков.
@@ -176,8 +166,6 @@ fn test_level_access_does_not_contain_score_methods() {
     // Эти методы НЕ доступны через LevelAccess:
     // state.get_score() // Не доступно через LevelAccess
     // state.add_score(100) // Не доступно через LevelAccess
-    
-    assert!(true, "LevelAccess не содержит методов очков");
 }
 
 // ============================================================================
@@ -223,8 +211,6 @@ fn test_lines_access_contains_only_lines_methods() {
     
     use_lines_access_mut(&mut state);
     assert_eq!(state.get_lines_cleared(), 30);
-    
-    assert!(true, "LinesAccess содержит только методы линий");
 }
 
 /// Тест что `LinesAccess` не содержит методов очков.
@@ -238,8 +224,6 @@ fn test_lines_access_does_not_contain_score_methods() {
     // Эти методы НЕ доступны через LinesAccess:
     // state.get_score() // Не доступно через LinesAccess
     // state.add_score(100) // Не доступно через LinesAccess
-    
-    assert!(true, "LinesAccess не содержит методов очков");
 }
 
 // ============================================================================
@@ -285,8 +269,6 @@ fn test_combo_access_contains_only_combo_methods() {
     
     use_combo_access_mut(&mut state);
     assert_eq!(state.get_combo(), 0);
-    
-    assert!(true, "ComboAccess содержит только методы комбо");
 }
 
 /// Тест что `ComboAccess` не содержит методов очков.
@@ -300,8 +282,6 @@ fn test_combo_access_does_not_contain_score_methods() {
     // Эти методы НЕ доступны через ComboAccess:
     // state.get_score() // Не доступно через ComboAccess
     // state.add_score(100) // Не доступно через ComboAccess
-    
-    assert!(true, "ComboAccess не содержит методов очков");
 }
 
 // ============================================================================
@@ -340,9 +320,8 @@ fn test_scoring_state_inherits_narrow_traits() {
     let _: &dyn ComboAccess = &state;
     state.set_combo(5);
     assert_eq!(state.get_combo(), 5);
-    
+
     // ScoringState объединяет все трейты
-    assert!(true, "ScoringState наследует узкие трейты");
 }
 
 /// Тест что `ScoringState` можно использовать через узкие трейты.
@@ -379,8 +358,6 @@ fn test_scoring_state_can_be_used_through_narrow_traits() {
     }
     use_combo(&mut state);
     assert_eq!(state.get_combo(), 10);
-    
-    assert!(true, "ScoringState можно использовать через узкие трейты");
 }
 
 // ============================================================================
@@ -420,8 +397,6 @@ fn test_traits_follow_isp_principle() {
         l.get_level()
     }
     let _ = level_only_client(&state);
-    
-    assert!(true, "Трейты следуют ISP принципу");
 }
 
 // ============================================================================
@@ -454,7 +429,6 @@ fn test_isp_architecture_test() {
     let _: &dyn LinesAccess = &state;
     let _: &dyn ComboAccess = &state;
     let _: &dyn ScoringState = &state;
-    
+
     assert_eq!(architecture.len(), 5, "Должно быть 5 трейтов");
-    assert!(true, "ISP архитектура соблюдается");
 }

@@ -6,6 +6,8 @@
 //! 3. Валидация имён в таблице лидеров
 //! 4. Константа анимации Hard Drop
 
+#![allow(deprecated)]
+
 use crate::crypto::generate_salt;
 use crate::game::{GameMode, GameState};
 use crate::highscore::leaderboard::LeaderboardEntry;

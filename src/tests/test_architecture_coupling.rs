@@ -58,8 +58,6 @@ fn test_scoring_points_no_direct_access_to_gamestate_fields() {
     
     // handle_soft_drop использует публичные методы
     handle_soft_drop(&mut state);
-    
-    assert!(true, "scoring/points.rs использует публичные методы");
 }
 
 /// Тест что `scoring/points.rs` использует инкапсуляцию.
@@ -78,8 +76,6 @@ fn test_scoring_points_uses_encapsulation() {
     
     state.set_level(5);
     assert_eq!(state.level(), 5, "set_level() должен работать");
-    
-    assert!(true, "scoring/points.rs использует инкапсуляцию");
 }
 
 // ============================================================================
@@ -125,8 +121,6 @@ fn test_scoring_lines_uses_public_methods_only() {
     // remove_rows() использует публичные методы
     let blocks_mut = state.get_blocks_mut();
     remove_rows(blocks_mut, 0);
-    
-    assert!(true, "scoring/lines.rs использует только публичные методы");
 }
 
 /// Тест что `scoring/lines.rs` не имеет прямого доступа к полям.
@@ -147,9 +141,8 @@ fn test_scoring_lines_no_direct_field_access() {
     
     let mut state = GameState::new();
     let _ = check_rows(&mut state);
-    
+
     // Если код компилируется - используется публичный API
-    assert!(true, "scoring/lines.rs не имеет прямого доступа к полям");
 }
 
 // ============================================================================
@@ -181,10 +174,9 @@ fn test_score_logic_encapsulated_in_scoreboard() {
     
     scoreboard.set_lines_cleared(10);
     assert_eq!(scoreboard.get_lines_cleared(), 10);
-    
+
     // ScoreBoard инкапсулирует внутреннее состояние
     // Прямой доступ к полям невозможен извне
-    assert!(true, "Логика очков инкапсулирована в ScoreBoard");
 }
 
 /// Тест что `ScoreBoard` имеет чёткий публичный API.
@@ -214,10 +206,8 @@ fn test_scoreboard_has_clear_public_api() {
     
     let lines: u32 = scoreboard.get_lines_cleared();
     let _ = lines;
-    
+
     scoreboard.set_lines_cleared(10);
-    
-    assert!(true, "ScoreBoard имеет чёткий публичный API");
 }
 
 // ============================================================================
@@ -249,8 +239,6 @@ fn test_coupling_reduced_through_traits() {
     
     set_target_level(&mut state, 10);
     assert_eq!(state.level(), 10);
-    
-    assert!(true, "Связанность снижена через трейты");
 }
 
 /// Тест что `GameState` не зависит от конкретных реализаций.
@@ -266,8 +254,6 @@ fn test_gamestate_not_dependent_on_concrete_implementations() {
     let _: &dyn LevelAccess = &state;
     let _: &dyn LinesAccess = &state;
     let _: &dyn ComboAccess = &state;
-    
-    assert!(true, "GameState не зависит от конкретных реализаций");
 }
 
 // ============================================================================
@@ -296,11 +282,9 @@ fn test_internal_logic_encapsulated() {
     // Эти функции доступны только внутри crate
     calculate_landing_bonus(&mut state);
     update_combo_on_clear(&mut state, 0);
-    
+
     // Приватные функции недоступны извне модуля
     // check_game_over_condition() // Не доступна
-    
-    assert!(true, "Внутренняя логика инкапсулирована");
 }
 
 /// Тест что поля GameState приватные.
@@ -323,8 +307,6 @@ fn test_gamestate_fields_are_private() {
     // state.board // Не доступно
     // state.scoreboard // Не доступно
     // state.curr_shape // Не доступно
-    
-    assert!(true, "Поля GameState приватные");
 }
 
 // ============================================================================
@@ -368,9 +350,8 @@ fn test_coupling_architecture_test() {
         s.add_score(100);
     }
     use_score(&mut state);
-    
+
     assert_eq!(architecture.len(), 4, "Должно быть 4 элемента архитектуры");
-    assert!(true, "Связанность снижена");
 }
 
 /// Тест что модули не имеют циклических зависимостей.
@@ -389,6 +370,4 @@ fn test_modules_have_no_circular_dependencies() {
     
     let mut state = GameState::new();
     let _ = handle_landing(&mut state);
-    
-    assert!(true, "Нет циклических зависимостей");
 }

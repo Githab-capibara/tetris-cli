@@ -183,9 +183,6 @@ fn test_renderer_trait_implementation() {
         }
     };
     requires_renderer(&canvas); // Должно компилироваться
-
-    // Assert что canvas не пуст (тест прошёл)
-    assert!(true, "Canvas реализует трейт Renderer");
 }
 
 /// Проверка, что KeyReader реализует трейт InputReader.
@@ -202,9 +199,6 @@ fn test_input_reader_trait_implementation() {
 
     let reader = KeyReader::new();
     requires_input_reader(&reader); // Должно компилироваться
-
-    // Assert что reader создан (тест прошёл)
-    assert!(true, "KeyReader реализует трейт InputReader");
 }
 
 /// Проверка, что Canvas можно использовать как &mut dyn Renderer.
@@ -231,9 +225,6 @@ fn test_canvas_as_dyn_renderer() {
         }
     };
     draw_with_renderer(&mut canvas); // Должно компилироваться
-
-    // Assert что отрисовка прошла (тест прошёл)
-    assert!(true, "Canvas можно использовать как &mut dyn Renderer");
 }
 
 // ============================================================================

@@ -33,14 +33,12 @@ fn test_validation_service_exists() {
     // Проверяем что можно вызвать методы
     let result = ValidationService::validate_f32_finite(1.0);
     assert!(result.is_ok(), "ValidationService должен существовать");
-    
+
     // Проверяем что ValidationError существует
     let _error = ValidationError {
         message: "Тест".to_string(),
         kind: ValidationErrorKind::NotFinite,
     };
-    
-    assert!(true, "ValidationService существует и работает");
 }
 
 /// Тест что `ValidationService` имеет правильную структуру.
@@ -62,8 +60,6 @@ fn test_validation_service_structure() {
     // Проверяем что ValidationErrorKind имеет правильные варианты
     let _not_finite = ValidationErrorKind::NotFinite;
     let _out_of_range = ValidationErrorKind::OutOfRange;
-    
-    assert!(true, "ValidationService имеет правильную структуру");
 }
 
 // ============================================================================
@@ -106,8 +102,6 @@ fn test_validate_f32_finite_used_in_set_fall_speed() {
         result.is_err(),
         "NegInfinity должен отклоняться через validate_f32_finite()"
     );
-    
-    assert!(true, "validate_f32_finite() используется в set_fall_speed()");
 }
 
 /// Тест что `validate_f32_finite()` используется в `set_land_timer()`.
@@ -132,8 +126,6 @@ fn test_validate_f32_finite_used_in_set_land_timer() {
         result.is_err(),
         "Infinity должен отклоняться через validate_f32_finite()"
     );
-    
-    assert!(true, "validate_f32_finite() используется в set_land_timer()");
 }
 
 // ============================================================================
@@ -167,8 +159,6 @@ fn test_validate_u32_range_exists_and_works() {
     
     let result = ValidationService::validate_u32_range(u32::MAX, 0, 10);
     assert!(result.is_err(), "Значение вне диапазона должно отклоняться");
-    
-    assert!(true, "validate_u32_range() существует и работает");
 }
 
 /// Тест что `validate_u32_range()` используется в `set_fall_speed()`.
@@ -183,8 +173,6 @@ fn test_validate_u32_range_used_in_set_fall_speed() {
     // validate_u32_range() используется внутри set_fall_speed()
     // для дополнительной валидации диапазона
     // Это проверяется через код в state.rs строка 680
-    
-    assert!(true, "validate_u32_range() используется в set_fall_speed()");
 }
 
 // ============================================================================
@@ -208,9 +196,8 @@ fn test_no_duplicate_validation_logic() {
     // set_land_timer() использует ValidationService
     let result = state.set_land_timer(0.5);
     assert!(result.is_ok());
-    
+
     // Нет дублирования - валидация централизована
-    assert!(true, "Валидация централизована в ValidationService");
 }
 
 /// Тест что `ValidationError` используется для всех ошибок валидации.
@@ -225,8 +212,6 @@ fn test_validation_error_used_for_all_validation_errors() {
     // Проверяем что ошибка конвертируется в GameError
     let game_error = crate::game::state::GameError::Validation(error.message.clone());
     assert!(matches!(game_error, crate::game::state::GameError::Validation(_)));
-    
-    assert!(true, "ValidationError используется для ошибок валидации");
 }
 
 // ============================================================================
@@ -254,9 +239,8 @@ fn test_all_validation_centralized_in_validation_service() {
     let mut state = GameState::new();
     let _ = state.set_fall_speed(1.0); // Использует validate_f32_finite
     let _ = state.set_land_timer(0.5); // Использует validate_f32_finite
-    
+
     assert_eq!(validation_functions.len(), 2, "Должно быть 2 функции валидации");
-    assert!(true, "Валидация централизована в ValidationService");
 }
 
 // ============================================================================
@@ -278,10 +262,9 @@ fn test_validation_follows_dry_principle() {
     
     // set_land_timer() использует ValidationService
     let _ = state.set_land_timer(0.5);
-    
+
     // Обе функции используют один и тот же ValidationService
     // вместо дублирования кода валидации
-    assert!(true, "Валидация следует DRY принципу");
 }
 
 /// Тест что `ValidationError` используется консистентно.
@@ -295,9 +278,8 @@ fn test_validation_error_used_consistently() {
     let error2 = ValidationService::validate_u32_range(11, 0, 10);
     assert!(error2.is_err());
     assert_eq!(error2.unwrap_err().kind, ValidationErrorKind::OutOfRange);
-    
+
     // Оба типа ошибок используют один и тот же ValidationError
-    assert!(true, "ValidationError используется консистентно");
 }
 
 // ============================================================================
@@ -317,8 +299,6 @@ fn test_validation_integration_with_game_state() {
     assert!(state.set_land_timer(0.5).is_ok());
     assert!(state.set_land_timer(f64::NAN).is_err());
     assert!(state.set_land_timer(f64::INFINITY).is_err());
-    
-    assert!(true, "Валидация интегрирована с GameState");
 }
 
 /// Тест что валидация не влияет на производительность критичных путей.
@@ -330,7 +310,6 @@ fn test_validation_does_not_impact_performance() {
     for _ in 0..1000 {
         let _ = state.set_fall_speed(1.0);
     }
-    
+
     // Если тест проходит - валидация не влияет на производительность
-    assert!(true, "Валидация не влияет на производительность");
 }
