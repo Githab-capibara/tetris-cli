@@ -474,7 +474,7 @@ fn test_lines_per_level_constant() {
 #[test]
 fn test_level_calculation_from_lines() {
     // Уровень 1: 0-9 линий
-    assert_eq!(1, 1, "0 линий = уровень 1");
+    assert_eq!((0 / LINES_PER_LEVEL) + 1, 1, "0 линий = уровень 1");
     assert_eq!((9 / LINES_PER_LEVEL) + 1, 1, "9 линий = уровень 1");
 
     // Уровень 2: 10-19 линий

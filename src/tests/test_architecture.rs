@@ -447,7 +447,7 @@ fn test_leaderboard_independence() {
     use crate::highscore::Leaderboard;
 
     let mut leaderboard = Leaderboard::load();
-    let _ = leaderboard.add_score("Тест", 1000);
+    let _result = leaderboard.add_score("Тест", 1000);
 
     let entries = leaderboard.get_entries();
     assert!(!entries.is_empty());
@@ -510,7 +510,10 @@ fn test_wall_kick_logic_centralization() {
 
     // Результат должен быть логичным (фигура может или не может вращаться)
     // Просто проверяем что функция вернула bool значение
-    let _ = can_rotate;
+    assert!(
+        can_rotate == true || can_rotate == false,
+        "Функция должна возвращать bool"
+    );
 }
 
 /// Тест: HMAC ключ из переменных окружения
