@@ -4,6 +4,79 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.26] — 2026-03-30
+
+### Новые тесты и улучшения
+
+**CRITICAL:**
+- **Добавлены тесты защиты от переполнения очков** (`src/tests/test_score_overflow_protection.rs`) — 12 тестов для проверки saturating_add(), MAX_SCORE защиты, экстремальных значений (уровень 10000+, комбо 1000+)
+- **Добавлены тесты валидации fall_speed/land_timer** (`src/tests/test_state_validation.rs`) — 15 тестов для проверки NaN/Infinity защиты, clamp значений, граничных случаев
+- **Добавлены тесты TOCTOU защиты controls** (`src/tests/test_controls_toctou.rs`) — 10 тестов для проверки защиты от символических ссылок, O_NOFOLLOW применения
+
+### Тесты
+
+- **test_score_overflow_protection.rs** — 12 тестов:
+  - `test_score_does_not_exceed_max` — проверка ограничения MAX_SCORE
+  - `test_saturating_add_normal_values` — saturating_add с нормальными значениями
+  - `test_saturating_add_overflow_protection` — защита от переполнения u128
+  - `test_extreme_level_10000_plus` — экстремальный уровень 10000+
+  - `test_extreme_combo_1000_plus` — экстремальное комбо 1000+
+  - `test_extreme_level_and_combo_combined` — уровень и комбо одновременно
+  - `test_stress_many_score_additions` — 10000+ начислений
+  - `test_game_state_score_overflow` — интеграция с GameState
+  - `test_update_score_for_lines_overflow_protection` — защита в функции
+  - `test_max_score_constant` — проверка константы MAX_SCORE
+  - `test_saturating_add_edge_cases` — краевые случаи
+  - `test_no_panic_at_extreme_values` — отсутствие паник
+
+- **test_state_validation.rs** — 15 тестов:
+  - `test_set_fall_speed_nan_returns_error` — NaN защита fall_speed
+  - `test_set_fall_speed_positive_infinity_returns_error` — +Infinity защита
+  - `test_set_fall_speed_negative_infinity_returns_error` — -Infinity защита
+  - `test_set_fall_speed_valid_values` — валидные значения
+  - `test_set_fall_speed_clamps_to_valid_range` — clamp диапазона
+  - `test_set_land_timer_nan_returns_error` — NaN защита land_timer
+  - `test_set_land_timer_positive_infinity_returns_error` — +Infinity защита
+  - `test_set_land_timer_negative_infinity_returns_error` — -Infinity защита
+  - `test_set_land_timer_valid_values` — валидные значения
+  - `test_set_land_timer_negative_values_clamped_to_zero` — отрицательные значения
+  - `test_set_fall_speed_boundary_values` — граничные значения
+  - `test_set_land_timer_boundary_values` — граница 0.0
+  - `test_validation_in_game_state_context` — интеграция
+  - `test_validation_no_panic_on_invalid_values` — отсутствие паник
+  - `test_validation_stress_test` — стресс-тест
+
+- **test_controls_toctou.rs** — 10 тестов:
+  - `test_symlink_rejected_on_load` — отклонение symlink при загрузке
+  - `test_symlink_rejected_on_save` — отклонение symlink при сохранении
+  - `test_broken_symlink_handling` — обработка несуществующих symlink
+  - `test_o_nofollow_applied_on_save` — применение O_NOFOLLOW при сохранении
+  - `test_o_nofollow_applied_on_load` — применение O_NOFOLLOW при загрузке
+  - `test_o_nofollow_prevents_race_condition` — предотвращение race condition
+  - `test_toctou_protection_integration` — интеграционный тест
+  - `test_regular_files_work_correctly` — работа с обычными файлами
+  - `test_multiple_symlinks_attack` — защита от множественных symlink
+  - `test_toctou_protection_no_panic` — отсутствие паник
+
+- **Всего тестов: 1510+** (все проходят)
+
+### Улучшения
+
+- **Безопасность** — полная защита от переполнения очков, валидация fall_speed/land_timer, TOCTOU защита
+- **Надёжность** — отсутствие паник при экстремальных значениях
+- **Тестируемость** — 37 новых тестов для критических функций
+
+### Изменённые файлы
+
+- `src/tests/test_score_overflow_protection.rs` — 12 тестов защиты от переполнения
+- `src/tests/test_state_validation.rs` — 15 тестов валидации
+- `src/tests/test_controls_toctou.rs` — 10 тестов TOCTOU защиты
+- `README.md` — обновление количества тестов
+- `CHANGELOG.md` — запись изменений
+- `TESTS_REGISTRY.md` — обновление реестра тестов
+- `ARCHITECTURE.md` — обновление информации о тестах
+- `ARCHITECTURE_SUMMARY.md` — обновление метрик
+
 ## [23.96.24] — 2026-03-30
 
 ### Архитектурные улучшения

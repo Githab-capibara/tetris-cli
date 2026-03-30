@@ -404,7 +404,7 @@ let vim_config = ControlsConfig::custom(
 
 ### 🧪 Тестирование
 
-**1113 тестов** покрывают все аспекты игры:
+**1510+ тестов** покрывают все аспекты игры:
 - Комплексное тестирование игровой логики
 - Тесты безопасности (HmacValidator, constant-time HMAC)
 - Тесты оптимизаций производительности
@@ -427,8 +427,11 @@ let vim_config = ControlsConfig::custom(
 - Тесты deprecated методов GameState
 - Тесты HMAC ключей
 - Тесты инкапсуляции scoring модуля
+- **Тесты защиты от переполнения очков** (test_score_overflow_protection.rs — 12 тестов)
+- **Тесты валидации fall_speed/land_timer** (test_state_validation.rs — 15 тестов)
+- **Тесты TOCTOU защиты controls** (test_controls_toctou.rs — 10 тестов)
 
-**ВСЕГО: 1113 тестов** (unit + integration + architecture)
+**ВСЕГО: 1510+ тестов** (unit + integration + architecture)
 
 ### 🏗️ Архитектурные улучшения (версия 23.96.15+)
 
@@ -537,8 +540,8 @@ let vim_config = ControlsConfig::custom(
 
 Tetris CLI использует модульную архитектуру с чётким разделением ответственности между компонентами.
 
-**Версия проекта:** 23.96.24
-**Количество тестов:** 1144
+**Версия проекта:** 23.96.26
+**Количество тестов:** 1510+
 **Общая оценка архитектуры:** 9/10
 **Подробнее:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
