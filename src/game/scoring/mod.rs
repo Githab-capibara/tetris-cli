@@ -102,6 +102,10 @@ pub trait ScoringState {
     fn fall_speed(&self) -> f32;
 
     /// Установить скорость падения.
+    ///
+    /// # Errors
+    ///
+    /// Возвращает ошибку, если скорость падения недопустима.
     fn set_fall_speed(&mut self, speed: f32) -> Result<(), &'static str>;
 
     /// Получить маску анимируемых строк.

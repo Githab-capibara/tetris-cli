@@ -114,11 +114,17 @@ pub fn generate_salt() -> String {
 ///
 /// # Исправление #4 (ВЫСОКИЙ ПРИОРИТЕТ)
 /// Функция использует настоящий HMAC-SHA256 вместо простой конкатенации.
+///
+/// # Исправление аудита 2026-03-30
+/// Заменён .expect() на .unwrap() с комментарием о безопасности.
+/// HMAC-SHA256 поддерживает ключи любой длины, поэтому ошибка невозможна.
 #[allow(clippy::missing_panics_doc)]
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    let mut mac =
-        HmacSha256::new_from_slice(key.as_bytes()).expect("HMAC может принимать ключ любой длины");
+    // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
+    // new_from_slice() никогда не вернёт ошибку для HMAC.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())

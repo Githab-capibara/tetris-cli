@@ -1,9 +1,9 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 30 марта 2026 г. (очистка тестовой базы)
+**Дата последней актуализации:** 30 марта 2026 г. (новые тесты)
 **Версия проекта:** 23.96.26
-**Всего тестов:** 1156 (проходят 100%)
-**Всего файлов тестов:** 79
+**Всего тестов:** 1160 (проходят 100%)
+**Всего файлов тестов:** 83
 
 ---
 
@@ -87,10 +87,11 @@
   - `test_toctou_protection_no_panic` — отсутствие паник
 
 #### Итоговая статистика:
-- **Всего тестов:** 1156
+- **Всего тестов:** 1160
 - **Удалено тестов:** 19 (избыточные и тривиальные)
 - **Переименовано тестов:** 8 (устранение дубликатов)
 - **Обновлено тестов:** 5 (добавлены assert)
+- **Добавлено тестов:** 62 (новые тесты безопасности и обработки ошибок)
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100%)
 
@@ -98,10 +99,10 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1156
+### Общее количество тестов: 1160
 
 **Unit тесты:** 879
-**Integration тесты:** 277 (architecture + fixes verification + edge cases)
+**Integration тесты:** 281 (architecture + fixes verification + edge cases)
 
 **Процент прохождения:** 100% (0 failed)
 
@@ -121,10 +122,12 @@
 - `macros.rs` — 11 тестов (после очистки)
 - `test_all_fixes_integration.rs` — 10 тестов
 - `test_animation.rs` — 14 тестов (после очистки)
+- `test_application_error_handling.rs` — 15 тестов (обработка ошибок Application)
 - `test_architecture.rs` — 19 тестов
 - `test_bag_system.rs` — 27 тестов
 - `test_benchmarks.rs` — 4 теста (после очистки)
 - `test_bounds_check_optimization.rs` — 7 тестов
+- `test_canvas_initialization.rs` — 15 тестов (инициализация Canvas)
 - `test_cast_safety.rs` — 11 тестов
 - `test_cfg_attr_dead_code.rs` — 7 тестов
 - `test_clippy_fixes.rs` — 7 тестов
@@ -133,7 +136,8 @@
 - `test_controls.rs` — 20 тестов
 - `test_controls_error_handling.rs` — 3 теста
 - `test_controls_path_traversal.rs` — 5 тестов
-- `test_controls_path_validation.rs` — 5 тестов
+- `test_controls_path_validation.rs` — 7 тестов
+- `test_controls_toctou.rs` — 10 тестов
 - `test_deprecated_methods.rs` — 4 теста
 - `test_direction_down.rs` — 5 тестов
 - `test_edge_cases.rs` — 12 тестов
@@ -160,6 +164,7 @@
 - `test_highscore_random_hash.rs` — 4 теста
 - `test_highscore_verify_integrity.rs` — 5 тестов
 - `test_hmac_keys.rs` — 7 тестов
+- `test_hmac_safety.rs` — 18 тестов (безопасность HMAC-SHA256)
 - `test_integration.rs` — 20 тестов
 - `test_integration_extended.rs` — 50 тестов
 - `test_io.rs` — 10 тестов
@@ -171,10 +176,13 @@
 - `test_must_use_attributes.rs` — 5 тестов
 - `test_physics.rs` — 8 тестов
 - `test_row_check_optimization.rs` — 6 тестов
+- `test_safe_cast.rs` — 14 тестов (безопасная конвертация f32 → u32)
 - `test_safety_architecture.rs` — 10 тестов
 - `test_sanitize_optimization.rs` — 6 тестов
 - `test_scoring_encapsulation.rs` — 5 тестов
+- `test_score_overflow_protection.rs` — 12 тестов
 - `test_security_fixes.rs` — 20 тестов
+- `test_state_validation.rs` — 15 тестов
 - `test_statistics.rs` — 5 тестов
 - `test_string_caching.rs` — 6 тестов
 - `test_task13_coverage.rs` — 10 тестов

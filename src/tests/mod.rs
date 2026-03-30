@@ -169,6 +169,9 @@ pub mod test_must_use_attributes;
 pub mod test_track_caller;
 pub mod test_unicode_validation;
 
+// Тесты безопасной конвертации типов
+pub mod test_safe_cast;
+
 // ============================================================================
 // ТЕСТЫ ОПТИМИЗАЦИЙ
 // ============================================================================
@@ -185,6 +188,15 @@ pub mod test_scoring_state;
 pub mod test_safety_architecture;
 pub mod test_security_fixes;
 pub mod test_time_safety;
+
+// Тесты инициализации Canvas и обработки IoError
+pub mod test_canvas_initialization;
+
+// Тесты безопасности HMAC
+pub mod test_hmac_safety;
+
+// Тесты обработки ошибок Application
+pub mod test_application_error_handling;
 
 // ============================================================================
 // ОБЩИЕ ТЕСТЫ ИСПРАВЛЕНИЙ

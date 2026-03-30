@@ -12,6 +12,10 @@
 - **Добавлены тесты защиты от переполнения очков** (`src/tests/test_score_overflow_protection.rs`) — 12 тестов для проверки saturating_add(), MAX_SCORE защиты, экстремальных значений (уровень 10000+, комбо 1000+)
 - **Добавлены тесты валидации fall_speed/land_timer** (`src/tests/test_state_validation.rs`) — 15 тестов для проверки NaN/Infinity защиты, clamp значений, граничных случаев
 - **Добавлены тесты TOCTOU защиты controls** (`src/tests/test_controls_toctou.rs`) — 10 тестов для проверки защиты от символических ссылок, O_NOFOLLOW применения
+- **Добавлены тесты инициализации Canvas** (`src/tests/test_canvas_initialization.rs`) — 15 тестов для проверки безопасной инициализации Canvas и обработки IoError
+- **Добавлены тесты безопасности HMAC** (`src/tests/test_hmac_safety.rs`) — 18 тестов для проверки HMAC-SHA256 с ключами разной длины и обработки ошибок
+- **Добавлены тесты безопасной конвертации** (`src/tests/test_safe_cast.rs`) — 14 тестов для проверки безопасной конвертации f32 → u32
+- **Добавлены тесты обработки ошибок Application** (`src/tests/test_application_error_handling.rs`) — 15 тестов для проверки обработки ошибок в Application::new()
 
 ### Тесты
 
@@ -58,19 +62,93 @@
   - `test_multiple_symlinks_attack` — защита от множественных symlink
   - `test_toctou_protection_no_panic` — отсутствие паник
 
-- **Всего тестов: 1510+** (все проходят)
+- **test_canvas_initialization.rs** — 15 тестов:
+  - `test_canvas_try_default_success` — успешная инициализация Canvas
+  - `test_canvas_try_default_error_type` — тип ошибки инициализации
+  - `test_canvas_drop_no_panic` — отсутствие паники при Drop
+  - `test_canvas_drop_error_handling` — обработка ошибок в Drop
+  - `test_canvas_drop_catch_unwind` — catch_unwind в Drop
+  - `test_canvas_stub_fallback` — fallback stub поведение
+  - `test_canvas_stub_error_message` — сообщение об ошибке stub
+  - `test_io_error_types` — типы ошибок IoError
+  - `test_io_error_display` — форматирование IoError
+  - `test_canvas_initialization_integration` — интеграция инициализации
+  - `test_canvas_terminal_state` — состояние терминала после инициализации
+  - `test_canvas_drop_idempotent` — идемпотентность Drop
+  - `test_canvas_error_propagation` — распространение ошибок
+  - `test_canvas_resource_cleanup` — очистка ресурсов
+  - `test_canvas_stub_as_fallback` — stub как fallback
+
+- **test_hmac_safety.rs** — 18 тестов:
+  - `test_hmac_sha256_empty_key` — HMAC с пустым ключом
+  - `test_hmac_sha256_short_key` — HMAC с коротким ключом
+  - `test_hmac_sha256_long_key` — HMAC с длинным ключом
+  - `test_hmac_sha256_unicode_key` — HMAC с Unicode ключом
+  - `test_hmac_sha256_special_chars` — HMAC со спецсимволами
+  - `test_hmac_verify_valid` — проверка валидной подписи
+  - `test_hmac_verify_tampered` — проверка подделанной подписи
+  - `test_hmac_verify_empty_data` — проверка пустых данных
+  - `test_hmac_verify_unicode_data` — проверка Unicode данных
+  - `test_hmac_key_validation` — валидация HMAC ключа
+  - `test_hmac_key_non_empty` — проверка непустоты ключа
+  - `test_hmac_key_release_mode` — проверка ключа в release режиме
+  - `test_hmac_deterministic` — детерминированность HMAC
+  - `test_hmac_different_keys` — разные ключи дают разные подписи
+  - `test_hmac_different_data` — разные данные дают разные подписи
+  - `test_hmac_json_data` — HMAC JSON данных
+  - `test_hmac_score_data` — HMAC данных счёта
+  - `test_hmac_timing_safe_comparison` — постоянное по времени сравнение
+
+- **test_safe_cast.rs** — 14 тестов:
+  - `test_safe_f32_to_u32_normal_positive_values` — нормальные положительные значения
+  - `test_safe_f32_to_u32_zero` — конвертация нуля
+  - `test_safe_f32_to_u32_nan` — конвертация NaN
+  - `test_safe_f32_to_u32_infinity` — конвертация Infinity
+  - `test_safe_f32_to_u32_negative` — конвертация отрицательных значений
+  - `test_safe_f32_to_u32_boundary` — граничные значения
+  - `test_safe_f32_to_u32_max` — максимальное значение u32
+  - `test_safe_f32_to_u32_overflow` — переполнение
+  - `test_safe_f32_to_u32_large_numbers` — большие числа
+  - `test_safe_f32_to_u32_fractional` — дробные значения
+  - `test_safe_f32_to_u32_edge_cases` — краевые случаи
+  - `test_safe_f32_to_u32_stress` — стресс-тест
+  - `test_safe_f32_to_u32_comprehensive` — комплексный тест
+  - `test_safe_f32_to_u32_no_panic` — отсутствие паник
+
+- **test_application_error_handling.rs** — 15 тестов:
+  - `test_application_new_success` — успешная инициализация Application
+  - `test_application_new_terminal_error` — ошибка терминала
+  - `test_application_new_cleanup` — очистка при ошибке
+  - `test_application_unwrap_or_else_record` — unwrap_or_else для рекорда
+  - `test_application_error_logging` — логирование ошибок
+  - `test_application_load_game_data` — загрузка данных игры
+  - `test_application_leaderboard_error` — ошибка таблицы лидеров
+  - `test_application_error_format` — формат сообщений об ошибках
+  - `test_application_error_integration` — интеграция обработки ошибок
+  - `test_application_error_recovery` — восстановление после ошибки
+  - `test_application_error_propagation` — распространение ошибок
+  - `test_application_error_messages` — сообщения об ошибках
+  - `test_application_error_constants` — константы ошибок
+  - `test_application_error_types` — типы ошибок
+  - `test_application_error_handling_comprehensive` — комплексная обработка
+
+- **Всего тестов: 1160+** (все проходят)
 
 ### Улучшения
 
-- **Безопасность** — полная защита от переполнения очков, валидация fall_speed/land_timer, TOCTOU защита
-- **Надёжность** — отсутствие паник при экстремальных значениях
-- **Тестируемость** — 37 новых тестов для критических функций
+- **Безопасность** — полная защита от переполнения очков, валидация fall_speed/land_timer, TOCTOU защита, безопасная инициализация Canvas
+- **Надёжность** — отсутствие паник при экстремальных значениях, корректная обработка ошибок
+- **Тестируемость** — 99 новых тестов для критических функций
 
 ### Изменённые файлы
 
 - `src/tests/test_score_overflow_protection.rs` — 12 тестов защиты от переполнения
 - `src/tests/test_state_validation.rs` — 15 тестов валидации
 - `src/tests/test_controls_toctou.rs` — 10 тестов TOCTOU защиты
+- `src/tests/test_canvas_initialization.rs` — 15 тестов инициализации Canvas
+- `src/tests/test_hmac_safety.rs` — 18 тестов безопасности HMAC
+- `src/tests/test_safe_cast.rs` — 14 тестов безопасной конвертации
+- `src/tests/test_application_error_handling.rs` — 15 тестов обработки ошибок Application
 - `README.md` — обновление количества тестов
 - `CHANGELOG.md` — запись изменений
 - `TESTS_REGISTRY.md` — обновление реестра тестов

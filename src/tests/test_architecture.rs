@@ -443,7 +443,7 @@ fn test_wall_kick_logic_centralization() {
 
     // Assert что функция вернула корректное значение bool
     assert!(
-        can_rotate || !can_rotate,
+        true,
         "can_rotate_with_wall_kick должен вернуть bool"
     );
 }

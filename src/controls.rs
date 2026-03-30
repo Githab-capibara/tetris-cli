@@ -255,7 +255,7 @@ impl ControlsConfig {
 
         // Вычисляем HMAC-SHA256 подпись через hmac модуль
         // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
-        let signature = hmac_sign_with_salt(&get_controls_hmac_key(), &hmac_key, &config_json);
+        let signature = hmac_sign_with_salt(get_controls_hmac_key(), &hmac_key, &config_json);
 
         // Создаём итоговую конфигурацию с подписью
         let config_with_sig = ControlsConfig {
@@ -388,7 +388,7 @@ impl ControlsConfig {
         // Проверяем HMAC-SHA256 подпись через hmac модуль
         // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
         let expected_signature =
-            hmac_sign_with_salt(&get_controls_hmac_key(), &config.hmac_key, &config_json);
+            hmac_sign_with_salt(get_controls_hmac_key(), &config.hmac_key, &config_json);
 
         if config.signature != expected_signature {
             return Err(io::Error::new(

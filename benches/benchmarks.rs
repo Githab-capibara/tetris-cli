@@ -373,7 +373,7 @@ fn bench_string_caching(c: &mut Criterion) {
     group.bench_function("cache_combo", |b| {
         b.iter(|| {
             let mut state = GameState::new();
-            state.get_stats_mut().set_combo_counter(10);
+            state.stats_mut().set_combo_counter(10);
             black_box(state);
         });
     });
