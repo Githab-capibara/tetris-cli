@@ -218,116 +218,53 @@ impl GameMode {
 /// Состояние игры.
 ///
 /// Содержит всю информацию о текущем состоянии игры:
-/// - Счёт, уровень, количество линий
+/// - Счёт, уровень, количество линий (через ScoreBoard)
 /// - Текущая и следующая фигуры
 /// - Удержанная фигура (Hold)
-/// - Игровое поле
+/// - Игровое поле (через GameBoard)
 /// - Таймеры и скорость
 /// - Статистика игры
-/// - Режим игры
+/// - Режим игры (GameModeTrait)
 ///
 /// # Архитектурные заметки
-/// ## Инкапсуляция (Problem 2.1)
-/// Поля структуры сделаны приватными для улучшения инкапсуляции.
+/// ## Инкапсуляция и композиция
+/// Начиная с версии 23.96.18, `GameState` использует композицию:
+/// - `board: GameBoard` - инкапсуляция состояния поля
+/// - `scoreboard: ScoreBoard` - инкапсуляция состояния очков
+/// - `stats: GameStats` - статистика игры
+/// - `mode_trait: Box<dyn GameModeTrait>` - режим игры
 ///
-/// Доступ к полям осуществляется через геттеры/сеттеры в impl блоке ниже.
-/// Это позволяет валидировать изменения и контролировать доступ.
-///
-/// ## Геттеры
-/// Для всех полей существуют геттеры в impl блоке ниже.
-/// Используйте их вместо прямого доступа к полям.
+/// ## Поля структуры
+/// Все поля структуры приватные. Доступ осуществляется через методы:
+/// - `board()` / `board_mut()` - доступ к игровому полю
+/// - `scoreboard()` / `scoreboard_mut()` - доступ к очкам и уровням
+/// - `stats()` / `stats_mut()` - доступ к статистике
+/// - `get_mode_trait()` - доступ к режиму игры
 ///
 /// ## Пример использования
 /// ```ignore
 /// let mut game = GameState::new();
-/// let score = game.get_score();  // Используйте геттер
-/// let level = game.get_level();  // Используйте геттер
+/// let score = game.score();  // Используйте геттер
+/// let level = game.level();  // Используйте геттер
+/// let board = game.board();  // Доступ к полю
 /// ```
-///
-/// ## Будущая рефакторизация
-/// TODO (#архитектура, срок: 1-2 недели): Разделить GameState на специализированные модули:
-/// - `GameBoard` - состояние поля (blocks, filled_lines)
-/// - `ScoreBoard` - состояние очков (score, level, lines_cleared)
-/// - `FigureManager` - состояние фигур (curr_shape, next_shape, held_shape, bag)
-/// - `AnimationState` - состояние анимаций (animating_rows_mask, is_hard_dropping)
-///
-/// ## Архитектурные заметки
-///
-/// Рассмотреть разделение на компоненты:
-/// - `GameBoard` - состояние поля (blocks, filled_lines)
-/// - `ScoreBoard` - очки (score, level, lines_cleared)
-/// - `FigureManager` - фигуры (curr_shape, next_shape, held_shape, bag)
-/// - `AnimationState` - анимации (animating_rows_mask, is_hard_dropping)
-///
-/// Текущая структура нарушает Single Responsibility Principle.
-///
-/// ## Исправление A1 (HIGH) - Разделение ответственности
-/// Начиная с версии 23.96.18, `GameState` использует композицию:
-/// - `board: GameBoard` - инкапсуляция состояния поля
-/// - `scoreboard: ScoreBoard` - инкапсуляция состояния очков
-///
-/// Старые поля (`blocks`, `filled_lines`, `score`, `level`, `lines_cleared`)
-/// сохранены как deprecated для обратной совместимости и делегируют вызовы
-/// новым компонентам.
 pub struct GameState {
     // ========================================================================
-    // === НОВЫЕ КОМПОНЕНТЫ (A1: Разделение ответственности) ===
+    // === КОМПОНЕНТЫ СОСТОЯНИЯ ===
     // ========================================================================
     /// Состояние игрового поля.
     ///
     /// Инкапсулирует состояние поля (blocks, filled_lines).
-    /// Новый способ доступа к полю - используйте `board()` и `board_mut()`.
+    /// Используйте `board()` и `board_mut()` для доступа.
     board: GameBoard,
     /// Состояние счёта и уровней.
     ///
     /// Инкапсулирует состояние очков (score, level, lines_cleared).
-    /// Новый способ доступа к очкам - используйте `scoreboard()` и `scoreboard_mut()`.
+    /// Используйте `scoreboard()` и `scoreboard_mut()` для доступа.
     scoreboard: ScoreBoard,
 
     // ========================================================================
-    // === СОСТОЯНИЕ ПОЛЯ (будущий GameBoard) ===
-    // ========================================================================
-    /// Двумерный массив игрового поля 10x20.
-    /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.
-    ///
-    /// # Устарело
-    /// Используйте `board.get_blocks()` вместо прямого доступа.
-    #[deprecated(since = "23.96.18", note = "Используйте board.get_blocks()")]
-    blocks: [[i8; GRID_WIDTH]; GRID_HEIGHT],
-    /// Битовая маска заполненных линий (для будущей оптимизации).
-    ///
-    /// # Устарело
-    /// Используйте `board.get_filled_lines_mask()` вместо прямого доступа.
-    #[deprecated(since = "23.96.18", note = "Используйте board.get_filled_lines_mask()")]
-    filled_lines: u32,
-
-    // ========================================================================
-    // === СОСТОЯНИЕ ОЧКОВ (будущий ScoreBoard) ===
-    // ========================================================================
-    /// Текущий счёт.
-    ///
-    /// # Устарело
-    /// Используйте `scoreboard.get_score()` вместо прямого доступа.
-    #[deprecated(since = "23.96.18", note = "Используйте scoreboard.get_score()")]
-    score: u128,
-    /// Текущий уровень.
-    ///
-    /// # Устарело
-    /// Используйте `scoreboard.get_level()` вместо прямого доступа.
-    #[deprecated(since = "23.96.18", note = "Используйте scoreboard.get_level()")]
-    level: u32,
-    /// Количество удалённых линий.
-    ///
-    /// # Устарело
-    /// Используйте `scoreboard.get_lines_cleared()` вместо прямого доступа.
-    #[deprecated(
-        since = "23.96.18",
-        note = "Используйте scoreboard.get_lines_cleared()"
-    )]
-    lines_cleared: u32,
-
-    // ========================================================================
-    // === СОСТОЯНИЕ ФИГУР (будущий FigureManager) ===
+    // === СОСТОЯНИЕ ФИГУР ===
     // ========================================================================
     /// Текущая фигура.
     curr_shape: Tetromino,
@@ -341,7 +278,7 @@ pub struct GameState {
     bag: BagGenerator,
 
     // ========================================================================
-    // === СОСТОЯНИЕ АНИМАЦИЙ (будущий AnimationState) ===
+    // === СОСТОЯНИЕ АНИМАЦИЙ ===
     // ========================================================================
     /// Строки для анимации (мигание при очистке).
     animating_rows_mask: u32,
@@ -414,7 +351,6 @@ impl GameState {
     }
 
     /// Внутренний метод создания состояния игры.
-    #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
         let mut bag = BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);
@@ -436,23 +372,26 @@ impl GameState {
             board,
             scoreboard,
 
-            // Старые поля для обратной совместимости (deprecated)
-            score: 0,
-            level: 1,
-            lines_cleared: 0,
+            // Состояние фигур
             curr_shape,
             next_shape,
             held_shape: None,
             can_hold: true,
-            fall_speed: INITIAL_FALL_SPD,
-            blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
-            filled_lines: 0,
-            land_timer: LAND_TIME_DELAY_S,
-            stats,
-            mode_trait,
+
+            // Состояние анимаций
             animating_rows_mask: 0,
             is_hard_dropping: false,
+
+            // Игровая логика
+            fall_speed: INITIAL_FALL_SPD,
+            land_timer: LAND_TIME_DELAY_S,
             soft_drop_distance: 0,
+
+            // Статистика и режим
+            stats,
+            mode_trait,
+
+            // Кэш для отрисовки
             bag,
             render_cache: RenderCache::new(),
         };
@@ -492,61 +431,16 @@ impl GameState {
         self.scoreboard.get_lines_cleared()
     }
 
-    /// Получить текущий счёт (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`score()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_score(&self) -> u128 {
-        self.score()
-    }
-
-    /// Получить текущий уровень (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`level()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_level(&self) -> u32 {
-        self.level()
-    }
-
-    /// Получить количество удалённых линий (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`lines_cleared()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_lines_cleared(&self) -> u32 {
-        self.lines_cleared()
-    }
-
     /// Получить статистику игры.
     #[must_use]
-    pub fn get_stats(&self) -> &GameStats {
+    pub fn stats(&self) -> &GameStats {
         &self.stats
     }
 
     /// Получить статистику игры (мутуабельная ссылка).
     #[must_use]
-    pub fn get_stats_mut(&mut self) -> &mut GameStats {
+    pub fn stats_mut(&mut self) -> &mut GameStats {
         &mut self.stats
-    }
-
-    /// Получить статистику игры (для обратной совместимости).
-    #[must_use]
-    pub fn stats(&self) -> &GameStats {
-        &self.stats
     }
 
     /// Получить режим игры (объект трейта).
@@ -674,67 +568,16 @@ impl GameState {
         self.held_shape.as_ref()
     }
 
-    /// Получить текущую фигуру (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`curr_shape()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_curr_shape(&self) -> &Tetromino {
-        self.curr_shape()
-    }
-
-    /// Получить следующую фигуру (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`next_shape()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_next_shape(&self) -> &Tetromino {
-        self.next_shape()
-    }
-
-    /// Получить удержанную фигуру (устаревшее имя).
-    ///
-    /// # Устарело
-    /// Используйте [`held_shape()`] вместо этого.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.14",
-        note = "Используйте score(), board(), level() вместо get_*"
-    )]
-    pub fn get_held_shape(&self) -> Option<&Tetromino> {
-        self.held_shape()
-    }
-
     /// Получить скорость падения.
     #[must_use]
     pub fn fall_speed(&self) -> f32 {
         self.fall_speed
     }
 
-    /// Получить скорость падения (для обратной совместимости).
-    #[must_use]
-    pub fn get_fall_speed(&self) -> f32 {
-        self.fall_speed()
-    }
-
     /// Получить таймер приземления.
     #[must_use]
     pub fn land_timer(&self) -> f64 {
         self.land_timer
-    }
-
-    /// Получить таймер приземления (для обратной совместимости).
-    #[must_use]
-    pub fn get_land_timer(&self) -> f64 {
-        self.land_timer()
     }
 
     /// Получить расстояние Soft Drop.
@@ -781,10 +624,8 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn set_score(&mut self, value: u128) {
         self.scoreboard.set_score(value);
-        self.score = value; // Для обратной совместимости
     }
 
     /// Установить уровень.
@@ -793,20 +634,16 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn set_level(&mut self, value: u32) {
         self.scoreboard.set_level(value);
-        self.level = value.max(1); // Для обратной совместимости
     }
 
     /// Установить количество удалённых линий.
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn set_lines_cleared(&mut self, value: u32) {
         self.scoreboard.set_lines_cleared(value);
-        self.lines_cleared = value; // Для обратной совместимости
     }
 
     /// Установить скорость падения.
@@ -946,40 +783,32 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
-    #[allow(deprecated)]
     pub fn set_filled_lines(&mut self, value: u32) {
         self.board.set_filled_lines_mask(value);
-        self.filled_lines = value; // Для обратной совместимости
     }
 
     /// Добавить очки к текущему счёту.
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn add_score(&mut self, points: u128) {
         self.scoreboard.add_score(points);
-        self.score = self.score.saturating_add(points); // Для обратной совместимости
     }
 
     /// Добавить очки к текущему счёту без проверки (для тестов).
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn add_score_no_check(&mut self, points: u128) {
         self.scoreboard.add_score(points);
-        self.score = self.score.saturating_add(points); // Для обратной совместимости
     }
 
     /// Добавить количество очищенных линий.
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    #[allow(deprecated)]
     pub fn add_lines_cleared(&mut self, lines: u32) {
         self.scoreboard.add_lines_cleared(lines);
-        self.lines_cleared = self.lines_cleared.saturating_add(lines); // Для обратной совместимости
     }
 
     /// Увеличить уровень на 1.
@@ -1041,12 +870,66 @@ impl GameState {
     pub fn get_animating_rows_mask(&self) -> u32 {
         self.animating_rows_mask
     }
+}
 
-    /// Получить заполненные линии (для access.rs).
-    #[must_use]
-    #[allow(deprecated)]
-    pub fn get_filled_lines(&self) -> u32 {
-        self.filled_lines
+// ============================================================================
+// РЕАЛИЗАЦИЯ TRAIT SCORINGSTATE (ИСПРАВЛЕНИЕ #6 - HIGH)
+// ============================================================================
+
+impl super::scoring::ScoringState for GameState {
+    fn score(&self) -> u128 {
+        self.score()
+    }
+
+    fn set_score(&mut self, score: u128) {
+        self.set_score(score);
+    }
+
+    fn level(&self) -> u32 {
+        self.level()
+    }
+
+    fn lines_cleared(&self) -> u32 {
+        self.lines_cleared()
+    }
+
+    fn set_lines_cleared(&mut self, lines: u32) {
+        self.set_lines_cleared(lines);
+    }
+
+    fn fall_speed(&self) -> f32 {
+        self.fall_speed()
+    }
+
+    fn set_fall_speed(&mut self, speed: f32) -> Result<(), &'static str> {
+        match self.set_fall_speed(speed) {
+            Ok(()) => Ok(()),
+            Err(_) => Err("Ошибка установки скорости падения"),
+        }
+    }
+
+    fn animating_rows_mask(&self) -> u32 {
+        self.animating_rows_mask
+    }
+
+    fn set_animating_rows_mask(&mut self, mask: u32) {
+        self.animating_rows_mask = mask;
+    }
+
+    fn stats(&self) -> &crate::game::stats::GameStats {
+        self.stats()
+    }
+
+    fn stats_mut(&mut self) -> &mut crate::game::stats::GameStats {
+        self.stats_mut()
+    }
+
+    fn get_blocks(&self) -> &[[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT] {
+        self.get_blocks()
+    }
+
+    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT] {
+        self.get_blocks_mut()
     }
 }
 
@@ -1058,34 +941,29 @@ impl GameState {
 mod state_tests {
     use super::*;
 
-    /// Тест: проверка что deprecated методы всё ещё работают
+    /// Тест: проверка методов доступа к состоянию
     ///
-    /// Проверяет что устаревшие методы помечены корректно
-    /// и всё ещё функционируют для обратной совместимости.
+    /// Проверяет что методы score(), level(), lines_cleared()
+    /// возвращают корректные начальные значения.
     #[test]
-    #[allow(deprecated)]
-    fn test_deprecated_methods_still_work() {
-        // Проверка что deprecated методы всё ещё работают
-        // и помечены корректно
+    fn test_state_initial_values() {
         let state = GameState::new();
 
-        // Тест deprecated методов get_*
-        let _score = state.get_score();
-        let _level = state.get_level();
-        let _lines = state.get_lines_cleared();
-
-        // Проверка что методы возвращают корректные значения
-        assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
-        assert_eq!(state.get_level(), 1, "Начальный уровень должен быть 1");
+        // Проверка начальных значений
+        assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+        assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
         assert_eq!(
-            state.get_lines_cleared(),
+            state.lines_cleared(),
             0,
             "Начальное количество линий должно быть 0"
         );
 
-        // Проверка что новые методы возвращают те же значения
-        assert_eq!(state.score(), state.get_score());
-        assert_eq!(state.level(), state.get_level());
-        assert_eq!(state.lines_cleared(), state.get_lines_cleared());
+        // Проверка что методы возвращают те же значения что и scoreboard
+        assert_eq!(state.score(), state.scoreboard().get_score());
+        assert_eq!(state.level(), state.scoreboard().get_level());
+        assert_eq!(
+            state.lines_cleared(),
+            state.scoreboard().get_lines_cleared()
+        );
     }
 }

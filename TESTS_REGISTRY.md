@@ -2,8 +2,8 @@
 
 **Дата последней актуализации:** 30 марта 2026 г.
 **Версия проекта:** 23.96.26
-**Всего тестов:** 1510+ (проходят 100%)
-**Всего файлов тестов:** 76
+**Всего тестов:** 1186 (проходят 100%)
+**Всего файлов тестов:** 80
 
 ---
 
@@ -60,8 +60,8 @@
   - `test_toctou_protection_no_panic` — отсутствие паник
 
 #### Итоговая статистика:
-- **Всего тестов:** 1510+
-- **Добавлено тестов:** 37
+- **Всего тестов:** 1186
+- **Добавлено тестов:** 45 (HMAC, config keys, IO drop, leaderboard TOCTOU, scoring state, macros)
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100%)
 
@@ -69,26 +69,27 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1510+
+### Общее количество тестов: 1186
 
-**Unit тесты:** 1092
-**Integration тесты:** 418 (architecture + fixes verification + edge cases)
+**Unit тесты:** 898
+**Integration тесты:** 288 (architecture + fixes verification + edge cases)
 
 **Процент прохождения:** 100% (0 failed)
 
 ### Структура тестовых файлов:
 
 **tests/** (интеграционные тесты):
-- `test_architecture_improvements.rs` — 17 тестов
-- `test_architecture_integrity.rs` — 15 тестов
+- `test_architecture_improvements.rs` — 9 тестов
+- `test_architecture_integrity.rs` — 17 тестов
 - `test_architecture_refactoring.rs` — 37 тестов
 - `test_fixes_verification.rs` — 14 тестов
-- `test_architecture_components.rs` — 31 тест
+- `test_architecture_components.rs` — 29 тестов
 
 **src/tests/** (unit тесты):
-- `test_score_overflow_protection.rs` — 12 тестов (новые)
-- `test_state_validation.rs` — 15 тестов (новые)
-- `test_controls_toctou.rs` — 10 тестов (новые)
+- `io_drop.rs` — 6 тестов (новые)
+- `leaderboard_toctou.rs` — 10 тестов (новые)
+- `scoring_state.rs` — 15 тестов (новые)
+- `macros.rs` — 14 тестов (новые)
 - `test_all_fixes_integration.rs` — 10 тестов
 - `test_animation.rs` — 15 тестов
 - `test_architecture.rs` — 19 тестов

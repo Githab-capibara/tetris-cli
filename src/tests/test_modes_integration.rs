@@ -77,9 +77,9 @@ fn test_modes_integration_initial_speed_consistency() {
     let sprint = GameState::new_sprint();
     let marathon = GameState::new_marathon();
 
-    let classic_speed = classic.get_fall_speed();
-    let sprint_speed = sprint.get_fall_speed();
-    let marathon_speed = marathon.get_fall_speed();
+    let classic_speed = classic.fall_speed();
+    let sprint_speed = sprint.fall_speed();
+    let marathon_speed = marathon.fall_speed();
 
     assert!(
         (classic_speed - sprint_speed).abs() < f32::EPSILON,
@@ -274,7 +274,7 @@ fn test_modes_integration_next_shape_in_all_modes() {
 #[test]
 fn test_modes_integration_stats_in_classic() {
     let state = GameState::new();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
     assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
@@ -290,7 +290,7 @@ fn test_modes_integration_stats_in_classic() {
 #[test]
 fn test_modes_integration_stats_in_sprint() {
     let state = GameState::new_sprint();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
     assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
@@ -306,7 +306,7 @@ fn test_modes_integration_stats_in_sprint() {
 #[test]
 fn test_modes_integration_stats_in_marathon() {
     let state = GameState::new_marathon();
-    let stats = state.get_stats();
+    let stats = state.stats();
 
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
     assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
@@ -326,7 +326,7 @@ fn test_modes_integration_sprint_timer_works() {
 
     std::thread::sleep(std::time::Duration::from_millis(50));
 
-    let elapsed = state.get_stats().get_elapsed_time();
+    let elapsed = state.stats().get_elapsed_time();
     assert!(elapsed >= 0.05, "Время должно быть больше 50 мс");
 }
 
@@ -340,7 +340,7 @@ fn test_modes_integration_marathon_timer_works() {
 
     std::thread::sleep(std::time::Duration::from_millis(50));
 
-    let elapsed = state.get_stats().get_elapsed_time();
+    let elapsed = state.stats().get_elapsed_time();
     assert!(elapsed >= 0.05, "Время должно быть больше 50 мс");
 }
 

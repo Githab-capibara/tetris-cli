@@ -266,14 +266,14 @@ fn test_animation_marathon_mode() {
 #[test]
 fn test_animation_does_not_affect_stats() {
     let mut state = GameState::new();
-    let initial_pieces = state.get_stats().total_pieces();
+    let initial_pieces = state.stats().total_pieces();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
     // Статистика не должна измениться при падении
-    assert_eq!(state.get_stats().total_pieces(), initial_pieces);
+    assert_eq!(state.stats().total_pieces(), initial_pieces);
 }
 
 /// Тест 19: Проверка что анимация работает после удержания

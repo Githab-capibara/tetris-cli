@@ -45,7 +45,7 @@ pub fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Lea
 /// * `game_state` - состояние игры для отображения статистики
 #[track_caller]
 pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameState) {
-    let stats = game_state.get_stats();
+    let stats = game_state.stats();
     let mode_trait = game_state.get_mode_trait();
     let mode_str = mode_trait.name();
 

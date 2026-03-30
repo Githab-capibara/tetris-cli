@@ -15,6 +15,16 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(deprecated)]
 
+// Импорты для тестов
+use crate::game::board::GameBoard;
+use crate::game::scoreboard::ScoreBoard;
+use crate::game::state::GameState;
+use crate::game::GameView;
+use crate::game::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
+use crate::io::Canvas;
+use crate::io_traits::{InputReader, Renderer};
+use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+
 // ============================================================================
 // ТЕСТ 1: РАЗДЕЛЕНИЕ КОМПОНЕНТОВ (A1)
 // ============================================================================
@@ -335,13 +345,13 @@ impl MockInputReader {
 }
 
 impl InputReader for MockInputReader {
-    fn get_key(&mut self) -> Option<u8> {
+    fn get_key(&mut self) -> std::io::Result<Option<u8>> {
         if self.index < self.keys.len() {
             let key = self.keys[self.index];
             self.index += 1;
-            Some(key)
+            Ok(Some(key))
         } else {
-            None
+            Ok(None)
         }
     }
 }
@@ -402,27 +412,27 @@ fn test_dependency_inversion() {
     let mut mock_reader = MockInputReader::new(vec![b'a', b'd', b'w', b's']);
 
     assert_eq!(
-        mock_reader.get_key(),
+        mock_reader.get_key().unwrap(),
         Some(b'a'),
         "Первая клавиша должна быть 'a'"
     );
     assert_eq!(
-        mock_reader.get_key(),
+        mock_reader.get_key().unwrap(),
         Some(b'd'),
         "Вторая клавиша должна быть 'd'"
     );
     assert_eq!(
-        mock_reader.get_key(),
+        mock_reader.get_key().unwrap(),
         Some(b'w'),
         "Третья клавиша должна быть 'w'"
     );
     assert_eq!(
-        mock_reader.get_key(),
+        mock_reader.get_key().unwrap(),
         Some(b's'),
         "Четвёртая клавиша должна быть 's'"
     );
     assert_eq!(
-        mock_reader.get_key(),
+        mock_reader.get_key().unwrap(),
         None,
         "После всех клавиш должно вернуть None"
     );
@@ -442,7 +452,7 @@ fn test_dependency_inversion() {
     // Функция принимающая любой InputReader
     fn process_input<R: InputReader>(reader: &mut R) -> Vec<u8> {
         let mut keys = Vec::new();
-        while let Some(key) = reader.get_key() {
+        while let Ok(Some(key)) = reader.get_key() {
             keys.push(key);
         }
         keys
@@ -669,30 +679,30 @@ fn test_solid_principles() {
     // Трейты должны быть специфичными, не перегруженными
 
     // BoardReadonly - только для чтения
-    fn requires_board_readonly<B: crate::game::BoardReadonly>(_board: &B) {}
-    requires_board_readonly(&GameBoard::new());
+    fn requires_board_readonly<B: crate::game::access::BoardReadonly>(_board: &B) {}
+    requires_board_readonly(&GameState::new());
 
     // BoardMutable - для изменения (наследует BoardReadonly)
-    fn requires_board_mutable<B: crate::game::BoardMutable>(_board: &mut B) {}
-    requires_board_mutable(&mut GameBoard::new());
+    fn requires_board_mutable<B: crate::game::access::BoardMutable>(_board: &mut B) {}
+    requires_board_mutable(&mut GameState::new());
 
     // ScoreAccess - только для чтения
-    fn requires_score_access<S: crate::game::ScoreAccess>(_scoreboard: &S) {}
-    requires_score_access(&ScoreBoard::new());
+    fn requires_score_access<S: crate::game::access::ScoreAccess>(_scoreboard: &S) {}
+    requires_score_access(&GameState::new());
 
-    // ScoreMutable - для изменения (наследует ScoreAccess)
-    fn requires_score_mutable<S: crate::game::ScoreMutable>(_scoreboard: &mut S) {}
-    requires_score_mutable(&mut ScoreBoard::new());
+    // ScoreMutable - для изменения (используем ScoreAccess с мутуабельной ссылкой)
+    fn requires_score_mutable<S: crate::game::access::ScoreAccess>(_scoreboard: &mut S) {}
+    requires_score_mutable(&mut GameState::new());
 
     // === Liskov Substitution Principle (LSP) ===
     // Подтипы должны заменять базовые типы без нарушения работы
 
     // MockInputReader должен заменять KeyReader
     fn process_any_reader<R: InputReader>(reader: &mut R) -> Option<u8> {
-        reader.get_key()
+        reader.get_key().unwrap_or(None)
     }
 
-    let mut mock = MockInputReader::new(vec![b"test"]);
+    let mut mock = MockInputReader::new(vec![b't', b'e', b's', b't']);
     let _key = process_any_reader(&mut mock);
 
     // === Open/Closed Principle (OCP) ===
@@ -701,8 +711,8 @@ fn test_solid_principles() {
     // Можно добавить новые реализации InputReader без изменения существующего кода
     struct AnotherMockReader;
     impl InputReader for AnotherMockReader {
-        fn get_key(&mut self) -> Option<u8> {
-            None
+        fn get_key(&mut self) -> std::io::Result<Option<u8>> {
+            Ok(None)
         }
     }
 

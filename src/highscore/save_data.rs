@@ -4,9 +4,10 @@
 //! с защитой от подделки через хэширование с солью.
 //!
 //! # Исправление #3 (CRITICAL)
-//! HMAC логика перемещена в модуль `crypto::validator`.
+//! HMAC логика перемещена в модуль `crypto::hmac`.
 
-use crate::crypto::validator::{sign_salt_and_data, verify_salt_and_data};
+use crate::config::keys::get_save_data_hmac_key;
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -14,24 +15,6 @@ use std::path::PathBuf;
 
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
-
-/// Секретный ключ для HMAC подписи рекордов.
-///
-/// # Безопасность (Исправление В4)
-/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
-/// В противном случае используется fallback ключ для обратной совместимости.
-///
-/// ## Использование переменной окружения
-/// ```bash
-/// export TETRIS_HMAC_KEY="your-secret-key-here"
-/// ```
-///
-/// ## Fallback для обратной совместимости
-/// Если переменная окружения не установлена, используется константный ключ.
-/// Это обеспечивает обратную совместимость с существующими записями.
-fn get_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-save-data-hmac-key")
-}
 
 /// Получить путь к файлу конфигурации confy.
 ///
@@ -224,11 +207,11 @@ impl SaveData {
     /// Поля переименованы: используется `score`, `salt`, `hash`.
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
-        let hash = sign_salt_and_data(get_hmac_key(), &salt, &score_str);
+        let hash = hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str);
 
         Self { score, salt, hash }
     }
@@ -307,11 +290,11 @@ impl SaveData {
     /// ```
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn verify_and_get_score(&self) -> Option<u128> {
         let score_str = self.score.to_string();
-        if verify_salt_and_data(get_hmac_key(), &self.salt, &score_str, &self.hash) {
+        if hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash) {
             Some(self.score)
         } else {
             // Логирование попытки подделки

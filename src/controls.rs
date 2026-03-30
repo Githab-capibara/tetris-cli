@@ -22,25 +22,8 @@ use std::os::unix::fs::OpenOptionsExt;
 // Переэкспорт для обратной совместимости
 pub use crate::validation::path::DEFAULT_PATH_VALIDATOR;
 
-use crate::crypto::validator::sign_salt_and_data;
-
-/// Секретный ключ для HMAC подписи конфигурации.
-///
-/// # Безопасность (Исправление В4)
-/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
-/// В противном случае используется fallback ключ для обратной совместимости.
-///
-/// ## Использование переменной окружения
-/// ```bash
-/// export TETRIS_HMAC_KEY="your-secret-key-here"
-/// ```
-///
-/// ## Fallback для обратной совместимости
-/// Если переменная окружения не установлена, используется константный ключ.
-/// Это обеспечивает обратную совместимость с существующими записями.
-fn get_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-controls-hmac-key")
-}
+use crate::config::keys::get_controls_hmac_key;
+use crate::crypto::hmac::hmac_sign_with_salt;
 
 /// Конфигурация управления с keyed hash подписью.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -270,8 +253,9 @@ impl ControlsConfig {
         let config_json = serde_json::to_string(&config_for_hash)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
-        // Вычисляем HMAC-SHA256 подпись через validator модуль
-        let signature = sign_salt_and_data(&hmac_key, "", &config_json);
+        // Вычисляем HMAC-SHA256 подпись через hmac модуль
+        // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
+        let signature = hmac_sign_with_salt(&get_controls_hmac_key(), &hmac_key, &config_json);
 
         // Создаём итоговую конфигурацию с подписью
         let config_with_sig = ControlsConfig {
@@ -401,8 +385,10 @@ impl ControlsConfig {
             )
         })?;
 
-        // Проверяем HMAC-SHA256 подпись через validator модуль
-        let expected_signature = sign_salt_and_data(&config.hmac_key, "", &config_json);
+        // Проверяем HMAC-SHA256 подпись через hmac модуль
+        // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
+        let expected_signature =
+            hmac_sign_with_salt(&get_controls_hmac_key(), &config.hmac_key, &config_json);
 
         if config.signature != expected_signature {
             return Err(io::Error::new(
@@ -932,11 +918,11 @@ mod controls_tests {
         // HMAC логика корректно интегрирована
     }
 
-    /// Тест: проверка что get_hmac_key() возвращает не пустую строку
+    /// Тест: проверка что get_controls_hmac_key() возвращает не пустую строку
     #[test]
-    fn test_get_hmac_key_not_empty() {
-        // Проверяем что функция get_hmac_key() возвращает не пустой ключ
-        let key = get_hmac_key();
+    fn test_get_controls_hmac_key_not_empty() {
+        // Проверяем что функция get_controls_hmac_key() возвращает не пустой ключ
+        let key = get_controls_hmac_key();
         assert!(!key.is_empty(), "HMAC ключ не должен быть пустым");
     }
 }

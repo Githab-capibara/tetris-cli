@@ -104,7 +104,7 @@ fn test_classic_mode_score_saved() {
 #[test]
 fn test_classic_mode_fall_speed() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(
         fall_spd > 0.0,
@@ -186,7 +186,7 @@ fn test_sprint_mode_timer() {
     state.start_timer();
 
     // Проверяем, что таймер работает
-    let stats = state.get_stats();
+    let stats = state.stats();
     let elapsed = stats.get_elapsed_time();
 
     assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
@@ -216,7 +216,7 @@ fn test_sprint_mode_win_at_40_lines() {
 #[test]
 fn test_sprint_mode_fall_speed() {
     let state = GameState::new_sprint();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(
         fall_spd > 0.0,
@@ -333,7 +333,7 @@ fn test_marathon_mode_score_saved() {
 #[test]
 fn test_marathon_mode_fall_speed() {
     let state = GameState::new_marathon();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(
         fall_spd > 0.0,

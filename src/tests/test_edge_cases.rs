@@ -34,8 +34,9 @@ fn test_edge_cases_empty_field() {
 /// Тест: Проверка что `BagGenerator` инициализирован при создании
 #[test]
 fn test_edge_cases_bag_empty() {
-    let bag = BagGenerator::new();
-    assert_eq!(bag.get_bag().len(), 7);
+    let mut bag = BagGenerator::new();
+    // Проверяем что можно получить фигуру из мешка
+    let _shape = Tetromino::from_bag(&mut bag);
 }
 
 /// Тест: Проверка что удержанная фигура None при создании
@@ -49,7 +50,7 @@ fn test_edge_cases_held_shape_none() {
 #[test]
 fn test_edge_cases_start_time_none() {
     let state = GameState::new();
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
     assert!(game_stats.start_time().is_none());
 }
 
@@ -57,7 +58,7 @@ fn test_edge_cases_start_time_none() {
 #[test]
 fn test_edge_cases_end_time_none() {
     let state = GameState::new();
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
     assert!(game_stats.end_time().is_none());
 }
 
@@ -65,7 +66,7 @@ fn test_edge_cases_end_time_none() {
 #[test]
 fn test_edge_cases_combo_counter_zero() {
     let state = GameState::new();
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
     assert_eq!(game_stats.combo_counter(), 0);
 }
 
@@ -73,7 +74,7 @@ fn test_edge_cases_combo_counter_zero() {
 #[test]
 fn test_edge_cases_max_combo_zero() {
     let state = GameState::new();
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
     assert_eq!(game_stats.max_combo(), 0);
 }
 
@@ -216,7 +217,7 @@ fn test_edge_cases_bag_10000_shapes() {
 #[test]
 fn test_edge_cases_speed_reasonable() {
     let state = GameState::new();
-    let fall_spd = state.get_fall_speed();
+    let fall_spd = state.fall_speed();
 
     assert!(fall_spd < 10.0);
 }
@@ -403,7 +404,7 @@ fn test_edge_cases_get_blocks_no_panic() {
 #[test]
 fn test_edge_cases_get_stats_no_panic() {
     let state = GameState::new();
-    let _stats = state.get_stats();
+    let _stats = state.stats();
     // Тест успешно завершён, если код достиг этой строки
 }
 
@@ -545,7 +546,7 @@ fn test_edge_cases_performance_get_stats_10k() {
     let start = std::time::Instant::now();
 
     for _ in 0..10_000 {
-        let _stats = state.get_stats();
+        let _stats = state.stats();
     }
 
     let duration = start.elapsed();

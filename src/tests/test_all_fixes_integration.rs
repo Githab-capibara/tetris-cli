@@ -35,9 +35,7 @@ fn test_game_stats_and_constants_integration() {
     let initial_t_pieces = state.stats().t_pieces();
 
     // Добавляем фигуру через геттер
-    state
-        .get_stats_mut()
-        .add_piece(crate::tetromino::ShapeType::T);
+    state.stats_mut().add_piece(crate::tetromino::ShapeType::T);
     assert_eq!(
         state.stats().t_pieces(),
         initial_t_pieces + 1,

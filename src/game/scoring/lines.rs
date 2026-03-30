@@ -8,11 +8,13 @@
 //! # Зависимости
 //! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
+//! - [`super::ScoringState`](super::ScoringState): trait для изменения состояния
 
 use super::super::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
 use super::super::state::GameState;
+use super::ScoringState;
 use crate::io::GRID_HEIGHT;
 
 /// Максимально допустимый счёт для защиты от переполнения.
@@ -101,6 +103,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 /// # Пример
 /// ```ignore
 /// use tetris_cli::game::scoring::lines::check_rows;
+/// use tetris_cli::game::scoring::ScoringState;
 ///
 /// let mut state = GameState::new();
 /// let cleared = check_rows(&mut state);
@@ -111,7 +114,10 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 /// - Улучшения разделения ответственности (отрисовка vs логика игры)
 /// - Уменьшения связанности между модулями
 /// - Улучшения тестируемости логики удаления линий
-pub fn check_rows(state: &mut GameState) -> u32 {
+///
+/// # Исправление #6 (HIGH)
+/// Использует trait `ScoringState` вместо прямого доступа к полям GameState.
+pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     // Поиск заполненных линий - используем битовую маску для оптимизации
     let (rows_mask, remove_count) = find_filled_lines(state.get_blocks());
 
@@ -120,7 +126,7 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     if remove_count > 0 {
         state.set_animating_rows_mask(rows_mask);
         print!("{BELL}");
-        state.get_stats_mut().update_max_combo(remove_count);
+        state.stats_mut().update_max_combo(remove_count);
     }
 
     // Удаление линий и сдвиг поля
@@ -129,12 +135,12 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     // Обновление счёта, уровня и комбо
     let mut score = state.score();
     let level = state.level();
-    let mut combo_counter = state.get_stats().combo_counter();
+    let mut combo_counter = state.stats().combo_counter();
 
     update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter);
 
     state.set_score(score);
-    state.get_stats_mut().set_combo_counter(combo_counter);
+    state.stats_mut().set_combo_counter(combo_counter);
 
     // Обновление количества очищенных линий
     let lines_cleared = state.lines_cleared().saturating_add(remove_count);
@@ -373,8 +379,8 @@ mod lines_tests {
         // - state.score() - для получения счёта
         // - state.set_score() - для установки счёта
         // - state.level() - для получения уровня
-        // - state.get_stats() - для получения статистики
-        // - state.get_stats_mut() - для модификации статистики
+        // - state.stats() - для получения статистики
+        // - state.stats_mut() - для модификации статистики
         // - state.lines_cleared() - для получения количества линий
         // - state.set_lines_cleared() - для установки количества линий
         // - state.fall_speed() - для получения скорости
@@ -389,8 +395,8 @@ mod lines_tests {
         let _score = state.score();
         state.set_score(100);
         let _level = state.level();
-        let _stats = state.get_stats();
-        let _stats_mut = state.get_stats_mut();
+        let _stats = state.stats();
+        let _stats_mut = state.stats_mut();
         let _lines = state.lines_cleared();
         state.set_lines_cleared(5);
         let _fall_speed = state.fall_speed();

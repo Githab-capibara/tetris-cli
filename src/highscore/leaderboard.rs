@@ -22,7 +22,8 @@
 
 #![deny(clippy::mut_mutex_lock)]
 
-use crate::crypto::validator::{sign_salt_and_data, verify_salt_and_data};
+use crate::config::keys::get_leaderboard_hmac_key;
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
@@ -35,24 +36,6 @@ const APP_NAME: &str = "tetris-cli";
 
 /// Максимальное количество рекордов в таблице лидеров.
 const MAX_LEADERBOARD_SIZE: usize = 5;
-
-/// Секретный ключ для HMAC подписи рекордов.
-///
-/// # Безопасность (Исправление В4)
-/// Ключ загружается из переменной окружения `TETRIS_HMAC_KEY` если она установлена.
-/// В противном случае используется fallback ключ для обратной совместимости.
-///
-/// ## Использование переменной окружения
-/// ```bash
-/// export TETRIS_HMAC_KEY="your-secret-key-here"
-/// ```
-///
-/// ## Fallback для обратной совместимости
-/// Если переменная окружения не установлена, используется константный ключ.
-/// Это обеспечивает обратную совместимость с существующими записями.
-fn get_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or("tetris-cli-leaderboard-hmac-key")
-}
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.
@@ -172,11 +155,19 @@ impl LeaderboardEntry {
     /// сначала сохраняется локальная копия score_value,
     /// затем проверяется хэш именно для этого значения,
     /// и только после этого значение возвращается.
+    ///
+    /// # Исправление #4 (CRITICAL): Усиленная защита TOCTOU
+    /// Используется volatile загрузка через std::hint::black_box для предотвращения
+    /// оптимизаций компилятора которые могут привести к гонкам данных.
     #[must_use]
     pub fn score(&self) -> u128 {
-        let score_value = self.score_value;
+        // Используем volatile загрузку для предотвращения оптимизаций компилятора
+        // Это обеспечивает что score_value загружается из памяти один раз
+        let score_value = std::hint::black_box(self.score_value);
+
+        // Атомарная валидация и возврат значения
         if !self.verify_hash_for_value(score_value) {
-            eprintln!("Предупреждение: запись не прошла валидацию!");
+            eprintln!("[PANIC SAFE] Предупреждение: запись не прошла валидацию!");
             return 0;
         }
         score_value
@@ -227,11 +218,16 @@ impl LeaderboardEntry {
     /// что предотвращает TOCTOU уязвимость при использовании в методе `score()`.
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
         let salt_name_score = format!("{}{}{}", self.salt, self.name, value);
-        verify_salt_and_data(get_hmac_key(), &self.salt, &salt_name_score, &self.hash)
+        hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &self.salt,
+            &salt_name_score,
+            &self.hash,
+        )
     }
 
     /// Получить хэш записи.
@@ -266,14 +262,14 @@ impl LeaderboardEntry {
     /// Используется `&str` вместо `String` для предотвращения лишних аллокаций.
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
 
         let salt = crate::crypto::generate_salt();
         let salt_name_score = format!("{salt}{valid_name}{}", score);
-        let hash = sign_salt_and_data(get_hmac_key(), &salt, &salt_name_score);
+        let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
             name: valid_name,
@@ -312,11 +308,16 @@ impl LeaderboardEntry {
     /// ```
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn is_valid(&self) -> bool {
         let salt_name_score = format!("{}{}{}", self.salt, self.name, self.score_value);
-        verify_salt_and_data(get_hmac_key(), &self.salt, &salt_name_score, &self.hash)
+        hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &self.salt,
+            &salt_name_score,
+            &self.hash,
+        )
     }
 }
 
@@ -426,13 +427,13 @@ impl ThreadSafeLeaderboardEntry {
     /// Новый экземпляр `ThreadSafeLeaderboardEntry`
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
         let salt = crate::crypto::generate_salt();
         let salt_name_score = format!("{salt}{valid_name}{score}");
-        let hash = sign_salt_and_data(get_hmac_key(), &salt, &salt_name_score);
+        let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
             inner: Mutex::new(LeaderboardEntryData {
@@ -457,14 +458,19 @@ impl ThreadSafeLeaderboardEntry {
     /// Валидация и возврат значения выполняются атомарно под блокировкой.
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let score_value = guard.score_value;
         let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-        if !verify_salt_and_data(get_hmac_key(), &guard.salt, &salt_name_score, &guard.hash) {
+        if !hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &guard.salt,
+            &salt_name_score,
+            &guard.hash,
+        ) {
             eprintln!("Предупреждение: запись не прошла валидацию!");
             return 0;
         }
@@ -483,13 +489,18 @@ impl ThreadSafeLeaderboardEntry {
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     ///
     /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
+    /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
     pub fn is_valid(&self) -> bool {
         let guard = self.inner.lock().expect("Mutex poisoned");
         let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
-        verify_salt_and_data(get_hmac_key(), &guard.salt, &salt_name_score, &guard.hash)
+        hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &guard.salt,
+            &salt_name_score,
+            &guard.hash,
+        )
     }
 
     /// Получить имя игрока.

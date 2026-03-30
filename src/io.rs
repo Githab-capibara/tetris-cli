@@ -115,18 +115,18 @@ impl Drop for Canvas {
     /// Обёрнуто в catch_unwind для предотвращения паники при панике.
     ///
     /// # M3: Обработка ошибок
-    /// Добавлено логирование ошибок для отладки проблем с терминалом.
+    /// Добавлено логирование ошибок с префиксом "[PANIC SAFE]" для отладки проблем с терминалом.
     fn drop(&mut self) {
         // Минимальный сброс: только показ курсора и flush
         // Используем write_all для атомарности записи
         // Исправление аудита 2026-03-30: catch_unwind для предотвращения паники
-        // M3: логирование ошибок
+        // M3: логирование ошибок с префиксом "[PANIC SAFE]"
         let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             if let Err(e) = write!(self.out, "{Show}") {
-                eprintln!("[ERROR] Не удалось показать курсор в Drop: {}", e);
+                eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {}", e);
             }
             if let Err(e) = self.out.flush() {
-                eprintln!("[ERROR] Не удалось сбросить буфер в Drop: {}", e);
+                eprintln!("[PANIC SAFE] Не удалось сбросить буфер в Drop: {}", e);
             }
         }));
     }
@@ -376,13 +376,27 @@ impl Drop for KeyReader {
     ///
     /// # Безопасность
     /// Гарантирует возврат терминала в нормальное состояние даже при панике.
+    ///
+    /// # Исправление #4: Обработка ошибок
+    /// Добавлено логирование ошибок с префиксом "[PANIC SAFE]" для отладки.
     fn drop(&mut self) {
         let mut stdout = std::io::stdout();
 
         // Минимальный сброс: только показ курсора и flush
         // Используем write_all для атомарности записи
-        let _ = write!(stdout, "{Show}");
-        let _ = stdout.flush();
+        // Исправление #4: логирование ошибок с префиксом "[PANIC SAFE]"
+        if let Err(e) = write!(stdout, "{Show}") {
+            eprintln!(
+                "[PANIC SAFE] Не удалось показать курсор в KeyReader::Drop: {}",
+                e
+            );
+        }
+        if let Err(e) = stdout.flush() {
+            eprintln!(
+                "[PANIC SAFE] Не удалось сбросить буфер в KeyReader::Drop: {}",
+                e
+            );
+        }
     }
 }
 

@@ -133,7 +133,7 @@ impl<'a> GameView<'a> {
             is_hard_dropping: state.is_hard_dropping(),
             mode: state.get_mode_trait(),
             lines_cleared: state.lines_cleared(),
-            elapsed_time: state.get_stats().get_elapsed_time(),
+            elapsed_time: state.stats().get_elapsed_time(),
         }
     }
 

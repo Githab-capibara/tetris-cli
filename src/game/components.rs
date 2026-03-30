@@ -33,56 +33,6 @@ pub use super::scoreboard::{ScoreAccess as ScoreAccessTrait, ScoreBoard, ScoreMu
 // FIGURE MANAGER — УПРАВЛЕНИЕ ФИГУРАМИ
 // ============================================================================
 
-/// Трейт для доступа к состоянию фигур.
-///
-/// Предоставляет только чтение для доступа к фигурам.
-pub trait FigureAccess {
-    /// Получить текущую фигуру.
-    fn get_curr_shape(&self) -> &Tetromino;
-
-    /// Получить следующую фигуру.
-    fn get_next_shape(&self) -> &Tetromino;
-
-    /// Получить удержанную фигуру.
-    fn get_held_shape(&self) -> Option<&Tetromino>;
-
-    /// Проверить возможность удержания фигуры.
-    fn can_hold(&self) -> bool;
-}
-
-/// Трейт для изменения состояния фигур.
-///
-/// Предоставляет мутуабельный доступ для изменения фигур.
-pub trait FigureMutable: FigureAccess {
-    /// Установить текущую фигуру.
-    fn set_curr_shape(&mut self, shape: Tetromino);
-
-    /// Установить следующую фигуру.
-    fn set_next_shape(&mut self, shape: Tetromino);
-
-    /// Установить удержанную фигуру.
-    fn set_held_shape(&mut self, shape: Option<Tetromino>);
-
-    /// Установить флаг возможности удержания.
-    fn set_can_hold(&mut self, can_hold: bool);
-
-    /// Получить генератор фигур.
-    fn get_bag(&self) -> &BagGenerator;
-
-    /// Получить генератор фигур (мутуабельная ссылка).
-    fn get_bag_mut(&mut self) -> &mut BagGenerator;
-
-    /// Получить следующую фигуру из мешка и обновить состояние.
-    ///
-    /// # Возвращает
-    /// Следующую фигуру из мешка
-    fn get_next_from_bag(&mut self) -> Tetromino {
-        let next = Tetromino::from_bag(self.get_bag_mut());
-        self.set_next_shape(next);
-        *self.get_next_shape()
-    }
-}
-
 /// Менеджер фигур.
 ///
 /// Инкапсулирует состояние фигур и предоставляет контролируемый доступ.
@@ -207,103 +157,9 @@ impl FigureManager {
     }
 }
 
-impl FigureAccess for FigureManager {
-    #[inline]
-    fn get_curr_shape(&self) -> &Tetromino {
-        self.get_curr_shape()
-    }
-
-    #[inline]
-    fn get_next_shape(&self) -> &Tetromino {
-        self.get_next_shape()
-    }
-
-    #[inline]
-    fn get_held_shape(&self) -> Option<&Tetromino> {
-        self.get_held_shape()
-    }
-
-    #[inline]
-    fn can_hold(&self) -> bool {
-        self.can_hold()
-    }
-}
-
-impl FigureMutable for FigureManager {
-    #[inline]
-    fn set_curr_shape(&mut self, shape: Tetromino) {
-        self.set_curr_shape(shape);
-    }
-
-    #[inline]
-    fn set_next_shape(&mut self, shape: Tetromino) {
-        self.set_next_shape(shape);
-    }
-
-    #[inline]
-    fn set_held_shape(&mut self, shape: Option<Tetromino>) {
-        self.set_held_shape(shape);
-    }
-
-    #[inline]
-    fn set_can_hold(&mut self, can_hold: bool) {
-        self.set_can_hold(can_hold);
-    }
-
-    #[inline]
-    fn get_bag(&self) -> &BagGenerator {
-        self.get_bag()
-    }
-
-    #[inline]
-    fn get_bag_mut(&mut self) -> &mut BagGenerator {
-        self.get_bag_mut()
-    }
-}
-
 // ============================================================================
 // ANIMATION STATE — СОСТОЯНИЕ АНИМАЦИЙ
 // ============================================================================
-
-/// Трейт для доступа к состоянию анимаций.
-pub trait AnimationAccess {
-    /// Получить маску анимации строк.
-    fn get_animating_rows_mask(&self) -> u32;
-
-    /// Проверить флаг Hard Drop.
-    fn is_hard_dropping(&self) -> bool;
-
-    /// Проверить флаг завершения игры.
-    fn is_game_over(&self) -> bool;
-}
-
-/// Трейт для изменения состояния анимаций.
-pub trait AnimationMutable: AnimationAccess {
-    /// Установить маску анимации строк.
-    fn set_animating_rows_mask(&mut self, mask: u32);
-
-    /// Установить флаг Hard Drop.
-    fn set_is_hard_dropping(&mut self, value: bool);
-
-    /// Установить флаг завершения игры.
-    fn set_is_game_over(&mut self, value: bool);
-
-    /// Добавить строку в маску анимации.
-    ///
-    /// # Аргументы
-    /// * `row` — номер строки (0..GRID_HEIGHT)
-    fn add_animating_row(&mut self, row: usize) {
-        if row < GRID_HEIGHT {
-            let mask = self.get_animating_rows_mask();
-            self.set_animating_rows_mask(mask | (1 << row));
-        }
-    }
-
-    /// Очистить маску анимации строк.
-    fn clear_animating_rows(&mut self) {
-        self.set_animating_rows_mask(0);
-    }
-}
 
 /// Состояние анимаций.
 ///
@@ -399,81 +255,9 @@ impl AnimationState {
     }
 }
 
-impl AnimationAccess for AnimationState {
-    #[inline]
-    fn get_animating_rows_mask(&self) -> u32 {
-        self.get_animating_rows_mask()
-    }
-
-    #[inline]
-    fn is_hard_dropping(&self) -> bool {
-        self.is_hard_dropping()
-    }
-
-    #[inline]
-    fn is_game_over(&self) -> bool {
-        self.is_game_over()
-    }
-}
-
-impl AnimationMutable for AnimationState {
-    #[inline]
-    fn set_animating_rows_mask(&mut self, mask: u32) {
-        self.set_animating_rows_mask(mask);
-    }
-
-    #[inline]
-    fn set_is_hard_dropping(&mut self, value: bool) {
-        self.set_is_hard_dropping(value);
-    }
-
-    #[inline]
-    fn set_is_game_over(&mut self, value: bool) {
-        self.set_is_game_over(value);
-    }
-}
-
 // ============================================================================
 // GAME PHASE — ФАЗА ИГРЫ
 // ============================================================================
-
-/// Трейт для доступа к фазе игры.
-pub trait GamePhaseAccess {
-    /// Проверить флаг паузы.
-    fn is_paused(&self) -> bool;
-
-    /// Проверить флаг завершения игры (победа или поражение).
-    fn is_game_complete(&self) -> bool;
-}
-
-/// Трейт для изменения фазы игры.
-pub trait GamePhaseMutable: GamePhaseAccess {
-    /// Установить флаг паузы.
-    fn set_is_paused(&mut self, value: bool);
-
-    /// Установить флаг завершения игры.
-    fn set_is_game_complete(&mut self, value: bool);
-
-    /// Поставить игру на паузу.
-    fn pause(&mut self) {
-        self.set_is_paused(true);
-    }
-
-    /// Снять игру с паузы.
-    fn resume(&mut self) {
-        self.set_is_paused(false);
-    }
-
-    /// Переключить состояние паузы.
-    fn toggle_pause(&mut self) {
-        self.set_is_paused(!self.is_paused());
-    }
-
-    /// Завершить игру.
-    fn complete(&mut self) {
-        self.set_is_game_complete(true);
-    }
-}
 
 /// Фаза игры.
 ///
@@ -557,30 +341,6 @@ impl GamePhase {
     #[inline]
     pub fn complete(&mut self) {
         self.game_complete = true;
-    }
-}
-
-impl GamePhaseAccess for GamePhase {
-    #[inline]
-    fn is_paused(&self) -> bool {
-        self.is_paused()
-    }
-
-    #[inline]
-    fn is_game_complete(&self) -> bool {
-        self.is_game_complete()
-    }
-}
-
-impl GamePhaseMutable for GamePhase {
-    #[inline]
-    fn set_is_paused(&mut self, value: bool) {
-        self.set_is_paused(value);
-    }
-
-    #[inline]
-    fn set_is_game_complete(&mut self, value: bool) {
-        self.set_is_game_complete(value);
     }
 }
 

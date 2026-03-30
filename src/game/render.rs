@@ -207,7 +207,7 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     }
 
     // Кэширование строки комбо
-    let combo_counter = state.get_stats().combo_counter();
+    let combo_counter = state.stats().combo_counter();
     {
         let render_cache = state.get_render_cache_mut();
         if render_cache.last_cached_combo != combo_counter {
@@ -222,7 +222,7 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
 
     // Кэширование строки таймера для режима спринт
     if state.get_mode_trait().get_target_lines() == Some(40) {
-        let elapsed = state.get_stats().get_elapsed_time();
+        let elapsed = state.stats().get_elapsed_time();
         let timer_str = format!("Время: {elapsed:.2}с");
         let render_cache = state.get_render_cache_mut();
         // Исправление #4: используем clear() + push_str() для переиспользования буфера

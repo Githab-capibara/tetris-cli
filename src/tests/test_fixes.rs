@@ -75,7 +75,7 @@ mod tests {
         assert_eq!(state.get_mode(), GameMode::Sprint);
 
         // Проверяем, что start_time установлен
-        let stats = state.get_stats();
+        let stats = state.stats();
         assert!(
             stats.start_time.is_some(),
             "Таймер должен быть запущен в режиме Sprint"
@@ -93,7 +93,7 @@ mod tests {
         assert_eq!(state.get_mode(), GameMode::Marathon);
 
         // Проверяем, что start_time установлен
-        let stats = state.get_stats();
+        let stats = state.stats();
         assert!(
             stats.start_time.is_some(),
             "Таймер должен быть запущен в режиме Marathon"

@@ -64,7 +64,7 @@ fn test_sprint_game_initialization() {
 
     // Проверяем, что таймер работает
     std::thread::sleep(std::time::Duration::from_millis(50));
-    let elapsed = state.get_stats().get_elapsed_time();
+    let elapsed = state.stats().get_elapsed_time();
     assert!(elapsed > 0.0, "Таймер должен течь");
 }
 
@@ -261,7 +261,7 @@ fn test_controls_game_state_interaction() {
 #[test]
 fn test_game_stats_game_state_interaction() {
     let state = GameState::new();
-    let game_stats = state.get_stats();
+    let game_stats = state.stats();
 
     // В начале игры должна быть 1 фигура
     assert_eq!(
