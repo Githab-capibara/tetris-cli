@@ -150,59 +150,50 @@ fn test_render_uses_game_view_methods() {
 }
 
 // -----------------------------------------------------------------------------
-// ТЕСТ 3: ARCH-3 - Трейты фаз в cycle.rs
+// ТЕСТ 3: ARCH-3 - Трейты фаз в cycle.rs (удалены - исправление #13)
 // -----------------------------------------------------------------------------
 
-/// Проверка что трейты фаз имеют документацию.
+/// Проверка что трейты фаз были удалены (исправление #13 LOW).
 ///
 /// ## Требования
-/// - cycle.rs должен содержать трейт FPSControl с документацией
-/// - cycle.rs должен содержать трейт InputHandler с документацией
-/// - cycle.rs должен содержать трейт GameUpdater с документацией
-/// - cycle.rs должен содержать трейт GameRenderer с документацией
+/// - cycle.rs должен содержать комментарии об удалении трейтов
+/// - cycle.rs должен содержать объяснение почему трейты удалены
+/// - Трейты FPSControl, InputHandler, GameUpdater, GameRenderer не должны существовать
 #[test]
 fn test_cycle_traits_documentation() {
     let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
 
-    // Проверяем наличие трейта FPSControl
+    // Проверяем что трейты НЕ существуют (они были удалены)
     assert!(
-        contains_pattern(&content, "trait FPSControl"),
-        "cycle.rs должен содержать трейт FPSControl"
+        !contains_pattern(&content, "trait FPSControl"),
+        "trait FPSControl должен быть удален (исправление #13)"
+    );
+    assert!(
+        !contains_pattern(&content, "trait InputHandler"),
+        "trait InputHandler должен быть удален (исправление #13)"
+    );
+    assert!(
+        !contains_pattern(&content, "trait GameUpdater"),
+        "trait GameUpdater должен быть удален (исправление #13)"
+    );
+    assert!(
+        !contains_pattern(&content, "trait GameRenderer"),
+        "trait GameRenderer должен быть удален (исправление #13)"
     );
 
-    // Проверяем наличие трейта InputHandler
-    assert!(
-        contains_pattern(&content, "trait InputHandler"),
-        "cycle.rs должен содержать трейт InputHandler"
-    );
-
-    // Проверяем наличие трейта GameUpdater
-    assert!(
-        contains_pattern(&content, "trait GameUpdater"),
-        "cycle.rs должен содержать трейт GameUpdater"
-    );
-
-    // Проверяем наличие трейта GameRenderer
-    assert!(
-        contains_pattern(&content, "trait GameRenderer"),
-        "cycle.rs должен содержать трейт GameRenderer"
-    );
-
-    // Проверяем наличие документации для трейтов
-    let has_trait_docs = contains_all_patterns(
+    // Проверяем наличие комментариев об удалении
+    let has_removal_comments = contains_all_patterns(
         &content,
         &[
-            "Архитектурные заметки",
-            "FPSControl",
-            "InputHandler",
-            "GameUpdater",
-            "GameRenderer",
+            "Исправление #13",
+            "удалены",
+            "не использовались полиморфно",
         ],
     );
 
     assert!(
-        has_trait_docs,
-        "Трейты в cycle.rs должны иметь документацию с архитектурными заметками"
+        has_removal_comments,
+        "cycle.rs должен содержать комментарии об удалении трейтов (исправление #13 LOW)"
     );
 }
 
@@ -420,35 +411,43 @@ fn test_thread_safe_leaderboard_entry_documentation() {
 }
 
 // -----------------------------------------------------------------------------
-// ТЕСТ 9: YAGNI-1 - Документация трейтов в cycle.rs
+// ТЕСТ 9: YAGNI-1 - Документация удаления трейтов в cycle.rs
 // -----------------------------------------------------------------------------
 
-/// Проверка что трейты имеют TODO комментарии.
+/// Проверка что удаление трейтов задокументировано.
 ///
 /// ## Требования
-/// - cycle.rs должен содержать TODO о будущем использовании или удалении трейтов
-/// - Должны быть комментарии о YAGNI принципе
+/// - cycle.rs должен содержать комментарии об удалении трейтов
+/// - Должны быть объяснения почему трейты удалены (YAGNI принцип)
 #[test]
 fn test_cycle_traits_have_todo_comments() {
     let content = read_src_file("game/cycle.rs").expect("Не удалось прочитать файл cycle.rs");
 
-    // Проверяем наличие TODO комментариев
-    let has_todo = contains_pattern(&content, "TODO")
-        && (contains_pattern(&content, "будущ")
-            || contains_pattern(&content, "использован")
-            || contains_pattern(&content, "удален")
-            || contains_pattern(&content, "YAGNI")
-            || contains_pattern(&content, "рефакторизаци"));
+    // Проверяем наличие комментариев об удалении трейтов
+    let has_removal_explanation = contains_all_patterns(
+        &content,
+        &[
+            "Исправление #13",
+            "удалены",
+            "не использовались полиморфно",
+        ],
+    );
+
+    // Проверяем наличие комментариев о YAGNI принципе
+    let has_yagni_comments = contains_pattern(&content, "YAGNI")
+        || contains_pattern(&content, "избыточ")
+        || contains_pattern(&content, "уменьшени");
 
     // Проверяем наличие комментариев о текущем состоянии
     let has_status_comments = contains_pattern(&content, "Текущее состояние")
         || contains_pattern(&content, "ARCH-3")
-        || contains_pattern(&content, "В настоящее время");
+        || contains_pattern(&content, "В настоящее время")
+        || contains_pattern(&content, "Архитектурные заметки");
 
     assert!(
-        has_todo || has_status_comments,
-        "cycle.rs должен содержать TODO комментарии о будущем использовании \
-         трейтов или комментарии о текущем состоянии (YAGNI-1)"
+        has_removal_explanation || has_yagni_comments || has_status_comments,
+        "cycle.rs должен содержать комментарии об удалении трейтов и объяснения \
+         почему они были удалены (YAGNI-1, исправление #13)"
     );
 }
 

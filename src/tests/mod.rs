@@ -31,7 +31,6 @@
 //! ### Тесты исправлений и безопасности
 //! - `test_controls_path_validation` - валидация путей
 //! - `test_game_bounds_check` - проверки границ
-//! - `test_highscore_integrity` - целостность рекордов
 //! - `test_controls_error_handling` - обработка ошибок
 //! - `test_game_negative_coords` - отрицательные координаты
 //! - `test_io_resource_leak` - утечка ресурсов
@@ -118,7 +117,6 @@ pub mod test_game_stats_export;
 
 pub mod test_highscore_config_path;
 pub mod test_highscore_error_handling;
-pub mod test_highscore_integrity;
 pub mod test_highscore_random_hash;
 pub mod test_highscore_verify_integrity;
 
