@@ -586,8 +586,8 @@ fn test_score_overflow_protection_integration() {
 /// Проверяет что валидация работает корректно.
 #[test]
 fn test_state_validation_integration() {
+    use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
     use crate::game::GameState;
-    use crate::game::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, LAND_TIME_DELAY_S};
 
     let mut state = GameState::new();
 
@@ -664,8 +664,8 @@ fn test_controls_toctou_protection_integration() {
 #[test]
 fn test_all_new_fixes_comprehensive_integration() {
     use crate::controls::ControlsConfig;
-    use crate::game::GameState;
     use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+    use crate::game::GameState;
 
     // 1. Защита от переполнения счёта (проверка через GameState)
     let mut state = GameState::new();
@@ -704,8 +704,8 @@ fn test_all_new_fixes_comprehensive_integration() {
 #[test]
 fn test_no_panic_at_extreme_values_integration() {
     use crate::controls::ControlsConfig;
-    use crate::game::GameState;
     use crate::game::scoring::check_rows;
+    use crate::game::GameState;
 
     // 1. Экстремальные значения счёта не вызывают паник
     let mut state = GameState::new();
@@ -726,7 +726,11 @@ fn test_no_panic_at_extreme_values_integration() {
             let mut s = GameState::new();
             let _ = s.set_fall_speed(value);
         }));
-        assert!(result.is_ok(), "set_fall_speed({}) не должен вызывать панику", value);
+        assert!(
+            result.is_ok(),
+            "set_fall_speed({}) не должен вызывать панику",
+            value
+        );
     }
 
     // 3. Экстремальные значения land_timer не вызывают паник
@@ -737,7 +741,11 @@ fn test_no_panic_at_extreme_values_integration() {
             let mut s = GameState::new();
             let _ = s.set_land_timer(value);
         }));
-        assert!(result.is_ok(), "set_land_timer({}) не должен вызывать панику", value);
+        assert!(
+            result.is_ok(),
+            "set_land_timer({}) не должен вызывать панику",
+            value
+        );
     }
 
     // 4. TOCTOU защита не вызывает паник

@@ -10,9 +10,9 @@
 //! Функции `set_fall_speed()` и `set_land_timer()` проверяют значения
 //! на NaN и Infinity, возвращая `GameError::Validation` при невалидных значениях.
 
-use crate::game::GameState;
+use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
 use crate::game::state::GameError;
-use crate::game::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, LAND_TIME_DELAY_S};
+use crate::game::GameState;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Валидация fall_speed (NaN и Infinity)
@@ -121,7 +121,10 @@ fn test_set_fall_speed_valid_values() {
     let valid_value = 2.0;
     let result = state.set_fall_speed(valid_value);
 
-    assert!(result.is_ok(), "Установка валидного значения должна быть успешной");
+    assert!(
+        result.is_ok(),
+        "Установка валидного значения должна быть успешной"
+    );
     assert_eq!(
         state.fall_speed(),
         valid_value,
@@ -147,7 +150,10 @@ fn test_set_fall_speed_clamps_to_valid_range() {
     let below_min = INITIAL_FALL_SPD - 0.5;
     let result = state.set_fall_speed(below_min);
 
-    assert!(result.is_ok(), "Установка значения ниже минимума должна быть успешной");
+    assert!(
+        result.is_ok(),
+        "Установка значения ниже минимума должна быть успешной"
+    );
     assert_eq!(
         state.fall_speed(),
         INITIAL_FALL_SPD,
@@ -158,7 +164,10 @@ fn test_set_fall_speed_clamps_to_valid_range() {
     let above_max = MAX_FALL_SPEED + 100.0;
     let result = state.set_fall_speed(above_max);
 
-    assert!(result.is_ok(), "Установка значения выше максимума должна быть успешной");
+    assert!(
+        result.is_ok(),
+        "Установка значения выше максимума должна быть успешной"
+    );
     assert_eq!(
         state.fall_speed(),
         MAX_FALL_SPEED,
@@ -170,7 +179,11 @@ fn test_set_fall_speed_clamps_to_valid_range() {
     let result = state.set_fall_speed(in_range);
 
     assert!(result.is_ok());
-    assert_eq!(state.fall_speed(), in_range, "Значение в пределах должно устанавливаться корректно");
+    assert_eq!(
+        state.fall_speed(),
+        in_range,
+        "Значение в пределах должно устанавливаться корректно"
+    );
 }
 
 // ============================================================================
@@ -273,7 +286,10 @@ fn test_set_land_timer_valid_values() {
     let valid_value = 0.5;
     let result = state.set_land_timer(valid_value);
 
-    assert!(result.is_ok(), "Установка валидного значения должна быть успешной");
+    assert!(
+        result.is_ok(),
+        "Установка валидного значения должна быть успешной"
+    );
     assert_eq!(
         state.land_timer(),
         valid_value,
@@ -299,7 +315,10 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
     let negative_value = -0.5;
     let result = state.set_land_timer(negative_value);
 
-    assert!(result.is_ok(), "Установка отрицательного значения должна быть успешной");
+    assert!(
+        result.is_ok(),
+        "Установка отрицательного значения должна быть успешной"
+    );
     assert_eq!(
         state.land_timer(),
         0.0,
@@ -311,7 +330,11 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
     let result = state.set_land_timer(more_negative);
 
     assert!(result.is_ok());
-    assert_eq!(state.land_timer(), 0.0, "Отрицательный таймер должен быть заменён на 0.0");
+    assert_eq!(
+        state.land_timer(),
+        0.0,
+        "Отрицательный таймер должен быть заменён на 0.0"
+    );
 }
 
 // ============================================================================
@@ -328,12 +351,20 @@ fn test_set_fall_speed_boundary_values() {
     // Устанавливаем точно на минимуме
     let result = state.set_fall_speed(INITIAL_FALL_SPD);
     assert!(result.is_ok());
-    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD, "Значение на минимуме должно устанавливаться");
+    assert_eq!(
+        state.fall_speed(),
+        INITIAL_FALL_SPD,
+        "Значение на минимуме должно устанавливаться"
+    );
 
     // Устанавливаем точно на максимуме
     let result = state.set_fall_speed(MAX_FALL_SPEED);
     assert!(result.is_ok());
-    assert_eq!(state.fall_speed(), MAX_FALL_SPEED, "Значение на максимуме должно устанавливаться");
+    assert_eq!(
+        state.fall_speed(),
+        MAX_FALL_SPEED,
+        "Значение на максимуме должно устанавливаться"
+    );
 }
 
 /// Тест 12: Проверка граничных значений land_timer
@@ -346,13 +377,21 @@ fn test_set_land_timer_boundary_values() {
     // Устанавливаем точно 0.0
     let result = state.set_land_timer(0.0);
     assert!(result.is_ok());
-    assert_eq!(state.land_timer(), 0.0, "Значение 0.0 должно устанавливаться");
+    assert_eq!(
+        state.land_timer(),
+        0.0,
+        "Значение 0.0 должно устанавливаться"
+    );
 
     // Устанавливаем небольшое положительное значение
     let small_value = 0.001;
     let result = state.set_land_timer(small_value);
     assert!(result.is_ok());
-    assert_eq!(state.land_timer(), small_value, "Небольшое положительное значение должно устанавливаться");
+    assert_eq!(
+        state.land_timer(),
+        small_value,
+        "Небольшое положительное значение должно устанавливаться"
+    );
 }
 
 /// Тест 13: Интеграционный тест валидации в GameState
@@ -449,7 +488,9 @@ fn test_validation_stress_test() {
             // Валидное значение
             let valid_fall = (i as f32) % MAX_FALL_SPEED;
             let valid_timer = (i as f64 * 0.001) % LAND_TIME_DELAY_S;
-            assert!(state.set_fall_speed(valid_fall.max(INITIAL_FALL_SPD)).is_ok());
+            assert!(state
+                .set_fall_speed(valid_fall.max(INITIAL_FALL_SPD))
+                .is_ok());
             assert!(state.set_land_timer(valid_timer).is_ok());
         }
     }

@@ -27,11 +27,7 @@ fn test_bitmask_correct_line_detection() {
     let blocks = state.get_blocks();
     for y in 0..GRID_HEIGHT {
         for x in 0..GRID_WIDTH {
-            assert_eq!(
-                blocks[y][x], -1,
-                "Клетка [{},{}] должна быть пустой",
-                y, x
-            );
+            assert_eq!(blocks[y][x], -1, "Клетка [{},{}] должна быть пустой", y, x);
         }
     }
 
@@ -102,10 +98,7 @@ fn test_bitmask_with_empty_field() {
     }
 
     // Для пустого поля маска должна быть 0
-    assert_eq!(
-        rows_mask, 0,
-        "Маска для пустого поля должна быть 0"
-    );
+    assert_eq!(rows_mask, 0, "Маска для пустого поля должна быть 0");
     assert_eq!(
         remove_count, 0,
         "Количество заполненных линий должно быть 0"
@@ -116,7 +109,11 @@ fn test_bitmask_with_empty_field() {
 
     // Проверяем что каждая строка содержит 10 клеток
     for row in blocks.iter() {
-        assert_eq!(row.len(), GRID_WIDTH, "Каждая строка должна содержать 10 клеток");
+        assert_eq!(
+            row.len(),
+            GRID_WIDTH,
+            "Каждая строка должна содержать 10 клеток"
+        );
     }
 }
 
@@ -145,7 +142,10 @@ fn test_bitmask_with_full_field() {
 
     // Проверяем что все биты установлены
     assert_ne!(rows_mask, 0, "Маска должна быть не нулевой");
-    assert_eq!(remove_count, GRID_HEIGHT, "Все 20 строк должны быть заполнены");
+    assert_eq!(
+        remove_count, GRID_HEIGHT,
+        "Все 20 строк должны быть заполнены"
+    );
 
     // Проверяем что каждый бит установлен
     for y in 0..GRID_HEIGHT {
@@ -206,8 +206,16 @@ fn test_bitmask_operations() {
 
     // Тест инверсии
     let inverted = !mask;
-    assert_eq!((inverted & (1 << 5)) != 0, true, "Инвертированный бит 5 установлен");
-    assert_eq!((inverted & (1 << 0)) == 0, true, "Инвертированный бит 0 сброшен");
+    assert_eq!(
+        (inverted & (1 << 5)) != 0,
+        true,
+        "Инвертированный бит 5 установлен"
+    );
+    assert_eq!(
+        (inverted & (1 << 0)) == 0,
+        true,
+        "Инвертированный бит 0 сброшен"
+    );
 }
 
 /// Тест 5: Проверка производительности битовой маски

@@ -38,7 +38,6 @@
 //!
 //! ### Архитектурные тесты
 //! - `test_architecture` - архитектурная целостность
-//! - `test_architecture_improvements` - архитектурные улучшения
 //!
 //! ### Тесты качества кода
 //! - `test_must_use_attributes` - атрибуты must_use
@@ -134,8 +133,8 @@ pub mod test_hard_drop_flag;
 pub mod test_direction_down;
 pub mod test_wall_kick_refactor;
 
-pub mod test_unwrap_to_expect;
 pub mod test_error_propagation;
+pub mod test_unwrap_to_expect;
 
 pub mod test_benchmarks;
 
@@ -150,7 +149,6 @@ pub mod test_constant_imports;
 // ============================================================================
 
 pub mod test_architecture;
-pub mod test_architecture_improvements;
 
 // Тесты целостности архитектуры
 pub mod test_architecture_integrity;
@@ -186,11 +184,6 @@ pub mod test_time_safety;
 // ============================================================================
 
 pub mod test_fixes;
-
-// Интеграционные тесты исправлений
-
-// Тесты верификации исправлений (C1, L1, L2, L3, M4)
-pub mod test_fixes_verification;
 
 // ============================================================================
 // ОГРАНИЧЕНИЯ И СПЕЦИАЛЬНЫЕ ТЕСТЫ

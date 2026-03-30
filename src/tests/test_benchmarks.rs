@@ -20,7 +20,7 @@ fn test_benchmarks_compile() {
     // и основные функции доступны для бенчмаркинга
 
     use crate::game::GameState;
-    use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
+    use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
 
     // Проверяем что GameState можно создать
     let state = GameState::new();
@@ -38,7 +38,11 @@ fn test_benchmarks_compile() {
     // Проверяем что можно получить поле для бенчмарка
     let blocks = state.get_blocks_for_bench();
     assert_eq!(blocks.len(), 20, "Поле должно содержать 20 строк");
-    assert_eq!(blocks[0].len(), 10, "Каждая строка должна содержать 10 клеток");
+    assert_eq!(
+        blocks[0].len(),
+        10,
+        "Каждая строка должна содержать 10 клеток"
+    );
 }
 
 /// Тест 2: Проверка что check_rows() бенчмарк работает
@@ -89,9 +93,9 @@ fn test_check_rows_benchmark_works() {
 /// Проверяет, что rotate() может быть забенчмаркен.
 #[test]
 fn test_rotate_benchmark_works() {
+    use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
     use crate::types::Direction;
-use crate::types::RotationDirection;
-    use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
+    use crate::types::RotationDirection;
     use std::time::Instant;
 
     // Создаём тестовую фигуру
@@ -224,7 +228,7 @@ fn test_draw_benchmark_works() {
 #[test]
 fn test_benchmark_performance() {
     use crate::game::GameState;
-    use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS, Dir};
+    use crate::tetromino::{Dir, ShapeType, Tetromino, SHAPE_COORDS};
     use std::time::Instant;
 
     let iterations = 10_000;

@@ -36,19 +36,35 @@ fn test_component_separation() {
     let mut board = GameBoard::new();
 
     // Проверяем что GameBoard имеет методы для работы с полем
-    assert_eq!(board.get_block(0, 0), Some(-1), "Новое поле должно быть пустым");
+    assert_eq!(
+        board.get_block(0, 0),
+        Some(-1),
+        "Новое поле должно быть пустым"
+    );
 
     board.set_block(5, 10, 1);
-    assert_eq!(board.get_block(5, 10), Some(1), "Ячейка должна быть установлена");
+    assert_eq!(
+        board.get_block(5, 10),
+        Some(1),
+        "Ячейка должна быть установлена"
+    );
 
-    assert_eq!(board.get_block(100, 100), None, "Выход за границы должен вернуть None");
+    assert_eq!(
+        board.get_block(100, 100),
+        None,
+        "Выход за границы должен вернуть None"
+    );
 
     let blocks = board.get_blocks();
     assert_eq!(blocks.len(), 20, "Поле должно иметь 20 рядов");
     assert_eq!(blocks[0].len(), 10, "Поле должно иметь 10 колонок");
 
     // Проверяем битовую маску заполненных линий
-    assert_eq!(board.get_filled_lines_mask(), 0, "Новое поле не имеет заполненных линий");
+    assert_eq!(
+        board.get_filled_lines_mask(),
+        0,
+        "Новое поле не имеет заполненных линий"
+    );
 
     // === Проверка ScoreBoard ===
     let mut scoreboard = ScoreBoard::new();
@@ -77,14 +93,22 @@ fn test_component_separation() {
 
     // Проверяем изменение количества линий
     scoreboard.set_lines_cleared(25);
-    assert_eq!(scoreboard.get_lines_cleared(), 25, "Количество линий должно обновиться");
+    assert_eq!(
+        scoreboard.get_lines_cleared(),
+        25,
+        "Количество линий должно обновиться"
+    );
 
     // === Проверка делегирования в GameState ===
     let state = GameState::new();
 
     // GameState должен делегировать доступ к компонентам
     let blocks = state.get_blocks();
-    assert_eq!(blocks.len(), 20, "GameState должен предоставлять доступ к полю");
+    assert_eq!(
+        blocks.len(),
+        20,
+        "GameState должен предоставлять доступ к полю"
+    );
 
     let score = state.score();
     assert_eq!(score, 0, "GameState должен предоставлять доступ к счёту");
@@ -97,7 +121,10 @@ fn test_component_separation() {
 
     // Проверяем что GameState использует композицию
     let view = GameView::from_game_state(&state);
-    assert!(!view.score.is_empty(), "GameView должен корректно работать с GameState");
+    assert!(
+        !view.score.is_empty(),
+        "GameView должен корректно работать с GameState"
+    );
 }
 
 // ============================================================================
@@ -216,14 +243,22 @@ fn test_encapsulation() {
     assert_eq!(initial_level, 1, "Начальный уровень должен быть 1");
 
     state.set_level(10);
-    assert_eq!(state.level(), 10, "Уровень должен измениться через set_level");
+    assert_eq!(
+        state.level(),
+        10,
+        "Уровень должен измениться через set_level"
+    );
 
     // Проверяем что уровень не может быть меньше 1
     state.set_level(0);
     assert_eq!(state.level(), 1, "Уровень не может быть меньше 1");
 
     state.increment_level();
-    assert_eq!(state.level(), 2, "increment_level должен увеличить уровень на 1");
+    assert_eq!(
+        state.level(),
+        2,
+        "increment_level должен увеличить уровень на 1"
+    );
 
     // === Проверка инкапсуляции количества линий ===
     let initial_lines = state.lines_cleared();
@@ -251,7 +286,11 @@ fn test_encapsulation() {
     // Проверяем что можно получить мутабельную ссылку на поле
     let blocks_mut = state.get_blocks_mut();
     blocks_mut[0][0] = 1;
-    assert_eq!(state.get_blocks()[0][0], 1, "Поле должно измениться через get_blocks_mut");
+    assert_eq!(
+        state.get_blocks()[0][0],
+        1,
+        "Поле должно измениться через get_blocks_mut"
+    );
 
     // === Проверка инкапсуляции фигур ===
     let curr_shape = state.curr_shape();
@@ -362,11 +401,31 @@ fn test_dependency_inversion() {
     // === Проверка что MockInputReader работает ===
     let mut mock_reader = MockInputReader::new(vec![b'a', b'd', b'w', b's']);
 
-    assert_eq!(mock_reader.get_key(), Some(b'a'), "Первая клавиша должна быть 'a'");
-    assert_eq!(mock_reader.get_key(), Some(b'd'), "Вторая клавиша должна быть 'd'");
-    assert_eq!(mock_reader.get_key(), Some(b'w'), "Третья клавиша должна быть 'w'");
-    assert_eq!(mock_reader.get_key(), Some(b's'), "Четвёртая клавиша должна быть 's'");
-    assert_eq!(mock_reader.get_key(), None, "После всех клавиш должно вернуть None");
+    assert_eq!(
+        mock_reader.get_key(),
+        Some(b'a'),
+        "Первая клавиша должна быть 'a'"
+    );
+    assert_eq!(
+        mock_reader.get_key(),
+        Some(b'd'),
+        "Вторая клавиша должна быть 'd'"
+    );
+    assert_eq!(
+        mock_reader.get_key(),
+        Some(b'w'),
+        "Третья клавиша должна быть 'w'"
+    );
+    assert_eq!(
+        mock_reader.get_key(),
+        Some(b's'),
+        "Четвёртая клавиша должна быть 's'"
+    );
+    assert_eq!(
+        mock_reader.get_key(),
+        None,
+        "После всех клавиш должно вернуть None"
+    );
 
     // === Проверка что MockRenderer работает ===
     let mut mock_renderer = MockRenderer::new();
@@ -391,7 +450,11 @@ fn test_dependency_inversion() {
 
     let mut mock = MockInputReader::new(vec![b'x', b'y', b'z']);
     let result = process_input(&mut mock);
-    assert_eq!(result, vec![b'x', b'y', b'z'], "Полиморфизм должен работать");
+    assert_eq!(
+        result,
+        vec![b'x', b'y', b'z'],
+        "Полиморфизм должен работать"
+    );
 
     // === Проверка что GameState может работать с трейтами ===
     // GameState должен быть спроектирован для работы с InputReader
@@ -442,7 +505,14 @@ fn test_error_handling() {
     // Мы не можем вызвать play() без терминала, но можем проверить тип
     fn check_play_signature() {
         // Эта функция компилируется только если play() возвращает Result
-        fn _requires_result<F: FnOnce(&mut GameState, &mut Canvas, &mut crate::io::KeyReader, &str) -> Result<u128, GameError>>(
+        fn _requires_result<
+            F: FnOnce(
+                &mut GameState,
+                &mut Canvas,
+                &mut crate::io::KeyReader,
+                &str,
+            ) -> Result<u128, GameError>,
+        >(
             _f: F,
         ) {
         }
@@ -622,7 +692,7 @@ fn test_solid_principles() {
         reader.get_key()
     }
 
-    let mut mock = MockInputReader::new(vec![b'test']);
+    let mut mock = MockInputReader::new(vec![b"test"]);
     let _key = process_any_reader(&mut mock);
 
     // === Open/Closed Principle (OCP) ===
@@ -759,7 +829,13 @@ fn test_architecture_integrity_comprehensive() {
     let curr_shape = state.curr_shape();
     assert!(matches!(
         curr_shape.shape,
-        ShapeType::T | ShapeType::L | ShapeType::J | ShapeType::S | ShapeType::Z | ShapeType::O | ShapeType::I
+        ShapeType::T
+            | ShapeType::L
+            | ShapeType::J
+            | ShapeType::S
+            | ShapeType::Z
+            | ShapeType::O
+            | ShapeType::I
     ));
 
     // Проверяем обработку ошибок

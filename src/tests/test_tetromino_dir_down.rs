@@ -7,9 +7,9 @@
 //!
 //! Исправление: добавлен ранний возврат для Direction::Down в rotate()
 
+use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::Direction;
 use crate::types::RotationDirection;
-use crate::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Direction::Down в rotate()
@@ -224,10 +224,7 @@ fn test_dir_right_rotates_correctly() {
     i_tetromino.rotate_old(Direction::Right);
 
     // I-фигура должна измениться (вертикальная -> горизонтальная)
-    assert_ne!(
-        i_tetromino.coords, i_original,
-        "I-фигура должна вращаться"
-    );
+    assert_ne!(i_tetromino.coords, i_original, "I-фигура должна вращаться");
 
     // После 4 вращений должна вернуться к исходному состоянию
     let mut i_tetromino2 = Tetromino {

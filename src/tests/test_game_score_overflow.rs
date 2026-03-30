@@ -8,8 +8,7 @@
 //! Исправление: использование saturating_add() вместо обычного сложения
 
 use crate::game::{
-    GameState, COMBO_BONUS, HARD_DROP_POINTS, PIECE_SCORE_INC, LINE_SCORES, LINE_SCORES[0],
-    SOFT_DROP_POINTS,
+    GameState, COMBO_BONUS, HARD_DROP_POINTS, LINE_SCORES, PIECE_SCORE_INC, SOFT_DROP_POINTS,
 };
 
 // ============================================================================
@@ -30,43 +29,28 @@ fn test_saturating_add_normal_values() {
 
     // Начисляем очки за вторую линию (200)
     score = score.saturating_add(LINE_SCORES[0] * 2);
-    assert_eq!(
-        score, 300,
-        "После второй линии счёт должен быть 300"
-    );
+    assert_eq!(score, 300, "После второй линии счёт должен быть 300");
 
     // Начисляем очки за фигуру
     score = score.saturating_add(PIECE_SCORE_INC);
-    assert_eq!(
-        score, 400,
-        "После фигуры счёт должен быть 400"
-    );
+    assert_eq!(score, 400, "После фигуры счёт должен быть 400");
 
     // Начисляем очки за Soft Drop (1 очко за ячейку)
     let soft_drop_distance = 10;
     score = score.saturating_add((soft_drop_distance as u64) * SOFT_DROP_POINTS);
-    assert_eq!(
-        score, 410,
-        "После Soft Drop счёт должен быть 410"
-    );
+    assert_eq!(score, 410, "После Soft Drop счёт должен быть 410");
 
     // Начисляем очки за Hard Drop (2 очка за ячейку)
     let hard_drop_distance = 5;
     score = score.saturating_add(hard_drop_distance as u64 * HARD_DROP_POINTS);
-    assert_eq!(
-        score, 420,
-        "После Hard Drop счёт должен быть 420"
-    );
+    assert_eq!(score, 420, "После Hard Drop счёт должен быть 420");
 
     // Начисляем бонус за комбо
     let combo = 3;
     if combo > 1 {
         score = score.saturating_add(COMBO_BONUS * (combo - 1) as u64);
     }
-    assert_eq!(
-        score, 520,
-        "После комбо x3 счёт должен быть 520"
-    );
+    assert_eq!(score, 520, "После комбо x3 счёт должен быть 520");
 }
 
 /// Тест 2: Проверка защиты от переполнения
@@ -161,11 +145,7 @@ fn test_correct_score_calculation() {
     // Проверяем что GameState использует saturating_add
     // Создаём состояние и проверяем что счёт корректен
     let state = GameState::new();
-    assert_eq!(
-        state.score(),
-        0,
-        "Новое состояние должно иметь счёт 0"
-    );
+    assert_eq!(state.score(), 0, "Новое состояние должно иметь счёт 0");
 }
 
 /// Тест 4: Стресс-тест с очень большим счётом
@@ -184,7 +164,8 @@ fn test_stress_with_very_large_score() {
     }
 
     assert_eq!(
-        score, 1_000_000_000_000, // 1 trillion
+        score,
+        1_000_000_000_000, // 1 trillion
         "Счёт должен быть 1 триллион"
     );
 
@@ -193,10 +174,7 @@ fn test_stress_with_very_large_score() {
 
     // Малое добавление должно работать
     near_max_score = near_max_score.saturating_add(500);
-    assert!(
-        near_max_score < u64::MAX,
-        "Счёт должен быть меньше MAX"
-    );
+    assert!(near_max_score < u64::MAX, "Счёт должен быть меньше MAX");
 
     // Добавление вызывающее переполнение
     near_max_score = near_max_score.saturating_add(1000);

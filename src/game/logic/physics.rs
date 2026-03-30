@@ -30,7 +30,8 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     } else if state.land_timer() > 0.0 {
         let land_timer = state.land_timer();
         // Игнорируем ошибку, так как значение вычисляется корректно
-        let _ = state.set_land_timer(land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND));
+        let _ =
+            state.set_land_timer(land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND));
         false
     } else {
         true

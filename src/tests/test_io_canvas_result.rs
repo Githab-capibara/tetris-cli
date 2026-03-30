@@ -22,7 +22,7 @@ use crate::io::{Canvas, IoError};
 fn test_canvas_new_success() {
     // Создаём канвас - должен вернуть Ok(Canvas)
     let result = Canvas::new();
-    
+
     // В нормальном терминале должен вернуться Ok
     assert!(
         result.is_ok(),
@@ -30,7 +30,7 @@ fn test_canvas_new_success() {
     );
 
     let canvas = result.expect("Failed to create Canvas in normal terminal");
-    
+
     // Проверяем что канвас не паникует при использовании
     // (просто создаём и сразу уничтожаем через drop)
     drop(canvas);
@@ -44,10 +44,10 @@ fn test_canvas_new_success() {
 fn test_canvas_new_error_handling() {
     // Этот тест проверяет что Canvas::new() возвращает Result
     // а не паникует при ошибке
-    
+
     // В CI/CD среде или без терминала Canvas::new() может вернуть ошибку
     let result = Canvas::new();
-    
+
     // Проверяем что результат либо Ok, либо Err с правильным типом ошибки
     match result {
         Ok(canvas) => {
@@ -105,7 +105,7 @@ fn test_canvas_new_error_handling() {
 fn test_canvas_new_error_message() {
     // Проверяем что Canvas::new() возвращает Result с правильным типом
     let result: Result<Canvas, IoError> = Canvas::new();
-    
+
     // Проверяем Display реализацию для IoError
     match &result {
         Ok(_) => {
@@ -134,7 +134,7 @@ fn test_canvas_new_error_message() {
                 flush_error.to_string().contains("Ошибка flush"),
                 "Display для FlushError должен работать корректно"
             );
-            
+
             let draw_error = IoError::Draw("тест".to_string());
             assert!(
                 draw_error.to_string().contains("Ошибка отрисовки"),
@@ -148,7 +148,7 @@ fn test_canvas_new_error_message() {
                 !error_msg.is_empty(),
                 "to_string() для IoError не должен возвращать пустую строку"
             );
-            
+
             // Проверяем что сообщение содержит полезную информацию
             assert!(
                 error_msg.len() > 10,
@@ -172,7 +172,7 @@ fn test_canvas_drop() {
     }
     // Здесь должен сработать Drop и сбросить терминал
     // Если Drop не работает, терминал останется в raw-режиме
-    
+
     // Этот тест просто проверяет что код не паникует
 }
 
@@ -183,7 +183,7 @@ fn test_canvas_drop() {
 #[ignore = "Требует реальный терминал"]
 fn test_canvas_reset() {
     let mut canvas = Canvas::new().expect("Не удалось создать Canvas");
-    
+
     // Вызываем reset - не должно паниковать
     canvas.reset();
 

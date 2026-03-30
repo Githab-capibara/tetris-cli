@@ -38,8 +38,14 @@ fn test_random_hash_uniqueness() {
     }
 
     // Проверяем что новые соли тоже уникальны
-    let unique_count = more_hashes.iter().collect::<std::collections::HashSet<_>>().len();
-    assert_eq!(unique_count, 100, "Все 100 новых солей должны быть уникальны");
+    let unique_count = more_hashes
+        .iter()
+        .collect::<std::collections::HashSet<_>>()
+        .len();
+    assert_eq!(
+        unique_count, 100,
+        "Все 100 новых солей должны быть уникальны"
+    );
 }
 
 /// Тест 2: Проверка длины результата (64 символа)
