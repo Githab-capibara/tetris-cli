@@ -53,7 +53,7 @@ fn test_rotate_with_wall_kick_basic() {
 ///
 /// Проверяем, что wall kick работает у стены.
 #[test]
-fn test_wall_kick_at_wall() {
+fn test_wall_kick_refactor_at_wall() {
     use crate::game::logic::can_move_curr_shape_direction;
     use crate::types::Direction;
 

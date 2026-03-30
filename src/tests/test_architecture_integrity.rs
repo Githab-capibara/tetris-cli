@@ -148,7 +148,7 @@ fn test_component_separation() {
 /// - Все подмодули доступны через ре-экспорт
 /// - ShapeType, Tetromino, BagGenerator импортируются корректно
 #[test]
-fn test_module_boundaries() {
+fn test_arch_integrity_module_boundaries() {
     // === Проверка структуры tetromino/ ===
     // Модуль должен иметь подмодули: bag_generator, constants, shape_type, tetromino
 
@@ -571,7 +571,7 @@ fn test_error_handling() {
 /// - Базовые модули (constants, types, errors) не зависят от других
 /// - Нет циклов между game/, tetromino/, io/
 #[test]
-fn test_no_circular_dependencies() {
+fn test_arch_integrity_no_circular_dependencies() {
     // === Проверка независимости types.rs ===
     use crate::types::{Direction, RotationDirection, UpdateEndState};
 

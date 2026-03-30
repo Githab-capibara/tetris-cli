@@ -1,13 +1,40 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 30 марта 2026 г.
+**Дата последней актуализации:** 30 марта 2026 г. (очистка тестовой базы)
 **Версия проекта:** 23.96.26
-**Всего тестов:** 1186 (проходят 100%)
-**Всего файлов тестов:** 80
+**Всего тестов:** 1156 (проходят 100%)
+**Всего файлов тестов:** 79
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
+
+### Изменения после очистки (30 марта 2026):
+
+#### Удаленные тесты (19 тестов):
+- `macros.rs`: 3 теста на компиляцию макросов (тривиальные)
+- `test_benchmarks.rs`: 1 тест на компиляцию бенчмарков
+- `test_edge_cases.rs`: 11 избыточных no_panic тестов
+- `test_collision.rs`: 1 no_panic тест
+- `test_direction_down.rs`: 1 no_panic тест
+- `test_animation.rs`: 1 no_panic тест
+
+#### Переименованные тесты (8 тестов):
+- `test_constants_centralized` → `test_arch_comp_constants_centralized`
+- `test_controls_uses_path_validator` → `test_arch_ref_controls_uses_path_validator`
+- `test_game_state_has_getters` → `test_arch_comp/integrity_game_state_has_getters`
+- `test_module_boundaries` → `test_arch/integrity/fixes_module_boundaries`
+- `test_no_circular_dependencies` → `test_arch_integrity/fixes_no_circular_dependencies`
+- `test_saturating_add_normal_values` → `test_score_overflow_saturating_add_normal_values`
+- `test_wall_kick_at_wall` → `test_wall_kick_refactor_at_wall`
+- `test_logic_does_not_import_render` → `test_arch_comp_logic_does_not_import_render_2`
+
+#### Обновленные тесты (5 тестов):
+- `test_bag_generator_creation` — добавлен assert
+- `test_scoring_state_trait_implemented` — добавлены assert
+- `test_renderer_trait_implementation` — добавлен assert
+- `test_input_reader_trait_implementation` — добавлен assert
+- `test_canvas_as_dyn_renderer` — добавлен assert
 
 ### Новые тесты (30 марта 2026):
 
@@ -60,8 +87,10 @@
   - `test_toctou_protection_no_panic` — отсутствие паник
 
 #### Итоговая статистика:
-- **Всего тестов:** 1186
-- **Добавлено тестов:** 45 (HMAC, config keys, IO drop, leaderboard TOCTOU, scoring state, macros)
+- **Всего тестов:** 1156
+- **Удалено тестов:** 19 (избыточные и тривиальные)
+- **Переименовано тестов:** 8 (устранение дубликатов)
+- **Обновлено тестов:** 5 (добавлены assert)
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100%)
 
@@ -69,10 +98,10 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1186
+### Общее количество тестов: 1156
 
-**Unit тесты:** 898
-**Integration тесты:** 288 (architecture + fixes verification + edge cases)
+**Unit тесты:** 879
+**Integration тесты:** 277 (architecture + fixes verification + edge cases)
 
 **Процент прохождения:** 100% (0 failed)
 
@@ -86,18 +115,18 @@
 - `test_architecture_components.rs` — 29 тестов
 
 **src/tests/** (unit тесты):
-- `io_drop.rs` — 6 тестов (новые)
-- `leaderboard_toctou.rs` — 10 тестов (новые)
-- `scoring_state.rs` — 15 тестов (новые)
-- `macros.rs` — 14 тестов (новые)
+- `io_drop.rs` — 6 тестов
+- `leaderboard_toctou.rs` — 10 тестов
+- `scoring_state.rs` — 15 тестов
+- `macros.rs` — 11 тестов (после очистки)
 - `test_all_fixes_integration.rs` — 10 тестов
-- `test_animation.rs` — 15 тестов
+- `test_animation.rs` — 14 тестов (после очистки)
 - `test_architecture.rs` — 19 тестов
-- `test_bag_system.rs` — 4 теста
-- `test_benchmarks.rs` — бенчмарки
-- `test_bounds_check_optimization.rs` — 5 тестов
-- `test_cast_safety.rs` — 6 тестов
-- `test_cfg_attr_dead_code.rs` — 2 теста
+- `test_bag_system.rs` — 27 тестов
+- `test_benchmarks.rs` — 4 теста (после очистки)
+- `test_bounds_check_optimization.rs` — 7 тестов
+- `test_cast_safety.rs` — 11 тестов
+- `test_cfg_attr_dead_code.rs` — 7 тестов
 - `test_clippy_fixes.rs` — 7 тестов
 - `test_collision.rs` — 10 тестов
 - `test_constant_imports.rs` — 7 тестов

@@ -164,23 +164,6 @@ fn test_animation_hard_drop_marathon_mode() {
 // ГРУППА ТЕСТОВ 11-20: Анимация очистки линий
 // ============================================================================
 
-/// Тест 13: Проверка что анимация не вызывает паники
-#[test]
-fn test_animation_no_panic() {
-    let mut state = GameState::new();
-
-    // Симулируем падение фигуры
-    while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
-    }
-
-    // Проверяем что фигура достигла пола
-    assert!(
-        !state.can_move_curr_shape_direction(crate::types::Direction::Down),
-        "Фигура должна достигнуть пола"
-    );
-}
-
 /// Тест 14: Проверка что анимация работает с разными фигурами
 #[test]
 fn test_animation_different_shapes() {

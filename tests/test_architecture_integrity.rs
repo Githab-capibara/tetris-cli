@@ -146,7 +146,7 @@ mod tests {
     // ========================================================================
 
     #[test]
-    fn test_game_state_has_getters() {
+    fn test_arch_integrity_game_state_has_getters() {
         // Проверяем, что GameState имеет геттеры для основных полей
         let state_path = "src/game/state.rs";
         let state_content = fs::read_to_string(state_path).expect("Failed to read state.rs");

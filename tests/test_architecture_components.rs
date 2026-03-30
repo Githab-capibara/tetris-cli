@@ -261,7 +261,7 @@ mod test_constants_centralization {
     /// - Все основные константы должны быть в constants.rs
     /// - Не должно быть дублирования в menu/constants.rs
     #[test]
-    fn test_constants_centralized() {
+    fn test_arch_comp_constants_centralized() {
         let constants_path = "src/constants.rs";
         let constants_content =
             fs::read_to_string(constants_path).expect("Failed to read src/constants.rs");
@@ -621,7 +621,7 @@ mod test_field_encapsulation {
 
     /// Проверка что GameState имеет геттеры для всех полей.
     #[test]
-    fn test_game_state_has_getters() {
+    fn test_arch_comp_game_state_has_getters() {
         let state_path = "src/game/state.rs";
         let state_content =
             fs::read_to_string(state_path).expect("Failed to read src/game/state.rs");
@@ -808,12 +808,12 @@ mod test_no_circular_dependencies {
 mod test_module_boundaries {
     use super::*;
 
-    /// Проверка что game/logic/ не импортирует из game/render/.
+    /// Проверка что второй дубликат test_logic_does_not_import_render.
     ///
     /// ## Требование
     /// Логика не должна зависеть от отрисовки.
     #[test]
-    fn test_logic_does_not_import_render() {
+    fn test_arch_comp_logic_does_not_import_render_2() {
         let logic_dir = "src/game/logic";
 
         if Path::new(logic_dir).exists() {
