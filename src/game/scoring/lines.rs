@@ -117,6 +117,13 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 ///
 /// # Исправление #6 (HIGH)
 /// Использует trait `ScoringState` вместо прямого доступа к полям GameState.
+///
+/// # ISP-1: Использует узкие трейты
+/// Функция работает с любым типом реализующим `ScoringState` который включает:
+/// - `ScoreAccess` (get_score, set_score, add_score)
+/// - `LevelAccess` (get_level, set_level)
+/// - `LinesAccess` (get_lines_cleared, set_lines_cleared, add_lines)
+/// - `ComboAccess` (get_combo, set_combo, reset_combo)
 pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     // Поиск заполненных линий - используем битовую маску для оптимизации
     let (rows_mask, remove_count) = find_filled_lines(state.get_blocks());
@@ -132,9 +139,9 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     // Удаление линий и сдвиг поля
     remove_lines(state.get_blocks_mut(), rows_mask);
 
-    // Обновление счёта, уровня и комбо
-    let mut score = state.score();
-    let level = state.level();
+    // Обновление счёта, уровня и комбо (ISP-1: используем новые имена методов)
+    let mut score = state.get_score();
+    let level = state.get_level();
     let mut combo_counter = state.stats().combo_counter();
 
     update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter);
@@ -142,8 +149,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     state.set_score(score);
     state.stats_mut().set_combo_counter(combo_counter);
 
-    // Обновление количества очищенных линий
-    let lines_cleared = state.lines_cleared().saturating_add(remove_count);
+    // Обновление количества очищенных линий (ISP-1: используем get_lines_cleared)
+    let lines_cleared = state.get_lines_cleared().saturating_add(remove_count);
     state.set_lines_cleared(lines_cleared);
 
     // Увеличение скорости игры

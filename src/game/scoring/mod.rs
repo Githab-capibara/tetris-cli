@@ -40,6 +40,13 @@
 //! Добавлен trait `ScoringState` для инкапсуляции изменений состояния.
 //! Это предотвращает прямой доступ к полям GameState и улучшает инкапсуляцию.
 //!
+//! ## ISP-1: Разделение на узкие трейты
+//! ScoringState разделён на узкие трейты для соблюдения Interface Segregation Principle:
+//! - [`ScoreAccess`] - доступ к очкам (get_score, add_score)
+//! - [`LevelAccess`] - доступ к уровням (get_level, set_level)
+//! - [`LinesAccess`] - доступ к линиям (get_lines_cleared, add_lines)
+//! - [`ComboAccess`] - доступ к комбо (get_combo, reset_combo)
+//!
 //! TODO (#архитектура): Избегать прямого изменения полей GameState.
 //! В настоящее время используется прямой доступ к полям для производительности.
 //! Рассмотреть возможность использования методов GameState для модификации.
@@ -61,7 +68,68 @@ pub use lines::{check_rows, find_full_rows, remove_rows};
 pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};
 
 // ============================================================================
-// TRAIT SCORINGSTATE (ИСПРАВЛЕНИЕ #6 - HIGH)
+// ISP-1: УЗКИЕ ТРЕЙТЫ ДЛЯ SCORING (INTERFACE SEGREGATION PRINCIPLE)
+// ============================================================================
+
+/// Трейт для доступа к очкам.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с очками.
+pub trait ScoreAccess {
+    /// Получить текущий счёт.
+    fn get_score(&self) -> u128;
+
+    /// Установить новый счёт.
+    fn set_score(&mut self, score: u128);
+
+    /// Добавить очки к текущему счёту.
+    fn add_score(&mut self, points: u128);
+}
+
+/// Трейт для доступа к уровням.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с уровнями.
+pub trait LevelAccess {
+    /// Получить текущий уровень.
+    fn get_level(&self) -> u32;
+
+    /// Установить текущий уровень.
+    fn set_level(&mut self, level: u32);
+}
+
+/// Трейт для доступа к линиям.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с линиями.
+pub trait LinesAccess {
+    /// Получить количество очищенных линий.
+    fn get_lines_cleared(&self) -> u32;
+
+    /// Установить количество очищенных линий.
+    fn set_lines_cleared(&mut self, lines: u32);
+
+    /// Добавить количество очищенных линий.
+    fn add_lines(&mut self, lines: u32);
+}
+
+/// Трейт для доступа к комбо.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с комбо.
+pub trait ComboAccess {
+    /// Получить текущий комбо.
+    fn get_combo(&self) -> u32;
+
+    /// Установить текущий комбо.
+    fn set_combo(&mut self, combo: u32);
+
+    /// Сбросить комбо.
+    fn reset_combo(&mut self);
+}
+
+// ============================================================================
+// TRAIT SCORINGSTATE (ОБЪЕДИНЁННЫЙ ТРЕЙТ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ)
 // ============================================================================
 
 /// Trait для изменения состояния счёта в игре.
@@ -74,6 +142,14 @@ pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop
 /// Добавлен для предотвращения прямого доступа к полям GameState
 /// из модуля scoring. Обеспечивает инкапсуляцию и контролируемую модификацию.
 ///
+/// # ISP-1: Наследует узкие трейты
+/// Этот трейт объединяет узкие трейты для обратной совместимости.
+/// Для нового кода рекомендуется использовать специализированные трейты:
+/// - [`ScoreAccess`] для работы с очками
+/// - [`LevelAccess`] для работы с уровнями
+/// - [`LinesAccess`] для работы с линиями
+/// - [`ComboAccess`] для работы с комбо
+///
 /// # Пример использования
 /// ```ignore
 /// use tetris_cli::game::scoring::ScoringState;
@@ -82,22 +158,7 @@ pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop
 ///     state.set_score(new_score);
 /// }
 /// ```
-pub trait ScoringState {
-    /// Получить текущий счёт.
-    fn score(&self) -> u128;
-
-    /// Установить новый счёт.
-    fn set_score(&mut self, score: u128);
-
-    /// Получить текущий уровень.
-    fn level(&self) -> u32;
-
-    /// Получить количество очищенных линий.
-    fn lines_cleared(&self) -> u32;
-
-    /// Установить количество очищенных линий.
-    fn set_lines_cleared(&mut self, lines: u32);
-
+pub trait ScoringState: ScoreAccess + LevelAccess + LinesAccess + ComboAccess {
     /// Получить скорость падения.
     fn fall_speed(&self) -> f32;
 

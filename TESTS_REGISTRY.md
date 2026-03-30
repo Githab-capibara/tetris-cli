@@ -1,97 +1,114 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 30 марта 2026 г. (новые тесты)
+**Дата последней актуализации:** 30 марта 2026 г. (архитектурные улучшения)
 **Версия проекта:** 23.96.26
-**Всего тестов:** 1160 (проходят 100%)
-**Всего файлов тестов:** 83
+**Всего тестов:** 1227+ (проходят 100%)
+**Всего файлов тестов:** 89
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
 
-### Изменения после очистки (30 марта 2026):
+### Изменения после архитектурных улучшений (30 марта 2026):
 
-#### Удаленные тесты (19 тестов):
-- `macros.rs`: 3 теста на компиляцию макросов (тривиальные)
-- `test_benchmarks.rs`: 1 тест на компиляцию бенчмарков
-- `test_edge_cases.rs`: 11 избыточных no_panic тестов
-- `test_collision.rs`: 1 no_panic тест
-- `test_direction_down.rs`: 1 no_panic тест
-- `test_animation.rs`: 1 no_panic тест
+#### Новые архитектурные тесты (67 тестов):
 
-#### Переименованные тесты (8 тестов):
-- `test_constants_centralized` → `test_arch_comp_constants_centralized`
-- `test_controls_uses_path_validator` → `test_arch_ref_controls_uses_path_validator`
-- `test_game_state_has_getters` → `test_arch_comp/integrity_game_state_has_getters`
-- `test_module_boundaries` → `test_arch/integrity/fixes_module_boundaries`
-- `test_no_circular_dependencies` → `test_arch_integrity/fixes_no_circular_dependencies`
-- `test_saturating_add_normal_values` → `test_score_overflow_saturating_add_normal_values`
-- `test_wall_kick_at_wall` → `test_wall_kick_refactor_at_wall`
-- `test_logic_does_not_import_render` → `test_arch_comp_logic_does_not_import_render_2`
+**Тесты архитектурных компонентов (7 тестов):**
+- `test_architecture_components.rs` — проверка отсутствия мёртвого кода:
+  - `test_figure_manager_not_used` — FigureManager не используется
+  - `test_animation_state_not_used` — AnimationState не используется
+  - `test_game_phase_not_used` — GamePhase не используется
+  - `test_no_unused_components_in_components_rs` — нет мёртвого кода
+  - `test_game_board_is_used` — GameBoard используется
+  - `test_score_board_is_used` — ScoreBoard используется
+  - `test_no_dead_code_in_components_module` — нет мёртвого кода в трейтах
 
-#### Обновленные тесты (5 тестов):
-- `test_bag_generator_creation` — добавлен assert
-- `test_scoring_state_trait_implemented` — добавлены assert
-- `test_renderer_trait_implementation` — добавлен assert
-- `test_input_reader_trait_implementation` — добавлен assert
-- `test_canvas_as_dyn_renderer` — добавлен assert
+**Тесты архитектурных трейтов (8 тестов):**
+- `test_architecture_traits.rs` — консолидация трейтов в access.rs:
+  - `test_board_readonly_defined_only_in_access` — BoardReadonly в access.rs
+  - `test_board_mutable_defined_only_in_access` — BoardMutable в access.rs
+  - `test_no_duplicate_traits_in_board_rs` — нет дублирования в board.rs
+  - `test_board_rs_imports_traits_from_access` — board.rs импортирует трейты
+  - `test_traits_reexported_from_access` — переэкспорт из access.rs
+  - `test_score_access_defined_only_in_access` — ScoreAccess в access.rs
+  - `test_no_duplicate_traits_in_scoreboard_rs` — нет дублирования в scoreboard.rs
+  - `test_all_access_traits_consolidated_in_access` — все трейты в access.rs
 
-### Новые тесты (30 марта 2026):
+**Тесты архитектурной валидации (12 тестов):**
+- `test_architecture_validation.rs` — централизация валидации:
+  - `test_validation_service_exists` — ValidationService существует
+  - `test_validation_service_structure` — правильная структура
+  - `test_validate_f32_finite_used_in_set_fall_speed` — валидация fall_speed
+  - `test_validate_f32_finite_used_in_set_land_timer` — валидация land_timer
+  - `test_validate_u32_range_exists_and_works` — validate_u32_range работает
+  - `test_validate_u32_range_used_in_set_fall_speed` — используется в set_fall_speed
+  - `test_no_duplicate_validation_logic` — нет дублирования валидации
+  - `test_validation_error_used_for_all_validation_errors` — ValidationError используется
+  - `test_all_validation_centralized_in_validation_service` — централизация
+  - `test_validation_follows_dry_principle` — следует DRY принципу
+  - `test_validation_error_used_consistently` — консистентное использование
+  - `test_validation_integration_with_game_state` — интеграция с GameState
 
-#### Добавленные тесты (37 тестов):
+**Тесты разделения ответственности (9 тестов):**
+- `test_architecture_separation.rs` — разделение render/logic:
+  - `test_check_rows_not_called_in_render_rs` — check_rows не в render.rs
+  - `test_render_rs_does_not_import_check_rows` — render.rs не импортирует
+  - `test_render_function_does_not_contain_line_clearing_logic` — нет логики линий
+  - `test_render_rs_does_not_contain_line_removal_functions` — нет функций удаления
+  - `test_line_logic_in_scoring_lines_rs` — логика линий в scoring/lines.rs
+  - `test_check_rows_in_scoring_lines_rs` — check_rows в scoring/lines.rs
+  - `test_logic_update_rs_coordinates_line_logic` — logic/update.rs координирует
+  - `test_handle_landing_calls_check_rows` — handle_landing вызывает check_rows
+  - `test_render_and_logic_are_separated` — render и logic разделены
 
-**Тесты защиты от переполнения очков (12 тестов):**
-- `test_score_overflow_protection.rs` — защита от переполнения счёта:
-  - `test_score_does_not_exceed_max` — проверка ограничения MAX_SCORE
-  - `test_saturating_add_normal_values` — saturating_add с нормальными значениями
-  - `test_saturating_add_overflow_protection` — защита от переполнения u128
-  - `test_extreme_level_10000_plus` — экстремальный уровень 10000+
-  - `test_extreme_combo_1000_plus` — экстремальное комбо 1000+
-  - `test_extreme_level_and_combo_combined` — уровень и комбо одновременно
-  - `test_stress_many_score_additions` — 10000+ начислений
-  - `test_game_state_score_overflow` — интеграция с GameState
-  - `test_update_score_for_lines_overflow_protection` — защита в функции
-  - `test_max_score_constant` — проверка константы MAX_SCORE
-  - `test_saturating_add_edge_cases` — краевые случаи
-  - `test_no_panic_at_extreme_values` — отсутствие паник
+**Тесты Interface Segregation Principle (13 тестов):**
+- `test_architecture_isp.rs` — разделение трейтов:
+  - `test_score_access_contains_only_score_methods` — ScoreAccess: только очки
+  - `test_score_access_does_not_contain_level_methods` — нет методов уровней
+  - `test_score_access_does_not_contain_lines_methods` — нет методов линий
+  - `test_score_access_does_not_contain_combo_methods` — нет методов комбо
+  - `test_level_access_contains_only_level_methods` — LevelAccess: только уровни
+  - `test_level_access_does_not_contain_score_methods` — нет методов очков
+  - `test_lines_access_contains_only_lines_methods` — LinesAccess: только линии
+  - `test_lines_access_does_not_contain_score_methods` — нет методов очков
+  - `test_combo_access_contains_only_combo_methods` — ComboAccess: только комбо
+  - `test_combo_access_does_not_contain_score_methods` — нет методов очков
+  - `test_scoring_state_inherits_narrow_traits` — ScoringState наследует трейты
+  - `test_scoring_state_can_be_used_through_narrow_traits` — использование через трейты
+  - `test_traits_follow_isp_principle` — следуют ISP принципу
 
-**Тесты валидации fall_speed/land_timer (15 тестов):**
-- `test_state_validation.rs` — валидация значений GameState:
-  - `test_set_fall_speed_nan_returns_error` — NaN защита fall_speed
-  - `test_set_fall_speed_positive_infinity_returns_error` — +Infinity защита
-  - `test_set_fall_speed_negative_infinity_returns_error` — -Infinity защита
-  - `test_set_fall_speed_valid_values` — валидные значения
-  - `test_set_fall_speed_clamps_to_valid_range` — clamp диапазона
-  - `test_set_land_timer_nan_returns_error` — NaN защита land_timer
-  - `test_set_land_timer_positive_infinity_returns_error` — +Infinity защита
-  - `test_set_land_timer_negative_infinity_returns_error` — -Infinity защита
-  - `test_set_land_timer_valid_values` — валидные значения
-  - `test_set_land_timer_negative_values_clamped_to_zero` — отрицательные значения
-  - `test_set_fall_speed_boundary_values` — граничные значения
-  - `test_set_land_timer_boundary_values` — граница 0.0
-  - `test_validation_in_game_state_context` — интеграция
-  - `test_validation_no_panic_on_invalid_values` — отсутствие паник
-  - `test_validation_stress_test` — стресс-тест
+**Тесты снижения связанности (11 тестов):**
+- `test_architecture_coupling.rs` — низкая связанность:
+  - `test_scoring_points_no_direct_access_to_gamestate_fields` — нет прямого доступа
+  - `test_scoring_points_uses_encapsulation` — использует инкапсуляцию
+  - `test_scoring_lines_uses_public_methods_only` — только публичные методы
+  - `test_scoring_lines_no_direct_field_access` — нет прямого доступа к полям
+  - `test_score_logic_encapsulated_in_scoreboard` — инкапсуляция в ScoreBoard
+  - `test_scoreboard_has_clear_public_api` — чёткий публичный API
+  - `test_coupling_reduced_through_traits` — снижение через трейты
+  - `test_gamestate_not_dependent_on_concrete_implementations` — нет зависимости
+  - `test_internal_logic_encapsulated` — внутренняя логика инкапсулирована
+  - `test_gamestate_fields_are_private` — поля приватные
+  - `test_coupling_architecture_test` — архитектурный тест
 
-**Тесты TOCTOU защиты controls (10 тестов):**
-- `test_controls_toctou.rs` — защита от Time-Of-Check-Time-Of-Use атак:
-  - `test_symlink_rejected_on_load` — отклонение symlink при загрузке
-  - `test_symlink_rejected_on_save` — отклонение symlink при сохранении
-  - `test_broken_symlink_handling` — обработка несуществующих symlink
-  - `test_o_nofollow_applied_on_save` — применение O_NOFOLLOW при сохранении
-  - `test_o_nofollow_applied_on_load` — применение O_NOFOLLOW при загрузке
-  - `test_o_nofollow_prevents_race_condition` — предотвращение race condition
-  - `test_toctou_protection_integration` — интеграционный тест
-  - `test_regular_files_work_correctly` — работа с обычными файлами
-  - `test_multiple_symlinks_attack` — защита от множественных symlink
-  - `test_toctou_protection_no_panic` — отсутствие паник
+**Тесты целостности архитектуры (дополнено 4 тестами):**
+- `test_architecture_integrity.rs` — целостность архитектуры:
+  - `test_component_separation` — разделение компонентов
+  - `test_module_boundaries` — границы модулей
+  - `test_encapsulation` — инкапсуляция
+  - `test_dependency_inversion` — инверсия зависимостей
+  - `test_error_handling` — обработка ошибок
+  - `test_no_circular_dependencies` — отсутствие циклов
+  - `test_solid_principles` — принципы SOLID
+  - `test_backward_compatibility` — обратная совместимость
+  - ... (ещё 15 тестов)
 
 #### Итоговая статистика:
-- **Всего тестов:** 1160
+- **Всего тестов:** 1227+
 - **Удалено тестов:** 19 (избыточные и тривиальные)
 - **Переименовано тестов:** 8 (устранение дубликатов)
 - **Обновлено тестов:** 5 (добавлены assert)
-- **Добавлено тестов:** 62 (новые тесты безопасности и обработки ошибок)
+- **Добавлено тестов:** 129 (новые тесты безопасности и архитектурные тесты)
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100%)
 
@@ -99,9 +116,9 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1160
+### Общее количество тестов: 1227+
 
-**Unit тесты:** 879
+**Unit тесты:** 946
 **Integration тесты:** 281 (architecture + fixes verification + edge cases)
 
 **Процент прохождения:** 100% (0 failed)
@@ -124,6 +141,13 @@
 - `test_animation.rs` — 14 тестов (после очистки)
 - `test_application_error_handling.rs` — 15 тестов (обработка ошибок Application)
 - `test_architecture.rs` — 19 тестов
+- `test_architecture_components.rs` — 7 тестов (архитектурные компоненты)
+- `test_architecture_traits.rs` — 8 тестов (архитектурные трейты)
+- `test_architecture_validation.rs` — 12 тестов (архитектурная валидация)
+- `test_architecture_separation.rs` — 9 тестов (разделение ответственности)
+- `test_architecture_isp.rs` — 13 тестов (Interface Segregation)
+- `test_architecture_coupling.rs` — 11 тестов (снижение связанности)
+- `test_architecture_integrity.rs` — 23 теста (целостность архитектуры)
 - `test_bag_system.rs` — 27 тестов
 - `test_benchmarks.rs` — 4 теста (после очистки)
 - `test_bounds_check_optimization.rs` — 7 тестов

@@ -114,10 +114,6 @@ pub use board::{
 #[allow(unused_imports)]
 pub use scoreboard::{ScoreAccess, ScoreBoard, ScoreMutable};
 
-// Re-export трейтов и типов из components
-#[allow(unused_imports)]
-pub use components::{AnimationState, FigureManager, GamePhase};
-
 // Re-export GameView и StringCache для отрисовки и кэширования
 #[allow(unused_imports)]
 pub use cache::StringCache;

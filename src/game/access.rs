@@ -68,6 +68,19 @@ pub trait BoardReadonly {
 
     /// Проверить, занята ли ячейка.
     fn is_block_occupied(&self, x: usize, y: usize) -> bool;
+
+    /// Получить битовую маску заполненных линий.
+    ///
+    /// # Возвращает
+    /// Битовая маска где каждый бит соответствует линии поля.
+    /// Бит установлен в 1 если линия заполнена.
+    fn get_filled_lines_mask(&self) -> u32;
+
+    /// Получить количество заполненных линий.
+    ///
+    /// # Возвращает
+    /// Количество линий, которые необходимо удалить.
+    fn get_filled_lines_count(&self) -> u32;
 }
 
 // ============================================================================
@@ -96,29 +109,49 @@ pub trait BoardMutable: BoardReadonly {
     /// Установить значение ячейки игрового поля.
     fn set_block(&mut self, x: usize, y: usize, value: i8);
 
-    /// Получить скорость падения.
-    fn get_fall_speed(&self) -> f32;
+    /// Установить битовую маску заполненных линий.
+    ///
+    /// # Аргументы
+    /// * `mask` - битовая маска заполненных линий
+    fn set_filled_lines_mask(&mut self, mask: u32);
 
-    /// Установить скорость падения.
+    /// Очистить заполненные линии.
+    ///
+    /// # Возвращает
+    /// Количество очищенных линий.
+    fn clear_filled_lines(&mut self) -> u32;
+
+    /// Получить скорость падения (по умолчанию 0.0).
+    ///
+    /// Этот метод имеет реализацию по умолчанию для типов которые не поддерживают скорость падения.
+    fn get_fall_speed(&self) -> f32 {
+        0.0
+    }
+
+    /// Установить скорость падения (по умолчанию возвращает ошибку).
     ///
     /// # Errors
     /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
-    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::game::state::GameError>;
+    fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::game::state::GameError> {
+        Err(crate::game::state::GameError::Validation(
+            "Этот тип не поддерживает установку скорости падения".to_string()
+        ))
+    }
 
-    /// Получить таймер приземления.
-    fn get_land_timer(&self) -> f64;
+    /// Получить таймер приземления (по умолчанию 0.0).
+    fn get_land_timer(&self) -> f64 {
+        0.0
+    }
 
-    /// Установить таймер приземления.
+    /// Установить таймер приземления (по умолчанию возвращает ошибку).
     ///
     /// # Errors
     /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
-    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::game::state::GameError>;
-
-    /// Получить количество заполненных линий.
-    fn get_filled_lines(&self) -> u32;
-
-    /// Установить количество заполненных линий.
-    fn set_filled_lines(&mut self, value: u32);
+    fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::game::state::GameError> {
+        Err(crate::game::state::GameError::Validation(
+            "Этот тип не поддерживает установку таймера приземления".to_string()
+        ))
+    }
 }
 
 // ============================================================================
@@ -208,6 +241,14 @@ impl BoardReadonly for crate::game::state::GameState {
     fn is_block_occupied(&self, x: usize, y: usize) -> bool {
         self.get_blocks()[y][x] != -1
     }
+
+    fn get_filled_lines_mask(&self) -> u32 {
+        self.filled_lines()
+    }
+
+    fn get_filled_lines_count(&self) -> u32 {
+        self.filled_lines().count_ones()
+    }
 }
 
 impl BoardMutable for crate::game::state::GameState {
@@ -217,6 +258,16 @@ impl BoardMutable for crate::game::state::GameState {
 
     fn set_block(&mut self, x: usize, y: usize, value: i8) {
         self.get_blocks_mut()[y][x] = value;
+    }
+
+    fn set_filled_lines_mask(&mut self, mask: u32) {
+        self.set_filled_lines(mask);
+    }
+
+    fn clear_filled_lines(&mut self) -> u32 {
+        let count = self.filled_lines().count_ones();
+        self.set_filled_lines(0);
+        count
     }
 
     fn get_fall_speed(&self) -> f32 {
@@ -233,14 +284,6 @@ impl BoardMutable for crate::game::state::GameState {
 
     fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::game::state::GameError> {
         self.set_land_timer(timer)
-    }
-
-    fn get_filled_lines(&self) -> u32 {
-        self.lines_cleared()
-    }
-
-    fn set_filled_lines(&mut self, value: u32) {
-        self.set_lines_cleared(value);
     }
 }
 
