@@ -17,8 +17,8 @@ fn test_get_key_method_exists() {
     // Метод существует и компилируется
     use crate::io::KeyReader;
     let mut reader = KeyReader::new();
-    // Метод возвращает Option<u8>
-    let _result: Option<u8> = reader.get_key();
+    // Метод возвращает io::Result<Option<u8>>
+    let _result: std::io::Result<Option<u8>> = reader.get_key();
 }
 
 /// Тест 2: Проверка, что get_key() возвращает Option<u8>
@@ -32,9 +32,9 @@ fn test_get_key_returns_option_u8() {
     let mut reader = KeyReader::new();
     let result = reader.get_key();
 
-    // Тип возвращаемого значения - Option<u8>
+    // Тип возвращаемого значения - io::Result<Option<u8>>
     // Это подтверждает, что поддерживаются только ASCII символы (0x00-0x7F)
-    let _is_ascii: Option<u8> = result;
+    let _is_ascii: std::io::Result<Option<u8>> = result;
 }
 
 /// Тест 3: Проверка, что многобайтовые символы не поддерживаются

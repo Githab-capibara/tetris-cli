@@ -149,7 +149,7 @@ impl Application {
             draw_menu(&mut self.canvas, &high_score_display);
 
             // Обработка ввода
-            if let Some(key) = self.input.get_key() {
+            if let Ok(Some(key)) = self.input.get_key() {
                 // Выход из приложения
                 if key == crate::io::KEY_BACKSPACE {
                     break;

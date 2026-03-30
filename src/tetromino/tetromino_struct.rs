@@ -134,6 +134,8 @@ impl Tetromino {
                 RotationDirection::CounterClockwise => (y, x.saturating_neg()),
                 // По часовой: (x, y) -> (-y, x)
                 RotationDirection::Clockwise => (y.saturating_neg(), x),
+                // Без вращения - возвращаем исходные координаты
+                RotationDirection::NoRotation => (x, y),
             };
 
             // Явная проверка границ вместо assert - предотвращает панику в релизном режиме

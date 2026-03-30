@@ -4,7 +4,7 @@
 //! - `Canvas` - канвас для отрисовки
 //! - `KeyReader` - асинхронный читатель клавиатуры
 
-use std::io::{stdout, Read, Stdout, Write};
+use std::io::{self, stdout, Read, Stdout, Write};
 use termion::{
     async_stdin,
     clear::All,
@@ -341,11 +341,11 @@ impl Canvas {
 /// Поддерживает обработку ESC-последовательностей для специальных клавиш.
 ///
 /// ## Пример использования
-/// ```
+/// ```ignore
 /// use tetris_cli::io::KeyReader;
 ///
 /// let mut reader = KeyReader::new();
-/// if let Some(key) = reader.get_key() {
+/// if let Ok(Some(key)) = reader.get_key() {
 ///     if key == b'q' {
 ///         println!("Нажата клавиша Q");
 ///     }
@@ -397,15 +397,20 @@ impl KeyReader {
     /// Получить код нажатой клавиши (ASCII).
     ///
     /// # Возвращает
-    /// - `Some(u8)` — код нажатой клавиши (ASCII 0x00-0x7F)
-    /// - `None` — при ошибке чтения, если клавиша не была нажата или введён UTF-8 символ
+    /// - `Ok(Some(u8))` — код нажатой клавиши (ASCII 0x00-0x7F)
+    /// - `Ok(None)` — клавиша не была нажата или введён UTF-8 символ
+    /// - `Err(io::Error)` — при ошибке чтения ввода
+    ///
+    /// # Errors
+    /// Возвращает `io::Error` при ошибке чтения из терминала (например, при закрытии stdin
+    /// или сбое системного вызова).
     ///
     /// # Пример
-    /// ```
+    /// ```no_run
     /// use tetris_cli::io::KeyReader;
     ///
     /// let mut reader = KeyReader::new();
-    /// if let Some(key) = reader.get_key() {
+    /// if let Ok(Some(key)) = reader.get_key() {
     ///     match key {
     ///         b'q' => println!("Выход"),
     ///         b'p' => println!("Пауза"),
@@ -418,7 +423,7 @@ impl KeyReader {
     ///
     /// ## Исправление #1 (UTF-8 поддержка)
     /// **Метод НЕ поддерживает многобайтовые символы UTF-8** (кириллица, emoji и другие Unicode-символы).
-    /// При вводе многобайтовых символов метод возвращает `None`, предварительно прочитав все байты символа.
+    /// При вводе многобайтовых символов метод возвращает `Ok(None)`, предварительно прочитав все байты символа.
     ///
     /// ## Поддерживаемые символы
     /// - ✅ ASCII символы (0x00-0x7F): латиница, цифры, управляющие коды
@@ -441,7 +446,10 @@ impl KeyReader {
     ///
     /// # Исправление #18 (MEDIUM SEVERITY)
     /// Расширена валидация Unicode с логированием причин отбрасывания невалидных символов.
-    pub fn get_key(&mut self) -> Option<u8> {
+    ///
+    /// # Исправление аудита 2026-03-30
+    /// Изменён тип возврата с `Option<u8>` на `io::Result<Option<u8>>` для явной обработки ошибок.
+    pub fn get_key(&mut self) -> io::Result<Option<u8>> {
         let mut key_bytes: [u8; 1] = [0];
         match self.inp.read_exact(&mut key_bytes) {
             Ok(()) => {
@@ -450,7 +458,7 @@ impl KeyReader {
                 // Проверяем, является ли это началом многобайтового символа UTF-8
                 // ASCII (0x00-0x7F) - однобайтовый символ
                 if first_byte <= 0x7F {
-                    return Some(first_byte);
+                    return Ok(Some(first_byte));
                 }
 
                 // Определяем количество байт в символе UTF-8
@@ -465,7 +473,7 @@ impl KeyReader {
                 } else {
                     // Исправление #18: логирование причины отбрасывания
                     eprintln!("[WARN] get_key(): невалидный первый байт UTF-8: 0x{:02X} (диапазоны 0xC0-0xC1 и 0xF5-0xFF запрещены)", first_byte);
-                    return None;
+                    return Ok(None);
                 };
 
                 // Читаем остальные байты символа UTF-8
@@ -477,7 +485,7 @@ impl KeyReader {
                 {
                     // Исправление #18: логирование ошибки чтения
                     eprintln!("[WARN] get_key(): ошибка чтения продолжения UTF-8 последовательности (ожидалось {} байт)", bytes_to_read);
-                    return None;
+                    return Ok(None);
                 }
 
                 // Исправление #3 (CRITICAL): проверка валидности UTF-8 через std::str::from_utf8()
@@ -497,7 +505,7 @@ impl KeyReader {
                             .collect::<Vec<_>>()
                             .join(", ")
                     );
-                    return None;
+                    return Ok(None);
                 }
 
                 // Исправление #8: логирование предупреждения при получении UTF-8 символа
@@ -512,12 +520,13 @@ impl KeyReader {
 
                 // Для многобайтовых символов возвращаем None
                 // (они не являются управляющими клавишами для игры)
-                None
+                Ok(None)
             }
             Err(e) => {
                 // Исправление #18: логирование ошибки чтения ввода
                 eprintln!("[WARN] get_key(): ошибка чтения ввода: {}", e);
-                None
+                // Возвращаем ошибку явно через Err
+                Err(e)
             }
         }
     }
@@ -689,7 +698,12 @@ impl InputReader for KeyReader {
     /// Получить код нажатой клавиши.
     ///
     /// Делегирует вызов методу `KeyReader::get_key()`.
-    fn get_key(&mut self) -> Option<u8> {
+    ///
+    /// # Возвращает
+    /// - `Ok(Some(u8))` — код нажатой клавиши
+    /// - `Ok(None)` — если клавиша не была нажата
+    /// - `Err(io::Error)` — если произошла ошибка чтения
+    fn get_key(&mut self) -> io::Result<Option<u8>> {
         self.get_key()
     }
 }

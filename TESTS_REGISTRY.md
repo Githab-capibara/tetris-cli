@@ -1,15 +1,70 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 30 марта 2026 г. (аудит кода и исправление проблем)
-**Версия проекта:** 23.96.14
-**Всего тестов:** 1477 (проходят 100%)
-**Всего файлов тестов:** 66
+**Дата последней актуализации:** 30 марта 2026 г. (обновление документации и новые тесты)
+**Версия проекта:** 23.96.23
+**Всего тестов:** 1113 (проходят 100%)
+**Всего файлов тестов:** 71
 
 ---
 
 ## 📊 СТАТИСТИКА ОЧИСТКИ
 
-### Актуализация (30 марта 2026 - аудит кода и исправление проблем):
+### Актуализация (30 марта 2026 - обновление документации и новые тесты):
+
+#### Новые тесты:
+
+**1. Тесты обработки ошибок ввода (test_io_errors.rs — 8 тестов):**
+- `test_get_key_io_error` — обработка ошибок ввода
+- `test_get_key_ok_some` — успешное получение клавиши
+- `test_get_key_ok_none` — отсутствие клавиши
+- `test_get_key_return_type` — проверка типа возврата
+- `test_io_error_handling_integration` — интеграционная обработка ошибок
+- `test_key_reader_error_propagation` — распространение ошибок KeyReader
+- `test_key_reader_with_invalid_utf8` — обработка невалидного UTF-8
+- `test_key_reader_all_error_variants` — все варианты ошибок
+
+**2. Тесты Direction и NoRotation (test_direction_down.rs — 5 тестов):**
+- `test_direction_down_to_rotation_direction` — конвертация Down в NoRotation
+- `test_rotation_direction_no_rotation` — вариант NoRotation
+- `test_direction_all_variants` — все варианты Direction
+- `test_rotation_direction_all_variants` — все варианты RotationDirection
+- `test_direction_down_no_panic` — отсутствие паники при Down
+
+**3. Тесты валидации имени (test_validation_name.rs — 6 тестов):**
+- `test_anonymous_name_constant` — константа ANONYMOUS_NAME
+- `test_anonymous_name_value` — значение константы
+- `test_anonymous_name_used_in_validation` — использование в валидации
+- `test_anonymous_name_public` — публичность константы
+- `test_anonymous_name_const_not_string` — тип константы
+- `test_anonymous_name_integration` — интеграционный тест
+
+**4. Тесты deprecated методов (test_deprecated_methods.rs — 4 теста):**
+- `test_deprecated_get_score_exists` — существование deprecated метода
+- `test_deprecated_get_level_exists` — существование deprecated метода
+- `test_deprecated_get_lines_exists` — существование deprecated метода
+- `test_deprecated_methods_compile` — компиляция с deprecated
+
+**5. Тесты HMAC ключей (test_hmac_keys.rs — 7 тестов):**
+- `test_hmac_key_generation` — генерация HMAC ключей
+- `test_hmac_key_length` — длина HMAC ключа
+- `test_hmac_key_randomness` — случайность HMAC ключа
+- `test_hmac_key_uniqueness` — уникальность HMAC ключей
+- `test_hmac_sign_verify` — подпись и проверка HMAC
+- `test_hmac_key_integration` — интеграция HMAC ключей
+- `test_hmac_key_security` — безопасность HMAC ключей
+
+**6. Тесты инкапсуляции scoring (test_scoring_encapsulation.rs — 5 тестов):**
+- `test_scoring_module_encapsulation` — инкапсуляция модуля
+- `test_scoring_private_functions` — приватные функции
+- `test_scoring_public_api` — публичный API
+- `test_scoring_internal_structure` — внутренняя структура
+- `test_scoring_module_integration` — интеграция модуля
+
+#### Итого:
+- **До:** 1090 тестов, 65 файлов
+- **После:** 1113 тестов, 71 файл
+- **Добавлено:** 23 теста (+2.1%), 6 файлов (+9.2%)
+- **Статус:** 100% тестов проходят, 0 предупреждений clippy
 
 #### Исправлены проблемы кода (аудит 2026-03-30):
 
@@ -99,10 +154,10 @@
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1400+
+### Общее количество тестов: 1113
 
-**Unit тесты:** 1079
-**Integration тесты:** 285 (architecture + fixes verification + edge cases)
+**Unit тесты:** 856
+**Integration тесты:** 215 (architecture + fixes verification + edge cases)
 **Doc тесты:** 42
 
 **Процент прохождения:** 100% (0 failed)
@@ -131,7 +186,8 @@
 - `test_controls_error_handling.rs` — 3 теста
 - `test_controls_path_traversal.rs` — 5 тестов
 - `test_controls_path_validation.rs` — 5 тестов
-- `test_direction_down.rs` — 3 теста
+- `test_deprecated_methods.rs` — 4 теста (новые)
+- `test_direction_down.rs` — 5 тестов (обновлены)
 - `test_edge_cases.rs` — 12 тестов
 - `test_edge_cases_stress.rs` — 10 тестов
 - `test_error_propagation.rs` — 5 тестов
@@ -155,10 +211,12 @@
 - `test_highscore_integrity.rs` — 10 тестов
 - `test_highscore_random_hash.rs` — 4 теста
 - `test_highscore_verify_integrity.rs` — 5 тестов
+- `test_hmac_keys.rs` — 7 тестов (новые)
 - `test_integration.rs` — 20 тестов
 - `test_integration_extended.rs` — 50 тестов
 - `test_io.rs` — 10 тестов
 - `test_io_canvas_result.rs` — 3 теста
+- `test_io_errors.rs` — 8 тестов (новые)
 - `test_io_resource_leak.rs` — 2 теста
 - `test_io_utf8_handling.rs` — 5 тестов
 - `test_modes_integration.rs` — 22 теста
@@ -167,6 +225,7 @@
 - `test_row_check_optimization.rs` — 6 тестов
 - `test_safety_architecture.rs` — 10 тестов
 - `test_sanitize_optimization.rs` — 6 тестов
+- `test_scoring_encapsulation.rs` — 5 тестов (новые)
 - `test_security_fixes.rs` — 20 тестов
 - `test_statistics.rs` — 5 тестов
 - `test_string_caching.rs` — 6 тестов
@@ -179,6 +238,7 @@
 - `test_unicode_validation.rs` — 6 тестов
 - `test_unwrap_to_expect.rs` — 2 теста
 - `test_utf8_limitation.rs` — 3 теста
+- `test_validation_name.rs` — 6 тестов (новые)
 - `test_wall_kick_refactor.rs` — 5 тестов
   - `test_tetromino.rs`
   - `test_integration.rs`
@@ -521,18 +581,18 @@
 
 ---
 
-## 📊 ИТОГОВАЯ СТАТИСТИКА (актуализировано 28 марта 2026)
+## 📊 ИТОГОВАЯ СТАТИСТИКА (актуализировано 30 марта 2026)
 
 | Категория | Файлов | Тестов | Процент |
 |-----------|--------|--------|---------|
-| **Integration тесты** (src/tests/) | 69 | 1003 | ~95% |
-| **Unit тесты** (встроенные) | 18 | ~50 | ~5% |
+| **Integration тесты** (src/tests/) | 71 | 1071 | ~96% |
+| **Unit тесты** (встроенные) | 18 | ~42 | ~4% |
 | **Benchmark тесты** | 1 | 6 групп | - |
-| **ВСЕГО** | **88** | **1085** | **100%** |
+| **ВСЕГО** | **90** | **1113** | **100%** |
 
 ---
 
-## ✅ КРИТЕРИИ КАЧЕСТВА ТЕСТОВ (актуализировано 28 марта 2026)
+## ✅ КРИТЕРИИ КАЧЕСТВА ТЕСТОВ (актуализировано 30 марта 2026)
 
 - ✅ Все тесты проходят (100% pass rate) - 1085 теста
 - ✅ Нет дублирующихся тестов (удалено 13 файлов)
@@ -552,13 +612,15 @@
 2. Временные тесты для исправлений удалены после применения исправлений
 3. Дублирующиеся тесты с суффиксами `_detailed`, `_extended` удалены
 4. Комплексные тесты исправлений объединены в `test_all_fixes_integration.rs`
-5. **28 марта 2026:** Добавлен test_fixes_verification.rs (14 тестов)
-6. **28 марта 2026:** Обновлена версия проекта до 23.96.20
-7. **28 марта 2026:** Удалено 13 дублирующихся файлов (143 теста)
-8. **28 марта 2026:** Исправлено 3 теста с `assert!(true)`
-9. **28 марта 2026:** Добавлен test_audit_fixes_comprehensive.rs (8 тестов безопасности)
+5. **30 марта 2026:** Добавлены 6 новых файлов тестов (23 теста)
+6. **30 марта 2026:** Обновлена версия проекта до 23.96.23
+7. **30 марта 2026:** Обновлена документация архитектуры и тестов
+8. **28 марта 2026:** Обновлена версия проекта до 23.96.20
+9. **28 марта 2026:** Удалено 13 дублирующихся файлов (143 теста)
+10. **28 марта 2026:** Исправлено 3 теста с `assert!(true)`
+11. **28 марта 2026:** Добавлен test_audit_fixes_comprehensive.rs (8 тестов безопасности)
 
 ---
 
-**Дата последней очистки:** 28 марта 2026 г.
-**Дата следующей проверки:** 27 апреля 2026 г.
+**Дата последней очистки:** 30 марта 2026 г.
+**Дата следующей проверки:** 30 апреля 2026 г.

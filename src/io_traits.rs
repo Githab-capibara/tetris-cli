@@ -14,7 +14,7 @@
 //! let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
 //!
 //! // Чтение клавиши
-//! if let Some(key) = reader.get_key() {
+//! if let Ok(Some(key)) = reader.get_key() {
 //!     println!("Нажата клавиша: {}", key);
 //! }
 //!
@@ -23,6 +23,7 @@
 //! renderer.flush();
 //! ```
 
+use std::io;
 use termion::color::Color;
 
 /// Трейт для чтения ввода пользователя.
@@ -34,9 +35,10 @@ use termion::color::Color;
 /// ```ignore
 /// use tetris_cli::io_traits::InputReader;
 /// use tetris_cli::io::KeyReader;
+/// use std::io;
 ///
 /// impl InputReader for KeyReader {
-///     fn get_key(&mut self) -> Option<u8> {
+///     fn get_key(&mut self) -> io::Result<Option<u8>> {
 ///         self.get_key()
 ///     }
 /// }
@@ -45,13 +47,17 @@ pub trait InputReader {
     /// Получить код нажатой клавиши.
     ///
     /// # Возвращает
-    /// - `Some(u8)` — код нажатой клавиши
-    /// - `None` — если клавиша не была нажата или произошла ошибка чтения
+    /// - `Ok(Some(u8))` — код нажатой клавиши
+    /// - `Ok(None)` — если клавиша не была нажата
+    /// - `Err(io::Error)` — если произошла ошибка чтения
+    ///
+    /// # Errors
+    /// Возвращает `io::Error` при ошибке чтения из терминала (например, при закрытии stdin).
     ///
     /// # Пример
     /// ```ignore
     /// let mut reader: &mut dyn InputReader = &mut KeyReader::new();
-    /// if let Some(key) = reader.get_key() {
+    /// if let Ok(Some(key)) = reader.get_key() {
     ///     match key {
     ///         b'q' => println!("Выход"),
     ///         b'p' => println!("Пауза"),
@@ -59,7 +65,7 @@ pub trait InputReader {
     ///     }
     /// }
     /// ```
-    fn get_key(&mut self) -> Option<u8>;
+    fn get_key(&mut self) -> io::Result<Option<u8>>;
 }
 
 /// Трейт для отрисовки в терминале.

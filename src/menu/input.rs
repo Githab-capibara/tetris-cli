@@ -55,8 +55,8 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
         let key = inp.get_key();
 
         match key {
-            Some(b'\n' | b'\r') => break,
-            Some(KEY_BACKSPACE) => {
+            Ok(Some(b'\n' | b'\r')) => break,
+            Ok(Some(KEY_BACKSPACE)) => {
                 if !name.is_empty() {
                     name.pop();
                     cnv.draw_string(
@@ -68,7 +68,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                     cnv.flush();
                 }
             }
-            Some(key) if name.len() < MAX_NAME_LEN => {
+            Ok(Some(key)) if name.len() < MAX_NAME_LEN => {
                 let c = key as char;
                 if is_valid_name_char(c) {
                     name.push(c);
@@ -81,7 +81,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                     cnv.flush();
                 }
             }
-            Some(_) | None => {}
+            Ok(Some(_) | None) | Err(_) => {}
         }
 
         sleep(Duration::from_millis(FRAME_DELAY_MS));
@@ -106,7 +106,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
 pub fn wait_for_key(inp: &mut KeyReader) {
     loop {
         let key = inp.get_key();
-        if key.is_some() {
+        if let Ok(Some(_)) = key {
             break;
         }
         sleep(Duration::from_millis(FRAME_DELAY_MS));

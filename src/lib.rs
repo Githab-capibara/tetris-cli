@@ -434,6 +434,7 @@ mod tests {
     pub mod test_highscore;
     pub mod test_integration;
     pub mod test_io;
+    pub mod test_io_errors;
     pub mod test_physics;
     pub mod test_tetromino;
 

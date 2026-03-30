@@ -70,9 +70,9 @@ pub fn handle_input<T: InputReader>(
             loop {
                 let key = inp.get_key();
                 match key {
-                    Some(b'p') => break,
-                    Some(KEY_BACKSPACE) => return InputResult::Quit, // Backspace
-                    Some(_) | None => {}
+                    Ok(Some(b'p')) => break,
+                    Ok(Some(KEY_BACKSPACE)) => return InputResult::Quit, // Backspace
+                    Ok(Some(_) | None) | Err(_) => {}
                 }
                 sleep(Duration::from_millis(1_000 / FPS));
             }
