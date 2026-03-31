@@ -56,8 +56,6 @@ fn test_gameboard_access_trait_removed() {
 
     let score = state.score();
     assert_eq!(score, 0, "ScoreAccess должен предоставлять доступ к очкам");
-
-    assert!(true, "GameBoardAccess удален или deprecated");
 }
 
 // ============================================================================
@@ -109,8 +107,6 @@ fn test_score_access_not_duplicated() {
         1,
         "ScoreBoard должен реализовывать ScoreAccess"
     );
-
-    assert!(true, "ScoreAccess не дублируется");
 }
 
 // ============================================================================
@@ -166,8 +162,6 @@ fn test_game_action_enum_exists() {
 
     // Проверяем что enum имеет Debug
     assert_eq!(format!("{:?}", GameAction::MoveLeft), "MoveLeft");
-
-    assert!(true, "GameAction enum существует");
 }
 
 // ============================================================================
@@ -259,8 +253,6 @@ fn test_game_rules_module_exists() {
         MAX_LINES_PER_CLEAR, 4,
         "MAX_LINES_PER_CLEAR должен быть экспортирован"
     );
-
-    assert!(true, "game_rules модуль существует");
 }
 
 // ============================================================================
@@ -308,8 +300,6 @@ fn test_constants_not_exported_pub_crate() {
         GAME_GRID_HEIGHT, 20,
         "Константы должны быть доступны из game::constants"
     );
-
-    assert!(true, "constants не экспортируется pub(crate)");
 }
 
 // ============================================================================
@@ -342,6 +332,4 @@ fn test_all_architecture_fixes_applied() {
     // 5. constants доступен
     use crate::constants::FPS;
     assert_eq!(FPS, 60);
-
-    assert!(true, "Все архитектурные исправления применены");
 }

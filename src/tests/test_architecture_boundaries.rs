@@ -62,10 +62,6 @@ fn test_game_logic_does_not_import_rendering() {
     // handle_input требует InputReader, но не требует Renderer
     fn check_input_type<R: crate::io_traits::InputReader>(_reader: &R) {}
     let _ = std::any::type_name::<dyn crate::io_traits::InputReader>();
-
-    // Если бы логика зависела от отрисовки, этот тест не скомпилировался бы
-    // без импорта render модулей
-    assert!(true, "Game logic не импортирует отрисовку");
 }
 
 // ============================================================================
@@ -112,10 +108,6 @@ fn test_scoring_does_not_import_physics() {
         100,
         "Score должен работать независимо от physics"
     );
-
-    // Если бы scoring зависел от physics, этот тест не скомпилировался бы
-    // без импорта physics модулей
-    assert!(true, "Scoring не импортирует physics");
 }
 
 // ============================================================================
@@ -191,10 +183,6 @@ fn test_tetromino_is_autonomous() {
         tetromino2.pos.0.is_finite(),
         "Tetromino должен работать независимо"
     );
-
-    // Если бы tetromino зависел от game, этот тест не скомпилировался бы
-    // без импорта game модулей
-    assert!(true, "Tetromino модуль автономен");
 }
 
 // ============================================================================
@@ -251,10 +239,6 @@ fn test_validation_is_autonomous() {
         PathErrorKind::TooLong,
         PathErrorKind::AbsolutePath,
     ];
-
-    // Если бы validation зависел от game или controls,
-    // этот тест не скомпилировался бы без их импорта
-    assert!(true, "Validation модуль автономен");
 }
 
 // ============================================================================
@@ -319,10 +303,6 @@ fn test_crypto_is_autonomous() {
         validator.verify(data, &sig),
         "HmacValidator должен работать независимо"
     );
-
-    // Если бы crypto зависел от game или controls,
-    // этот тест не скомпилировался бы без их импорта
-    assert!(true, "Crypto модуль автономен");
 }
 
 // ============================================================================
@@ -350,11 +330,6 @@ fn test_highscore_does_not_depend_on_game() {
 
     // Проверяем что можно получить записи
     let _entries = leaderboard.get_entries();
-    assert!(true, "Leaderboard должен работать независимо");
-
-    // Если бы highscore зависел от game, этот тест не скомпилировался бы
-    // без импорта game модулей
-    assert!(true, "Highscore модуль не зависит от game");
 }
 
 // ============================================================================
@@ -383,10 +358,6 @@ fn test_menu_does_not_depend_on_game() {
 
     // Проверяем что draw_menu доступен
     let _ = std::any::type_name::<fn(&mut crate::io::Canvas, &crate::game::GameState, &str)>();
-
-    // Если бы menu зависел от game, этот тест не скомпилировался бы
-    // без импорта game модулей
-    assert!(true, "Menu модуль не зависит от game");
 }
 
 // ============================================================================
@@ -412,8 +383,4 @@ fn test_config_does_not_depend_on_game() {
     // Проверяем что get_controls_hmac_key работает независимо
     let key = get_controls_hmac_key();
     assert!(!key.is_empty(), "HMAC ключ должен быть не пустым");
-
-    // Если бы config зависел от game, этот тест не скомпилировался бы
-    // без импорта game модулей
-    assert!(true, "Config модуль не зависит от game");
 }
