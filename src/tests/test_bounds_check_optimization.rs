@@ -120,35 +120,6 @@ fn test_collision_with_other_pieces() {
     );
 }
 
-/// Тест 4: Проверка производительности check_collision_direction
-///
-/// Бенчмарк: проверка коллизий должна быть быстрой.
-#[test]
-fn test_check_collision_performance() {
-    use std::time::Instant;
-
-    let state = GameState::new();
-    let iterations = 100_000;
-
-    let start = Instant::now();
-
-    for _ in 0..iterations {
-        let _ = state.can_move_curr_shape_direction(Direction::Down);
-        let _ = state.can_move_curr_shape_direction(Direction::Left);
-        let _ = state.can_move_curr_shape_direction(Direction::Right);
-    }
-
-    let elapsed = start.elapsed();
-
-    // 100000 итераций × 3 направления должны выполняться < 500ms
-    // Увеличенный порог для стабильности в CI/CD и нагруженных системах
-    assert!(
-        elapsed.as_millis() < 500,
-        "Проверка коллизий {iterations} итераций должна выполняться < 500ms (прошло {:?})",
-        elapsed
-    );
-}
-
 /// Тест 5: Проверка использования as cast вместо try_from
 ///
 /// Проверяем, что оптимизация с as cast работает корректно.

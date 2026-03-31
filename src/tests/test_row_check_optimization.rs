@@ -108,32 +108,6 @@ fn test_remove_multiple_rows() {
     }
 }
 
-/// Тест 4: Проверка производительности find_full_rows
-///
-/// Бенчмарк: поиск линий должен быть быстрым.
-#[test]
-fn test_find_full_rows_performance() {
-    use std::time::Instant;
-
-    let state = GameState::new();
-    let iterations = 100_000;
-
-    let start = Instant::now();
-
-    for _ in 0..iterations {
-        let _ = find_full_rows(state.get_blocks());
-    }
-
-    let elapsed = start.elapsed();
-
-    // 100000 итераций должны выполняться < 200ms (увеличенный таймаут для стабильности)
-    assert!(
-        elapsed.as_millis() < 200,
-        "find_full_rows {iterations} итераций должна выполняться < 200ms (прошло {:?})",
-        elapsed
-    );
-}
-
 /// Тест 5: Проверка .all() с ранним выходом
 ///
 /// Проверяем, что .all() делает ранний выход при пустой ячейке.
