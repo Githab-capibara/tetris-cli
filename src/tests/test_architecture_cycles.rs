@@ -276,9 +276,9 @@ fn test_import_graph_is_acyclic() {
     assert_eq!(state.level(), 1, "GameState должен зависеть от types");
 
     // Уровень 4: logic/* (зависит от state и types)
-    let can_move = can_move_curr_shape_direction(&state, crate::types::Direction::Down);
+    let _can_move = can_move_curr_shape_direction(&state, crate::types::Direction::Down);
     // can_move возвращает false т.к. фигура может двигаться вниз в новом состоянии
-    assert!(true, "logic должен зависеть от state"); // can_move проверяется для зависимости
+    // logic зависит от state
 
     // Уровень 5: scoring/* (зависит от logic и types)
     // handle_landing требует GameState, что подтверждает зависимость

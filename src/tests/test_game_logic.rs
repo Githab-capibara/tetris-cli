@@ -238,12 +238,7 @@ fn test_ghost_piece_boundary() {
 /// Проверяет корректность изменения координат при вращении.
 #[test]
 fn test_tetromino_rotate_clockwise() {
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
 
     // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
     // Вращение по часовой: (x,y) -> (-y,x)
@@ -267,12 +262,7 @@ fn test_tetromino_rotate_clockwise() {
 /// Проверяет корректность изменения координат при вращении в обратную сторону.
 #[test]
 fn test_tetromino_rotate_counter_clockwise() {
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
 
     // Вращение против часовой: (x,y) -> (y,-x)
     tetromino.rotate(RotationDirection::CounterClockwise);
@@ -290,12 +280,7 @@ fn test_tetromino_rotate_counter_clockwise() {
 /// Квадрат - единственная фигура, которая не меняет форму при вращении.
 #[test]
 fn test_tetromino_o_no_rotate() {
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: [(0, 0), (1, 0), (0, 1), (1, 1)],
-        fg: 5,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::O, [(0, 0), (1, 0), (0, 1), (1, 1)], 5);
 
     let original_coords = tetromino.coords();
 
@@ -319,12 +304,7 @@ fn test_tetromino_o_no_rotate() {
 /// Проверяет, что 4 вращения возвращают фигуру в исходное состояние.
 #[test]
 fn test_tetromino_full_rotation_cycle() {
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
 
     let original_coords = tetromino.coords();
 
@@ -355,12 +335,12 @@ fn test_all_tetromino_rotate() {
     ];
 
     for shape_type in &shapes {
-        let mut tetromino = Tetromino {
-            pos: (4.0, 0.0),
-            shape: *shape_type,
-            coords: crate::tetromino::SHAPE_COORDS[*shape_type as usize],
-            fg: *shape_type as u8,
-        };
+        let mut tetromino = Tetromino::new(
+            (4.0, 0.0),
+            *shape_type,
+            crate::tetromino::SHAPE_COORDS[*shape_type as usize],
+            *shape_type as u8,
+        );
 
         let original_coords = tetromino.coords();
         tetromino.rotate(RotationDirection::Clockwise);

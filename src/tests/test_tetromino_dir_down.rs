@@ -21,12 +21,7 @@ use crate::types::RotationDirection;
 #[test]
 fn test_dir_down_does_not_change_coords() {
     // Создаём тестовую фигуру T
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Сохраняем оригинальные координаты
     let original_coords = tetromino.coords();
@@ -69,12 +64,7 @@ fn test_dir_down_does_not_change_coords() {
     }
 
     // Проверяем что квадрат (O) тоже не меняется
-    let mut o_tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut o_tetromino = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let o_original = o_tetromino.coords();
     o_tetromino.rotate(RotationDirection::NoRotation);
@@ -91,12 +81,7 @@ fn test_dir_down_does_not_change_coords() {
 #[test]
 fn test_dir_left_rotates_correctly() {
     // Создаём тестовую фигуру T
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords();
@@ -116,12 +101,7 @@ fn test_dir_left_rotates_correctly() {
     );
 
     // Проверяем что вращение на 4 раза возвращает к исходному состоянию
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     for _ in 0..4 {
         t.rotate(RotationDirection::CounterClockwise);
@@ -133,12 +113,7 @@ fn test_dir_left_rotates_correctly() {
     );
 
     // Проверяем что квадрат (O) не вращается
-    let mut o_tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut o_tetromino = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let o_original = o_tetromino.coords();
     o_tetromino.rotate(RotationDirection::CounterClockwise);
@@ -155,12 +130,7 @@ fn test_dir_left_rotates_correctly() {
 #[test]
 fn test_dir_right_rotates_correctly() {
     // Создаём тестовую фигуру T
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Исходные координаты T: (-1,0), (0,0), (1,0), (0,1)
     let original_coords = tetromino.coords();
@@ -180,12 +150,7 @@ fn test_dir_right_rotates_correctly() {
     );
 
     // Проверяем что вращение на 4 раза возвращает к исходному состоянию
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     for _ in 0..4 {
         t.rotate(RotationDirection::Clockwise);
@@ -197,12 +162,7 @@ fn test_dir_right_rotates_correctly() {
     );
 
     // Проверяем что квадрат (O) не вращается
-    let mut o_tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut o_tetromino = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let o_original = o_tetromino.coords();
     o_tetromino.rotate(RotationDirection::Clockwise);
@@ -213,12 +173,7 @@ fn test_dir_right_rotates_correctly() {
     );
 
     // Проверяем I-фигуру
-    let mut i_tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut i_tetromino = Tetromino::new((4.0, 0.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let i_original = i_tetromino.coords();
     i_tetromino.rotate(RotationDirection::Clockwise);
@@ -227,12 +182,7 @@ fn test_dir_right_rotates_correctly() {
     assert_ne!(i_tetromino.coords(), i_original, "I-фигура должна вращаться");
 
     // После 4 вращений должна вернуться к исходному состоянию
-    let mut i_tetromino2 = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut i_tetromino2 = Tetromino::new((4.0, 0.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     for _ in 0..4 {
         i_tetromino2.rotate(RotationDirection::Clockwise);
@@ -303,12 +253,7 @@ fn test_all_directions_work_correctly() {
 /// Проверяет корректность множественных вращений.
 #[test]
 fn test_sequential_rotations() {
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Последовательность: Left, Left, Left, Left (должно вернуться к исходному)
     let original = tetromino.coords();

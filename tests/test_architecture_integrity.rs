@@ -180,7 +180,7 @@ mod tests {
             assert_eq!(entry.score(), score);
             assert!(entry.is_valid());
 
-            leaderboard.add_score(&player_name, score);
+            let _ = leaderboard.add_score(&player_name, score);
         }
 
         assert!(
@@ -229,7 +229,7 @@ mod tests {
         for i in 0..10 {
             let player_name = format!("Thread_{i}");
             let score = i as u128 * 100;
-            leaderboard.add_score(&player_name, score);
+            let _ = leaderboard.add_score(&player_name, score);
         }
 
         let entries = leaderboard.get_entries();
@@ -792,7 +792,7 @@ mod tests {
         }
 
         // Тест всегда проходит, но выводит предупреждения
-        assert!(true, "Проверка публичных полей завершена");
+        // Проверка публичных полей завершена
     }
 
     /// Проверить что ошибки обрабатываются через Result, а не unwrap/expect.
@@ -821,7 +821,6 @@ mod tests {
             }
         }
 
-        // Тест всегда проходит
-        assert!(true, "Проверка обработки ошибок завершена");
+        // Проверка обработки ошибок завершена
     }
 }

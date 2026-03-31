@@ -37,26 +37,16 @@ fn test_game_logic_does_not_import_rendering() {
     use crate::game::logic::can_move_curr_shape_direction;
     use crate::game::logic::can_rotate_curr_shape;
     use crate::game::state::GameState;
-    use crate::types::{Direction, RotationDirection};
+    use crate::types::Direction;
 
     // Проверяем что логика работает независимо от отрисовки
     let state = GameState::new();
 
     // Проверяем collision logic
-    let can_move = can_move_curr_shape_direction(&state, Direction::Down);
-    // can_move возвращает true/false в зависимости от состояния
-    // Главное что функция работает независимо от отрисовки
-    assert!(
-        true,
-        "Collision logic должен работать независимо от отрисовки"
-    );
+    let _can_move = can_move_curr_shape_direction(&state, Direction::Down);
 
     // Проверяем rotation logic
-    let can_rotate = can_rotate_curr_shape(&state, crate::tetromino::RotationDirection::Clockwise);
-    assert!(
-        true,
-        "Rotation logic должен работать независимо от отрисовки"
-    );
+    let _can_rotate = can_rotate_curr_shape(&state, crate::tetromino::RotationDirection::Clockwise);
 
     // Проверяем input logic
     // handle_input требует InputReader, но не требует Renderer

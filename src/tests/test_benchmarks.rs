@@ -64,12 +64,7 @@ fn test_rotate_benchmark_works() {
     use std::time::Instant;
 
     // Создаём тестовую фигуру
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Замеряем время вращения
     let start = Instant::now();
@@ -92,12 +87,7 @@ fn test_rotate_benchmark_works() {
     // Замеряем время множественных вращений
     let start = Instant::now();
     for _ in 0..1000 {
-        let mut t = Tetromino {
-            pos: (4.0, 0.0),
-            shape: ShapeType::T,
-            coords: SHAPE_COORDS[0],
-            fg: 0,
-        };
+        let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
         t.rotate(RotationDirection::Clockwise);
         t.rotate(RotationDirection::CounterClockwise);
     }
@@ -207,12 +197,7 @@ fn test_benchmark_performance() {
     let check_rows_elapsed = start.elapsed();
 
     // Бенчмарк rotate()
-    let mut tetromino = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
     let start = Instant::now();
     for _ in 0..iterations {
         tetromino.rotate(RotationDirection::Clockwise);
