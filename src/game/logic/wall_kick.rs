@@ -99,8 +99,9 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
     if let Some((offset_x, offset_y)) = try_wall_kick_offsets(state, dir) {
         {
             let curr_shape = state.get_curr_shape_mut();
-            curr_shape.pos.0 += offset_x as f32;
-            curr_shape.pos.1 += offset_y as f32;
+            let pos = curr_shape.pos_mut();
+            pos.0 += offset_x as f32;
+            pos.1 += offset_y as f32;
         }
         let curr_shape = state.get_curr_shape_mut();
         curr_shape.rotate(dir);
@@ -138,11 +139,12 @@ pub(crate) fn try_wall_kick_offsets(
 ) -> Option<(i32, i32)> {
     for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
         let mut kicked_shape = *state.curr_shape();
-        kicked_shape.pos.0 += offset_x as f32;
-        kicked_shape.pos.1 += offset_y as f32;
+        let pos = kicked_shape.pos_mut();
+        pos.0 += offset_x as f32;
+        pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);
 
-        if super::collision::check_rotation_collision(state, &kicked_shape.coords, kicked_shape.pos)
+        if super::collision::check_rotation_collision(state, &kicked_shape.coords(), kicked_shape.pos())
         {
             return Some((offset_x, offset_y));
         }
@@ -174,7 +176,7 @@ pub fn can_rotate_with_wall_kick(state: &GameState, dir: crate::types::RotationD
 
     // Исправление #3 (HIGH): Используем check_rotation_collision() вместо прямой индексации
     // Это предотвращает панику при выходе за границы массива
-    if super::collision::check_rotation_collision(state, &temp_shape.coords, temp_shape.pos) {
+    if super::collision::check_rotation_collision(state, &temp_shape.coords(), temp_shape.pos()) {
         return true;
     }
 

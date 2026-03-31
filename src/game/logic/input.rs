@@ -199,11 +199,11 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
         match dir {
             Direction::Left => {
                 let curr_shape = state.get_curr_shape_mut();
-                curr_shape.pos.0 -= 1.0;
+                curr_shape.pos_mut().0 -= 1.0;
             }
             Direction::Right => {
                 let curr_shape = state.get_curr_shape_mut();
-                curr_shape.pos.0 += 1.0;
+                curr_shape.pos_mut().0 += 1.0;
             }
             // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
             Direction::Down => {}

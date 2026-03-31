@@ -12,13 +12,13 @@ use crate::game::GameState;
 #[test]
 fn test_f32_to_u32_conversion_with_clamp() {
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Выполняем Hard Drop
     handle_hard_drop(&mut state);
 
     // Вычисляем дистанцию падения
-    let drop_distance_f32 = (state.curr_shape().pos.1 - initial_y).abs().max(0.0);
+    let drop_distance_f32 = (state.curr_shape().pos().1 - initial_y).abs().max(0.0);
 
     // Проверяем, что дистанция конечна
     assert!(
@@ -85,7 +85,7 @@ fn test_infinity_handling() {
 #[test]
 fn test_max_drop_distance() {
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Опускаем фигуру на максимальную высоту
     // Максимальная высота поля = 20, начальная позиция = 0
@@ -94,7 +94,7 @@ fn test_max_drop_distance() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let max_drop_distance = (state.curr_shape().pos.1 - initial_y) as u32;
+    let max_drop_distance = (state.curr_shape().pos().1 - initial_y) as u32;
 
     // Проверяем, что дистанция в разумных пределах
     assert!(
@@ -117,14 +117,14 @@ fn test_hard_drop_scoring() {
     use crate::game::constants::HARD_DROP_POINTS;
 
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
     let initial_score = state.score();
 
     // Выполняем Hard Drop
     handle_hard_drop(&mut state);
 
     // Вычисляем ожидаемые очки
-    let drop_distance = (state.curr_shape().pos.1 - initial_y) as u32;
+    let drop_distance = (state.curr_shape().pos().1 - initial_y) as u32;
     let expected_bonus = drop_distance as u128 * HARD_DROP_POINTS;
 
     // Проверяем, что очки начислены

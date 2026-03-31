@@ -215,7 +215,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
     cnv: &mut R,
     inp: &mut T,
     high_score_display: &str,
-) -> Result<u128, super::state::GameError> {
+) -> Result<u128, crate::errors::GameError> {
     let mut last_time = std::time::Instant::now();
     let interval_ms = 1_000 / FPS;
 

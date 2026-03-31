@@ -25,7 +25,7 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     if state.can_move_curr_shape_direction(Direction::Down) {
         let fall_speed = state.fall_speed();
         let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos.1 += fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
+        curr_shape.pos_mut().1 += fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
         false
     } else if state.land_timer() > 0.0 {
         let land_timer = state.land_timer();

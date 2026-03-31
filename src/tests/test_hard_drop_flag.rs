@@ -142,7 +142,7 @@ fn test_hard_drop_flag_with_scoring() {
     let initial_score = state.score();
 
     // Получаем начальную позицию через геттер
-    let start_y = state.curr_shape().pos.1;
+    let start_y = state.curr_shape().pos().1;
 
     // Выполняем Hard Drop
     handle_hard_drop(&mut state);
@@ -154,7 +154,7 @@ fn test_hard_drop_flag_with_scoring() {
     );
 
     // Проверяем, что очки начислены через геттеры
-    let drop_distance = (state.curr_shape().pos.1 - start_y) as u32;
+    let drop_distance = (state.curr_shape().pos().1 - start_y) as u32;
     let expected_bonus = drop_distance as u128 * 2; // 2 очка за ячейку
 
     assert!(

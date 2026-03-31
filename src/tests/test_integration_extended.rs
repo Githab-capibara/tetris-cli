@@ -329,12 +329,12 @@ fn test_gamestate_responds_to_input() {
     let mut state = GameState::new();
 
     // Проверяем, что движение возможно
-    let initial_x = state.curr_shape().pos.0;
+    let initial_x = state.curr_shape().pos().0;
 
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
         assert!(
-            state.curr_shape().pos.0 < initial_x,
+            state.curr_shape().pos().0 < initial_x,
             "Движение влево должно уменьшить X"
         );
     }
@@ -356,7 +356,7 @@ fn test_piece_rotation_on_command() {
 #[test]
 fn test_hard_drop_command() {
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Симулируем hard drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -364,7 +364,7 @@ fn test_hard_drop_command() {
     }
 
     assert!(
-        state.curr_shape().pos.1 > initial_y,
+        state.curr_shape().pos().1 > initial_y,
         "Hard drop должен опустить фигуру"
     );
 }
@@ -373,7 +373,7 @@ fn test_hard_drop_command() {
 #[test]
 fn test_soft_drop_command() {
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Симулируем soft drop
     if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -381,7 +381,7 @@ fn test_soft_drop_command() {
     }
 
     assert!(
-        state.curr_shape().pos.1 >= initial_y,
+        state.curr_shape().pos().1 >= initial_y,
         "Soft drop должен опустить фигуру"
     );
 }
@@ -390,19 +390,19 @@ fn test_soft_drop_command() {
 #[test]
 fn test_move_left_right() {
     let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos.0;
+    let initial_x = state.curr_shape().pos().0;
 
     // Движение влево
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
         state.get_curr_shape_mut().pos.0 -= 1.0;
     }
-    let after_left = state.curr_shape().pos.0;
+    let after_left = state.curr_shape().pos().0;
 
     // Движение вправо
     if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
         state.get_curr_shape_mut().pos.0 += 1.0;
     }
-    let after_right = state.curr_shape().pos.0;
+    let after_right = state.curr_shape().pos().0;
 
     assert!(
         after_left <= initial_x,

@@ -123,15 +123,15 @@ pub fn handle_hard_drop(state: &mut GameState) {
     use crate::game::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
 
-    let start_y = state.curr_shape().pos.1;
+    let start_y = state.curr_shape().pos().1;
     while state.can_move_curr_shape_direction(Direction::Down) {
         let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos.1 += 1.0;
+        curr_shape.pos_mut().1 += 1.0;
     }
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast
     // Исправление #1 (CRITICAL): защита от NaN, Infinity и переполнения
-    let drop_distance_f32 = (state.curr_shape().pos.1 - start_y).abs();
+    let drop_distance_f32 = (state.curr_shape().pos().1 - start_y).abs();
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
@@ -158,7 +158,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
 
     if state.can_move_curr_shape_direction(Direction::Down) {
         let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos.1 += 1.0;
+        curr_shape.pos_mut().1 += 1.0;
         let soft_drop_distance = state.soft_drop_distance();
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
@@ -187,7 +187,7 @@ pub fn handle_hold(state: &mut GameState) {
         }
 
         let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos = (4.0, 0.0);
+        *curr_shape.pos_mut() = (4.0, 0.0);
         state.set_can_hold(false);
     }
 }
@@ -254,8 +254,8 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 fn check_game_over_condition(state: &GameState) -> bool {
     use crate::game::constants::MIN_Y;
 
-    let shape_block_y = state.curr_shape().pos.1 as i16;
-    state.curr_shape().coords.iter().any(|&(_, coord_y)| {
+    let shape_block_y = state.curr_shape().pos().1 as i16;
+    state.curr_shape().coords().iter().any(|&(_, coord_y)| {
         let block_y = coord_y + shape_block_y;
         block_y < MIN_Y
     })
@@ -360,7 +360,7 @@ fn spawn_next_tetromino(state: &mut GameState) {
     state.set_can_hold(true);
 
     // Обновление статистики для новой фигуры
-    let shape = state.curr_shape().shape;
+    let shape = state.curr_shape().shape();
     state.stats_mut().add_piece(shape);
 }
 

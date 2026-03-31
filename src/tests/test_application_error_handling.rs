@@ -97,7 +97,7 @@ mod tests {
                             "Ошибка должна упоминать терминал или Canvas"
                         );
                     }
-                    GameError::Validation(msg) => {
+                    GameError::ValidationError(msg) => {
                         // Ошибка валидации (например, размер терминала)
                         assert!(
                             msg.contains("терминал") || msg.contains("размер"),

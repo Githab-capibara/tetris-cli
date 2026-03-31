@@ -135,8 +135,8 @@ fn test_classic_mode_basic_mechanics() {
     let state = GameState::new();
 
     // Проверяем, что все базовые механики работают
-    assert!(state.curr_shape().pos.0 >= 0.0, "Фигура в поле");
-    assert!(state.curr_shape().pos.1 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().0 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().1 >= 0.0, "Фигура в поле");
 }
 
 // ============================================================================
@@ -242,8 +242,8 @@ fn test_sprint_mode_score_not_saved() {
 fn test_sprint_mode_basic_mechanics() {
     let state = GameState::new_sprint();
 
-    assert!(state.curr_shape().pos.0 >= 0.0, "Фигура в поле");
-    assert!(state.curr_shape().pos.1 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().0 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().1 >= 0.0, "Фигура в поле");
 }
 
 // ============================================================================
@@ -352,8 +352,8 @@ fn test_marathon_mode_win_at_150_lines() {
 fn test_marathon_mode_basic_mechanics() {
     let state = GameState::new_marathon();
 
-    assert!(state.curr_shape().pos.0 >= 0.0, "Фигура в поле");
-    assert!(state.curr_shape().pos.1 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().0 >= 0.0, "Фигура в поле");
+    assert!(state.curr_shape().pos().1 >= 0.0, "Фигура в поле");
 }
 
 // ============================================================================

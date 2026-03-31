@@ -86,7 +86,7 @@ fn test_validate_f32_finite_used_in_set_fall_speed() {
         "NaN должен отклоняться через validate_f32_finite()"
     );
     assert!(
-        matches!(result, Err(crate::game::state::GameError::Validation(_))),
+        matches!(result, Err(crate::game::state::GameError::ValidationError(_))),
         "Должна быть ошибка валидации"
     );
 
@@ -210,10 +210,10 @@ fn test_validation_error_used_for_all_validation_errors() {
     };
 
     // Проверяем что ошибка конвертируется в GameError
-    let game_error = crate::game::state::GameError::Validation(error.message.clone());
+    let game_error = crate::game::state::GameError::ValidationError(error.message.clone());
     assert!(matches!(
         game_error,
-        crate::game::state::GameError::Validation(_)
+        crate::game::state::GameError::ValidationError(_)
     ));
 }
 

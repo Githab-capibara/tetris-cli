@@ -423,12 +423,12 @@ impl<'a> GameView<'a> {
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
-        let (shape_x, shape_y) = self.curr_shape.pos;
+        let (shape_x, shape_y) = self.curr_shape.pos();
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
         let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
-        for coord in self.curr_shape.coords {
+        for coord in self.curr_shape.coords() {
             let (coord_x, coord_y) = coord;
             let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X = 2
             let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y = 5 + 0
@@ -437,7 +437,7 @@ impl<'a> GameView<'a> {
                 canvas.draw_strs(
                     &[SHAPE_STR],
                     (x as u16, y as u16),
-                    SHAPE_COLORS[self.curr_shape.fg as usize],
+                    SHAPE_COLORS[self.curr_shape.fg() as usize],
                     &Reset,
                 );
             }
@@ -538,16 +538,16 @@ impl<'a> GameView<'a> {
         let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
 
         // Вычисляем расстояние до препятствия напрямую
-        let ghost_block_y = ghost_shape.pos.1 as i16;
+        let ghost_block_y = ghost_shape.pos().1 as i16;
         let mut max_drop_distance = grid_height_i16;
 
-        for &(coord_x, coord_y) in &ghost_shape.coords {
+        for &(coord_x, coord_y) in &ghost_shape.coords() {
             let block_y = coord_y + ghost_block_y;
             let dist_to_floor = grid_height_i16 - 1 - block_y;
 
             let mut dist_to_block = dist_to_floor;
             for y in (block_y + 1)..grid_height_i16 {
-                let x = coord_x + ghost_shape.pos.0 as i16;
+                let x = coord_x + ghost_shape.pos().0 as i16;
                 if x >= 0 && x < grid_width_i16 && self.blocks[y as usize][x as usize] != -1 {
                     dist_to_block = y - block_y - 1;
                     break;
@@ -557,15 +557,15 @@ impl<'a> GameView<'a> {
             max_drop_distance = max_drop_distance.min(dist_to_block);
         }
 
-        ghost_shape.pos.1 += f32::from(max_drop_distance);
+        ghost_shape.pos_mut().1 += f32::from(max_drop_distance);
 
         // Отрисовка призрачной фигуры (полупрозрачная)
-        let (shape_x, shape_y) = ghost_shape.pos;
+        let (shape_x, shape_y) = ghost_shape.pos();
         let shape_block_x = shape_x as i16;
         let shape_block_y = shape_y as i16;
         let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
-        for coord in ghost_shape.coords {
+        for coord in ghost_shape.coords() {
             let (coord_x, coord_y) = coord;
             let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X
             let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y
@@ -573,7 +573,7 @@ impl<'a> GameView<'a> {
             canvas.draw_strs(
                 &["░░"],
                 (x as u16, y as u16),
-                SHAPE_COLORS[ghost_shape.fg as usize],
+                SHAPE_COLORS[ghost_shape.fg() as usize],
                 &Reset,
             );
         }
@@ -677,7 +677,7 @@ impl<'a> GameView<'a> {
 
         let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
-        for coord in shape.coords {
+        for coord in shape.coords() {
             let (coord_x, coord_y) = coord;
             let x = pos_x.cast_signed() + coord_x * shape_width_i16 + DRAW_OFFSET_X;
             let y = pos_y.cast_signed() + coord_y + 1;
@@ -688,7 +688,7 @@ impl<'a> GameView<'a> {
                 canvas.draw_strs(
                     &[display_char],
                     (x as u16, y as u16),
-                    SHAPE_COLORS[shape.fg as usize],
+                    SHAPE_COLORS[shape.fg() as usize],
                     &Reset,
                 );
             }

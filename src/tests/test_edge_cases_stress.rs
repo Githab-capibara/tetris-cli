@@ -110,7 +110,7 @@ fn test_edge_cases_all_shapes_extreme() {
         // Проверяем движение
         assert!(
             state.can_move_curr_shape_direction(crate::types::Direction::Down)
-                || state.curr_shape().pos.1 >= (GRID_HEIGHT - 2) as f32
+                || state.curr_shape().pos().1 >= (GRID_HEIGHT - 2) as f32
         );
     }
 }
@@ -184,7 +184,7 @@ fn test_stress_rapid_rotation() {
     }
 
     // Фигура должна остаться валидной
-    assert!(state.curr_shape().coords.len() == 4);
+    assert!(state.curr_shape().coords().len() == 4);
 }
 
 /// Тест 8: Проверка частого удержания фигуры
@@ -362,7 +362,7 @@ fn test_long_stability_1000_iterations() {
     for i in 0..1000 {
         // Проверяем что состояние корректно
         assert!(
-            state.curr_shape().coords.len() == 4,
+            state.curr_shape().coords().len() == 4,
             "Итерация {i}: фигура должна иметь 4 блока"
         );
 

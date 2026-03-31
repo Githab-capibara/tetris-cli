@@ -37,7 +37,7 @@ fn test_full_game_initialization() {
 
     // Проверяем наличие фигур
     assert!(
-        (state.curr_shape().shape as usize) < 7,
+        (state.curr_shape().shape() as usize) < 7,
         "Текущая фигура должна быть валидной"
     );
     assert!(
@@ -150,7 +150,7 @@ fn test_rotation_in_game_context() {
 
     // Вращение должно быть возможно хотя бы в одном направлении
     // (кроме O-фигуры которая не вращается)
-    if state.curr_shape().shape != ShapeType::O {
+    if state.curr_shape().shape() != ShapeType::O {
         assert!(
             can_rotate_right || can_rotate_left,
             "Хотя бы одно направление вращения должно быть доступно"
