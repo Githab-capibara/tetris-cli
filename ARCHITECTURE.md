@@ -1,6 +1,6 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 2.4
+**Версия:** 2.5
 **Дата:** 31 марта 2026 (архитектурные улучшения и рефакторинг)
 **Проект:** tetris-cli v23.96.27+
 
@@ -16,6 +16,8 @@ tetris-cli/
 │   ├── app/                 # Application layer
 │   │   ├── mod.rs
 │   │   └── application.rs   # Application struct, игровой цикл
+│   ├── core/                # Базовые типы (новый модуль v23.96.27+)
+│   │   └── mod.rs           # Direction, RotationDirection, Position
 │   ├── game/                # Игровая логика
 │   │   ├── mod.rs
 │   │   ├── state.rs         # GameState (фасад)
@@ -23,7 +25,8 @@ tetris-cli/
 │   │   ├── scoreboard.rs    # ScoreBoard (очки и уровни)
 │   │   ├── stats.rs         # GameStats (статистика)
 │   │   ├── mode_trait.rs    # GameModeTrait
-│   │   ├── types.rs         # Типобезопасные обёртки (Score, Level, LinesCount)
+│   │   ├── time.rs          # Time абстракция (новый модуль v23.96.27+)
+│   │   ├── types.rs         # Типобезопасные обёртки (Score, Level, LinesCount) — переэкспортирует из core/
 │   │   ├── view.rs          # GameView для отрисовки
 │   │   ├── access.rs        # Трейты доступа (BoardReadonly, BoardMutable)
 │   │   ├── cache.rs         # StringCache для кэширования строк
@@ -31,7 +34,7 @@ tetris-cli/
 │   │   ├── render.rs        # Отрисовка игрового поля
 │   │   ├── logic/           # Логика игры
 │   │   │   ├── mod.rs
-│   │   │   ├── input.rs     # Обработка ввода
+│   │   │   ├── input.rs     # Обработка ввода (parse_input, execute_action)
 │   │   │   ├── physics.rs   # Физика и гравитация
 │   │   │   ├── collision.rs # Проверка коллизий
 │   │   │   ├── rotation.rs  # Вращение с wall kick
@@ -68,12 +71,12 @@ tetris-cli/
 │   │   ├── mod.rs
 │   │   ├── name.rs
 │   │   └── path.rs
-│   ├── types.rs             # Direction, RotationDirection, Position
+│   ├── types.rs             # Direction, RotationDirection, Position — переэкспортирует из core/
 │   ├── errors.rs            # GameError (thiserror)
 │   ├── constants.rs         # Глобальные константы
 │   └── tests/               # Интеграционные тесты (67 файлов)
 ├── tests/                   # Integration tests
-│   └── test_architecture_integrity.rs
+│   └── test_architecture_integrity.rs  # 21 тест на архитектурную целостность
 ├── docs/
 │   └── ARCHITECTURE.md      # Подробная документация
 ├── benches/
@@ -268,7 +271,50 @@ ValidationService::validate_u32_range(5, 1, 10)?;
 
 ---
 
-### 8. Access Traits (`game/access.rs`)
+### 8. Core Module (`core/`) — НОВЫЙ МОДУЛЬ (v23.96.27+)
+
+**Ответственность:** Базовые типы для использования во всех модулях. Предотвращает циклические зависимости.
+
+**Компоненты:**
+- `Direction` — направление движения фигуры (Left, Right, Down)
+- `RotationDirection` — направление вращения (Clockwise, CounterClockwise, NoRotation)
+- `Position` — позиция в пространстве (x, y)
+
+**Назначение:**
+- Устранение циклических зависимостей между модулями
+- Централизация базовых типов
+- Типобезопасность координат и направлений
+
+**Примеры использования:**
+```rust
+use crate::core::{Direction, RotationDirection, Position};
+
+// Направление движения
+let dir = Direction::Left;
+
+// Направление вращения
+let rotation = RotationDirection::Clockwise;
+
+// Позиция
+let pos = Position::new(5, 10);
+assert_eq!(pos.x(), 5);
+assert_eq!(pos.y(), 10);
+
+// Конвертация Direction в RotationDirection
+assert_eq!(
+    Direction::Left.to_rotation_direction(),
+    RotationDirection::CounterClockwise
+);
+```
+
+**Архитектурные преимущества:**
+- **Отсутствие зависимостей** — `core/` не зависит от других модулей проекта
+- **Переэкспорт** — `types.rs` переэкспортирует типы из `core/` для обратной совместимости
+- **Конвертация** — `Direction::to_rotation_direction()` для конвертации между типами
+
+---
+
+### 9. Access Traits (`game/access.rs`)
 
 **Ответственность:** Трейты доступа для снижения связанности и соблюдения ISP
 
@@ -305,7 +351,57 @@ fn set_target_level<L: LevelAccess>(levelable: &mut L, level: u32) {
 
 ---
 
-### 9. Crypto Module (`crypto/`)
+### 9. Time Module (`game/time.rs`) — НОВЫЙ МОДУЛЬ (v23.96.27+)
+
+**Ответственность:** Типобезопасная абстракция для работы со временем в игре.
+
+**Компоненты:**
+- `Time` — типобезопасная обёртка для длительности
+
+**Методы:**
+- `from_secs(secs: f64)` — создание из секунд
+- `from_millis(millis: u64)` — создание из миллисекунд
+- `as_millis()` — получение времени в миллисекундах
+- `as_secs_f64()` — получение времени в секундах (f64)
+- `as_secs()` — получение времени в секундах (u64)
+- `is_zero()` — проверка на ноль
+
+**Операции:**
+- `add(other: Time)` — сложение времён
+- `sub(other: Time)` — вычитание времён (saturating)
+- `mul(factor: u32)` — умножение на скаляр
+- `cmp(other: &Time)` — сравнение времён
+- `gt(other: &Time)` — проверка больше
+- `lt(other: &Time)` — проверка меньше
+
+**Примеры использования:**
+```rust
+use crate::game::time::Time;
+
+// Создание времени
+let time = Time::from_secs(1.5);
+assert_eq!(time.as_millis(), 1500);
+assert_eq!(time.as_secs_f64(), 1.5);
+
+// Операции
+let t1 = Time::from_secs(1.0);
+let t2 = Time::from_secs(0.5);
+let sum = t1.add(t2);
+assert_eq!(sum.as_secs_f64(), 1.5);
+
+// Сравнение
+assert!(t1.gt(&t2));
+assert!(t2.lt(&t1));
+```
+
+**Архитектурные преимущества:**
+- **Типобезопасность** — предотвращает путаницу между временем и другими числовыми типами
+- **Saturating операции** — защита от переполнения при вычитании и умножении
+- **Консистентность** — единый API для работы со временем во всём проекте
+
+---
+
+### 10. Crypto Module (`crypto/`)
 
 **Ответственность:** Криптографические утилиты
 
@@ -395,13 +491,14 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 
 | Метрика | Значение | Оценка |
 |---------|----------|--------|
-| **Количество модулей** | 18+ | ✅ |
+| **Количество модулей** | 20+ | ✅ |
 | **Средний размер модуля** | ~350 строк | ✅ |
 | **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1308 тестов | ✅ |
+| **Покрытие тестами** | 1345 тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
 | **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
+| **Новые модули (v23.96.27+)** | core/, game/time.rs | ✅ |
 
 ---
 
@@ -458,7 +555,7 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1309 тестов** (unit + integration + architecture)
+**ВСЕГО: 1345 тестов** (unit + integration + architecture)
 
 ### Тесты исправлений аудита (`src/tests/test_audit_fixes.rs`)
 
@@ -529,14 +626,14 @@ cargo bench --features bench  # Бенчмарки
 
 ## 🎯 Оценка архитектуры
 
-**Текущая оценка: 9.4/10**
+**Текущая оценка: 9.6/10**
 
 **Сильные стороны:**
 - ✅ Модульная структура с чётким разделением ответственности
-- ✅ Отсутствие циклических зависимостей
+- ✅ Отсутствие циклических зависимостей (создан `core/` модуль)
 - ✅ Разделение render/scoring/logic на подмодули
 - ✅ Трейты для абстракции (GameModeTrait, TerminalBackend, InputReader, Renderer)
-- ✅ Обширное тестирование (1308 тестов, включая security-тесты)
+- ✅ Обширное тестирование (1345 тестов, включая security-тесты)
 - ✅ Защита от переполнения (saturating операции)
 - ✅ TOCTOU защита в LeaderboardEntry
 - ✅ Централизованная валидация путей с защитой от symlink
@@ -559,6 +656,11 @@ cargo bench --features bench  # Бенчмарки
 - ✅ **Разделение ответственности** render/logic/scoring
 - ✅ **Interface Segregation Principle** через узкие трейты
 - ✅ **Low Coupling** через публичный API и трейты
+- ✅ **Новый модуль `core/`** — базовые типы (Direction, RotationDirection, Position)
+- ✅ **Новый модуль `game/time.rs`** — типобезопасная абстракция времени
+- ✅ **Разделение ввода и логики** — `parse_input()` и `execute_action()` в `game/logic/input.rs`
+- ✅ **Методы в GameView** — `get_shape_display_char()`, `draw_field()`, `draw_shape()`, `draw_ui()`
+- ✅ **21 тест на архитектурную целостность** — `tests/test_architecture_integrity.rs`
 
 **Области улучшения:**
 - ⚠️ GameState — крупный модуль (требует дальнейшего разделения)
@@ -633,4 +735,4 @@ cargo bench --features bench  # Бенчмарки
 ---
 
 **Дата последнего обновления:** 31 марта 2026
-**Версия проекта:** 23.96.21+
+**Версия проекта:** 23.96.27+

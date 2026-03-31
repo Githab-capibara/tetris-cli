@@ -21,71 +21,23 @@
 //! - Изменять конфигурацию управления без изменения логики ввода
 //! - Легко добавлять новые действия
 //! - Уменьшить связанность между controls.rs и input.rs
+//!
+//! ## H5: Разделение ввода и логики
+//! Модуль разделён на три уровня:
+//! 1. `parse_input()` - чистый парсер клавиш в GameAction (без состояния)
+//! 2. `execute_action()` - исполнитель действий (изменяет GameState)
+//! 3. `handle_input()` - комбинация парсера и исполнителя для удобства
 
 use crate::game::state::{GameState, UpdateEndState};
 use crate::game::types::GameAction;
 use crate::io::KEY_BACKSPACE;
-use crate::io_traits::InputReader;
 use crate::types::{Direction, RotationDirection};
 
-/// Обработать пользовательский ввод.
-///
-/// # Аргументы
-/// * `state` - состояние игры (изменяемое)
-/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
-///
-/// # Возвращает
-/// - `Some(UpdateEndState::Quit)` - выход в меню
-/// - `Some(UpdateEndState::Pause)` - пауза
-/// - `None` - продолжить обработку
-///
-/// # Архитектурные заметки (A7: DIP)
-/// Использует трейт `InputReader` вместо конкретного типа `KeyReader`
-/// для соблюдения Dependency Inversion Principle.
-///
-/// # Исправление #14 (MEDIUM SEVERITY)
-/// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
-/// Это позволяет отслеживать проблемы с вводом во время отладки.
-///
-/// # Исправление 7: GameAction enum
-/// Использует GameAction для абстракции ввода. Конкретные клавиши маппятся в
-/// GameAction через функцию `map_key_to_action()`.
-pub fn handle_input<T: crate::io_traits::InputReader>(
-    state: &mut GameState,
-    inp: &mut T,
-) -> Option<UpdateEndState> {
-    let key = inp.get_key();
+// ============================================================================
+// H5: ЧИСТЫЙ ПАРСЕР (БЕЗ ЗАВИСИМОСТИ ОТ СОСТОЯНИЯ)
+// ============================================================================
 
-    // Сброс флага Hard Drop
-    state.set_is_hard_dropping(false);
-
-    // Маппинг клавиши в GameAction
-    let action = match key {
-        Ok(Some(KEY_BACKSPACE)) => {
-            eprintln!("[INFO] Получена клавиша выхода (Backspace)");
-            return Some(UpdateEndState::Quit);
-        }
-        Ok(Some(b'p')) => {
-            eprintln!("[INFO] Получена клавиша паузы (P)");
-            return Some(UpdateEndState::Pause);
-        }
-        Ok(Some(key_code)) => map_key_to_action(key_code),
-        Ok(None) => {
-            // Клавиша не была нажата
-            return None;
-        }
-        Err(e) => {
-            // Ошибка чтения ввода
-            eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
-            return None;
-        }
-    };
-
-    // Обработка действия
-    handle_game_action(state, action?)
-}
-
-/// Маппинг клавиши в игровое действие.
+/// Распознать игровое действие из кода клавиши.
 ///
 /// # Аргументы
 /// * `key_code` - код нажатой клавиши
@@ -94,10 +46,11 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 /// - `Some(GameAction)` если клавиша соответствует действию
 /// - `None` если клавиша не распознана
 ///
-/// # Исправление 7: GameAction enum
-/// Эта функция централизует маппинг клавиш → действия.
+/// # Архитектурные заметки (H5)
+/// Чистая функция без побочных эффектов. Не зависит от GameState.
 /// Для изменения конфигурации управления нужно изменить только эту функцию.
-fn map_key_to_action(key_code: u8) -> Option<GameAction> {
+#[must_use]
+pub fn parse_input(key_code: u8) -> Option<GameAction> {
     match key_code {
         b'a' => Some(GameAction::MoveLeft),
         b'd' => Some(GameAction::MoveRight),
@@ -106,19 +59,15 @@ fn map_key_to_action(key_code: u8) -> Option<GameAction> {
         b'w' => Some(GameAction::HardDrop),
         b's' => Some(GameAction::SoftDrop),
         b'c' | b'C' => Some(GameAction::Hold),
-        _ => {
-            // Логирование неизвестной клавиши для отладки
-            eprintln!(
-                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
-                char::from_u32(key_code as u32).unwrap_or('?'),
-                key_code
-            );
-            None
-        }
+        _ => None,
     }
 }
 
-/// Обработать игровое действие.
+// ============================================================================
+// H5: ИСПОЛНИТЕЛЬ ДЕЙСТВИЙ (ИЗМЕНЯЕТ СОСТОЯНИЕ)
+// ============================================================================
+
+/// Выполнить игровое действие над состоянием игры.
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
@@ -129,9 +78,10 @@ fn map_key_to_action(key_code: u8) -> Option<GameAction> {
 /// - `Some(UpdateEndState::Pause)` - пауза
 /// - `None` - продолжить обработку
 ///
-/// # Исправление 7: GameAction enum
+/// # Архитектурные заметки (H5)
 /// Эта функция обрабатывает абстрактные действия вместо конкретных клавиш.
-fn handle_game_action(state: &mut GameState, action: GameAction) -> Option<UpdateEndState> {
+/// Не содержит логики парсинга ввода.
+pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<UpdateEndState> {
     match action {
         GameAction::MoveLeft => {
             handle_movement_input(state, Direction::Left);
@@ -161,7 +111,77 @@ fn handle_game_action(state: &mut GameState, action: GameAction) -> Option<Updat
             super::super::scoring::handle_hold(state);
             None
         }
-        GameAction::Pause | GameAction::Quit => None, // Обрабатываются выше
+        GameAction::Pause | GameAction::Quit => None,
+    }
+}
+
+// ============================================================================
+// ОСНОВНАЯ ФУНКЦИЯ ОБРАБОТКИ ВВОДА (КОМБИНАЦИЯ ПАРСЕРА И ИСПОЛНИТЕЛЯ)
+// ============================================================================
+
+/// Обработать пользовательский ввод.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
+///
+/// # Возвращает
+/// - `Some(UpdateEndState::Quit)` - выход в меню
+/// - `Some(UpdateEndState::Pause)` - пауза
+/// - `None` - продолжить обработку
+///
+/// # Архитектурные заметки (A7: DIP)
+/// Использует трейт `InputReader` вместо конкретного типа `KeyReader`
+/// для соблюдения Dependency Inversion Principle.
+///
+/// # Исправление #14 (MEDIUM SEVERITY)
+/// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
+/// Это позволяет отслеживать проблемы с вводом во время отладки.
+///
+/// # Исправление 7: GameAction enum
+/// Использует GameAction для абстракции ввода. Конкретные клавиши маппятся в
+/// GameAction через функцию `parse_input()`.
+pub fn handle_input<T: crate::io_traits::InputReader>(
+    state: &mut GameState,
+    inp: &mut T,
+) -> Option<UpdateEndState> {
+    let key = inp.get_key();
+
+    // Сброс флага Hard Drop
+    state.set_is_hard_dropping(false);
+
+    // Обработка клавиши
+    match key {
+        Ok(Some(KEY_BACKSPACE)) => {
+            eprintln!("[INFO] Получена клавиша выхода (Backspace)");
+            Some(UpdateEndState::Quit)
+        }
+        Ok(Some(b'p')) => {
+            eprintln!("[INFO] Получена клавиша паузы (P)");
+            Some(UpdateEndState::Pause)
+        }
+        Ok(Some(key_code)) => {
+            // Парсинг клавиши в действие
+            if let Some(action) = parse_input(key_code) {
+                return execute_action(state, action);
+            }
+            // Неизвестная клавиша
+            eprintln!(
+                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
+                char::from_u32(key_code as u32).unwrap_or('?'),
+                key_code
+            );
+            None
+        }
+        Ok(None) => {
+            // Клавиша не была нажата
+            None
+        }
+        Err(e) => {
+            // Ошибка чтения ввода
+            eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
+            None
+        }
     }
 }
 

@@ -4,218 +4,87 @@
 //! для предотвращения циклических зависимостей.
 //!
 //! ## Структура модуля
-//! - [`Direction`] — направление движения фигуры
-//! - [`RotationDirection`] — направление вращения фигуры
+//! - [`Direction`] — направление движения фигуры (переэкспорт из [`crate::core`])
+//! - [`RotationDirection`] — направление вращения фигуры (переэкспорт из [`crate::core`])
+//! - [`Position`] — позиция в пространстве (переэкспорт из [`crate::core`])
+//! - [`GameAction`] — игровые действия
 //! - [`UpdateEndState`] — состояние завершения обновления
 
-/// Направление движения фигуры.
+// Переэкспорт базовых типов из core модуля для обратной совместимости
+pub use crate::core::{Direction, Position, RotationDirection};
+
+// ============================================================================
+// GAMEACTION ENUM (Абстракция ввода)
+// ============================================================================
+
+/// Перечисление игровых действий.
 ///
-/// Используется в [`crate::game`] и [`crate::tetromino`] для указания
-/// направления движения или вращения фигуры.
+/// Представляет абстракцию ввода, отделяя конкретные клавиши от игровых действий.
+/// Используется для маппинга клавиш → действия в системе управления.
 ///
-/// ## Пример использования
-/// ```
-/// use tetris_cli::types::Direction;
+/// ## Архитектурные заметки
+/// Введение GameAction соответствует:
+/// - **Dependency Inversion Principle (DIP)** - модуль ввода зависит от абстракции
+/// - **Interface Segregation Principle (ISP)** - узкоспециализированный интерфейс
+/// - Уменьшает связанность между controls.rs и input.rs
 ///
-/// let dir = Direction::Left;
-/// match dir {
-///     Direction::Left => println!("Движение влево"),
-///     Direction::Right => println!("Движение вправо"),
-///     Direction::Down => println!("Движение вниз"),
-/// }
-/// ```
-///
-/// ## Исправление #4 (Direction vs `RotationDirection`)
-/// Для конвертации в направление вращения используйте метод
-/// [`to_rotation_direction()`](Self::to_rotation_direction).
-///
-/// ### Соответствие направлений
-/// | Direction | RotationDirection |
-/// |-----------|-------------------|
-/// | `Left` | `CounterClockwise` |
-/// | `Right` | `Clockwise` |
-/// | `Down` | `Clockwise` (по умолчанию) |
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum Direction {
-    /// Движение вниз.
-    Down,
-    /// Движение влево.
-    Left,
-    /// Движение вправо.
-    Right,
+/// ## Варианты
+/// - `MoveLeft` - движение фигуры влево
+/// - `MoveRight` - движение фигуры вправо
+/// - `SoftDrop` - ускоренное падение
+/// - `HardDrop` - мгновенное падение
+/// - `RotateLeft` - вращение против часовой стрелки
+/// - `RotateRight` - вращение по часовой стрелке
+/// - `Hold` - удержание фигуры
+/// - `Pause` - пауза
+/// - `Quit` - выход в меню
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameAction {
+    /// Движение фигуры влево.
+    MoveLeft,
+    /// Движение фигуры вправо.
+    MoveRight,
+    /// Ускоренное падение (Soft Drop).
+    SoftDrop,
+    /// Мгновенное падение (Hard Drop).
+    HardDrop,
+    /// Вращение против часовой стрелки.
+    RotateLeft,
+    /// Вращение по часовой стрелке.
+    RotateRight,
+    /// Удержание фигуры.
+    Hold,
+    /// Пауза.
+    Pause,
+    /// Выход в меню.
+    Quit,
 }
 
-impl Direction {
-    /// Конвертировать [`Direction`] в [`RotationDirection`].
-    ///
-    /// # Возвращает
-    /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
-    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`]
-    /// - [`RotationDirection::NoRotation`] для [`Direction::Down`]
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::types::{Direction, RotationDirection};
-    ///
-    /// assert_eq!(
-    ///     Direction::Left.to_rotation_direction(),
-    ///     RotationDirection::CounterClockwise
-    /// );
-    /// assert_eq!(
-    ///     Direction::Right.to_rotation_direction(),
-    ///     RotationDirection::Clockwise
-    /// );
-    /// assert_eq!(
-    ///     Direction::Down.to_rotation_direction(),
-    ///     RotationDirection::NoRotation
-    /// );
-    /// ```
-    ///
-    /// # Примечания
-    /// Метод помечен как `#[allow(dead_code)]` так как используется
-    /// только в устаревшем коде. Новый код должен явно указывать
-    /// направление вращения через `RotationDirection`.
-    ///
-    /// # Исправление 1.3
-    /// `Direction::Down` больше не конвертируется в `RotationDirection::Clockwise`.
-    ///
-    /// # Исправление аудита 2026-03-30
-    /// Возвращает `RotationDirection::NoRotation` для `Direction::Down`
-    /// для явного указания отсутствия вращения.
-    ///
-    /// # Panics
-    /// Никогда не паникует — все варианты `Direction` обрабатываются корректно.
+impl GameAction {
+    /// Проверить, является ли действие движением.
     #[must_use]
-    #[allow(dead_code)]
-    pub const fn to_rotation_direction(self) -> RotationDirection {
-        match self {
-            Direction::Left => RotationDirection::CounterClockwise,
-            Direction::Right => RotationDirection::Clockwise,
-            Direction::Down => RotationDirection::NoRotation,
-        }
+    pub const fn is_movement(self) -> bool {
+        matches!(self, Self::MoveLeft | Self::MoveRight)
+    }
+
+    /// Проверить, является ли действие вращением.
+    #[must_use]
+    pub const fn is_rotation(self) -> bool {
+        matches!(self, Self::RotateLeft | Self::RotateRight)
+    }
+
+    /// Проверить, является ли действие падением.
+    #[must_use]
+    pub const fn is_drop(self) -> bool {
+        matches!(self, Self::SoftDrop | Self::HardDrop)
     }
 }
 
-/// Направление вращения фигуры.
-///
-/// Используется для вращения тетрамино по часовой или против часовой стрелки.
-/// Отдельный enum предотвращает панику при передаче неправильного направления.
-///
-/// ## Пример использования
-/// ```
-/// use tetris_cli::types::RotationDirection;
-///
-/// let rotation = RotationDirection::Clockwise;
-/// match rotation {
-///     RotationDirection::Clockwise => println!("Вращение по часовой"),
-///     RotationDirection::CounterClockwise => println!("Вращение против часовой"),
-///     RotationDirection::NoRotation => println!("Без вращения"),
-/// }
-/// ```
-///
-/// ## Исправление аудита 2026-03-30
-/// Добавлен вариант `NoRotation` для явного указания отсутствия вращения
-/// при конвертации из `Direction::Down`.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum RotationDirection {
-    /// По часовой стрелке (90° вправо).
-    Clockwise,
-    /// Против часовой стрелки (90° влево).
-    CounterClockwise,
-    /// Без вращения (используется для `Direction::Down`).
-    NoRotation,
-}
-
-/// Позиция в пространстве (x, y).
-///
-/// Используется для представления координат в игре.
-/// Обеспечивает типобезопасность и удобство работы с координатами.
-///
-/// ## Пример использования
-/// ```
-/// use tetris_cli::types::Position;
-///
-/// let pos = Position::new(5, 10);
-/// assert_eq!(pos.x, 5);
-/// assert_eq!(pos.y, 10);
-///
-/// let tuple = pos.to_tuple();
-/// assert_eq!(tuple, (5, 10));
-///
-/// let from_tuple = Position::from_tuple((3, 7));
-/// assert_eq!(from_tuple.x, 3);
-/// assert_eq!(from_tuple.y, 7);
-/// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Position {
-    /// Координата X (горизонтальная позиция).
-    pub x: u16,
-    /// Координата Y (вертикальная позиция).
-    pub y: u16,
-}
-
-impl Position {
-    /// Создать новую позицию из координат x и y.
-    ///
-    /// # Аргументы
-    /// * `x` - горизонтальная координата
-    /// * `y` - вертикальная координата
-    ///
-    /// # Возвращает
-    /// Новый экземпляр `Position`
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::types::Position;
-    /// let pos = Position::new(5, 10);
-    /// ```
-    #[must_use]
-    pub fn new(x: u16, y: u16) -> Self {
-        Self { x, y }
-    }
-
-    /// Создать позицию из кортежа (x, y).
-    ///
-    /// # Аргументы
-    /// * `tuple` - кортеж с координатами (x, y)
-    ///
-    /// # Возвращает
-    /// Новый экземпляр `Position`
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::types::Position;
-    /// let pos = Position::from_tuple((5, 10));
-    /// ```
-    #[must_use]
-    pub fn from_tuple(tuple: (u16, u16)) -> Self {
-        Self {
-            x: tuple.0,
-            y: tuple.1,
-        }
-    }
-
-    /// Преобразовать позицию в кортеж (x, y).
-    ///
-    /// # Возвращает
-    /// Кортеж с координатами (x, y)
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::types::Position;
-    /// let pos = Position::new(5, 10);
-    /// assert_eq!(pos.to_tuple(), (5, 10));
-    /// ```
-    #[must_use]
-    pub fn to_tuple(self) -> (u16, u16) {
-        (self.x, self.y)
-    }
-}
-
+// ============================================================================
 /// Состояние завершения обновления.
 ///
 /// Возвращается методами обновления игры для указания текущего состояния.
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum UpdateEndState {
     /// Выход из игры.
     Quit,
@@ -229,41 +98,36 @@ pub enum UpdateEndState {
     Won,
 }
 
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
 #[cfg(test)]
 mod types_tests {
     use super::*;
 
     #[test]
-    fn test_direction_to_rotation_direction() {
-        assert_eq!(
-            Direction::Left.to_rotation_direction(),
-            RotationDirection::CounterClockwise
-        );
-        assert_eq!(
-            Direction::Right.to_rotation_direction(),
-            RotationDirection::Clockwise
-        );
-        assert_eq!(
-            Direction::Down.to_rotation_direction(),
-            RotationDirection::NoRotation
-        );
+    fn test_direction_from_core() {
+        // Проверка что Direction переэкспортирован из core
+        let _ = Direction::Left;
+        let _ = Direction::Right;
+        let _ = Direction::Down;
     }
 
     #[test]
-    fn test_direction_debug() {
-        assert_eq!(format!("{:?}", Direction::Left), "Left");
-        assert_eq!(format!("{:?}", Direction::Right), "Right");
-        assert_eq!(format!("{:?}", Direction::Down), "Down");
+    fn test_rotation_direction_from_core() {
+        // Проверка что RotationDirection переэкспортирован из core
+        let _ = RotationDirection::Clockwise;
+        let _ = RotationDirection::CounterClockwise;
+        let _ = RotationDirection::NoRotation;
     }
 
     #[test]
-    fn test_rotation_direction_debug() {
-        assert_eq!(format!("{:?}", RotationDirection::Clockwise), "Clockwise");
-        assert_eq!(
-            format!("{:?}", RotationDirection::CounterClockwise),
-            "CounterClockwise"
-        );
-        assert_eq!(format!("{:?}", RotationDirection::NoRotation), "NoRotation");
+    fn test_position_from_core() {
+        // Проверка что Position переэкспортирован из core
+        let pos = Position::new(5, 10);
+        assert_eq!(pos.x(), 5);
+        assert_eq!(pos.y(), 10);
     }
 
     #[test]
@@ -275,24 +139,74 @@ mod types_tests {
         assert_eq!(format!("{:?}", UpdateEndState::Won), "Won");
     }
 
-    // =========================================================================
-    // ТЕСТЫ ДЛЯ ПРОВЕРКИ DIRECTION::DOWN И NOROTATION (ИСПРАВЛЕНИЕ АУДИТА)
-    // =========================================================================
+    // ==================== Тесты для GameAction ====================
 
-    /// Тест: проверка что Direction::Down возвращает RotationDirection::NoRotation
     #[test]
-    fn test_direction_down_returns_no_rotation() {
-        // Проверка что Direction::Down возвращает RotationDirection::NoRotation
-        assert_eq!(
-            Direction::Down.to_rotation_direction(),
-            RotationDirection::NoRotation
-        );
+    fn test_game_action_variants() {
+        // Проверка всех вариантов
+        let _ = GameAction::MoveLeft;
+        let _ = GameAction::MoveRight;
+        let _ = GameAction::SoftDrop;
+        let _ = GameAction::HardDrop;
+        let _ = GameAction::RotateLeft;
+        let _ = GameAction::RotateRight;
+        let _ = GameAction::Hold;
+        let _ = GameAction::Pause;
+        let _ = GameAction::Quit;
     }
 
-    /// Тест: проверка что NoRotation существует
     #[test]
-    fn test_rotation_direction_no_rotation() {
-        // Проверка что NoRotation существует
-        let _ = RotationDirection::NoRotation;
+    fn test_game_action_is_movement() {
+        assert!(GameAction::MoveLeft.is_movement());
+        assert!(GameAction::MoveRight.is_movement());
+        assert!(!GameAction::SoftDrop.is_movement());
+        assert!(!GameAction::HardDrop.is_movement());
+        assert!(!GameAction::RotateLeft.is_movement());
+        assert!(!GameAction::RotateRight.is_movement());
+        assert!(!GameAction::Hold.is_movement());
+        assert!(!GameAction::Pause.is_movement());
+        assert!(!GameAction::Quit.is_movement());
+    }
+
+    #[test]
+    fn test_game_action_is_rotation() {
+        assert!(!GameAction::MoveLeft.is_rotation());
+        assert!(!GameAction::MoveRight.is_rotation());
+        assert!(!GameAction::SoftDrop.is_rotation());
+        assert!(!GameAction::HardDrop.is_rotation());
+        assert!(GameAction::RotateLeft.is_rotation());
+        assert!(GameAction::RotateRight.is_rotation());
+        assert!(!GameAction::Hold.is_rotation());
+        assert!(!GameAction::Pause.is_rotation());
+        assert!(!GameAction::Quit.is_rotation());
+    }
+
+    #[test]
+    fn test_game_action_is_drop() {
+        assert!(!GameAction::MoveLeft.is_drop());
+        assert!(!GameAction::MoveRight.is_drop());
+        assert!(GameAction::SoftDrop.is_drop());
+        assert!(GameAction::HardDrop.is_drop());
+        assert!(!GameAction::RotateLeft.is_drop());
+        assert!(!GameAction::RotateRight.is_drop());
+        assert!(!GameAction::Hold.is_drop());
+        assert!(!GameAction::Pause.is_drop());
+        assert!(!GameAction::Quit.is_drop());
+    }
+
+    #[test]
+    fn test_game_action_debug() {
+        assert_eq!(format!("{:?}", GameAction::MoveLeft), "MoveLeft");
+        assert_eq!(format!("{:?}", GameAction::HardDrop), "HardDrop");
+    }
+
+    #[test]
+    fn test_game_action_copy_clone() {
+        let action = GameAction::MoveLeft;
+        let action_copy = action; // Copy
+        let action_clone = action; // Clone
+
+        assert_eq!(action, action_copy);
+        assert_eq!(action, action_clone);
     }
 }

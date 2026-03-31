@@ -72,6 +72,7 @@ pub mod scoreboard;
 pub mod scoring;
 pub mod state;
 pub mod stats;
+pub mod time;
 pub mod types;
 pub mod view;
 

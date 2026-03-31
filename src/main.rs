@@ -28,6 +28,7 @@ mod app;
 mod config;
 pub mod constants;
 mod controls;
+mod core;
 mod crypto;
 mod game;
 mod highscore;

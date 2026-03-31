@@ -380,6 +380,7 @@
 // Базовые модули (без зависимостей от других модулей проекта)
 pub mod config;
 pub mod constants;
+pub mod core;
 pub mod io_traits;
 pub mod types;
 
