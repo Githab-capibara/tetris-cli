@@ -111,7 +111,7 @@ fn test_game_view_creation() {
 
     // Проверяем, что текущая фигура доступна
     assert!(matches!(
-        view.curr_shape.shape,
+        view.curr_shape.shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J

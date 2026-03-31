@@ -28,7 +28,7 @@ fn test_gravity_and_falling() {
     let mut state = GameState::new();
 
     // Запоминаем начальную позицию Y
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Фигура должна иметь возможность падения вниз
     assert!(
@@ -44,7 +44,7 @@ fn test_gravity_and_falling() {
     }
 
     // Проверяем, что фигура опустилась
-    let final_y = state.curr_shape().pos.1;
+    let final_y = state.curr_shape().pos().1;
     assert!(
         final_y > initial_y,
         "Фигура должна опуститься вниз под действием гравитации"
@@ -189,7 +189,7 @@ fn test_collision_with_fixed_pieces() {
     );
 
     // Проверяем, что фигура не вышла за пределы поля
-    let curr_y = state.curr_shape().pos.1;
+    let curr_y = state.curr_shape().pos().1;
     assert!(
         curr_y < GRID_HEIGHT as f32,
         "Фигура не должна выходить за пределы поля по Y"
@@ -210,7 +210,7 @@ fn test_collisions_in_empty_field() {
     );
 
     // Проверяем, что движение влево/вправо зависит от позиции
-    let curr_x = state.curr_shape().pos.0;
+    let curr_x = state.curr_shape().pos().0;
 
     // Если фигура не у границы, хотя бы одно направление должно быть доступно
     if curr_x > 0.0 && curr_x < (GRID_WIDTH - 1) as f32 {
@@ -313,7 +313,7 @@ fn test_hold_swap_mechanism() {
     let mut state = GameState::new();
 
     // Запоминаем начальную фигуру
-    let initial_shape = state.curr_shape().shape;
+    let initial_shape = state.curr_shape().shape();
     let next_shape = state.next_shape().shape;
 
     // Удерживаем фигуру
@@ -321,7 +321,7 @@ fn test_hold_swap_mechanism() {
 
     // Текущая фигура должна измениться на следующую
     assert_eq!(
-        state.curr_shape().shape,
+        state.curr_shape().shape(),
         next_shape,
         "Текущая фигура должна стать следующей после hold"
     );
@@ -361,7 +361,7 @@ fn test_hold_double_usage_prevention() {
 
     // Позиция фигуры должна быть сброшена к центру
     assert_eq!(
-        state.curr_shape().pos,
+        state.curr_shape().pos(),
         (4.0, 0.0),
         "Позиция фигуры должна быть сброшена к центру после hold"
     );
@@ -417,7 +417,7 @@ fn test_ghost_piece_position() {
     // Проверяем, что призрачная фигура имеет те же координаты
     assert_eq!(
         ghost_shape.shape,
-        state.curr_shape().shape,
+        state.curr_shape().shape(),
         "Призрачная фигура должна быть того же типа"
     );
 }

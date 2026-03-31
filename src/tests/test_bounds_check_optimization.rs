@@ -69,7 +69,7 @@ fn test_bounds_check_boundaries() {
 
     // Проверяем, что фигура в пределах поля
     assert!(
-        state.curr_shape().pos.0 < GRID_WIDTH as f32,
+        state.curr_shape().pos().0 < GRID_WIDTH as f32,
         "Фигура должна быть в пределах поля по X"
     );
 }
@@ -98,7 +98,7 @@ fn test_collision_with_other_pieces() {
     );
 
     // Сохраняем текущую позицию фигуры
-    let original_pos = state.curr_shape().pos;
+    let original_pos = state.curr_shape().pos();
 
     // Перемещаем фигуру на тестовую позицию
     state.get_curr_shape_mut().pos = (test_x as f32, test_y as f32);

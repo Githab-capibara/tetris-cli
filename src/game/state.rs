@@ -43,52 +43,11 @@ pub use super::stats::GameStats;
 // ТИПЫ ОШИБОК
 // ============================================================================
 
-/// Типы ошибок игры.
-///
-/// # Архитектурные заметки
-/// TODO (#архитектура): Удалить этот enum, если он не используется в основном коде.
-/// В настоящее время используется только в тестах.
-/// Для обработки ошибок в проекте используются стандартные механизмы Rust.
-#[derive(Debug)]
-pub enum GameError {
-    /// Ошибка ввода/вывода.
-    Io(std::io::Error),
-    /// Ошибка терминала.
-    Terminal(String),
-    /// Ошибка конфигурации.
-    Config(String),
-    /// Игра окончена.
-    GameOver,
-    /// Ошибка валидации.
-    Validation(String),
-}
-
-impl std::fmt::Display for GameError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GameError::Io(e) => write!(f, "Ошибка ввода/вывода: {e}"),
-            GameError::Terminal(msg) => write!(f, "Ошибка терминала: {msg}"),
-            GameError::Config(msg) => write!(f, "Ошибка конфигурации: {msg}"),
-            GameError::GameOver => write!(f, "Игра окончена"),
-            GameError::Validation(msg) => write!(f, "Ошибка валидации: {msg}"),
-        }
-    }
-}
-
-impl std::error::Error for GameError {}
-
-impl From<std::io::Error> for GameError {
-    fn from(err: std::io::Error) -> Self {
-        GameError::Io(err)
-    }
-}
-
 /// Тип результата игры.
 ///
-/// # Архитектурные заметки
-/// TODO (#архитектура): Удалить этот тип, если GameError будет удалён.
-/// В настоящее время используется только в тестах.
-pub type GameResult<T> = Result<T, GameError>;
+/// Использует централизованный GameError из модуля errors.
+/// Для обратной совместимости с тестами.
+pub type GameResult<T> = Result<T, crate::errors::GameError>;
 
 // ============================================================================
 // РЕЖИМ ИГРЫ
@@ -357,7 +316,7 @@ impl GameState {
         let curr_shape = Tetromino::from_bag(&mut bag);
         let next_shape = Tetromino::from_bag(&mut bag);
         let mut stats = GameStats::new();
-        stats.add_piece(curr_shape.shape);
+        stats.add_piece(curr_shape.shape());
         if start_timer {
             stats.start_timer();
         }
@@ -656,7 +615,7 @@ impl GameState {
     /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity или вне диапазона)
     ///
     /// # Errors
-    /// Возвращает [`GameError::Validation`] если значение является NaN/Infinity или вне диапазона.
+    /// Возвращает [`crate::errors::GameError::Validation`] если значение является NaN/Infinity или вне диапазона.
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
@@ -667,13 +626,14 @@ impl GameState {
     /// # Исправление аудита 2026-03-31 (HIGH)
     /// Убран избыточный `clamp()` после валидации. Теперь используется только типизированная
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
-    pub fn set_fall_speed(&mut self, value: f32) -> Result<(), GameError> {
+    pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
         use crate::validation::ValidationService;
+        use crate::errors::GameError;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value) {
-            return Err(GameError::Validation(format!(
+            return Err(GameError::ValidationError(format!(
                 "Неверная скорость падения: {}",
                 e.message
             )));
@@ -683,7 +643,7 @@ impl GameState {
         if let Err(e) =
             ValidationService::validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED)
         {
-            return Err(GameError::Validation(format!(
+            return Err(GameError::ValidationError(format!(
                 "Неверный диапазон скорости: {}",
                 e.message
             )));
@@ -700,7 +660,7 @@ impl GameState {
     /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity)
     ///
     /// # Errors
-    /// Возвращает [`GameError::Validation`] если значение является NaN или Infinity.
+    /// Возвращает [`crate::errors::GameError::Validation`] если значение является NaN или Infinity.
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
@@ -708,12 +668,13 @@ impl GameState {
     ///
     /// # DRY-2: Централизация валидации
     /// Использует `ValidationService::validate_f32_finite()` для валидации.
-    pub fn set_land_timer(&mut self, value: f64) -> Result<(), GameError> {
+    pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::validation::ValidationService;
+        use crate::errors::GameError;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value as f32) {
-            return Err(GameError::Validation(format!(
+            return Err(GameError::ValidationError(format!(
                 "Неверный таймер приземления: {}",
                 e.message
             )));
@@ -936,10 +897,10 @@ impl GameState {
         self.next_shape = Tetromino::from_bag(&mut self.bag);
 
         // Сбрасываем позицию текущей фигуры
-        self.curr_shape.pos = (4.0, 0.0);
+        *self.curr_shape.pos_mut() = (4.0, 0.0);
 
         // Добавляем в статистику
-        self.stats.add_piece(self.curr_shape.shape);
+        self.stats.add_piece(self.curr_shape.shape());
 
         // Проверяем коллизию при появлении (игра окончена если коллизия)
         if !self.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -1144,7 +1105,7 @@ mod state_tests {
             "Скорость не должна измениться после NaN"
         );
 
-        if let Err(GameError::Validation(msg)) = result {
+        if let Err(crate::errors::GameError::ValidationError(msg)) = result {
             assert!(
                 msg.contains("Неверная скорость падения"),
                 "Сообщение должно указывать на ошибку скорости"

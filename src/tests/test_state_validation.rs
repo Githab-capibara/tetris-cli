@@ -8,10 +8,10 @@
 //!
 //! ## Исправление H3
 //! Функции `set_fall_speed()` и `set_land_timer()` проверяют значения
-//! на NaN и Infinity, возвращая `GameError::Validation` при невалидных значениях.
+//! на NaN и Infinity, возвращая `GameError::ValidationError` при невалидных значениях.
 
 use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
-use crate::game::state::GameError;
+use crate::errors::GameError;
 use crate::game::GameState;
 
 // ============================================================================
@@ -34,7 +34,7 @@ fn test_set_fall_speed_nan_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("NaN"),
                 "Сообщение об ошибке должно содержать 'NaN'"
@@ -67,7 +67,7 @@ fn test_set_fall_speed_positive_infinity_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("Infinity"),
                 "Сообщение об ошибке должно содержать 'Infinity'"
@@ -100,7 +100,7 @@ fn test_set_fall_speed_negative_infinity_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("Infinity"),
                 "Сообщение об ошибке должно содержать 'Infinity'"
@@ -206,7 +206,7 @@ fn test_set_land_timer_nan_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("NaN"),
                 "Сообщение об ошибке должно содержать 'NaN'"
@@ -239,7 +239,7 @@ fn test_set_land_timer_positive_infinity_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("Infinity"),
                 "Сообщение об ошибке должно содержать 'Infinity'"
@@ -265,7 +265,7 @@ fn test_set_land_timer_negative_infinity_returns_error() {
     );
 
     match result {
-        Err(GameError::Validation(msg)) => {
+        Err(GameError::ValidationError(msg)) => {
             assert!(
                 msg.contains("Infinity"),
                 "Сообщение об ошибке должно содержать 'Infinity'"

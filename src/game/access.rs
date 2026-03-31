@@ -131,9 +131,9 @@ pub trait BoardMutable: BoardReadonly {
     /// Установить скорость падения (по умолчанию возвращает ошибку).
     ///
     /// # Errors
-    /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
-    fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::game::state::GameError> {
-        Err(crate::game::state::GameError::Validation(
+    /// Возвращает [`crate::errors::GameError`] если значение невалидно.
+    fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::errors::GameError> {
+        Err(crate::errors::GameError::ValidationError(
             "Этот тип не поддерживает установку скорости падения".to_string(),
         ))
     }
@@ -146,9 +146,9 @@ pub trait BoardMutable: BoardReadonly {
     /// Установить таймер приземления (по умолчанию возвращает ошибку).
     ///
     /// # Errors
-    /// Возвращает [`crate::game::state::GameError`] если значение невалидно.
-    fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::game::state::GameError> {
-        Err(crate::game::state::GameError::Validation(
+    /// Возвращает [`crate::errors::GameError`] если значение невалидно.
+    fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::errors::GameError> {
+        Err(crate::errors::GameError::ValidationError(
             "Этот тип не поддерживает установку таймера приземления".to_string(),
         ))
     }
@@ -279,7 +279,7 @@ impl BoardMutable for crate::game::state::GameState {
         self.fall_speed()
     }
 
-    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::game::state::GameError> {
+    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::errors::GameError> {
         self.set_fall_speed(spd)
     }
 
@@ -287,7 +287,7 @@ impl BoardMutable for crate::game::state::GameState {
         self.land_timer()
     }
 
-    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::game::state::GameError> {
+    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::errors::GameError> {
         self.set_land_timer(timer)
     }
 }

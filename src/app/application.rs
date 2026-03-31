@@ -2,7 +2,7 @@
 //!
 //! Предоставляет структуру Application для управления жизненным циклом приложения.
 
-use crate::game::GameError;
+use crate::errors::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
@@ -97,7 +97,7 @@ impl Application {
                  Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов."
             );
             eprintln!("{msg}");
-            GameError::Io(e) // Исправление аудита 2026-03-30: сохраняем оригинальную ошибку
+            GameError::IoError(e)
         })?;
 
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
@@ -107,7 +107,7 @@ impl Application {
                  Текущий размер: {width}x{height} символов."
             );
             eprintln!("{msg}");
-            return Err(GameError::Validation(msg));
+            return Err(GameError::ValidationError(msg));
         }
 
         // Инициализация Canvas с безопасной обработкой ошибок (Исправление аудита #1)
@@ -115,7 +115,7 @@ impl Application {
         let canvas = Canvas::try_default().map_err(|e| {
             let msg = format!("Ошибка инициализации терминала: {e}");
             eprintln!("{msg}");
-            GameError::Io(std::io::Error::other(msg))
+            GameError::IoError(std::io::Error::other(msg))
         })?;
 
         let input = KeyReader::new();

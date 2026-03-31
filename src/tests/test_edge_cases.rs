@@ -100,7 +100,7 @@ fn test_edge_cases_right_boundary() {
         }
     }
 
-    let x = state.curr_shape().pos.0;
+    let x = state.curr_shape().pos().0;
     assert!(x < GRID_WIDTH as f32);
 }
 
@@ -115,7 +115,7 @@ fn test_edge_cases_left_boundary() {
         }
     }
 
-    let x = state.curr_shape().pos.0;
+    let x = state.curr_shape().pos().0;
     assert!(x >= 0.0);
 }
 
@@ -128,7 +128,7 @@ fn test_edge_cases_bottom_boundary() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let y = state.curr_shape().pos.1;
+    let y = state.curr_shape().pos().1;
     assert!(y < GRID_HEIGHT as f32);
 }
 
@@ -216,7 +216,7 @@ fn test_edge_cases_i_rotates() {
     state.get_curr_shape_mut().shape = ShapeType::I;
     state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
 
-    let original_coords = state.curr_shape().coords;
+    let original_coords = state.curr_shape().coords();
 
     if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
         state
@@ -224,7 +224,7 @@ fn test_edge_cases_i_rotates() {
             .rotate(RotationDirection::Clockwise);
     }
 
-    assert_ne!(state.curr_shape().coords, original_coords);
+    assert_ne!(state.curr_shape().coords(), original_coords);
 }
 
 /// Тест 24: Проверка что фигуры не выходят за границы
@@ -243,8 +243,8 @@ fn test_edge_cases_shapes_within_bounds() {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let x = state.curr_shape().pos.0;
-    let y = state.curr_shape().pos.1;
+    let x = state.curr_shape().pos().0;
+    let y = state.curr_shape().pos().1;
 
     assert!(x >= 0.0 && x < GRID_WIDTH as f32);
     assert!(y >= 0.0 && y < GRID_HEIGHT as f32);
@@ -270,7 +270,7 @@ fn test_edge_cases_position_resets_after_hold() {
     state.get_curr_shape_mut().pos = (2.0, 5.0);
     state.hold_shape();
 
-    assert_eq!(state.curr_shape().pos, (4.0, 0.0));
+    assert_eq!(state.curr_shape().pos(), (4.0, 0.0));
 }
 
 /// Тест 27: Проверка что следующая фигура не None

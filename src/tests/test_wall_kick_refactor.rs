@@ -28,7 +28,7 @@ fn test_can_rotate_curr_shape_basic() {
 #[test]
 fn test_rotate_with_wall_kick_basic() {
     let mut state = GameState::new();
-    let original_coords = state.curr_shape().coords;
+    let original_coords = state.curr_shape().coords();
 
     // Выполняем вращение по часовой
     let rotated_cw = state.rotate_with_wall_kick(RotationDirection::Clockwise);
@@ -40,9 +40,9 @@ fn test_rotate_with_wall_kick_basic() {
     );
 
     // Координаты должны измениться (если фигура не квадрат)
-    if state.curr_shape().shape != crate::tetromino::ShapeType::O {
+    if state.curr_shape().shape() != crate::tetromino::ShapeType::O {
         assert_ne!(
-            state.curr_shape().coords,
+            state.curr_shape().coords(),
             original_coords,
             "Координаты должны измениться после вращения"
         );
@@ -160,8 +160,8 @@ fn test_no_logic_duplication() {
     let mut state = GameState::new();
 
     // Сохраняем оригинальные координаты
-    let original_coords = state.curr_shape().coords;
-    let original_pos = state.curr_shape().pos;
+    let original_coords = state.curr_shape().coords();
+    let original_pos = state.curr_shape().pos();
 
     // Проверяем вращение
     let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);

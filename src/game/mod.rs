@@ -87,7 +87,8 @@ pub mod constants {
 // Подмодули logic
 
 // Re-export основных типов для обратной совместимости
-pub use state::GameError;
+// Исправление аудита 2026-03-31 (Проблема #1): GameError перемещён в errors.rs
+pub use crate::errors::GameError;
 #[allow(deprecated, unused_imports)]
 pub use state::GameMode;
 #[allow(unused_imports)]
@@ -178,7 +179,7 @@ impl GameState {
         cnv: &mut crate::io::Canvas,
         inp: &mut crate::io::KeyReader,
         high_score_display: &str,
-    ) -> Result<u128, state::GameError> {
+    ) -> Result<u128, crate::errors::GameError> {
         cycle::run_game_loop(self, cnv, inp, high_score_display)
     }
 

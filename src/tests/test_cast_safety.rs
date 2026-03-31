@@ -432,11 +432,11 @@ mod tests {
         );
 
         // Тест 2: Проверка cast при движении фигуры
-        let _initial_y = state.curr_shape().pos.1;
+        let _initial_y = state.curr_shape().pos().1;
         state.add_score_no_check(0); // Вызываем для проверки что состояние корректно
 
         // Тест 3: Проверка cast при вращении
-        let initial_x = state.curr_shape().pos.0;
+        let initial_x = state.curr_shape().pos().0;
         assert!(
             initial_x >= 0.0 && initial_x < GRID_WIDTH as f32,
             "Начальная X координата должна быть в пределах поля"

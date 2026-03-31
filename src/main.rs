@@ -30,6 +30,7 @@ pub mod constants;
 mod controls;
 mod core;
 mod crypto;
+mod errors;
 mod game;
 mod highscore;
 mod io;

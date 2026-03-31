@@ -57,7 +57,7 @@ pub fn update<T: InputReader>(
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 pub fn save_tetromino(state: &mut GameState) {
-    let (shape_x, shape_y) = state.curr_shape().pos;
+    let (shape_x, shape_y) = state.curr_shape().pos();
     let shape_block_x = shape_x as i16;
     let shape_block_y = shape_y as i16;
 
@@ -70,8 +70,8 @@ pub fn save_tetromino(state: &mut GameState) {
     let grid_width_i16 = crate::io::GRID_WIDTH as i16;
 
     let curr_shape = state.curr_shape();
-    let fg = curr_shape.fg;
-    let coords = curr_shape.coords;
+    let fg = curr_shape.fg();
+    let coords = curr_shape.coords();
 
     for coord in coords {
         let (coord_x, coord_y) = coord;

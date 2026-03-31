@@ -79,7 +79,7 @@ fn test_direction_down_and_soft_drop_integration() {
     use crate::game::scoring::handle_soft_drop;
 
     let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos.1;
+    let initial_y = state.curr_shape().pos().1;
 
     // Выполняем Soft Drop
     for _ in 0..5 {
@@ -90,7 +90,7 @@ fn test_direction_down_and_soft_drop_integration() {
 
     // Проверяем, что фигура опустилась через геттер
     assert!(
-        state.curr_shape().pos.1 > initial_y,
+        state.curr_shape().pos().1 > initial_y,
         "Фигура должна опуститься"
     );
 
@@ -269,7 +269,7 @@ fn test_no_regressions() {
 
     // Проверяем, что фигуры генерируются через геттер
     assert!(
-        (state.curr_shape().shape as usize) < 7,
+        (state.curr_shape().shape() as usize) < 7,
         "Фигура должна быть корректной"
     );
 
@@ -520,7 +520,7 @@ fn test_all_fixes_comprehensive() {
 
     // 2. Проверяем Copy семантику (проверка О2)
     let shape_copy = *state.curr_shape();
-    assert_eq!(shape_copy.shape, state.curr_shape().shape);
+    assert_eq!(shape_copy.shape, state.curr_shape().shape());
 
     // 3. Проверяем Canvas (проверка Л2)
     let canvas_result = Canvas::new();

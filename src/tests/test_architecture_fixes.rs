@@ -465,7 +465,7 @@ fn test_figure_manager_public_methods() {
     curr_shape_mut.pos.0 += 1.0;
 
     assert_eq!(
-        state.curr_shape().pos.0,
+        state.curr_shape().pos().0,
         original_x + 1.0,
         "get_curr_shape_mut должен предоставлять мутабельный доступ"
     );

@@ -160,7 +160,7 @@ pub fn can_move_curr_shape_direction(state: &GameState, dir: Direction) -> bool 
     let curr_shape = state.curr_shape();
     // Инвертируем: check_collision_direction возвращает true при коллизии,
     // а нам нужно true при возможности движения
-    !check_collision_direction(state, &curr_shape.coords, curr_shape.pos, dir)
+    !check_collision_direction(state, &curr_shape.coords(), curr_shape.pos(), dir)
 }
 
 /// Проверить возможность вращения фигуры (без смещения).
@@ -259,7 +259,7 @@ mod collision_tests {
         let state = GameState::new();
         // Фигура на левой границе (x=0)
         let mut test_state = state;
-        test_state.get_curr_shape_mut().pos.0 = 0.0;
+        test_state.get_curr_shape_mut().pos_mut().0 = 0.0;
 
         // Движение влево должно быть невозможно на границе
         let can_move = can_move_curr_shape_direction(&test_state, Direction::Left);
@@ -275,7 +275,7 @@ mod collision_tests {
         let state = GameState::new();
         // Фигура на правой границе (x=9 для GRID_WIDTH=10)
         let mut test_state = state;
-        test_state.get_curr_shape_mut().pos.0 = 9.0;
+        test_state.get_curr_shape_mut().pos_mut().0 = 9.0;
 
         // Движение вправо должно быть невозможно на границе
         let can_move = can_move_curr_shape_direction(&test_state, Direction::Right);
@@ -291,7 +291,7 @@ mod collision_tests {
         let state = GameState::new();
         // Фигура за левой границей (x=-1)
         let mut test_state = state;
-        test_state.get_curr_shape_mut().pos.0 = -1.0;
+        test_state.get_curr_shape_mut().pos_mut().0 = -1.0;
 
         // Движение влево должно быть невозможно
         let can_move = can_move_curr_shape_direction(&test_state, Direction::Left);
@@ -307,7 +307,7 @@ mod collision_tests {
         let state = GameState::new();
         // Фигура за правой границей (x=10 при GRID_WIDTH=10)
         let mut test_state = state;
-        test_state.get_curr_shape_mut().pos.0 = 10.0;
+        test_state.get_curr_shape_mut().pos_mut().0 = 10.0;
 
         // Движение вправо должно быть невозможно
         let can_move = can_move_curr_shape_direction(&test_state, Direction::Right);

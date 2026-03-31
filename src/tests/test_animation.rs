@@ -64,14 +64,14 @@ fn test_animation_hard_drop_resets_flag() {
 #[test]
 fn test_animation_hard_drop_changes_position() {
     let mut state = GameState::new();
-    let start_y = state.curr_shape().pos.1;
+    let start_y = state.curr_shape().pos().1;
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
         state.get_curr_shape_mut().pos.1 += 1.0;
     }
 
-    let end_y = state.curr_shape().pos.1;
+    let end_y = state.curr_shape().pos().1;
     assert!(end_y > start_y);
 }
 
