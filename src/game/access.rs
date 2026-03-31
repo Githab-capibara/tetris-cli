@@ -155,70 +155,96 @@ pub trait BoardMutable: BoardReadonly {
 }
 
 // ============================================================================
-// ТРЕЙТ SCOREACCESS (очки и уровни)
+// ТРЕЙТ SCOREACCESS (только чтение)
 // ============================================================================
 
-/// Трейт для доступа к очкам и уровням.
+/// Трейт для доступа только на чтение к очкам и уровням.
 ///
-/// Предоставляет методы для чтения и изменения очков, уровней и линий,
+/// Предоставляет методы для чтения очков, уровней и линий,
 /// не раскрывая внутреннюю структуру [`GameState`].
 ///
 /// ## Архитектурные заметки
-/// ## Разделение ответственности (Problem 2.3, 2.9)
-/// Этот трейт выделяет доступ к системе очков в отдельный интерфейс,
-/// что позволяет создавать функции, работающие только с очками,
-/// без доступа к игровому полю.
+/// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
+/// Этот трейт выделяет доступ только для чтения к системе очков в отдельный интерфейс,
+/// что позволяет создавать функции, работающие только с чтением очков,
+/// без возможности их изменения. Соответствует Interface Segregation Principle.
 ///
 /// ## Пример использования
 /// ```ignore
 /// use crate::game::access::ScoreAccess;
 ///
-/// fn add_line_bonus<T: ScoreAccess>(score: &mut T, lines: u32) {
-///     let bonus = lines * 100;
-///     score.add_score(bonus);
+/// fn display_score<T: ScoreAccess>(score: &T) {
+///     println!("Счёт: {}", score.get_score());
 /// }
 /// ```
 pub trait ScoreAccess {
     /// Получить текущий счёт.
     fn get_score(&self) -> u128;
 
+    /// Получить текущий уровень.
+    fn get_level(&self) -> u32;
+
+    /// Получить количество удалённых линий.
+    fn get_lines_cleared(&self) -> u32;
+}
+
+// ============================================================================
+// ТРЕЙТ SCOREMUTABLE (чтение и запись)
+// ============================================================================
+
+/// Трейт для доступа на чтение и запись к очкам и уровням.
+///
+/// Расширяет [`ScoreAccess`] методами для изменения очков, уровней и линий.
+///
+/// ## Архитектурные заметки
+/// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
+/// Этот трейт расширяет [`ScoreAccess`] методами для изменения состояния.
+/// Разделение на ScoreAccess (чтение) и ScoreMutable (запись) позволяет
+/// следовать Interface Segregation Principle и предоставлять минимально
+/// необходимый интерфейс для каждой функции.
+///
+/// ## Пример использования
+/// ```ignore
+/// use crate::game::access::ScoreMutable;
+///
+/// fn add_line_bonus<T: ScoreMutable>(score: &mut T, lines: u32) {
+///     let bonus = lines * 100;
+///     score.add_score(bonus);
+/// }
+/// ```
+pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
     fn add_score(&mut self, points: u128);
 
     /// Установить счёт (для тестов).
     fn set_score(&mut self, score: u128);
 
-    /// Получить текущий уровень.
-    fn get_level(&self) -> u32;
-
     /// Установить текущий уровень.
     fn set_level(&mut self, level: u32);
-
-    /// Получить количество удалённых линий.
-    fn get_lines_cleared(&self) -> u32;
 
     /// Установить количество удалённых линий.
     fn set_lines_cleared(&mut self, lines: u32);
 }
 
 // ============================================================================
-// ТРЕЙТ GAMEBOARDACCESS (объединённый - для обратной совместимости)
+// ТРЕЙТ GAMEBOARDACCESS (УДАЛЁН)
 // ============================================================================
 
 /// Трейт для полного доступа к игровому полю.
 ///
-/// Объединяет [`BoardMutable`] и [`ScoreAccess`] для обратной совместимости.
-///
-/// ## Архитектурные заметки
-/// ## Обратная совместимость
-/// Этот трейт сохранён для обратной совместимости.
+/// ## Устарел (deprecated)
+/// Этот трейт был удалён так как не использовался в коде.
 /// Для нового кода рекомендуется использовать специализированные трейты:
 /// - [`BoardReadonly`] для чтения
 /// - [`BoardMutable`] для чтения и записи
 /// - [`ScoreAccess`] для очков
+#[deprecated(
+    since = "0.3.0",
+    note = "GameBoardAccess удалён как избыточный. Используйте BoardMutable + ScoreAccess напрямую"
+)]
 pub trait GameBoardAccess: BoardMutable + ScoreAccess {}
 
-// Реализация GameBoardAccess для всех типов, реализующих [`BoardMutable`] и [`ScoreAccess`]
+#[allow(deprecated)]
 impl<T: BoardMutable + ScoreAccess> GameBoardAccess for T {}
 
 // ============================================================================
@@ -292,6 +318,16 @@ impl ScoreAccess for crate::game::state::GameState {
         self.score()
     }
 
+    fn get_level(&self) -> u32 {
+        self.level()
+    }
+
+    fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared()
+    }
+}
+
+impl ScoreMutable for crate::game::state::GameState {
     fn add_score(&mut self, points: u128) {
         self.add_score(points);
     }
@@ -300,16 +336,8 @@ impl ScoreAccess for crate::game::state::GameState {
         self.set_score(score);
     }
 
-    fn get_level(&self) -> u32 {
-        self.level()
-    }
-
     fn set_level(&mut self, level: u32) {
         self.set_level(level);
-    }
-
-    fn get_lines_cleared(&self) -> u32 {
-        self.lines_cleared()
     }
 
     fn set_lines_cleared(&mut self, lines: u32) {

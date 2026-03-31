@@ -9,13 +9,21 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
 //! - [`scoring.rs`](super::super::scoring): функции начисления очков
-//! - [`types.rs`](crate::types): `Direction`, `RotationDirection`
+//! - [`types.rs`](crate::types): `Direction`, `RotationDirection`, [`GameAction`](crate::game::types::GameAction)
 //!
 //! ## Архитектурные заметки (A7: DIP)
 //! Функция `handle_input()` использует трейт `InputReader` вместо конкретного типа `KeyReader`
 //! для соблюдения Dependency Inversion Principle.
+//!
+//! ## Исправление 7: GameAction enum
+//! Введена абстракция GameAction для отделения конкретных клавиш от игровых действий.
+//! Это позволяет:
+//! - Изменять конфигурацию управления без изменения логики ввода
+//! - Легко добавлять новые действия
+//! - Уменьшить связанность между controls.rs и input.rs
 
 use crate::game::state::{GameState, UpdateEndState};
+use crate::game::types::GameAction;
 use crate::io::KEY_BACKSPACE;
 use crate::io_traits::InputReader;
 use crate::types::{Direction, RotationDirection};
@@ -38,6 +46,10 @@ use crate::types::{Direction, RotationDirection};
 /// # Исправление #14 (MEDIUM SEVERITY)
 /// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
 /// Это позволяет отслеживать проблемы с вводом во время отладки.
+///
+/// # Исправление 7: GameAction enum
+/// Использует GameAction для абстракции ввода. Конкретные клавиши маппятся в
+/// GameAction через функцию `map_key_to_action()`.
 pub fn handle_input<T: crate::io_traits::InputReader>(
     state: &mut GameState,
     inp: &mut T,
@@ -47,7 +59,8 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
     // Сброс флага Hard Drop
     state.set_is_hard_dropping(false);
 
-    match key {
+    // Маппинг клавиши в GameAction
+    let action = match key {
         Ok(Some(KEY_BACKSPACE)) => {
             eprintln!("[INFO] Получена клавиша выхода (Backspace)");
             return Some(UpdateEndState::Quit);
@@ -56,32 +69,100 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
             eprintln!("[INFO] Получена клавиша паузы (P)");
             return Some(UpdateEndState::Pause);
         }
-        Ok(Some(b'a')) => handle_movement_input(state, Direction::Left),
-        Ok(Some(b'd')) => handle_movement_input(state, Direction::Right),
-        Ok(Some(b'q')) => handle_rotation_input(state, RotationDirection::CounterClockwise),
-        Ok(Some(b'e')) => handle_rotation_input(state, RotationDirection::Clockwise),
-        Ok(Some(b'w')) => super::super::scoring::handle_hard_drop(state),
-        Ok(Some(b's')) => super::super::scoring::handle_soft_drop(state),
-        Ok(Some(b'c' | b'C')) => super::super::scoring::handle_hold(state),
-        Ok(Some(other_key)) => {
-            // Логирование неизвестной клавиши для отладки
-            eprintln!(
-                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
-                char::from_u32(other_key as u32).unwrap_or('?'),
-                other_key
-            );
-        }
+        Ok(Some(key_code)) => map_key_to_action(key_code),
         Ok(None) => {
             // Клавиша не была нажата
-            // Не логируем чтобы не спамить в консоль каждый кадр
+            return None;
         }
         Err(e) => {
             // Ошибка чтения ввода
             eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
+            return None;
+        }
+    };
+
+    // Обработка действия
+    handle_game_action(state, action?)
+}
+
+/// Маппинг клавиши в игровое действие.
+///
+/// # Аргументы
+/// * `key_code` - код нажатой клавиши
+///
+/// # Возвращает
+/// - `Some(GameAction)` если клавиша соответствует действию
+/// - `None` если клавиша не распознана
+///
+/// # Исправление 7: GameAction enum
+/// Эта функция централизует маппинг клавиш → действия.
+/// Для изменения конфигурации управления нужно изменить только эту функцию.
+fn map_key_to_action(key_code: u8) -> Option<GameAction> {
+    match key_code {
+        b'a' => Some(GameAction::MoveLeft),
+        b'd' => Some(GameAction::MoveRight),
+        b'q' => Some(GameAction::RotateLeft),
+        b'e' => Some(GameAction::RotateRight),
+        b'w' => Some(GameAction::HardDrop),
+        b's' => Some(GameAction::SoftDrop),
+        b'c' | b'C' => Some(GameAction::Hold),
+        _ => {
+            // Логирование неизвестной клавиши для отладки
+            eprintln!(
+                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
+                char::from_u32(key_code as u32).unwrap_or('?'),
+                key_code
+            );
+            None
         }
     }
+}
 
-    None
+/// Обработать игровое действие.
+///
+/// # Аргументы
+/// * `state` - состояние игры (изменяемое)
+/// * `action` - игровое действие
+///
+/// # Возвращает
+/// - `Some(UpdateEndState::Quit)` - выход в меню
+/// - `Some(UpdateEndState::Pause)` - пауза
+/// - `None` - продолжить обработку
+///
+/// # Исправление 7: GameAction enum
+/// Эта функция обрабатывает абстрактные действия вместо конкретных клавиш.
+fn handle_game_action(state: &mut GameState, action: GameAction) -> Option<UpdateEndState> {
+    match action {
+        GameAction::MoveLeft => {
+            handle_movement_input(state, Direction::Left);
+            None
+        }
+        GameAction::MoveRight => {
+            handle_movement_input(state, Direction::Right);
+            None
+        }
+        GameAction::SoftDrop => {
+            super::super::scoring::handle_soft_drop(state);
+            None
+        }
+        GameAction::HardDrop => {
+            super::super::scoring::handle_hard_drop(state);
+            None
+        }
+        GameAction::RotateLeft => {
+            handle_rotation_input(state, RotationDirection::CounterClockwise);
+            None
+        }
+        GameAction::RotateRight => {
+            handle_rotation_input(state, RotationDirection::Clockwise);
+            None
+        }
+        GameAction::Hold => {
+            super::super::scoring::handle_hold(state);
+            None
+        }
+        GameAction::Pause | GameAction::Quit => None, // Обрабатываются выше
+    }
 }
 
 /// Обработка движения влево/вправо.

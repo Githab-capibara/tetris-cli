@@ -274,13 +274,14 @@ fn test_no_duplicate_traits_in_scoreboard_rs() {
 /// Этот тест подтверждает что `access.rs` является единственным местом
 /// определения трейтов доступа к состоянию игры.
 #[test]
+#[allow(deprecated)]
 fn test_all_access_traits_consolidated_in_access() {
     // Список всех трейтов которые должны быть в access.rs:
     let expected_traits = [
         "BoardReadonly",
         "BoardMutable",
         "ScoreAccess",
-        "GameBoardAccess",
+        // GameBoardAccess устарел и удалён, но сохраняется для обратной совместимости
     ];
 
     // Проверяем что все трейты доступны из access.rs
@@ -298,11 +299,16 @@ fn test_all_access_traits_consolidated_in_access() {
     // ScoreAccess
     let _: &dyn access::ScoreAccess = &state;
 
-    // GameBoardAccess (объединённый трейт)
+    // GameBoardAccess (объединённый трейт, устарел)
+    #[allow(deprecated)]
     let _: &dyn access::GameBoardAccess = &state;
 
-    // Все трейты консолидированы в access.rs
-    assert_eq!(expected_traits.len(), 4, "Должно быть 4 основных трейта");
+    // Все трейты консолидированы в access.rs (GameBoardAccess устарел)
+    assert_eq!(
+        expected_traits.len(),
+        3,
+        "Должно быть 3 основных трейта (GameBoardAccess устарел)"
+    );
 }
 
 // ============================================================================
