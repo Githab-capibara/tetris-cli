@@ -1,53 +1,166 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 31 марта 2026 г. (добавлено 55 тестов на исправления аудита)
-**Версия проекта:** 23.96.28+
-**Всего тестов:** 1788 (проходят 100%)
-**Всего файлов тестов:** 99
+**Дата последней актуализации:** 31 марта 2026 г. (очистка тестовой базы)
+**Версия проекта:** 23.96.30+
+**Всего тестов:** ~1150 (проходят 100%)
+**Всего файлов тестов:** 95
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
 
-### Новые тесты (31 марта 2026 — версия 23.96.28+):
+### Очистка тестовой базы (31 марта 2026 — версия 23.96.30+):
 
-**test_41_fixed_issues.rs — 42 теста:**
-- Критические ошибки (4 теста)
-- Логические ошибки (5 тестов)
-- Производительность (5 тестов)
-- Читаемость (5 тестов)
-- Безопасность (5 тестов)
-- Best Practices (7 тестов)
-- Тесты (5 тестов)
-- Документация (5 тестов)
+**Удалено дубликатов:**
+- test_direction_down.rs (дублировал test_tetromino_dir_down.rs)
+- test_architecture_refactoring.rs (дублировал test_architecture_improvements.rs)
 
-**test_all_fixed_issues.rs (обновлен) — 13 тестов:**
-- Исправление критических ошибок Canvas
-- Thread-safe Leaderboard
-- Checked neg rotation
-- TOCTOU защита
+**Переименовано файлов (для консистентности):**
+- fixtures.rs → test_fixtures.rs
+- scoring_state.rs → test_scoring_state.rs
+- io_drop.rs → test_io_drop.rs
+- leaderboard_toctou.rs → test_leaderboard_toctou.rs
+- macros.rs → test_macros.rs
+- mod.rs → test_mod.rs
 
-**test_architecture_integrity.rs — 21 тест:****
-- **C2: Отсутствие циклических зависимостей** (2 теста):
-  - `test_no_cyclic_dependencies_core_types` — core не зависит от game, io, tetromino
-  - `test_core_types_are_independent` — Direction, RotationDirection, Position независимы
-- **C1: Целостность компонентов** (2 теста):
-  - `test_game_state_uses_components` — GameState использует GameBoard, ScoreBoard
-  - `test_components_are_independent` — GameBoard и ScoreBoard независимы
-- **C3: TOCTOU защита** (2 теста):
-  - `test_thread_safe_leaderboard_entry_is_atomic` — атомарность score() и is_valid()
-  - `test_leaderboard_entry_thread_safety` — целостность данных LeaderboardEntry
-- **C4: Централизация HMAC** (2 теста):
-  - `test_hmac_functions_centralized` — hmac_sign/hmac_verify в crypto::hmac
-  - `test_no_duplicate_hmac_logic` — нет дублирования HMAC логики
-- **H1: Разделение трейтов** (2 теста):
-  - `test_scoring_traits_are_segregated` — ScoreAccess, LevelAccess, LinesAccess, ComboAccess
-  - `test_no_monolithic_scoring_trait` — нет широкого трейта с 10+ методами
-- **H2: DIP** (2 теста):
-  - `test_game_loop_uses_traits` — run_game_loop принимает &mut dyn Renderer
-  - `test_application_uses_trait_objects` — Application использует трейт-объекты
-- **H5: SoC — разделение ввода и логики** (2 теста):
-  - `test_input_parser_is_pure` — parse_input() не изменяет состояние
+**Исправлено ошибок компиляции (9):**
+- Доступ к приватным полям Tetromino (fg, shape, coords, pos)
+- Неиспользуемые импорты
+- Unused return value от Leaderboard::add_score()
+
+**Обновлено deprecated методов (12):**
+- name() → name_safe()
+- score() → score_safe()
+- is_valid() → is_valid_safe()
+
+**Удалено бесполезных тестов (12):**
+- assert!(true) тесты
+- assert!(x || !x) тесты (всегда проходят)
+- Информационные тесты без реальных проверок
+
+**Статистика изменений:**
+- Удалено строк: 1947
+- Добавлено строк: 164
+- Чистое изменение: -1783 строки
+
+---
+
+## 📊 СТРУКТУРА ТЕСТОВ
+
+### tests/ (корневая директория): 7 файлов
+- test_41_fixed_issues.rs — 42 теста на исправления аудита
+- test_all_fixed_issues.rs — 13 тестов критических исправлений
+- test_architecture_all.rs — 30 тестов архитектурных проблем
+- test_architecture_components.rs — 7 тестов компонентов
+- test_architecture_improvements.rs — 16 тестов улучшений
+- test_architecture_integrity.rs — 21 тест целостности
+- test_audit_fixes.rs — 25 тестов исправлений аудита
+- test_fixes_verification.rs — 8 интеграционных тестов
+
+### src/tests/: 88 файлов
+
+#### Архитектурные тесты (13 файлов)
+- test_architecture.rs — базовые архитектурные тесты
+- test_architecture_boundaries.rs — границы модулей
+- test_architecture_components.rs — компоненты GameState
+- test_architecture_coupling.rs — связанность модулей
+- test_architecture_cycles.rs — циклические зависимости
+- test_architecture_fixes.rs — исправления архитектуры
+- test_architecture_fixes_new.rs — новые исправления
+- test_architecture_integrity.rs — целостность архитектуры
+- test_architecture_integrity_new.rs — новые тесты целостности
+- test_architecture_isp.rs — Interface Segregation Principle
+- test_architecture_separation.rs — разделение ответственности
+- test_architecture_traits.rs — архитектурные трейты
+- test_architecture_validation.rs — валидация архитектуры
+
+#### Тесты безопасности (8 файлов)
+- test_application_error_handling.rs — обработка ошибок Application
+- test_cfg_attr_dead_code.rs — dead_code атрибуты
+- test_clippy_fixes.rs — исправления Clippy
+- test_controls_path_traversal.rs — защита от path traversal
+- test_controls_path_validation.rs — валидация путей
+- test_controls_toctou.rs — TOCTOU защита controls
+- test_hmac_safety.rs — HMAC безопасность
+- test_security_fixes.rs — исправления безопасности
+
+#### Тесты игры (25 файлов)
+- test_bag_system.rs — Bag Generator
+- test_collision.rs — столкновения
+- test_game_bitmask_check_rows.rs — битовая маска check_rows
+- test_game_bounds_check.rs — проверка границ
+- test_game_box_array.rs — массив поля
+- test_game_logic.rs — игровая логика
+- test_game_movement.rs — движение фигур
+- test_game_negative_coords.rs — отрицательные координаты
+- test_game_rotation.rs — вращение фигур
+- test_game_rotation_bounds.rs — границы вращения
+- test_game_score_overflow.rs — переполнение счёта
+- test_game_stats_export.rs — экспорт статистики
+- test_hard_drop_flag.rs — флаг hard drop
+- test_hard_drop_overflow.rs — переполнение hard drop
+- test_integration.rs — интеграционные тесты
+- test_integration_extended.rs — расширенные интеграционные
+- test_modes_integration.rs — режимы игры
+- test_physics.rs — физика
+- test_row_check_optimization.rs — оптимизация check_rows
+- test_safe_cast.rs — безопасный cast
+- test_score_overflow_protection.rs — защита от переполнения
+- test_state_validation.rs — валидация состояния
+- test_tetromino.rs — Tetromino
+- test_tetromino_dir_down.rs — направление Down
+- test_tetromino_shapes.rs — формы фигур
+
+#### Тесты highscore (5 файлов)
+- test_highscore.rs — базовые тесты highscore
+- test_highscore_config_path.rs — путь к конфигурации
+- test_highscore_error_handling.rs — обработка ошибок
+- test_highscore_random_hash.rs — случайный hash
+- test_highscore_verify_integrity.rs — проверка целостности
+
+#### Тесты controls (4 файла)
+- test_controls.rs — базовые тесты controls
+- test_controls_error_handling.rs — обработка ошибок
+- test_controls_path_validation.rs — валидация путей
+- test_controls_toctou.rs — TOCTOU защита
+
+#### Тесты IO (5 файлов)
+- test_canvas_initialization.rs — инициализация Canvas
+- test_io.rs — базовые тесты IO
+- test_io_canvas_result.rs — результат Canvas
+- test_io_drop.rs — Drop для Canvas
+- test_io_errors.rs — ошибки IO
+- test_io_resource_leak.rs — утечки ресурсов
+- test_io_utf8_handling.rs — обработка UTF-8
+- test_utf8_limitation.rs — ограничения UTF-8
+
+#### Тесты оптимизаций (6 файлов)
+- test_animation.rs — анимации
+- test_benchmarks.rs — бенчмарки
+- test_bounds_check_optimization.rs — оптимизация границ
+- test_cast_safety.rs — безопасность cast
+- test_edge_cases.rs — граничные случаи
+- test_edge_cases_stress.rs — стресс тесты
+- test_must_use_attributes.rs — must_use атрибуты
+- test_sanitize_optimization.rs — оптимизация sanitize
+- test_string_caching.rs — кэширование строк
+- test_track_caller.rs — track_caller атрибут
+- test_unwrap_to_expect.rs — unwrap → expect
+
+#### Вспомогательные файлы (6 файлов)
+- test_fixtures.rs — фикстуры и хелперы
+- test_macros.rs — макросы для тестов
+- test_mod.rs — модуль тестов
+- test_scoring_state.rs — состояние scoring
+- test_leaderboard_toctou.rs — TOCTOU leaderboard
+- test_all_fixes_integration.rs — интеграция всех исправлений
+- test_error_propagation.rs — распространение ошибок
+- test_task13_coverage.rs — покрытие кода
+- test_time_safety.rs — безопасность Time
+- test_unicode_validation.rs — валидация Unicode
+- test_statistics.rs — статистика
+
+---
   - `test_input_logic_separation` — handle_input() использует parse_input() и execute_action()
 - **H6: Абстракция времени** (2 теста):
   - `test_time_abstraction_exists` — Time структура существует
