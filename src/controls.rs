@@ -530,6 +530,41 @@ impl ControlsConfig {
             signature: String::new(),
         }
     }
+
+    /// Маппинг клавиши в игровое действие.
+    ///
+    /// # Аргументы
+    /// * `key_code` - код нажатой клавиши
+    ///
+    /// # Возвращает
+    /// - `Some(GameAction)` если клавиша соответствует действию
+    /// - `None` если клавиша не распознана
+    ///
+    /// # Исправление 7: GameAction enum
+    /// Эта функция использует конфигурацию ControlsConfig для маппинга клавиш.
+    /// Позволяет изменять управление через конфигурационный файл.
+    #[must_use]
+    pub fn map_key_to_action(&self, key_code: u8) -> Option<crate::game::types::GameAction> {
+        use crate::game::types::GameAction;
+
+        if key_code == self.move_left {
+            Some(GameAction::MoveLeft)
+        } else if key_code == self.move_right {
+            Some(GameAction::MoveRight)
+        } else if key_code == self.soft_drop {
+            Some(GameAction::SoftDrop)
+        } else if key_code == self.hard_drop {
+            Some(GameAction::HardDrop)
+        } else if key_code == self.rotate_left {
+            Some(GameAction::RotateLeft)
+        } else if key_code == self.rotate_right {
+            Some(GameAction::RotateRight)
+        } else if key_code == self.hold {
+            Some(GameAction::Hold)
+        } else {
+            None
+        }
+    }
 }
 
 impl Default for ControlsConfig {

@@ -6,7 +6,7 @@
 //! - [`scoring`] — система очков и уровней
 //! - [`render`] — отрисовка и анимации
 //! - [`view`] — представление игры для отрисовки ([`GameView`])
-//! - [`access`] — трейты доступа к состоянию игры ([`GameBoardAccess`])
+//! - [`access`] — трейты доступа к состоянию игры ([`BoardReadonly`], [`BoardMutable`])
 //! - [`cache`] — кэширование строк для отрисовки ([`StringCache`])
 //! - [`cycle`] — игровой цикл (FPS, ввод, отрисовка)
 //! - [`mode_trait`] — трейт режима игры ([`GameModeTrait`])
@@ -66,6 +66,7 @@ pub mod cycle;
 pub mod logic;
 pub mod mode_trait;
 pub mod render;
+pub mod rules;
 pub mod scoreboard;
 pub mod scoring;
 pub mod state;
@@ -73,9 +74,11 @@ pub mod stats;
 pub mod types;
 pub mod view;
 
-// Ре-экспорт констант для обратной совместимости (чтобы game::constants::FPS работал)
-// Публичный ре-экспорт для тестов и внешнего использования
-pub(crate) use crate::constants;
+// Ре-экспорт констант для внутренних модулей game
+// Это позволяет использовать super::constants внутри game/
+pub mod constants {
+    pub use crate::constants::*;
+}
 
 // Подмодули scoring
 
@@ -102,7 +105,15 @@ pub use constants::{
 
 // Re-export трейтов и типов из access
 #[allow(unused_imports)]
-pub use access::{BoardMutable, BoardReadonly, GameBoardAccess};
+pub use access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
+
+// Re-export устаревшего трейта GameBoardAccess для обратной совместимости
+#[allow(unused_imports, deprecated)]
+#[deprecated(
+    since = "0.3.0",
+    note = "Используйте BoardMutable + ScoreAccess напрямую"
+)]
+pub use access::GameBoardAccess;
 
 // Re-export трейтов и типов из board
 #[allow(unused_imports)]
@@ -110,9 +121,9 @@ pub use board::{
     BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait, GameBoard,
 };
 
-// Re-export трейтов и типов из scoreboard
+// Re-export ScoreBoard из scoreboard (трейты ScoreAccess и ScoreMutable теперь в access.rs)
 #[allow(unused_imports)]
-pub use scoreboard::{ScoreAccess, ScoreBoard, ScoreMutable};
+pub use scoreboard::ScoreBoard;
 
 // Re-export GameView и StringCache для отрисовки и кэширования
 #[allow(unused_imports)]

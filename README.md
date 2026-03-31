@@ -404,7 +404,7 @@ let vim_config = ControlsConfig::custom(
 
 ### 🧪 Тестирование
 
-**1238+ тестов** покрывают все аспекты игры:
+**1287+ тестов** покрывают все аспекты игры:
 - Комплексное тестирование игровой логики
 - Тесты безопасности (HmacValidator, constant-time HMAC)
 - Тесты оптимизаций производительности
@@ -441,8 +441,9 @@ let vim_config = ControlsConfig::custom(
 - **Тесты Interface Segregation** (test_architecture_isp.rs — 13 тестов)
 - **Тесты снижения связанности** (test_architecture_coupling.rs — 11 тестов)
 - **Тесты исправленных проблем** (test_all_fixed_issues.rs — 13 тестов)
+- **Архитектурные тесты** (test_architecture_cycles.rs, test_architecture_boundaries.rs, test_architecture_fixes_new.rs, test_architecture_integrity_new.rs — 26 тестов)
 
-**ВСЕГО: 1238+ тестов** (unit + integration + architecture)
+**ВСЕГО: 1287+ тестов** (unit + integration + architecture)
 
 ### 🏗️ Архитектурные улучшения (версия 23.96.15+)
 
@@ -470,7 +471,7 @@ let vim_config = ControlsConfig::custom(
 - Добавлено 16 тестов на архитектурные ограничения
 - Проверка отсутствия циклических зависимостей
 - Проверка соблюдения границ модулей
-- **Всего тестов: 1238+** (все проходят)
+- **Всего тестов: 1287+** (все проходят)
 
 ## 🆕 Новые функции (версия 23.96.11)
 

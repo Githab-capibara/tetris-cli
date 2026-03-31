@@ -15,10 +15,11 @@
 use crate::io::GRID_HEIGHT;
 
 // Переэкспорт существующих компонентов для удобства
+pub use super::access::{ScoreAccess as ScoreAccessTrait, ScoreMutable};
 pub use super::board::{
     BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait, GameBoard,
 };
-pub use super::scoreboard::{ScoreAccess as ScoreAccessTrait, ScoreBoard, ScoreMutable};
+pub use super::scoreboard::ScoreBoard;
 
 // ============================================================================
 // ТЕСТЫ

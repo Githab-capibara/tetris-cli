@@ -564,12 +564,12 @@ fn test_arch_fixes_no_circular_dependencies() {
 /// - Нет нарушения инкапсуляции
 #[test]
 fn test_arch_fixes_module_boundaries() {
-    use crate::game::access::{BoardMutable, BoardReadonly};
+    use crate::game::access::{
+        BoardMutable, BoardReadonly, ScoreAccess as ScoreAccessTrait,
+        ScoreMutable as ScoreMutableTrait,
+    };
     use crate::game::board::{
         BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait,
-    };
-    use crate::game::scoreboard::{
-        ScoreAccess as ScoreAccessTrait, ScoreMutable as ScoreMutableTrait,
     };
     use crate::game::state::GameState;
 

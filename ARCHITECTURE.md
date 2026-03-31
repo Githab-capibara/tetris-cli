@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 2.3
-**Дата:** 30 марта 2026 (архитектурные улучшения)
-**Проект:** tetris-cli v23.96.26+
+**Версия:** 2.4
+**Дата:** 31 марта 2026 (архитектурные улучшения и рефакторинг)
+**Проект:** tetris-cli v23.96.27+
 
 ---
 
@@ -163,6 +163,16 @@ pub trait GameModeTrait {
 - `points.rs` — начисление очков с saturating операциями
 - `combo.rs` — комбо-логика и бонусы
 
+#### Подмодули правил игры (`rules.rs`)
+- `GameRules` — централизованные бизнес-правила
+- `LINE_SCORES` — очки за линии
+- `COMBO_BONUS` — бонус за комбо
+- `LEVEL_BONUS_MULT` — множитель уровня
+
+#### Типы игры (`game/types.rs`)
+- `GameAction` — enum действий ввода (MoveLeft, MoveRight, Rotate, и т.д.)
+- `Score`, `Level`, `LinesCount` — типобезопасные обёртки
+
 ---
 
 ### 3. Menu Module (`menu/`)
@@ -264,17 +274,19 @@ ValidationService::validate_u32_range(5, 1, 10)?;
 
 **Трейты:**
 - `BoardReadonly` — только чтение игрового поля
-- `BoardMutable` — чтение и запись игрового поля
-- `ScoreAccess` — доступ к очкам (get_score, set_score, add_score)
+- `BoardMutable` — чтение и запись игрового поля (наследует BoardReadonly)
+- `ScoreAccess` — доступ к очкам (только чтение: get_score, get_level, get_lines_cleared)
+- `ScoreMutable` — запись очков (наследует ScoreAccess, добавляет set_score, add_score, set_level, set_lines_cleared)
 - `LevelAccess` — доступ к уровням (get_level, set_level)
 - `LinesAccess` — доступ к линиям (get_lines_cleared, set_lines_cleared, add_lines)
 - `ComboAccess` — доступ к комбо (get_combo, set_combo, reset_combo)
-- `GameBoardAccess` — объединённый трейт для поля
+- `GameBoardAccess` — ⚠️ deprecated (не используется)
 
 **Принципы:**
 - Interface Segregation Principle (ISP) — узкие трейты
 - Снижение связанности через абстракции
 - Возможность тестирования через моки
+- Разделение чтения и записи (ScoreAccess vs ScoreMutable)
 
 **Примеры использования:**
 ```rust
@@ -387,7 +399,7 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 | **Средний размер модуля** | ~350 строк | ✅ |
 | **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1227+ тестов | ✅ |
+| **Покрытие тестами** | 1287+ тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
 | **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
 
@@ -446,7 +458,30 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1227+ тестов** (unit + integration + architecture)
+**ВСЕГО: 1287+ тестов** (unit + integration + architecture)
+
+### Архитектурные тесты (`src/tests/test_architecture_*.rs`)
+
+**test_architecture_cycles.rs** — 7 тестов:
+- `test_no_circular_dependencies_game_modules` — проверка game/* модулей
+- `test_no_circular_dependencies_main_modules` — проверка основных модулей
+- `test_import_graph_is_acyclic` — проверка ацикличности графа импортов
+
+**test_architecture_boundaries.rs** — 8 тестов:
+- `test_game_logic_does_not_import_rendering` — логика не импортирует отрисовку
+- `test_scoring_does_not_import_physics` — scoring не импортирует physics
+- `test_tetromino_is_autonomous` — tetromino модуль автономен
+
+**test_architecture_fixes_new.rs** — 6 тестов:
+- `test_gameboard_access_trait_removed` — GameBoardAccess удален/deprecated
+- `test_score_access_not_duplicated` — ScoreAccess не дублируется
+- `test_game_action_enum_exists` — GameAction enum существует
+- `test_game_rules_module_exists` — game_rules модуль существует
+
+**test_architecture_integrity_new.rs** — 5 тестов:
+- `test_all_modules_have_clear_responsibility` — четкая ответственность модулей
+- `test_no_god_objects` — отсутствие God Object
+- `test_traits_are_narrow` — трейты узкие (ISP)
 
 ---
 
