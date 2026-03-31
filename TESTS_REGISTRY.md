@@ -1,15 +1,45 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 31 марта 2026 г. (добавлено 25 новых тестов)
-**Версия проекта:** 23.96.21+
-**Всего тестов:** 1309 (проходят 100%)
-**Всего файлов тестов:** 96
+**Дата последней актуализации:** 31 марта 2026 г. (добавлено 21 тест на архитектурную целостность)
+**Версия проекта:** 23.96.27+
+**Всего тестов:** 1345 (проходят 100%)
+**Всего файлов тестов:** 97
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
 
-### Новые тесты (31 марта 2026):
+### Новые тесты (31 марта 2026 — версия 23.96.27+):
+
+**test_architecture_integrity.rs — 21 тест:**
+- **C2: Отсутствие циклических зависимостей** (2 теста):
+  - `test_no_cyclic_dependencies_core_types` — core не зависит от game, io, tetromino
+  - `test_core_types_are_independent` — Direction, RotationDirection, Position независимы
+- **C1: Целостность компонентов** (2 теста):
+  - `test_game_state_uses_components` — GameState использует GameBoard, ScoreBoard
+  - `test_components_are_independent` — GameBoard и ScoreBoard независимы
+- **C3: TOCTOU защита** (2 теста):
+  - `test_thread_safe_leaderboard_entry_is_atomic` — атомарность score() и is_valid()
+  - `test_leaderboard_entry_thread_safety` — целостность данных LeaderboardEntry
+- **C4: Централизация HMAC** (2 теста):
+  - `test_hmac_functions_centralized` — hmac_sign/hmac_verify в crypto::hmac
+  - `test_no_duplicate_hmac_logic` — нет дублирования HMAC логики
+- **H1: Разделение трейтов** (2 теста):
+  - `test_scoring_traits_are_segregated` — ScoreAccess, LevelAccess, LinesAccess, ComboAccess
+  - `test_no_monolithic_scoring_trait` — нет широкого трейта с 10+ методами
+- **H2: DIP** (2 теста):
+  - `test_game_loop_uses_traits` — run_game_loop принимает &mut dyn Renderer
+  - `test_application_uses_trait_objects` — Application использует трейт-объекты
+- **H5: SoC — разделение ввода и логики** (2 теста):
+  - `test_input_parser_is_pure` — parse_input() не изменяет состояние
+  - `test_input_logic_separation` — handle_input() использует parse_input() и execute_action()
+- **H6: Абстракция времени** (2 теста):
+  - `test_time_abstraction_exists` — Time структура существует
+  - `test_time_type_safety` — Time используется вместо f64
+- **Интеграционный тест** (1 тест):
+  - `test_all_architecture_integrity_tests_pass` — все тесты проходят
+
+### Новые тесты (31 марта 2026 — версия 23.96.21+):
 
 **test_audit_fixes.rs — 25 тестов:**
 - **C1: Замена TetrominoType → ShapeType** (2 теста):
@@ -69,13 +99,14 @@
 - `test_classic_no_auto_timer` — заменено `get_mode()` на `get_mode_trait().name()`
 
 #### Итоговая статистика:
-- **Всего тестов:** 1308 (было 1261)
-- **Добавлено тестов:** 37 (новые тесты безопасности и архитектурные)
-- **Удалено тестов:** 42 (сломанные и бесполезные)
-- **Изменено тестов:** 3 (обновлен deprecated API)
-- **Чистое изменение:** +5 тестов
+- **Всего тестов:** 1345 (было 1309)
+- **Добавлено тестов:** 36 (новые тесты архитектурной целостности)
+- **Удалено тестов:** 0
+- **Изменено тестов:** 0
+- **Чистое изменение:** +36 тестов
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100% pass rate)
+- **Версия проекта:** 23.96.27+
 
 ---
 
@@ -105,17 +136,18 @@
 - **Компиляция:** ✅ успешна
 - **Линтеры:** ✅ без критических замечаний
 
-### Integration тесты (tests/): 106 тестов
+### Integration тесты (tests/): 127 тестов
 
 | Файл | Количество тестов | Описание |
 |------|------------------|----------|
 | `test_architecture_components.rs` | 29 | Проверка архитектурных компонентов |
 | `test_architecture_refactoring.rs` | 37 | Тесты рефакторинга архитектуры |
-| `test_architecture_integrity.rs` | 17 | Целостность архитектуры |
+| `test_architecture_integrity.rs` | 21 | Целостность архитектуры (НОВЫЙ ФАЙЛ v23.96.27+) |
+| `test_architecture_integrity_new.rs` | 17 | Новая целостность архитектуры |
 | `test_fixes_verification.rs` | 14 | Верификация исправлений |
 | `test_architecture_improvements.rs` | 9 | Улучшения архитектуры |
 
-### Unit тесты (src/tests/): 1117 тестов
+### Unit тесты (src/tests/): 1138 тестов
 
 **Архитектурные тесты:**
 | Файл | Количество тестов | Описание |
@@ -297,12 +329,12 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1309
+### Общее количество тестов: 1345
 
 **Unit тесты:** 1142
 **Integration тесты:** 106
 **Doctests:** ~125 (включены в unit/integration)
-**Новые тесты:** 25 (test_audit_fixes.rs)
+**Новые тесты:** 46 (test_audit_fixes.rs — 25, test_architecture_integrity.rs — 21)
 
 **Процент прохождения:** 100% (0 failed)
 
@@ -327,7 +359,7 @@
 | `test_fixes_verification.rs` | 14 | ✅ |
 | `test_architecture_improvements.rs` | 9 | ✅ |
 
-**Итого tests/:** 106 тестов
+**Итого tests/:** 127 тестов
 
 ### Unit тесты (src/tests/)
 
@@ -419,7 +451,7 @@
 | `macros.rs` | 11 | ✅ |
 | `fixtures.rs` | 1 | ✅ |
 
-**Итого src/tests/:** 1117 тестов
+**Итого src/tests/:** 1138 тестов
 
 ---
 

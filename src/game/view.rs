@@ -219,6 +219,23 @@ impl<'a> GameView<'a> {
         }
     }
 
+    /// Получить символ для отрисовки фигуры.
+    ///
+    /// # Возвращает
+    /// Символ для отрисовки блока фигуры
+    ///
+    /// # Пример
+    /// ```ignore
+    /// let view = GameView::from_game_state(&state);
+    /// let ch = view.get_shape_display_char();
+    /// ```
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn get_shape_display_char(&self) -> &str {
+        use crate::io::SHAPE_STR;
+        SHAPE_STR
+    }
+
     // ========================================================================
     // МЕТОДЫ ОТРИСОВКИ UI (Problem 2.5 - Feature Envy)
     // ========================================================================
