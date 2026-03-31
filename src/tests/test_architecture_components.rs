@@ -47,7 +47,7 @@ fn test_no_unused_components_in_components_rs() {
     // Проверяем что в components.rs нет других структур кроме переэкспортов
     // Это проверяется через анализ модуля components
     use crate::game::scoreboard::ScoreBoard;
-    use crate::game::{BoardMutable as _, BoardReadonly as _, ScoreAccess as _};
+    use crate::game::{BoardReadonly as _, ScoreAccess as _};
 
     // Если код компилируется - все переэкспорты корректны
 }
@@ -110,8 +110,8 @@ fn test_score_board_is_used() {
 #[test]
 fn test_no_dead_code_in_components_module() {
     // Проверяем что все переэкспорты из components используются
+    use crate::game::BoardReadonly as _;
     use crate::game::ScoreMutable;
-    use crate::game::{BoardMutable as _, BoardReadonly as _, ScoreAccess as _};
 
     // Создаём GameState для проверки использования трейтов
     use crate::game::state::GameState;

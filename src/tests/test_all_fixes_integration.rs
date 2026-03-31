@@ -346,7 +346,7 @@ fn test_all_fixes_comprehensive_integration() {
         "Кэш счёта должен содержать '1500'"
     );
     assert!(
-        state.render_cache().cached_level_str.trim().contains("5"),
+        state.render_cache().cached_level_str.trim().contains('5'),
         "Кэш уровня должен содержать '5'"
     );
     assert!(
@@ -554,7 +554,6 @@ fn test_all_fixes_comprehensive() {
 fn test_score_overflow_protection_integration() {
     use crate::game::scoring::check_rows;
     use crate::game::GameState;
-    use crate::io::GRID_HEIGHT;
 
     let mut state = GameState::new();
 
@@ -663,7 +662,7 @@ fn test_controls_toctou_protection_integration() {
 #[test]
 fn test_all_new_fixes_comprehensive_integration() {
     use crate::controls::ControlsConfig;
-    use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+    use crate::game::constants::INITIAL_FALL_SPD;
     use crate::game::GameState;
 
     // 1. Защита от переполнения счёта (проверка через GameState)
@@ -703,7 +702,7 @@ fn test_all_new_fixes_comprehensive_integration() {
 #[test]
 fn test_no_panic_at_extreme_values_integration() {
     use crate::controls::ControlsConfig;
-    use crate::game::scoring::check_rows;
+
     use crate::game::GameState;
 
     // 1. Экстремальные значения счёта не вызывают паник

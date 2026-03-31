@@ -8,7 +8,6 @@
 
 use crate::io::{Canvas, KeyReader};
 use crate::io_traits::InputReader;
-use std::io;
 use std::panic;
 
 // ============================================================================
@@ -121,17 +120,14 @@ fn test_drop_on_user_panic() {
     let result = panic::catch_unwind(|| {
         let create_result = Canvas::new();
 
-        match create_result {
-            Ok(canvas) => {
-                // Canvas создан, теперь паникуем
-                // Drop должен вызваться автоматически
-                drop(canvas);
-                panic!("Тестовая паника");
-            }
-            Err(_) => {
-                // Canvas не создан - терминал недоступен
-                // Это нормально в тестовой среде, паника не требуется
-            }
+        if let Ok(canvas) = create_result {
+            // Canvas создан, теперь паникуем
+            // Drop должен вызваться автоматически
+            drop(canvas);
+            panic!("Тестовая паника");
+        } else {
+            // Canvas не создан - терминал недоступен
+            // Это нормально в тестовой среде, паника не требуется
         }
     });
 

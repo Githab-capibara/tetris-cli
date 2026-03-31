@@ -444,7 +444,7 @@ mod tests {
 
         // Тест 4: Проверка cast при проверке столкновений
         let curr_shape = state.curr_shape();
-        for &(x, y) in curr_shape.coords.iter() {
+        for &(x, y) in &curr_shape.coords {
             // Координаты блоков относительные и могут быть отрицательными
             // Проверяем что cast из i8 в f32 работает корректно
             let block_x = x as f32;
@@ -498,7 +498,7 @@ mod tests {
             u32::MAX as f32,
         ];
 
-        for &val in test_values.iter() {
+        for &val in &test_values {
             let result: u32 = if !val.is_finite() {
                 0
             } else if val >= u32::MAX as f32 {
@@ -514,7 +514,7 @@ mod tests {
         // Тест специальных значений
         let special_values: [f32; 4] = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0];
 
-        for &val in special_values.iter() {
+        for &val in &special_values {
             let result: u32 = if !val.is_finite() {
                 0
             } else if val >= u32::MAX as f32 {

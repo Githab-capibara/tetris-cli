@@ -29,8 +29,7 @@ use crate::game::state::GameState;
 fn test_scoring_points_no_direct_access_to_gamestate_fields() {
     // Проверяем что scoring/points.rs использует публичные методы
     use crate::game::scoring::points::{
-        calculate_landing_bonus, handle_hard_drop, handle_hold, handle_landing, handle_soft_drop,
-        update_combo_on_clear, update_score_and_level,
+        handle_hard_drop, handle_hold, handle_soft_drop, update_score_and_level,
     };
 
     let mut state = GameState::new();
@@ -219,7 +218,7 @@ fn test_scoreboard_has_clear_public_api() {
 /// работать с любыми типами реализующими нужный трейт.
 #[test]
 fn test_coupling_reduced_through_traits() {
-    use crate::game::scoring::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess};
+    use crate::game::scoring::{LevelAccess, ScoreAccess};
 
     // Функции могут работать с любыми типами реализующими трейты
     fn add_bonus<S: ScoreAccess>(scoreable: &mut S, bonus: u128) {

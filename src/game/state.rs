@@ -669,7 +669,7 @@ impl GameState {
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
-        use crate::validation::{ValidationError, ValidationService};
+        use crate::validation::ValidationService;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value) {
@@ -680,7 +680,8 @@ impl GameState {
         }
 
         // Валидация диапазона через ValidationService (вместо clamp)
-        if let Err(e) = ValidationService::validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED)
+        if let Err(e) =
+            ValidationService::validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED)
         {
             return Err(GameError::Validation(format!(
                 "Неверный диапазон скорости: {}",
@@ -708,7 +709,7 @@ impl GameState {
     /// # DRY-2: Централизация валидации
     /// Использует `ValidationService::validate_f32_finite()` для валидации.
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), GameError> {
-        use crate::validation::{ValidationError, ValidationService};
+        use crate::validation::ValidationService;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value as f32) {
@@ -893,6 +894,74 @@ impl GameState {
     pub fn get_animating_rows_mask(&self) -> u32 {
         self.animating_rows_mask
     }
+
+    // ========================================================================
+    // СЕМАНТИЧЕСКИЕ МЕТОДЫ (ИСПРАВЛЕНИЕ M3)
+    // ========================================================================
+    // Эти методы инкапсулируют сложную логику и валидацию данных
+
+    /// Применить гравитацию к текущей фигуре.
+    ///
+    /// Увеличивает скорость падения на основе уровня.
+    /// Используется при повышении уровня для автоматического увеличения сложности.
+    ///
+    /// # Исправление M3 (MEDIUM)
+    /// Инкапсулирует логику изменения скорости падения с валидацией.
+    pub fn apply_gravity(&mut self) {
+        let new_speed = self.fall_speed + super::constants::SPD_INC;
+        // Валидация: скорость не должна превышать максимальную
+        if new_speed <= super::constants::MAX_FALL_SPEED {
+            self.fall_speed = new_speed;
+        } else {
+            self.fall_speed = super::constants::MAX_FALL_SPEED;
+        }
+    }
+
+    /// Появить новую фигуру из генератора.
+    ///
+    /// Берёт следующую фигуру из bag, устанавливает её как текущую,
+    /// генерирует новую следующую фигуру.
+    ///
+    /// # Возвращает
+    /// - `Some(())` если фигура успешно появлена
+    /// - `None` если новая фигура имеет коллизию (игра окончена)
+    ///
+    /// # Исправление M3 (MEDIUM)
+    /// Инкапсулирует логику появления фигур с проверкой коллизий.
+    pub fn spawn_new_piece(&mut self) -> Option<()> {
+        // Предыдущая следующая фигура становится текущей
+        self.curr_shape = self.next_shape;
+
+        // Генерируем новую следующую фигуру
+        self.next_shape = Tetromino::from_bag(&mut self.bag);
+
+        // Сбрасываем позицию текущей фигуры
+        self.curr_shape.pos = (4.0, 0.0);
+
+        // Добавляем в статистику
+        self.stats.add_piece(self.curr_shape.shape);
+
+        // Проверяем коллизию при появлении (игра окончена если коллизия)
+        if !self.can_move_curr_shape_direction(crate::types::Direction::Down) {
+            return None;
+        }
+
+        Some(())
+    }
+
+    /// Обновить скорость падения на основе уровня.
+    ///
+    /// Вычисляет скорость по формуле: INITIAL_FALL_SPD + (level - 1) * SPD_INC
+    ///
+    /// # Исправление M3 (MEDIUM)
+    /// Инкапсулирует логику расчёта скорости с валидацией диапазона.
+    pub fn update_fall_speed(&mut self) {
+        let level = self.level();
+        let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * super::constants::SPD_INC);
+
+        // Валидация: скорость должна быть в допустимых пределах
+        self.fall_speed = calculated_speed.clamp(0.0, super::constants::MAX_FALL_SPEED);
+    }
 }
 
 // ============================================================================
@@ -1040,15 +1109,25 @@ mod state_tests {
         // Валидное значение в диапазоне должно устанавливаться без изменений
         let result = state.set_fall_speed(2.0);
         assert!(result.is_ok(), "Валидное значение должно устанавливаться");
-        assert_eq!(state.fall_speed(), 2.0, "Значение должно установиться точно");
+        assert_eq!(
+            state.fall_speed(),
+            2.0,
+            "Значение должно установиться точно"
+        );
 
         // Значение на нижней границе
         let result = state.set_fall_speed(INITIAL_FALL_SPD);
-        assert!(result.is_ok(), "Значение на нижней границе должно быть валидно");
+        assert!(
+            result.is_ok(),
+            "Значение на нижней границе должно быть валидно"
+        );
 
         // Значение на верхней границе
         let result = state.set_fall_speed(MAX_FALL_SPEED);
-        assert!(result.is_ok(), "Значение на верхней границе должно быть валидно");
+        assert!(
+            result.is_ok(),
+            "Значение на верхней границе должно быть валидно"
+        );
     }
 
     /// Тест: обработка NaN в set_fall_speed()
@@ -1066,7 +1145,10 @@ mod state_tests {
         );
 
         if let Err(GameError::Validation(msg)) = result {
-            assert!(msg.contains("Неверная скорость падения"), "Сообщение должно указывать на ошибку скорости");
+            assert!(
+                msg.contains("Неверная скорость падения"),
+                "Сообщение должно указывать на ошибку скорости"
+            );
         } else {
             panic!("Ожидалась ошибка Validation");
         }
@@ -1097,7 +1179,10 @@ mod state_tests {
         let initial_speed = state.fall_speed();
 
         let result = state.set_fall_speed(-1.0);
-        assert!(result.is_err(), "Отрицательное значение должно быть отклонено");
+        assert!(
+            result.is_err(),
+            "Отрицательное значение должно быть отклонено"
+        );
         assert_eq!(
             state.fall_speed(),
             initial_speed,
@@ -1113,7 +1198,10 @@ mod state_tests {
 
         // Значение ниже минимума
         let result = state.set_fall_speed(INITIAL_FALL_SPD - 0.1);
-        assert!(result.is_err(), "Значение ниже минимума должно быть отклонено");
+        assert!(
+            result.is_err(),
+            "Значение ниже минимума должно быть отклонено"
+        );
         assert_eq!(
             state.fall_speed(),
             initial_speed,
@@ -1122,7 +1210,10 @@ mod state_tests {
 
         // Значение выше максимума
         let result = state.set_fall_speed(MAX_FALL_SPEED + 1.0);
-        assert!(result.is_err(), "Значение выше максимума должно быть отклонено");
+        assert!(
+            result.is_err(),
+            "Значение выше максимума должно быть отклонено"
+        );
         assert_eq!(
             state.fall_speed(),
             initial_speed,
@@ -1138,13 +1229,27 @@ mod state_tests {
         // Проверяем что валидные значения устанавливаются
         for valid_speed in [INITIAL_FALL_SPD, 1.0, 5.0, MAX_FALL_SPEED] {
             let result = state.set_fall_speed(valid_speed);
-            assert!(result.is_ok(), "Валидное значение {} должно устанавливаться", valid_speed);
+            assert!(
+                result.is_ok(),
+                "Валидное значение {} должно устанавливаться",
+                valid_speed
+            );
         }
 
         // Проверяем что невалидные значения отклоняются
-        for invalid_speed in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0, INITIAL_FALL_SPD - 0.1] {
+        for invalid_speed in [
+            f32::NAN,
+            f32::INFINITY,
+            f32::NEG_INFINITY,
+            -1.0,
+            INITIAL_FALL_SPD - 0.1,
+        ] {
             let result = state.set_fall_speed(invalid_speed);
-            assert!(result.is_err(), "Невалидное значение {} должно отклоняться", invalid_speed);
+            assert!(
+                result.is_err(),
+                "Невалидное значение {} должно отклоняться",
+                invalid_speed
+            );
         }
     }
 }

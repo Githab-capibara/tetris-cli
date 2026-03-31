@@ -682,7 +682,6 @@ fn test_fix_l2_rows_cleared_zero_panic() {
 #[test]
 fn test_all_critical_fixes_integration() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
-    use tetris_cli::io::Canvas;
 
     // E1: Canvas graceful degradation - проверяем код, не создаём Canvas
     let io_content = std::fs::read_to_string("src/io.rs").expect("Failed to read io.rs");

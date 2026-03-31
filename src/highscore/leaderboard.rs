@@ -565,7 +565,9 @@ impl ThreadSafeLeaderboardEntry {
                 &salt_name_score,
                 &guard.hash,
             ) {
-                eprintln!("[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию");
+                eprintln!(
+                    "[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию"
+                );
                 return Some(0);
             }
             return Some(score_value);
@@ -821,12 +823,11 @@ impl ThreadSafeLeaderboard {
     /// Метод атомарен и защищён от race condition через Mutex.
     #[must_use]
     pub fn add_score(&self, name: &str, score: u128) -> bool {
-        match self.inner.lock() {
-            Ok(mut leaderboard) => leaderboard.add_score(name, score),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
-                false
-            }
+        if let Ok(mut leaderboard) = self.inner.lock() {
+            leaderboard.add_score(name, score)
+        } else {
+            eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
+            false
         }
     }
 
@@ -852,12 +853,11 @@ impl ThreadSafeLeaderboard {
     /// Метод возвращает копию данных для сохранения потокобезопасности.
     #[must_use]
     pub fn get_entries(&self) -> Vec<LeaderboardEntry> {
-        match self.inner.lock() {
-            Ok(leaderboard) => leaderboard.get_entries().to_vec(),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
-                Vec::new()
-            }
+        if let Ok(leaderboard) = self.inner.lock() {
+            leaderboard.get_entries().to_vec()
+        } else {
+            eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
+            Vec::new()
         }
     }
 
@@ -870,12 +870,11 @@ impl ThreadSafeLeaderboard {
     /// Метод атомарен и защищён от race condition.
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
-        match self.inner.lock() {
-            Ok(leaderboard) => leaderboard.get_best_score(),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
-                0
-            }
+        if let Ok(leaderboard) = self.inner.lock() {
+            leaderboard.get_best_score()
+        } else {
+            eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
+            0
         }
     }
 

@@ -24,7 +24,7 @@
 /// Тест: GameBoardAccess удален или deprecated.
 #[test]
 fn test_gameboard_access_trait_removed() {
-    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
+    use crate::game::access::{BoardReadonly, ScoreAccess};
     use crate::game::state::GameState;
 
     // Проверяем что новые трейты работают
@@ -196,8 +196,7 @@ fn test_game_rules_module_exists() {
     use crate::game::rules::{
         GameRules, COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPEED, LAND_TIME_DELAY,
         LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MARATHON_LINES, MAX_FALL_SPEED, MAX_LEVEL,
-        MAX_LINES_PER_CLEAR, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
-        SPEED_INCREMENT, SPRINT_LINES,
+        MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPEED_INCREMENT, SPRINT_LINES,
     };
 
     // Проверяем что константы экспортированы
@@ -285,10 +284,7 @@ fn test_game_rules_module_exists() {
 #[test]
 fn test_constants_not_exported_pub_crate() {
     // Проверяем что constants доступен из корня crates
-    use crate::constants::{
-        FPS, GRID_HEIGHT, GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LINE_SCORES,
-        MAX_FALL_SPEED, SPRINT_LINES,
-    };
+    use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH, SPRINT_LINES};
 
     // Проверяем что константы доступны
     assert_eq!(FPS, 60, "FPS должен быть доступен из корня crates");

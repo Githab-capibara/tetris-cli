@@ -119,7 +119,7 @@ fn test_all_early_exit() {
     let blocks = state.get_blocks();
 
     // Проверяем, что .all() работает корректно
-    for row in blocks.iter() {
+    for row in blocks {
         let row_full = row.iter().take(GRID_WIDTH).all(|&cell| cell != -1);
 
         // На пустом поле все линии должны быть неполными

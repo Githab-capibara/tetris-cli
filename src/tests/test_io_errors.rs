@@ -4,7 +4,6 @@
 //! и работу с невалидными UTF-8 последовательностями.
 
 use crate::io::KeyReader;
-use std::io::Read;
 
 /// Тест: проверка что get_key() возвращает io::Result<Option<u8>>
 #[test]

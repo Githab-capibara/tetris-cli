@@ -239,7 +239,11 @@ fn test_mutex_lock_error_handling_in_score() {
 
     // score_safe() также должен работать
     let score_safe = entry.score_safe();
-    assert_eq!(score_safe, Some(1000), "score_safe() должен вернуть Some(1000)");
+    assert_eq!(
+        score_safe,
+        Some(1000),
+        "score_safe() должен вернуть Some(1000)"
+    );
 }
 
 /// Тест: корректная обработка ошибки Mutex::lock() в name()
@@ -253,7 +257,11 @@ fn test_mutex_lock_error_handling_in_name() {
 
     // name_safe() также должен работать
     let name_safe = entry.name_safe();
-    assert_eq!(name_safe, Some(String::from("TestPlayer")), "name_safe() должен вернуть Some(name)");
+    assert_eq!(
+        name_safe,
+        Some(String::from("TestPlayer")),
+        "name_safe() должен вернуть Some(name)"
+    );
 }
 
 /// Тест: потокобезопасность методов score() и name()
@@ -303,7 +311,10 @@ fn test_mutex_poison_handling_in_score_safe() {
     // score_safe() должен вернуть None при отравлении Mutex
     // (в реальном сценарии это происходит при панике в блокировке)
     let result = entry.score_safe();
-    assert!(result.is_some(), "score_safe() должен вернуть Some для валидной записи");
+    assert!(
+        result.is_some(),
+        "score_safe() должен вернуть Some для валидной записи"
+    );
     assert_eq!(result.unwrap(), 1000);
 }
 
@@ -314,7 +325,10 @@ fn test_mutex_poison_handling_in_name_safe() {
 
     // name_safe() должен вернуть None при отравлении Mutex
     let result = entry.name_safe();
-    assert!(result.is_some(), "name_safe() должен вернуть Some для валидной записи");
+    assert!(
+        result.is_some(),
+        "name_safe() должен вернуть Some для валидной записи"
+    );
     assert_eq!(result.unwrap(), "Player");
 }
 

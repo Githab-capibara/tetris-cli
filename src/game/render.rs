@@ -52,16 +52,12 @@
 //! - Улучшения тестируемости логики удаления линий
 
 use super::constants::{
-    BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, DRAW_OFFSET_X, HIGH_SCORE_X, HIGH_SCORE_Y,
-    HOLD_PREVIEW_X, HOLD_PREVIEW_Y, LEVEL_X, LEVEL_Y, LINES_X, LINES_Y, PREVIEW_X, PREVIEW_Y,
-    PROGRESS_Y, SCORE_X, SCORE_Y, SHAPE_DRAW_OFFSET, SHAPE_OFFSET_X, SHAPE_OFFSET_Y, SPRINT_LINES,
-    TIMER_Y,
+    BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, HIGH_SCORE_X, HIGH_SCORE_Y, LEVEL_X, LEVEL_Y, LINES_X,
+    LINES_Y, PREVIEW_X, PROGRESS_Y, SCORE_X, SCORE_Y, SPRINT_LINES, TIMER_Y,
 };
 use super::state::GameState;
 use super::view::GameView;
-use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 use crate::io_traits::Renderer;
-use crate::tetromino::{Tetromino, SHAPE_COLORS};
 use std::fmt::Write;
 use termion::color::Reset;
 

@@ -11,7 +11,6 @@ use std::{thread::sleep, time::Duration};
 use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE};
 use super::state::{GameState, UpdateEndState};
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
-use crate::io::{Canvas, KeyReader};
 use crate::io_traits::{InputReader, Renderer};
 use termion::color::Reset;
 
@@ -159,10 +158,7 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
-fn handle_input_result<R: Renderer>(
-    input_result: InputResult,
-    cnv: &mut R,
-) -> Option<u128> {
+fn handle_input_result<R: Renderer>(input_result: InputResult, cnv: &mut R) -> Option<u128> {
     match input_result {
         InputResult::Continue | InputResult::Pause => None,
         InputResult::Quit => Some(0),
@@ -268,7 +264,10 @@ mod tests {
 
         // maintain_fps() должен вернуть None так как прошло меньше интервала
         let result = maintain_fps(&mut last_time, interval_ms);
-        assert!(result.is_none(), "maintain_fps() должен вернуть None когда прошло меньше интервала");
+        assert!(
+            result.is_none(),
+            "maintain_fps() должен вернуть None когда прошло меньше интервала"
+        );
     }
 
     /// Тест: maintain_fps() возвращает Some когда интервал прошёл
@@ -282,8 +281,14 @@ mod tests {
 
         // maintain_fps() должен вернуть Some(delta_time_ms)
         let result = maintain_fps(&mut last_time, interval_ms);
-        assert!(result.is_some(), "maintain_fps() должен вернуть Some когда прошло больше интервала");
-        assert!(result.unwrap() >= interval_ms, "delta_time_ms должен быть >= interval_ms");
+        assert!(
+            result.is_some(),
+            "maintain_fps() должен вернуть Some когда прошло больше интервала"
+        );
+        assert!(
+            result.unwrap() >= interval_ms,
+            "delta_time_ms должен быть >= interval_ms"
+        );
     }
 
     /// Тест: maintain_fps() обновляет last_time
@@ -302,7 +307,10 @@ mod tests {
         let _ = maintain_fps(&mut last_time, interval_ms);
 
         // last_time должен обновиться
-        assert!(last_time > old_last_time, "last_time должен обновиться после maintain_fps");
+        assert!(
+            last_time > old_last_time,
+            "last_time должен обновиться после maintain_fps"
+        );
     }
 
     /// Тест: maintain_fps() обрабатывает переполнение u128 -> u64
@@ -315,7 +323,10 @@ mod tests {
         let result = maintain_fps(&mut last_time, interval_ms);
 
         // Должен вернуть None так как прошло очень мало времени
-        assert!(result.is_none(), "maintain_fps() должен обработать малый delta_time");
+        assert!(
+            result.is_none(),
+            "maintain_fps() должен обработать малый delta_time"
+        );
     }
 
     // =========================================================================
@@ -328,8 +339,22 @@ mod tests {
         // Создаём mock renderer
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -346,8 +371,22 @@ mod tests {
     fn test_handle_input_result_pause() {
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -364,8 +403,22 @@ mod tests {
     fn test_handle_input_result_quit() {
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -382,8 +435,22 @@ mod tests {
     fn test_handle_input_result_game_over() {
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -400,8 +467,22 @@ mod tests {
     fn test_handle_input_result_won() {
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -422,8 +503,22 @@ mod tests {
     fn test_all_input_result_variants_handled() {
         struct MockRenderer;
         impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
-            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_strs(
+                &mut self,
+                _lines: &[&str],
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
+            fn draw_string(
+                &mut self,
+                _string: &str,
+                _pos: (u16, u16),
+                _fg: &dyn termion::color::Color,
+                _bg: &dyn termion::color::Color,
+            ) {
+            }
             fn flush(&mut self) {}
             fn reset(&mut self) {}
         }
@@ -433,8 +528,17 @@ mod tests {
         // Проверяем все варианты
         assert!(handle_input_result(InputResult::Continue, &mut renderer).is_none());
         assert!(handle_input_result(InputResult::Pause, &mut renderer).is_none());
-        assert_eq!(handle_input_result(InputResult::Quit, &mut renderer), Some(0));
-        assert_eq!(handle_input_result(InputResult::GameOver, &mut renderer), Some(0));
-        assert_eq!(handle_input_result(InputResult::Won, &mut renderer), Some(0));
+        assert_eq!(
+            handle_input_result(InputResult::Quit, &mut renderer),
+            Some(0)
+        );
+        assert_eq!(
+            handle_input_result(InputResult::GameOver, &mut renderer),
+            Some(0)
+        );
+        assert_eq!(
+            handle_input_result(InputResult::Won, &mut renderer),
+            Some(0)
+        );
     }
 }

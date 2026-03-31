@@ -13,7 +13,6 @@
 #![allow(clippy::redundant_closure_for_method_calls)]
 
 use crate::game::state::GameState;
-use crate::io_traits::Renderer;
 
 // ============================================================================
 // ТЕСТ 1: CHECK_ROWS() НЕ ВЫЗЫВАЕТСЯ В RENDER.RS
@@ -33,7 +32,6 @@ fn test_check_rows_not_called_in_render_rs() {
     // - render.rs НЕ содержит вызовов check_rows()
 
     // Импортируем функции из render.rs
-    use crate::game::render::{draw, update_cached_strings_extended};
 
     // Проверяем что check_rows НЕ доступна из render.rs
     // Если бы check_rows была в render.rs, этот тест не скомпилировался бы
@@ -140,7 +138,7 @@ fn test_render_rs_does_not_contain_line_removal_functions() {
 #[test]
 fn test_line_logic_in_scoring_lines_rs() {
     // Проверяем что scoring/lines.rs содержит функции для работы с линиями
-    use crate::game::scoring::lines::{check_rows, find_filled_lines, find_full_rows, remove_rows};
+    use crate::game::scoring::lines::{check_rows, find_filled_lines, find_full_rows};
 
     // Проверяем что функции работают
     let blocks = [[-1i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
