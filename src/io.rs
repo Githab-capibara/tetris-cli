@@ -99,7 +99,29 @@ impl From<std::io::Error> for IoError {
 /// }
 /// ```
 pub struct Canvas {
-    out: RawTerminal<Stdout>,
+    out: CanvasOut,
+}
+
+/// Внутренний тип для вывода - поддерживает raw и stub режимы
+enum CanvasOut {
+    Raw(RawTerminal<Stdout>),
+    Stub(Stdout),
+}
+
+impl Write for CanvasOut {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        match self {
+            CanvasOut::Raw(out) => out.write(buf),
+            CanvasOut::Stub(out) => out.write(buf),
+        }
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        match self {
+            CanvasOut::Raw(out) => out.flush(),
+            CanvasOut::Stub(out) => out.flush(),
+        }
+    }
 }
 
 impl Drop for Canvas {
@@ -142,46 +164,28 @@ impl Default for Canvas {
     /// Возвращает Canvas по умолчанию.
     ///
     /// # Важность
-    /// Этот метод может паниковать если терминал полностью недоступен.
+    /// Этот метод НИКОГДА не паникует.
     /// Для безопасной обработки ошибок используйте [`Canvas::try_default()`].
     ///
     /// # Примечания
     /// При ошибке инициализации создаёт fallback canvas с заглушкой.
-    /// Если и stub не удаётся создать - паникует с понятным сообщением.
     ///
-    /// # Паникует
-    /// Если не удалось инициализировать ни основной Canvas, ни fallback stub.
+    /// # Гарантии
+    /// Метод всегда возвращает валидный Canvas, даже в ограниченном режиме.
     ///
     /// # Устарело
     /// Используйте [`Canvas::try_default()`] для безопасной обработки ошибок.
     ///
     /// # Исправление аудита 2026-03-31 (CRITICAL)
-    /// Убрана паника при полной ошибке инициализации. Теперь используется fallback на stub режим
-    /// с логированием ошибки через `eprintln!`.
+    /// Убрана паника при полной ошибке инициализации.
     fn default() -> Self {
+        // Используем try_default() который уже обрабатывает все fallback сценарии
+        // Если и он возвращает ошибку - создаём minimal stub без паники
         Self::try_default().unwrap_or_else(|e| {
             eprintln!("[WARN] Canvas::default(): не удалось инициализировать терминал: {e}");
             eprintln!("[WARN] Canvas::default(): создаётся minimal stub для совместимости");
-
-            // Исправление аудита: используем fallback на stub режим при полной ошибке
-            // вместо паники. Это позволяет игре работать в ограниченном режиме.
-            match Self::new_stub() {
-                Ok(stub) => stub,
-                Err(stub_err) => {
-                    eprintln!("[ERROR] Canvas::default(): критическая ошибка инициализации stub: {stub_err}");
-                    eprintln!("[WARN] Canvas::default(): создаётся Canvas в совместимом режиме");
-                    // Пытаемся создать Canvas в совместимом режиме без raw-режима
-                    // Это последний fallback перед паникой
-                    match stdout().into_raw_mode() {
-                        Ok(out) => Self { out },
-                        Err(_) => {
-                            // Если raw-режим недоступен, используем панику как последний вариант
-                            // Это происходит только при полной неработоспособности терминала
-                            panic!("Критическая ошибка: терминал полностью недоступен и не поддерживает raw-режим");
-                        }
-                    }
-                }
-            }
+            // new_stub() никогда не паникует и возвращает валидный Canvas
+            Self::new_stub()
         })
     }
 }
@@ -213,11 +217,8 @@ impl Canvas {
     pub fn try_default() -> Result<Self, IoError> {
         Self::new().or_else(|_| {
             // При ошибке основного Canvas пробуем создать fallback stub
-            Self::new_stub().map_err(|e| {
-                IoError::Initialization(format!(
-                    "не удалось создать Canvas (основной режим и fallback недоступны): {e}"
-                ))
-            })
+            // new_stub() теперь возвращает Self напрямую, без Result
+            Ok(Self::new_stub())
         })
     }
 
@@ -259,7 +260,9 @@ impl Canvas {
         write!(out, "{Hide}")
             .map_err(|e| IoError::Cursor(format!("не удалось скрыть курсор: {e}")))?;
 
-        Ok(Self { out })
+        Ok(Self {
+            out: CanvasOut::Raw(out),
+        })
     }
 
     /// Создать заглушку Canvas для использования при ошибке инициализации.
@@ -277,16 +280,18 @@ impl Canvas {
     ///
     /// # Обработка ошибок
     /// - Ошибки инициализации в stub режиме тихо игнорируются
-    /// - Критическая ошибка терминала возвращается как IoError::RawMode
+    /// - НИКОГДА не возвращает ошибку - всегда создаёт валидный Canvas
     /// - Программа может продолжить работу в ограниченном режиме
     ///
     /// # Примечания
     /// Исправление #1: создаём stub без паники с минимальной конфигурацией.
     /// Это позволяет программе работать в ограниченном режиме без терминала.
     /// Исправление #7: используется match вместо if let для лучшей читаемости.
-    fn new_stub() -> Result<Self, IoError> {
-        // Пытаемся создать Canvas, но если не получается - создаём минимальный stub
-        // Используем match вместо if let для лучшей читаемости (исправление #7)
+    ///
+    /// # Исправление аудита 2026-03-31 (CRITICAL)
+    /// Метод НИКОГДА не возвращает ошибку - всегда создаёт валидный Canvas.
+    fn new_stub() -> Self {
+        // Пытаемся создать Canvas в raw-режиме
         match stdout().into_raw_mode() {
             Ok(mut out) => {
                 // Тихо игнорируем ошибки инициализации в stub режиме
@@ -299,14 +304,20 @@ impl Canvas {
                 if let Err(e) = write!(out, "{Hide}") {
                     eprintln!("Warning: failed to hide cursor: {}", e);
                 }
-                Ok(Self { out })
+                Self {
+                    out: CanvasOut::Raw(out),
+                }
             }
             Err(e) => {
                 // Критическая ошибка - терминал недоступен
-                // Возвращаем ошибку вместо exit(1) для обработки наверх
-                Err(IoError::RawMode(format!(
-                    "терминал недоступен или не поддерживает ANSI: {e}"
-                )))
+                // Исправление аудита 2026-03-31: НИКОГДА не паникуем
+                // Создаём minimal stub с обычным stdout для совместимости
+                eprintln!("[WARN] Canvas::new_stub(): raw-режим недоступен: {e}");
+                eprintln!("[WARN] Canvas::new_stub(): создаётся stub без raw-режима");
+                // Возвращаем stub без raw-режима - это позволяет игре работать
+                Self {
+                    out: CanvasOut::Stub(stdout()),
+                }
             }
         }
     }

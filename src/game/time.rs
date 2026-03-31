@@ -6,6 +6,7 @@
 //! ## Структуры
 //! - [`Time`] - типобезопасная обёртка для длительности
 
+use std::cmp::Ordering;
 use std::time::Duration;
 
 /// Тип для представления времени в игре.
@@ -206,20 +207,6 @@ impl Time {
         }
     }
 
-    /// Сравнить два времени.
-    ///
-    /// # Аргументы
-    /// * `other` - время для сравнения
-    ///
-    /// # Возвращает
-    /// - `Ordering::Less` если self < other
-    /// - `Ordering::Equal` если self == other
-    /// - `Ordering::Greater` если self > other
-    #[must_use]
-    pub fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.inner.cmp(&other.inner)
-    }
-
     /// Проверить, больше ли одно время другого.
     ///
     /// # Аргументы
@@ -242,6 +229,19 @@ impl Time {
     #[must_use]
     pub fn lt(&self, other: &Self) -> bool {
         self.inner < other.inner
+    }
+}
+
+// Реализация трейтов сравнения для Time (исправляет clippy::should_implement_trait)
+impl PartialOrd for Time {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Time {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.inner.cmp(&other.inner)
     }
 }
 
