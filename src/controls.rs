@@ -850,7 +850,7 @@ mod controls_tests {
         );
         // Длина ключа зависит от внутренней константы CONTROLS_HMAC_KEY (28 символов)
         assert!(
-            loaded.hmac_key.len() > 0,
+            !loaded.hmac_key.is_empty(),
             "Длина HMAC ключа должна быть больше 0"
         );
 

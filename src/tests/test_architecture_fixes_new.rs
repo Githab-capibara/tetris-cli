@@ -156,7 +156,7 @@ fn test_game_action_enum_exists() {
     // Проверяем что enum имеет Copy и Clone
     let action = GameAction::MoveLeft;
     let action_copy = action; // Copy
-    let action_clone = action.clone(); // Clone
+    let action_clone = action; // Copy (вместо clone())
     assert_eq!(action, action_copy);
     assert_eq!(action, action_clone);
 
