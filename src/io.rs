@@ -156,25 +156,16 @@ impl Default for Canvas {
     /// Используйте [`Canvas::try_default()`] для безопасной обработки ошибок.
     fn default() -> Self {
         Self::try_default().unwrap_or_else(|e| {
-            // Graceful degradation: пытаемся создать минимальный stub
-            // Если не получается - логируем ошибку и создаём minimal stub
             eprintln!("[WARN] Canvas::default(): не удалось инициализировать терминал: {e}");
             eprintln!("[WARN] Canvas::default(): создаётся minimal stub для совместимости");
 
-            // Пытаемся создать stub - он всегда должен работать
-            // Если stub не работает - создаём minimal возможный Canvas
             match Self::new_stub() {
                 Ok(stub) => stub,
                 Err(_) => {
-                    // Критическая ошибка - терминал полностью недоступен
-                    // Создаём minimal Canvas с обычным stdout
-                    // Это позволяет избежать паники но функциональность ограничена
-                    if let Ok(raw_out) = stdout().into_raw_mode() {
-                        Self { out: raw_out }
-                    } else {
-                        // Полная деградация - паника с понятным сообщением
+                    let out = stdout().into_raw_mode().unwrap_or_else(|_| {
                         panic!("Критическая ошибка: терминал полностью недоступен");
-                    }
+                    });
+                    Self { out }
                 }
             }
         })

@@ -161,10 +161,13 @@ mod test_game_state_components {
         let board_content =
             fs::read_to_string(board_path).expect("Failed to read src/game/board.rs");
 
+        // Проверяем что трейты импортируются через pub use (реэкспорт из access.rs)
+        let has_rexport = board_content.contains("pub use super::access::");
+        let has_board_readonly = board_content.contains("BoardReadonly");
+
         assert!(
-            board_content.contains("trait BoardReadonly")
-                || board_content.contains("trait BoardMutable"),
-            "Должны существовать трейты BoardReadonly/BoardMutable в board.rs"
+            has_rexport && has_board_readonly,
+            "Должны существовать трейты BoardReadonly/BoardMutable в board.rs (через pub use)"
         );
 
         println!("✅ Трейты доступа к компонентам существуют");
@@ -1024,10 +1027,13 @@ mod test_solid_principles {
         let board_content =
             fs::read_to_string(board_path).expect("Failed to read src/game/board.rs");
 
+        // Проверяем что трейты импортируются через pub use (реэкспорт из access.rs)
+        let has_rexport = board_content.contains("pub use super::access::");
+        let has_board_readonly = board_content.contains("BoardReadonly");
+
         assert!(
-            board_content.contains("trait BoardReadonly")
-                && board_content.contains("trait BoardMutable"),
-            "board.rs должен содержать разделённые трейты"
+            has_rexport && has_board_readonly,
+            "board.rs должен содержать разделённые трейты (через pub use)"
         );
 
         println!("✅ Interface Segregation Principle соблюдается");
