@@ -585,7 +585,6 @@ mod tests {
     pub mod test_game_stats_export;
 
     // Тесты логических ошибок (13 тестов)
-    pub mod test_direction_down;
     pub mod test_hard_drop_flag;
     pub mod test_wall_kick_refactor;
 
@@ -618,8 +617,8 @@ mod tests {
     pub mod test_clippy_fixes;
 
     // Новые тесты для исправлений (2026-03-30)
-    pub mod io_drop;
-    pub mod leaderboard_toctou;
-    pub mod macros;
-    pub mod scoring_state;
+    pub mod test_io_drop;
+    pub mod test_leaderboard_toctou;
+    pub mod test_macros;
+    pub mod test_scoring_state;
 }

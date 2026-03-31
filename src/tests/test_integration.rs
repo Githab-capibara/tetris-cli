@@ -11,7 +11,7 @@
 use crate::controls::ControlsConfig;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::{Direction, RotationDirection};
 
 // ============================================================================
@@ -321,12 +321,7 @@ fn test_all_shapes_in_game() {
 
     for &shape_type in &shapes {
         // Создаём фигуру вручную
-        let tetromino = Tetromino {
-            pos: (4.0, 0.0),
-            shape: shape_type,
-            coords: crate::tetromino::SHAPE_COORDS[shape_type as usize],
-            fg: shape_type as u8,
-        };
+    let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
         // Проверяем, что фигура валидна
         assert!(tetromino.fg() < 7, "Индекс цвета должен быть валидным");

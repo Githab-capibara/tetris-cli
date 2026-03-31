@@ -26,12 +26,7 @@ use crate::types::{Direction, RotationDirection};
 /// Проверяет корректность изменения координат при вращении T на 90°.
 #[test]
 fn test_t_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -55,12 +50,7 @@ fn test_t_rotate_clockwise() {
 /// Тест 2: Вращение L-фигуры по часовой стрелке
 #[test]
 fn test_l_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -74,12 +64,7 @@ fn test_l_rotate_clockwise() {
 /// Тест 3: Вращение J-фигуры по часовой стрелке
 #[test]
 fn test_j_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -93,12 +78,7 @@ fn test_j_rotate_clockwise() {
 /// Тест 4: Вращение S-фигуры по часовой стрелке
 #[test]
 fn test_s_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -112,12 +92,7 @@ fn test_s_rotate_clockwise() {
 /// Тест 5: Вращение Z-фигуры по часовой стрелке
 #[test]
 fn test_z_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -131,12 +106,7 @@ fn test_z_rotate_clockwise() {
 /// Тест 6: Вращение O-фигуры по часовой стрелке (не вращается)
 #[test]
 fn test_o_rotate_clockwise_no_change() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -150,12 +120,7 @@ fn test_o_rotate_clockwise_no_change() {
 /// Тест 7: Вращение I-фигуры по часовой стрелке
 #[test]
 fn test_i_rotate_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -182,12 +147,7 @@ fn test_i_rotate_clockwise() {
 /// Тест 8: Вращение T-фигуры против часовой стрелки
 #[test]
 fn test_t_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::CounterClockwise);
@@ -201,12 +161,7 @@ fn test_t_rotate_counter_clockwise() {
 /// Тест 9: Вращение L-фигуры против часовой стрелки
 #[test]
 fn test_l_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     t.rotate(RotationDirection::CounterClockwise);
     // L-фигура должна вращаться против часовой
@@ -220,12 +175,7 @@ fn test_l_rotate_counter_clockwise() {
 /// Тест 10: Вращение J-фигуры против часовой стрелки
 #[test]
 fn test_j_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(
@@ -237,12 +187,7 @@ fn test_j_rotate_counter_clockwise() {
 /// Тест 11: Вращение S-фигуры против часовой стрелки
 #[test]
 fn test_s_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[3]);
@@ -251,12 +196,7 @@ fn test_s_rotate_counter_clockwise() {
 /// Тест 12: Вращение Z-фигуры против часовой стрелки
 #[test]
 fn test_z_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[4]);
@@ -265,12 +205,7 @@ fn test_z_rotate_counter_clockwise() {
 /// Тест 13: Вращение O-фигуры против часовой стрелки (не вращается)
 #[test]
 fn test_o_rotate_counter_clockwise_no_change() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::CounterClockwise);
@@ -284,12 +219,7 @@ fn test_o_rotate_counter_clockwise_no_change() {
 /// Тест 14: Вращение I-фигуры против часовой стрелки
 #[test]
 fn test_i_rotate_counter_clockwise() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(
@@ -307,12 +237,7 @@ fn test_i_rotate_counter_clockwise() {
 /// 4 вращения по часовой должны вернуть к исходным координатам.
 #[test]
 fn test_t_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     let original_coords = t.coords();
 
@@ -330,12 +255,7 @@ fn test_t_full_rotation_cycle() {
 /// Тест 16: Полный цикл вращения L-фигуры
 #[test]
 fn test_l_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     let original_coords = t.coords();
 
@@ -352,12 +272,7 @@ fn test_l_full_rotation_cycle() {
 /// Тест 17: Полный цикл вращения J-фигуры
 #[test]
 fn test_j_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     let original_coords = t.coords();
 
@@ -374,12 +289,7 @@ fn test_j_full_rotation_cycle() {
 /// Тест 18: Полный цикл вращения S-фигуры
 #[test]
 fn test_s_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     let original_coords = t.coords();
 
@@ -396,12 +306,7 @@ fn test_s_full_rotation_cycle() {
 /// Тест 19: Полный цикл вращения Z-фигуры
 #[test]
 fn test_z_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     let original_coords = t.coords();
 
@@ -418,12 +323,7 @@ fn test_z_full_rotation_cycle() {
 /// Тест 20: Полный цикл вращения O-фигуры (остаётся неизменной)
 #[test]
 fn test_o_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let original_coords = t.coords();
 
@@ -441,12 +341,7 @@ fn test_o_full_rotation_cycle() {
 /// Тест 21: Полный цикл вращения I-фигуры
 #[test]
 fn test_i_full_rotation_cycle() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
 
@@ -469,12 +364,7 @@ fn test_i_full_rotation_cycle() {
 /// Проверяет, что вращение возможно рядом со стеной.
 #[test]
 fn test_t_rotation_at_left_wall() {
-    let mut t = Tetromino {
-        pos: (0.0, 5.0), // У левой стены
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((0.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Вращение у стены должно быть возможно (координаты изменятся)
     let original_coords = t.coords();
@@ -489,12 +379,7 @@ fn test_t_rotation_at_left_wall() {
 /// Тест 23: Вращение T-фигуры у правой стены
 #[test]
 fn test_t_rotation_at_right_wall() {
-    let mut t = Tetromino {
-        pos: (9.0, 5.0), // У правой стены
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((9.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     t.rotate(RotationDirection::Clockwise);
     // Вращение должно произойти
@@ -507,12 +392,7 @@ fn test_t_rotation_at_right_wall() {
 /// Тест 24: Вращение I-фигуры у левой стены
 #[test]
 fn test_i_rotation_at_left_wall() {
-    let mut t = Tetromino {
-        pos: (0.0, 5.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((0.0, 5.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -527,12 +407,7 @@ fn test_i_rotation_at_left_wall() {
 /// Тест 25: Вращение I-фигуры у правой стены
 #[test]
 fn test_i_rotation_at_right_wall() {
-    let mut t = Tetromino {
-        pos: (9.0, 5.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((9.0, 5.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
@@ -544,12 +419,7 @@ fn test_i_rotation_at_right_wall() {
 /// Тест 26: Вращение L-фигуры у левой стены
 #[test]
 fn test_l_rotation_at_left_wall() {
-    let mut t = Tetromino {
-        pos: (0.0, 5.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((0.0, 5.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
@@ -561,12 +431,7 @@ fn test_l_rotation_at_left_wall() {
 /// Тест 27: Вращение L-фигуры у правой стены
 #[test]
 fn test_l_rotation_at_right_wall() {
-    let mut t = Tetromino {
-        pos: (9.0, 5.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((9.0, 5.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
@@ -578,12 +443,7 @@ fn test_l_rotation_at_right_wall() {
 /// Тест 28: Вращение O-фигуры у стены (не вращается)
 #[test]
 fn test_o_rotation_at_wall() {
-    let mut t = Tetromino {
-        pos: (0.0, 5.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut t = Tetromino::new((0.0, 5.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -597,12 +457,7 @@ fn test_o_rotation_at_wall() {
 /// Тест 29: Вращение J-фигуры у правой стены
 #[test]
 fn test_j_rotation_at_right_wall() {
-    let mut t = Tetromino {
-        pos: (9.0, 5.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((9.0, 5.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
@@ -620,12 +475,7 @@ fn test_j_rotation_at_right_wall() {
 /// Проверяет, что вращение возможно над зафиксированной фигурой.
 #[test]
 fn test_t_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Вращение над "фигурой" (в воздухе) должно быть возможно
     let original_coords = t.coords();
@@ -640,12 +490,7 @@ fn test_t_rotation_above_piece() {
 /// Тест 31: Вращение L-фигуры над другой фигурой
 #[test]
 fn test_l_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[1]);
@@ -654,12 +499,7 @@ fn test_l_rotation_above_piece() {
 /// Тест 32: Вращение J-фигуры над другой фигурой
 #[test]
 fn test_j_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[2]);
@@ -668,12 +508,7 @@ fn test_j_rotation_above_piece() {
 /// Тест 33: Вращение S-фигуры над другой фигурой
 #[test]
 fn test_s_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[3]);
@@ -682,12 +517,7 @@ fn test_s_rotation_above_piece() {
 /// Тест 34: Вращение Z-фигуры над другой фигурой
 #[test]
 fn test_z_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[4]);
@@ -696,12 +526,7 @@ fn test_z_rotation_above_piece() {
 /// Тест 35: Вращение I-фигуры над другой фигурой
 #[test]
 fn test_i_rotation_above_piece() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -721,12 +546,7 @@ fn test_i_rotation_above_piece() {
 /// Проверяет поведение при вращении в ограниченном пространстве.
 #[test]
 fn test_t_rotation_with_left_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0), // Близко к левой стене
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Вращение должно изменить координаты
     let original_coords = t.coords();
@@ -742,12 +562,7 @@ fn test_t_rotation_with_left_collision() {
 /// Тест 37: Вращение T-фигуры с коллизией справа
 #[test]
 fn test_t_rotation_with_right_collision() {
-    let mut t = Tetromino {
-        pos: (8.0, 5.0), // Близко к правой стене
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((8.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
@@ -759,12 +574,7 @@ fn test_t_rotation_with_right_collision() {
 /// Тест 38: Вращение I-фигуры с коллизией
 #[test]
 fn test_i_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -780,12 +590,7 @@ fn test_i_rotation_with_collision() {
 /// Тест 39: Вращение L-фигуры с коллизией
 #[test]
 fn test_l_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[1],
-        fg: 1,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::L, SHAPE_COORDS[1], 1);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[1]);
@@ -794,12 +599,7 @@ fn test_l_rotation_with_collision() {
 /// Тест 40: Вращение J-фигуры с коллизией
 #[test]
 fn test_j_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[2],
-        fg: 2,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::J, SHAPE_COORDS[2], 2);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[2]);
@@ -808,12 +608,7 @@ fn test_j_rotation_with_collision() {
 /// Тест 41: Вращение S-фигуры с коллизией
 #[test]
 fn test_s_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[3]);
@@ -822,12 +617,7 @@ fn test_s_rotation_with_collision() {
 /// Тест 42: Вращение Z-фигуры с коллизией
 #[test]
 fn test_z_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(t.coords(), SHAPE_COORDS[4]);
@@ -836,12 +626,7 @@ fn test_z_rotation_with_collision() {
 /// Тест 43: Вращение O-фигуры с коллизией (не вращается)
 #[test]
 fn test_o_rotation_with_collision() {
-    let mut t = Tetromino {
-        pos: (1.0, 5.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[5],
-        fg: 5,
-    };
+    let mut t = Tetromino::new((1.0, 5.0), ShapeType::O, SHAPE_COORDS[5], 5);
 
     let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
@@ -861,12 +646,7 @@ fn test_o_rotation_with_collision() {
 /// T-spin - это вращение T-фигуры в ограниченном пространстве.
 #[test]
 fn test_t_spin_rotation() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Выполняем несколько вращений для симуляции T-spin
     let original_coords = t.coords();
@@ -883,12 +663,7 @@ fn test_t_spin_rotation() {
 /// Тест 45: T-spin - проверка 3 вращений
 #[test]
 fn test_t_spin_three_rotations() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // 3 вращения по часовой = 1 против часовой
     for _ in 0..3 {
@@ -905,12 +680,7 @@ fn test_t_spin_three_rotations() {
 /// Тест 46: I-spin - вращение I-фигуры в узком пространстве
 #[test]
 fn test_i_spin_rotation() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[6],
-        fg: 6,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::I, SHAPE_COORDS[6], 6);
 
     let original_coords = t.coords();
 
@@ -927,12 +697,7 @@ fn test_i_spin_rotation() {
 /// Тест 47: T-spin - комбинация вращений влево и вправо
 #[test]
 fn test_t_spin_combined_rotations() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     // Вращение вправо, затем влево
     t.rotate(RotationDirection::Clockwise);
@@ -950,12 +715,7 @@ fn test_t_spin_combined_rotations() {
 /// Тест 48: Special rotation - S-фигура
 #[test]
 fn test_s_special_rotation() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[3],
-        fg: 3,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::S, SHAPE_COORDS[3], 3);
 
     // S-фигура имеет симметричное вращение
     t.rotate(RotationDirection::Clockwise);
@@ -971,12 +731,7 @@ fn test_s_special_rotation() {
 /// Тест 49: Special rotation - Z-фигура
 #[test]
 fn test_z_special_rotation() {
-    let mut t = Tetromino {
-        pos: (4.0, 5.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[4],
-        fg: 4,
-    };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::Z, SHAPE_COORDS[4], 4);
 
     t.rotate(RotationDirection::Clockwise);
     t.rotate(RotationDirection::Clockwise);
@@ -1001,12 +756,7 @@ fn test_all_pieces_special_rotation() {
     ];
 
     for shape in &shapes {
-        let mut t = Tetromino {
-            pos: (4.0, 5.0),
-            shape: *shape,
-            coords: SHAPE_COORDS[*shape as usize],
-            fg: *shape as u8,
-        };
+    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
         let original_coords = t.coords();
 

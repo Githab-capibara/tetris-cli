@@ -183,7 +183,7 @@ fn test_modes_integration_rotation_in_all_modes() {
 /// Проверяет возможность движения фигур в каждом режиме.
 #[test]
 fn test_modes_integration_movement_in_all_modes() {
-    use crate::types::{Direction, RotationDirection};
+    use crate::types::Direction;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();

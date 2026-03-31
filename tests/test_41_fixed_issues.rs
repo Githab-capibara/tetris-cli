@@ -1255,7 +1255,7 @@ fn test_documentation_code_deduplication() {
 
     // Тест 3: Интеграционный тест - валидация работает
     use std::path::Path;
-    use tetris_cli::validation::path::{PathValidator, DEFAULT_PATH_VALIDATOR};
+    use tetris_cli::validation::path::DEFAULT_PATH_VALIDATOR;
 
     let result = DEFAULT_PATH_VALIDATOR.validate_all("src/lib.rs", Path::new("."));
     assert!(
@@ -1347,7 +1347,7 @@ fn test_all_41_fixes_integration() {
 
     // Тест 2: Leaderboard работает
     let mut leaderboard = Leaderboard::default();
-    leaderboard.add_score("Player", 1000);
+    let _ = leaderboard.add_score("Player", 1000);
     assert_eq!(leaderboard.get_best_score(), 1000);
 
     // Тест 3: ThreadSafeLeaderboardEntry работает

@@ -13,7 +13,7 @@
 
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::RotationDirection;
 
 // ============================================================================
@@ -640,12 +640,7 @@ fn test_fast_bag_generator_next() {
 /// Тест 45: Быстрое вращение фигуры
 #[test]
 fn test_fast_piece_rotation() {
-    let mut t = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: crate::tetromino::SHAPE_COORDS[0],
-        fg: 0,
-    };
+    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
     let start = std::time::Instant::now();
 

@@ -421,12 +421,7 @@ fn test_canvas_functions() {
 fn test_tetromino_copy_semantics() {
     use crate::tetromino::{ShapeType, Tetromino};
 
-    let original = Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        fg: 0,
-    };
+    let original = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
 
     // Копирование через присваивание (Copy семантика)
     let copied = original;

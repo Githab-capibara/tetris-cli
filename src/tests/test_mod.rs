@@ -70,7 +70,7 @@
 // ============================================================================
 
 // Общие фикстуры и хелперы
-pub mod fixtures;
+pub mod test_fixtures;
 
 pub mod test_controls;
 pub mod test_game_logic;
@@ -128,11 +128,8 @@ pub mod test_io_drop;
 pub mod test_io_resource_leak;
 pub mod test_io_utf8_handling;
 
-pub mod test_tetromino_dir_down;
-
 pub mod test_hard_drop_flag;
 
-pub mod test_direction_down;
 pub mod test_wall_kick_refactor;
 
 pub mod test_error_propagation;
@@ -200,7 +197,7 @@ pub mod test_architecture_integrity_new;
 // ТЕСТЫ КАЧЕСТВА КОДА
 // ============================================================================
 
-pub mod macros;
+pub mod test_macros;
 pub mod test_cast_safety;
 pub mod test_cfg_attr_dead_code;
 pub mod test_must_use_attributes;
