@@ -8,6 +8,8 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты системы рекордов.
 
+#![allow(deprecated)]
+
 use crate::highscore::leaderboard::LeaderboardEntry;
 use crate::highscore::{Leaderboard, SaveData};
 

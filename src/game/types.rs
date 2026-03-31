@@ -800,7 +800,7 @@ mod tests {
 
         let action = GameAction::MoveLeft;
         let action_copy = action; // Copy
-        let action_clone = action.clone(); // Clone
+        let action_clone = action; // Clone
 
         assert_eq!(action, action_copy);
         assert_eq!(action, action_clone);

@@ -45,7 +45,7 @@ fn test_board_readonly_defined_only_in_access() {
 
     // Проверяем что трейт определён в access.rs (проверка через модуль)
     assert!(
-        is_trait_defined_in_access::<dyn BoardReadonly>(),
+        is_trait_defined_in_access(),
         "BoardReadonly должен быть определён в access.rs"
     );
 }
@@ -53,11 +53,11 @@ fn test_board_readonly_defined_only_in_access() {
 /// Вспомогательная функция для проверки что трейт определён в access.rs.
 ///
 /// # Аргументы
-/// * `_trait_obj` - объект трейта для проверки (не используется)
+/// Проверяет что трейт определён в access.rs через компиляцию.
 ///
 /// # Возвращает
-/// `true` если трейт определён в access.rs
-fn is_trait_defined_in_access<T: ?Sized>() -> bool {
+/// `true` если трейт определён в access.rs (проверяется компиляцией)
+const fn is_trait_defined_in_access() -> bool {
     // Трейт BoardReadonly определён в crate::game::access
     // Это проверяется через компиляцию - если бы трейт был в другом месте,
     // импорт в начале файла не работал бы
@@ -97,7 +97,7 @@ fn test_board_mutable_defined_only_in_access() {
 
     // Проверяем что трейт определён в access.rs
     assert!(
-        is_trait_defined_in_access::<dyn BoardMutable>(),
+        is_trait_defined_in_access(),
         "BoardMutable должен быть определён в access.rs"
     );
 }

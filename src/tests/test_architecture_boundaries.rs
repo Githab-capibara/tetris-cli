@@ -47,14 +47,14 @@ fn test_game_logic_does_not_import_rendering() {
     // can_move возвращает true/false в зависимости от состояния
     // Главное что функция работает независимо от отрисовки
     assert!(
-        can_move || !can_move,
+        true,
         "Collision logic должен работать независимо от отрисовки"
     );
 
     // Проверяем rotation logic
     let can_rotate = can_rotate_curr_shape(&state, crate::tetromino::RotationDirection::Clockwise);
     assert!(
-        can_rotate || !can_rotate,
+        true,
         "Rotation logic должен работать независимо от отрисовки"
     );
 

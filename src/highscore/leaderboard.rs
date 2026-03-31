@@ -1075,6 +1075,7 @@ impl Leaderboard {
 // ============================================================================
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod thread_safe_tests {
     use super::*;
     use std::sync::Arc;
@@ -1084,6 +1085,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет создание и базовые методы потокобезопасной записи.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_basic() {
         let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000);
 
@@ -1096,6 +1098,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет атомарность метода score() при доступе из нескольких потоков.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_concurrent_score() {
         let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player2", 2000));
         let mut handles = vec![];
@@ -1204,6 +1207,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет корректную работу с различными именами игроков.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_different_names() {
         let names = ["Alice", "Bob", "Charlie", "Игрок", "Player_123"];
 
@@ -1218,6 +1222,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет корректную работу с нулевым значением рекорда.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_zero_score() {
         let entry = ThreadSafeLeaderboardEntry::new("Player", 0);
         assert_eq!(entry.score(), 0);
@@ -1228,6 +1233,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет работу с максимально возможным значением u128.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_max_score() {
         let max_score = u128::MAX;
         let entry = ThreadSafeLeaderboardEntry::new("MaxPlayer", max_score);
@@ -1239,6 +1245,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет атомарность метода name() при доступе из нескольких потоков.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_concurrent_name() {
         let entry = Arc::new(ThreadSafeLeaderboardEntry::new("TestPlayer", 1000));
         let mut handles = vec![];
@@ -1261,6 +1268,7 @@ mod thread_safe_tests {
     ///
     /// Проверяет стабильность при высокой конкуренции за Mutex.
     #[test]
+    #[allow(deprecated)]
     fn test_thread_safe_entry_stress_test() {
         let entry = Arc::new(ThreadSafeLeaderboardEntry::new("StressPlayer", 9999));
         let mut handles = vec![];

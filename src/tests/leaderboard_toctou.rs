@@ -6,6 +6,8 @@
 //!
 //! Исправление: использование std::hint::black_box для volatile загрузки
 
+#![allow(deprecated)]
+
 use crate::highscore::leaderboard::{LeaderboardEntry, ThreadSafeLeaderboardEntry};
 
 // ============================================================================

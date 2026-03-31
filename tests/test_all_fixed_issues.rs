@@ -9,6 +9,8 @@
 //! cargo test --test test_all_fixed_issues
 //! ```
 
+#![allow(deprecated)]
+
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 
@@ -135,7 +137,7 @@ fn test_fix_e2_thread_safe_score_no_panic() {
 /// В controls.rs изменён порядок операций:
 /// 1. Сначала open(O_NOFOLLOW) - атомарная операция
 /// 2. Затем fstat() проверка на symlink
-/// Это устраняет TOCTOU уязвимость (Time-Of-Check-Time-Of-Use).
+///    Это устраняет TOCTOU уязвимость (Time-Of-Check-Time-Of-Use).
 ///
 /// # Пример
 /// ```ignore
@@ -401,7 +403,7 @@ fn test_fix_e6_thread_safe_leaderboard_race_protection() {
     // Тест 2: ThreadSafeLeaderboard::get_entries() возвращает записи
     let entries = leaderboard.get_entries();
     assert!(
-        entries.len() >= 1,
+        !entries.is_empty(),
         "ThreadSafeLeaderboard должен содержать хотя бы 1 запись"
     );
 
