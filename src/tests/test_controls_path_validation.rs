@@ -205,15 +205,14 @@ fn test_path_with_url_encoding() {
     );
 
     // Тест 1: URL-encoded path traversal (%2e%2e = ..)
-    // Валидатор НЕ декодирует URL, поэтому %2e%2e не распознаётся как ..
+    // Исправление аудита 2026-03-31: валидатор ТЕПЕРЬ обнаруживает URL-encoded path traversal
     let url_encoded_path = "%2e%2e%2fetc%2fpasswd";
     let result = validator.validate_no_traversal(url_encoded_path);
 
-    // Это ожидаемое поведение - валидатор не декодирует URL
-    // Приложение должно декодировать пути ПЕРЕД валидацией если они приходят из URL
+    // URL-encoded path traversal ТЕПЕРЬ распознаётся и отклоняется
     assert!(
-        result.is_ok(),
-        "URL-encoded путь не распознаётся как path traversal (это ожидаемое поведение)"
+        result.is_err(),
+        "URL-encoded path traversal должен отклоняться"
     );
 
     // Тест 2: Смешанный стиль (часть URL-encoded, часть обычная)

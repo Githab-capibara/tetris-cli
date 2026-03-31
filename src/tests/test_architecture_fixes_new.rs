@@ -38,13 +38,6 @@ fn test_gameboard_access_trait_removed() {
     fn requires_score_access<S: ScoreAccess>(_score: &S) {}
     requires_score_access(&state);
 
-    // Проверяем что GameBoardAccess deprecated (если существует)
-    #[allow(deprecated)]
-    {
-        use crate::game::access::GameBoardAccess;
-        let _ = std::any::type_name::<dyn GameBoardAccess>();
-    }
-
     // Проверяем что новые трейты предоставляют тот же функционал
     let state = GameState::new();
     let blocks = state.get_blocks();
@@ -56,6 +49,35 @@ fn test_gameboard_access_trait_removed() {
 
     let score = state.score();
     assert_eq!(score, 0, "ScoreAccess должен предоставлять доступ к очкам");
+}
+
+/// Тест: гарантия что трейт GameBoardAccess не используется (используются BoardReadonly + BoardMutable)
+#[test]
+fn test_gameboard_access_not_used_board_readonly_mutable_instead() {
+    use crate::game::access::{BoardMutable, BoardReadonly};
+    use crate::game::state::GameState;
+    use crate::io::GRID_HEIGHT;
+
+    // Проверяем что GameState реализует BoardReadonly
+    fn requires_board_readonly<B: BoardReadonly>(_board: &B) {}
+    let state = GameState::new();
+    requires_board_readonly(&state);
+
+    // Проверяем что GameState реализует BoardMutable
+    fn requires_board_mutable<B: BoardMutable>(_board: &mut B) {}
+    let mut state = GameState::new();
+    requires_board_mutable(&mut state);
+
+    // Проверяем что BoardReadonly предоставляет методы чтения
+    let state = GameState::new();
+    let blocks = state.get_blocks();
+    assert_eq!(blocks.len(), GRID_HEIGHT);
+
+    // Проверяем что BoardMutable предоставляет методы записи
+    let mut state = GameState::new();
+    let board_mut = state.board_mut();
+    // BoardMutable должен предоставлять доступ к mutable полю
+    let _blocks_mut = board_mut.get_blocks_mut();
 }
 
 // ============================================================================
@@ -309,12 +331,7 @@ fn test_constants_not_exported_pub_crate() {
 /// Тест: проверка что все архитектурные исправления применены.
 #[test]
 fn test_all_architecture_fixes_applied() {
-    // 1. GameBoardAccess deprecated
-    #[allow(deprecated)]
-    {
-        use crate::game::access::GameBoardAccess;
-        let _ = std::any::type_name::<dyn GameBoardAccess>();
-    }
+    // 1. GameBoardAccess удалён (используйте BoardReadonly + ScoreAccess)
 
     // 2. ScoreAccess не дублируется
     use crate::game::access::ScoreAccess;

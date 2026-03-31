@@ -107,14 +107,6 @@ pub use constants::{
 #[allow(unused_imports)]
 pub use access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
 
-// Re-export устаревшего трейта GameBoardAccess для обратной совместимости
-#[allow(unused_imports, deprecated)]
-#[deprecated(
-    since = "0.3.0",
-    note = "Используйте BoardMutable + ScoreAccess напрямую"
-)]
-pub use access::GameBoardAccess;
-
 // Re-export трейтов и типов из board
 #[allow(unused_imports)]
 pub use board::{

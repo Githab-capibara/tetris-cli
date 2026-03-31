@@ -653,16 +653,20 @@ impl GameState {
     ///
     /// # Возвращает
     /// - `Ok(())` если значение установлено успешно
-    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity)
+    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity или вне диапазона)
     ///
     /// # Errors
-    /// Возвращает [`GameError::Validation`] если значение является NaN или Infinity.
+    /// Возвращает [`GameError::Validation`] если значение является NaN/Infinity или вне диапазона.
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
     ///
     /// # DRY-2: Централизация валидации
-    /// Использует `ValidationService::validate_f32_finite()` для валидации.
+    /// Использует `ValidationService::validate_f32_finite()` и `validate_f32_range()` для валидации.
+    ///
+    /// # Исправление аудита 2026-03-31 (HIGH)
+    /// Убран избыточный `clamp()` после валидации. Теперь используется только типизированная
+    /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
         use crate::validation::{ValidationError, ValidationService};
@@ -675,16 +679,16 @@ impl GameState {
             )));
         }
 
-        // Дополнительная валидация диапазона через ValidationService
-        let value_u32 = value.abs() as u32;
-        if let Err(e) = ValidationService::validate_u32_range(value_u32, 0, u32::MAX) {
+        // Валидация диапазона через ValidationService (вместо clamp)
+        if let Err(e) = ValidationService::validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED)
+        {
             return Err(GameError::Validation(format!(
                 "Неверный диапазон скорости: {}",
                 e.message
             )));
         }
 
-        self.fall_speed = value.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
+        self.fall_speed = value;
         Ok(())
     }
 
@@ -1020,5 +1024,127 @@ mod state_tests {
             state.lines_cleared(),
             state.scoreboard().get_lines_cleared()
         );
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: DRY-2 ВАЛИДАЦИЯ set_fall_speed()
+    // =========================================================================
+
+    use crate::game::constants::MAX_FALL_SPEED;
+
+    /// Тест: валидация set_fall_speed() через ValidationService без clamp()
+    #[test]
+    fn test_set_fall_speed_validation_no_clamp() {
+        let mut state = GameState::new();
+
+        // Валидное значение в диапазоне должно устанавливаться без изменений
+        let result = state.set_fall_speed(2.0);
+        assert!(result.is_ok(), "Валидное значение должно устанавливаться");
+        assert_eq!(state.fall_speed(), 2.0, "Значение должно установиться точно");
+
+        // Значение на нижней границе
+        let result = state.set_fall_speed(INITIAL_FALL_SPD);
+        assert!(result.is_ok(), "Значение на нижней границе должно быть валидно");
+
+        // Значение на верхней границе
+        let result = state.set_fall_speed(MAX_FALL_SPEED);
+        assert!(result.is_ok(), "Значение на верхней границе должно быть валидно");
+    }
+
+    /// Тест: обработка NaN в set_fall_speed()
+    #[test]
+    fn test_set_fall_speed_nan_rejected() {
+        let mut state = GameState::new();
+        let initial_speed = state.fall_speed();
+
+        let result = state.set_fall_speed(f32::NAN);
+        assert!(result.is_err(), "NaN должен быть отклонён");
+        assert_eq!(
+            state.fall_speed(),
+            initial_speed,
+            "Скорость не должна измениться после NaN"
+        );
+
+        if let Err(GameError::Validation(msg)) = result {
+            assert!(msg.contains("Неверная скорость падения"), "Сообщение должно указывать на ошибку скорости");
+        } else {
+            panic!("Ожидалась ошибка Validation");
+        }
+    }
+
+    /// Тест: обработка Infinity в set_fall_speed()
+    #[test]
+    fn test_set_fall_speed_infinity_rejected() {
+        let mut state = GameState::new();
+        let initial_speed = state.fall_speed();
+
+        let result = state.set_fall_speed(f32::INFINITY);
+        assert!(result.is_err(), "Infinity должен быть отклонён");
+        assert_eq!(
+            state.fall_speed(),
+            initial_speed,
+            "Скорость не должна измениться после Infinity"
+        );
+
+        let result = state.set_fall_speed(f32::NEG_INFINITY);
+        assert!(result.is_err(), "Negative Infinity должен быть отклонён");
+    }
+
+    /// Тест: обработка отрицательных значений в set_fall_speed()
+    #[test]
+    fn test_set_fall_speed_negative_rejected() {
+        let mut state = GameState::new();
+        let initial_speed = state.fall_speed();
+
+        let result = state.set_fall_speed(-1.0);
+        assert!(result.is_err(), "Отрицательное значение должно быть отклонено");
+        assert_eq!(
+            state.fall_speed(),
+            initial_speed,
+            "Скорость не должна измениться после отрицательного значения"
+        );
+    }
+
+    /// Тест: обработка значений вне диапазона в set_fall_speed()
+    #[test]
+    fn test_set_fall_speed_out_of_range() {
+        let mut state = GameState::new();
+        let initial_speed = state.fall_speed();
+
+        // Значение ниже минимума
+        let result = state.set_fall_speed(INITIAL_FALL_SPD - 0.1);
+        assert!(result.is_err(), "Значение ниже минимума должно быть отклонено");
+        assert_eq!(
+            state.fall_speed(),
+            initial_speed,
+            "Скорость не должна измениться"
+        );
+
+        // Значение выше максимума
+        let result = state.set_fall_speed(MAX_FALL_SPEED + 1.0);
+        assert!(result.is_err(), "Значение выше максимума должно быть отклонено");
+        assert_eq!(
+            state.fall_speed(),
+            initial_speed,
+            "Скорость не должна измениться"
+        );
+    }
+
+    /// Тест: set_fall_speed() использует ValidationService (DRY-2)
+    #[test]
+    fn test_set_fall_speed_uses_validation_service() {
+        let mut state = GameState::new();
+
+        // Проверяем что валидные значения устанавливаются
+        for valid_speed in [INITIAL_FALL_SPD, 1.0, 5.0, MAX_FALL_SPEED] {
+            let result = state.set_fall_speed(valid_speed);
+            assert!(result.is_ok(), "Валидное значение {} должно устанавливаться", valid_speed);
+        }
+
+        // Проверяем что невалидные значения отклоняются
+        for invalid_speed in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0, INITIAL_FALL_SPD - 0.1] {
+            let result = state.set_fall_speed(invalid_speed);
+            assert!(result.is_err(), "Невалидное значение {} должно отклоняться", invalid_speed);
+        }
     }
 }

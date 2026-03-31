@@ -5,6 +5,7 @@
 //! - Проверка разрешённых символов
 //! - Защита от symlink атак
 //! - Защита от path traversal (..)
+//! - Защита от URL-encoded path traversal (%2e%2e%2f и др.)
 //! - Проверка на null байты (\0)
 //!
 //! ## Структуры
@@ -14,11 +15,14 @@
 //!
 //! ## Ограничения и важные замечания
 //!
-//! ### URL-encoding ограничение
-//! **ВНИМАНИЕ**: Этот валидатор НЕ поддерживает URL-encoded пути.
-//! Пути вида `config%2Ejson` или `..%2F..%2Fetc%2Fpasswd` НЕ будут распознаны
-//! как path traversal атаки. Если ваше приложение принимает пути из HTTP-запросов
-//! или других источников с URL-encoding, вы должны декодировать их ПЕРЕД валидацией.
+//! ### URL-encoding
+//! **Исправление аудита 2026-03-31**: Валидатор ТЕПЕРЬ поддерживает обнаружение URL-encoded путей.
+//! Пути вида `config%2Ejson` или `..%2F..%2Fetc%2Fpasswd` БУДУТ распознаны как path traversal атаки.
+//! Метод `validate_no_traversal()` проверяет на:
+//! - `%2e` и `%2E` (.)
+//! - `%2f` и `%2F` (/)
+//! - `%5c` и `%5C` (\)
+//! - Двойное кодирование: `%252e`, `%252f`
 //!
 //! ### Null байты
 //! Валидатор автоматически отклоняет пути содержащие null байты (\0).
@@ -469,16 +473,53 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если путь содержит последовательности `..`.
+    ///
+    /// # Исправление аудита 2026-03-31 (HIGH)
+    /// Добавлена проверка на URL-encoded последовательности:
+    /// - `%2e` и `%2E` (.)
+    /// - `%2f` и `%2F` (/)
+    /// - `%5c` и `%5C` (\)
+    /// - Комбинации: `%2e%2e%2f`, `%2e%2e/`, `..%2f` и т.д.
     #[allow(dead_code)]
     // Может быть использовано для дополнительной валидации
     #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
+        // Проверка на обычные последовательности ..
         if path.contains("..") {
             return Err(PathError {
                 message: format!("Path traversal не разрешён: {:?}", path),
                 kind: PathErrorKind::PathTraversal,
             });
         }
+
+        // Исправление аудита 2026-03-31: проверка на URL-encoded последовательности
+        // Проверяем на наличие encoded символов которые могут использоваться для обхода
+        let path_lower = path.to_lowercase();
+
+        // Проверка на encoded точки (%2e, %2E)
+        if path_lower.contains("%2e") {
+            return Err(PathError {
+                message: format!("URL-encoded path traversal не разрешён: {:?}", path),
+                kind: PathErrorKind::PathTraversal,
+            });
+        }
+
+        // Проверка на encoded слеши (%2f, %2F, %5c, %5C)
+        if path_lower.contains("%2f") || path_lower.contains("%5c") {
+            return Err(PathError {
+                message: format!("URL-encoded path traversal не разрешён: {:?}", path),
+                kind: PathErrorKind::PathTraversal,
+            });
+        }
+
+        // Проверка на двойное URL-encoding (%252e, %252f)
+        if path_lower.contains("%252e") || path_lower.contains("%252f") {
+            return Err(PathError {
+                message: format!("Двойной URL-encoding не разрешён: {:?}", path),
+                kind: PathErrorKind::PathTraversal,
+            });
+        }
+
         Ok(())
     }
 }
@@ -656,12 +697,20 @@ mod validation_path_tests {
             .validate_no_traversal("config/../../../etc/passwd")
             .is_err());
 
-        // Вариант 6: URL encoded (должен обрабатываться отдельно)
-        // Этот тест проверяет что валидатор не декодирует URL
+        // Вариант 6: URL encoded (теперь распознаётся и отклоняется)
+        // Исправление аудита 2026-03-31: валидатор ТЕПЕРЬ обнаруживает URL-encoded path traversal
         assert!(validator
             .validate_no_traversal("%2e%2e%2fetc%2fpasswd")
-            .is_ok());
-        // Примечание: %2e%2e%2f не распознаётся как .., что правильно для базового валидатора
+            .is_err(),
+            "URL-encoded path traversal должен отклоняться");
+        assert!(validator
+            .validate_no_traversal("..%2f..%2fetc%2fpasswd")
+            .is_err(),
+            "Смешанный URL-encoded path traversal должен отклоняться");
+        assert!(validator
+            .validate_no_traversal("%2e%2e/etc/passwd")
+            .is_err(),
+            "Частично URL-encoded path traversal должен отклоняться");
     }
 
     /// Тест: Проверка граничных случаев длины пути
@@ -902,5 +951,122 @@ mod validation_path_tests {
         if current_dir.join("src/lib.rs").exists() {
             assert!(result.is_ok(), "Путь к src/lib.rs должен быть валидным");
         }
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: URL-ENCODING ПРОВЕРКИ
+    // =========================================================================
+
+    /// Тест: `%2e%2e%2f` должен быть отклонён (URL-encoded `../`)
+    #[test]
+    fn test_url_encoded_dotdotlash_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("%2e%2e%2f");
+        assert!(
+            result.is_err(),
+            "URL-encoded '../' (%2e%2e%2f) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: `%2e%2e/` должен быть отклонён (URL-encoded `..` + обычный `/`)
+    #[test]
+    fn test_url_encoded_dotdot_with_normal_slash_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("%2e%2e/");
+        assert!(
+            result.is_err(),
+            "URL-encoded '..' с обычным '/' (%2e%2e/) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: `..%2f` должен быть отклонён (обычный `..` + URL-encoded `/`)
+    #[test]
+    fn test_normal_dotdot_with_url_encoded_slash_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("..%2f");
+        assert!(
+            result.is_err(),
+            "Обычный '..' с URL-encoded '/' (..%2f) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: `%252e%252e%252f` должен быть отклонён (double encoding)
+    #[test]
+    fn test_double_url_encoded_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("%252e%252e%252f");
+        assert!(
+            result.is_err(),
+            "Double URL-encoding (%252e%252e%252f) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: `%5c` (URL-encoded backslash) должен быть отклонён
+    #[test]
+    fn test_url_encoded_backslash_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("%5c");
+        assert!(
+            result.is_err(),
+            "URL-encoded backslash (%5c) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: `%5C` (URL-encoded backslash uppercase) должен быть отклонён
+    #[test]
+    fn test_url_encoded_backslash_uppercase_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+        let result = validator.validate_no_traversal("%5C");
+        assert!(
+            result.is_err(),
+            "URL-encoded backslash uppercase (%5C) должен быть отклонён"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+    }
+
+    /// Тест: валидные пути принимаются
+    #[test]
+    fn test_valid_paths_accepted() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+
+        // Валидные пути без URL-encoding
+        assert!(validator.validate_no_traversal("config.json").is_ok());
+        assert!(validator.validate_no_traversal("data/save.txt").is_ok());
+        assert!(validator.validate_no_traversal("file_name.txt").is_ok());
+        assert!(validator.validate_no_traversal("my-file.txt").is_ok());
+    }
+
+    /// Тест: все encoded последовательности отклоняются (комплексный тест)
+    #[test]
+    fn test_all_encoded_sequences_rejected() {
+        let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
+
+        //Encoded точки
+        assert!(validator.validate_no_traversal("%2e").is_err());
+        assert!(validator.validate_no_traversal("%2E").is_err());
+
+        // Encoded слеши
+        assert!(validator.validate_no_traversal("%2f").is_err());
+        assert!(validator.validate_no_traversal("%2F").is_err());
+
+        // Encoded backslashes
+        assert!(validator.validate_no_traversal("%5c").is_err());
+        assert!(validator.validate_no_traversal("%5C").is_err());
+
+        // Комбинации
+        assert!(validator.validate_no_traversal("%2e%2e").is_err());
+        assert!(validator.validate_no_traversal("%2e%2e%2f").is_err());
+        assert!(validator.validate_no_traversal("%2E%2E%2F").is_err());
+
+        // Double encoding
+        assert!(validator.validate_no_traversal("%252e").is_err());
+        assert!(validator.validate_no_traversal("%252f").is_err());
+        assert!(validator.validate_no_traversal("%252E").is_err());
+        assert!(validator.validate_no_traversal("%252F").is_err());
     }
 }

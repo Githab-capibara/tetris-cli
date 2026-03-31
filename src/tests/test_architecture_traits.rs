@@ -299,15 +299,13 @@ fn test_all_access_traits_consolidated_in_access() {
     // ScoreAccess
     let _: &dyn access::ScoreAccess = &state;
 
-    // GameBoardAccess (объединённый трейт, устарел)
-    #[allow(deprecated)]
-    let _: &dyn access::GameBoardAccess = &state;
+    // GameBoardAccess удалён (используйте BoardReadonly + ScoreAccess напрямую)
 
-    // Все трейты консолидированы в access.rs (GameBoardAccess устарел)
+    // Все трейты консолидированы в access.rs
     assert_eq!(
         expected_traits.len(),
         3,
-        "Должно быть 3 основных трейта (GameBoardAccess устарел)"
+        "Должно быть 3 основных трейта"
     );
 }
 
