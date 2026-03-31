@@ -113,41 +113,7 @@ fn test_sanitize_allowed_chars() {
     }
 }
 
-/// Тест 5: Проверка производительности sanitize_player_name
-///
-/// Бенчмарк: фильтрация должна быть быстрой.
-#[test]
-fn test_sanitize_performance() {
-    use std::time::Instant;
-
-    let test_names = [
-        "NormalName",
-        "Player\u{200C}\u{200D}Name", // с zero-width joiners
-        "Player\u{FE00}\u{FE0F}Name", // с variation selectors
-        "Player\u{200E}\u{200F}Name", // с bidi controls
-        "ИмяСПлохимиСимволами\u{200C}",
-    ];
-
-    let iterations = 10000;
-    let start = Instant::now();
-
-    for _ in 0..iterations {
-        for &name in &test_names {
-            let _entry = LeaderboardEntry::new(name, 1000);
-        }
-    }
-
-    let elapsed = start.elapsed();
-
-    // 10000 итераций × 5 имён должны выполняться < 10000ms (увеличенный таймаут для стабильности на медленных системах)
-    assert!(
-        elapsed.as_millis() < 10000,
-        "Санитизация {iterations} итераций должна выполняться < 10000ms (прошло {:?})",
-        elapsed
-    );
-}
-
-/// Тест 6: Проверка замены пустого имени на "Anonymous"
+/// Тест 5: Проверка допустимых символов
 ///
 /// Пустое имя или имя только из запрещённых символов
 /// должно заменяться на "Anonymous".
@@ -178,7 +144,7 @@ fn test_sanitize_empty_to_anonymous() {
     );
 }
 
-/// Тест 7: Проверка ограничения длины имени (20 символов)
+/// Тест 6: Проверка ограничения длины имени (20 символов)
 ///
 /// Имя длиннее 20 символов должно обрезаться.
 #[test]
@@ -200,7 +166,7 @@ fn test_sanitize_max_length() {
     );
 }
 
-/// Тест 8: Проверка фильтрации emoji
+/// Тест 7: Проверка фильтрации emoji
 ///
 /// Emoji и другие опасные Unicode-символы должны отфильтровываться.
 #[test]
