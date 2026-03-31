@@ -132,6 +132,46 @@ impl ValidationService {
         }
         Ok(())
     }
+
+    /// Валидировать f32 значение на попадание в диапазон.
+    ///
+    /// # Аргументы
+    /// * `value` - значение для валидации
+    /// * `min` - минимальное допустимое значение (включительно)
+    /// * `max` - максимальное допустимое значение (включительно)
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если значение в диапазоне
+    /// - `Err(ValidationError)` если значение вне диапазона
+    ///
+    /// # Errors
+    /// Возвращает `ValidationError` с `ValidationErrorKind::OutOfRange`
+    /// если значение меньше min или больше max.
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use tetris_cli::validation::{ValidationService, ValidationError};
+    ///
+    /// assert!(ValidationService::validate_f32_range(5.0, 1.0, 10.0).is_ok());
+    /// assert!(ValidationService::validate_f32_range(0.0, 1.0, 10.0).is_err());
+    /// assert!(ValidationService::validate_f32_range(11.0, 1.0, 10.0).is_err());
+    /// ```
+    ///
+    /// # Исправление аудита 2026-03-31 (HIGH)
+    /// Добавлен для устранения дублирования валидации в `set_fall_speed()`.
+    /// Используется вместо `clamp()` для типизированной валидации диапазона.
+    pub fn validate_f32_range(value: f32, min: f32, max: f32) -> Result<(), ValidationError> {
+        if value < min || value > max {
+            return Err(ValidationError {
+                message: format!(
+                    "Значение {} вне допустимого диапазона [{}, {}]",
+                    value, min, max
+                ),
+                kind: ValidationErrorKind::OutOfRange,
+            });
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -180,6 +220,71 @@ mod validation_service_tests {
         assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
 
         let result = ValidationService::validate_u32_range(11, 1, 10);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
+    }
+
+    #[test]
+    fn test_validate_f32_range_valid() {
+        assert!(ValidationService::validate_f32_range(5.0, 1.0, 10.0).is_ok());
+        assert!(ValidationService::validate_f32_range(1.0, 1.0, 10.0).is_ok());
+        assert!(ValidationService::validate_f32_range(10.0, 1.0, 10.0).is_ok());
+    }
+
+    #[test]
+    fn test_validate_f32_range_out_of_range() {
+        let result = ValidationService::validate_f32_range(0.0, 1.0, 10.0);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
+
+        let result = ValidationService::validate_f32_range(11.0, 1.0, 10.0);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: DRY-2 ВАЛИДАЦИЯ
+    // =========================================================================
+
+    /// Тест: валидация NaN через ValidationService
+    #[test]
+    fn test_validation_service_nan_rejected() {
+        let result = ValidationService::validate_f32_finite(f32::NAN);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::NotFinite);
+    }
+
+    /// Тест: валидация Infinity через ValidationService
+    #[test]
+    fn test_validation_service_infinity_rejected() {
+        let result = ValidationService::validate_f32_finite(f32::INFINITY);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::NotFinite);
+
+        let result = ValidationService::validate_f32_finite(f32::NEG_INFINITY);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::NotFinite);
+    }
+
+    /// Тест: валидация отрицательных значений через validate_f32_range
+    #[test]
+    fn test_validation_service_negative_rejected() {
+        // Отрицательные значения вне диапазона [0.5, 10.0]
+        let result = ValidationService::validate_f32_range(-1.0, 0.5, 10.0);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
+    }
+
+    /// Тест: валидация значений вне диапазона
+    #[test]
+    fn test_validation_service_out_of_range() {
+        // Значения меньше минимума
+        let result = ValidationService::validate_f32_range(0.1, 0.5, 10.0);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
+
+        // Значения больше максимума
+        let result = ValidationService::validate_f32_range(15.0, 0.5, 10.0);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().kind, ValidationErrorKind::OutOfRange);
     }

@@ -4,6 +4,35 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.29] — 2026-03-31
+
+### Улучшения валидации и архитектуры
+
+**Исправления:**
+
+**Валидация:**
+- **Исправление дублирования валидации set_fall_speed()** — централизация проверок в ValidationService
+- **Добавлена проверка URL-encoding в PathValidator** — защита от обхода через закодированные символы
+- **Удалён избыточный трейт GameBoardAccess** — заменён на BoardReadonly/BoardMutable
+
+**Архитектура:**
+- **Улучшена обработка Mutex в leaderboard.rs** — атомарные операции для TOCTOU защиты
+- **Разбиты длинные функции в cycle.rs** — разделение на maintain_fps(), delta_time(), handle_input_phase()
+
+**Тесты:**
+- **test_io_drop.rs** — 3 теста (Drop для IO компонентов)
+- **test_set_fall_speed_validation.rs** — 6 тестов (валидация set_fall_speed)
+- **test_url_encoded_path_traversal.rs** — 8 тестов (URL-encoding в PathValidator)
+- **test_validation_service.rs** — 6 тестов (ValidationService тесты)
+- **test_leaderboard_toctou.rs** — 8 тестов (TOCTOU защита в leaderboard)
+- **test_cycle_functions.rs** — 9 тестов (разделение функций в cycle.rs)
+
+**Обновления документации:**
+- README.md — обновлено количество тестов: **1308 тестов**
+- CONTRIBUTING.md — обновлено количество тестов: **1308 тестов**
+- TESTS_REGISTRY.md — добавлена информация о новых тестах
+- ARCHITECTURE.md — обновлена информация о трейтах доступа
+
 ## [23.96.28] — 2026-03-31
 
 ### Архитектурные улучшения и рефакторинг

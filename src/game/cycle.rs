@@ -114,6 +114,66 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
     sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
 }
 
+/// Поддержать стабильный FPS.
+///
+/// # Аргументы
+/// * `last_time` - время последнего кадра (изменяемое)
+/// * `interval_ms` - интервал между кадрами (мс)
+///
+/// # Возвращает
+/// - `Some(delta_time_ms)` - время прошло между кадрами
+/// - `None` - нужно продолжить ожидание (delta_time_ms < interval_ms)
+///
+/// # Исправление аудита 2026-03-31 (MEDIUM)
+/// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
+fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<u64> {
+    let now = std::time::Instant::now();
+    // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
+    // Используем try_into() с unwrap_or(u64::MAX) для предотвращения переполнения
+    let delta_time_ms: u64 = now
+        .duration_since(*last_time)
+        .as_millis()
+        .try_into()
+        .unwrap_or(u64::MAX);
+
+    if delta_time_ms < interval_ms {
+        sleep(Duration::from_millis(
+            interval_ms.saturating_sub(delta_time_ms),
+        ));
+        return None;
+    }
+
+    *last_time = now;
+    Some(delta_time_ms)
+}
+
+/// Обработать результат ввода.
+///
+/// # Аргументы
+/// * `input_result` - результат обработки ввода
+/// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
+///
+/// # Возвращает
+/// - `Some(final_score)` - игра завершена, вернуть счёт
+/// - `None` - продолжить игру
+///
+/// # Исправление аудита 2026-03-31 (MEDIUM)
+/// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
+fn handle_input_result<R: Renderer>(
+    input_result: InputResult,
+    cnv: &mut R,
+) -> Option<u128> {
+    match input_result {
+        InputResult::Continue | InputResult::Pause => None,
+        InputResult::Quit => Some(0),
+        InputResult::GameOver => {
+            handle_game_over(cnv);
+            Some(0)
+        }
+        InputResult::Won => Some(0),
+    }
+}
+
 /// Запустить игровой цикл и вернуть финальный счёт.
 ///
 /// # Аргументы
@@ -132,6 +192,13 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
 /// # Архитектурные заметки (A8: Обработка ошибок, H1: DIP)
 /// Функция возвращает `Result<u128, GameError>` для явной обработки ошибок.
 /// Использует трейты `InputReader` и `Renderer` для зависимости от абстракций.
+///
+/// # Архитектурные заметки (Исправление аудита 2026-03-31)
+/// Функция разбита на подфункции для улучшения читаемости:
+/// - `maintain_fps()` - поддержание стабильного FPS
+/// - `handle_input()` - обработка ввода пользователя
+/// - `handle_input_result()` - обработка результата ввода
+/// - `render()` - отрисовка текущего кадра
 ///
 /// # Пример использования
 /// ```ignore
@@ -153,45 +220,24 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
     inp: &mut T,
     high_score_display: &str,
 ) -> Result<u128, super::state::GameError> {
-    use std::time::Instant;
-
-    let mut last_time = Instant::now();
+    let mut last_time = std::time::Instant::now();
     let interval_ms = 1_000 / FPS;
 
     loop {
-        // Поддержание стабильного FPS
-        let now = Instant::now();
-        // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
-        // Используем try_into() с unwrap_or(u64::MAX) для предотвращения переполнения
-        let delta_time_ms: u64 = now
-            .duration_since(last_time)
-            .as_millis()
-            .try_into()
-            .unwrap_or(u64::MAX);
-        if delta_time_ms < interval_ms {
-            sleep(Duration::from_millis(
-                interval_ms.saturating_sub(delta_time_ms),
-            ));
-            continue;
-        }
-        last_time = now;
+        // Поддержание стабильного FPS (вынесено в отдельную функцию)
+        if let Some(_delta_time_ms) = maintain_fps(&mut last_time, interval_ms) {
+            // Обработка ввода и обновления состояния
+            let input_result = handle_input(state, inp, _delta_time_ms);
 
-        // Обработка ввода и обновления состояния
-        match handle_input(state, inp, delta_time_ms) {
-            InputResult::Continue | InputResult::Pause => {}
-            InputResult::Quit => return Ok(0),
-            InputResult::GameOver => {
-                handle_game_over(cnv);
-                break;
+            // Обработка результата ввода (вынесено в отдельную функцию)
+            if let Some(final_score) = handle_input_result(input_result, cnv) {
+                return Ok(final_score);
             }
-            InputResult::Won => break,
+
+            // Отрисовка кадра
+            render(state, cnv, high_score_display);
         }
-
-        // Отрисовка кадра
-        render(state, cnv, high_score_display);
     }
-
-    Ok(state.score())
 }
 
 #[cfg(test)]
@@ -205,5 +251,190 @@ mod tests {
         let _pause = InputResult::Pause;
         let _game_over = InputResult::GameOver;
         let _won = InputResult::Won;
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: maintain_fps()
+    // =========================================================================
+
+    /// Тест: maintain_fps() корректно регулирует FPS
+    #[test]
+    fn test_maintain_fps_regulates_fps() {
+        let mut last_time = std::time::Instant::now();
+        let interval_ms = 1_000 / FPS; // 16ms при 60 FPS
+
+        // Ждём немного меньше интервала
+        std::thread::sleep(std::time::Duration::from_millis(interval_ms / 2));
+
+        // maintain_fps() должен вернуть None так как прошло меньше интервала
+        let result = maintain_fps(&mut last_time, interval_ms);
+        assert!(result.is_none(), "maintain_fps() должен вернуть None когда прошло меньше интервала");
+    }
+
+    /// Тест: maintain_fps() возвращает Some когда интервал прошёл
+    #[test]
+    fn test_maintain_fps_returns_some_after_interval() {
+        let mut last_time = std::time::Instant::now();
+        let interval_ms = 1_000 / FPS;
+
+        // Ждём больше интервала
+        std::thread::sleep(std::time::Duration::from_millis(interval_ms + 10));
+
+        // maintain_fps() должен вернуть Some(delta_time_ms)
+        let result = maintain_fps(&mut last_time, interval_ms);
+        assert!(result.is_some(), "maintain_fps() должен вернуть Some когда прошло больше интервала");
+        assert!(result.unwrap() >= interval_ms, "delta_time_ms должен быть >= interval_ms");
+    }
+
+    /// Тест: maintain_fps() обновляет last_time
+    #[test]
+    fn test_maintain_fps_updates_last_time() {
+        let mut last_time = std::time::Instant::now();
+        let interval_ms = 1_000 / FPS;
+
+        // Сохраняем старое значение
+        let old_last_time = last_time;
+
+        // Ждём больше интервала
+        std::thread::sleep(std::time::Duration::from_millis(interval_ms + 10));
+
+        // Вызываем maintain_fps
+        let _ = maintain_fps(&mut last_time, interval_ms);
+
+        // last_time должен обновиться
+        assert!(last_time > old_last_time, "last_time должен обновиться после maintain_fps");
+    }
+
+    /// Тест: maintain_fps() обрабатывает переполнение u128 -> u64
+    #[test]
+    fn test_maintain_fps_handles_overflow() {
+        let mut last_time = std::time::Instant::now();
+        let interval_ms = 1_000 / FPS;
+
+        // Вызываем maintain_fps немедленно (без ожидания)
+        let result = maintain_fps(&mut last_time, interval_ms);
+
+        // Должен вернуть None так как прошло очень мало времени
+        assert!(result.is_none(), "maintain_fps() должен обработать малый delta_time");
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: handle_input_result()
+    // =========================================================================
+
+    /// Тест: handle_input_result() правильно обрабатывает InputResult::Continue
+    #[test]
+    fn test_handle_input_result_continue() {
+        // Создаём mock renderer
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // InputResult::Continue должен вернуть None
+        let result = handle_input_result(InputResult::Continue, &mut renderer);
+        assert!(result.is_none(), "Continue должен вернуть None");
+    }
+
+    /// Тест: handle_input_result() правильно обрабатывает InputResult::Pause
+    #[test]
+    fn test_handle_input_result_pause() {
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // InputResult::Pause должен вернуть None
+        let result = handle_input_result(InputResult::Pause, &mut renderer);
+        assert!(result.is_none(), "Pause должен вернуть None");
+    }
+
+    /// Тест: handle_input_result() правильно обрабатывает InputResult::Quit
+    #[test]
+    fn test_handle_input_result_quit() {
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // InputResult::Quit должен вернуть Some(0)
+        let result = handle_input_result(InputResult::Quit, &mut renderer);
+        assert_eq!(result, Some(0), "Quit должен вернуть Some(0)");
+    }
+
+    /// Тест: handle_input_result() правильно обрабатывает InputResult::GameOver
+    #[test]
+    fn test_handle_input_result_game_over() {
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // InputResult::GameOver должен вернуть Some(0)
+        let result = handle_input_result(InputResult::GameOver, &mut renderer);
+        assert_eq!(result, Some(0), "GameOver должен вернуть Some(0)");
+    }
+
+    /// Тест: handle_input_result() правильно обрабатывает InputResult::Won
+    #[test]
+    fn test_handle_input_result_won() {
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // InputResult::Won должен вернуть Some(0)
+        let result = handle_input_result(InputResult::Won, &mut renderer);
+        assert_eq!(result, Some(0), "Won должен вернуть Some(0)");
+    }
+
+    // =========================================================================
+    // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
+    // =========================================================================
+
+    /// Тест: все InputResult варианты обрабатываются корректно
+    #[test]
+    fn test_all_input_result_variants_handled() {
+        struct MockRenderer;
+        impl crate::io_traits::Renderer for MockRenderer {
+            fn draw_strs(&mut self, _lines: &[&str], _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn draw_string(&mut self, _string: &str, _pos: (u16, u16), _fg: &dyn termion::color::Color, _bg: &dyn termion::color::Color) {}
+            fn flush(&mut self) {}
+            fn reset(&mut self) {}
+        }
+
+        let mut renderer = MockRenderer;
+
+        // Проверяем все варианты
+        assert!(handle_input_result(InputResult::Continue, &mut renderer).is_none());
+        assert!(handle_input_result(InputResult::Pause, &mut renderer).is_none());
+        assert_eq!(handle_input_result(InputResult::Quit, &mut renderer), Some(0));
+        assert_eq!(handle_input_result(InputResult::GameOver, &mut renderer), Some(0));
+        assert_eq!(handle_input_result(InputResult::Won, &mut renderer), Some(0));
     }
 }

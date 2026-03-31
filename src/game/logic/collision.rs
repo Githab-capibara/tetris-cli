@@ -4,7 +4,7 @@
 //!
 //! ## Архитектурные заметки
 //! ## Исправление #3 (DRY - Don't Repeat Yourself)
-//! Выделена общая функция `check_block_collision()` для устранения дублирования кода
+//! Выделена общая функция `is_position_valid()` для устранения дублирования кода
 //! между проверкой движения и проверкой вращения.
 //!
 //! ## Исправление C2
@@ -12,8 +12,13 @@
 //!
 //! ## Архитектурные заметки (SOLID-1)
 //! Функции используют трейт `BoardReadonly` для уменьшения связанности:
-//! - `check_block_collision()` работает с любым типом, реализующим `BoardReadonly`
+//! - `is_position_valid()` работает с любым типом, реализующим `BoardReadonly`
 //! - Это позволяет тестировать функции отдельно от `GameState`
+//!
+//! ## Исправление аудита 2026-03-31
+//! Функция `check_block_collision` переименована в `is_position_valid` с инвертированной логикой:
+//! - `true` = позиция валидна (нет коллизии)
+//! - `false` = коллизия обнаружена
 
 use crate::game::access::BoardReadonly;
 use crate::game::GameState;
@@ -24,7 +29,7 @@ use crate::types::Direction;
 /// Используется для проверки границ в проверке коллизий.
 const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 
-/// Проверить столкновение одного блока с границами или другими блоками.
+/// Проверить валидность позиции одного блока (границы и коллизии).
 ///
 /// # Аргументы
 /// * `board` - объект с доступом только на чтение к полю
@@ -33,7 +38,8 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// * `ignore_above_field` - игнорировать блоки выше поля (Y < 0)
 ///
 /// # Возвращает
-/// `true` если блок не сталкивается ни с чем
+/// - `true` если позиция валидна (нет коллизии с границами или другими блоками)
+/// - `false` если обнаружена коллизия
 ///
 /// # Архитектурные заметки (SOLID-1)
 /// Использует трейт `BoardReadonly` вместо прямого доступа к `GameState`.
@@ -47,16 +53,16 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// # Исправление C2
 /// Используется Range::contains для проверки границ вместо множественных сравнений.
 ///
-/// # Исправление #15 (LOW)
-/// Добавлен `#[inline]` атрибут для оптимизации встраивания функции.
+/// # Исправление аудита 2026-03-31 (LOW)
+/// Удалён `#[inline]` атрибут. Современные компиляторы LLVM самостоятельно
+/// принимают решение о встраивании функций на основе анализа производительности.
 ///
 /// # Примечания
 /// - Проверка границ X: `0 <= check_x < GRID_WIDTH`
 /// - Проверка заполненных ячеек: `cell == -1` означает пусто
 /// - Игнорирование `Y < 0` полезно для вращения (блоки могут быть выше поля)
 #[must_use]
-#[inline]
-fn check_block_collision<T: BoardReadonly>(
+fn is_position_valid<T: BoardReadonly>(
     board: &T,
     check_x: i16,
     check_y: i16,
@@ -84,7 +90,7 @@ fn check_block_collision<T: BoardReadonly>(
         return false; // Столкновение с заполненной ячейкой
     }
 
-    true // Нет столкновений
+    true // Нет столкновений - позиция валидна
 }
 
 /// Проверить возможность движения фигуры в заданном направлении.
@@ -133,11 +139,12 @@ fn check_collision_direction<T: BoardReadonly>(
             Direction::Down => check_y += 1,
         }
 
-        // Исправление #3 (DRY): используем общую функцию check_block_collision
+        // Исправление #3 (DRY): используем общую функцию is_position_valid
         // Для движения вниз не игнорируем блоки выше поля (check_y < 0 блокирует движение)
         let ignore_above_field = false;
-        // Инвертируем результат: check_block_collision возвращает true если нет коллизии
-        !check_block_collision(board, check_x, check_y, ignore_above_field)
+        // Исправление аудита 2026-03-31: is_position_valid возвращает true если позиция валидна
+        // Инвертируем: !is_position_valid = коллизия обнаружена
+        !is_position_valid(board, check_x, check_y, ignore_above_field)
     })
 }
 
@@ -186,10 +193,11 @@ pub fn check_rotation_collision<T: BoardReadonly>(
         let check_x = coord_x + shape_block_x;
         let check_y = coord_y + shape_block_y;
 
-        // Исправление #3 (DRY): используем общую функцию check_block_collision
+        // Исправление #3 (DRY): используем общую функцию is_position_valid
         // Для вращения игнорируем блоки выше поля (check_y < 0 допустимо)
         let ignore_above_field = true;
-        if !check_block_collision(board, check_x, check_y, ignore_above_field) {
+        // Исправление аудита 2026-03-31: is_position_valid возвращает true если позиция валидна
+        if !is_position_valid(board, check_x, check_y, ignore_above_field) {
             return false;
         }
     }
@@ -308,9 +316,9 @@ mod collision_tests {
         );
     }
 
-    /// Тест C2: проверка check_block_collision с VALID_X_RANGE.contains()
+    /// Тест C2: проверка is_position_valid с VALID_X_RANGE.contains()
     #[test]
-    fn test_fix_c2_check_block_collision_range_contains() {
+    fn test_fix_c2_is_position_valid_range_contains() {
         use crate::io::GRID_WIDTH;
 
         // Проверка что VALID_X_RANGE корректно определён

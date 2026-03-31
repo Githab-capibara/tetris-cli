@@ -161,9 +161,55 @@ impl LeaderboardEntry {
     /// Вместо этого используется прямое копирование значения с последующей атомарной
     /// валидацией. Для многопоточного доступа используйте ThreadSafeLeaderboardEntry.
     ///
+    /// # ⚠️ TOCTOU уязвимость в многопоточном коде
+    ///
+    /// **Внимание:** Этот метод безопасен ТОЛЬКО в однопоточном коде.
+    ///
+    /// ## Природа уязвимости
+    /// Метод `score()` выполняет проверку хэша и возврат значения атомарно в рамках
+    /// одного потока, но в многопоточной среде возможно состояние гонки:
+    ///
+    /// 1. **Поток 1**: вызывает `score()` → проверка хэша проходит успешно
+    /// 2. **Поток 2**: модифицирует данные (если есть мутабельный доступ)
+    /// 3. **Поток 1**: возвращает значение, которое уже не актуально
+    ///
+    /// ## Рекомендация
+    /// Для многопоточного кода используйте [`ThreadSafeLeaderboardEntry`] который
+    /// использует `Mutex` для защиты от TOCTOU уязвимостей.
+    ///
+    /// ## Пример безопасного использования
+    ///
+    /// ### ✅ Однопоточный код (безопасно)
+    /// ```ignore
+    /// let entry = LeaderboardEntry::new("Player", 1000);
+    /// let score = entry.score(); // Безопасно: атомарная валидация + возврат
+    /// ```
+    ///
+    /// ### ✅ Многопоточный код с Mutex (безопасно)
+    /// ```ignore
+    /// use std::sync::{Arc, Mutex};
+    /// let entry = Arc::new(Mutex::new(LeaderboardEntry::new("Player", 1000)));
+    /// let score = entry.lock().unwrap().score(); // Безопасно: внешняя синхронизация
+    /// ```
+    ///
+    /// ### ❌ Многопоточный код без синхронизации (НЕ БЕЗОПАСНО)
+    /// ```ignore
+    /// // ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ TOCTOU:
+    /// let entry = LeaderboardEntry::new("Player", 1000);
+    /// // Поток 1
+    /// if entry.is_valid() {
+    ///     // Поток 2 может изменить данные между проверкой и использованием!
+    ///     let score = entry.score(); // TOCTOU уязвимость!
+    /// }
+    /// ```
+    ///
     /// # Ограничения
     /// Метод безопасен только в однопоточном коде. Для многопоточного доступа
     /// используйте [`crate::highscore::leaderboard::ThreadSafeLeaderboardEntry`].
+    ///
+    /// # #[warn] Внешняя синхронизация
+    /// При использовании из нескольких потоков требуется внешняя синхронизация
+    /// через `Arc<Mutex<LeaderboardEntry>>` или `Arc<RwLock<LeaderboardEntry>>`.
     #[must_use]
     pub fn score(&self) -> u128 {
         // Атомарное копирование значения (u128 копируется атомарно на большинстве платформ)
@@ -475,27 +521,24 @@ impl ThreadSafeLeaderboardEntry {
     )]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
-        match self.inner.lock() {
-            Ok(guard) => {
-                let score_value = guard.score_value;
-                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-                if !hmac_verify_with_salt(
-                    get_leaderboard_hmac_key(),
-                    &guard.salt,
-                    &salt_name_score,
-                    &guard.hash,
-                ) {
-                    eprintln!("Предупреждение: запись не прошла валидацию!");
-                    return 0;
-                }
-                score_value
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            let score_value = guard.score_value;
+            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+            if !hmac_verify_with_salt(
+                get_leaderboard_hmac_key(),
+                &guard.salt,
+                &salt_name_score,
+                &guard.hash,
+            ) {
+                eprintln!("Предупреждение: запись не прошла валидацию!");
+                return 0;
             }
-            Err(_) => {
-                // Graceful degradation: логируем ошибку вместо паники
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): Mutex poisoned - поток паниковал удерживая блокировку");
-                0
-            }
+            return score_value;
         }
+        // Graceful degradation: логируем ошибку вместо паники
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): Mutex poisoned - поток паниковал удерживая блокировку");
+        0
     }
 
     /// Получить значение рекорда с безопасной обработкой ошибок.
@@ -512,27 +555,24 @@ impl ThreadSafeLeaderboardEntry {
     /// Возвращает `Option<u128>` для явной обработки отравления Mutex.
     #[must_use]
     pub fn score_safe(&self) -> Option<u128> {
-        match self.inner.lock() {
-            Ok(guard) => {
-                let score_value = guard.score_value;
-                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-                if !hmac_verify_with_salt(
-                    get_leaderboard_hmac_key(),
-                    &guard.salt,
-                    &salt_name_score,
-                    &guard.hash,
-                ) {
-                    eprintln!("[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию");
-                    return Some(0);
-                }
-                Some(score_value)
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            let score_value = guard.score_value;
+            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+            if !hmac_verify_with_salt(
+                get_leaderboard_hmac_key(),
+                &guard.salt,
+                &salt_name_score,
+                &guard.hash,
+            ) {
+                eprintln!("[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию");
+                return Some(0);
             }
-            Err(_) => {
-                // Логгируем ошибку и возвращаем None
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): Mutex poisoned");
-                None
-            }
+            return Some(score_value);
         }
+        // Логгируем ошибку и возвращаем None
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): Mutex poisoned");
+        None
     }
 
     /// Проверить валидность записи.
@@ -555,21 +595,18 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте is_valid_safe() для безопасной обработки ошибок"
     )]
     pub fn is_valid(&self) -> bool {
-        match self.inner.lock() {
-            Ok(guard) => {
-                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
-                hmac_verify_with_salt(
-                    get_leaderboard_hmac_key(),
-                    &guard.salt,
-                    &salt_name_score,
-                    &guard.hash,
-                )
-            }
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): Mutex poisoned");
-                false
-            }
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+            return hmac_verify_with_salt(
+                get_leaderboard_hmac_key(),
+                &guard.salt,
+                &salt_name_score,
+                &guard.hash,
+            );
         }
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): Mutex poisoned");
+        false
     }
 
     /// Проверить валидность записи с безопасной обработкой ошибок.
@@ -586,21 +623,18 @@ impl ThreadSafeLeaderboardEntry {
     /// Возвращает `Option<bool>` для явной обработки отравления Mutex.
     #[must_use]
     pub fn is_valid_safe(&self) -> Option<bool> {
-        match self.inner.lock() {
-            Ok(guard) => {
-                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
-                Some(hmac_verify_with_salt(
-                    get_leaderboard_hmac_key(),
-                    &guard.salt,
-                    &salt_name_score,
-                    &guard.hash,
-                ))
-            }
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): Mutex poisoned");
-                None
-            }
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+            return Some(hmac_verify_with_salt(
+                get_leaderboard_hmac_key(),
+                &guard.salt,
+                &salt_name_score,
+                &guard.hash,
+            ));
         }
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): Mutex poisoned");
+        None
     }
 
     /// Получить имя игрока.
@@ -620,13 +654,12 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте name_safe() для безопасной обработки ошибок"
     )]
     pub fn name(&self) -> String {
-        match self.inner.lock() {
-            Ok(guard) => guard.name.clone(),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): Mutex poisoned");
-                String::from("[ошибка доступа]")
-            }
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            return guard.name.clone();
         }
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): Mutex poisoned");
+        String::from("[ошибка доступа]")
     }
 
     /// Получить имя игрока с безопасной обработкой ошибок.
@@ -639,13 +672,12 @@ impl ThreadSafeLeaderboardEntry {
     /// Возвращает `Option<String>` для явной обработки отравления Mutex.
     #[must_use]
     pub fn name_safe(&self) -> Option<String> {
-        match self.inner.lock() {
-            Ok(guard) => Some(guard.name.clone()),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): Mutex poisoned");
-                None
-            }
+        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
+        if let Ok(guard) = self.inner.lock() {
+            return Some(guard.name.clone());
         }
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): Mutex poisoned");
+        None
     }
 }
 

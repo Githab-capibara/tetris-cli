@@ -12,26 +12,24 @@
 //! ## Исправление #4 (HIGH)
 //! Логика wall kick перемещена в `wall_kick.rs` для устранения дублирования.
 //! Этот модуль содержит только базовое вращение без смещений.
+//!
+//! ## Исправление аудита 2026-03-31
+//! Удалена дублирующая функция `can_rotate_curr_shape` так как она полностью
+//! дублирует функциональность из `collision::can_rotate_curr_shape`.
+//! Используйте функцию из модуля `collision` для проверки вращения.
 
 use crate::game::GameState;
 
-/// Проверить возможность вращения текущей фигуры.
+/// Базовое вращение фигуры без проверки коллизий.
 ///
 /// # Аргументы
-/// * `state` - состояние игры
+/// * `state` - состояние игры (изменяемое)
 /// * `dir` - направление вращения
 ///
-/// # Возвращает
-/// `true` если вращение возможно (прямое или с wall kick)
-///
-/// # Делегирование
-/// Функция делегирует проверку в `wall_kick::can_rotate_with_wall_kick`
-/// для централизации логики wall kick.
-///
-/// ## Исправление #13
-/// Функция предназначена для будущего использования в API.
-#[must_use]
-#[allow(dead_code)]
-pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
-    super::wall_kick::can_rotate_with_wall_kick(state, dir)
+/// # Примечания
+/// Эта функция выполняет только вращение координат фигуры.
+/// Для проверки возможности вращения используйте
+/// `crate::game::logic::collision::can_rotate_curr_shape`.
+pub fn rotate_shape(state: &mut GameState, dir: crate::types::RotationDirection) {
+    state.get_curr_shape_mut().rotate(dir);
 }

@@ -601,12 +601,13 @@ fn test_state_validation_integration() {
     assert!(state.set_fall_speed(f32::INFINITY).is_err());
     assert!(state.set_land_timer(f64::INFINITY).is_err());
 
-    // Проверяем clamp значений
-    assert!(state.set_fall_speed(INITIAL_FALL_SPD - 0.5).is_ok());
+    // Проверяем валидацию диапазона (вместо clamp теперь строгая валидация)
+    // Исправление аудита 2026-03-31: set_fall_speed() теперь отклоняет значения вне диапазона
+    assert!(state.set_fall_speed(INITIAL_FALL_SPD - 0.5).is_err());
     assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
-    assert!(state.set_fall_speed(MAX_FALL_SPEED + 100.0).is_ok());
-    assert_eq!(state.fall_speed(), MAX_FALL_SPEED);
+    assert!(state.set_fall_speed(MAX_FALL_SPEED + 100.0).is_err());
+    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Проверяем отрицательные значения land_timer
     assert!(state.set_land_timer(-0.5).is_ok());

@@ -95,18 +95,25 @@ pub fn is_valid_name_char(c: char) -> bool {
 ///
 /// # Исправление аудита 2026-03-30
 /// Добавлен комментарий о дублировании (не критично, оставлено как есть).
+///
+/// # Исправление аудита 2026-03-31 (MEDIUM)
+/// Использует `String::with_capacity()` для предварительного выделения памяти
+/// и предотвращения лишних аллокаций при сборке строки.
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {
         return ANONYMOUS_NAME.to_string();
     }
 
+    // Исправление аудита 2026-03-31: используем with_capacity для оптимизации
+    // Предварительно выделяем память исходя из длины входной строки (максимум 20 символов)
+    let max_len = trimmed.len().min(20);
+    let mut validated = String::with_capacity(max_len);
+
     // Whitelist фильтрация: оставляем только разрешённые символы
-    let validated: String = trimmed
-        .chars()
-        .filter(|&c| is_valid_name_char(c))
-        .take(20)
-        .collect();
+    for c in trimmed.chars().filter(|&c| is_valid_name_char(c)).take(20) {
+        validated.push(c);
+    }
 
     if validated.is_empty() {
         ANONYMOUS_NAME.to_string()

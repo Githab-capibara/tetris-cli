@@ -280,7 +280,7 @@ ValidationService::validate_u32_range(5, 1, 10)?;
 - `LevelAccess` — доступ к уровням (get_level, set_level)
 - `LinesAccess` — доступ к линиям (get_lines_cleared, set_lines_cleared, add_lines)
 - `ComboAccess` — доступ к комбо (get_combo, set_combo, reset_combo)
-- `GameBoardAccess` — ⚠️ deprecated (не используется)
+- `GameBoardAccess` — ❌ удалён (избыточный трейт, заменён на BoardReadonly/BoardMutable)
 
 **Принципы:**
 - Interface Segregation Principle (ISP) — узкие трейты
@@ -399,7 +399,7 @@ impl GameMode { fn as_trait(&self) -> &dyn GameModeTrait { ... } }
 | **Средний размер модуля** | ~350 строк | ✅ |
 | **Крупные модули** | 2 (state, tetromino) | ⚠️ |
 | **Циклические зависимости** | 0 | ✅ |
-| **Покрытие тестами** | 1287+ тестов | ✅ |
+| **Покрытие тестами** | 1308 тестов | ✅ |
 | **Публичный API** | Стабильный | ✅ |
 | **Меры безопасности** | 10+ (HmacValidator, constant-time HMAC, UTF-8, path traversal, saturating operations) | ✅ |
 
@@ -458,7 +458,7 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1287+ тестов** (unit + integration + architecture)
+**ВСЕГО: 1308 тестов** (unit + integration + architecture)
 
 ### Архитектурные тесты (`src/tests/test_architecture_*.rs`)
 
@@ -521,7 +521,7 @@ cargo bench --features bench  # Бенчмарки
 - ✅ Отсутствие циклических зависимостей
 - ✅ Разделение render/scoring/logic на подмодули
 - ✅ Трейты для абстракции (GameModeTrait, TerminalBackend, InputReader, Renderer)
-- ✅ Обширное тестирование (1227+ тестов, включая security-тесты)
+- ✅ Обширное тестирование (1308 тестов, включая security-тесты)
 - ✅ Защита от переполнения (saturating операции)
 - ✅ TOCTOU защита в LeaderboardEntry
 - ✅ Централизованная валидация путей с защитой от symlink
