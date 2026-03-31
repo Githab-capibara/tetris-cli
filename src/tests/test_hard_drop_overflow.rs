@@ -91,7 +91,7 @@ fn test_max_drop_distance() {
     // Максимальная высота поля = 20, начальная позиция = 0
     // Максимальная дистанция = 20 ячеек
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     let max_drop_distance = (state.curr_shape().pos().1 - initial_y) as u32;

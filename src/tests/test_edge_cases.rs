@@ -96,7 +96,7 @@ fn test_edge_cases_right_boundary() {
 
     for _ in 0..20 {
         if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
+            state.get_curr_shape_mut().pos().0 += 1.0;
         }
     }
 
@@ -111,7 +111,7 @@ fn test_edge_cases_left_boundary() {
 
     for _ in 0..20 {
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 
@@ -125,7 +125,7 @@ fn test_edge_cases_bottom_boundary() {
     let mut state = GameState::new();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     let y = state.curr_shape().pos().1;
@@ -213,8 +213,8 @@ fn test_edge_cases_speed_reasonable() {
 #[test]
 fn test_edge_cases_i_rotates() {
     let mut state = GameState::new();
-    state.get_curr_shape_mut().shape = ShapeType::I;
-    state.get_curr_shape_mut().coords = SHAPE_COORDS[ShapeType::I as usize];
+    state.get_curr_shape_mut().set_shape(ShapeType::I);
+    state.get_curr_shape_mut().set_coords(SHAPE_COORDS[ShapeType::I as usize]);
 
     let original_coords = state.curr_shape().coords();
 
@@ -235,12 +235,12 @@ fn test_edge_cases_shapes_within_bounds() {
     // Двигаем ко всем границам
     for _ in 0..10 {
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     let x = state.curr_shape().pos().0;
@@ -267,7 +267,7 @@ fn test_edge_cases_can_hold_resets() {
 fn test_edge_cases_position_resets_after_hold() {
     let mut state = GameState::new();
 
-    state.get_curr_shape_mut().pos = (2.0, 5.0);
+    state.get_curr_shape_mut().set_pos((2.0, 5.0));
     state.hold_shape();
 
     assert_eq!(state.curr_shape().pos(), (4.0, 0.0));
@@ -279,7 +279,7 @@ fn test_edge_cases_next_shape_not_none() {
     let state = GameState::new();
     let next = state.next_shape();
 
-    assert!((next.shape as usize) < 7);
+    assert!((next.shape() as usize) < 7);
 }
 
 /// Тест 28: Проверка что текущая фигура не None
@@ -288,7 +288,7 @@ fn test_edge_cases_curr_shape_not_none() {
     let state = GameState::new();
     let curr = state.curr_shape();
 
-    assert!((curr.shape as usize) < 7);
+    assert!((curr.shape() as usize) < 7);
 }
 
 /// Тест 29: Проверка что поле имеет правильный размер

@@ -44,7 +44,7 @@ fn test_bounds_check_boundaries() {
 
     // Перемещаем фигуру к левой границе
     while can_move_curr_shape_direction(&state, Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     // Движение влево должно быть заблокировано
@@ -58,7 +58,7 @@ fn test_bounds_check_boundaries() {
 
     // Перемещаем фигуру к правой границе
     while can_move_curr_shape_direction(&state, Direction::Right) {
-        state.get_curr_shape_mut().pos.0 += 1.0;
+        state.get_curr_shape_mut().pos().0 += 1.0;
     }
 
     // Движение вправо должно быть заблокировано
@@ -101,7 +101,7 @@ fn test_collision_with_other_pieces() {
     let original_pos = state.curr_shape().pos();
 
     // Перемещаем фигуру на тестовую позицию
-    state.get_curr_shape_mut().pos = (test_x as f32, test_y as f32);
+    state.get_curr_shape_mut().set_pos((test_x as f32, test_y as f32));
 
     // Устанавливаем блок прямо под фигурой (на 1 ячейку ниже)
     state.get_blocks_mut()[test_y + 1][test_x] = 1;
@@ -110,7 +110,7 @@ fn test_collision_with_other_pieces() {
     let can_move = can_move_curr_shape_direction(&state, Direction::Down);
 
     // Восстанавливаем оригинальную позицию
-    state.get_curr_shape_mut().pos = original_pos;
+    state.get_curr_shape_mut().set_pos(original_pos);
 
     assert!(
         !can_move,
@@ -159,7 +159,7 @@ fn test_negative_coords_handling() {
     let mut state = GameState::new();
 
     // Устанавливаем позицию на левой границе (X=0)
-    state.get_curr_shape_mut().pos.0 = 0.0;
+    state.get_curr_shape_mut().pos().0 = 0.0;
 
     // Движение влево должно быть заблокировано на границе
     assert!(

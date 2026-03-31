@@ -41,7 +41,7 @@ fn test_full_game_initialization() {
         "Текущая фигура должна быть валидной"
     );
     assert!(
-        (state.next_shape().shape as usize) < 7,
+        (state.next_shape().shape() as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
 }
@@ -76,27 +76,27 @@ fn test_piece_movement_cycle() {
     let mut state = GameState::new();
 
     // Запоминаем начальную позицию
-    let initial_x = state.get_curr_shape_mut().pos.0;
-    let initial_y = state.get_curr_shape_mut().pos.1;
+    let initial_x = state.get_curr_shape_mut().pos().0;
+    let initial_y = state.get_curr_shape_mut().pos().1;
 
     // Двигаем влево
     if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     // Двигаем вправо
     if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos.0 += 1.0;
+        state.get_curr_shape_mut().pos().0 += 1.0;
     }
 
     // Двигаем вниз
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем, что позиция изменилась
-    let final_x = state.get_curr_shape_mut().pos.0;
-    let final_y = state.get_curr_shape_mut().pos.1;
+    let final_x = state.get_curr_shape_mut().pos().0;
+    let final_y = state.get_curr_shape_mut().pos().1;
 
     // Хотя бы одна координата должна измениться
     assert!(
@@ -112,16 +112,16 @@ fn test_piece_movement_cycle() {
 fn test_piece_drop_to_floor() {
     let mut state = GameState::new();
 
-    let start_y = state.get_curr_shape_mut().pos.1;
+    let start_y = state.get_curr_shape_mut().pos().1;
 
     // Опускаем фигуру до упора
     let mut drop_count = 0;
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
         drop_count += 1;
     }
 
-    let end_y = state.get_curr_shape_mut().pos.1;
+    let end_y = state.get_curr_shape_mut().pos().1;
 
     // Фигура должна опуститься
     assert!(end_y > start_y, "Фигура должна опуститься вниз");
@@ -142,7 +142,7 @@ fn test_rotation_in_game_context() {
     let mut state = GameState::new();
 
     // Устанавливаем фигуру в центр поля для корректного вращения
-    state.get_curr_shape_mut().pos = (5.0, 10.0);
+    state.get_curr_shape_mut().set_pos((5.0, 10.0));
 
     // Проверяем возможность вращения
     let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
@@ -173,12 +173,12 @@ fn test_game_state_tetromino_interaction() {
     let curr = state.curr_shape();
 
     // Проверяем, что у фигуры правильная структура
-    assert_eq!(curr.coords.len(), 4, "У фигуры должно быть 4 блока");
-    assert!(curr.fg < 7, "Индекс цвета должен быть в диапазоне 0-6");
+    assert_eq!(curr.coords().len(), 4, "У фигуры должно быть 4 блока");
+    assert!(curr.fg() < 7, "Индекс цвета должен быть в диапазоне 0-6");
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        curr.shape as u8, curr.fg,
+        curr.shape() as u8, curr.fg(),
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
 }
@@ -329,8 +329,8 @@ fn test_all_shapes_in_game() {
         };
 
         // Проверяем, что фигура валидна
-        assert!(tetromino.fg < 7, "Индекс цвета должен быть валидным");
-        assert_eq!(tetromino.coords.len(), 4, "У фигуры должно быть 4 блока");
+        assert!(tetromino.fg() < 7, "Индекс цвета должен быть валидным");
+        assert_eq!(tetromino.coords().len(), 4, "У фигуры должно быть 4 блока");
     }
 }
 

@@ -231,12 +231,12 @@ mod input_tests {
     #[test]
     fn test_handle_movement_left() {
         let mut state = GameState::new();
-        let initial_x = state.curr_shape().pos.0;
+        let initial_x = state.curr_shape().pos().0;
 
         handle_movement_input(&mut state, Direction::Left);
 
         assert!(
-            state.curr_shape().pos.0 <= initial_x,
+            state.curr_shape().pos().0 <= initial_x,
             "Фигура должна сдвинуться влево или остаться на месте"
         );
     }
@@ -244,12 +244,12 @@ mod input_tests {
     #[test]
     fn test_handle_movement_right() {
         let mut state = GameState::new();
-        let initial_x = state.curr_shape().pos.0;
+        let initial_x = state.curr_shape().pos().0;
 
         handle_movement_input(&mut state, Direction::Right);
 
         assert!(
-            state.curr_shape().pos.0 >= initial_x,
+            state.curr_shape().pos().0 >= initial_x,
             "Фигура должна сдвинуться вправо или остаться на месте"
         );
     }

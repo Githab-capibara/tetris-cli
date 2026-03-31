@@ -3,7 +3,7 @@
 //! Проверяют, что Direction::Down не вызывает паники и корректно обрабатывается.
 
 use crate::game::GameState;
-use crate::types::Direction;
+use crate::types::{Direction, RotationDirection};
 
 /// Тест 1: Проверка, что Direction::Down не вызывает вращения
 ///
@@ -13,15 +13,15 @@ fn test_direction_down_no_rotation() {
     use crate::tetromino::Tetromino;
 
     let mut tetromino = Tetromino::from_bag(&mut crate::tetromino::BagGenerator::new());
-    let original_coords = tetromino.coords;
+    let original_coords = tetromino.coords();
 
     // Пытаемся "вращать" с Direction::Down (должно игнорироваться)
     #[allow(deprecated)]
-    tetromino.rotate_old(Direction::Down);
+    tetromino.rotate(RotationDirection::NoRotation);
 
     // Координаты не должны измениться
     assert_eq!(
-        tetromino.coords, original_coords,
+        tetromino.coords(), original_coords,
         "Direction::Down не должен вызывать вращение фигуры"
     );
 }
@@ -99,7 +99,7 @@ fn test_direction_down_collision_check() {
 
     // Опускаем фигуру на дно через геттер
     while can_move_curr_shape_direction(&state, Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Теперь движение вниз должно быть заблокировано

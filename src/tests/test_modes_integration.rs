@@ -183,7 +183,7 @@ fn test_modes_integration_rotation_in_all_modes() {
 /// Проверяет возможность движения фигур в каждом режиме.
 #[test]
 fn test_modes_integration_movement_in_all_modes() {
-    use crate::types::Direction;
+    use crate::types::{Direction, RotationDirection};
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -213,7 +213,7 @@ fn test_modes_integration_movement_in_all_modes() {
 /// Проверяет механику призрачной фигуры в каждом режиме.
 #[test]
 fn test_modes_integration_ghost_piece_in_all_modes() {
-    use crate::types::Direction;
+    use crate::types::{Direction, RotationDirection};
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();
@@ -251,15 +251,15 @@ fn test_modes_integration_next_shape_in_all_modes() {
     let marathon_next = marathon.next_shape();
 
     assert!(
-        (classic_next.shape as usize) < 7,
+        (classic_next.shape() as usize) < 7,
         "Classic: следующая фигура должна быть валидной"
     );
     assert!(
-        (sprint_next.shape as usize) < 7,
+        (sprint_next.shape() as usize) < 7,
         "Sprint: следующая фигура должна быть валидной"
     );
     assert!(
-        (marathon_next.shape as usize) < 7,
+        (marathon_next.shape() as usize) < 7,
         "Marathon: следующая фигура должна быть валидной"
     );
 }
@@ -393,7 +393,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
 
     for &shape in &shapes {
         let mut classic = GameState::new();
-        classic.get_curr_shape_mut().shape = shape;
+        classic.get_curr_shape_mut().set_shape(shape);
         assert_eq!(
             classic.curr_shape().shape(),
             shape,
@@ -401,7 +401,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         );
 
         let mut sprint = GameState::new_sprint();
-        sprint.get_curr_shape_mut().shape = shape;
+        sprint.get_curr_shape_mut().set_shape(shape);
         assert_eq!(
             sprint.curr_shape().shape(),
             shape,
@@ -409,7 +409,7 @@ fn test_modes_integration_all_shapes_in_all_modes() {
         );
 
         let mut marathon = GameState::new_marathon();
-        marathon.get_curr_shape_mut().shape = shape;
+        marathon.get_curr_shape_mut().set_shape(shape);
         assert_eq!(
             marathon.curr_shape().shape(),
             shape,

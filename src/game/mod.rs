@@ -328,7 +328,7 @@ mod game_tests {
         let mut drop_height = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
             drop_height += 1;
         }
 
@@ -342,13 +342,13 @@ mod game_tests {
     #[test]
     fn test_hard_drop_bonus_points() {
         let mut state = GameState::new();
-        let start_y = state.curr_shape().pos.1;
+        let start_y = state.curr_shape().pos().1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
 
-        let drop_distance = (state.curr_shape().pos.1 - start_y) as u64;
+        let drop_distance = (state.curr_shape().pos().1 - start_y) as u64;
 
         assert_eq!(
             HARD_DROP_POINTS, 2,
@@ -367,7 +367,7 @@ mod game_tests {
         );
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
         state.set_is_hard_dropping(true);
 
@@ -386,14 +386,14 @@ mod game_tests {
     #[test]
     fn test_hard_drop_boundary() {
         let mut state = GameState::new();
-        let initial_y = state.curr_shape().pos.1;
+        let initial_y = state.curr_shape().pos().1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
 
         assert!(
-            state.curr_shape().pos.1 > initial_y,
+            state.curr_shape().pos().1 > initial_y,
             "Фигура должна опуститься после Hard Drop"
         );
         assert!(
@@ -401,7 +401,7 @@ mod game_tests {
             "Движение вниз должно быть заблокировано после приземления"
         );
         assert!(
-            state.curr_shape().pos.1 <= GRID_HEIGHT as f32,
+            state.curr_shape().pos().1 <= GRID_HEIGHT as f32,
             "Фигура не должна выходить за границы поля"
         );
     }
@@ -445,7 +445,7 @@ mod game_tests {
         let mut soft_drop_moves = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
             soft_drop_moves += 1;
         }
 
@@ -472,7 +472,7 @@ mod game_tests {
         let test_moves = 5;
         for _ in 0..test_moves {
             if state.can_move_curr_shape_direction(Direction::Down) {
-                state.get_curr_shape_mut().pos.1 += 1.0;
+                state.get_curr_shape_mut().pos_mut().1 += 1.0;
                 state.set_soft_drop_distance(state.soft_drop_distance() + 1);
             }
         }

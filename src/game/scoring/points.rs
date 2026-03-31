@@ -424,8 +424,8 @@ mod points_tests {
 
         assert!(state.held_shape().is_some(), "Фигура должна быть удержана");
         assert_ne!(
-            state.curr_shape().shape,
-            initial_shape.shape,
+            state.curr_shape().shape(),
+            initial_shape.shape(),
             "Текущая фигура должна измениться"
         );
         assert!(
@@ -466,7 +466,7 @@ mod points_tests {
         state.set_score(u128::MAX - 50);
 
         // Устанавливаем фигуру высоко для большого падения
-        state.get_curr_shape_mut().pos.1 = 0.0;
+        state.get_curr_shape_mut().pos_mut().1 = 0.0;
 
         // Выполняем Hard Drop
         handle_hard_drop(&mut state);
@@ -615,7 +615,7 @@ mod points_tests {
 
         // Устанавливаем фигуру так чтобы она достигла верха поля (проигрыш)
         // Для этого устанавливаем координату Y отрицательной
-        state.get_curr_shape_mut().pos.1 = -5.0;
+        state.get_curr_shape_mut().pos_mut().1 = -5.0;
 
         // Сохраняем фигуру в сетке чтобы создать коллизию
         state.save_tetromino();
@@ -638,7 +638,7 @@ mod points_tests {
         let mut state = GameState::new();
 
         // Устанавливаем фигуру в нормальной позиции (на поле)
-        state.get_curr_shape_mut().pos.1 = 10.0;
+        state.get_curr_shape_mut().pos_mut().1 = 10.0;
 
         // Сохраняем фигуру в сетке
         state.save_tetromino();
@@ -686,11 +686,11 @@ mod points_tests {
         state.get_blocks_mut()[0][4] = 1;
 
         // Устанавливаем фигуру так чтобы её блок был выше поля
-        state.get_curr_shape_mut().pos.1 = -2.0;
+        state.get_curr_shape_mut().pos_mut().1 = -2.0;
 
         // Проверяем условие проигрыша напрямую
-        let game_over = state.curr_shape().coords.iter().any(|&(_, coord_y)| {
-            let shape_block_y = state.curr_shape().pos.1 as i16;
+        let game_over = state.curr_shape().coords().iter().any(|&(_, coord_y)| {
+            let shape_block_y = state.curr_shape().pos().1 as i16;
             let block_y = coord_y + shape_block_y;
             block_y < MIN_Y
         });

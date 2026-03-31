@@ -55,13 +55,13 @@ fn test_rotate_with_wall_kick_basic() {
 #[test]
 fn test_wall_kick_refactor_at_wall() {
     use crate::game::logic::can_move_curr_shape_direction;
-    use crate::types::Direction;
+    use crate::types::{Direction, RotationDirection};
 
     let mut state = GameState::new();
 
     // Перемещаем фигуру к левой стене
     while can_move_curr_shape_direction(&state, Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     // Пытаемся вращать у стены - должен сработать wall kick
@@ -167,8 +167,8 @@ fn test_no_logic_duplication() {
     let can_rotate = state.can_rotate_curr_shape(RotationDirection::Clockwise);
 
     // Сбрасываем состояние
-    state.get_curr_shape_mut().coords = original_coords;
-    state.get_curr_shape_mut().pos = original_pos;
+    state.get_curr_shape_mut().set_coords(original_coords);
+    state.get_curr_shape_mut().set_pos(original_pos);
 
     // Выполняем вращение
     let rotated = state.rotate_with_wall_kick(RotationDirection::Clockwise);

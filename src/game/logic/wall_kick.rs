@@ -193,7 +193,7 @@ mod wall_kick_tests {
     #[test]
     fn test_rotate_with_wall_kick_basic() {
         let mut state = GameState::new();
-        let initial_coords = state.curr_shape().coords;
+        let initial_coords = state.curr_shape().coords();
 
         let result = rotate_with_wall_kick(&mut state, RotationDirection::Clockwise);
 

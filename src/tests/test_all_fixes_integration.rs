@@ -209,7 +209,7 @@ fn test_bounds_check_and_collision_integration() {
 
     // Перемещаем к стене через геттер
     while can_move_curr_shape_direction(&state, Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     // Проверяем, что движение влево заблокировано
@@ -432,13 +432,13 @@ fn test_tetromino_copy_semantics() {
     let copied = original;
 
     // Проверяем, что оба значения равны
-    assert_eq!(original.pos, copied.pos, "Позиции должны совпадать");
-    assert_eq!(original.shape, copied.shape, "Фигуры должны совпадать");
+    assert_eq!(original.pos(), copied.pos(), "Позиции должны совпадать");
+    assert_eq!(original.shape(), copied.shape(), "Фигуры должны совпадать");
     assert_eq!(
-        original.coords, copied.coords,
+        original.coords(), copied.coords(),
         "Координаты должны совпадать"
     );
-    assert_eq!(original.fg, copied.fg, "Цвет должен совпадать");
+    assert_eq!(original.fg(), copied.fg(), "Цвет должен совпадать");
 }
 
 /// Тест 14: Проверка исправления О3 - порядок элементов в модулях
@@ -503,7 +503,7 @@ fn test_no_components_reference() {
 
     // Проверяем доступность основных компонентов
     let shape = state.curr_shape();
-    assert!(shape.pos.0 == 4.0, "Начальная позиция X должна быть 4.0");
+    assert!(shape.pos().0 == 4.0, "Начальная позиция X должна быть 4.0");
 }
 
 /// Тест 18: Комплексный тест всех исправлений
@@ -520,7 +520,7 @@ fn test_all_fixes_comprehensive() {
 
     // 2. Проверяем Copy семантику (проверка О2)
     let shape_copy = *state.curr_shape();
-    assert_eq!(shape_copy.shape, state.curr_shape().shape());
+    assert_eq!(shape_copy.shape(), state.curr_shape().shape());
 
     // 3. Проверяем Canvas (проверка Л2)
     let canvas_result = Canvas::new();

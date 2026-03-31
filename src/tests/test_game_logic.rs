@@ -14,8 +14,7 @@ use crate::game::GameState;
 use crate::game::{INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::Direction;
-use crate::types::RotationDirection;
+use crate::types::{Direction, RotationDirection};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
@@ -31,13 +30,13 @@ fn test_game_state_initial_piece_position() {
 
     // Начальная позиция X должна быть по центру (4.0)
     assert!(
-        (curr_shape.pos.0 - 4.0).abs() < f32::EPSILON,
+        (curr_shape.pos().0 - 4.0).abs() < f32::EPSILON,
         "Начальная позиция X должна быть 4.0 (центр)"
     );
 
     // Начальная позиция Y должна быть 0.0 (верх поля)
     assert!(
-        (curr_shape.pos.1 - 0.0).abs() < f32::EPSILON,
+        (curr_shape.pos().1 - 0.0).abs() < f32::EPSILON,
         "Начальная позиция Y должна быть 0.0"
     );
 }
@@ -52,7 +51,7 @@ fn test_game_state_next_shape_exists() {
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        next_shape.shape as u8, next_shape.fg,
+        next_shape.shape() as u8, next_shape.fg(),
         "Индекс цвета должен соответствовать типу фигуры"
     );
 }
@@ -114,7 +113,7 @@ fn test_collision_left_boundary() {
     // Перемещаем фигуру к левой границе
     for _ in 0..10 {
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 
@@ -135,7 +134,7 @@ fn test_collision_right_boundary() {
     // Перемещаем фигуру к правой границе
     for _ in 0..10 {
         if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
+            state.get_curr_shape_mut().pos().0 += 1.0;
         }
     }
 
@@ -155,7 +154,7 @@ fn test_collision_floor() {
 
     // Опускаем фигуру вниз до упора
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Дальнейшее движение вниз должно быть заблокировано
@@ -166,7 +165,7 @@ fn test_collision_floor() {
 
     // Проверяем, что фигура не вышла за пределы поля
     assert!(
-        state.get_curr_shape_mut().pos.1 < GRID_HEIGHT as f32,
+        state.get_curr_shape_mut().pos().1 < GRID_HEIGHT as f32,
         "Фигура не должна выходить за пределы поля по Y"
     );
 }
@@ -181,7 +180,7 @@ fn test_collision_with_fixed_blocks() {
 
     // Опускаем фигуру близко к полу для теста
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
@@ -200,7 +199,7 @@ fn test_movement_in_empty_field() {
 
     // В начале игры движение влево/вправо должно быть возможно
     // (если фигура не у самой границы)
-    let _initial_x = state.get_curr_shape_mut().pos.0;
+    let _initial_x = state.get_curr_shape_mut().pos().0;
 
     // Проверяем, что можем двигаться хотя бы в одну сторону
     let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
@@ -252,12 +251,12 @@ fn test_tetromino_rotate_clockwise() {
 
     // После вращения: (0,-1), (0,0), (0,1), (-1,0)
     assert_eq!(
-        tetromino.coords[0],
+        tetromino.coords()[0],
         (0, -1),
         "Первый блок должен повернуться"
     );
     assert_eq!(
-        tetromino.coords[1],
+        tetromino.coords()[1],
         (0, 0),
         "Центральный блок должен остаться на месте"
     );
@@ -280,7 +279,7 @@ fn test_tetromino_rotate_counter_clockwise() {
 
     // После вращения: (0,1), (0,0), (0,-1), (1,0)
     assert_eq!(
-        tetromino.coords[3],
+        tetromino.coords()[3],
         (1, 0),
         "Верхний блок должен переместиться вправо"
     );
@@ -298,19 +297,19 @@ fn test_tetromino_o_no_rotate() {
         fg: 5,
     };
 
-    let original_coords = tetromino.coords;
+    let original_coords = tetromino.coords();
 
     // Вращение по часовой
     tetromino.rotate(RotationDirection::Clockwise);
     assert_eq!(
-        tetromino.coords, original_coords,
+        tetromino.coords(), original_coords,
         "Квадрат не должен вращаться по часовой"
     );
 
     // Вращение против часовой
     tetromino.rotate(RotationDirection::CounterClockwise);
     assert_eq!(
-        tetromino.coords, original_coords,
+        tetromino.coords(), original_coords,
         "Квадрат не должен вращаться против часовой"
     );
 }
@@ -327,7 +326,7 @@ fn test_tetromino_full_rotation_cycle() {
         fg: 0,
     };
 
-    let original_coords = tetromino.coords;
+    let original_coords = tetromino.coords();
 
     // 4 вращения по часовой должны вернуть к исходным координатам
     for _ in 0..4 {
@@ -335,7 +334,7 @@ fn test_tetromino_full_rotation_cycle() {
     }
 
     assert_eq!(
-        tetromino.coords, original_coords,
+        tetromino.coords(), original_coords,
         "После 4 вращений фигура должна вернуться в исходное состояние"
     );
 }
@@ -363,14 +362,14 @@ fn test_all_tetromino_rotate() {
             fg: *shape_type as u8,
         };
 
-        let original_coords = tetromino.coords;
+        let original_coords = tetromino.coords();
         tetromino.rotate(RotationDirection::Clockwise);
 
         // Все фигуры кроме O должны изменить координаты
         if *shape_type == ShapeType::O {
             // Квадрат не должен измениться
             assert_eq!(
-                tetromino.coords, original_coords,
+                tetromino.coords(), original_coords,
                 "Квадрат (O) не должен вращаться"
             );
         } else {

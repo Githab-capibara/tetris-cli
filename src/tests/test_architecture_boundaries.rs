@@ -37,7 +37,7 @@ fn test_game_logic_does_not_import_rendering() {
     use crate::game::logic::can_move_curr_shape_direction;
     use crate::game::logic::can_rotate_curr_shape;
     use crate::game::state::GameState;
-    use crate::types::Direction;
+    use crate::types::{Direction, RotationDirection};
 
     // Проверяем что логика работает независимо от отрисовки
     let state = GameState::new();
@@ -152,7 +152,7 @@ fn test_tetromino_is_autonomous() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -180,7 +180,7 @@ fn test_tetromino_is_autonomous() {
     let mut bag2 = BagGenerator::new();
     let tetromino2 = Tetromino::from_bag(&mut bag2);
     assert!(
-        tetromino2.pos.0.is_finite(),
+        tetromino2.pos().0.is_finite(),
         "Tetromino должен работать независимо"
     );
 }

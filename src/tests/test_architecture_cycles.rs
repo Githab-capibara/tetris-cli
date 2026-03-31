@@ -190,7 +190,7 @@ fn test_no_circular_dependencies_main_modules() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J

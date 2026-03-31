@@ -46,14 +46,14 @@ mod physics_tests {
     #[test]
     fn test_handle_falling_initial() {
         let mut state = GameState::new();
-        let initial_y = state.curr_shape().pos.1;
+        let initial_y = state.curr_shape().pos().1;
 
         // Фигура должна падать
         let result = handle_falling(&mut state, 100);
 
         assert!(!result, "Фигура должна ещё падать");
         assert!(
-            state.curr_shape().pos.1 >= initial_y,
+            state.curr_shape().pos().1 >= initial_y,
             "Y координата должна увеличиться или остаться"
         );
     }
