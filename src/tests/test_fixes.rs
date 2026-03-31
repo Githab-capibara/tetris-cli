@@ -74,7 +74,7 @@ mod tests {
         let state = GameState::new_sprint();
 
         // Проверяем, что режим - Sprint
-        assert_eq!(state.get_mode(), GameMode::Sprint);
+        assert_eq!(state.get_mode_trait().name(), "Спринт");
 
         // Проверяем, что start_time установлен
         let stats = state.stats();
@@ -92,7 +92,7 @@ mod tests {
         let state = GameState::new_marathon();
 
         // Проверяем, что режим - Marathon
-        assert_eq!(state.get_mode(), GameMode::Marathon);
+        assert_eq!(state.get_mode_trait().name(), "Марафон");
 
         // Проверяем, что start_time установлен
         let stats = state.stats();
@@ -110,7 +110,7 @@ mod tests {
         let state = GameState::new();
 
         // Проверяем, что режим - Classic
-        assert_eq!(state.get_mode(), GameMode::Classic);
+        assert_eq!(state.get_mode_trait().name(), "Классика");
 
         // Для классического режима таймер не запускается автоматически
         // (он запускается при старте игры через play() или внешний код)
