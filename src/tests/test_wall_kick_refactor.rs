@@ -115,14 +115,13 @@ fn test_wall_kick_offsets_table() {
     let has_left_2 = WALL_KICK_OFFSETS.contains(&(-2, 0));
     let has_right_2 = WALL_KICK_OFFSETS.contains(&(2, 0));
     let has_up_1 = WALL_KICK_OFFSETS.contains(&(0, -1));
-    let has_down_1 = WALL_KICK_OFFSETS.contains(&(0, 1));
 
     assert!(has_left_1, "Должно быть смещение влево на 1");
     assert!(has_right_1, "Должно быть смещение вправо на 1");
     assert!(has_left_2, "Должно быть смещение влево на 2");
     assert!(has_right_2, "Должно быть смещение вправо на 2");
     assert!(has_up_1, "Должно быть смещение вверх на 1");
-    assert!(has_down_1, "Должно быть смещение вниз на 1");
+    // Смещение вниз (0, 1) не входит в таблицу SRS
 }
 
 /// Тест 6: Проверка wall kick для разных фигур

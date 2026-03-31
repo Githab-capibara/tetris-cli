@@ -433,10 +433,7 @@ fn test_wall_kick_logic_centralization() {
     let can_rotate = can_rotate_with_wall_kick(&state, RotationDirection::Clockwise);
 
     // Assert что функция вернула корректное значение bool
-    assert!(
-        true,
-        "can_rotate_with_wall_kick должен вернуть bool"
-    );
+    assert!(true, "can_rotate_with_wall_kick должен вернуть bool");
 }
 
 /// Тест: HMAC ключ из переменных окружения

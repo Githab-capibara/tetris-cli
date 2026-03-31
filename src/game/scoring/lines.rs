@@ -155,8 +155,14 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
 
     // Увеличение скорости игры
     let fall_speed = state.fall_speed();
-    // Игнорируем ошибку, так как значение вычисляется корректно
-    let _ = state.set_fall_speed(fall_speed + SPD_INC * remove_count as f32);
+    // Исправление E4 (HIGH): Явная обработка ошибки set_fall_speed()
+    // Вместо игнорирования ошибки через let _ = ..., явно обрабатываем результат
+    let new_fall_speed = fall_speed + SPD_INC * remove_count as f32;
+    if let Err(e) = state.set_fall_speed(new_fall_speed) {
+        // Логгируем ошибку но продолжаем работу (не критично)
+        eprintln!("[WARN] check_rows(): не удалось установить скорость падения: {e}");
+        // Продолжаем работу с текущей скоростью - игра не должна останавливаться
+    }
 
     remove_count
 }
@@ -208,40 +214,57 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 ///
 /// # Защита от переполнения
 /// Если счёт превышает MAX_SCORE, он устанавливается в MAX_SCORE.
+///
+/// # Исправление L2 (HIGH)
+/// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES
+/// для предотвращения паники при rows_cleared = 0.
 fn update_score_for_lines(
     score: &mut u128,
     level: u32,
     rows_cleared: usize,
     combo_counter: &mut u32,
 ) {
-    if rows_cleared > 0 {
-        // Ограничение количества линий максимум 4
-        let capped_rows = rows_cleared.min(MAX_LINES_PER_CLEAR as usize);
-
-        // Начисление очков за линии
-        let line_score = LINE_SCORES[capped_rows - 1];
-        *score = score.saturating_add(line_score);
-
-        // Обновление комбо
-        *combo_counter = combo_counter.saturating_add(1);
-
-        // Бонус за комбо (если комбо > 1)
-        if *combo_counter > 1 {
-            let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
-            *score = score.saturating_add(combo_bonus);
-        }
-
-        // Бонус за уровень (каждые 10 линий)
-        let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
-        *score = score.saturating_add(level_bonus);
-
-        // Защита от переполнения: если счёт превышает MAX_SCORE, устанавливаем в MAX_SCORE
-        if *score > MAX_SCORE {
-            *score = MAX_SCORE;
-        }
-    } else {
+    // Исправление L2 (HIGH): Явная проверка rows_cleared > 0
+    // Предотвращаем панику при доступе к LINE_SCORES[capped_rows - 1]
+    // когда capped_rows = 0
+    if rows_cleared == 0 {
         // Сброс комбо если линии не удалены
         *combo_counter = 0;
+        return;
+    }
+
+    // Ограничение количества линий максимум 4
+    let capped_rows = rows_cleared.min(MAX_LINES_PER_CLEAR as usize);
+
+    // Исправление L2: дополнительная защита - проверяем capped_rows > 0
+    // Это предотвращает панику при доступе к LINE_SCORES[-1]
+    if capped_rows == 0 {
+        // Сброс комбо если линии не удалены
+        *combo_counter = 0;
+        return;
+    }
+
+    // Начисление очков за линии
+    // Безопасно: capped_rows >= 1 гарантировано
+    let line_score = LINE_SCORES[capped_rows - 1];
+    *score = score.saturating_add(line_score);
+
+    // Обновление комбо
+    *combo_counter = combo_counter.saturating_add(1);
+
+    // Бонус за комбо (если комбо > 1)
+    if *combo_counter > 1 {
+        let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
+        *score = score.saturating_add(combo_bonus);
+    }
+
+    // Бонус за уровень (каждые 10 линий)
+    let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
+    *score = score.saturating_add(level_bonus);
+
+    // Защита от переполнения: если счёт превышает MAX_SCORE, устанавливаем в MAX_SCORE
+    if *score > MAX_SCORE {
+        *score = MAX_SCORE;
     }
 }
 

@@ -124,16 +124,42 @@ impl Tetromino {
             return;
         }
 
-        // Исправление #4 (CRITICAL): замена assert на явную проверку с saturating операциями
-        // Предотвращаем панику путём использования saturating_neg для отрицания
-        // и пропуска вращения если координаты выходят за безопасные пределы
+        // Исправление E3 (CRITICAL): замена saturating_neg на checked_neg с обработкой None
+        // saturating_neg() может вернуть некорректное значение для i16::MIN
+        // checked_neg() возвращает None при переполнении, что позволяет явно обработать ошибку
         for i in 0..4 {
             let (x, y) = self.coords[i];
             let (new_x, new_y) = match dir {
                 // Против часовой: (x, y) -> (y, -x)
-                RotationDirection::CounterClockwise => (y, x.saturating_neg()),
+                RotationDirection::CounterClockwise => {
+                    // Используем checked_neg() для безопасного отрицания
+                    match x.checked_neg() {
+                        Some(neg_x) => (y, neg_x),
+                        None => {
+                            // Переполнение при отрицании x (i16::MIN)
+                            eprintln!(
+                                "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
+                                x
+                            );
+                            return;
+                        }
+                    }
+                }
                 // По часовой: (x, y) -> (-y, x)
-                RotationDirection::Clockwise => (y.saturating_neg(), x),
+                RotationDirection::Clockwise => {
+                    // Используем checked_neg() для безопасного отрицания
+                    match y.checked_neg() {
+                        Some(neg_y) => (neg_y, x),
+                        None => {
+                            // Переполнение при отрицании y (i16::MIN)
+                            eprintln!(
+                                "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
+                                y
+                            );
+                            return;
+                        }
+                    }
+                }
                 // Без вращения - возвращаем исходные координаты
                 RotationDirection::NoRotation => (x, y),
             };

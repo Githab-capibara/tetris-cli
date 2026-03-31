@@ -11,7 +11,7 @@
 //! Валидация путей предотвращает запись файлов вне директории приложения.
 
 use crate::controls::ControlsConfig;
-use crate::validation::path::{PathValidator, PathErrorKind};
+use crate::validation::path::{PathErrorKind, PathValidator};
 use std::fs;
 use std::path::Path;
 
@@ -159,10 +159,7 @@ fn test_path_with_null_byte() {
     // Тест 1: Null byte в конце пути
     let path_with_null = Path::new("config.json\0");
     let result = validator.validate_characters(path_with_null);
-    assert!(
-        result.is_err(),
-        "Путь с null byte должен быть отклонён"
-    );
+    assert!(result.is_err(), "Путь с null byte должен быть отклонён");
     if let Err(e) = result {
         assert_eq!(
             e.kind,
@@ -223,10 +220,7 @@ fn test_path_with_url_encoding() {
     let mixed_path = "..%2fetc%2fpasswd";
     let result2 = validator.validate_no_traversal(mixed_path);
     // .. распознаётся и путь отклоняется
-    assert!(
-        result2.is_err(),
-        "Смешанный путь с .. должен быть отклонён"
-    );
+    assert!(result2.is_err(), "Смешанный путь с .. должен быть отклонён");
 
     // Тест 3: URL-encoded слэш (%2f = /)
     let url_encoded_slash = "config%2fconfig.json";
@@ -271,18 +265,12 @@ fn test_path_with_unicode_normalization() {
     // Тест 2: Unicode с разрешёнными символами (ASCII)
     let ascii_path = Path::new("config.json");
     let result2 = validator.validate_characters(ascii_path);
-    assert!(
-        result2.is_ok(),
-        "ASCII путь должен быть валидным"
-    );
+    assert!(result2.is_ok(), "ASCII путь должен быть валидным");
 
     // Тест 3: Unicode emoji (должны быть отклонены)
     let emoji_path = Path::new("config🎮.json");
     let result3 = validator.validate_characters(emoji_path);
-    assert!(
-        result3.is_err(),
-        "Путь с emoji должен быть отклонён"
-    );
+    assert!(result3.is_err(), "Путь с emoji должен быть отклонён");
 
     // Тест 4: Unicode homoglyphs (похожие символы)
     // Кириллическая 'а' (U+0430) выглядит как латинская 'a' (U+0061)
@@ -322,9 +310,7 @@ fn test_valid_paths() {
 
     // Тест 3: Путь с несколькими поддиректориями
     assert!(
-        validator
-            .validate(Path::new("a/b/c/d/config.json"))
-            .is_ok(),
+        validator.validate(Path::new("a/b/c/d/config.json")).is_ok(),
         "a/b/c/d/config.json должен быть валидным"
     );
 
@@ -351,7 +337,9 @@ fn test_valid_paths() {
     // Тест 7: Путь максимальной длины (255 символов)
     let max_length_path = "a".repeat(255);
     assert!(
-        validator.validate_length(Path::new(&max_length_path)).is_ok(),
+        validator
+            .validate_length(Path::new(&max_length_path))
+            .is_ok(),
         "Путь длиной 255 символов должен быть валидным"
     );
 

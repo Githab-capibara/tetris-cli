@@ -4,6 +4,46 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.27] — 2026-03-31
+
+### Исправления проблем аудита
+
+**CRITICAL:**
+- **E1: Canvas::default() graceful degradation** — заменена паника на graceful degradation с fallback на stub и логированием
+- **E2: ThreadSafeLeaderboardEntry::score_safe()** — возвращает `Option<u128>` вместо паники при отравлении Mutex
+- **E5: TOCTOU защита в controls.rs** — используется `O_NOFOLLOW` флаг и `fstat()` после открытия файла
+- **E9: LeaderboardEntry TOCTOU документация** — добавлена документация об ограничениях для многопоточного кода
+
+**HIGH:**
+- **E3: checked_neg() при вращении фигур** — безопасная конвертация координат с обработкой `None`
+- **E4: Обработка ошибки set_fall_speed()** — явная обработка `Result` с логированием
+- **E6: ThreadSafeLeaderboard race condition** — добавлен `ThreadSafeLeaderboard` с `Arc<Mutex<>>` защитой
+- **E10: HMAC ключ константность** — используется глобальный ключ вместо генерации нового при каждом сохранении
+- **L1: SRS wall kick смещения** — добавлено `(0, 0)` первым смещением (стандарт SRS)
+- **L2: rows_cleared=0 защита от паники** — явная проверка `rows_cleared > 0` перед доступом к массиву
+
+### Тесты
+
+- **test_all_fixed_issues.rs** — 13 тестов на все исправленные проблемы:
+  - `test_fix_e1_canvas_graceful_degradation` — Canvas::default() graceful degradation
+  - `test_fix_e2_thread_safe_score_no_panic` — ThreadSafeLeaderboardEntry без паники
+  - `test_fix_e5_controls_toctou_protection` — TOCTOU защита в controls.rs
+  - `test_fix_e9_leaderboard_toctou_documentation` — LeaderboardEntry TOCTOU документация
+  - `test_fix_e3_checked_neg_rotation` — checked_neg() при вращении фигур
+  - `test_fix_e4_set_fall_speed_error_handling` — Обработка ошибки set_fall_speed()
+  - `test_fix_e6_thread_safe_leaderboard_race_protection` — ThreadSafeLeaderboard race condition
+  - `test_fix_e10_hmac_key_constancy` — HMAC ключ константность
+  - `test_fix_l1_srs_wall_kick_offsets` — SRS wall kick смещения
+  - `test_fix_l2_rows_cleared_zero_panic` — rows_cleared=0 защита от паники
+  - `test_all_critical_fixes_integration` — интеграционный тест критических исправлений
+  - `test_all_high_priority_fixes_integration` — интеграционный тест высокоприоритетных исправлений
+  - `test_thread_safety_stress_test` — стресс-тест потокобезопасности
+
+### Обновления документации
+
+- Обновлено количество тестов: **1238+ тестов** (было 1227+)
+- Добавлена информация о новых исправлениях в README.md
+
 ## [23.96.26] — 2026-03-30
 
 ### Архитектурные улучшения

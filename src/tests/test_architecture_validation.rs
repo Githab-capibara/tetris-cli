@@ -29,7 +29,7 @@ use crate::validation::{ValidationError, ValidationErrorKind, ValidationService}
 fn test_validation_service_exists() {
     // Проверяем что ValidationService существует
     let _service = ValidationService;
-    
+
     // Проверяем что можно вызвать методы
     let result = ValidationService::validate_f32_finite(1.0);
     assert!(result.is_ok(), "ValidationService должен существовать");
@@ -49,14 +49,14 @@ fn test_validation_service_structure() {
         message: "Тестовая ошибка".to_string(),
         kind: ValidationErrorKind::OutOfRange,
     };
-    
+
     assert_eq!(error.message, "Тестовая ошибка");
     assert!(matches!(error.kind, ValidationErrorKind::OutOfRange));
-    
+
     // Проверяем Display реализацию
     let display = format!("{}", error);
     assert!(display.contains("Ошибка валидации"));
-    
+
     // Проверяем что ValidationErrorKind имеет правильные варианты
     let _not_finite = ValidationErrorKind::NotFinite;
     let _out_of_range = ValidationErrorKind::OutOfRange;
@@ -74,11 +74,11 @@ fn test_validation_service_structure() {
 #[test]
 fn test_validate_f32_finite_used_in_set_fall_speed() {
     let mut state = GameState::new();
-    
+
     // Проверяем что валидная скорость устанавливается
     let result = state.set_fall_speed(1.5);
     assert!(result.is_ok(), "Валидная скорость должна установиться");
-    
+
     // Проверяем что NaN отклоняется
     let result = state.set_fall_speed(f32::NAN);
     assert!(
@@ -89,14 +89,14 @@ fn test_validate_f32_finite_used_in_set_fall_speed() {
         matches!(result, Err(crate::game::state::GameError::Validation(_))),
         "Должна быть ошибка валидации"
     );
-    
+
     // Проверяем что Infinity отклоняется
     let result = state.set_fall_speed(f32::INFINITY);
     assert!(
         result.is_err(),
         "Infinity должен отклоняться через validate_f32_finite()"
     );
-    
+
     let result = state.set_fall_speed(f32::NEG_INFINITY);
     assert!(
         result.is_err(),
@@ -108,18 +108,18 @@ fn test_validate_f32_finite_used_in_set_fall_speed() {
 #[test]
 fn test_validate_f32_finite_used_in_set_land_timer() {
     let mut state = GameState::new();
-    
+
     // Проверяем что валидный таймер устанавливается
     let result = state.set_land_timer(0.5);
     assert!(result.is_ok(), "Валидный таймер должен установиться");
-    
+
     // Проверяем что NaN отклоняется
     let result = state.set_land_timer(f64::NAN);
     assert!(
         result.is_err(),
         "NaN должен отклоняться через validate_f32_finite()"
     );
-    
+
     // Проверяем что Infinity отклоняется
     let result = state.set_land_timer(f64::INFINITY);
     assert!(
@@ -142,12 +142,12 @@ fn test_validate_u32_range_exists_and_works() {
     // Проверяем что функция существует и работает
     let result = ValidationService::validate_u32_range(5, 1, 10);
     assert!(result.is_ok(), "validate_u32_range() должна существовать");
-    
+
     // Проверяем валидные значения
     assert!(ValidationService::validate_u32_range(0, 0, 10).is_ok());
     assert!(ValidationService::validate_u32_range(5, 0, 10).is_ok());
     assert!(ValidationService::validate_u32_range(10, 0, 10).is_ok());
-    
+
     // Проверяем невалидные значения
     let result = ValidationService::validate_u32_range(11, 0, 10);
     assert!(result.is_err(), "Значение вне диапазона должно отклоняться");
@@ -156,7 +156,7 @@ fn test_validate_u32_range_exists_and_works() {
         ValidationErrorKind::OutOfRange,
         "Должна быть ошибка OutOfRange"
     );
-    
+
     let result = ValidationService::validate_u32_range(u32::MAX, 0, 10);
     assert!(result.is_err(), "Значение вне диапазона должно отклоняться");
 }
@@ -165,11 +165,11 @@ fn test_validate_u32_range_exists_and_works() {
 #[test]
 fn test_validate_u32_range_used_in_set_fall_speed() {
     let mut state = GameState::new();
-    
+
     // Проверяем что скорость устанавливается с валидацией диапазона
     let result = state.set_fall_speed(1.0);
     assert!(result.is_ok());
-    
+
     // validate_u32_range() используется внутри set_fall_speed()
     // для дополнительной валидации диапазона
     // Это проверяется через код в state.rs строка 680
@@ -188,11 +188,11 @@ fn test_validate_u32_range_used_in_set_fall_speed() {
 fn test_no_duplicate_validation_logic() {
     // Проверяем что ValidationService используется вместо дублирования
     let mut state = GameState::new();
-    
+
     // set_fall_speed() использует ValidationService
     let result = state.set_fall_speed(1.0);
     assert!(result.is_ok());
-    
+
     // set_land_timer() использует ValidationService
     let result = state.set_land_timer(0.5);
     assert!(result.is_ok());
@@ -208,10 +208,13 @@ fn test_validation_error_used_for_all_validation_errors() {
         message: "Тест".to_string(),
         kind: ValidationErrorKind::NotFinite,
     };
-    
+
     // Проверяем что ошибка конвертируется в GameError
     let game_error = crate::game::state::GameError::Validation(error.message.clone());
-    assert!(matches!(game_error, crate::game::state::GameError::Validation(_)));
+    assert!(matches!(
+        game_error,
+        crate::game::state::GameError::Validation(_)
+    ));
 }
 
 // ============================================================================
@@ -226,21 +229,22 @@ fn test_validation_error_used_for_all_validation_errors() {
 #[test]
 fn test_all_validation_centralized_in_validation_service() {
     // Список функций валидации в ValidationService:
-    let validation_functions = [
-        "validate_f32_finite",
-        "validate_u32_range",
-    ];
-    
+    let validation_functions = ["validate_f32_finite", "validate_u32_range"];
+
     // Проверяем что функции работают
     assert!(ValidationService::validate_f32_finite(1.0).is_ok());
     assert!(ValidationService::validate_u32_range(5, 0, 10).is_ok());
-    
+
     // Проверяем что функции используются в GameState
     let mut state = GameState::new();
     let _ = state.set_fall_speed(1.0); // Использует validate_f32_finite
     let _ = state.set_land_timer(0.5); // Использует validate_f32_finite
 
-    assert_eq!(validation_functions.len(), 2, "Должно быть 2 функции валидации");
+    assert_eq!(
+        validation_functions.len(),
+        2,
+        "Должно быть 2 функции валидации"
+    );
 }
 
 // ============================================================================
@@ -256,10 +260,10 @@ fn test_all_validation_centralized_in_validation_service() {
 fn test_validation_follows_dry_principle() {
     // Проверяем что ValidationService используется в нескольких местах
     let mut state = GameState::new();
-    
+
     // set_fall_speed() использует ValidationService
     let _ = state.set_fall_speed(1.0);
-    
+
     // set_land_timer() использует ValidationService
     let _ = state.set_land_timer(0.5);
 
@@ -274,7 +278,7 @@ fn test_validation_error_used_consistently() {
     let error1 = ValidationService::validate_f32_finite(f32::NAN);
     assert!(error1.is_err());
     assert_eq!(error1.unwrap_err().kind, ValidationErrorKind::NotFinite);
-    
+
     let error2 = ValidationService::validate_u32_range(11, 0, 10);
     assert!(error2.is_err());
     assert_eq!(error2.unwrap_err().kind, ValidationErrorKind::OutOfRange);
@@ -290,12 +294,12 @@ fn test_validation_error_used_consistently() {
 #[test]
 fn test_validation_integration_with_game_state() {
     let mut state = GameState::new();
-    
+
     // Проверяем что валидация работает через GameState
     assert!(state.set_fall_speed(1.0).is_ok());
     assert!(state.set_fall_speed(f32::NAN).is_err());
     assert!(state.set_fall_speed(f32::INFINITY).is_err());
-    
+
     assert!(state.set_land_timer(0.5).is_ok());
     assert!(state.set_land_timer(f64::NAN).is_err());
     assert!(state.set_land_timer(f64::INFINITY).is_err());
@@ -305,7 +309,7 @@ fn test_validation_integration_with_game_state() {
 #[test]
 fn test_validation_does_not_impact_performance() {
     let mut state = GameState::new();
-    
+
     // Валидация должна быть быстрой
     for _ in 0..1000 {
         let _ = state.set_fall_speed(1.0);

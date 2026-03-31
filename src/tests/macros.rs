@@ -70,9 +70,24 @@ fn test_log_macros_with_different_types() {
     log_info!("Строка: {}", "текст");
 
     // Числа
-    log_error!("i32: {}, u64: {}, f64: {}", 42i32, 100u64, std::f64::consts::PI);
-    log_warn!("i32: {}, u64: {}, f64: {}", 42i32, 100u64, std::f64::consts::PI);
-    log_info!("i32: {}, u64: {}, f64: {}", 42i32, 100u64, std::f64::consts::PI);
+    log_error!(
+        "i32: {}, u64: {}, f64: {}",
+        42i32,
+        100u64,
+        std::f64::consts::PI
+    );
+    log_warn!(
+        "i32: {}, u64: {}, f64: {}",
+        42i32,
+        100u64,
+        std::f64::consts::PI
+    );
+    log_info!(
+        "i32: {}, u64: {}, f64: {}",
+        42i32,
+        100u64,
+        std::f64::consts::PI
+    );
 
     // Булевы значения
     log_error!("Булево: {}", true);
