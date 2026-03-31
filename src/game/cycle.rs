@@ -158,7 +158,7 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
-fn handle_input_result<R: Renderer>(input_result: InputResult, cnv: &mut R) -> Option<u128> {
+fn handle_input_result<R: Renderer>(input_result: &InputResult, cnv: &mut R) -> Option<u128> {
     match input_result {
         InputResult::Continue | InputResult::Pause => None,
         InputResult::Quit => Some(0),
@@ -226,7 +226,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
             let input_result = handle_input(state, inp, _delta_time_ms);
 
             // Обработка результата ввода (вынесено в отдельную функцию)
-            if let Some(final_score) = handle_input_result(input_result, cnv) {
+            if let Some(final_score) = handle_input_result(&input_result, cnv) {
                 return Ok(final_score);
             }
 
@@ -362,7 +362,7 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // InputResult::Continue должен вернуть None
-        let result = handle_input_result(InputResult::Continue, &mut renderer);
+        let result = handle_input_result(&InputResult::Continue, &mut renderer);
         assert!(result.is_none(), "Continue должен вернуть None");
     }
 
@@ -394,7 +394,7 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // InputResult::Pause должен вернуть None
-        let result = handle_input_result(InputResult::Pause, &mut renderer);
+        let result = handle_input_result(&InputResult::Pause, &mut renderer);
         assert!(result.is_none(), "Pause должен вернуть None");
     }
 
@@ -426,7 +426,7 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // InputResult::Quit должен вернуть Some(0)
-        let result = handle_input_result(InputResult::Quit, &mut renderer);
+        let result = handle_input_result(&InputResult::Quit, &mut renderer);
         assert_eq!(result, Some(0), "Quit должен вернуть Some(0)");
     }
 
@@ -458,7 +458,7 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // InputResult::GameOver должен вернуть Some(0)
-        let result = handle_input_result(InputResult::GameOver, &mut renderer);
+        let result = handle_input_result(&InputResult::GameOver, &mut renderer);
         assert_eq!(result, Some(0), "GameOver должен вернуть Some(0)");
     }
 
@@ -490,7 +490,7 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // InputResult::Won должен вернуть Some(0)
-        let result = handle_input_result(InputResult::Won, &mut renderer);
+        let result = handle_input_result(&InputResult::Won, &mut renderer);
         assert_eq!(result, Some(0), "Won должен вернуть Some(0)");
     }
 
@@ -526,18 +526,18 @@ mod tests {
         let mut renderer = MockRenderer;
 
         // Проверяем все варианты
-        assert!(handle_input_result(InputResult::Continue, &mut renderer).is_none());
-        assert!(handle_input_result(InputResult::Pause, &mut renderer).is_none());
+        assert!(handle_input_result(&InputResult::Continue, &mut renderer).is_none());
+        assert!(handle_input_result(&InputResult::Pause, &mut renderer).is_none());
         assert_eq!(
-            handle_input_result(InputResult::Quit, &mut renderer),
+            handle_input_result(&InputResult::Quit, &mut renderer),
             Some(0)
         );
         assert_eq!(
-            handle_input_result(InputResult::GameOver, &mut renderer),
+            handle_input_result(&InputResult::GameOver, &mut renderer),
             Some(0)
         );
         assert_eq!(
-            handle_input_result(InputResult::Won, &mut renderer),
+            handle_input_result(&InputResult::Won, &mut renderer),
             Some(0)
         );
     }

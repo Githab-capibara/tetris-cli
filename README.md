@@ -203,7 +203,9 @@ let vim_config = ControlsConfig::custom(
 
 **Новые тесты:**
 - `tests/test_architecture_integrity.rs` — 21 тест на архитектурную целостность
-- **Общее количество тестов: 1345** (+36)
+- `tests/test_41_fixed_issues.rs` — 42 теста на все исправления аудита
+- `tests/test_all_fixed_issues.rs` (обновлен) — 13 тестов критических исправлений
+- **Общее количество тестов: 1788** (+443)
 
 **Исправленные архитектурные проблемы:**
 - **C2** — устранение циклических зависимостей (создан `core/`)
@@ -524,8 +526,9 @@ let vim_config = ControlsConfig::custom(
 - **Тесты исправленных проблем** (test_all_fixed_issues.rs — 13 тестов)
 - **Архитектурные тесты** (test_architecture_cycles.rs, test_architecture_boundaries.rs, test_architecture_fixes_new.rs, test_architecture_integrity_new.rs — 26 тестов)
 - **Тесты исправлений аудита** (test_audit_fixes.rs — 25 тестов)
+- **Новые тесты исправлений** (test_41_fixed_issues.rs — 42 теста)
 
-**ВСЕГО: 1345 тестов** (unit + integration + architecture)
+**ВСЕГО: 1788 тестов** (unit + integration + architecture)
 
 ### 🏗️ Архитектурные улучшения (версия 23.96.15+)
 

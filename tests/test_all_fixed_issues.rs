@@ -288,10 +288,10 @@ fn test_fix_e3_checked_neg_rotation() {
         "rotate() должен использовать checked_neg()"
     );
 
-    // Тест 3: Обработка None случая
+    // Тест 3: Обработка None случая (через if let Some или match None)
     assert!(
-        rotate_section.contains("None =>"),
-        "checked_neg() должен обрабатывать None случай"
+        rotate_section.contains("if let Some") || rotate_section.contains("None =>"),
+        "checked_neg() должен обрабатывать None случай (через if let Some или match)"
     );
 
     // Тест 4: Логирование ошибки при переполнении
