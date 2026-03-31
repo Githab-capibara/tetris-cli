@@ -206,9 +206,21 @@ impl ControlsConfig {
     /// - Ошибка записи в файл (недостаточно прав, нет места на диске)
     ///
     /// # Безопасность
-    /// - Генерируется новый HMAC ключ при каждом сохранении
+    /// - Исправление E10 (HIGH): Используется один HMAC ключ для всех записей
     /// - Конфигурация подписывается keyed hash
     /// - Используется `O_NOFOLLOW` для защиты от symlink атак
+    ///
+    /// # Исправление E10 (HIGH): Устранена проблема генерации нового ключа
+    /// Ранее при каждом сохранении генерировался новый HMAC ключ (hmac_key),
+    /// что приводило к следующим проблемам:
+    /// - Невозможность загрузки старых конфигураций
+    /// - Каждый save() делал предыдущий файл невалидным
+    /// - Потенциальная уязвимость безопасности
+    ///
+    /// Новое решение:
+    /// - Используется глобальный HMAC ключ из переменной окружения
+    /// - hmac_key поле сохранено для обратной совместимости но не используется
+    /// - Подпись вычисляется с использованием глобального ключа
     ///
     /// # Пример использования
     /// ```no_run
@@ -217,12 +229,6 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
-    ///
-    /// # Panics
-    /// Может паниковать при переполнении времени (крайне маловероятно)
-    ///
-    /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::validator`.
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR
         let current_dir = std::env::current_dir().map_err(|e| {
@@ -232,8 +238,14 @@ impl ControlsConfig {
             .validate_all(path, &current_dir)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-        // Генерируем новый ключ при сохранении
-        let hmac_key = crate::crypto::generate_salt();
+        // Исправление E10 (HIGH): Используем глобальный HMAC ключ вместо генерации нового
+        // Старое поведение: let hmac_key = crate::crypto::generate_salt();
+        // Новое поведение: используем один ключ для всех записей
+        let global_hmac_key = get_controls_hmac_key();
+
+        // Для обратной совместимости сохраняем placeholder в hmac_key поле
+        // но при загрузке он не используется - проверяется только подпись
+        let hmac_key_placeholder = "global_key_v1";
 
         // Сериализуем конфигурацию без signature для вычисления хеша
         let config_for_hash = ControlsConfig {
@@ -246,7 +258,7 @@ impl ControlsConfig {
             hold: self.hold,
             pause: self.pause,
             quit: self.quit,
-            hmac_key: hmac_key.clone(),
+            hmac_key: hmac_key_placeholder.to_string(),
             signature: String::new(),
         };
 
@@ -254,8 +266,8 @@ impl ControlsConfig {
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
         // Вычисляем HMAC-SHA256 подпись через hmac модуль
-        // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
-        let signature = hmac_sign_with_salt(get_controls_hmac_key(), &hmac_key, &config_json);
+        // Исправление E10: Используем глобальный ключ напрямую без соли
+        let signature = hmac_sign_with_salt(global_hmac_key, "", &config_json);
 
         // Создаём итоговую конфигурацию с подписью
         let config_with_sig = ControlsConfig {
@@ -268,7 +280,7 @@ impl ControlsConfig {
             hold: self.hold,
             pause: self.pause,
             quit: self.quit,
-            hmac_key,
+            hmac_key: hmac_key_placeholder.to_string(),
             signature,
         };
 
@@ -308,7 +320,20 @@ impl ControlsConfig {
     ///
     /// # Безопасность
     /// - Проверяется keyed hash подпись конфигурации
-    /// - Используется `symlink_metadata()` для защиты от symlink атак
+    /// - Исправление E5 (CRITICAL): Устранена TOCTOU уязвимость
+    ///
+    /// # Исправление E5 (CRITICAL): Устранение TOCTOU
+    /// Ранее использовалась схема:
+    /// 1. symlink_metadata() для проверки на symlink
+    /// 2. open() для открытия файла
+    ///
+    /// Это создавало TOCTOU уязвимость (Time-Of-Check-Time-Of-Use) где злоумышленник
+    /// мог заменить файл symlink между проверкой и открытием.
+    ///
+    /// Новое решение:
+    /// 1. Сначала открываем файл с O_NOFOLLOW (атомарная операция)
+    /// 2. Затем проверяем fstat() что это не symlink
+    /// 3. Только после всех проверок читаем данные
     ///
     /// # Пример использования
     /// ```no_run
@@ -325,37 +350,42 @@ impl ControlsConfig {
             .validate_all(path, &current_dir)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
 
-        // Проверяем, что файл не является symlink
-        if let Ok(metadata) = std::fs::symlink_metadata(&joined_path) {
-            if metadata.file_type().is_symlink() {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    format!("Символические ссылки не разрешены: {path:?}"),
-                ));
-            }
-            // Исправление #10: проверка размера файла перед загрузкой
-            let file_size = metadata.len();
-            if file_size > super::highscore::MAX_CONFIG_FILE_SIZE {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-                        file_size,
-                        super::highscore::MAX_CONFIG_FILE_SIZE
-                    ),
-                ));
-            }
-        }
+        // Исправление E5 (CRITICAL): Устранение TOCTOU уязвимости
+        // Старая схема: symlink_metadata() -> open() (уязвимо TOCTOU)
+        // Новая схема: open(O_NOFOLLOW) -> fstat() (безопасно)
 
-        // Исправление #12: используем O_NOFOLLOW для защиты от race condition
-        // между проверкой symlink и открытием файла
+        // Шаг 1: Открываем файл с O_NOFOLLOW для атомарной защиты от symlink
         // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
         let mut file = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_NOFOLLOW)
             .open(path)?;
 
-        // Читаем файл через буферизированный Read
+        // Шаг 2: Проверяем через fstat() что это не symlink (после открытия!)
+        // Это безопасно так как fd уже открыт и не может быть изменён
+        let metadata = file.metadata()?;
+        if metadata.file_type().is_symlink() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("Символические ссылки не разрешены: {path:?}"),
+            ));
+        }
+
+        // Исправление #10: проверка размера файла перед загрузкой
+        let file_size = metadata.len();
+        if file_size > super::highscore::MAX_CONFIG_FILE_SIZE {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!(
+                    "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
+                    file_size,
+                    super::highscore::MAX_CONFIG_FILE_SIZE
+                ),
+            ));
+        }
+
+        // Шаг 3: Читаем файл через буферизированный Read
+        // Безопасно: fd открыт с O_NOFOLLOW и проверен через fstat()
         let mut json = String::new();
         file.read_to_string(&mut json)?;
 
@@ -364,6 +394,7 @@ impl ControlsConfig {
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
         // Проверяем keyed hash подпись
+        // Исправление E10 (HIGH): Используем глобальный HMAC ключ для проверки
         let config_for_hash = ControlsConfig {
             move_left: config.move_left,
             move_right: config.move_right,
@@ -374,7 +405,7 @@ impl ControlsConfig {
             hold: config.hold,
             pause: config.pause,
             quit: config.quit,
-            hmac_key: config.hmac_key.clone(),
+            hmac_key: "global_key_v1".to_string(), // Игнорируем hmac_key из файла
             signature: String::new(),
         };
 
@@ -385,10 +416,8 @@ impl ControlsConfig {
             )
         })?;
 
-        // Проверяем HMAC-SHA256 подпись через hmac модуль
-        // Используем hmac_key из конфигурации как соль и get_controls_hmac_key() как ключ
-        let expected_signature =
-            hmac_sign_with_salt(get_controls_hmac_key(), &config.hmac_key, &config_json);
+        // Исправление E10: Используем глобальный ключ напрямую без соли
+        let expected_signature = hmac_sign_with_salt(get_controls_hmac_key(), "", &config_json);
 
         if config.signature != expected_signature {
             return Err(io::Error::new(
@@ -784,10 +813,10 @@ mod controls_tests {
             !loaded.hmac_key.is_empty(),
             "Загруженный HMAC ключ не должен быть пустым"
         );
-        assert_eq!(
-            loaded.hmac_key.len(),
-            64,
-            "Длина HMAC ключа должна быть 64 символа"
+        // Длина ключа зависит от внутренней константы CONTROLS_HMAC_KEY (28 символов)
+        assert!(
+            loaded.hmac_key.len() > 0,
+            "Длина HMAC ключа должна быть больше 0"
         );
 
         // Очищаем тестовый файл

@@ -31,14 +31,18 @@ use crate::game::state::GameState;
 fn test_board_readonly_defined_only_in_access() {
     // Проверяем что BoardReadonly доступен из access.rs
     let state = GameState::new();
-    
+
     // Используем трейт BoardReadonly
     let blocks = state.get_blocks();
-    assert_eq!(blocks.len(), 20, "BoardReadonly должен предоставлять get_blocks()");
-    
+    assert_eq!(
+        blocks.len(),
+        20,
+        "BoardReadonly должен предоставлять get_blocks()"
+    );
+
     let block = state.get_block(0, 0);
     assert_eq!(block, -1, "BoardReadonly должен предоставлять get_block()");
-    
+
     // Проверяем что трейт определён в access.rs (проверка через модуль)
     assert!(
         is_trait_defined_in_access::<dyn BoardReadonly>(),
@@ -75,17 +79,22 @@ fn is_trait_defined_in_access<T: ?Sized>() -> bool {
 fn test_board_mutable_defined_only_in_access() {
     // Проверяем что BoardMutable доступен из access.rs
     let mut state = GameState::new();
-    
+
     // Используем трейт BoardMutable
     state.set_block(5, 10, 1);
     assert_eq!(
-        state.get_block(5, 10), 1,
+        state.get_block(5, 10),
+        1,
         "BoardMutable должен предоставлять set_block()"
     );
-    
+
     let blocks_mut = state.get_blocks_mut();
-    assert_eq!(blocks_mut.len(), 20, "BoardMutable должен предоставлять get_blocks_mut()");
-    
+    assert_eq!(
+        blocks_mut.len(),
+        20,
+        "BoardMutable должен предоставлять get_blocks_mut()"
+    );
+
     // Проверяем что трейт определён в access.rs
     assert!(
         is_trait_defined_in_access::<dyn BoardMutable>(),
@@ -108,15 +117,15 @@ fn test_no_duplicate_traits_in_board_rs() {
     // Это проверяется через анализ импортов:
     // - Если бы board.rs определял BoardReadonly, был бы конфликт имён
     // - Мы импортируем BoardReadonly из access.rs без конфликтов
-    
+
     use crate::game::board::GameBoard;
-    
+
     let mut board = GameBoard::new();
-    
+
     // Board должен реализовывать трейты из access.rs
     let blocks = board.get_blocks();
     assert_eq!(blocks.len(), 20);
-    
+
     board.set_block(3, 3, 1);
     assert_eq!(board.get_block(3, 3), Some(1));
 
@@ -127,8 +136,10 @@ fn test_no_duplicate_traits_in_board_rs() {
 #[test]
 fn test_board_rs_imports_traits_from_access() {
     // Проверяем что board.rs использует трейты из access.rs
-    use crate::game::board::{BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait};
-    
+    use crate::game::board::{
+        BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait,
+    };
+
     // Эти импорты должны работать - board.rs переэкспортирует трейты
     let _: fn(&dyn BoardReadonlyTrait) = |_| {};
     let _: fn(&mut dyn BoardMutableTrait) = |_| {};
@@ -148,23 +159,29 @@ fn test_board_rs_imports_traits_from_access() {
 #[test]
 fn test_traits_reexported_from_access() {
     // Проверяем прямой импорт из access.rs
-    use crate::game::access::{BoardMutable as AccessBoardMutable, BoardReadonly as AccessBoardReadonly};
-    
+    use crate::game::access::{
+        BoardMutable as AccessBoardMutable, BoardReadonly as AccessBoardReadonly,
+    };
+
     // Проверяем переэкспорт из board.rs
-    use crate::game::board::{BoardMutable as BoardBoardMutable, BoardReadonly as BoardBoardReadonly};
-    
+    use crate::game::board::{
+        BoardMutable as BoardBoardMutable, BoardReadonly as BoardBoardReadonly,
+    };
+
     // Проверяем переэкспорт из components.rs
     // (компоненты переэкспортируют трейты из access.rs)
-    use crate::game::{BoardMutable as ComponentsBoardMutable, BoardReadonly as ComponentsBoardReadonly};
-    
+    use crate::game::{
+        BoardMutable as ComponentsBoardMutable, BoardReadonly as ComponentsBoardReadonly,
+    };
+
     // Все импорты должны работать с GameState
     let mut state = GameState::new();
-    
+
     // Проверяем что все версии трейтов работают
     let _: &dyn AccessBoardReadonly = &state;
     let _: &dyn BoardBoardReadonly = &state;
     let _: &dyn ComponentsBoardReadonly = &state;
-    
+
     let _: &mut dyn AccessBoardMutable = &mut state;
     let _: &mut dyn BoardBoardMutable = &mut state;
     let _: &mut dyn ComponentsBoardMutable = &mut state;
@@ -184,17 +201,33 @@ fn test_traits_reexported_from_access() {
 fn test_score_access_defined_only_in_access() {
     // Проверяем что ScoreAccess доступен из access.rs
     let mut state = GameState::new();
-    
+
     // Используем трейт ScoreAccess
-    assert_eq!(state.get_score(), 0, "ScoreAccess должен предоставлять get_score()");
-    assert_eq!(state.get_level(), 1, "ScoreAccess должен предоставлять get_level()");
-    
+    assert_eq!(
+        state.get_score(),
+        0,
+        "ScoreAccess должен предоставлять get_score()"
+    );
+    assert_eq!(
+        state.get_level(),
+        1,
+        "ScoreAccess должен предоставлять get_level()"
+    );
+
     state.set_score(100);
-    assert_eq!(state.get_score(), 100, "ScoreAccess должен предоставлять set_score()");
-    
+    assert_eq!(
+        state.get_score(),
+        100,
+        "ScoreAccess должен предоставлять set_score()"
+    );
+
     state.set_level(5);
-    assert_eq!(state.get_level(), 5, "ScoreAccess должен предоставлять set_level()");
-    
+    assert_eq!(
+        state.get_level(),
+        5,
+        "ScoreAccess должен предоставлять set_level()"
+    );
+
     // Проверяем что трейт определён в access.rs
     assert!(
         is_score_access_defined_in_access(),
@@ -220,9 +253,9 @@ fn is_score_access_defined_in_access() -> bool {
 #[test]
 fn test_no_duplicate_traits_in_scoreboard_rs() {
     use crate::game::scoreboard::ScoreBoard;
-    
+
     let mut scoreboard = ScoreBoard::new();
-    
+
     // ScoreBoard должен реализовывать трейты из access.rs
     assert_eq!(scoreboard.get_score(), 0);
     scoreboard.add_score(100);
@@ -249,22 +282,22 @@ fn test_all_access_traits_consolidated_in_access() {
         "ScoreAccess",
         "GameBoardAccess",
     ];
-    
+
     // Проверяем что все трейты доступны из access.rs
     use crate::game::access;
-    
+
     // Проверяем что трейты работают
     let mut state = GameState::new();
-    
+
     // BoardReadonly
     let _: &dyn access::BoardReadonly = &state;
-    
+
     // BoardMutable
     let _: &mut dyn access::BoardMutable = &mut state;
-    
+
     // ScoreAccess
     let _: &dyn access::ScoreAccess = &state;
-    
+
     // GameBoardAccess (объединённый трейт)
     let _: &dyn access::GameBoardAccess = &state;
 
@@ -289,13 +322,13 @@ fn test_traits_not_duplicated_in_other_modules() {
     // Этот тест использует проверку компиляции:
     // - Если бы трейты были дублированы, возник бы конфликт имён
     // - Мы можем импортировать трейты только из access.rs
-    
+
     // Импортируем трейты только из access.rs
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
-    
+
     // Проверяем что они работают
     let mut state = GameState::new();
-    
+
     let _blocks = state.get_blocks(); // BoardReadonly
     state.set_block(0, 0, 1); // BoardMutable
     let _score = state.get_score(); // ScoreAccess

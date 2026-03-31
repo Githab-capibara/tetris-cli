@@ -31,20 +31,20 @@ fn test_check_rows_not_called_in_render_rs() {
     // Это подтверждается через анализ импортов:
     // - render.rs НЕ импортирует check_rows из scoring::lines
     // - render.rs НЕ содержит вызовов check_rows()
-    
+
     // Импортируем функции из render.rs
     use crate::game::render::{draw, update_cached_strings_extended};
-    
+
     // Проверяем что check_rows НЕ доступна из render.rs
     // Если бы check_rows была в render.rs, этот тест не скомпилировался бы
-    
+
     // Проверяем что check_rows доступна только из scoring::lines
     use crate::game::scoring::lines::check_rows;
-    
+
     // Создаём GameState для проверки
     use crate::game::state::GameState;
     let mut state = GameState::new();
-    
+
     // check_rows() вызывается из scoring::lines, а не из render
     let _cleared = check_rows(&mut state);
 
@@ -56,7 +56,7 @@ fn test_check_rows_not_called_in_render_rs() {
 fn test_render_rs_does_not_import_check_rows() {
     // Проверяем что render.rs не импортирует check_rows
     // Это проверяется через анализ модуля render.rs
-    
+
     // render.rs должен импортировать только:
     // - super::constants::*
     // - super::state::GameState
@@ -64,7 +64,7 @@ fn test_render_rs_does_not_import_check_rows() {
     // - crate::io::*
     // - crate::io_traits::Renderer
     // - crate::tetromino::*
-    
+
     // render.rs НЕ должен импортировать:
     // - scoring::lines::check_rows
 
@@ -84,16 +84,16 @@ fn test_render_rs_does_not_import_check_rows() {
 fn test_render_function_does_not_contain_line_clearing_logic() {
     // Проверяем что draw() НЕ содержит логики удаления линий
     use crate::game::render::draw;
-    use crate::game::view::GameView;
     use crate::game::state::GameState;
-    
+    use crate::game::view::GameView;
+
     // Создаём GameState и View
     let state = GameState::new();
     let view = GameView::from_game_state(&state);
-    
+
     // draw() принимает только view и canvas для отрисовки
     // Она не содержит логики удаления линий
-    
+
     // Проверяем что draw() не изменяет состояние игры
     // draw() принимает &GameView (только чтение), а не &mut GameState
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
@@ -110,23 +110,18 @@ fn test_render_rs_does_not_contain_line_removal_functions() {
     // - remove_rows()
     // - find_full_rows()
     // - find_filled_lines()
-    
+
     // Эти функции должны быть в scoring::lines.rs
-    use crate::game::scoring::lines::{
-        check_rows,
-        find_filled_lines,
-        find_full_rows,
-        remove_rows,
-    };
-    
+    use crate::game::scoring::lines::{check_rows, find_filled_lines, find_full_rows, remove_rows};
+
     // Все функции удаления линий доступны из scoring::lines.rs
     let mut state = GameState::new();
     let _ = check_rows(&mut state);
-    
+
     let blocks = state.get_blocks();
     let (_mask, _count) = find_full_rows(blocks);
     let (_mask2, _count2) = find_filled_lines(blocks);
-    
+
     let blocks_mut = state.get_blocks_mut();
     remove_rows(blocks_mut, 0);
 }
@@ -145,23 +140,18 @@ fn test_render_rs_does_not_contain_line_removal_functions() {
 #[test]
 fn test_line_logic_in_scoring_lines_rs() {
     // Проверяем что scoring/lines.rs содержит функции для работы с линиями
-    use crate::game::scoring::lines::{
-        check_rows,
-        find_filled_lines,
-        find_full_rows,
-        remove_rows,
-    };
-    
+    use crate::game::scoring::lines::{check_rows, find_filled_lines, find_full_rows, remove_rows};
+
     // Проверяем что функции работают
     let blocks = [[-1i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
     let (mask, count) = find_full_rows(&blocks);
     assert_eq!(count, 0, "Новое поле не имеет заполненных линий");
     assert_eq!(mask, 0, "Битовая маска должна быть 0");
-    
+
     let (mask2, count2) = find_filled_lines(&blocks);
     assert_eq!(count2, 0);
     assert_eq!(mask2, 0);
-    
+
     // check_rows() также в scoring/lines.rs
     let mut state = GameState::new();
     let cleared = check_rows(&mut state);
@@ -179,10 +169,10 @@ fn test_line_logic_in_scoring_lines_rs() {
 fn test_check_rows_in_scoring_lines_rs() {
     // Проверяем что check_rows() доступна из scoring::lines
     use crate::game::scoring::lines::check_rows;
-    
+
     let mut state = GameState::new();
     let result = check_rows(&mut state);
-    
+
     // check_rows() должна возвращать количество удалённых линий
     assert_eq!(result, 0, "Новое поле не имеет линий");
 }
@@ -200,7 +190,7 @@ fn test_check_rows_in_scoring_lines_rs() {
 fn test_logic_update_rs_coordinates_line_logic() {
     // Проверяем что logic/update.rs содержит функцию update()
     use crate::game::logic::update::update;
-    
+
     // update() координирует логику игры
     let mut state = GameState::new();
     let mut reader = crate::io::KeyReader::default();
@@ -216,11 +206,11 @@ fn test_logic_update_rs_coordinates_line_logic() {
 fn test_handle_landing_calls_check_rows() {
     // handle_landing() находится в scoring/points.rs
     // и вызывает check_rows() из scoring/lines.rs
-    
+
     use crate::game::scoring::handle_landing;
-    
+
     let mut state = GameState::new();
-    
+
     // Устанавливаем фигуру на поле
     state.get_curr_shape_mut().pos.1 = 10.0;
     state.save_tetromino();
@@ -242,23 +232,23 @@ fn test_handle_landing_calls_check_rows() {
 fn test_render_and_logic_are_separated() {
     // render.rs отвечает за отрисовку
     use crate::game::render::draw;
-    
+
     // logic/update.rs отвечает за обновление состояния
     use crate::game::logic::update::update;
-    
+
     // scoring/lines.rs отвечает за логику линий
     use crate::game::scoring::lines::check_rows;
-    
+
     // Все модули работают независимо
     let mut state = GameState::new();
     let mut reader = crate::io::KeyReader::default();
-    
+
     // logic/update() обновляет состояние
     let _update_result = update(&mut state, &mut reader, 100);
-    
+
     // scoring/lines::check_rows() удаляет линии
     let _cleared = check_rows(&mut state);
-    
+
     // render::draw() отрисовывает состояние
     // (не можем вызвать без Canvas, но проверяем что функция существует)
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
@@ -270,13 +260,13 @@ fn test_render_uses_gameview_for_decoupling() {
     // Проверяем что draw() принимает GameView вместо GameState
     use crate::game::render::draw;
     use crate::game::view::GameView;
-    
+
     // draw() принимает &GameView (только чтение)
     // Это уменьшает связанность между render и GameState
-    
+
     let state = GameState::new();
     let view = GameView::from_game_state(&state);
-    
+
     // view содержит только данные для отрисовки
     assert!(!view.score.is_empty());
     assert!(!view.level.is_empty());
@@ -297,24 +287,22 @@ fn test_render_logic_separation_architecture() {
     // - logic/update.rs: обновление состояния
     // - scoring/lines.rs: логика линий
     // - scoring/points.rs: логика очков
-    
+
     let architecture = [
         ("render.rs", "Отрисовка"),
         ("logic/update.rs", "Обновление состояния"),
         ("scoring/lines.rs", "Логика линий"),
         ("scoring/points.rs", "Логика очков"),
     ];
-    
+
     // Проверяем что все модули существуют
-    use crate::game::render::draw;
     use crate::game::logic::update::update;
+    use crate::game::render::draw;
     use crate::game::scoring::lines::check_rows;
     use crate::game::scoring::points::{
-        handle_hard_drop,
-        handle_soft_drop,
-        update_score_and_level,
+        handle_hard_drop, handle_soft_drop, update_score_and_level,
     };
-    
+
     // Все функции доступны из своих модулей
     let _ = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
     let _ = update::<crate::io::KeyReader>;

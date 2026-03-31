@@ -42,11 +42,7 @@ pub enum ValidationErrorKind {
 
 impl std::fmt::Display for ValidationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Ошибка валидации: {} ({:?})",
-            self.message, self.kind
-        )
+        write!(f, "Ошибка валидации: {} ({:?})", self.message, self.kind)
     }
 }
 

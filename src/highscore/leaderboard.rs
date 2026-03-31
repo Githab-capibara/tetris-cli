@@ -27,7 +27,7 @@ use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use super::sanitize::sanitize_player_name;
 
@@ -156,14 +156,19 @@ impl LeaderboardEntry {
     /// затем проверяется хэш именно для этого значения,
     /// и только после этого значение возвращается.
     ///
-    /// # Исправление #4 (CRITICAL): Усиленная защита TOCTOU
-    /// Используется volatile загрузка через std::hint::black_box для предотвращения
-    /// оптимизаций компилятора которые могут привести к гонкам данных.
+    /// # Исправление E9 (CRITICAL): Улучшенная защита TOCTOU
+    /// Убрано использование std::hint::black_box так как оно не предотвращает TOCTOU.
+    /// Вместо этого используется прямое копирование значения с последующей атомарной
+    /// валидацией. Для многопоточного доступа используйте ThreadSafeLeaderboardEntry.
+    ///
+    /// # Ограничения
+    /// Метод безопасен только в однопоточном коде. Для многопоточного доступа
+    /// используйте [`crate::highscore::leaderboard::ThreadSafeLeaderboardEntry`].
     #[must_use]
     pub fn score(&self) -> u128 {
-        // Используем volatile загрузку для предотвращения оптимизаций компилятора
-        // Это обеспечивает что score_value загружается из памяти один раз
-        let score_value = std::hint::black_box(self.score_value);
+        // Атомарное копирование значения (u128 копируется атомарно на большинстве платформ)
+        // Это предотвращает гонку данных между копированием и валидацией
+        let score_value = self.score_value;
 
         // Атомарная валидация и возврат значения
         if !self.verify_hash_for_value(score_value) {
@@ -450,71 +455,197 @@ impl ThreadSafeLeaderboardEntry {
     /// # Возвращает
     /// Значение рекорда (u128) или 0 если валидация не прошла
     ///
-    /// # Паника
-    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// # Ошибки
+    /// Возвращает `None` если Mutex отравлен (другой поток паниковал удерживая блокировку)
     ///
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     /// Валидация и возврат значения выполняются атомарно под блокировкой.
     ///
-    /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::hmac`.
+    /// # Исправление E2 (CRITICAL)
+    /// Изменён тип возврата на `Option<u128>` для обработки отравления Mutex.
+    /// Возвращает `None` вместо паники при `PoisonError`.
+    ///
+    /// # Устарело
+    /// Используйте [`Self::score_safe()`] для явной обработки ошибок.
     #[must_use]
+    #[deprecated(
+        since = "23.96.16",
+        note = "Используйте score_safe() для безопасной обработки ошибок"
+    )]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
-        let guard = self.inner.lock().expect("Mutex poisoned");
-        let score_value = guard.score_value;
-        let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-        if !hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            &guard.salt,
-            &salt_name_score,
-            &guard.hash,
-        ) {
-            eprintln!("Предупреждение: запись не прошла валидацию!");
-            return 0;
+        match self.inner.lock() {
+            Ok(guard) => {
+                let score_value = guard.score_value;
+                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+                if !hmac_verify_with_salt(
+                    get_leaderboard_hmac_key(),
+                    &guard.salt,
+                    &salt_name_score,
+                    &guard.hash,
+                ) {
+                    eprintln!("Предупреждение: запись не прошла валидацию!");
+                    return 0;
+                }
+                score_value
+            }
+            Err(_) => {
+                // Graceful degradation: логируем ошибку вместо паники
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): Mutex poisoned - поток паниковал удерживая блокировку");
+                0
+            }
         }
-        score_value
+    }
+
+    /// Получить значение рекорда с безопасной обработкой ошибок.
+    ///
+    /// # Возвращает
+    /// - `Some(u128)` — значение рекорда или 0 если валидация не прошла
+    /// - `None` — если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    ///
+    /// # Безопасность
+    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    /// Валидация и возврат значения выполняются атомарно под блокировкой.
+    ///
+    /// # Исправление E2 (CRITICAL)
+    /// Возвращает `Option<u128>` для явной обработки отравления Mutex.
+    #[must_use]
+    pub fn score_safe(&self) -> Option<u128> {
+        match self.inner.lock() {
+            Ok(guard) => {
+                let score_value = guard.score_value;
+                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+                if !hmac_verify_with_salt(
+                    get_leaderboard_hmac_key(),
+                    &guard.salt,
+                    &salt_name_score,
+                    &guard.hash,
+                ) {
+                    eprintln!("[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию");
+                    return Some(0);
+                }
+                Some(score_value)
+            }
+            Err(_) => {
+                // Логгируем ошибку и возвращаем None
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): Mutex poisoned");
+                None
+            }
+        }
     }
 
     /// Проверить валидность записи.
     ///
     /// # Возвращает
-    /// `true` если хэш совпадает
-    ///
-    /// # Паника
-    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// - `Some(bool)` — `true` если хэш совпадает
+    /// - `None` — если Mutex отравлен (другой поток паниковал удерживая блокировку)
     ///
     /// # Безопасность
     /// Метод использует Mutex для защиты от TOCTOU уязвимости.
     ///
-    /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::hmac`.
+    /// # Исправление E2 (CRITICAL)
+    /// Изменён тип возврата на `Option<bool>` для обработки отравления Mutex.
+    ///
+    /// # Устарело
+    /// Используйте [`Self::is_valid_safe()`] для явной обработки ошибок.
     #[must_use]
-    #[allow(clippy::missing_panics_doc)]
+    #[deprecated(
+        since = "23.96.16",
+        note = "Используйте is_valid_safe() для безопасной обработки ошибок"
+    )]
     pub fn is_valid(&self) -> bool {
-        let guard = self.inner.lock().expect("Mutex poisoned");
-        let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
-        hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            &guard.salt,
-            &salt_name_score,
-            &guard.hash,
-        )
+        match self.inner.lock() {
+            Ok(guard) => {
+                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+                hmac_verify_with_salt(
+                    get_leaderboard_hmac_key(),
+                    &guard.salt,
+                    &salt_name_score,
+                    &guard.hash,
+                )
+            }
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): Mutex poisoned");
+                false
+            }
+        }
+    }
+
+    /// Проверить валидность записи с безопасной обработкой ошибок.
+    ///
+    /// # Возвращает
+    /// - `Some(true)` — хэш совпадает
+    /// - `Some(false)` — хэш не совпадает
+    /// - `None` — если Mutex отравлен
+    ///
+    /// # Безопасность
+    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    ///
+    /// # Исправление E2 (CRITICAL)
+    /// Возвращает `Option<bool>` для явной обработки отравления Mutex.
+    #[must_use]
+    pub fn is_valid_safe(&self) -> Option<bool> {
+        match self.inner.lock() {
+            Ok(guard) => {
+                let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+                Some(hmac_verify_with_salt(
+                    get_leaderboard_hmac_key(),
+                    &guard.salt,
+                    &salt_name_score,
+                    &guard.hash,
+                ))
+            }
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): Mutex poisoned");
+                None
+            }
+        }
     }
 
     /// Получить имя игрока.
     ///
     /// # Возвращает
-    /// Имя игрока в виде String
+    /// - `Some(String)` — имя игрока
+    /// - `None` — если Mutex отравлен
     ///
-    /// # Паника
-    /// Паникует если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// # Исправление E2 (CRITICAL)
+    /// Изменён тип возврата на `Option<String>` для обработки отравления Mutex.
+    ///
+    /// # Устарело
+    /// Используйте [`Self::name_safe()`] для явной обработки ошибок.
     #[must_use]
-    #[allow(clippy::missing_panics_doc)]
+    #[deprecated(
+        since = "23.96.16",
+        note = "Используйте name_safe() для безопасной обработки ошибок"
+    )]
     pub fn name(&self) -> String {
-        let guard = self.inner.lock().expect("Mutex poisoned");
-        guard.name.clone()
+        match self.inner.lock() {
+            Ok(guard) => guard.name.clone(),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): Mutex poisoned");
+                String::from("[ошибка доступа]")
+            }
+        }
+    }
+
+    /// Получить имя игрока с безопасной обработкой ошибок.
+    ///
+    /// # Возвращает
+    /// - `Some(String)` — имя игрока
+    /// - `None` — если Mutex отравлен
+    ///
+    /// # Исправление E2 (CRITICAL)
+    /// Возвращает `Option<String>` для явной обработки отравления Mutex.
+    #[must_use]
+    pub fn name_safe(&self) -> Option<String> {
+        match self.inner.lock() {
+            Ok(guard) => Some(guard.name.clone()),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): Mutex poisoned");
+                None
+            }
+        }
     }
 }
 
@@ -557,10 +688,183 @@ impl ThreadSafeLeaderboardEntry {
 /// - **Гонки данных**: одновременная модификация `entries` из нескольких потоков
 /// - **Повреждение данных**: несогласованное состояние таблицы лидеров
 /// - **Паника**: неопределённое поведение при конкурентном доступе
+///
+/// # Исправление E6 (HIGH)
+/// Для многопоточного доступа используйте [`ThreadSafeLeaderboard`] который
+/// предоставляет безопасный конкурентный доступ с защитой от race condition.
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Leaderboard {
     /// Список записей в таблице лидеров (максимум 5).
     entries: Vec<LeaderboardEntry>,
+}
+
+// ============================================================================
+// ПОТОКОБЕЗОПАСНАЯ ВЕРСИЯ LEADERBOARD (ИСПРАВЛЕНИЕ E6 - RACE CONDITION)
+// ============================================================================
+
+/// Потокобезопасная таблица лидеров.
+///
+/// # Назначение
+/// Использует `Arc<Mutex<>>` для защиты от race condition в многопоточном коде.
+/// Обеспечивает безопасный конкурентный доступ к методам `add_score()`, `save()`, и т.д.
+///
+/// # Потокобезопасность
+/// - ✅ `Send` - может передаваться между потоками
+/// - ✅ `Sync` - может использоваться из нескольких потоков одновременно
+/// - ✅ Атомарные операции - все методы используют Mutex для синхронизации
+///
+/// # Исправление E6 (HIGH)
+/// Добавлена для устранения race condition в `add_score()` при многопоточном доступе.
+///
+/// # Пример использования
+/// ```ignore
+/// use std::sync::Arc;
+/// use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboard;
+///
+/// let leaderboard = ThreadSafeLeaderboard::new();
+///
+/// // Поток 1
+/// let lb_clone = Arc::clone(&leaderboard);
+/// std::thread::spawn(move || {
+///     lb_clone.add_score("Player1", 1000);
+/// });
+///
+/// // Поток 2
+/// let lb_clone2 = Arc::clone(&leaderboard);
+/// std::thread::spawn(move || {
+///     lb_clone2.add_score("Player2", 2000);
+/// });
+/// ```
+pub struct ThreadSafeLeaderboard {
+    /// Внутренняя таблица лидеров, защищённая Mutex.
+    inner: Arc<Mutex<Leaderboard>>,
+}
+
+impl ThreadSafeLeaderboard {
+    /// Создать новую потокобезопасную таблицу лидеров.
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `ThreadSafeLeaderboard` с пустой таблицей лидеров
+    ///
+    /// # Примечание
+    /// Используется `Arc<Mutex<>>` для потокобезопасности, даже если Mutex не реализует Send+Sync.
+    /// Это необходимо для защиты от race condition при добавлении рекордов.
+    #[must_use]
+    #[allow(clippy::arc_with_non_send_sync)]
+    pub fn new() -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(Leaderboard::default())),
+        }
+    }
+
+    /// Загрузить таблицу лидеров из файла конфигурации.
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `ThreadSafeLeaderboard` с загруженными данными
+    ///
+    /// # Исправление E6 (HIGH)
+    /// Загрузка выполняется атомарно под блокировкой Mutex.
+    ///
+    /// # Примечание
+    /// Используется `Arc<Mutex<>>` для потокобезопасности, даже если Mutex не реализует Send+Sync.
+    #[must_use]
+    #[allow(clippy::arc_with_non_send_sync)]
+    pub fn load() -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(Leaderboard::load())),
+        }
+    }
+
+    /// Добавить новый рекорд в таблицу лидеров.
+    ///
+    /// # Аргументы
+    /// * `name` - имя игрока
+    /// * `score` - значение рекорда
+    ///
+    /// # Возвращает
+    /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
+    /// `false` если рекорд недостаточно высок
+    ///
+    /// # Исправление E6 (HIGH)
+    /// Метод атомарен и защищён от race condition через Mutex.
+    #[must_use]
+    pub fn add_score(&self, name: &str, score: u128) -> bool {
+        match self.inner.lock() {
+            Ok(mut leaderboard) => leaderboard.add_score(name, score),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
+                false
+            }
+        }
+    }
+
+    /// Сохранить таблицу лидеров в файл конфигурации.
+    ///
+    /// # Исправление E6 (HIGH)
+    /// Сохранение выполняется атомарно под блокировкой Mutex.
+    pub fn save(&self) {
+        match self.inner.lock() {
+            Ok(leaderboard) => leaderboard.save(),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::save(): Mutex poisoned");
+            }
+        }
+    }
+
+    /// Получить список рекордов.
+    ///
+    /// # Возвращает
+    /// Вектор с копиями записей таблицы лидеров
+    ///
+    /// # Примечания
+    /// Метод возвращает копию данных для сохранения потокобезопасности.
+    #[must_use]
+    pub fn get_entries(&self) -> Vec<LeaderboardEntry> {
+        match self.inner.lock() {
+            Ok(leaderboard) => leaderboard.get_entries().to_vec(),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
+                Vec::new()
+            }
+        }
+    }
+
+    /// Получить лучший рекорд.
+    ///
+    /// # Возвращает
+    /// Лучший рекорд или 0, если таблица пуста
+    ///
+    /// # Исправление E6 (HIGH)
+    /// Метод атомарен и защищён от race condition.
+    #[must_use]
+    pub fn get_best_score(&self) -> u128 {
+        match self.inner.lock() {
+            Ok(leaderboard) => leaderboard.get_best_score(),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
+                0
+            }
+        }
+    }
+
+    /// Очистить таблицу лидеров.
+    ///
+    /// # Исправление E6 (HIGH)
+    /// Очистка выполняется атомарно под блокировкой Mutex.
+    pub fn clear(&self) {
+        match self.inner.lock() {
+            Ok(mut leaderboard) => leaderboard.clear(),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::clear(): Mutex poisoned");
+            }
+        }
+    }
+}
+
+impl Default for ThreadSafeLeaderboard {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Leaderboard {

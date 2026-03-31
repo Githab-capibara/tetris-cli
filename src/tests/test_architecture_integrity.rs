@@ -873,22 +873,22 @@ fn test_no_circular_dependencies_between_modules() {
     // Проверяем что нет циклов:
     // game -> scoring -> game (это не цикл, а нормальная зависимость)
     // game -> logic -> game (это не цикл, а нормальная зависимость)
-    
+
     // Модули имеют правильную иерархию:
     // - constants, types, errors (базовые, ни от кого не зависят)
     // - tetromino (зависит только от constants)
     // - io, io_traits (базовые для ввода/вывода)
     // - game (зависит от tetromino, io, io_traits)
     // - game::scoring, game::logic (подмодули game)
-    
-    use crate::game::state::GameState;
-    use crate::game::scoring::handle_landing;
+
     use crate::game::logic::update::update;
+    use crate::game::scoring::handle_landing;
+    use crate::game::state::GameState;
     use crate::tetromino::Tetromino;
-    
+
     let mut state = GameState::new();
     let mut reader = crate::io::KeyReader::default();
-    
+
     // update() вызывает handle_landing()
     let _ = update(&mut state, &mut reader, 100);
 
@@ -916,24 +916,24 @@ fn test_no_circular_dependencies_between_modules() {
 fn test_module_hierarchy_respected() {
     // Базовые модули (не зависят от других):
     use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH};
-    use crate::types::{Direction, RotationDirection};
     use crate::errors::GameError;
-    
+    use crate::types::{Direction, RotationDirection};
+
     assert_eq!(FPS, 60);
     assert_eq!(GRID_WIDTH, 10);
     assert_eq!(GRID_HEIGHT, 20);
-    
+
     let _dir = Direction::Left;
     let _rotation = RotationDirection::Clockwise;
     let _err = GameError::validation_error("Тест");
-    
+
     // Модули верхнего уровня (зависят от базовых):
     use crate::game::state::GameState;
     use crate::tetromino::Tetromino;
-    
+
     let state = GameState::new();
     let _score = state.score();
-    
+
     let mut bag = crate::tetromino::BagGenerator::new();
     let _tetromino = Tetromino::from_bag(&mut bag);
 
@@ -956,21 +956,21 @@ fn test_no_forbidden_imports() {
     // Проверяем что render не импортирует логику из scoring/logic
     use crate::game::render::draw;
     use crate::game::view::GameView;
-    
+
     // draw() принимает только GameView для отрисовки
     // Она не должна иметь доступа к функциям обновления состояния
-    
+
     let state = GameState::new();
     let view = GameView::from_game_state(&state);
-    
+
     // draw() не может изменять состояние
     // Просто проверяем что функция существует
     let _draw_fn = draw::<MockRenderer>;
-    
+
     // Проверяем что scoring не импортирует из render
     use crate::game::scoring::handle_landing;
     // handle_landing() не использует функции отрисовки
-    
+
     // Проверяем что logic не импортирует из render
     use crate::game::logic::update::update;
     // update() не использует функции отрисовки
@@ -996,43 +996,52 @@ fn test_architectural_integrity_final() {
     use crate::game::board::GameBoard;
     use crate::game::scoreboard::ScoreBoard;
     use crate::game::state::GameState;
-    
+
     let board = GameBoard::new();
     let scoreboard = ScoreBoard::new();
     let state = GameState::new();
-    
+
     assert_eq!(board.get_block(0, 0), Some(-1));
     assert_eq!(scoreboard.get_score(), 0);
     assert_eq!(state.score(), 0);
-    
+
     // === Границы модулей ===
     use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
-    
+
     let mut bag = BagGenerator::new();
     let tetromino = Tetromino::from_bag(&mut bag);
-    assert!(matches!(tetromino.shape, ShapeType::T | ShapeType::L | ShapeType::J | ShapeType::S | ShapeType::Z | ShapeType::O | ShapeType::I));
-    
+    assert!(matches!(
+        tetromino.shape,
+        ShapeType::T
+            | ShapeType::L
+            | ShapeType::J
+            | ShapeType::S
+            | ShapeType::Z
+            | ShapeType::O
+            | ShapeType::I
+    ));
+
     // === Инкапсуляция ===
     let mut state = GameState::new();
     state.set_score(1000);
     assert_eq!(state.score(), 1000);
-    
+
     // === Отсутствие циклических зависимостей ===
-    use crate::game::scoring::handle_landing;
     use crate::game::logic::update::update;
-    
+    use crate::game::scoring::handle_landing;
+
     let mut reader = crate::io::KeyReader::default();
     let _ = update(&mut state, &mut reader, 100);
     let _ = handle_landing(&mut state);
-    
+
     // === Соблюдение иерархии ===
     use crate::constants::FPS;
     assert_eq!(FPS, 60);
-    
+
     // === Отсутствие запрещённых импортов ===
     use crate::game::render::draw;
     use crate::game::view::GameView;
-    
+
     let view = GameView::from_game_state(&state);
     let _ = draw::<MockRenderer>;
 
