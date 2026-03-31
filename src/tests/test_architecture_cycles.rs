@@ -137,9 +137,6 @@ fn test_no_circular_dependencies_game_modules() {
         !view.score.is_empty(),
         "GameView должен работать независимо"
     );
-
-    // Если бы были циклические зависимости, этот тест не скомпилировался бы
-    assert!(true, "game/* модули не имеют циклических зависимостей");
 }
 
 // ============================================================================
@@ -178,7 +175,6 @@ fn test_no_circular_dependencies_main_modules() {
 
     // Проверяем что errors.rs независим
     let _err = GameError::validation_error("Тест");
-    assert!(true, "GameError должен работать независимо");
 
     // Проверяем что types.rs независим
     let dir = Direction::Left;
@@ -214,10 +210,6 @@ fn test_no_circular_dependencies_main_modules() {
     // Проверяем что highscore независим от game
     let leaderboard = Leaderboard::load();
     let _entries = leaderboard.get_entries();
-    assert!(true, "Leaderboard должен работать независимо");
-
-    // Если бы были циклические зависимости, этот тест не скомпилировался бы
-    assert!(true, "Основные модули не имеют циклических зависимостей");
 }
 
 // ============================================================================
@@ -313,8 +305,6 @@ fn test_import_graph_is_acyclic() {
     // Проверяем что types не зависит от game/* кроме constants
     // (это проверяется компиляцией - types импортируется до state)
     let _types_score = Score::new();
-
-    assert!(true, "Граф импортов является ациклическим");
 }
 
 // ============================================================================
@@ -360,8 +350,6 @@ fn test_no_circular_dependencies_crypto() {
         validator.verify("данные", &sig),
         "HmacValidator должен работать независимо"
     );
-
-    assert!(true, "crypto модуль не имеет циклических зависимостей");
 }
 
 /// Тест: проверка что validation модуль не имеет циклов.
@@ -382,8 +370,6 @@ fn test_no_circular_dependencies_validation() {
 
     // Проверяем что PathErrorKind работает независимо
     let _error_kind = PathErrorKind::PathTraversal;
-
-    assert!(true, "validation модуль не имеет циклических зависимостей");
 }
 
 /// Тест: проверка что highscore модуль не имеет циклов.
@@ -398,7 +384,4 @@ fn test_no_circular_dependencies_highscore() {
     // Проверяем что Leaderboard работает независимо
     let leaderboard = Leaderboard::load();
     let _entries = leaderboard.get_entries();
-    assert!(true, "Leaderboard должен работать независимо");
-
-    assert!(true, "highscore модуль не имеет циклических зависимостей");
 }

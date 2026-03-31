@@ -30,18 +30,15 @@ fn test_all_modules_have_clear_responsibility() {
     let _lines = LinesCount::new();
     let _pos = Position::new(0, 0);
     let _action = GameAction::MoveLeft;
-    assert!(true, "types должен отвечать за типобезопасные обёртки");
 
     // === state - состояние игры ===
     use crate::game::state::GameState;
     let _state = GameState::new();
-    assert!(true, "state должен отвечать за состояние игры");
 
     // === logic - игровая логика ===
     use crate::game::logic::can_move_curr_shape_direction;
     let state = GameState::new();
     let _ = can_move_curr_shape_direction(&state, crate::types::Direction::Down);
-    assert!(true, "logic должен отвечать за игровую логику");
 
     // === scoring - система очков ===
     use crate::game::scoring::combo::calculate_combo_bonus;
@@ -49,7 +46,6 @@ fn test_all_modules_have_clear_responsibility() {
     let _ = calculate_combo_bonus(3);
     let blocks = [[0i8; 10]; 20];
     let _ = find_full_rows(&blocks);
-    assert!(true, "scoring должен отвечать за систему очков");
 
     // === access - трейты доступа ===
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
@@ -58,37 +54,29 @@ fn test_all_modules_have_clear_responsibility() {
         _score: &S,
     ) {
     }
-    assert!(true, "access должен отвечать за трейты доступа");
 
     // === view - представление для отрисовки ===
     use crate::game::view::GameView;
     let state = GameState::new();
     let _view = GameView::from_game_state(&state);
-    assert!(true, "view должен отвечать за представление");
 
     // === scoreboard - очки и уровни ===
     use crate::game::scoreboard::ScoreBoard;
     let _scoreboard = ScoreBoard::new();
-    assert!(true, "scoreboard должен отвечать за очки и уровни");
 
     // === board - игровое поле ===
     use crate::game::board::GameBoard;
     let _board = GameBoard::new();
-    assert!(true, "board должен отвечать за игровое поле");
 
     // === mode_trait - трейты режимов игры ===
     use crate::game::mode_trait::{ClassicMode, GameModeTrait, MarathonMode, SprintMode};
     let _classic = ClassicMode;
     let _sprint = SprintMode::new();
     let _marathon = MarathonMode::new();
-    assert!(true, "mode_trait должен отвечать за трейты режимов");
 
     // === rules - бизнес-правила ===
     use crate::game::rules::GameRules;
     let _rules = GameRules::new();
-    assert!(true, "rules должен отвечать за бизнес-правила");
-
-    assert!(true, "Все модули имеют четкую ответственность");
 }
 
 // ============================================================================
@@ -152,8 +140,6 @@ fn test_no_god_objects() {
     let _score = state.score();
     let _lines = state.lines_cleared();
     let _level = state.level();
-
-    assert!(true, "Отсутствуют God Object");
 }
 
 // ============================================================================
@@ -212,8 +198,6 @@ fn test_traits_are_narrow() {
 
     let mut state = GameState::new();
     requires_score_mutable(&mut state);
-
-    assert!(true, "Трейты узкие (ISP)");
 }
 
 // ============================================================================
@@ -286,8 +270,6 @@ fn test_dependencies_are_acyclic() {
     // Проверка что validation независим
     use crate::validation::path::PathValidator;
     let _validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-");
-
-    assert!(true, "Зависимости ацикличны");
 }
 
 // ============================================================================
@@ -341,6 +323,4 @@ fn test_architecture_integrity_comprehensive() {
     let _action = GameAction::MoveLeft;
     let _hash = crate::crypto::hash("тест");
     let _validator = crate::validation::path::PathValidator::new(255, "abc");
-
-    assert!(true, "Архитектурная целостность соблюдается");
 }
