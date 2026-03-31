@@ -123,7 +123,7 @@ fn test_game_view_creation() {
 
     // Проверяем, что следующая фигура доступна
     assert!(matches!(
-        view.next_shape.shape,
+        view.next_shape.shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J

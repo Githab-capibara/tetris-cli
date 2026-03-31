@@ -69,7 +69,7 @@ fn test_c1_shapetype_in_tetromino() {
     let tetromino = Tetromino::from_bag(&mut bag);
 
     // Проверяем что поле shape имеет тип ShapeType
-    let _shape: tetris_cli::tetromino::ShapeType = tetromino.shape;
+    let _shape: tetris_cli::tetromino::ShapeType = tetromino.shape();
 
     // Проверяем что shape корректно работает
     assert!((tetromino.fg as usize) < 7);
@@ -157,20 +157,20 @@ fn test_h1_has_collision_different_positions() {
     // T-фигура имеет блоки [(-1,0), (0,0), (1,0), (0,1)]
     // При x=2 блоки будут на (1,0), (2,0), (3,0), (2,1)
     let mut state_left = GameState::new();
-    state_left.get_curr_shape_mut().pos.0 = 2.0;
+    state_left.get_curr_shape_mut().pos().0 = 2.0;
 
     // Движение влево должно быть возможно
     let _can_move_left = can_move_curr_shape_direction(&state_left, Direction::Left);
     // Тест существует для проверки что функция работает без паники
 
     // Тест 2: Фигура на позиции x=1 (при движении влево будет коллизия с границей)
-    state_left.get_curr_shape_mut().pos.0 = 1.0;
+    state_left.get_curr_shape_mut().pos().0 = 1.0;
     let _cannot_move_left = can_move_curr_shape_direction(&state_left, Direction::Left);
     // Тест существует для проверки что функция работает без паники
 
     // Тест 3: Фигура на правой границе
     let mut state_right = GameState::new();
-    state_right.get_curr_shape_mut().pos.0 = 8.0;
+    state_right.get_curr_shape_mut().pos().0 = 8.0;
     let _cannot_move_right = can_move_curr_shape_direction(&state_right, Direction::Right);
     // Тест существует для проверки что функция работает без паники
 
@@ -291,7 +291,7 @@ fn test_h3_no_inline_in_collision() {
     let mut state = GameState::new();
 
     // Перемещаем фигуру в центр для корректной проверки
-    state.get_curr_shape_mut().pos = (4.0, 5.0);
+    state.get_curr_shape_mut().set_pos((4.0, 5.0));
 
     // Проверяем что функции работают корректно (компилируются и выполняются)
     // В центре поля все движения должны быть возможны

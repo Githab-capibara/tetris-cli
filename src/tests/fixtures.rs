@@ -142,7 +142,7 @@ pub fn create_test_game_state_with_filled_row(row_index: usize, color: i16) -> G
 pub fn drop_piece_to_floor(state: &mut GameState) -> usize {
     let mut drop_count = 0;
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
         drop_count += 1;
     }
     drop_count
@@ -160,7 +160,7 @@ pub fn drop_piece_to_floor(state: &mut GameState) -> usize {
 /// ```
 pub fn move_piece_to_left_wall(state: &mut GameState) {
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 }
 
@@ -176,7 +176,7 @@ pub fn move_piece_to_left_wall(state: &mut GameState) {
 /// ```
 pub fn move_piece_to_right_wall(state: &mut GameState) {
     while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos.0 += 1.0;
+        state.get_curr_shape_mut().pos().0 += 1.0;
     }
 }
 
@@ -573,11 +573,11 @@ pub fn assert_piece_in_bounds(piece: &Tetromino) {
 
     // Проверяем что позиция в пределах поля
     assert!(
-        piece.pos.0 >= 0.0 && piece.pos.0 < GRID_WIDTH as f32,
+        piece.pos().0 >= 0.0 && piece.pos().0 < GRID_WIDTH as f32,
         "X позиция фигуры должна быть в пределах поля"
     );
     assert!(
-        piece.pos.1 >= 0.0 && piece.pos.1 < GRID_HEIGHT as f32,
+        piece.pos().1 >= 0.0 && piece.pos().1 < GRID_HEIGHT as f32,
         "Y позиция фигуры должна быть в пределах поля"
     );
 }
@@ -593,7 +593,7 @@ pub fn assert_piece_in_bounds(piece: &Tetromino) {
 /// assert_piece_has_four_blocks(&piece);
 /// ```
 pub fn assert_piece_has_four_blocks(piece: &Tetromino) {
-    assert_eq!(piece.coords.len(), 4, "У фигуры должно быть 4 блока");
+    assert_eq!(piece.coords().len(), 4, "У фигуры должно быть 4 блока");
 }
 
 /// Проверяет, что индекс цвета фигуры соответствует её типу.
@@ -608,7 +608,7 @@ pub fn assert_piece_has_four_blocks(piece: &Tetromino) {
 /// ```
 pub fn assert_piece_color_matches_type(piece: &Tetromino) {
     assert_eq!(
-        piece.shape as usize, piece.fg,
+        piece.shape() as usize, piece.fg(),
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
 }

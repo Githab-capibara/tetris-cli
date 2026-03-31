@@ -133,6 +133,38 @@ impl Tetromino {
         &mut self.coords
     }
 
+    /// Создать новую фигуру с заданными параметрами.
+    ///
+    /// # Аргументы
+    /// * `pos` - позиция фигуры
+    /// * `shape` - тип фигуры
+    /// * `coords` - координаты блоков
+    /// * `fg` - индекс цвета
+    ///
+    /// # Возвращает
+    /// Новый Tetromino
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::tetromino::{Tetromino, ShapeType};
+    ///
+    /// let tetromino = Tetromino::new(
+    ///     (4.0, 0.0),
+    ///     ShapeType::T,
+    ///     [(-1, 0), (0, 0), (1, 0), (0, 1)],
+    ///     0,
+    /// );
+    /// ```
+    #[must_use]
+    pub const fn new(
+        pos: (f32, f32),
+        shape: ShapeType,
+        coords: [(i16, i16); 4],
+        fg: u8,
+    ) -> Self {
+        Self { pos, shape, coords, fg }
+    }
+
     /// Установить позицию фигуры.
     ///
     /// # Аргументы

@@ -13,8 +13,7 @@
 use crate::game::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::BagGenerator;
-use crate::types::Direction;
-use crate::types::RotationDirection;
+use crate::types::{Direction, RotationDirection};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-4: Гравитация и падение
@@ -39,7 +38,7 @@ fn test_gravity_and_falling() {
     // Опускаем фигуру на 5 блоков
     for _ in 0..5 {
         if state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
     }
 
@@ -65,7 +64,7 @@ fn test_piece_reaching_floor() {
     // Опускаем фигуру до упора
     let mut drop_count = 0;
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
         drop_count += 1;
     }
 
@@ -126,7 +125,7 @@ fn test_collision_with_left_wall() {
     // Перемещаем фигуру к левой границе
     for _ in 0..10 {
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 
@@ -153,7 +152,7 @@ fn test_collision_with_right_wall() {
     // Перемещаем фигуру к правой границе
     for _ in 0..10 {
         if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
+            state.get_curr_shape_mut().pos().0 += 1.0;
         }
     }
 
@@ -179,7 +178,7 @@ fn test_collision_with_fixed_pieces() {
 
     // Опускаем фигуру на пол
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
@@ -239,7 +238,7 @@ fn test_rotation_near_left_wall() {
     // Перемещаем фигуру к левой границе
     for _ in 0..5 {
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 
@@ -261,7 +260,7 @@ fn test_rotation_near_right_wall() {
     // Перемещаем фигуру к правой границе (но не вплотную)
     for _ in 0..3 {
         if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
+            state.get_curr_shape_mut().pos().0 += 1.0;
         }
     }
 
@@ -286,7 +285,7 @@ fn test_rotation_near_floor() {
     // Опускаем фигуру близко к полу
     for _ in 0..15 {
         if state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
     }
 
@@ -314,7 +313,7 @@ fn test_hold_swap_mechanism() {
 
     // Запоминаем начальную фигуру
     let initial_shape = state.curr_shape().shape();
-    let next_shape = state.next_shape().shape;
+    let next_shape = state.next_shape().shape();
 
     // Удерживаем фигуру
     state.hold_shape();
@@ -337,7 +336,7 @@ fn test_hold_swap_mechanism() {
         state
             .held_shape()
             .expect("Удержанная фигура должна существовать")
-            .shape,
+            .shape(),
         initial_shape,
         "Удержанная фигура должна быть начальной фигурой"
     );
@@ -416,7 +415,7 @@ fn test_ghost_piece_position() {
 
     // Проверяем, что призрачная фигура имеет те же координаты
     assert_eq!(
-        ghost_shape.shape,
+        ghost_shape.shape(),
         state.curr_shape().shape(),
         "Призрачная фигура должна быть того же типа"
     );
@@ -431,7 +430,7 @@ fn test_ghost_piece_floor_detection() {
 
     // Опускаем фигуру до пола
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Создаём призрачную фигуру на той же позиции

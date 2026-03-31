@@ -210,7 +210,7 @@ fn test_handle_landing_calls_check_rows() {
     let mut state = GameState::new();
 
     // Устанавливаем фигуру на поле
-    state.get_curr_shape_mut().pos.1 = 10.0;
+    state.get_curr_shape_mut().pos().1 = 10.0;
     state.save_tetromino();
 
     // handle_landing() вызывает check_rows() внутри

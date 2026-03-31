@@ -70,7 +70,7 @@ fn test_negative_x_coords_handling() {
 
     // Получаем текущую фигуру
     let curr_shape = game.curr_shape();
-    let (shape_x, shape_y) = curr_shape.pos;
+    let (shape_x, shape_y) = curr_shape.pos();
 
     // Проверяем что начальная X координата неотрицательная
     assert!(

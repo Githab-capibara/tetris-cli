@@ -28,7 +28,7 @@ fn test_gamestate_uses_tetromino() {
     // Проверяем, что текущая фигура существует
     let shape = state.curr_shape();
     assert!(
-        (shape.pos.0 - 4.0).abs() < f32::EPSILON,
+        (shape.pos().0 - 4.0).abs() < f32::EPSILON,
         "Фигура должна быть в начальной позиции"
     );
 }
@@ -41,7 +41,7 @@ fn test_gamestate_uses_bag_generator() {
     // Проверяем, что следующая фигура существует
     let next = state.next_shape();
     assert!(
-        (next.shape as usize) < 7,
+        (next.shape() as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
 }
@@ -52,9 +52,9 @@ fn test_tetromino_from_bag_to_gamestate() {
     let mut bag = BagGenerator::new();
     let tetromino = Tetromino::from_bag(&mut bag);
 
-    assert_eq!(tetromino.pos, (4.0, 0.0), "Позиция должна быть начальной");
+    assert_eq!(tetromino.pos(), (4.0, 0.0), "Позиция должна быть начальной");
     assert!(
-        (tetromino.shape as usize) < 7,
+        (tetromino.shape() as usize) < 7,
         "Тип фигуры должен быть валидным"
     );
 }
@@ -68,7 +68,7 @@ fn test_all_piece_types_appear_in_game() {
     for _ in 0..70 {
         let state = GameState::new();
         let shape = state.curr_shape();
-        found_shapes[shape.shape as usize] = true;
+        found_shapes[shape.shape() as usize] = true;
     }
 
     // Все 7 типов должны встретиться
@@ -111,13 +111,13 @@ fn test_piece_stays_within_bounds() {
 
     // Двигаем фигуру к левой границе
     while state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     // Проверяем, что фигура не вышла за границу
     let shape = state.curr_shape();
-    for &(x, _) in &shape.coords {
-        let global_x = shape.pos.0 as i16 + x;
+    for &(x, _) in &shape.coords() {
+        let global_x = shape.pos().0 as i16 + x;
         assert!(global_x >= 0, "Фигура не должна выходить за левую границу");
     }
 }
@@ -129,11 +129,11 @@ fn test_next_shape_from_bag_generator() {
 
     let next = state.next_shape();
     assert!(
-        (next.shape as usize) < 7,
+        (next.shape() as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
     assert_eq!(
-        next.pos,
+        next.pos(),
         (4.0, 0.0),
         "Позиция следующей фигуры должна быть начальной"
     );
@@ -149,8 +149,8 @@ fn test_curr_and_next_shapes_different() {
 
     // Фигуры могут совпадать, но это маловероятно
     // Проверяем, что обе валидны
-    assert!((curr.shape as usize) < 7);
-    assert!((next.shape as usize) < 7);
+    assert!((curr.shape() as usize) < 7);
+    assert!((next.shape() as usize) < 7);
 }
 
 // ============================================================================
@@ -332,7 +332,7 @@ fn test_gamestate_responds_to_input() {
     let initial_x = state.curr_shape().pos().0;
 
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
         assert!(
             state.curr_shape().pos().0 < initial_x,
             "Движение влево должно уменьшить X"
@@ -360,7 +360,7 @@ fn test_hard_drop_command() {
 
     // Симулируем hard drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     assert!(
@@ -377,7 +377,7 @@ fn test_soft_drop_command() {
 
     // Симулируем soft drop
     if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     assert!(
@@ -394,13 +394,13 @@ fn test_move_left_right() {
 
     // Движение влево
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
     let after_left = state.curr_shape().pos().0;
 
     // Движение вправо
     if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
-        state.get_curr_shape_mut().pos.0 += 1.0;
+        state.get_curr_shape_mut().pos().0 += 1.0;
     }
     let after_right = state.curr_shape().pos().0;
 
@@ -450,7 +450,7 @@ fn test_next_piece_preview() {
 
     let next = state.next_shape();
     assert!(
-        (next.shape as usize) < 7,
+        (next.shape() as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
 }
@@ -484,7 +484,7 @@ fn test_game_has_piece() {
     let state = GameState::new();
 
     let shape = state.curr_shape();
-    assert!((shape.shape as usize) < 7, "Фигура должна быть валидной");
+    assert!((shape.shape() as usize) < 7, "Фигура должна быть валидной");
 }
 
 /// Тест 33: Игра имеет следующую фигуру
@@ -494,7 +494,7 @@ fn test_game_has_next_piece() {
 
     let next = state.next_shape();
     assert!(
-        (next.shape as usize) < 7,
+        (next.shape() as usize) < 7,
         "Следующая фигура должна быть валидной"
     );
 }
@@ -748,7 +748,7 @@ fn test_overall_system_performance() {
     // Двигаем фигуру
     for _ in 0..100 {
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
     }
 

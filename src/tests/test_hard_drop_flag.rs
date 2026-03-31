@@ -180,11 +180,11 @@ fn test_hard_drop_flag_different_heights() {
             0 => {} // Начальная позиция
             1 => {
                 // Поднимаем на 5 ячеек
-                state.get_curr_shape_mut().pos.1 = 5.0;
+                state.get_curr_shape_mut().pos().1 = 5.0;
             }
             2 => {
                 // Поднимаем на 10 ячеек
-                state.get_curr_shape_mut().pos.1 = 10.0;
+                state.get_curr_shape_mut().pos().1 = 10.0;
             }
             _ => unreachable!(),
         }

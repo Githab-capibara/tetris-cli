@@ -411,7 +411,7 @@ fn test_redundant_traits_removed() {
     // Проверяем что методы возвращают корректные данные
     assert!(
         matches!(
-            curr_shape.shape,
+            curr_shape.shape(),
             crate::tetromino::ShapeType::T
                 | crate::tetromino::ShapeType::L
                 | crate::tetromino::ShapeType::J
@@ -425,7 +425,7 @@ fn test_redundant_traits_removed() {
 
     assert!(
         matches!(
-            next_shape.shape,
+            next_shape.shape(),
             crate::tetromino::ShapeType::T
                 | crate::tetromino::ShapeType::L
                 | crate::tetromino::ShapeType::J
@@ -458,11 +458,11 @@ fn test_figure_manager_public_methods() {
 
     // Проверяем публичные методы для работы с фигурами
     let curr_shape = state.curr_shape();
-    let original_x = curr_shape.pos.0;
+    let original_x = curr_shape.pos().0;
 
     // Проверяем что можно получить мутабельную ссылку на текущую фигуру
     let curr_shape_mut = state.get_curr_shape_mut();
-    curr_shape_mut.pos.0 += 1.0;
+    curr_shape_mut.pos().0 += 1.0;
 
     assert_eq!(
         state.curr_shape().pos().0,
@@ -474,7 +474,7 @@ fn test_figure_manager_public_methods() {
     let shape = state.curr_shape();
     assert!(
         matches!(
-            shape.shape,
+            shape.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -490,7 +490,7 @@ fn test_figure_manager_public_methods() {
     let next = state.next_shape();
     assert!(
         matches!(
-            next.shape,
+            next.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -537,7 +537,7 @@ fn test_arch_fixes_no_circular_dependencies() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J

@@ -29,8 +29,8 @@ mod tests {
 
         // Получаем текущую фигуру
         let curr_shape = state.curr_shape();
-        let shape_x = curr_shape.pos.0;
-        let shape_y = curr_shape.pos.1;
+        let shape_x = curr_shape.pos().0;
+        let shape_y = curr_shape.pos().1;
 
         // Проверка что координаты фигуры в разумных пределах
         assert!(
@@ -444,7 +444,7 @@ mod tests {
 
         // Тест 4: Проверка cast при проверке столкновений
         let curr_shape = state.curr_shape();
-        for &(x, y) in &curr_shape.coords {
+        for &(x, y) in &curr_shape.coords() {
             // Координаты блоков относительные и могут быть отрицательными
             // Проверяем что cast из i8 в f32 работает корректно
             let block_x = x as f32;
@@ -461,8 +461,8 @@ mod tests {
             );
 
             // Глобальные координаты = позиция фигуры + относительные координаты
-            let global_x = curr_shape.pos.0 + block_x;
-            let global_y = curr_shape.pos.1 + block_y;
+            let global_x = curr_shape.pos().0 + block_x;
+            let global_y = curr_shape.pos().1 + block_y;
 
             // Проверка что глобальные координаты валидны (с учётом что фигура может быть выше поля)
             assert!(
@@ -553,8 +553,8 @@ mod tests {
         // Проверка что cast координат не вызывает паники
         for state in &states {
             let shape = state.curr_shape();
-            let _x = shape.pos.0 as i16;
-            let _y = shape.pos.1 as i16;
+            let _x = shape.pos().0 as i16;
+            let _y = shape.pos().1 as i16;
         }
 
         println!("✓ Cast операции не вызывают паники в реальных условиях");

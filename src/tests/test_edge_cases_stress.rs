@@ -95,8 +95,8 @@ fn test_edge_cases_all_shapes_extreme() {
 
     for &shape in &shapes {
         let mut state = GameState::new();
-        state.get_curr_shape_mut().shape = shape;
-        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
+        state.get_curr_shape_mut().set_shape(shape);
+        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
 
         // Проверяем вращение
         for _ in 0..4 {
@@ -154,11 +154,11 @@ fn test_stress_rapid_key_presses() {
     for _ in 0..1000 {
         // Движение влево
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
         // Движение вправо
         if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
-            state.get_curr_shape_mut().pos.0 += 1.0;
+            state.get_curr_shape_mut().pos().0 += 1.0;
         }
     }
 
@@ -239,7 +239,7 @@ fn test_stress_sprint_mode_load() {
     for _ in 0..1000 {
         // Движение
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos.0 -= 1.0;
+            state.get_curr_shape_mut().pos().0 -= 1.0;
         }
         // Вращение
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
@@ -368,7 +368,7 @@ fn test_long_stability_1000_iterations() {
 
         // Двигаем фигуру
         if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
     }
 }
@@ -410,7 +410,7 @@ fn test_long_memory_leak_1000_cycles() {
         // Активно используем
         for _ in 0..100 {
             if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-                state.get_curr_shape_mut().pos.0 -= 1.0;
+                state.get_curr_shape_mut().pos().0 -= 1.0;
             }
         }
 

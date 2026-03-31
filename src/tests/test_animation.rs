@@ -20,7 +20,7 @@ fn test_animation_hard_drop_default_false() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // После падения флаг должен быть сброшен в update()
@@ -38,7 +38,7 @@ fn test_animation_hard_drop_sets_flag() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Флаг устанавливается в update() при нажатии W
@@ -53,7 +53,7 @@ fn test_animation_hard_drop_resets_flag() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Флаг сбрасывается после обновления
@@ -68,7 +68,7 @@ fn test_animation_hard_drop_changes_position() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     let end_y = state.curr_shape().pos().1;
@@ -82,7 +82,7 @@ fn test_animation_hard_drop_blocks_down() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     assert!(!state.can_move_curr_shape_direction(crate::types::Direction::Down));
@@ -105,12 +105,12 @@ fn test_animation_hard_drop_all_shapes() {
 
     for &shape in &shapes {
         let mut state = GameState::new();
-        state.get_curr_shape_mut().shape = shape;
-        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
+        state.get_curr_shape_mut().set_shape(shape);
+        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
 
         // Симулируем Hard Drop
         while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
 
         assert!(!state.can_move_curr_shape_direction(crate::types::Direction::Down));
@@ -123,11 +123,11 @@ fn test_animation_hard_drop_all_shapes() {
 fn test_animation_hard_drop_different_x_positions() {
     for x in &[0, 2, 5, 8] {
         let mut state = GameState::new();
-        state.get_curr_shape_mut().pos.0 = *x as f32;
+        state.get_curr_shape_mut().pos().0 = *x as f32;
 
         // Симулируем Hard Drop
         while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
 
         assert!(!state.can_move_curr_shape_direction(crate::types::Direction::Down));
@@ -141,7 +141,7 @@ fn test_animation_hard_drop_sprint_mode() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     assert!(!state.can_move_curr_shape_direction(crate::types::Direction::Down));
@@ -154,7 +154,7 @@ fn test_animation_hard_drop_marathon_mode() {
 
     // Симулируем Hard Drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     assert!(!state.can_move_curr_shape_direction(crate::types::Direction::Down));
@@ -181,12 +181,12 @@ fn test_animation_different_shapes() {
 
     for &shape in &shapes {
         let mut state = GameState::new();
-        state.get_curr_shape_mut().shape = shape;
-        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
+        state.get_curr_shape_mut().set_shape(shape);
+        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
 
         // Симулируем падение
         while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-            state.get_curr_shape_mut().pos.1 += 1.0;
+            state.get_curr_shape_mut().pos().1 += 1.0;
         }
 
         // Проверяем что фигура достигла пола
@@ -203,7 +203,7 @@ fn test_animation_classic_mode() {
     let mut state = GameState::new();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем что фигура достигла пола
@@ -219,7 +219,7 @@ fn test_animation_sprint_mode() {
     let mut state = GameState::new_sprint();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем что фигура достигла пола
@@ -235,7 +235,7 @@ fn test_animation_marathon_mode() {
     let mut state = GameState::new_marathon();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем что фигура достигла пола
@@ -252,7 +252,7 @@ fn test_animation_does_not_affect_stats() {
     let initial_pieces = state.stats().total_pieces();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Статистика не должна измениться при падении
@@ -267,7 +267,7 @@ fn test_animation_after_hold() {
     state.hold_shape();
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем что фигура достигла пола
@@ -289,7 +289,7 @@ fn test_animation_after_rotation() {
     }
 
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     // Проверяем что фигура достигла пола
@@ -311,11 +311,11 @@ fn test_animation_ghost_is_copy() {
     let ghost = *current;
 
     // Призрачная фигура должна быть копией текущей фигуры
-    assert_eq!(ghost.pos.0, current.pos.0, "Позиция X должна совпадать");
-    assert_eq!(ghost.pos.1, current.pos.1, "Позиция Y должна совпадать");
-    assert_eq!(ghost.coords, current.coords, "Координаты должны совпадать");
-    assert_eq!(ghost.shape, current.shape, "Тип фигуры должен совпадать");
-    assert_eq!(ghost.fg, current.fg, "Цвет должен совпадать");
+    assert_eq!(ghost.pos().0, current.pos().0, "Позиция X должна совпадать");
+    assert_eq!(ghost.pos().1, current.pos().1, "Позиция Y должна совпадать");
+    assert_eq!(ghost.coords(), current.coords(), "Координаты должны совпадать");
+    assert_eq!(ghost.shape(), current.shape(), "Тип фигуры должен совпадать");
+    assert_eq!(ghost.fg(), current.fg(), "Цвет должен совпадать");
 }
 
 /// Тест 26: Проверка что `can_move_ghost_shape` работает
@@ -345,8 +345,8 @@ fn test_animation_ghost_all_shapes() {
 
     for &shape in &shapes {
         let mut state = GameState::new();
-        state.get_curr_shape_mut().shape = shape;
-        state.get_curr_shape_mut().coords = SHAPE_COORDS[shape as usize];
+        state.get_curr_shape_mut().set_shape(shape);
+        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
 
         let ghost = *state.curr_shape();
         let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);
@@ -362,7 +362,7 @@ fn test_animation_ghost_after_movement() {
 
     // Двигаем фигуру
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos.0 -= 1.0;
+        state.get_curr_shape_mut().pos().0 -= 1.0;
     }
 
     let ghost = *state.curr_shape();
@@ -396,7 +396,7 @@ fn test_animation_ghost_on_floor() {
 
     // Опускаем на пол
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos.1 += 1.0;
+        state.get_curr_shape_mut().pos().1 += 1.0;
     }
 
     let ghost = *state.curr_shape();

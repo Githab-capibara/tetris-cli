@@ -170,7 +170,7 @@ fn test_arch_integrity_module_boundaries() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -191,7 +191,7 @@ fn test_arch_integrity_module_boundaries() {
     // Проверяем что BagGenerator работает корректно
     assert!(
         matches!(
-            shape1.shape,
+            shape1.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -306,7 +306,7 @@ fn test_encapsulation() {
     let curr_shape = state.curr_shape();
     assert!(
         matches!(
-            curr_shape.shape,
+            curr_shape.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -319,8 +319,8 @@ fn test_encapsulation() {
     );
 
     let curr_shape_mut = state.get_curr_shape_mut();
-    let original_x = curr_shape_mut.pos.0;
-    curr_shape_mut.pos.0 += 1.0;
+    let original_x = curr_shape_mut.pos().0;
+    curr_shape_mut.pos().0 += 1.0;
     assert_eq!(
         state.curr_shape().pos().0,
         original_x + 1.0,
@@ -606,7 +606,7 @@ fn test_arch_integrity_no_circular_dependencies() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -788,7 +788,7 @@ fn test_architecture_backward_compatibility() {
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(
         matches!(
-            tetromino.shape,
+            tetromino.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -838,7 +838,7 @@ fn test_architecture_integrity_comprehensive() {
     // Проверяем работу с фигурами
     let curr_shape = state.curr_shape();
     assert!(matches!(
-        curr_shape.shape,
+        curr_shape.shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J
@@ -1011,7 +1011,7 @@ fn test_architectural_integrity_final() {
     let mut bag = BagGenerator::new();
     let tetromino = Tetromino::from_bag(&mut bag);
     assert!(matches!(
-        tetromino.shape,
+        tetromino.shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J

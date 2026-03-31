@@ -59,7 +59,7 @@ fn test_check_rows_benchmark_works() {
 #[test]
 fn test_rotate_benchmark_works() {
     use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
-    use crate::types::Direction;
+    use crate::types::{Direction, RotationDirection};
     use crate::types::RotationDirection;
     use std::time::Instant;
 
@@ -73,7 +73,7 @@ fn test_rotate_benchmark_works() {
 
     // Замеряем время вращения
     let start = Instant::now();
-    tetromino.rotate_old(Direction::Right);
+    tetromino.rotate(RotationDirection::Clockwise);
     let elapsed = start.elapsed();
 
     // Проверяем что rotate() выполнился
@@ -85,7 +85,7 @@ fn test_rotate_benchmark_works() {
     // Проверяем что вращение работает корректно
     let original_coords = SHAPE_COORDS[0];
     assert_ne!(
-        tetromino.coords, original_coords,
+        tetromino.coords(), original_coords,
         "Вращение должно изменить координаты"
     );
 
@@ -98,8 +98,8 @@ fn test_rotate_benchmark_works() {
             coords: SHAPE_COORDS[0],
             fg: 0,
         };
-        t.rotate_old(Direction::Right);
-        t.rotate_old(Direction::Left);
+        t.rotate(RotationDirection::Clockwise);
+        t.rotate(RotationDirection::CounterClockwise);
     }
     let elapsed_1000 = start.elapsed();
 
@@ -129,8 +129,8 @@ fn test_rotate_benchmark_works() {
         };
 
         let start = Instant::now();
-        t.rotate_old(Direction::Right);
-        t.rotate_old(Direction::Left);
+        t.rotate(RotationDirection::Clockwise);
+        t.rotate(RotationDirection::CounterClockwise);
         let elapsed = start.elapsed();
 
         assert!(
@@ -215,8 +215,8 @@ fn test_benchmark_performance() {
     };
     let start = Instant::now();
     for _ in 0..iterations {
-        tetromino.rotate_old(Direction::Right);
-        tetromino.rotate_old(Direction::Left);
+        tetromino.rotate(RotationDirection::Clockwise);
+        tetromino.rotate(RotationDirection::CounterClockwise);
     }
     let rotate_elapsed = start.elapsed();
 
