@@ -4,6 +4,90 @@
 
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 
+## [23.96.21] — 2026-03-31
+
+### Исправления аудита и улучшения архитектуры
+
+**Исправления:**
+
+**C1: Замена TetrominoType → ShapeType:**
+- Переименование типа `TetrominoType` в `ShapeType` в `events.rs`
+- Улучшена согласованность именования типов фигур
+- Добавлено 2 теста на использование `ShapeType`
+
+**H1: Инвертированная логика has_collision:**
+- Переименование `is_position_valid` → `has_collision` с инвертированной логикой
+- Улучшена читаемость кода проверки коллизий
+- Добавлено 4 теста на проверку логики коллизий
+
+**H2: TOCTOU защита ThreadSafeLeaderboardEntry:**
+- Добавлена потокобезопасная версия `LeaderboardEntry`
+- Используется `Arc<Mutex<>>` для защиты данных
+- Добавлено 4 теста потокобезопасности
+
+**H3: Удаление избыточных #[inline] атрибутов:**
+- Удалены явные `#[inline]` атрибуты в `collision.rs` и `board.rs`
+- Компилятор Rust сам решает какие функции инлайнить
+- Добавлено 2 теста на отсутствие `#[inline]`
+
+**M1: Централизация константы MAX_CONFIG_FILE_SIZE:**
+- Константа перемещена в `constants.rs`
+- Удалены дублирующие определения в других файлах
+- Добавлено 2 теста на централизацию констант
+
+**M2: Оптимизация sanitize_player_name:**
+- Замена двухпроходного алгоритма на однопроходный
+- Используется `filter_map()` для фильтрации и маппинга
+- Снижено количество аллокаций при валидации имён
+- Добавлено 3 теста оптимизации
+
+**M3: Семантические методы GameState:**
+- Добавлены методы: `apply_gravity()`, `spawn_new_piece()`, `update_fall_speed()`
+- Улучшена инкапсуляция игровой логики
+- Добавлено 3 теста на семантические методы
+
+**L4: Рефакторинг run_menu_loop():**
+- Разбиение функции `run_menu_loop()` в `application.rs`
+- Выделены методы: `render_menu_frame()`, `process_menu_input()`, `check_exit_condition()`
+- Улучшена читаемость и поддерживаемость кода
+- Добавлено 4 теста на новые методы
+
+**Тесты:**
+- **test_audit_fixes.rs** — 25 тестов на все исправления аудита:
+  - `test_c1_shapetype_in_game_event` — ShapeType в GameEvent
+  - `test_c1_shapetype_in_tetromino` — ShapeType в Tetromino
+  - `test_h1_has_collision_returns_true_on_collision` — has_collision true
+  - `test_h1_has_collision_returns_false_no_collision` — has_collision false
+  - `test_h1_has_collision_different_positions` — has_collision позиции
+  - `test_h2_thread_safe_leaderboard_entry_exists` — ThreadSafeLeaderboardEntry
+  - `test_h2_thread_safe_score_returns_correct_value` — score() корректен
+  - `test_h2_verify_hash_for_value` — verify_hash_for_value
+  - `test_h2_thread_safe_leaderboard_multithreaded` — потокобезопасность
+  - `test_h3_no_inline_in_collision` — нет #[inline] в collision.rs
+  - `test_h3_no_inline_in_board` — нет #[inline] в board.rs
+  - `test_m1_max_config_file_size_constant` — константа MAX_CONFIG_FILE_SIZE
+  - `test_m1_constant_imports` — импорты констант
+  - `test_m2_sanitize_player_name_memory_allocation` — оптимизация памяти
+  - `test_m2_sanitize_player_name_filters_invalid_chars` — фильтрация символов
+  - `test_m2_sanitize_player_name_empty_to_anonymous` — пустое имя → Anonymous
+  - `test_m3_apply_gravity_increases_fall_speed` — apply_gravity()
+  - `test_m3_spawn_new_piece` — spawn_new_piece()
+  - `test_m3_update_fall_speed` — update_fall_speed()
+  - `test_l4_render_menu_frame_exists` — render_menu_frame()
+  - `test_l4_process_menu_input_exists` — process_menu_input()
+  - `test_l4_check_exit_condition_exists` — check_exit_condition()
+  - `test_l4_application_functions_integration` — интеграция application.rs
+  - `test_all_fixes_compile_together` — все исправления компилируются
+  - `test_game_event_uses_shapetype_not_tetrominotype` — ShapeType не TetrominoType
+
+**Обновления документации:**
+- README.md — обновлено количество тестов: **1309 тестов**
+- README.md — добавлена секция о версии 23.96.21+
+- ARCHITECTURE.md — обновлена информация о методах GameState
+- ARCHITECTURE_SUMMARY.md — обновлена актуальная информация
+- TESTS_REGISTRY.md — добавлена информация о test_audit_fixes.rs
+- TODO.md — отмечены выполненные задачи
+
 ## [23.96.29] — 2026-03-31
 
 ### Улучшения валидации и архитектуры

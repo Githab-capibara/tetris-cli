@@ -351,7 +351,6 @@ fn test_highscore_does_not_depend_on_game() {
 #[test]
 fn test_menu_does_not_depend_on_game() {
     use crate::menu::constants::MENU;
-    use crate::menu::draw::draw_menu;
 
     // Проверяем что константы меню работают независимо
     assert!(!MENU.is_empty(), "MENU должен работать независимо");

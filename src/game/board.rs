@@ -61,7 +61,6 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(i8)` - значение ячейки (-1 = пусто, 0-6 = цвет)
     /// - `None` - если координаты выходят за пределы поля
-    #[inline]
     pub fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             Some(self.blocks[y][x])
@@ -80,7 +79,6 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(())` - если ячейка успешно установлена
     /// - `None` - если координаты выходят за пределы поля
-    #[inline]
     pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             self.blocks[y][x] = value;
@@ -94,7 +92,6 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Битовая маска где каждый бит соответствует линии поля.
-    #[inline]
     pub fn get_filled_lines_mask(&self) -> u32 {
         self.filled_lines
     }
@@ -103,7 +100,6 @@ impl GameBoard {
     ///
     /// # Аргументы
     /// * `mask` - битовая маска заполненных линий
-    #[inline]
     pub fn set_filled_lines_mask(&mut self, mask: u32) {
         self.filled_lines = mask;
     }
@@ -112,7 +108,6 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Количество установленных битов в маске.
-    #[inline]
     pub fn get_filled_lines_count(&self) -> u32 {
         self.filled_lines.count_ones()
     }
@@ -125,7 +120,6 @@ impl GameBoard {
     /// # Примечания
     /// Этот метод только сбрасывает маску.
     /// Фактическое удаление линий должно выполняться отдельно.
-    #[inline]
     pub fn clear_filled_lines(&mut self) -> u32 {
         let count = self.get_filled_lines_count();
         self.filled_lines = 0;
@@ -136,7 +130,6 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Ссылка на [[i8; GRID_WIDTH]; GRID_HEIGHT]
-    #[inline]
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
@@ -145,61 +138,50 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на [[i8; GRID_WIDTH]; GRID_HEIGHT]
-    #[inline]
     pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &mut self.blocks
     }
 }
 
 impl BoardReadonly for GameBoard {
-    #[inline]
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
 
-    #[inline]
     fn get_block(&self, x: usize, y: usize) -> i8 {
         self.blocks[y][x]
     }
 
-    #[inline]
     fn is_block_empty(&self, x: usize, y: usize) -> bool {
         self.blocks[y][x] == -1
     }
 
-    #[inline]
     fn is_block_occupied(&self, x: usize, y: usize) -> bool {
         self.blocks[y][x] != -1
     }
 
-    #[inline]
     fn get_filled_lines_mask(&self) -> u32 {
         self.filled_lines
     }
 
-    #[inline]
     fn get_filled_lines_count(&self) -> u32 {
         self.filled_lines.count_ones()
     }
 }
 
 impl BoardMutable for GameBoard {
-    #[inline]
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &mut self.blocks
     }
 
-    #[inline]
     fn set_block(&mut self, x: usize, y: usize, value: i8) {
         self.blocks[y][x] = value;
     }
 
-    #[inline]
     fn set_filled_lines_mask(&mut self, mask: u32) {
         self.filled_lines = mask;
     }
 
-    #[inline]
     fn clear_filled_lines(&mut self) -> u32 {
         let count = self.filled_lines.count_ones();
         self.filled_lines = 0;

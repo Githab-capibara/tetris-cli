@@ -63,6 +63,7 @@ pub mod cache;
 // constants больше не является отдельным файлом - используем ре-экспорт из crate::constants
 pub mod components;
 pub mod cycle;
+pub mod events;
 pub mod logic;
 pub mod mode_trait;
 pub mod render;

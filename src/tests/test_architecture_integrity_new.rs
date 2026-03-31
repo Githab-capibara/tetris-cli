@@ -69,7 +69,7 @@ fn test_all_modules_have_clear_responsibility() {
     let _board = GameBoard::new();
 
     // === mode_trait - трейты режимов игры ===
-    use crate::game::mode_trait::{ClassicMode, GameModeTrait, MarathonMode, SprintMode};
+    use crate::game::mode_trait::{ClassicMode, MarathonMode, SprintMode};
     let _classic = ClassicMode;
     let _sprint = SprintMode::new();
     let _marathon = MarathonMode::new();
@@ -249,7 +249,7 @@ fn test_dependencies_are_acyclic() {
     let _view = GameView::from_game_state(&state);
 
     // Проверка что tetromino независим
-    use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
+    use crate::tetromino::{BagGenerator, Tetromino};
     let mut bag = BagGenerator::new();
     let _tetromino = Tetromino::from_bag(&mut bag);
 

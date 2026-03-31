@@ -73,7 +73,7 @@ impl GameModeTrait for ClassicMode {
         None
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Классика"
     }
 }
@@ -110,7 +110,7 @@ impl GameModeTrait for SprintMode {
         Some(self.target)
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Спринт"
     }
 }
@@ -147,7 +147,7 @@ impl GameModeTrait for MarathonMode {
         Some(self.target)
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Марафон"
     }
 }

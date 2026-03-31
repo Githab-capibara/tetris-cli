@@ -511,7 +511,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::io::{GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+        use crate::io::{GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
@@ -582,7 +582,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{BORDER_COLOR, PREVIEW_X, PREVIEW_Y};
+        use crate::game::constants::{PREVIEW_X, PREVIEW_Y};
         self.draw_shape_preview(
             canvas,
             self.next_shape,
@@ -613,7 +613,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{BORDER_COLOR, HOLD_PREVIEW_X, HOLD_PREVIEW_Y};
+        use crate::game::constants::{HOLD_PREVIEW_X, HOLD_PREVIEW_Y};
         if let Some(held) = self.held_shape {
             let is_faded = false; // can_hold не доступен в GameView
             self.draw_shape_preview(

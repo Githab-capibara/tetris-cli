@@ -174,13 +174,12 @@ fn test_renderer_trait_implementation() {
     // Функция, требующая реализации трейта Renderer
     fn requires_renderer<R: Renderer>(_: &R) {}
 
-    let canvas = match Canvas::new() {
-        Ok(c) => c,
-        Err(_) => {
-            // Пропускаем тест в среде без терминала
-            eprintln!("Пропуск теста: требуется терминал");
-            return;
-        }
+    let canvas = if let Ok(c) = Canvas::new() {
+        c
+    } else {
+        // Пропускаем тест в среде без терминала
+        eprintln!("Пропуск теста: требуется терминал");
+        return;
     };
     requires_renderer(&canvas); // Должно компилироваться
 }
@@ -216,13 +215,12 @@ fn test_canvas_as_dyn_renderer() {
         renderer.draw_string("Test", (1, 1), &White, &Reset);
     }
 
-    let mut canvas = match Canvas::new() {
-        Ok(c) => c,
-        Err(_) => {
-            // Пропускаем тест в среде без терминала
-            eprintln!("Пропуск теста: требуется терминал");
-            return;
-        }
+    let mut canvas = if let Ok(c) = Canvas::new() {
+        c
+    } else {
+        // Пропускаем тест в среде без терминала
+        eprintln!("Пропуск теста: требуется терминал");
+        return;
     };
     draw_with_renderer(&mut canvas); // Должно компилироваться
 }

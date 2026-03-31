@@ -893,7 +893,7 @@ impl MockCanvas {
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16)) {
         let (x, mut y) = pos;
         for line in lines {
-            self.drawn_strings.push((line.to_string(), (x, y)));
+            self.drawn_strings.push(((*line).to_string(), (x, y)));
             y += 1;
         }
         // Один flush() в конце как в реальном Canvas
@@ -1150,7 +1150,7 @@ mod utf8_tests {
                     || !(0xC2..=0xDF).contains(&first_byte)
                         && !(0xE0..=0xEF).contains(&first_byte)
                         && !(0xF0..=0xF4).contains(&first_byte)
-                    || first_byte >= 0x80 && first_byte <= 0xBF,
+                    || (0x80..=0xBF).contains(&first_byte),
                 "Байт {:#X} должен быть распознан как невалидный или продолжение",
                 first_byte
             );

@@ -23,7 +23,7 @@ use crate::game::GameView;
 use crate::game::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
 use crate::io::Canvas;
 use crate::io_traits::{InputReader, Renderer};
-use crate::tetromino::{BagGenerator, RotationDirection, ShapeType, Tetromino};
+use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 
 // ============================================================================
 // ТЕСТ 1: РАЗДЕЛЕНИЕ КОМПОНЕНТОВ (A1)
@@ -968,11 +968,11 @@ fn test_no_forbidden_imports() {
     let _draw_fn = draw::<MockRenderer>;
 
     // Проверяем что scoring не импортирует из render
-    use crate::game::scoring::handle_landing;
+
     // handle_landing() не использует функции отрисовки
 
     // Проверяем что logic не импортирует из render
-    use crate::game::logic::update::update;
+
     // update() не использует функции отрисовки
 }
 

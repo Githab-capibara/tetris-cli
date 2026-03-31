@@ -452,7 +452,7 @@ fn test_redundant_traits_removed() {
 #[test]
 fn test_figure_manager_public_methods() {
     use crate::game::state::GameState;
-    use crate::tetromino::{RotationDirection, ShapeType};
+    use crate::tetromino::ShapeType;
 
     let mut state = GameState::new();
 
@@ -516,7 +516,7 @@ fn test_figure_manager_public_methods() {
 fn test_arch_fixes_no_circular_dependencies() {
     use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH};
     use crate::errors::GameError;
-    use crate::types::{Direction, RotationDirection};
+    use crate::types::Direction;
 
     // Проверяем что базовые модули работают независимо
     assert_eq!(FPS, 60);
@@ -564,10 +564,7 @@ fn test_arch_fixes_no_circular_dependencies() {
 /// - Нет нарушения инкапсуляции
 #[test]
 fn test_arch_fixes_module_boundaries() {
-    use crate::game::access::{
-        BoardMutable, BoardReadonly, ScoreAccess as ScoreAccessTrait,
-        ScoreMutable as ScoreMutableTrait,
-    };
+    use crate::game::access::{BoardMutable, BoardReadonly, ScoreMutable as ScoreMutableTrait};
     use crate::game::board::{
         BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait,
     };
@@ -692,7 +689,7 @@ fn test_game_mode_ocp() {
             Some(100)
         }
 
-        fn name(&self) -> &str {
+        fn name(&self) -> &'static str {
             "Пользовательский"
         }
     }

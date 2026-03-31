@@ -11,10 +11,7 @@
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
 use crate::game::GameState;
-use crate::game::{
-    HARD_DROP_POINTS, INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, PIECE_SCORE_INC,
-    SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
-};
+use crate::game::{INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, Tetromino};
 use crate::types::Direction;

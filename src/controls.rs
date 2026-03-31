@@ -8,6 +8,7 @@
 
 #![allow(dead_code)]
 
+use crate::constants::MAX_CONFIG_FILE_SIZE;
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
@@ -373,13 +374,12 @@ impl ControlsConfig {
 
         // Исправление #10: проверка размера файла перед загрузкой
         let file_size = metadata.len();
-        if file_size > super::highscore::MAX_CONFIG_FILE_SIZE {
+        if file_size > MAX_CONFIG_FILE_SIZE {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
                     "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-                    file_size,
-                    super::highscore::MAX_CONFIG_FILE_SIZE
+                    file_size, MAX_CONFIG_FILE_SIZE
                 ),
             ));
         }
@@ -767,7 +767,7 @@ mod controls_tests {
         let test_path = "test_controls_config_large.json";
 
         // Создаём файл размером больше 1MB (1MB + 100KB)
-        let large_size = (crate::highscore::MAX_CONFIG_FILE_SIZE + 100_000) as usize;
+        let large_size = (MAX_CONFIG_FILE_SIZE + 100_000) as usize;
         let mut file = File::create(test_path)?;
 
         // Записываем данные размером больше 1MB
@@ -811,7 +811,7 @@ mod controls_tests {
         // Проверяем размер файла
         let metadata = fs::metadata(test_path)?;
         assert!(
-            metadata.len() < crate::highscore::MAX_CONFIG_FILE_SIZE,
+            metadata.len() < MAX_CONFIG_FILE_SIZE,
             "Файл конфигурации должен быть меньше 1MB"
         );
 
@@ -913,7 +913,7 @@ mod controls_tests {
     #[test]
     fn test_file_size_error_message_format() {
         // Проверяем формат сообщения об ошибке размера файла
-        let max_size = crate::highscore::MAX_CONFIG_FILE_SIZE;
+        let max_size = MAX_CONFIG_FILE_SIZE;
         let file_size = max_size + 1;
 
         let error_msg = format!(
@@ -945,8 +945,7 @@ mod controls_tests {
     #[test]
     fn test_max_config_file_size_constant() {
         assert_eq!(
-            crate::highscore::MAX_CONFIG_FILE_SIZE,
-            1_048_576,
+            MAX_CONFIG_FILE_SIZE, 1_048_576,
             "MAX_CONFIG_FILE_SIZE должен быть 1MB (1024 * 1024)"
         );
     }

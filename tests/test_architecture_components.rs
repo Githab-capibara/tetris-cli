@@ -605,7 +605,7 @@ mod test_field_encapsulation {
 
         // Извлекаем определение структуры
         let struct_section = &state_content[struct_start.unwrap()..];
-        let struct_end = struct_section.find("}").unwrap_or(2000);
+        let struct_end = struct_section.find('}').unwrap_or(2000);
         let struct_definition = &struct_section[..struct_end];
 
         // Все поля должны быть приватными (без pub)

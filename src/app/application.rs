@@ -133,7 +133,6 @@ impl Application {
     /// Обрабатывает отрисовку меню и ввод пользователя.
     fn run_menu_loop(&mut self) {
         use crate::game::FPS;
-        use crate::menu::draw_menu;
         use std::time::Instant;
 
         let mut last_time = Instant::now();
@@ -146,35 +145,47 @@ impl Application {
             }
 
             // Отрисовка меню
-            let high_score_display = format!("{:10}", self.high_score);
-            draw_menu(&mut self.canvas, &high_score_display);
+            let high_score_display = self.format_high_score();
+            Self::render_menu_frame(&mut self.canvas, &high_score_display);
 
             // Обработка ввода
             if let Ok(Some(key)) = self.input.get_key() {
-                // Выход из приложения
-                if key == crate::io::KEY_BACKSPACE {
+                // Проверка выхода из приложения
+                if Self::check_exit_condition(key) {
                     break;
                 }
-                self.handle_menu_input(key, &high_score_display);
+                self.process_menu_input(key, &high_score_display);
             }
         }
     }
 
-    /// Подождать следующего кадра для поддержания FPS.
+    /// Отформатировать рекорд для отображения.
     ///
     /// # Возвращает
-    /// `true` если пришло время обновлять кадр, `false` если нужно ждать
-    fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
-        let now = Instant::now();
-        let delta_time_ms = u64::from(now.duration_since(*last_time).subsec_millis());
+    /// Отформатированная строка рекорда
+    fn format_high_score(&self) -> String {
+        format!("{:10}", self.high_score)
+    }
 
-        if delta_time_ms < interval_ms {
-            sleep(Duration::from_millis(interval_ms - delta_time_ms));
-            return false;
-        }
+    /// Отрисовать кадр меню.
+    ///
+    /// # Аргументы
+    /// * `canvas` - канвас для отрисовки
+    /// * `high_score_display` - строка рекорда
+    fn render_menu_frame(canvas: &mut Canvas, high_score_display: &str) {
+        use crate::menu::draw_menu;
+        draw_menu(canvas, high_score_display);
+    }
 
-        *last_time = now;
-        true
+    /// Проверить условие выхода из приложения.
+    ///
+    /// # Аргументы
+    /// * `key` - код нажатой клавиши
+    ///
+    /// # Возвращает
+    /// `true` если нужно выйти из приложения
+    fn check_exit_condition(key: u8) -> bool {
+        key == crate::io::KEY_BACKSPACE
     }
 
     /// Обработать ввод в меню.
@@ -182,7 +193,7 @@ impl Application {
     /// # Аргументы
     /// * `key` - код нажатой клавиши
     /// * `high_score_display` - строка для отображения рекорда
-    fn handle_menu_input(&mut self, key: u8, high_score_display: &str) {
+    fn process_menu_input(&mut self, key: u8, high_score_display: &str) {
         use crate::menu::show_leaderboard;
 
         match key {
@@ -256,6 +267,23 @@ impl Application {
             true,
             &mut self.leaderboard,
         )
+    }
+
+    /// Подождать следующего кадра для поддержания FPS.
+    ///
+    /// # Возвращает
+    /// `true` если пришло время обновлять кадр, `false` если нужно ждать
+    fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
+        let now = Instant::now();
+        let delta_time_ms = u64::from(now.duration_since(*last_time).subsec_millis());
+
+        if delta_time_ms < interval_ms {
+            sleep(Duration::from_millis(interval_ms - delta_time_ms));
+            return false;
+        }
+
+        *last_time = now;
+        true
     }
 }
 

@@ -7,6 +7,7 @@
 //! HMAC логика перемещена в модуль `crypto::hmac`.
 
 use crate::config::keys::get_save_data_hmac_key;
+use crate::constants::MAX_CONFIG_FILE_SIZE;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
@@ -44,11 +45,10 @@ fn check_config_file_size(path: &PathBuf) -> Result<(), String> {
     match fs::metadata(path) {
         Ok(metadata) => {
             let file_size = metadata.len();
-            if file_size > super::MAX_CONFIG_FILE_SIZE {
+            if file_size > MAX_CONFIG_FILE_SIZE {
                 return Err(format!(
                     "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-                    file_size,
-                    super::MAX_CONFIG_FILE_SIZE
+                    file_size, MAX_CONFIG_FILE_SIZE
                 ));
             }
             Ok(())
@@ -328,7 +328,7 @@ mod tests {
         let test_path = PathBuf::from("test_config_large.toml");
 
         // Создаём файл размером больше 1MB (1MB + 1 байт)
-        let large_size = (super::super::MAX_CONFIG_FILE_SIZE + 1) as usize;
+        let large_size = (MAX_CONFIG_FILE_SIZE + 1) as usize;
         let mut file = File::create(&test_path).expect("Не удалось создать тестовый файл");
 
         // Записываем данные размером больше 1MB

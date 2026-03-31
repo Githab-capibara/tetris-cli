@@ -13,7 +13,6 @@
 use super::super::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
-use super::super::state::GameState;
 use super::ScoringState;
 use crate::io::GRID_HEIGHT;
 
@@ -280,6 +279,7 @@ fn update_score_for_lines(
 #[cfg(test)]
 mod lines_tests {
     use super::*;
+    use crate::game::GameState;
 
     #[test]
     fn test_find_full_rows_empty() {

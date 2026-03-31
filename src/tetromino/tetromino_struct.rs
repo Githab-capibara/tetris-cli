@@ -3,7 +3,7 @@
 //! Модуль определяет `Tetromino` - падающую фигуру в игре.
 
 use crate::tetromino::bag_generator::BagGenerator;
-use crate::tetromino::constants::{SHAPE_COLORS, SHAPE_COORDS};
+use crate::tetromino::constants::SHAPE_COORDS;
 use crate::tetromino::shape_type::ShapeType;
 use crate::types::RotationDirection;
 
@@ -133,31 +133,29 @@ impl Tetromino {
                 // Против часовой: (x, y) -> (y, -x)
                 RotationDirection::CounterClockwise => {
                     // Используем checked_neg() для безопасного отрицания
-                    match x.checked_neg() {
-                        Some(neg_x) => (y, neg_x),
-                        None => {
-                            // Переполнение при отрицании x (i16::MIN)
-                            eprintln!(
-                                "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
-                                x
-                            );
-                            return;
-                        }
+                    if let Some(neg_x) = x.checked_neg() {
+                        (y, neg_x)
+                    } else {
+                        // Переполнение при отрицании x (i16::MIN)
+                        eprintln!(
+                            "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
+                            x
+                        );
+                        return;
                     }
                 }
                 // По часовой: (x, y) -> (-y, x)
                 RotationDirection::Clockwise => {
                     // Используем checked_neg() для безопасного отрицания
-                    match y.checked_neg() {
-                        Some(neg_y) => (neg_y, x),
-                        None => {
-                            // Переполнение при отрицании y (i16::MIN)
-                            eprintln!(
-                                "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
-                                y
-                            );
-                            return;
-                        }
+                    if let Some(neg_y) = y.checked_neg() {
+                        (neg_y, x)
+                    } else {
+                        // Переполнение при отрицании y (i16::MIN)
+                        eprintln!(
+                            "[WARN] Вращение фигуры пропущено: переполнение при checked_neg({})",
+                            y
+                        );
+                        return;
                     }
                 }
                 // Без вращения - возвращаем исходные координаты

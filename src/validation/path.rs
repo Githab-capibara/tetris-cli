@@ -387,19 +387,16 @@ impl PathValidator {
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
         // Исправление H9 (HIGH): проверяем symlink через symlink_metadata() ПЕРЕД canonicalize()
         // symlink_metadata() не следует по symlink, в отличие от metadata()
-        match std::fs::symlink_metadata(path) {
-            Ok(metadata) => {
-                if metadata.file_type().is_symlink() {
-                    return Err(PathError {
-                        message: format!("Символические ссылки не разрешены: {}", path.display()),
-                        kind: PathErrorKind::Symlink,
-                    });
-                }
+        if let Ok(metadata) = std::fs::symlink_metadata(path) {
+            if metadata.file_type().is_symlink() {
+                return Err(PathError {
+                    message: format!("Символические ссылки не разрешены: {}", path.display()),
+                    kind: PathErrorKind::Symlink,
+                });
             }
-            Err(_) => {
-                // Файл не существует - это нормально, проверка symlink не применима
-                // Файл будет проверен при попытке открытия с O_NOFOLLOW
-            }
+        } else {
+            // Файл не существует - это нормально, проверка symlink не применима
+            // Файл будет проверен при попытке открытия с O_NOFOLLOW
         }
         Ok(())
     }
@@ -699,18 +696,24 @@ mod validation_path_tests {
 
         // Вариант 6: URL encoded (теперь распознаётся и отклоняется)
         // Исправление аудита 2026-03-31: валидатор ТЕПЕРЬ обнаруживает URL-encoded path traversal
-        assert!(validator
-            .validate_no_traversal("%2e%2e%2fetc%2fpasswd")
-            .is_err(),
-            "URL-encoded path traversal должен отклоняться");
-        assert!(validator
-            .validate_no_traversal("..%2f..%2fetc%2fpasswd")
-            .is_err(),
-            "Смешанный URL-encoded path traversal должен отклоняться");
-        assert!(validator
-            .validate_no_traversal("%2e%2e/etc/passwd")
-            .is_err(),
-            "Частично URL-encoded path traversal должен отклоняться");
+        assert!(
+            validator
+                .validate_no_traversal("%2e%2e%2fetc%2fpasswd")
+                .is_err(),
+            "URL-encoded path traversal должен отклоняться"
+        );
+        assert!(
+            validator
+                .validate_no_traversal("..%2f..%2fetc%2fpasswd")
+                .is_err(),
+            "Смешанный URL-encoded path traversal должен отклоняться"
+        );
+        assert!(
+            validator
+                .validate_no_traversal("%2e%2e/etc/passwd")
+                .is_err(),
+            "Частично URL-encoded path traversal должен отклоняться"
+        );
     }
 
     /// Тест: Проверка граничных случаев длины пути

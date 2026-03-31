@@ -12,8 +12,6 @@
 //! - [`GameBoard`] находится в [`super::board`] — состояние поля (blocks, filled_lines_mask)
 //! - [`ScoreBoard`] находится в [`super::scoreboard`] — очки и уровни (score, level, lines_cleared)
 
-use crate::io::GRID_HEIGHT;
-
 // Переэкспорт существующих компонентов для удобства
 pub use super::access::{ScoreAccess as ScoreAccessTrait, ScoreMutable};
 pub use super::board::{

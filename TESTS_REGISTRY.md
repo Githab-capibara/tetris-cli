@@ -1,13 +1,51 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 31 марта 2026 г. (добавлено 37 новых тестов)
-**Версия проекта:** 23.96.29
-**Всего тестов:** 1308 (проходят 100%)
-**Всего файлов тестов:** 95
+**Дата последней актуализации:** 31 марта 2026 г. (добавлено 25 новых тестов)
+**Версия проекта:** 23.96.21+
+**Всего тестов:** 1309 (проходят 100%)
+**Всего файлов тестов:** 96
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
+
+### Новые тесты (31 марта 2026):
+
+**test_audit_fixes.rs — 25 тестов:**
+- **C1: Замена TetrominoType → ShapeType** (2 теста):
+  - `test_c1_shapetype_in_game_event` — ShapeType в GameEvent
+  - `test_c1_shapetype_in_tetromino` — ShapeType в Tetromino
+- **H1: Инвертированная логика has_collision** (4 теста):
+  - `test_h1_has_collision_returns_true_on_collision` — true при коллизии
+  - `test_h1_has_collision_returns_false_no_collision` — false без коллизии
+  - `test_h1_has_collision_different_positions` — разные позиции
+- **H2: TOCTOU защита ThreadSafeLeaderboardEntry** (4 теста):
+  - `test_h2_thread_safe_leaderboard_entry_exists` — существование типа
+  - `test_h2_thread_safe_score_returns_correct_value` — корректность score()
+  - `test_h2_verify_hash_for_value` — verify_hash_for_value
+  - `test_h2_thread_safe_leaderboard_multithreaded` — потокобезопасность
+- **H3: Удаление #[inline] атрибутов** (2 теста):
+  - `test_h3_no_inline_in_collision` — нет #[inline] в collision.rs
+  - `test_h3_no_inline_in_board` — нет #[inline] в board.rs
+- **M1: Централизация констант** (2 теста):
+  - `test_m1_max_config_file_size_constant` — MAX_CONFIG_FILE_SIZE
+  - `test_m1_constant_imports` — импорты констант
+- **M2: Оптимизация sanitize_player_name** (3 теста):
+  - `test_m2_sanitize_player_name_memory_allocation` — выделение памяти
+  - `test_m2_sanitize_player_name_filters_invalid_chars` — фильтрация
+  - `test_m2_sanitize_player_name_empty_to_anonymous` — пустое имя
+- **M3: Семантические методы GameState** (3 теста):
+  - `test_m3_apply_gravity_increases_fall_speed` — apply_gravity()
+  - `test_m3_spawn_new_piece` — spawn_new_piece()
+  - `test_m3_update_fall_speed` — update_fall_speed()
+- **L4: Рефакторинг application.rs** (4 теста):
+  - `test_l4_render_menu_frame_exists` — render_menu_frame()
+  - `test_l4_process_menu_input_exists` — process_menu_input()
+  - `test_l4_check_exit_condition_exists` — check_exit_condition()
+  - `test_l4_application_functions_integration` — интеграция
+- **Интеграционные тесты** (2 теста):
+  - `test_all_fixes_compile_together` — все исправления компилируются
+  - `test_game_event_uses_shapetype_not_tetrominotype` — ShapeType не TetrominoType
 
 ### Изменения после очистки тестовой базы (31 марта 2026):
 
@@ -182,6 +220,7 @@
 |------|------------------|----------|
 | `test_error_propagation.rs` | 5 | Пропagация ошибок |
 | `test_application_error_handling.rs` | 15 | Обработка ошибок приложения |
+| `test_audit_fixes.rs` | 25 | Исправления аудита (C1, H1, H2, H3, M1, M2, M3, L4) |
 | `test_edge_cases.rs` | 35 | Граничные случаи |
 | `test_edge_cases_stress.rs` | 20 | Стресс-тесты граничных случаев |
 
@@ -258,12 +297,12 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1308
+### Общее количество тестов: 1309
 
-**Unit тесты:** 1117
+**Unit тесты:** 1142
 **Integration тесты:** 106
 **Doctests:** ~125 (включены в unit/integration)
-**Новые тесты:** 37 (test_io_drop, test_set_fall_speed_validation, test_url_encoded_path_traversal, test_validation_service, test_leaderboard_toctou, test_cycle_functions)
+**Новые тесты:** 25 (test_audit_fixes.rs)
 
 **Процент прохождения:** 100% (0 failed)
 
@@ -354,6 +393,7 @@
 | `test_animation.rs` | 22 | ✅ |
 | `test_error_propagation.rs` | 5 | ✅ |
 | `test_application_error_handling.rs` | 15 | ✅ |
+| `test_audit_fixes.rs` | 25 | ✅ |
 | `test_edge_cases.rs` | 35 | ✅ |
 | `test_edge_cases_stress.rs` | 20 | ✅ |
 | `test_bounds_check_optimization.rs` | 7 | ✅ |

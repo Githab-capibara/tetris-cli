@@ -458,7 +458,22 @@ cargo test test_architecture_integrity  # Тесты целостности
 cargo bench --features bench  # Бенчмарки
 ```
 
-**ВСЕГО: 1308 тестов** (unit + integration + architecture)
+**ВСЕГО: 1309 тестов** (unit + integration + architecture)
+
+### Тесты исправлений аудита (`src/tests/test_audit_fixes.rs`)
+
+**test_audit_fixes.rs** — 25 тестов:
+- `test_c1_shapetype_in_game_event` — ShapeType в GameEvent
+- `test_c1_shapetype_in_tetromino` — ShapeType в Tetromino
+- `test_h1_has_collision_*` — 3 теста логики has_collision
+- `test_h2_thread_safe_leaderboard_*` — 4 теста потокобезопасности
+- `test_h3_no_inline_*` — 2 теста отсутствия #[inline]
+- `test_m1_*` — 2 теста централизации констант
+- `test_m2_*` — 3 теста оптимизации sanitize_player_name
+- `test_m3_*` — 3 теста семантических методов GameState
+- `test_l4_*` — 4 теста рефакторинга application.rs
+- `test_all_fixes_compile_together` — интеграционный тест
+- `test_game_event_uses_shapetype_not_tetrominotype` — ShapeType не TetrominoType
 
 ### Архитектурные тесты (`src/tests/test_architecture_*.rs`)
 
@@ -617,5 +632,5 @@ cargo bench --features bench  # Бенчмарки
 
 ---
 
-**Дата последнего обновления:** 30 марта 2026
-**Версия проекта:** 23.96.26
+**Дата последнего обновления:** 31 марта 2026
+**Версия проекта:** 23.96.21+

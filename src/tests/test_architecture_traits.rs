@@ -302,11 +302,7 @@ fn test_all_access_traits_consolidated_in_access() {
     // GameBoardAccess удалён (используйте BoardReadonly + ScoreAccess напрямую)
 
     // Все трейты консолидированы в access.rs
-    assert_eq!(
-        expected_traits.len(),
-        3,
-        "Должно быть 3 основных трейта"
-    );
+    assert_eq!(expected_traits.len(), 3, "Должно быть 3 основных трейта");
 }
 
 // ============================================================================
