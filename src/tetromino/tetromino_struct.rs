@@ -156,13 +156,13 @@ impl Tetromino {
     /// );
     /// ```
     #[must_use]
-    pub const fn new(
-        pos: (f32, f32),
-        shape: ShapeType,
-        coords: [(i16, i16); 4],
-        fg: u8,
-    ) -> Self {
-        Self { pos, shape, coords, fg }
+    pub const fn new(pos: (f32, f32), shape: ShapeType, coords: [(i16, i16); 4], fg: u8) -> Self {
+        Self {
+            pos,
+            shape,
+            coords,
+            fg,
+        }
     }
 
     /// Установить позицию фигуры.
@@ -295,8 +295,6 @@ impl Tetromino {
                         return;
                     }
                 }
-                // Без вращения - возвращаем исходные координаты
-                RotationDirection::NoRotation => (x, y),
             };
 
             // Явная проверка границ вместо assert - предотвращает панику в релизном режиме

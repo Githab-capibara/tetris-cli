@@ -148,7 +148,14 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     let level = state.get_level();
     let mut combo_counter = state.stats().combo_counter();
 
-    update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter);
+    // Исправление C3 (CRITICAL): Обработка ошибки переполнения счёта
+    if let Err(e) =
+        update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter)
+    {
+        // Логгируем ошибку переполнения
+        eprintln!("[WARN] check_rows(): {e}");
+        // Продолжаем работу - очки уже были добавлены через saturating_add
+    }
 
     state.set_score(score);
     state.stats_mut().set_combo_counter(combo_counter);
@@ -210,6 +217,10 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// * `rows_cleared` - количество удалённых линий
 /// * `combo_counter` - счётчик комбо (изменяемый)
 ///
+/// # Возвращает
+/// - `Ok(())` если очки успешно добавлены
+/// - `Err(GameError::ScoreOverflow)` если счёт превышает MAX_SCORE
+///
 /// # Примечания
 /// Формула расчёта очков:
 /// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
@@ -217,40 +228,47 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// - Бонус за уровень: LEVEL_BONUS_MULT × (level - 1)
 ///
 /// # Защита от переполнения
-/// Если счёт превышает MAX_SCORE, он устанавливается в MAX_SCORE.
+/// Если счёт превышает MAX_SCORE, возвращается ошибка ScoreOverflow.
 ///
 /// # Исправление L2 (HIGH)
 /// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES
 /// для предотвращения паники при rows_cleared = 0.
+///
+/// # Исправление аудита 2026-04-01 (C3)
+/// Добавлена явная проверка переполнения перед добавлением очков
+/// с возвратом `GameError::ScoreOverflow`.
 fn update_score_for_lines(
     score: &mut u128,
     level: u32,
     rows_cleared: usize,
     combo_counter: &mut u32,
-) {
+) -> Result<(), crate::errors::GameError> {
+    use crate::errors::GameError;
+
     // Исправление L2 (HIGH): Явная проверка rows_cleared > 0
     // Предотвращаем панику при доступе к LINE_SCORES[capped_rows - 1]
     // когда capped_rows = 0
     if rows_cleared == 0 {
         // Сброс комбо если линии не удалены
         *combo_counter = 0;
-        return;
+        return Ok(());
     }
 
     // Ограничение количества линий максимум 4
     let capped_rows = rows_cleared.min(MAX_LINES_PER_CLEAR as usize);
 
-    // Исправление L2: дополнительная защита - проверяем capped_rows > 0
-    // Это предотвращает панику при доступе к LINE_SCORES[-1]
-    if capped_rows == 0 {
-        // Сброс комбо если линии не удалены
-        *combo_counter = 0;
-        return;
-    }
-
     // Начисление очков за линии
     // Безопасно: capped_rows >= 1 гарантировано
     let line_score = LINE_SCORES[capped_rows - 1];
+
+    // Исправление C3 (CRITICAL): Явная проверка переполнения перед добавлением
+    // Проверяем не приведёт ли сложение к переполнению
+    if score
+        .checked_add(line_score)
+        .is_none_or(|new_score| new_score > MAX_SCORE)
+    {
+        return Err(GameError::ScoreOverflow);
+    }
     *score = score.saturating_add(line_score);
 
     // Обновление комбо
@@ -259,17 +277,33 @@ fn update_score_for_lines(
     // Бонус за комбо (если комбо > 1)
     if *combo_counter > 1 {
         let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
+        // Проверка переполнения для комбо бонуса
+        if score
+            .checked_add(combo_bonus)
+            .is_none_or(|new_score| new_score > MAX_SCORE)
+        {
+            return Err(GameError::ScoreOverflow);
+        }
         *score = score.saturating_add(combo_bonus);
     }
 
     // Бонус за уровень (каждые 10 линий)
     let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
+    // Проверка переполнения для бонуса уровня
+    if score
+        .checked_add(level_bonus)
+        .is_none_or(|new_score| new_score > MAX_SCORE)
+    {
+        return Err(GameError::ScoreOverflow);
+    }
     *score = score.saturating_add(level_bonus);
 
     // Защита от переполнения: если счёт превышает MAX_SCORE, устанавливаем в MAX_SCORE
     if *score > MAX_SCORE {
-        *score = MAX_SCORE;
+        return Err(GameError::ScoreOverflow);
     }
+
+    Ok(())
 }
 
 // ============================================================================

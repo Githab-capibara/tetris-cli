@@ -175,6 +175,8 @@ fn test_critical_leaderboard_toctou_documentation() {
 #[test]
 fn test_logic_checked_neg_rotation() {
     use std::fs;
+    use tetris_cli::tetromino::bag_generator::BagGenerator;
+    use tetris_cli::tetromino::Tetromino;
 
     let tetromino_path = "src/tetromino/tetromino_struct.rs";
     let content = fs::read_to_string(tetromino_path).expect("Failed to read tetromino_struct.rs");
@@ -186,9 +188,6 @@ fn test_logic_checked_neg_rotation() {
     );
 
     // Тест 2: Интеграционный тест - вращение работает
-    use tetris_cli::tetromino::bag_generator::BagGenerator;
-    use tetris_cli::tetromino::Tetromino;
-
     let mut bag = BagGenerator::default();
     let mut tetromino = Tetromino::from_bag(&mut bag);
     tetromino.rotate(tetris_cli::types::RotationDirection::Clockwise);
@@ -264,10 +263,8 @@ fn test_logic_thread_safe_leaderboard_race_protection() {
 
     // Тест 3: ThreadSafeLeaderboard::get_best_score() безопасен
     let best_score = leaderboard.get_best_score();
-    assert!(
-        best_score >= 0,
-        "get_best_score() должен возвращать корректное значение"
-    );
+    // best_score имеет unsigned тип, поэтому >= 0 всегда истинно
+    let _ = best_score; // Просто проверяем что вызов работает
 }
 
 /// Тест 8: SRS wall kick смещения
@@ -346,6 +343,7 @@ fn test_logic_rows_cleared_zero_protection() {
 #[test]
 fn test_performance_sanitize_optimization() {
     use std::fs;
+    use tetris_cli::highscore::sanitize::sanitize_player_name;
 
     let sanitize_path = "src/validation/name.rs";
     let content = fs::read_to_string(sanitize_path).unwrap_or_else(|_| {
@@ -354,8 +352,6 @@ fn test_performance_sanitize_optimization() {
     });
 
     // Тест 1: Функция sanitize_player_name существует и работает
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
-
     let name = sanitize_player_name("Player123");
     assert_eq!(name, "Player123");
 
@@ -376,6 +372,7 @@ fn test_performance_sanitize_optimization() {
 #[test]
 fn test_performance_find_filled_lines_optimization() {
     use std::fs;
+    use tetris_cli::game::scoring::lines::find_filled_lines;
 
     let lines_path = "src/game/scoring/lines.rs";
     let content = fs::read_to_string(lines_path).expect("Failed to read lines.rs");
@@ -387,11 +384,10 @@ fn test_performance_find_filled_lines_optimization() {
     );
 
     // Тест 2: Интеграционный тест - функция работает
-    use tetris_cli::game::scoring::lines::find_filled_lines;
-
+    // count имеет unsigned тип, поэтому >= 0 всегда истинно
     let board = [[0i8; 10]; 20];
-    let (count, mask) = find_filled_lines(&board);
-    assert!(count >= 0); // Просто проверяем что работает
+    let (count, _mask) = find_filled_lines(&board);
+    let _ = count; // Просто проверяем что вызов работает
 }
 
 /// Тест 12: Проверка размера Tetromino
@@ -460,6 +456,7 @@ fn test_performance_can_move_optimization() {
 #[test]
 fn test_performance_safe_cast_in_cycle() {
     use std::fs;
+    use std::time::Duration;
 
     let cycle_path = "src/game/cycle.rs";
     let content = fs::read_to_string(cycle_path).expect("Failed to read cycle.rs");
@@ -471,9 +468,6 @@ fn test_performance_safe_cast_in_cycle() {
     );
 
     // Тест 2: Интеграционный тест - время работает
-    use std::time::Duration;
-
-    // Проверяем что цикл работает
     let duration = Duration::from_millis(16);
     let _secs = duration.as_secs_f64();
     assert!(_secs > 0.0);
@@ -492,6 +486,7 @@ fn test_performance_safe_cast_in_cycle() {
 #[test]
 fn test_readability_has_collision_logic() {
     use std::fs;
+    use tetris_cli::game::board::GameBoard;
 
     let collision_path = "src/game/logic/collision.rs";
     let content = fs::read_to_string(collision_path).expect("Failed to read collision.rs");
@@ -504,8 +499,6 @@ fn test_readability_has_collision_logic() {
 
     // Тест 2: Интеграционный тест - функция работает корректно
     // Проверяем что код содержит правильную логику
-    use tetris_cli::game::board::GameBoard;
-
     let board = GameBoard::default();
     // Проверяем что поле имеет правильную структуру
     assert!(board.get_block(0, 0).is_some());
@@ -558,7 +551,7 @@ fn test_readability_wall_kick_documentation() {
 
     // Тест 1: Таблица с описанием смещений
     assert!(
-        content.contains("|") && content.contains("Смещение"),
+        content.contains('|') && content.contains("Смещение"),
         "wall_kick.rs должен содержать таблицу с описанием смещений"
     );
 
@@ -785,7 +778,7 @@ fn test_security_application_error_handling() {
 
     // Тест 2: ? оператор используется для обработки ошибок
     assert!(
-        content.contains("?"),
+        content.contains('?'),
         "application.rs должен использовать ? оператор"
     );
 }
@@ -1046,6 +1039,7 @@ fn test_tests_shapetype_usage() {
 #[test]
 fn test_tests_score_overflow_protection() {
     use std::fs;
+    use tetris_cli::game::GameState;
 
     let scoreboard_path = "src/game/scoreboard.rs";
     let content = fs::read_to_string(scoreboard_path).expect("Failed to read scoreboard.rs");
@@ -1057,8 +1051,6 @@ fn test_tests_score_overflow_protection() {
     );
 
     // Тест 2: Интеграционный тест - добавление очков работает
-    use tetris_cli::game::GameState;
-
     let mut state = GameState::default();
 
     // Добавляем много очков - не должно быть паники
@@ -1237,6 +1229,8 @@ fn test_documentation_no_redundant_comments() {
 #[test]
 fn test_documentation_code_deduplication() {
     use std::fs;
+    use std::path::Path;
+    use tetris_cli::validation::path::DEFAULT_PATH_VALIDATOR;
 
     let validation_path = "src/validation/path.rs";
     let content = fs::read_to_string(validation_path).expect("Failed to read validation/path.rs");
@@ -1254,9 +1248,6 @@ fn test_documentation_code_deduplication() {
     );
 
     // Тест 3: Интеграционный тест - валидация работает
-    use std::path::Path;
-    use tetris_cli::validation::path::DEFAULT_PATH_VALIDATOR;
-
     let result = DEFAULT_PATH_VALIDATOR.validate_all("src/lib.rs", Path::new("."));
     assert!(
         result.is_ok() || result.is_err(), // Просто проверяем что работает
@@ -1273,6 +1264,7 @@ fn test_documentation_code_deduplication() {
 #[test]
 fn test_documentation_gamestats_export() {
     use std::fs;
+    use tetris_cli::game::GameState;
 
     let lib_path = "src/lib.rs";
     let content = fs::read_to_string(lib_path).expect("Failed to read lib.rs");
@@ -1284,12 +1276,10 @@ fn test_documentation_gamestats_export() {
     );
 
     // Тест 2: Интеграционный тест - GameStats доступен
-    use tetris_cli::game::GameState;
-
     let state = GameState::default();
     let stats = state.stats();
-    // Проверяем что stats имеет методы доступа
-    assert!(stats.t_pieces() >= 0, "GameStats должен содержать t_pieces");
+    // t_pieces() имеет unsigned тип, поэтому >= 0 всегда истинно
+    let _t_pieces = stats.t_pieces(); // Просто проверяем что вызов работает
 }
 
 /// Тест 41: Оптимизация импортов

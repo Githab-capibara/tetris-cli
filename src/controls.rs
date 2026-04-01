@@ -289,6 +289,7 @@ impl ControlsConfig {
         let json = serde_json::to_string_pretty(&config_with_sig)
             .map_err(|e| io::Error::other(e.to_string()))?;
 
+        // Исправление аудита 2026-04-01 (S2): Дополнительная проверка пути после открытия файла
         // Используем O_NOFOLLOW для защиты от symlink атак при записи
         // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
         let mut file = OpenOptions::new()
@@ -297,6 +298,18 @@ impl ControlsConfig {
             .truncate(true)
             .custom_flags(libc::O_NOFOLLOW)
             .open(path)?;
+
+        // S2: Дополнительная проверка что файл не является symlink после открытия
+        // Это защита от race condition между проверкой и открытием
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::linux::fs::MetadataExt;
+            let metadata = file.metadata()?;
+            // Проверка что файл не является symlink через mode
+            if metadata.st_mode() & libc::S_IFMT as u32 == libc::S_IFLNK as u32 {
+                return Err(io::Error::other("Файл является символической ссылкой"));
+            }
+        }
 
         file.write_all(json.as_bytes())?;
         Ok(())

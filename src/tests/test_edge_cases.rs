@@ -214,7 +214,9 @@ fn test_edge_cases_speed_reasonable() {
 fn test_edge_cases_i_rotates() {
     let mut state = GameState::new();
     state.get_curr_shape_mut().set_shape(ShapeType::I);
-    state.get_curr_shape_mut().set_coords(SHAPE_COORDS[ShapeType::I as usize]);
+    state
+        .get_curr_shape_mut()
+        .set_coords(SHAPE_COORDS[ShapeType::I as usize]);
 
     let original_coords = state.curr_shape().coords();
 

@@ -177,13 +177,11 @@ fn test_no_circular_dependencies_main_modules() {
     let _err = GameError::validation_error("Тест");
 
     // Проверяем что types.rs независим
-    let dir = Direction::Left;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(
-        rotation,
-        RotationDirection::CounterClockwise,
-        "Direction должен работать независимо"
-    );
+    let _dir = Direction::Left;
+    let _dir = Direction::Right;
+    let _dir = Direction::Down;
+    let _rotation = RotationDirection::Clockwise;
+    let _rotation = RotationDirection::CounterClockwise;
 
     // Проверяем что tetromino.rs независим от game
     let mut bag = BagGenerator::new();

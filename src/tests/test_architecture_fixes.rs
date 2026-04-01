@@ -524,8 +524,9 @@ fn test_arch_fixes_no_circular_dependencies() {
     assert_eq!(GRID_HEIGHT, 20);
 
     // Direction должен работать независимо
-    let dir = Direction::Left;
-    let _rotation = dir.to_rotation_direction();
+    let _dir = Direction::Left;
+    let _dir = Direction::Right;
+    let _dir = Direction::Down;
 
     // GameError должен работать независимо
     let _err = GameError::validation_error("Тест");
@@ -564,10 +565,7 @@ fn test_arch_fixes_no_circular_dependencies() {
 /// - Нет нарушения инкапсуляции
 #[test]
 fn test_arch_fixes_module_boundaries() {
-    use crate::game::access::{BoardMutable, BoardReadonly, ScoreMutable as ScoreMutableTrait};
-    use crate::game::board::{
-        BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait,
-    };
+    use crate::game::access::{BoardMutable, BoardReadonly};
     use crate::game::state::GameState;
 
     let mut state = GameState::new();

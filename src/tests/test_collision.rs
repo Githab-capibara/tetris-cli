@@ -140,7 +140,9 @@ fn test_collision_all_shapes_left_wall() {
     for shape_type in shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape_type);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape_type as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape_type as usize]);
 
         for _ in 0..10 {
             if state.can_move_curr_shape_direction(Direction::Left) {
@@ -240,7 +242,9 @@ fn test_collision_all_shapes_floor() {
     for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape as usize]);
 
         // Опускаем до упора
         while state.can_move_curr_shape_direction(Direction::Down) {
@@ -368,7 +372,9 @@ fn test_collision_rotation_in_center() {
 fn test_collision_rotation_o_piece() {
     let mut state = GameState::new();
     state.get_curr_shape_mut().set_shape(ShapeType::O);
-    state.get_curr_shape_mut().set_coords(SHAPE_COORDS[ShapeType::O as usize]);
+    state
+        .get_curr_shape_mut()
+        .set_coords(SHAPE_COORDS[ShapeType::O as usize]);
 
     // O-фигура не вращается, но метод не должен паниковать
     let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);

@@ -55,7 +55,7 @@ fn test_c1_application_error_handling() {
     }
 
     // Проверяем что тип Application существует и имеет правильные методы
-    let _type_check: fn() -> Result<Application, GameError> = Application::new;
+    let _ = Application::new;
 }
 
 /// C2. Тест потокобезопасности LeaderboardEntry
@@ -77,14 +77,21 @@ fn test_c2_leaderboard_entry_thread_safety() {
     assert_eq!(score, 1500, "score() должен вернуть правильное значение");
 
     // Проверяем что is_valid() работает корректно
-    assert!(entry.is_valid(), "is_valid() должен вернуть true для валидной записи");
+    assert!(
+        entry.is_valid(),
+        "is_valid() должен вернуть true для валидной записи"
+    );
 
     // Проверяем что name() возвращает правильное имя
     assert_eq!(entry.name(), "TestPlayer");
 
     // Проверяем атомарность score() - валидация и возврат выполняются вместе
     let valid_score = entry.get_valid_score();
-    assert_eq!(valid_score, Some(1500), "get_valid_score() должен вернуть Some(score)");
+    assert_eq!(
+        valid_score,
+        Some(1500),
+        "get_valid_score() должен вернуть Some(score)"
+    );
 
     // Тест существует для проверки однопоточной безопасности
     // Для многопоточного использования существует ThreadSafeLeaderboardEntry
@@ -99,7 +106,9 @@ fn test_c2_leaderboard_entry_thread_safety() {
 /// Используется u128 для счёта и проверка на переполнение через GameError::ScoreOverflow.
 #[test]
 fn test_c3_score_overflow_protection() {
+    use tetris_cli::constants::LINE_SCORES;
     use tetris_cli::errors::GameError;
+    use tetris_cli::highscore::leaderboard::LeaderboardEntry;
 
     // Проверяем что GameError::ScoreOverflow существует
     let overflow_err = GameError::ScoreOverflow;
@@ -113,9 +122,12 @@ fn test_c3_score_overflow_protection() {
     let test_score: u128 = max_score / 2;
 
     // Проверяем что score_value в LeaderboardEntry использует u128
-    use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     let entry = LeaderboardEntry::new("MaxScorePlayer", test_score);
-    assert_eq!(entry.score(), test_score, "u128 должен поддерживать большие значения");
+    assert_eq!(
+        entry.score(),
+        test_score,
+        "u128 должен поддерживать большие значения"
+    );
 
     // Проверяем что очень большие значения работают
     let near_max_entry = LeaderboardEntry::new("NearMaxPlayer", u128::MAX - 1000);
@@ -126,7 +138,6 @@ fn test_c3_score_overflow_protection() {
     );
 
     // Проверяем LINE_SCORES используют u128
-    use tetris_cli::constants::LINE_SCORES;
     assert_eq!(LINE_SCORES[3], 1800, "LINE_SCORES должны использовать u128");
 }
 
@@ -205,7 +216,8 @@ fn test_h2_frame_delay_constant_unique() {
             let content = fs::read_to_string(&path).expect("Failed to read file");
 
             // Ищем определения константы (не импорты)
-            if content.contains("const FRAME_DELAY_MS") || content.contains("pub const FRAME_DELAY_MS")
+            if content.contains("const FRAME_DELAY_MS")
+                || content.contains("pub const FRAME_DELAY_MS")
             {
                 frame_delay_definitions.push(path.display().to_string());
             }
@@ -364,8 +376,12 @@ fn test_m5_tetromino_field_order() {
 
     // Проверка 2: Поля определены в правильном порядке
     // pos должен быть перед shape, shape перед fg, fg перед coords
-    let pos_pos = content.find("pos: (f32, f32)").expect("Поле pos должно существовать");
-    let shape_pos = content.find("shape: ShapeType").expect("Поле shape должно существовать");
+    let pos_pos = content
+        .find("pos: (f32, f32)")
+        .expect("Поле pos должно существовать");
+    let shape_pos = content
+        .find("shape: ShapeType")
+        .expect("Поле shape должно существовать");
     let fg_pos = content.find("fg: u8").expect("Поле fg должно существовать");
     let coords_pos = content
         .find("coords: [(i16, i16); 4]")
@@ -532,7 +548,7 @@ fn test_l4_no_rotation_variant_removed() {
 
     // Ищем закрывающую скобку enum (примерно 500 символов после начала)
     let enum_section = &content[rotation_direction_start..];
-    let enum_end = enum_section.find("}").unwrap_or(500);
+    let enum_end = enum_section.find('}').unwrap_or(500);
     let enum_content = &enum_section[..enum_end];
 
     // NoRotation не должен быть вариантом enum
@@ -576,7 +592,10 @@ fn test_l5_config_error_variant_removed() {
 
     // Ищем секцию enum (берём 1500 символов чтобы захватить весь enum)
     let enum_section = &content[game_error_start..];
-    let enum_end = enum_section.find("}\n\nimpl").or_else(|| enum_section.find("}\n\n//")).unwrap_or(1500);
+    let enum_end = enum_section
+        .find("}\n\nimpl")
+        .or_else(|| enum_section.find("}\n\n//"))
+        .unwrap_or(1500);
     let enum_content = &enum_section[..enum_end];
     let enum_content_lower = enum_content.to_lowercase();
 
@@ -722,7 +741,10 @@ fn test_critical_fixes_integration() {
     match result {
         Ok(_) => {}
         Err(e) => {
-            assert!(matches!(e, GameError::ValidationError(_) | GameError::IoError(_)));
+            assert!(matches!(
+                e,
+                GameError::ValidationError(_) | GameError::IoError(_)
+            ));
         }
     }
 
@@ -740,16 +762,15 @@ fn test_critical_fixes_integration() {
 #[test]
 fn test_high_fixes_integration() {
     use tetris_cli::constants::FRAME_DELAY_MS;
+    use tetris_cli::game::logic::collision::can_move_curr_shape_direction;
+    use tetris_cli::game::GameState;
+    use tetris_cli::types::Direction;
 
     // Тест 1: FRAME_DELAY_MS централизована
     assert_eq!(FRAME_DELAY_MS, 1000 / 60);
 
     // Тест 2: has_collision логика работает корректно
     // Проверяем через публичный API
-    use tetris_cli::game::GameState;
-    use tetris_cli::game::logic::collision::can_move_curr_shape_direction;
-    use tetris_cli::types::Direction;
-
     let state = GameState::new();
     let can_move = can_move_curr_shape_direction(&state, Direction::Down);
     // В начальном состоянии движение должно быть возможно
@@ -759,8 +780,8 @@ fn test_high_fixes_integration() {
 /// Интеграционный тест: проверка что все MEDIUM исправления работают вместе
 #[test]
 fn test_medium_fixes_integration() {
-    use tetris_cli::tetromino::Tetromino;
     use tetris_cli::tetromino::BagGenerator;
+    use tetris_cli::tetromino::Tetromino;
 
     // Тест 1: Tetromino field order + dead_code allowed
     let mut bag = BagGenerator::new();
@@ -772,13 +793,14 @@ fn test_medium_fixes_integration() {
 
     // Тест 2: MAX_SCORE_DIGITS удалена
     // Проверяем что код компилируется без этой константы
-    let _score: u128 = 1000;
+    let _ = 1000u128;
 }
 
 /// Интеграционный тест: проверка что все LOW исправления работают вместе
 #[test]
 fn test_low_fixes_integration() {
     use tetris_cli::constants::{KEY_ENTER_CR, KEY_ENTER_LF};
+    use tetris_cli::errors::GameError;
     use tetris_cli::types::RotationDirection;
 
     // Тест 1: KEY_ENTER константы объединены
@@ -786,12 +808,11 @@ fn test_low_fixes_integration() {
     assert_eq!(KEY_ENTER_CR, b'\r');
 
     // Тест 2: NoRotation удалён - используем правильные варианты
-    let _cw = RotationDirection::Clockwise;
-    let _ccw = RotationDirection::CounterClockwise;
+    let _ = RotationDirection::Clockwise;
+    let _ = RotationDirection::CounterClockwise;
 
     // Тест 3: ConfigError не является вариантом GameError
-    use tetris_cli::errors::GameError;
-    let _err = GameError::ValidationError("test".to_string());
+    let _ = GameError::ValidationError("test".to_string());
 }
 
 /// Интеграционный тест: проверка что все SECURITY исправления работают вместе
@@ -799,6 +820,7 @@ fn test_low_fixes_integration() {
 fn test_security_fixes_integration() {
     use tetris_cli::crypto::{generate_salt, hmac_sha256};
     use tetris_cli::highscore::leaderboard::LeaderboardEntry;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     // Тест 1: HMAC ключи с предупреждениями
     let salt = generate_salt();
@@ -813,7 +835,6 @@ fn test_security_fixes_integration() {
 
     // Тест 3: Symlink защита через canonicalize
     // Проверяем что path валидация существует
-    use tetris_cli::validation::name::sanitize_player_name;
     let sanitized = sanitize_player_name("TestPlayer");
     assert_eq!(sanitized, "TestPlayer");
 }

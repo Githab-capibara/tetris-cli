@@ -363,7 +363,12 @@ fn test_all_pieces_spawn_at_center() {
     ];
 
     for shape in &shapes {
-        let t = Tetromino::new((4.0, 0.0), *shape, SHAPE_COORDS[*shape as usize], *shape as u8);
+        let t = Tetromino::new(
+            (4.0, 0.0),
+            *shape,
+            SHAPE_COORDS[*shape as usize],
+            *shape as u8,
+        );
 
         assert!(
             (t.pos().0 - 4.0).abs() < f32::EPSILON,
@@ -440,7 +445,8 @@ fn test_t_piece_after_two_rotations() {
 
     // После 2 вращений фигура перевёрнута
     assert_ne!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "После 2 вращений координаты должны измениться"
     );
 }
@@ -456,7 +462,8 @@ fn test_t_piece_after_three_rotations() {
 
     // 3 вращения по часовой = 1 против часовой
     assert_ne!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "После 3 вращений координаты должны отличаться от исходных"
     );
 }
@@ -471,7 +478,8 @@ fn test_t_piece_after_four_rotations() {
     }
 
     assert_eq!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "После 4 вращений фигура должна вернуться к исходным координатам"
     );
 }
@@ -485,7 +493,8 @@ fn test_l_piece_after_rotation() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "L-фигура должна изменить координаты после вращения"
     );
 }

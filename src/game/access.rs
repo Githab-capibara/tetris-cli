@@ -18,6 +18,12 @@
 //! ## Пример использования
 //! ```ignore
 //! use crate::game::access::BoardReadonly;
+//! ```
+
+// Исправление аудита 2026-04-01 (M2)
+// Трейты для будущего расширения API
+#![allow(dead_code)]
+
 //!
 //! fn render_field<T: BoardReadonly>(field: &T) {
 //!     for y in 0..GRID_HEIGHT {

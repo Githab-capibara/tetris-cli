@@ -152,12 +152,12 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение T-фигуры
     group.bench_function("rotate_t_clockwise", |b| {
-        let tetromino = Tetromino {
-            pos: (4.0, 0.0),
-            shape: ShapeType::T,
-            coords: tetris_cli::tetromino::SHAPE_COORDS[0],
-            fg: 0,
-        };
+        let tetromino = Tetromino::new(
+            (4.0, 0.0),
+            ShapeType::T,
+            tetris_cli::tetromino::SHAPE_COORDS[0],
+            0,
+        );
         b.iter(|| {
             let mut t = tetromino;
             t.rotate(RotationDirection::Clockwise);
@@ -167,12 +167,12 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение I-фигуры
     group.bench_function("rotate_i_clockwise", |b| {
-        let tetromino = Tetromino {
-            pos: (4.0, 0.0),
-            shape: ShapeType::I,
-            coords: tetris_cli::tetromino::SHAPE_COORDS[6],
-            fg: 6,
-        };
+        let tetromino = Tetromino::new(
+            (4.0, 0.0),
+            ShapeType::I,
+            tetris_cli::tetromino::SHAPE_COORDS[6],
+            6,
+        );
         b.iter(|| {
             let mut t = tetromino;
             t.rotate(RotationDirection::Clockwise);
@@ -182,12 +182,12 @@ fn bench_rotate(c: &mut Criterion) {
 
     // Вращение O-фигуры (не вращается)
     group.bench_function("rotate_o_noop", |b| {
-        let tetromino = Tetromino {
-            pos: (4.0, 0.0),
-            shape: ShapeType::O,
-            coords: tetris_cli::tetromino::SHAPE_COORDS[5],
-            fg: 5,
-        };
+        let tetromino = Tetromino::new(
+            (4.0, 0.0),
+            ShapeType::O,
+            tetris_cli::tetromino::SHAPE_COORDS[5],
+            5,
+        );
         b.iter(|| {
             let mut t = tetromino;
             t.rotate(RotationDirection::Clockwise);
@@ -218,12 +218,12 @@ fn bench_save_tetromino(c: &mut Criterion) {
         b.iter(|| {
             let mut game_state = GameState::new();
             // Устанавливаем I-фигуру как текущую
-            game_state.set_curr_shape(Tetromino {
-                pos: (4.0, 0.0),
-                shape: ShapeType::I,
-                coords: tetris_cli::tetromino::SHAPE_COORDS[6],
-                fg: 6,
-            });
+            game_state.set_curr_shape(Tetromino::new(
+                (4.0, 0.0),
+                ShapeType::I,
+                tetris_cli::tetromino::SHAPE_COORDS[6],
+                6,
+            ));
             game_state.save_tetromino_for_bench();
             black_box(game_state);
         });

@@ -15,7 +15,7 @@
 #![allow(deprecated)]
 
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
-use crate::types::{Direction, RotationDirection};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-7: Вращение по часовой для всех фигур
@@ -33,7 +33,8 @@ fn test_t_rotate_clockwise() {
 
     // Координаты должны измениться
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна изменить координаты после вращения по часовой"
     );
 
@@ -56,7 +57,8 @@ fn test_l_rotate_clockwise() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "L-фигура должна изменить координаты после вращения"
     );
 }
@@ -70,7 +72,8 @@ fn test_j_rotate_clockwise() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "J-фигура должна изменить координаты после вращения"
     );
 }
@@ -84,7 +87,8 @@ fn test_s_rotate_clockwise() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "S-фигура должна изменить координаты после вращения"
     );
 }
@@ -98,7 +102,8 @@ fn test_z_rotate_clockwise() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "Z-фигура должна изменить координаты после вращения"
     );
 }
@@ -112,7 +117,8 @@ fn test_o_rotate_clockwise_no_change() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура (квадрат) не должна вращаться"
     );
 }
@@ -126,7 +132,8 @@ fn test_i_rotate_clockwise() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура должна изменить координаты после вращения"
     );
 
@@ -153,7 +160,8 @@ fn test_t_rotate_counter_clockwise() {
     t.rotate(RotationDirection::CounterClockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна изменить координаты после вращения против часовой"
     );
 }
@@ -167,7 +175,8 @@ fn test_l_rotate_counter_clockwise() {
     // L-фигура должна вращаться против часовой
     // Проверяем, что координаты изменились
     assert_ne!(
-        t.coords(), SHAPE_COORDS[1],
+        t.coords(),
+        SHAPE_COORDS[1],
         "L-фигура должна вращаться против часовой"
     );
 }
@@ -179,7 +188,8 @@ fn test_j_rotate_counter_clockwise() {
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[2],
+        t.coords(),
+        SHAPE_COORDS[2],
         "J-фигура должна вращаться против часовой"
     );
 }
@@ -211,7 +221,8 @@ fn test_o_rotate_counter_clockwise_no_change() {
     t.rotate(RotationDirection::CounterClockwise);
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура не должна вращаться против часовой"
     );
 }
@@ -223,7 +234,8 @@ fn test_i_rotate_counter_clockwise() {
 
     t.rotate(RotationDirection::CounterClockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[6],
+        t.coords(),
+        SHAPE_COORDS[6],
         "I-фигура должна вращаться против часовой"
     );
 }
@@ -247,7 +259,8 @@ fn test_t_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна вернуться к исходным координатам после 4 вращений"
     );
 }
@@ -264,7 +277,8 @@ fn test_l_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "L-фигура должна вернуться к исходным координатам"
     );
 }
@@ -281,7 +295,8 @@ fn test_j_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "J-фигура должна вернуться к исходным координатам"
     );
 }
@@ -298,7 +313,8 @@ fn test_s_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "S-фигура должна вернуться к исходным координатам"
     );
 }
@@ -315,7 +331,8 @@ fn test_z_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "Z-фигура должна вернуться к исходным координатам"
     );
 }
@@ -333,7 +350,8 @@ fn test_o_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура должна остаться неизменной"
     );
 }
@@ -350,7 +368,8 @@ fn test_i_full_rotation_cycle() {
     }
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура должна вернуться к исходным координатам"
     );
 }
@@ -371,7 +390,8 @@ fn test_t_rotation_at_left_wall() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна вращаться у левой стены"
     );
 }
@@ -384,7 +404,8 @@ fn test_t_rotation_at_right_wall() {
     t.rotate(RotationDirection::Clockwise);
     // Вращение должно произойти
     assert_ne!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "T-фигура должна вращаться у правой стены"
     );
 }
@@ -399,7 +420,8 @@ fn test_i_rotation_at_left_wall() {
 
     // I-фигура должна вращаться у стены
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура должна вращаться у левой стены"
     );
 }
@@ -411,7 +433,8 @@ fn test_i_rotation_at_right_wall() {
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[6],
+        t.coords(),
+        SHAPE_COORDS[6],
         "I-фигура должна вращаться у правой стены"
     );
 }
@@ -423,7 +446,8 @@ fn test_l_rotation_at_left_wall() {
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[1],
+        t.coords(),
+        SHAPE_COORDS[1],
         "L-фигура должна вращаться у левой стены"
     );
 }
@@ -435,7 +459,8 @@ fn test_l_rotation_at_right_wall() {
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[1],
+        t.coords(),
+        SHAPE_COORDS[1],
         "L-фигура должна вращаться у правой стены"
     );
 }
@@ -449,7 +474,8 @@ fn test_o_rotation_at_wall() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура не должна вращаться у стены"
     );
 }
@@ -461,7 +487,8 @@ fn test_j_rotation_at_right_wall() {
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[2],
+        t.coords(),
+        SHAPE_COORDS[2],
         "J-фигура должна вращаться у правой стены"
     );
 }
@@ -482,7 +509,8 @@ fn test_t_rotation_above_piece() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна вращаться над другой фигурой"
     );
 }
@@ -532,7 +560,8 @@ fn test_i_rotation_above_piece() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура должна вращаться над другой фигурой"
     );
 }
@@ -554,7 +583,8 @@ fn test_t_rotation_with_left_collision() {
 
     // Координаты должны измениться даже при близости к стене
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура должна пытаться вращаться при коллизии слева"
     );
 }
@@ -566,7 +596,8 @@ fn test_t_rotation_with_right_collision() {
 
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "T-фигура должна пытаться вращаться при коллизии справа"
     );
 }
@@ -582,7 +613,8 @@ fn test_i_rotation_with_collision() {
     // I-фигура длинная, поэтому вращение у стены может быть ограничено
     // но метод rotate всё равно должен выполниться
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура должна пытаться вращаться"
     );
 }
@@ -632,7 +664,8 @@ fn test_o_rotation_with_collision() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура не должна вращаться даже с коллизией"
     );
 }
@@ -655,7 +688,8 @@ fn test_t_spin_rotation() {
 
     // После 2 вращений координаты должны отличаться
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "T-фигура после T-spin должна иметь другие координаты"
     );
 }
@@ -672,7 +706,8 @@ fn test_t_spin_three_rotations() {
 
     // Координаты должны измениться
     assert_ne!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "T-фигура после 3 вращений должна изменить координаты"
     );
 }
@@ -689,7 +724,8 @@ fn test_i_spin_rotation() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "I-фигура после I-spin должна иметь другие координаты"
     );
 }
@@ -707,7 +743,8 @@ fn test_t_spin_combined_rotations() {
 
     // После вращения вправо и влево должны вернуться к исходным
     assert_eq!(
-        t.coords(), SHAPE_COORDS[0],
+        t.coords(),
+        SHAPE_COORDS[0],
         "T-фигура должна вернуться к исходным координатам"
     );
 }
@@ -723,7 +760,8 @@ fn test_s_special_rotation() {
 
     // После 2 вращений S-фигура должна быть зеркальной
     assert_ne!(
-        t.coords(), SHAPE_COORDS[3],
+        t.coords(),
+        SHAPE_COORDS[3],
         "S-фигура после 2 вращений должна изменить ориентацию"
     );
 }
@@ -737,7 +775,8 @@ fn test_z_special_rotation() {
     t.rotate(RotationDirection::Clockwise);
 
     assert_ne!(
-        t.coords(), SHAPE_COORDS[4],
+        t.coords(),
+        SHAPE_COORDS[4],
         "Z-фигура после 2 вращений должна изменить ориентацию"
     );
 }
@@ -756,7 +795,7 @@ fn test_all_pieces_special_rotation() {
     ];
 
     for shape in &shapes {
-    let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
+        let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
         let original_coords = t.coords();
 
@@ -768,7 +807,8 @@ fn test_all_pieces_special_rotation() {
             assert_eq!(t.coords(), original_coords, "O-фигура не должна вращаться");
         } else {
             assert_ne!(
-                t.coords(), original_coords,
+                t.coords(),
+                original_coords,
                 "{shape:?} фигура должна вращаться"
             );
         }

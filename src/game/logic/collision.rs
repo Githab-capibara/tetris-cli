@@ -62,6 +62,7 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// - Проверка границ X: `0 <= check_x < GRID_WIDTH`
 /// - Проверка заполненных ячеек: `cell == -1` означает пусто
 /// - Игнорирование `Y < 0` полезно для вращения (блоки могут быть выше поля)
+// Возвращает true при наличии коллизии, false при валидной позиции
 #[must_use]
 fn has_collision<T: BoardReadonly>(
     board: &T,

@@ -106,7 +106,9 @@ fn test_animation_hard_drop_all_shapes() {
     for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape as usize]);
 
         // Симулируем Hard Drop
         while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -182,7 +184,9 @@ fn test_animation_different_shapes() {
     for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape as usize]);
 
         // Симулируем падение
         while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -313,8 +317,16 @@ fn test_animation_ghost_is_copy() {
     // Призрачная фигура должна быть копией текущей фигуры
     assert_eq!(ghost.pos().0, current.pos().0, "Позиция X должна совпадать");
     assert_eq!(ghost.pos().1, current.pos().1, "Позиция Y должна совпадать");
-    assert_eq!(ghost.coords(), current.coords(), "Координаты должны совпадать");
-    assert_eq!(ghost.shape(), current.shape(), "Тип фигуры должен совпадать");
+    assert_eq!(
+        ghost.coords(),
+        current.coords(),
+        "Координаты должны совпадать"
+    );
+    assert_eq!(
+        ghost.shape(),
+        current.shape(),
+        "Тип фигуры должен совпадать"
+    );
     assert_eq!(ghost.fg(), current.fg(), "Цвет должен совпадать");
 }
 
@@ -346,7 +358,9 @@ fn test_animation_ghost_all_shapes() {
     for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape as usize]);
 
         let ghost = *state.curr_shape();
         let can_move = state.can_move_ghost_shape_direction(crate::types::Direction::Down);

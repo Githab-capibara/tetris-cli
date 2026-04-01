@@ -324,7 +324,7 @@ fn test_traits_not_duplicated_in_other_modules() {
     // - Мы можем импортировать трейты только из access.rs
 
     // Импортируем трейты только из access.rs
-    use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
+    use crate::game::access::{BoardMutable, ScoreAccess};
 
     // Проверяем что они работают
     let mut state = GameState::new();

@@ -101,7 +101,9 @@ fn test_collision_with_other_pieces() {
     let original_pos = state.curr_shape().pos();
 
     // Перемещаем фигуру на тестовую позицию
-    state.get_curr_shape_mut().set_pos((test_x as f32, test_y as f32));
+    state
+        .get_curr_shape_mut()
+        .set_pos((test_x as f32, test_y as f32));
 
     // Устанавливаем блок прямо под фигурой (на 1 ячейку ниже)
     state.get_blocks_mut()[test_y + 1][test_x] = 1;

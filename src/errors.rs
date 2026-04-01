@@ -25,7 +25,7 @@ use thiserror::Error;
 /// ## Варианты ошибок
 /// - `ValidationError` - ошибка валидации данных
 /// - `IoError` - ошибка ввода/вывода
-/// - `ConfigError` - ошибка конфигурации
+/// - `ScoreOverflow` - переполнение счёта
 ///
 /// ## Пример использования
 /// ```ignore
@@ -54,11 +54,11 @@ pub enum GameError {
     #[error("Ошибка ввода/вывода: {0}")]
     IoError(#[from] std::io::Error),
 
-    /// Ошибка конфигурации.
+    /// Ошибка переполнения счёта.
     ///
-    /// Возникает при загрузке или сохранении конфигурации.
-    #[error("Ошибка конфигурации: {0}")]
-    ConfigError(String),
+    /// Возникает при попытке добавить очки, превышающие допустимый предел.
+    #[error("Переполнение счёта: попытка превышения максимального значения")]
+    ScoreOverflow,
 }
 
 impl GameError {
@@ -78,20 +78,17 @@ impl GameError {
         Self::ValidationError(message.into())
     }
 
-    /// Создать ошибку конфигурации с сообщением.
-    ///
-    /// # Аргументы
-    /// * `message` - сообщение об ошибке
+    /// Создать ошибку переполнения счёта.
     ///
     /// # Возвращает
-    /// Новый экземпляр `GameError::ConfigError`
+    /// Новый экземпляр `GameError::ScoreOverflow`
     ///
     /// # Пример
     /// ```ignore
-    /// let err = GameError::config_error("Файл конфигурации не найден");
+    /// let err = GameError::score_overflow();
     /// ```
-    pub fn config_error(message: impl Into<String>) -> Self {
-        Self::ConfigError(message.into())
+    pub fn score_overflow() -> Self {
+        Self::ScoreOverflow
     }
 }
 
@@ -107,10 +104,10 @@ mod tests {
     }
 
     #[test]
-    fn test_config_error() {
-        let err = GameError::config_error("Тестовая конфигурация");
-        assert!(matches!(err, GameError::ConfigError(_)));
-        assert!(err.to_string().contains("Тестовая конфигурация"));
+    fn test_score_overflow() {
+        let err = GameError::score_overflow();
+        assert!(matches!(err, GameError::ScoreOverflow));
+        assert!(err.to_string().contains("Переполнение счёта"));
     }
 
     #[test]
@@ -129,10 +126,10 @@ mod tests {
             "Ошибка валидации: Ошибка валидации"
         );
 
-        let config_err = GameError::ConfigError("Ошибка конфигурации".to_string());
+        let overflow_err = GameError::ScoreOverflow;
         assert_eq!(
-            format!("{config_err}"),
-            "Ошибка конфигурации: Ошибка конфигурации"
+            format!("{overflow_err}"),
+            "Переполнение счёта: попытка превышения максимального значения"
         );
     }
 }

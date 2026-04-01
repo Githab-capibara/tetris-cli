@@ -321,6 +321,7 @@ fn test_fix_e3_checked_neg_rotation() {
 #[test]
 fn test_fix_e4_set_fall_speed_error_handling() {
     use std::fs;
+    use tetris_cli::game::GameState;
 
     let lines_path = "src/game/scoring/lines.rs";
     let content = fs::read_to_string(lines_path).expect("Failed to read lines.rs");
@@ -345,7 +346,6 @@ fn test_fix_e4_set_fall_speed_error_handling() {
     );
 
     // Тест 4: Интеграционный тест - проверяем что set_fall_speed возвращает Result
-    use tetris_cli::game::GameState;
     let mut state = GameState::default();
 
     // set_fall_speed должен возвращать Result
@@ -403,10 +403,8 @@ fn test_fix_e6_thread_safe_leaderboard_race_protection() {
 
     // Тест 3: ThreadSafeLeaderboard::get_best_score() безопасен
     let best_score = leaderboard.get_best_score();
-    assert!(
-        best_score >= 0,
-        "get_best_score() должен возвращать корректное значение"
-    );
+    // best_score имеет unsigned тип, поэтому >= 0 всегда истинно
+    let _ = best_score; // Просто проверяем что вызов работает
 
     // Тест 4: ThreadSafeLeaderboard имеет документацию о race condition
     let leaderboard_path = "src/highscore/leaderboard.rs";
@@ -461,6 +459,7 @@ fn test_fix_e6_thread_safe_leaderboard_race_protection() {
 #[test]
 fn test_fix_e10_hmac_key_constancy() {
     use std::fs;
+    use tetris_cli::config::keys::get_controls_hmac_key;
 
     let controls_path = "src/controls.rs";
     let content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");
@@ -506,7 +505,6 @@ fn test_fix_e10_hmac_key_constancy() {
     );
 
     // Тест 5: Проверяем что get_controls_hmac_key() возвращает константный ключ
-    use tetris_cli::config::keys::get_controls_hmac_key;
     let key1 = get_controls_hmac_key();
     let key2 = get_controls_hmac_key();
     assert_eq!(
@@ -621,6 +619,7 @@ fn test_fix_l1_srs_wall_kick_offsets() {
 #[test]
 fn test_fix_l2_rows_cleared_zero_panic() {
     use std::fs;
+    use tetris_cli::game::GameState;
 
     let lines_path = "src/game/scoring/lines.rs";
     let content = fs::read_to_string(lines_path).expect("Failed to read lines.rs");
@@ -657,7 +656,6 @@ fn test_fix_l2_rows_cleared_zero_panic() {
 
     // Тест 5: Интеграционный тест - update_score_for_lines не паникует при 0
     // Проверяем через публичный API scoring
-    use tetris_cli::game::GameState;
     let mut state = GameState::default();
 
     // Симулируем ситуацию где lines_to_clear = 0
