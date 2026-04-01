@@ -11,63 +11,12 @@
 //!
 //! ## Трейты
 //! - [`ScoreAccess`] (импортирован из [`crate::game::access`]) - доступ только на чтение
-//! - [`ScoreMutable`] - доступ на чтение и запись (расширяет ScoreAccess)
+//! - [`ScoreMutable`] (импортирован из [`crate::game::access`]) - доступ на чтение и запись
 
 #![allow(dead_code)]
 
-// Импортируем ScoreAccess из access.rs для избежания дублирования
-use crate::game::access::ScoreAccess;
-
-/// Трейт для изменения состояния очков.
-///
-/// Предоставляет мутуабельный доступ для изменения очков и уровня.
-/// Расширяет [`ScoreAccess`] методами для изменения состояния.
-pub trait ScoreMutable: ScoreAccess {
-    /// Добавить очки к текущему счёту.
-    ///
-    /// # Аргументы
-    /// * `points` - количество очков для добавления
-    ///
-    /// # Возвращает
-    /// Новый счёт после добавления очков.
-    fn add_score(&mut self, points: u128) -> u128;
-
-    /// Установить счёт.
-    ///
-    /// # Аргументы
-    /// * `value` - новое значение счёта
-    fn set_score(&mut self, value: u128);
-
-    /// Установить уровень.
-    ///
-    /// # Аргументы
-    /// * `value` - новое значение уровня
-    ///
-    /// # Примечания
-    /// Уровень не может быть меньше 1.
-    fn set_level(&mut self, value: u32);
-
-    /// Увеличить уровень на 1.
-    ///
-    /// # Возвращает
-    /// Новый уровень после увеличения.
-    fn increment_level(&mut self) -> u32;
-
-    /// Добавить количество очищенных линий.
-    ///
-    /// # Аргументы
-    /// * `count` - количество линий для добавления
-    ///
-    /// # Возвращает
-    /// Новое количество очищенных линий.
-    fn add_lines_cleared(&mut self, count: u32) -> u32;
-
-    /// Установить количество очищенных линий.
-    ///
-    /// # Аргументы
-    /// * `value` - новое значение количества линий
-    fn set_lines_cleared(&mut self, value: u32);
-}
+// Импортируем трейты из access.rs для избежания дублирования
+use crate::game::access::{ScoreAccess, ScoreMutable};
 
 /// Состояние счёта и уровней.
 ///
@@ -212,55 +161,19 @@ impl ScoreAccess for ScoreBoard {
     fn get_score(&self) -> u128 {
         self.get_score()
     }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn get_level(&self) -> u32 {
-        self.get_level()
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn get_lines_cleared(&self) -> u32 {
-        self.get_lines_cleared()
-    }
 }
 
 impl ScoreMutable for ScoreBoard {
     #[inline]
     #[allow(clippy::too_many_arguments)]
-    fn add_score(&mut self, points: u128) -> u128 {
-        self.add_score(points)
+    fn add_score(&mut self, points: u128) {
+        self.add_score(points);
     }
 
     #[inline]
     #[allow(clippy::too_many_arguments)]
     fn set_score(&mut self, value: u128) {
         self.set_score(value);
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn set_level(&mut self, value: u32) {
-        self.set_level(value);
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn increment_level(&mut self) -> u32 {
-        self.increment_level()
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn add_lines_cleared(&mut self, count: u32) -> u32 {
-        self.add_lines_cleared(count)
-    }
-
-    #[inline]
-    #[allow(clippy::too_many_arguments)]
-    fn set_lines_cleared(&mut self, value: u32) {
-        self.set_lines_cleared(value);
     }
 }
 

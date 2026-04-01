@@ -191,7 +191,11 @@ fn test_traits_are_narrow() {
     requires_score_access(&state);
 
     // ScoreMutable - изменение очков
-    fn requires_score_mutable<S: ScoreAccess + ScoreMutable>(score: &mut S) {
+    fn requires_score_mutable<
+        S: ScoreAccess + ScoreMutable + crate::game::access::LevelAccess + crate::game::access::LinesAccess,
+    >(
+        score: &mut S,
+    ) {
         let _score_val = score.get_score();
         score.set_score(100);
         score.set_level(5);
@@ -239,7 +243,10 @@ fn test_dependencies_are_acyclic() {
 
     // Уровень 6: access (зависит от state и types)
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
-    fn requires_traits<B: BoardReadonly + BoardMutable, S: ScoreAccess + ScoreMutable>(
+    fn requires_traits<
+        B: BoardReadonly + BoardMutable,
+        S: ScoreAccess + ScoreMutable + crate::game::access::LevelAccess + crate::game::access::LinesAccess,
+    >(
         _board: &B,
         _score: &S,
     ) {
