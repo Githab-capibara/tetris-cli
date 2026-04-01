@@ -253,7 +253,7 @@ fn test_game_state_getters() {
     let _blocks = state.get_blocks();
     let _curr_shape = state.curr_shape();
     let _next_shape = state.next_shape();
-    let _held_shape = state.get_held_shape_ref();
+    let _held_shape = state.held_shape();
     let _stats = state.stats();
     let _fall_spd = state.fall_speed();
 

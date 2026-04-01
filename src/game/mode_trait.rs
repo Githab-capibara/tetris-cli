@@ -182,10 +182,16 @@ pub type GameModeResult = Box<dyn GameModeTrait>;
 /// вместо использования enum GameMode.
 #[must_use]
 pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
-    match name.to_lowercase().as_str() {
-        "classic" | "классика" | "классический" => Some(Box::new(ClassicMode)),
-        "sprint" | "спринт" => Some(Box::new(SprintMode::new())),
-        "marathon" | "марафон" => Some(Box::new(MarathonMode::new())),
+    match name {
+        n if n.eq_ignore_ascii_case("classic") || n == "классика" || n == "классический" => {
+            Some(Box::new(ClassicMode))
+        }
+        n if n.eq_ignore_ascii_case("sprint") || n == "спринт" => {
+            Some(Box::new(SprintMode::new()))
+        }
+        n if n.eq_ignore_ascii_case("marathon") || n == "марафон" => {
+            Some(Box::new(MarathonMode::new()))
+        }
         _ => None,
     }
 }

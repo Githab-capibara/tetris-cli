@@ -17,13 +17,13 @@ fn test_time_error_handling() {
 
     // Проверяем, что записи созданы корректно
     assert_eq!(entry1.name(), "Player1", "Имя должно быть 'Player1'");
-    assert_eq!(entry1.score(), 1000, "Счёт должен быть 1000");
+    assert_eq!(entry1.score(), Some(1000), "Счёт должен быть 1000");
 
     assert_eq!(entry2.name(), "Player2", "Имя должно быть 'Player2'");
-    assert_eq!(entry2.score(), 2000, "Счёт должен быть 2000");
+    assert_eq!(entry2.score(), Some(2000), "Счёт должен быть 2000");
 
     assert_eq!(entry3.name(), "Player3", "Имя должно быть 'Player3'");
-    assert_eq!(entry3.score(), 3000, "Счёт должен быть 3000");
+    assert_eq!(entry3.score(), Some(3000), "Счёт должен быть 3000");
 }
 
 /// Тест 3: Проверка rate limiting с защитой от изменения времени

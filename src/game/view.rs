@@ -81,7 +81,7 @@ pub struct GameView<'a> {
     /// Следующая фигура (предпросмотр).
     pub next_shape: &'a Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    pub held_shape: &'a Option<Tetromino>,
+    pub held_shape: Option<&'a Tetromino>,
 
     // === Анимации ===
     /// Битовая маска строк для анимации очистки.
@@ -130,7 +130,7 @@ impl<'a> GameView<'a> {
             blocks: state.get_blocks(),
             curr_shape: state.curr_shape(),
             next_shape: state.next_shape(),
-            held_shape: state.get_held_shape_ref(),
+            held_shape: state.held_shape(),
             animating_rows: state.get_animating_rows_mask(),
             is_hard_dropping: state.is_hard_dropping(),
             mode: state.get_mode_trait(),
@@ -572,12 +572,14 @@ impl<'a> GameView<'a> {
             let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X
             let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y
 
-            canvas.draw_strs(
-                &["░░"],
-                (x as u16, y as u16),
-                SHAPE_COLORS[ghost_shape.fg() as usize],
-                &Reset,
-            );
+            if x >= 0 && x < GRID_WIDTH as i16 {
+                canvas.draw_strs(
+                    &["░░"],
+                    (x as u16, y as u16),
+                    SHAPE_COLORS[ghost_shape.fg() as usize],
+                    &Reset,
+                );
+            }
         }
     }
 

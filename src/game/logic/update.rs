@@ -14,8 +14,9 @@
 //! ## Архитектурные заметки (A7: DIP)
 //! Функция `update()` использует трейт `InputReader` вместо конкретного типа `KeyReader`.
 
-use crate::game::state::{GameState, UpdateEndState};
+use crate::game::state::GameState;
 use crate::io_traits::InputReader;
+use crate::types::UpdateEndState;
 
 /// Обновить состояние игры за один кадр.
 ///
@@ -35,7 +36,8 @@ pub fn update<T: InputReader>(
     delta_time_ms: u64,
 ) -> UpdateEndState {
     // Обработка ввода
-    if let Some(update_state) = super::input::handle_input(state, inp) {
+    let config = crate::controls::ControlsConfig::default_config();
+    if let Some(update_state) = super::input::handle_input(state, inp, &config) {
         return update_state;
     }
 

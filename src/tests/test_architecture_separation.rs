@@ -299,9 +299,7 @@ fn test_render_logic_separation_architecture() {
     use crate::game::logic::update::update;
     use crate::game::render::draw;
     use crate::game::scoring::lines::check_rows;
-    use crate::game::scoring::points::{
-        handle_hard_drop, handle_soft_drop, update_score_and_level,
-    };
+    use crate::game::scoring::points::{handle_hard_drop, handle_soft_drop};
 
     // Все функции доступны из своих модулей
     let _ = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
@@ -309,7 +307,6 @@ fn test_render_logic_separation_architecture() {
     let _check_rows: fn(&mut crate::game::state::GameState) -> u32 = check_rows;
     let _ = handle_hard_drop;
     let _ = handle_soft_drop;
-    let _ = update_score_and_level;
 
     assert_eq!(architecture.len(), 4, "Должно быть 4 модуля");
 }

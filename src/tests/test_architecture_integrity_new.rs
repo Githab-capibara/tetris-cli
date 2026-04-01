@@ -78,8 +78,7 @@ fn test_all_modules_have_clear_responsibility() {
     let _marathon = MarathonMode::new();
 
     // === rules - бизнес-правила ===
-    use crate::game::rules::GameRules;
-    let _rules = GameRules::new();
+    // GameRules модуль удалён, константы перенесены в constants и scoring модули
 }
 
 // ============================================================================
@@ -286,7 +285,7 @@ fn test_architecture_integrity_comprehensive() {
     use crate::constants::FPS;
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
     use crate::game::board::GameBoard;
-    use crate::game::rules::GameRules;
+    // GameRules модуль удалён
     use crate::game::scoreboard::ScoreBoard;
     use crate::game::state::GameState;
     use crate::game::types::GameAction;
@@ -303,8 +302,9 @@ fn test_architecture_integrity_comprehensive() {
     let mut scoreboard = ScoreBoard::new();
     scoreboard.set_score(100);
 
-    let rules = GameRules::new();
-    let _line_score = rules.get_line_score(4);
+    // GameRules удалён, константы в constants/scoring модулях
+    use crate::constants::LINE_SCORES;
+    let _line_score = LINE_SCORES[3];
 
     // ISP: Interface Segregation Principle
     fn readonly_fn<B: BoardReadonly>(_board: &B) {}

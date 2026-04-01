@@ -343,7 +343,7 @@ fn test_logic_rows_cleared_zero_protection() {
 #[test]
 fn test_performance_sanitize_optimization() {
     use std::fs;
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     let sanitize_path = "src/validation/name.rs";
     let content = fs::read_to_string(sanitize_path).unwrap_or_else(|_| {

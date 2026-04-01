@@ -22,7 +22,7 @@ mod clippy_fixes_tests {
         let name = "TestPlayer";
         let entry = LeaderboardEntry::new(name, 1000);
         assert_eq!(entry.name(), "TestPlayer");
-        assert_eq!(entry.score(), 1000);
+        assert_eq!(entry.score(), Some(1000));
     }
 
     /// Тест 3: Проверка что диапазоны используют .contains() вместо manual check

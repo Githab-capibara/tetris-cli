@@ -66,7 +66,12 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 
     let entries = leaderboard.get_entries();
     for (i, entry) in entries.iter().take(MAX_LEADERBOARD_ENTRIES).enumerate() {
-        let line = format!("{}. {:12} {:10}", i + 1, entry.name(), entry.score());
+        let line = format!(
+            "{}. {:12} {:10}",
+            i + 1,
+            entry.name(),
+            entry.score().unwrap_or(0)
+        );
         cnv.draw_string(
             &line,
             (3, (3 + i) as u16),

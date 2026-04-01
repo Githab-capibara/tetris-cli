@@ -781,7 +781,7 @@ fn test_scalability_menu_loop_refactoring() {
 #[test]
 fn test_additional_sanitize_optimization() {
     use std::fs;
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     let sanitize_path = "src/validation/name.rs";
     let content = fs::read_to_string(sanitize_path).unwrap_or_else(|_| {

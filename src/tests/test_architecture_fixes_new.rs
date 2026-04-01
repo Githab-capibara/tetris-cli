@@ -196,13 +196,12 @@ fn test_game_action_enum_exists() {
 /// Тест: game_rules модуль существует.
 #[test]
 fn test_game_rules_module_exists() {
-    use crate::game::rules::{
-        GameRules, COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPEED, LAND_TIME_DELAY,
-        LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MARATHON_LINES, MAX_FALL_SPEED, MAX_LEVEL,
-        MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS, SPEED_INCREMENT, SPRINT_LINES,
+    use crate::constants::{
+        COMBO_BONUS, HARD_DROP_POINTS, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL,
+        LINE_SCORES, MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS,
+        SPRINT_LINES,
     };
 
-    // Проверяем что константы экспортированы
     assert_eq!(
         LINE_SCORES.len(),
         4,
@@ -222,47 +221,15 @@ fn test_game_rules_module_exists() {
         "HARD_DROP_POINTS должен быть экспортирован"
     );
 
-    // Проверяем что GameRules существует
-    let rules = GameRules::new();
-    assert_eq!(rules.score_multiplier, 1, "GameRules должен существовать");
-    assert!(rules.combo_enabled, "GameRules должен существовать");
-
-    // Проверяем что методы GameRules работают
-    assert_eq!(
-        rules.get_line_score(4),
-        1800,
-        "get_line_score должен работать"
-    );
-    assert_eq!(
-        rules.get_combo_bonus(3),
-        100,
-        "get_combo_bonus должен работать"
-    );
-    assert_eq!(
-        rules.get_level_bonus(10),
-        5000,
-        "get_level_bonus должен работать"
-    );
-
-    // Проверяем что константы физики экспортированы
     assert!(
-        INITIAL_FALL_SPEED > 0.0,
-        "INITIAL_FALL_SPEED должен быть экспортирован"
-    );
-    assert!(
-        MAX_FALL_SPEED > INITIAL_FALL_SPEED,
+        MAX_FALL_SPEED > 0.0,
         "MAX_FALL_SPEED должен быть экспортирован"
     );
     assert!(
-        SPEED_INCREMENT > 0.0,
-        "SPEED_INCREMENT должен быть экспортирован"
-    );
-    assert!(
-        LAND_TIME_DELAY > 0.0,
-        "LAND_TIME_DELAY должен быть экспортирован"
+        LAND_TIME_DELAY_S > 0.0,
+        "LAND_TIME_DELAY_S должен быть экспортирован"
     );
 
-    // Проверяем что константы режимов экспортированы
     assert_eq!(SPRINT_LINES, 40, "SPRINT_LINES должен быть экспортирован");
     assert_eq!(
         MARATHON_LINES, 150,
@@ -272,7 +239,6 @@ fn test_game_rules_module_exists() {
         LINES_PER_LEVEL, 10,
         "LINES_PER_LEVEL должен быть экспортирован"
     );
-    assert_eq!(MAX_LEVEL, 1000, "MAX_LEVEL должен быть экспортирован");
     assert_eq!(
         MAX_LINES_PER_CLEAR, 4,
         "MAX_LINES_PER_CLEAR должен быть экспортирован"
@@ -341,9 +307,9 @@ fn test_all_architecture_fixes_applied() {
     use crate::game::types::GameAction;
     let _action = GameAction::MoveLeft;
 
-    // 4. game_rules модуль существует
-    use crate::game::rules::GameRules;
-    let _rules = GameRules::new();
+    // 4. game_rules модуль удалён, константы перенесены в constants и scoring
+    use crate::constants::LINE_SCORES;
+    assert_eq!(LINE_SCORES.len(), 4);
 
     // 5. constants доступен
     use crate::constants::FPS;

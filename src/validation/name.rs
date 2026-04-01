@@ -106,26 +106,33 @@ pub fn sanitize_player_name(name: &str) -> String {
         return ANONYMOUS_NAME.to_string();
     }
 
-    // Двухпроходный алгоритм: сначала подсчёт валидных символов
-    let valid_count = trimmed
-        .chars()
-        .filter(|&c| is_valid_name_char(c))
-        .take(20)
-        .count();
+    // M10: однопроходный алгоритм с предварительным выделением памяти
+    let mut validated = String::with_capacity(20);
 
-    if valid_count == 0 {
+    for c in trimmed.chars() {
+        if is_valid_name_char(c) {
+            // S3: схлопывание последовательных пробелов
+            if c == ' ' {
+                if let Some(last) = validated.chars().last() {
+                    if last == ' ' {
+                        continue;
+                    }
+                }
+            }
+            validated.push(c);
+            if validated.chars().count() >= 20 {
+                break;
+            }
+        }
+    }
+
+    // Убираем trailing пробел
+    let result = validated.trim_end();
+    if result.is_empty() {
         return ANONYMOUS_NAME.to_string();
     }
 
-    // Выделяем память с точным размером
-    let mut validated = String::with_capacity(valid_count);
-
-    // Второй проход: сборка строки
-    for c in trimmed.chars().filter(|&c| is_valid_name_char(c)).take(20) {
-        validated.push(c);
-    }
-
-    validated
+    result.to_string()
 }
 
 #[cfg(test)]

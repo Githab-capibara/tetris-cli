@@ -70,7 +70,7 @@ fn test_leaderboard_entry_atomic_validation() {
 
     // Проверка что score() тоже возвращает корректное значение
     let score = entry.score();
-    assert_eq!(score, 1000, "score() должен вернуть 1000");
+    assert_eq!(score, Some(1000), "score() должен вернуть 1000");
 
     // Проверка что is_valid() возвращает true
     assert!(entry.is_valid(), "Запись должна быть валидной");

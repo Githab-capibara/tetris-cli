@@ -88,7 +88,7 @@ fn test_must_use_score() {
 
     // Используем результат
     let score = entry.score();
-    assert_eq!(score, 1000, "Счёт должен быть 1000");
+    assert_eq!(score, Some(1000), "Счёт должен быть 1000");
 }
 
 /// Тест 9: Проверка #[must_use] на name()

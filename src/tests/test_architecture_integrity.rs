@@ -492,7 +492,7 @@ fn test_error_handling() {
     // === Проверка что GameError существует ===
     use crate::errors::GameError;
 
-    let validation_err = GameError::validation_error("Тестовая ошибка валидации");
+    let validation_err = GameError::ValidationError("Тестовая ошибка валидации".to_string());
     assert!(
         matches!(validation_err, GameError::ValidationError(_)),
         "ValidationError должен существовать"
@@ -541,7 +541,7 @@ fn test_error_handling() {
 
     // === Проверка что ошибка корректно распространяется ===
     fn test_error_propagation_fail() -> Result<(), GameError> {
-        let result: Result<u128, GameError> = Err(GameError::validation_error("Тест"));
+        let result: Result<u128, GameError> = Err(GameError::ValidationError("Тест".to_string()));
         let _value = result?; // Ошибка должна распространиться
         Ok(())
     }
@@ -592,7 +592,7 @@ fn test_arch_integrity_no_circular_dependencies() {
     // === Проверка независимости errors.rs ===
     use crate::errors::GameError;
 
-    let _err = GameError::validation_error("Тест");
+    let _err = GameError::ValidationError("Тест".to_string());
 
     // === Проверка что tetromino не зависит от game ===
     // Tetromino должен работать независимо от GameState
@@ -844,7 +844,7 @@ fn test_architecture_integrity_comprehensive() {
 
     // Проверяем обработку ошибок
     use crate::errors::GameError;
-    let _err = GameError::validation_error("Тест");
+    let _err = GameError::ValidationError("Тест".to_string());
 
     // Проверяем что трейты работают
     let mock_reader = MockInputReader::new(vec![]);
@@ -919,7 +919,7 @@ fn test_module_hierarchy_respected() {
 
     let _dir = Direction::Left;
     let _rotation = RotationDirection::Clockwise;
-    let _err = GameError::validation_error("Тест");
+    let _err = GameError::ValidationError("Тест".to_string());
 
     // Модули верхнего уровня (зависят от базовых):
     use crate::game::state::GameState;

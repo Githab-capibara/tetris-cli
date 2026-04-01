@@ -128,7 +128,7 @@ fn test_leaderboard_entry_thread_safety_docs() {
 /// truncate и push_str для предотвращения лишних реаллокаций.
 #[test]
 fn test_string_allocation_optimization() {
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     // Тест 1: Проверка что длинные имена обрезаются без реаллокаций
     let long_name = "a".repeat(100);
@@ -519,7 +519,7 @@ fn test_imports_style() {
 fn test_critical_fixes_integration() {
     // Тест 1: Безопасная конвертация времени + Unicode валидация
     use std::time::Duration;
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     let duration = Duration::from_secs(100);
     let secs = duration.as_secs();
@@ -539,7 +539,7 @@ fn test_critical_fixes_integration() {
 /// Интеграционный тест: проверка что все HIGH исправления работают вместе
 #[test]
 fn test_high_fixes_integration() {
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
+    use tetris_cli::validation::name::sanitize_player_name;
 
     // Тест 1: Оптимизация строк + Unicode валидация
     let long_name = "a".repeat(1000);

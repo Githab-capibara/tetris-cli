@@ -135,7 +135,7 @@ mod tests {
         // Проверяем что score() возвращает корректное значение
         assert_eq!(
             entry.score(),
-            score,
+            Some(score),
             "score() должен возвращать корректное значение"
         );
 
@@ -161,7 +161,7 @@ mod tests {
         if entry.is_valid() {
             assert_eq!(
                 entry.score(),
-                score,
+                Some(score),
                 "score() должен возвращать корректное значение для валидной записи"
             );
         }
@@ -177,7 +177,7 @@ mod tests {
                 tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
 
             // Проверяем атомарность
-            assert_eq!(entry.score(), score);
+            assert_eq!(entry.score(), Some(score));
             assert!(entry.is_valid());
 
             let _ = leaderboard.add_score(&player_name, score);
@@ -206,7 +206,7 @@ mod tests {
 
             // Проверяем что запись валидна
             assert!(entry.is_valid(), "Запись должна быть валидной");
-            assert_eq!(entry.score(), score, "Счёт должен совпадать");
+            assert_eq!(entry.score(), Some(score), "Счёт должен совпадать");
             assert_eq!(entry.name(), player_name, "Имя должно совпадать");
 
             entries.push(entry);
@@ -218,7 +218,7 @@ mod tests {
             assert!(entry.is_valid(), "Запись должна оставаться валидной");
             assert_eq!(
                 entry.score(),
-                expected_score,
+                Some(expected_score),
                 "Счёт должен совпадать после множественных операций"
             );
         }

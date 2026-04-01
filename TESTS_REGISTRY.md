@@ -1,18 +1,53 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
 **Дата последней актуализации:** 1 апреля 2026 г. (очистка тестовой базы)
-**Версия проекта:** 23.96.31+ (очистка тестов)
-**Всего тестов:** ~1306 тестов (проходят 100%)
-**Всего файлов тестов:** 93
+**Версия проекта:** 23.96.32+ (аудит 2026-04)
+**Всего тестов:** ~1381 тестов (проходят 100%)
+**Всего файлов тестов:** 95
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
 
-### Очистка тестовой базы (1 апреля 2026 — версия 23.96.31+):
+### Аудит и исправления (1 апреля 2026 — версия 23.96.32+):
 
-**Дата очистки:** 1 апреля 2026
-**Версия проекта:** 23.96.31+ (очистка тестов)
+**Проведён полный аудит кода:**
+- Выявлено проблем: 19
+- Исправлено критических проблем: 3 (C1-C3)
+- Исправлено проблем высокого приоритета: 10 (H1-H10)
+- Исправлено проблем среднего приоритета: 10 (M1-M10)
+- Исправлено проблем низкого приоритета: 3 (L1, L3, L4)
+
+**Ключевые исправления:**
+- **C1: Валидация HMAC ключей** — проверка на пустоту и пробелы
+- **C2: Документирование UTF-8 ограничений KeyReader** — ASCII только
+- **C3: Упрощённая документация TOCTOU** — ключевые методы
+- **H1: Замена format!() на .to_string()** — оптимизация
+- **H2: Замена map_or() на is_none_or()** — читаемость
+- **H3: Замена closure на UFCS** — Universal Function Call Syntax
+- **H4: Замена sort_by на sort_by_key** — оптимизация сортировки
+- **H5-H6: Документирование # Errors** — разделы в документации
+- **H7: Константы FPS** — вынесены в constants.rs
+- **H8: Массив запрещённых URL-encoding паттернов** — валидация имён
+- **H9: Метод compute_signature()** — HMAC подпись
+- **H10: Консолидированные методы загрузки конфига** — упрощение API
+- **M1: Отсутствие избыточных ignore примеров** — lib.rs
+- **M3: Упрощённый Drop в Canvas** — без catch_unwind
+- **M4: #[must_use] только на критических методах** — целевое использование
+- **M5: Мёртвый код помечен #[allow(dead_code)]** — для неиспользуемых функций
+- **M7: Удаление sanitize.rs** — используется validation::name
+- **M10: Оптимизация sanitize_player_name()** — однопроходный алгоритм
+- **L1: Модуль key_codes** — константы клавиш
+- **L3: Упрощённые конструкторы ошибок** — GameError
+- **L4: Упрощённый exports.rs** — только необходимые экспорты
+
+**Новые тесты:**
+- Добавлен тестовый файл: `test_audit_2026_04_fixes.rs` (26 тестов для всех исправлений аудита)
+
+**Статистика изменений:**
+- Добавлено тестов: 26 (test_audit_2026_04_fixes.rs)
+- Все тесты проходят: ✅ (100% pass rate)
+- Общее количество тестов: ~1381
 
 #### Удалено файлов (2):
 - `test_mod.rs` — пустой файл, 0 тестов
@@ -145,14 +180,18 @@
 
 ## 📊 СТРУКТУРА ТЕСТОВ
 
-### tests/ (корневая директория): 7 файлов
+### tests/ (корневая директория): 13 файлов
 - test_41_fixed_issues.rs — 42 теста на исправления аудита
 - test_all_fixed_issues.rs — 13 тестов критических исправлений
 - test_architecture_all.rs — 30 тестов архитектурных проблем
 - test_architecture_components.rs — 7 тестов компонентов
 - test_architecture_improvements.rs — 16 тестов улучшений
 - test_architecture_integrity.rs — 21 тест целостности
+- test_audit_2026_04_fixes.rs — 26 тестов исправлений аудита (апрель 2026)
 - test_audit_fixes.rs — 25 тестов исправлений аудита
+- test_audit_fixes_all.rs — 20 тестов всех исправлений
+- test_audit_fixes_comprehensive.rs — комплексные тесты исправлений
+- test_audit_fixes_verification.rs — 21 тест верификации
 - test_fixes_verification.rs — 8 интеграционных тестов
 
 ### src/tests/: 88 файлов
@@ -732,3 +771,51 @@
 - До очистки: ~1344 тестов, 95 файлов
 - После очистки: ~1306 тестов, 93 файла
 - Качество тестовой базы: улучшено (удалены дубликаты и фиктивные тесты)
+
+---
+
+## 🆕 НОВЫЕ ТЕСТЫ (1 апреля 2026 — версия 23.96.32+)
+
+### test_audit_2026_04_fixes.rs — 26 тестов
+
+**Файл:** `tests/test_audit_2026_04_fixes.rs`
+
+**Описание:** Тесты для всех исправленных проблем из аудита кода (апрель 2026).
+
+**CRITICAL проблемы (C1-C3) — 3 теста:**
+- `test_c1_validate_hmac_key_rejects_empty` — валидация HMAC ключей (пустые и с пробелами)
+- `test_c2_key_reader_handles_ascii_correctly` — ASCII обработка KeyReader
+- `test_c3_toctou_documentation_has_key_methods` — TOCTOU документация и ключевые методы
+
+**HIGH проблемы (H1-H10) — 10 тестов:**
+- `test_h1_to_string_instead_of_format_in_state` — .to_string() вместо format!()
+- `test_h2_is_none_or_in_collision` — is_none_or() в collision.rs
+- `test_h3_ufcs_instead_of_closure_in_leaderboard` — UFCS вместо closure
+- `test_h4_sort_by_key_in_leaderboard` — sort_by_key() в leaderboard.rs
+- `test_h5_h6_errors_documentation_exists` — документация # Errors
+- `test_h7_fps_constants_defined` — константы FPS
+- `test_h8_forbidden_url_encoding_patterns` — URL-encoding паттерны
+- `test_h9_compute_signature_method_exists` — compute_signature()
+- `test_h10_consolidated_config_load_methods` — загрузка конфигурации
+
+**MEDIUM проблемы (M1-M10) — 7 тестов:**
+- `test_m1_no_redundant_ignore_examples_in_lib` — отсутствие ignore примеров
+- `test_m3_simplified_canvas_drop` — упрощённый Canvas Drop
+- `test_m4_must_use_only_on_critical_methods` — #[must_use] атрибуты
+- `test_m5_dead_code_marked_with_allow_attribute` — #[allow(dead_code)]
+- `test_m7_sanitize_removed_uses_validation_name` — validation::name вместо sanitize.rs
+- `test_m10_sanitize_player_name_single_pass` — однопроходная оптимизация
+
+**LOW проблемы (L1, L3, L4) — 3 теста:**
+- `test_l1_key_codes_module_exists` — модуль key_codes
+- `test_l3_simplified_error_constructors` — конструкторы ошибок
+- `test_l4_simplified_exports` — упрощённые экспорты
+
+**Интеграционные тесты — 3 теста:**
+- `test_all_critical_fixes_integration` — интеграция CRITICAL исправлений
+- `test_all_high_fixes_integration` — интеграция HIGH исправлений
+- `test_all_medium_fixes_integration` — интеграция MEDIUM исправлений
+- `test_all_low_fixes_integration` — интеграция LOW исправлений
+- `test_all_26_audit_fixes_complete_integration` — полная интеграция всех 26 исправлений
+
+**Итого:** 26 тестов (все проходят 100%)
