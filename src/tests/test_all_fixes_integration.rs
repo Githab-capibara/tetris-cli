@@ -588,8 +588,10 @@ fn test_state_validation_integration() {
     assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Проверяем отрицательные значения land_timer
-    assert!(state.set_land_timer(-0.5).is_ok());
-    assert_eq!(state.land_timer(), 0.0);
+    // Исправление аудита 2026-04-01 (H3): set_land_timer() теперь отклоняет отрицательные значения
+    assert!(state.set_land_timer(-0.5).is_err());
+    // Значение не должно измениться после ошибки
+    assert_ne!(state.land_timer(), -0.5);
 }
 
 /// Тест 21: Интеграционный тест TOCTOU защиты в controls.rs

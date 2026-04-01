@@ -61,6 +61,10 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
 /// # Аргументы
 /// * `blocks` - игровое поле (изменяемое)
 /// * `rows_mask` - битовая маска заполненных линий
+///
+/// # Исправление аудита 2026-04-01 (L2)
+/// Удалена избыточная проверка `y + rows_removed_below < GRID_HEIGHT` - это условие
+/// всегда истинно так как мы идём снизу вверх и rows_removed_below <= y.
 pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
     // Проверка валидности rows_mask
     if rows_mask >= (1u32 << GRID_HEIGHT) {
@@ -80,9 +84,8 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
             rows_removed_below += 1;
         } else if rows_removed_below > 0 {
             // Перемещаем строку вниз на rows_removed_below позиций
-            if y + rows_removed_below < GRID_HEIGHT {
-                blocks[y + rows_removed_below] = blocks[y];
-            }
+            // Исправление L2: убрана избыточная проверка y + rows_removed_below < GRID_HEIGHT
+            blocks[y + rows_removed_below] = blocks[y];
         }
     }
 
@@ -261,15 +264,12 @@ fn update_score_for_lines(
     // Безопасно: capped_rows >= 1 гарантировано
     let line_score = LINE_SCORES[capped_rows - 1];
 
-    // Исправление C3 (CRITICAL): Явная проверка переполнения перед добавлением
-    // Проверяем не приведёт ли сложение к переполнению
-    if score
-        .checked_add(line_score)
-        .is_none_or(|new_score| new_score > MAX_SCORE)
-    {
+    // Исправление C3 (CRITICAL): Упрощена проверка переполнения через saturating_add
+    // Вместо checked_add используется saturating_add для защиты от переполнения
+    *score = score.saturating_add(line_score);
+    if *score > MAX_SCORE {
         return Err(GameError::ScoreOverflow);
     }
-    *score = score.saturating_add(line_score);
 
     // Обновление комбо
     *combo_counter = combo_counter.saturating_add(1);
@@ -277,28 +277,17 @@ fn update_score_for_lines(
     // Бонус за комбо (если комбо > 1)
     if *combo_counter > 1 {
         let combo_bonus = COMBO_BONUS.saturating_mul(u128::from(*combo_counter - 1));
-        // Проверка переполнения для комбо бонуса
-        if score
-            .checked_add(combo_bonus)
-            .is_none_or(|new_score| new_score > MAX_SCORE)
-        {
+        // Исправление C3: упрощена проверка переполнения через saturating_add
+        *score = score.saturating_add(combo_bonus);
+        if *score > MAX_SCORE {
             return Err(GameError::ScoreOverflow);
         }
-        *score = score.saturating_add(combo_bonus);
     }
 
     // Бонус за уровень (каждые 10 линий)
     let level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(level - 1));
-    // Проверка переполнения для бонуса уровня
-    if score
-        .checked_add(level_bonus)
-        .is_none_or(|new_score| new_score > MAX_SCORE)
-    {
-        return Err(GameError::ScoreOverflow);
-    }
+    // Исправление C3: упрощена проверка переполнения через saturating_add
     *score = score.saturating_add(level_bonus);
-
-    // Защита от переполнения: если счёт превышает MAX_SCORE, устанавливаем в MAX_SCORE
     if *score > MAX_SCORE {
         return Err(GameError::ScoreOverflow);
     }

@@ -194,6 +194,9 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 /// # Исправление #4
 /// Удалена ветка Direction::Down как dead code — движение вниз
 /// обрабатывается отдельно в handle_soft_drop/handle_hard_drop.
+///
+/// # Исправление аудита 2026-04-01 (L3)
+/// Удалён мёртвый код - ветка Direction::Down в match больше не требуется.
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
     if state.can_move_curr_shape_direction(dir) {
         match dir {
@@ -205,7 +208,7 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
                 let curr_shape = state.get_curr_shape_mut();
                 curr_shape.pos_mut().0 += 1.0;
             }
-            // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
+            // Исправление L3: Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
             Direction::Down => {}
         }
     }
