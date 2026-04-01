@@ -12,6 +12,7 @@
 
 #![allow(clippy::unnecessary_literal_bound)]
 #![allow(clippy::redundant_closure_for_method_calls)]
+#![allow(clippy::no_effect_underscore_binding)]
 
 use crate::game::state::GameState;
 use crate::validation::{ValidationError, ValidationErrorKind, ValidationService};

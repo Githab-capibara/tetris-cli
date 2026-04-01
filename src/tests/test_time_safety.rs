@@ -4,22 +4,6 @@
 //! обрабатывает ошибки времени.
 
 use crate::highscore::leaderboard::LeaderboardEntry;
-use crate::highscore::Leaderboard;
-
-/// Тест 1: Проверка, что get_current_time_ms_protected не паникует
-///
-/// Функция должна корректно работать без паники.
-#[test]
-fn test_get_current_time_ms_no_panic() {
-    // Создаём таблицу лидеров - это использует get_current_time_ms_protected
-    let mut leaderboard = Leaderboard::load();
-
-    // Добавляем запись
-    let _ = leaderboard.add_score("TestPlayer", 1000);
-
-    // Если дошли сюда - паники не было
-    // get_current_time_ms_protected не вызывает панику
-}
 
 /// Тест 2: Проверка обработки ошибок времени
 ///

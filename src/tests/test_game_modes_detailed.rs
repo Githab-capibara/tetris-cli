@@ -177,21 +177,6 @@ fn test_sprint_mode_initial_level() {
     assert_eq!(state.level(), 1, "Начальный уровень в Sprint должен быть 1");
 }
 
-/// Тест 15: Sprint режим - таймер
-#[test]
-fn test_sprint_mode_timer() {
-    let mut state = GameState::new_sprint();
-
-    // Запускаем таймер
-    state.start_timer();
-
-    // Проверяем, что таймер работает
-    let stats = state.stats();
-    let elapsed = stats.get_elapsed_time();
-
-    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
-}
-
 /// Тест 16: Sprint режим - время до завершения
 #[test]
 fn test_sprint_mode_time_to_complete() {

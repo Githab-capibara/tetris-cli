@@ -11,6 +11,8 @@
 
 #![allow(clippy::unnecessary_literal_bound)]
 #![allow(clippy::redundant_closure_for_method_calls)]
+#![allow(clippy::no_effect_underscore_binding)]
+#![allow(clippy::items_after_statements)]
 
 use crate::game::state::GameState;
 

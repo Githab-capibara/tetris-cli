@@ -2,6 +2,8 @@
 //!
 //! Предоставляет структуру Application для управления жизненным циклом приложения.
 
+#![allow(clippy::no_effect_underscore_binding)]
+
 use crate::errors::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};

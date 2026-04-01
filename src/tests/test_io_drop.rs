@@ -6,6 +6,8 @@
 //!
 //! Исправление: упрощён сброс до минимально необходимых операций с логированием ошибок
 
+#![allow(dead_code)]
+
 use crate::io::{Canvas, KeyReader};
 use crate::io_traits::InputReader;
 use std::panic;

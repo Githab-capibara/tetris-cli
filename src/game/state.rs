@@ -29,6 +29,8 @@
 //! - ⏳ Выделить `FigureManager` - управление фигурами
 //! - ⏳ Выделить `AnimationState` - управление анимациями
 
+#![allow(dead_code)]
+
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};
 

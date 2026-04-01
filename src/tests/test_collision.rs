@@ -194,36 +194,6 @@ fn test_collision_not_beyond_right_boundary() {
 // ГРУППА ТЕСТОВ 16-25: Столкновения с полом
 // ============================================================================
 
-/// Тест 17: Проверка что фигура достигает пола
-#[test]
-fn test_collision_reaches_floor() {
-    let mut state = GameState::new();
-    let start_y = state.curr_shape().pos().1;
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    let end_y = state.curr_shape().pos().1;
-    assert!(end_y > start_y, "Фигура должна опуститься");
-}
-
-/// Тест 18: Проверка что фигура не проходит сквозь пол
-#[test]
-fn test_collision_not_through_floor() {
-    let mut state = GameState::new();
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    let y = state.curr_shape().pos().1;
-    assert!(
-        y < GRID_HEIGHT as f32,
-        "Фигура не должна проходить сквозь пол"
-    );
-}
-
 /// Тест 19: Проверка столкновения с полом для всех типов фигур
 #[test]
 fn test_collision_all_shapes_floor() {
@@ -424,19 +394,6 @@ fn test_collision_bottom_right_corner() {
     // Движение вправо и вниз должно быть заблокировано
     assert!(!state.can_move_curr_shape_direction(Direction::Right));
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 48: Проверка что столкновение работает для призрачной фигуры
-#[test]
-fn test_collision_ghost_piece() {
-    let state = GameState::new();
-    let ghost = *state.curr_shape();
-
-    let can_move = state.can_move_ghost_shape_direction(Direction::Down);
-    assert!(
-        can_move,
-        "Призрачная фигура должна иметь возможность падения"
-    );
 }
 
 /// Тест 49: Проверка что столкновение не выходит за границы массива

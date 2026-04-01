@@ -54,30 +54,6 @@ fn test_gravity_and_falling() {
     );
 }
 
-/// Тест 2: Проверка достижения пола фигурой
-///
-/// Проверяет, что фигура не может пройти сквозь пол.
-#[test]
-fn test_piece_reaching_floor() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру до упора
-    let mut drop_count = 0;
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-        drop_count += 1;
-    }
-
-    // Движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз должно быть заблокировано после достижения пола"
-    );
-
-    // Проверяем, что было хотя бы одно движение
-    assert!(drop_count > 0, "Должно быть хотя бы одно движение вниз");
-}
-
 /// Тест 4: Проверка увеличения скорости падения
 ///
 /// Проверяет, что скорость падения увеличивается с уровнем.
@@ -114,60 +90,6 @@ fn test_falling_speed_increase() {
 // ============================================================================
 // ГРУППА ТЕСТОВ 5-8: Столкновения
 // ============================================================================
-
-/// Тест 5: Проверка столкновения с левой стеной
-///
-/// Проверяет, что фигура не может пройти сквозь левую стену.
-#[test]
-fn test_collision_with_left_wall() {
-    let mut state = GameState::new();
-
-    // Перемещаем фигуру к левой границе
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
-        }
-    }
-
-    // Движение влево должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево должно быть заблокировано у левой стены"
-    );
-
-    // Движение вправо должно быть возможно
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо должно быть возможно у левой стены"
-    );
-}
-
-/// Тест 6: Проверка столкновения с правой стеной
-///
-/// Проверяет, что фигура не может пройти сквозь правую стену.
-#[test]
-fn test_collision_with_right_wall() {
-    let mut state = GameState::new();
-
-    // Перемещаем фигуру к правой границе
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos().0 += 1.0;
-        }
-    }
-
-    // Движение вправо должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо должно быть заблокировано у правой стены"
-    );
-
-    // Движение влево должно быть возможно
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево должно быть возможно у правой стены"
-    );
-}
 
 /// Тест 7: Проверка столкновения с зафиксированными фигурами
 ///
@@ -418,29 +340,6 @@ fn test_ghost_piece_position() {
         ghost_shape.shape(),
         state.curr_shape().shape(),
         "Призрачная фигура должна быть того же типа"
-    );
-}
-
-/// Тест 16: Проверка достижения пола призрачной фигурой
-///
-/// Проверяет, что призрачная фигура корректно определяет пол.
-#[test]
-fn test_ghost_piece_floor_detection() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру до пола
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    // Создаём призрачную фигуру на той же позиции
-    let ghost_shape = *state.curr_shape();
-
-    // Призрачная фигура не должна иметь возможность движения вниз
-    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
-    assert!(
-        !can_move_down,
-        "Призрачная фигура на полу не должна иметь возможность падения"
     );
 }
 

@@ -9,6 +9,9 @@
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::assertions_on_constants)]
+#![allow(clippy::no_effect_underscore_binding)]
+#![allow(clippy::items_after_statements)]
+#![allow(dead_code)]
 
 // ============================================================================
 // ТЕСТ 1: КАЖДЫЙ МОДУЛЬ ИМЕЕТ ЧЕТКУЮ ОТВЕТСТВЕННОСТЬ

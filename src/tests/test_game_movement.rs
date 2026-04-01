@@ -19,281 +19,62 @@ use crate::types::{Direction, RotationDirection};
 // ГРУППА ТЕСТОВ 1-14: Движение влево/вправо для всех 7 фигур
 // ============================================================================
 
-/// Тест 1: Движение фигуры T влево
+/// Тест 1-14: Движение всех фигур влево и вправо (параметризированный тест)
 ///
-/// Проверяет, что T-фигура может двигаться влево в пустом поле.
+/// Проверяет, что все 7 типов фигур могут двигаться влево и вправо в пустом поле.
 #[test]
-fn test_t_piece_move_left() {
-    let mut state = GameState::new();
+fn test_all_pieces_move_left_right() {
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
 
-    // Проверяем, что текущая фигура - T или любая другая
-    let initial_x = state.curr_shape().pos().0;
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::O,
+        ShapeType::I,
+    ];
 
-    // Пытаемся двигаться влево
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        let new_x = state.curr_shape().pos().0;
-        assert!(new_x < initial_x, "Фигура T должна двигаться влево");
-    }
-}
+    for shape_type in shapes {
+        let mut state = GameState::new();
+        state.get_curr_shape_mut().set_shape(shape_type);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape_type as usize]);
 
-/// Тест 2: Движение фигуры T вправо
-///
-/// Проверяет, что T-фигура может двигаться вправо в пустом поле.
-#[test]
-fn test_t_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
+        let initial_x = state.curr_shape().pos().0;
 
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        let new_x = state.curr_shape().pos().0;
-        assert!(new_x > initial_x, "Фигура T должна двигаться вправо");
-    }
-}
+        // Тест движения влево
+        if state.can_move_curr_shape_direction(Direction::Left) {
+            state.get_curr_shape_mut().pos().0 -= 1.0;
+            assert!(
+                state.curr_shape().pos().0 < initial_x,
+                "Фигура {shape_type:?} должна двигаться влево"
+            );
+        }
 
-/// Тест 3: Движение фигуры L влево
-///
-/// Проверяет, что L-фигура может двигаться влево.
-#[test]
-fn test_l_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
+        // Тест движения вправо
+        let mut state = GameState::new();
+        state.get_curr_shape_mut().set_shape(shape_type);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape_type as usize]);
 
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура L должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 4: Движение фигуры L вправо
-#[test]
-fn test_l_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура L должна двигаться вправо"
-        );
-    }
-}
-
-/// Тест 5: Движение фигуры J влево
-#[test]
-fn test_j_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура J должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 6: Движение фигуры J вправо
-#[test]
-fn test_j_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура J должна двигаться вправо"
-        );
-    }
-}
-
-/// Тест 7: Движение фигуры S влево
-#[test]
-fn test_s_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура S должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 8: Движение фигуры S вправо
-#[test]
-fn test_s_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура S должна двигаться вправо"
-        );
-    }
-}
-
-/// Тест 9: Движение фигуры Z влево
-#[test]
-fn test_z_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура Z должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 10: Движение фигуры Z вправо
-#[test]
-fn test_z_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура Z должна двигаться вправо"
-        );
-    }
-}
-
-/// Тест 11: Движение фигуры O влево
-#[test]
-fn test_o_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура O должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 12: Движение фигуры O вправо
-#[test]
-fn test_o_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура O должна двигаться вправо"
-        );
-    }
-}
-
-/// Тест 13: Движение фигуры I влево
-#[test]
-fn test_i_piece_move_left() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Фигура I должна двигаться влево"
-        );
-    }
-}
-
-/// Тест 14: Движение фигуры I вправо
-#[test]
-fn test_i_piece_move_right() {
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        assert!(
-            state.curr_shape().pos().0 > initial_x,
-            "Фигура I должна двигаться вправо"
-        );
+        let initial_x = state.curr_shape().pos().0;
+        if state.can_move_curr_shape_direction(Direction::Right) {
+            state.get_curr_shape_mut().pos().0 += 1.0;
+            assert!(
+                state.curr_shape().pos().0 > initial_x,
+                "Фигура {shape_type:?} должна двигаться вправо"
+            );
+        }
     }
 }
 
 // ============================================================================
-// ГРУППА ТЕСТОВ 15-24: Движение у границ поля
+// ГРУППА ТЕСТОВ 18-24: Позиции фигур у границ
 // ============================================================================
-
-/// Тест 15: Движение к левой границе - блокировка
-///
-/// Проверяет, что фигура не может выйти за левую границу.
-#[test]
-fn test_move_to_left_boundary_blocked() {
-    let mut state = GameState::new();
-
-    // Двигаемся влево до упора
-    let mut moves = 0;
-    while state.can_move_curr_shape_direction(Direction::Left) && moves < 20 {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
-        moves += 1;
-    }
-
-    // Дальнейшее движение влево должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево за границу должно быть заблокировано после {moves} перемещений"
-    );
-}
-
-/// Тест 16: Движение к правой границе - блокировка
-#[test]
-fn test_move_to_right_boundary_blocked() {
-    let mut state = GameState::new();
-
-    // Двигаемся вправо до упора
-    let mut moves = 0;
-    while state.can_move_curr_shape_direction(Direction::Right) && moves < 20 {
-        state.get_curr_shape_mut().pos().0 += 1.0;
-        moves += 1;
-    }
-
-    // Дальнейшее движение вправо должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо за границу должно быть заблокировано после {moves} перемещений"
-    );
-}
-
-/// Тест 17: Движение к нижней границе - блокировка
-#[test]
-fn test_move_to_bottom_boundary_blocked() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру до пола
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    // Дальнейшее движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз за границу пола должно быть заблокировано"
-    );
-}
 
 /// Тест 18: Позиция фигуры у левой границы
 #[test]
@@ -660,15 +441,17 @@ fn test_soft_drop_speed() {
 // ГРУППА ТЕСТОВ 39-44: Жёсткое падение (Hard Drop)
 // ============================================================================
 
-/// Тест 39: Жёсткое падение - базовая проверка
+/// Тест 39-44: Жёсткое падение - комплексный тест
 ///
-/// Проверяет, что жёсткое падение возможно.
+/// Проверяет все аспекты жёсткого падения фигур.
 #[test]
-fn test_hard_drop_basic() {
+fn test_hard_drop_comprehensive() {
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
+
+    // Тест 1: Базовая проверка hard drop
     let mut state = GameState::new();
     let initial_y = state.curr_shape().pos().1;
 
-    // Симулируем hard drop - опускаем до упора
     while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos().1 += 1.0;
     }
@@ -677,37 +460,15 @@ fn test_hard_drop_basic() {
         state.curr_shape().pos().1 > initial_y,
         "Жёсткое падение должно опустить фигуру"
     );
-}
 
-/// Тест 40: Жёсткое падение - мгновенная остановка
-#[test]
-fn test_hard_drop_instant_stop() {
-    let mut state = GameState::new();
-
-    // Выполняем hard drop
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    // Движение вниз должно быть заблокировано
+    // Тест 2: Мгновенная остановка после hard drop
     assert!(
         !state.can_move_curr_shape_direction(Direction::Down),
         "После жёсткого падения движение вниз должно быть заблокировано"
     );
-}
 
-/// Тест 41: Жёсткое падение - позиция после падения
-#[test]
-fn test_hard_drop_final_position() {
-    let mut state = GameState::new();
-
-    // Выполняем hard drop
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
+    // Тест 3: Позиция после падения в пределах поля
     let shape = state.curr_shape();
-    // Проверяем, что фигура на полу
     for &(_, y) in &shape.coords() {
         let global_y = shape.pos().1 as i16 + y;
         assert!(
@@ -715,60 +476,43 @@ fn test_hard_drop_final_position() {
             "Фигура после жёсткого падения должна быть в пределах поля (y={global_y})"
         );
     }
-}
 
-/// Тест 42: Жёсткое падение - разные высоты
-#[test]
-fn test_hard_drop_different_heights() {
-    let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos().1;
-
-    // Выполняем hard drop
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    let final_y = state.curr_shape().pos().1;
-    let drop_distance = final_y - initial_y;
-
+    // Тест 4: Расстояние падения положительное
+    let drop_distance = shape.pos().1 - initial_y;
     assert!(
         drop_distance > 0.0,
         "Расстояние жёсткого падения должно быть положительным"
     );
-}
 
-/// Тест 43: Жёсткое падение - I-фигура
-#[test]
-fn test_hard_drop_i_piece() {
-    let mut state = GameState::new();
+    // Тест 5-6: Hard drop для всех типов фигур
+    let shapes = [
+        ShapeType::T,
+        ShapeType::L,
+        ShapeType::J,
+        ShapeType::S,
+        ShapeType::Z,
+        ShapeType::O,
+        ShapeType::I,
+    ];
 
-    // Выполняем hard drop для текущей фигуры
-    let initial_y = state.curr_shape().pos().1;
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+    for shape_type in shapes {
+        let mut state = GameState::new();
+        state.get_curr_shape_mut().set_shape(shape_type);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape_type as usize]);
+
+        let initial_y = state.curr_shape().pos().1;
+
+        while state.can_move_curr_shape_direction(Direction::Down) {
+            state.get_curr_shape_mut().pos().1 += 1.0;
+        }
+
+        assert!(
+            state.curr_shape().pos().1 > initial_y,
+            "Фигура {shape_type:?} должна корректно выполнять жёсткое падение"
+        );
     }
-
-    assert!(
-        state.curr_shape().pos().1 > initial_y,
-        "I-фигура должна корректно выполнять жёсткое падение"
-    );
-}
-
-/// Тест 44: Жёсткое падение - O-фигура
-#[test]
-fn test_hard_drop_o_piece() {
-    let mut state = GameState::new();
-
-    // Выполняем hard drop
-    let initial_y = state.curr_shape().pos().1;
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
-    }
-
-    assert!(
-        state.curr_shape().pos().1 > initial_y,
-        "O-фигура должна корректно выполнять жёсткое падение"
-    );
 }
 
 // ============================================================================

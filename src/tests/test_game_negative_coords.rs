@@ -7,6 +7,8 @@
 //!
 //! Исправление: использование `checked_sub()` для защиты от отрицательных координат
 
+#![allow(clippy::items_after_statements)]
+
 use crate::game::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 

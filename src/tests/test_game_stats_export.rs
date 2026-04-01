@@ -218,7 +218,8 @@ fn test_game_stats_timer_fields() {
 
     // Получаем elapsed time (должно работать)
     let elapsed = stats.get_elapsed_time();
-    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
+    // Проверяем что время корректно работает
+    assert!(elapsed >= 0.0);
 }
 
 /// Тест 8: Проверка Clone trait для GameStats

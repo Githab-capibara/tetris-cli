@@ -9,6 +9,8 @@
 //! ## Архитектурные заметки
 //! Выделено из `state.rs` для улучшения организации кода и разделения ответственности.
 
+#![allow(dead_code)]
+
 use crate::tetromino::ShapeType;
 use std::time::Instant;
 

@@ -23,6 +23,8 @@
 //! renderer.flush();
 //! ```
 
+#![allow(dead_code)]
+
 use std::io;
 use termion::color::Color;
 

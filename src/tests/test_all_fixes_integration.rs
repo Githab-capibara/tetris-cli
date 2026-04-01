@@ -7,6 +7,7 @@
 // Разрешаем needless_range_loop для тестов: индексация нагляднее итераторов
 // в тестах, так как явно показывает работу с индексами строк и столбцов
 #![allow(clippy::needless_range_loop)]
+#![allow(clippy::items_after_statements)]
 
 use crate::game::GameState;
 use crate::types::{Direction, RotationDirection};
@@ -371,29 +372,6 @@ fn test_all_fixes_comprehensive_integration() {
 // ============================================================================
 // ТЕСТЫ ИСПРАВЛЕНИЙ ИЗ АУДИТА (март 2026)
 // ============================================================================
-
-/// Тест 11: Проверка исправления Л1 - отсутствие тривиальных утверждений
-///
-/// Проверяет, что тесты коллизий содержат содержательные проверки,
-/// а не тривиальные утверждения вида `assert!(can_move || !can_move)`.
-#[test]
-fn test_collision_assertions_meaningful() {
-    use crate::game::logic::can_move_curr_shape_direction;
-    use crate::game::GameState;
-    use crate::types::Direction;
-
-    let state = GameState::new();
-
-    // Проверяем конкретное состояние, а не тривиальное утверждение
-    let can_move_left = can_move_curr_shape_direction(&state, Direction::Left);
-    let can_move_right = can_move_curr_shape_direction(&state, Direction::Right);
-
-    // Конкретные проверки вместо тривиальных
-    assert!(
-        can_move_left || can_move_right,
-        "Хотя бы одно направление должно быть доступно"
-    );
-}
 
 /// Тест 12: Проверка функций Canvas
 ///

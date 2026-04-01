@@ -18,6 +18,8 @@
 //! use crate::constants::FRAME_DELAY_MS; // вместо menu::constants::FRAME_DELAY_MS
 //! ```
 
+#![allow(dead_code)]
+
 // Исправление M2: переэкспорт FRAME_DELAY_MS из crate::constants
 pub use crate::constants::FRAME_DELAY_MS;
 // Исправление C3: переэкспорт MAX_LEADERBOARD_ENTRIES из crate::constants

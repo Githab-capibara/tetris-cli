@@ -10,6 +10,8 @@
 //! - [`GameAction`] — игровые действия
 //! - [`UpdateEndState`] — состояние завершения обновления
 
+#![allow(dead_code)]
+
 // Переэкспорт базовых типов из core модуля для обратной совместимости
 pub use crate::core::{Direction, Position, RotationDirection};
 

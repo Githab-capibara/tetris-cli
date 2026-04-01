@@ -104,49 +104,7 @@ fn test_game_state_default_mode() {
 // ГРУППА ТЕСТОВ 7-12: Столкновения
 // ============================================================================
 
-/// Тест 7: Проверка столкновения с левой границей
-///
-/// Проверяет, что фигура не может выйти за левую границу.
-#[test]
-fn test_collision_left_boundary() {
-    let mut state = GameState::new();
-
-    // Перемещаем фигуру к левой границе
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
-        }
-    }
-
-    // Дальнейшее движение влево должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево за границу должно быть заблокировано"
-    );
-}
-
-/// Тест 8: Проверка столкновения с правой границей
-///
-/// Проверяет, что фигура не может выйти за правую границу.
-#[test]
-fn test_collision_right_boundary() {
-    let mut state = GameState::new();
-
-    // Перемещаем фигуру к правой границе
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos().0 += 1.0;
-        }
-    }
-
-    // Дальнейшее движение вправо должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо за границу должно быть заблокировано"
-    );
-}
-
-/// Тест 9: Проверка столкновения с полом
+/// Тест 7: Проверка столкновения с полом
 ///
 /// Проверяет, что фигура не может пройти сквозь пол.
 #[test]
@@ -209,24 +167,6 @@ fn test_movement_in_empty_field() {
     assert!(
         can_move_left || can_move_right,
         "В пустом поле должно быть возможно движение хотя бы в одну сторону"
-    );
-}
-
-/// Тест 12: Проверка границ поля для призрачной фигуры
-///
-/// Проверяет, что призрачная фигура корректно определяет пол.
-#[test]
-fn test_ghost_piece_boundary() {
-    let state = GameState::new();
-    let ghost_shape = *state.curr_shape();
-
-    // Призрачная фигура должна использовать ту же логику столкновений
-    let can_move_down = state.can_move_ghost_shape_direction(Direction::Down);
-
-    // В начале игры призрачная фигура должна иметь возможность движения вниз
-    assert!(
-        can_move_down,
-        "Призрачная фигура должна иметь возможность падения"
     );
 }
 

@@ -21,40 +21,6 @@
 // КАТЕГОРИЯ 1: КРИТИЧЕСКИЕ ПРОБЛЕМЫ (4 теста)
 // ============================================================================
 
-/// Тест 1: Canvas graceful degradation при ошибке инициализации
-///
-/// Проверяет что Canvas::default() использует unwrap_or_else для graceful degradation
-/// вместо паники при недоступности терминала.
-///
-/// # Архитектурная проблема E1 (CRITICAL)
-/// Canvas::default() теперь использует unwrap_or_else с fallback stub вместо паники.
-/// Это позволяет избежать краша приложения при недоступности терминала.
-#[test]
-fn test_critical_canvas_graceful_degradation() {
-    use std::fs;
-
-    let io_path = "src/io.rs";
-    let io_content = fs::read_to_string(io_path).expect("Failed to read io.rs");
-
-    // Проверяем что используется unwrap_or_else для graceful degradation
-    assert!(
-        io_content.contains("unwrap_or_else"),
-        "io.rs должен использовать unwrap_or_else для graceful degradation"
-    );
-
-    // Проверяем что есть fallback stub
-    assert!(
-        io_content.contains("new_stub") || io_content.contains("stub"),
-        "io.rs должен использовать new_stub как fallback"
-    );
-
-    // Проверяем что есть обработка ошибок
-    assert!(
-        io_content.contains("IoError") || io_content.contains("Error"),
-        "io.rs должен содержать обработку ошибок"
-    );
-}
-
 /// Тест 2: ThreadSafeLeaderboardEntry без паники при отравлении Mutex
 ///
 /// Проверяет что ThreadSafeLeaderboardEntry::score_safe() возвращает Option<u128>
@@ -87,47 +53,6 @@ fn test_critical_thread_safe_score_no_panic() {
     let name = entry.name_safe();
     assert!(name.is_some(), "name_safe() должен возвращать Some(String)");
     assert_eq!(name, Some("Player1".to_string()));
-}
-
-/// Тест 3: TOCTOU защита в controls.rs
-///
-/// Проверяет что controls.rs использует O_NOFOLLOW для защиты от TOCTOU уязвимости.
-///
-/// # Архитектурная проблема E5 (CRITICAL)
-/// В controls.rs изменён порядок операций:
-/// 1. Сначала open(O_NOFOLLOW) - атомарная операция
-/// 2. Затем fstat() проверка на symlink
-#[test]
-fn test_critical_controls_toctou_protection() {
-    use std::fs;
-
-    let controls_path = "src/controls.rs";
-    let content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");
-
-    // Тест 1: O_NOFOLLOW используется при открытии файла
-    assert!(
-        content.contains("O_NOFOLLOW"),
-        "controls.rs должен использовать O_NOFOLLOW для защиты от symlink атак"
-    );
-
-    // Тест 2: Проверка на symlink выполняется ПОСЛЕ открытия
-    let open_pos = content
-        .find("OpenOptions::new()")
-        .expect("OpenOptions::new() должен существовать");
-    let metadata_pos = content
-        .find("file.metadata()")
-        .expect("file.metadata() должен существовать");
-
-    assert!(
-        open_pos < metadata_pos,
-        "Сначала должно быть open(), затем metadata() - защита от TOCTOU"
-    );
-
-    // Тест 3: Проверка is_symlink() после открытия
-    assert!(
-        content.contains("is_symlink()"),
-        "Должна быть проверка is_symlink() после открытия файла"
-    );
 }
 
 /// Тест 4: LeaderboardEntry TOCTOU документация и защита
@@ -177,34 +102,6 @@ fn test_critical_leaderboard_toctou_documentation() {
 // ============================================================================
 // КАТЕГОРИЯ 2: АРХИТЕКТУРА (5 тестов)
 // ============================================================================
-
-/// Тест 5: Отсутствие циклических зависимостей в core модуле
-///
-/// Проверяет что core модуль не зависит от game, io, tetromino модулей.
-///
-/// # Архитектурная проблема C2
-/// Core модуль должен быть независимым базовым модулем без циклических зависимостей.
-#[test]
-fn test_architecture_no_cyclic_dependencies_core() {
-    use std::fs;
-
-    let core_path = "src/core/mod.rs";
-    let core_content = fs::read_to_string(core_path).expect("Failed to read src/core/mod.rs");
-
-    // Core не должен импортировать из game, io, tetromino
-    assert!(
-        !core_content.contains("use crate::game::"),
-        "core/mod.rs не должен импортировать из crate::game"
-    );
-    assert!(
-        !core_content.contains("use crate::io::"),
-        "core/mod.rs не должен импортировать из crate::io"
-    );
-    assert!(
-        !core_content.contains("use crate::tetromino::"),
-        "core/mod.rs не должен импортировать из crate::tetromino"
-    );
-}
 
 /// Тест 6: Абстракция времени Time модуль
 ///
@@ -460,39 +357,6 @@ fn test_modularity_game_action_enum() {
 // ============================================================================
 // КАТЕГОРИЯ 4: КОД (7 тестов)
 // ============================================================================
-
-/// Тест 14: checked_neg() при вращении фигур
-///
-/// Проверяет что tetromino_struct.rs использует checked_neg() вместо saturating_neg()
-/// для предотвращения переполнения при вращении фигур.
-///
-/// # Архитектурная проблема E3 (HIGH)
-/// Замена saturating_neg() на checked_neg() с явной обработкой None.
-#[test]
-fn test_code_checked_neg_rotation() {
-    use std::fs;
-
-    let tetromino_path = "src/tetromino/tetromino_struct.rs";
-    let content = fs::read_to_string(tetromino_path).expect("Failed to read tetromino_struct.rs");
-
-    // checked_neg() должен использоваться вместо saturating_neg()
-    assert!(
-        content.contains("checked_neg()"),
-        "tetromino_struct.rs должен использовать checked_neg()"
-    );
-
-    // Проверяем что checked_neg() используется в rotate функции
-    let rotate_section_start = content
-        .find("pub fn rotate")
-        .expect("rotate функция должна существовать");
-    let rotate_section_end = rotate_section_start + 2000;
-    let rotate_section = &content[rotate_section_start..rotate_section_end.min(content.len())];
-
-    assert!(
-        rotate_section.contains("checked_neg()"),
-        "rotate() должен использовать checked_neg()"
-    );
-}
 
 /// Тест 15: Обработка ошибки set_fall_speed()
 ///

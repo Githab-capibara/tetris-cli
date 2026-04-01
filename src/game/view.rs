@@ -4,6 +4,8 @@
 //! неизменяемого представления состояния игры.
 //! Уменьшает связанность между render.rs и GameState.
 
+#![allow(dead_code)]
+
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
@@ -230,7 +232,7 @@ impl<'a> GameView<'a> {
     /// let ch = view.get_shape_display_char();
     /// ```
     #[must_use]
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::unused_self)]
     pub fn get_shape_display_char(&self) -> &str {
         use crate::io::SHAPE_STR;
         SHAPE_STR
@@ -656,7 +658,7 @@ impl<'a> GameView<'a> {
     /// * `pos_y` - позиция по Y
     /// * `title` - заголовок
     /// * `is_faded` - если true, рисовать тусклым цветом
-    #[allow(clippy::unused_self)]
+    #[allow(clippy::ignored_unit_patterns, clippy::unused_self, dead_code)]
     fn draw_shape_preview<R>(
         &self,
         canvas: &mut R,

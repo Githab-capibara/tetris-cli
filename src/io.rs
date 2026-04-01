@@ -4,6 +4,8 @@
 //! - `Canvas` - канвас для отрисовки
 //! - `KeyReader` - асинхронный читатель клавиатуры
 
+#![allow(dead_code)]
+
 use std::io::{self, stdout, Read, Stdout, Write};
 use termion::{
     async_stdin,

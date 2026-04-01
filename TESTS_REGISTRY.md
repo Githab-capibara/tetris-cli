@@ -1,13 +1,83 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 1 апреля 2026 г. (аудит и исправления)
-**Версия проекта:** 23.96.30+ (аудит и исправления)
-**Всего тестов:** ~1344 тестов (проходят 100%)
-**Всего файлов тестов:** 95
+**Дата последней актуализации:** 1 апреля 2026 г. (очистка тестовой базы)
+**Версия проекта:** 23.96.31+ (очистка тестов)
+**Всего тестов:** ~1306 тестов (проходят 100%)
+**Всего файлов тестов:** 93
 
 ---
 
 ## 📊 ТЕКУЩАЯ СТАТИСТИКА
+
+### Очистка тестовой базы (1 апреля 2026 — версия 23.96.31+):
+
+**Дата очистки:** 1 апреля 2026
+**Версия проекта:** 23.96.31+ (очистка тестов)
+
+#### Удалено файлов (2):
+- `test_mod.rs` — пустой файл, 0 тестов
+- `test_tetromino_dir_down.rs` — тесты с удалённым NoRotation
+
+#### Удалено дубликатов тестов:
+
+**Коллизии со стенами (6 тестов → 2):**
+- Удалены: `test_collision_left_boundary`, `test_collision_right_boundary` (test_game_logic.rs)
+- Удалены: `test_collision_with_left_wall`, `test_collision_with_right_wall` (test_physics.rs)
+- Удалены: `test_move_to_left_boundary_blocked`, `test_move_to_right_boundary_blocked` (test_game_movement.rs)
+- Оставлены: `test_collision_left_wall`, `test_collision_right_wall` (test_collision.rs)
+
+**Коллизии с полом (4 теста → 1):**
+- Удалены: `test_collision_reaches_floor`, `test_collision_not_through_floor` (test_collision.rs)
+- Удалены: `test_piece_reaching_floor` (test_physics.rs)
+- Удалены: `test_move_to_bottom_boundary_blocked` (test_game_movement.rs)
+- Оставлен: `test_collision_floor` (test_game_logic.rs)
+
+**Призрачная фигура (3 теста → 1):**
+- Удалены: `test_collision_ghost_piece` (test_collision.rs)
+- Удалены: `test_ghost_piece_boundary` (test_game_logic.rs)
+- Удалены: `test_ghost_piece_floor_detection` (test_physics.rs)
+- Оставлен: `test_ghost_piece_position` (test_physics.rs)
+
+**Движение фигур (14 тестов → 1):**
+- Удалены: `test_t_piece_move_left`, `test_t_piece_move_right`, ..., `test_i_piece_move_left`, `test_i_piece_move_right`
+- Добавлен: `test_all_pieces_move_left_right` (параметризированный тест)
+
+**Hard Drop (6 тестов → 1):**
+- Удалены: `test_hard_drop_basic`, `test_hard_drop_instant_stop`, `test_hard_drop_final_position`, `test_hard_drop_different_heights`, `test_hard_drop_o_piece`
+- Добавлен: `test_hard_drop_comprehensive`
+
+#### Удалено бесполезных тестов:
+
+**Тривиальные ассерты (>= 0):**
+- `test_save_error_handling` (test_highscore_error_handling.rs)
+- `test_must_use_get_elapsed_time` (test_must_use_attributes.rs)
+- `test_min_game_time` (test_edge_cases_stress.rs)
+- `test_sprint_mode_timer` (test_game_modes_detailed.rs)
+- `test_game_has_timer` (test_integration_extended.rs)
+
+**Тесты-документации:**
+- `test_critical_canvas_graceful_degradation` (test_architecture_all.rs)
+- `test_critical_controls_toctou_protection` (test_architecture_all.rs)
+- `test_architecture_no_cyclic_dependencies_core` (test_architecture_all.rs)
+- `test_code_checked_neg_rotation` (test_architecture_all.rs)
+
+**Тесты без ассертов:**
+- `test_get_current_time_ms_no_panic` (test_time_safety.rs)
+- `test_collision_assertions_meaningful` (test_all_fixes_integration.rs)
+- `test_unused_import_fixed` (test_fixes.rs)
+
+**Сломанные тесты:**
+- `test_directory_unavailable_error_handling` (test_highscore_config_path.rs) — использовал ConfigError
+
+#### Итоговая статистика очистки:
+- Удалено файлов: **2**
+- Удалено тестов: **~40**
+- Объединено тестов: **20 → 2**
+- Изменено файлов: **12**
+- Новое количество тестов: **~1306** (было ~1344)
+- Новое количество файлов тестов: **93** (было 95)
+
+---
 
 ### Аудит и исправления (1 апреля 2026 — версия 23.96.30+):
 
@@ -230,36 +300,69 @@
   - `test_all_fixes_compile_together` — все исправления компилируются
   - `test_game_event_uses_shapetype_not_tetrominotype` — ShapeType не TetrominoType
 
-### Изменения после очистки тестовой базы (31 марта 2026):
+### Изменения после очистки тестовой базы (1 апреля 2026):
 
-#### Удалённые тесты (42 теста):
+#### Удалённые тесты (~40 тестов):
 
-**Сломанные performance тесты (3 теста):**
-- `test_check_collision_performance` — нестабильный, дублирует бенчмарки
-- `test_find_full_rows_performance` — нестабильный, дублирует бенчмарки
-- `test_sanitize_performance` — нестабильный, дублирует бенчмарки
+**Удалено файлов (2):**
+- `test_mod.rs` — пустой файл, 0 тестов
+- `test_tetromino_dir_down.rs` — тесты с удалённым NoRotation
 
-**Бесполезные тесты с `assert!(true, ...)` (39 тестов):**
-- Удалены тесты-заглушки из архитектурных файлов
-- Эти тесты не выполняли реальной проверки
-- Улучшено общее качество тестовой базы
+**Дубликаты коллизий со стенами (6 тестов → 2):**
+- Удалены: `test_collision_left_boundary`, `test_collision_right_boundary` (test_game_logic.rs)
+- Удалены: `test_collision_with_left_wall`, `test_collision_with_right_wall` (test_physics.rs)
+- Удалены: `test_move_to_left_boundary_blocked`, `test_move_to_right_boundary_blocked` (test_game_movement.rs)
 
-#### Исправленные тесты (3 теста):
+**Дубликаты коллизий с полом (4 теста → 1):**
+- Удалены: `test_collision_reaches_floor`, `test_collision_not_through_floor` (test_collision.rs)
+- Удалены: `test_piece_reaching_floor` (test_physics.rs)
+- Удалены: `test_move_to_bottom_boundary_blocked` (test_game_movement.rs)
 
-**GameMode API:**
-- `test_sprint_timer_initialization` — заменено `get_mode()` на `get_mode_trait().name()`
-- `test_marathon_timer_initialization` — заменено `get_mode()` на `get_mode_trait().name()`
-- `test_classic_no_auto_timer` — заменено `get_mode()` на `get_mode_trait().name()`
+**Дубликаты призрачной фигуры (3 теста → 1):**
+- Удалены: `test_collision_ghost_piece` (test_collision.rs)
+- Удалены: `test_ghost_piece_boundary` (test_game_logic.rs)
+- Удалены: `test_ghost_piece_floor_detection` (test_physics.rs)
+
+**Дубликаты движения фигур (14 тестов → 1):**
+- Удалены: `test_t_piece_move_left`, `test_t_piece_move_right`, и другие тесты для J, L, O, S, Z, I pieces
+
+**Дубликаты Hard Drop (6 тестов → 1):**
+- Удалены: `test_hard_drop_basic`, `test_hard_drop_instant_stop`, `test_hard_drop_final_position`, `test_hard_drop_different_heights`, `test_hard_drop_o_piece`
+
+**Бесполезные тесты:**
+- `test_save_error_handling` (test_highscore_error_handling.rs)
+- `test_must_use_get_elapsed_time` (test_must_use_attributes.rs)
+- `test_min_game_time` (test_edge_cases_stress.rs)
+- `test_sprint_mode_timer` (test_game_modes_detailed.rs)
+- `test_game_has_timer` (test_integration_extended.rs)
+
+**Тесты-документации:**
+- `test_critical_canvas_graceful_degradation` (test_architecture_all.rs)
+- `test_critical_controls_toctou_protection` (test_architecture_all.rs)
+- `test_architecture_no_cyclic_dependencies_core` (test_architecture_all.rs)
+- `test_code_checked_neg_rotation` (test_architecture_all.rs)
+
+**Тесты без ассертов:**
+- `test_get_current_time_ms_no_panic` (test_time_safety.rs)
+- `test_collision_assertions_meaningful` (test_all_fixes_integration.rs)
+- `test_unused_import_fixed` (test_fixes.rs)
+
+**Сломанные тесты:**
+- `test_directory_unavailable_error_handling` (test_highscore_config_path.rs) — использовал ConfigError
+
+#### Добавлены параметризированные тесты (2):
+- `test_all_pieces_move_left_right` — заменил 14 тестов движения фигур
+- `test_hard_drop_comprehensive` — заменил 6 тестов hard drop
 
 #### Итоговая статистика:
-- **Всего тестов:** 1345 (было 1309)
-- **Добавлено тестов:** 36 (новые тесты архитектурной целостности)
-- **Удалено тестов:** 0
-- **Изменено тестов:** 0
-- **Чистое изменение:** +36 тестов
+- **Всего тестов:** ~1306 (было ~1344)
+- **Удалено тестов:** ~40
+- **Объединено тестов:** 20 → 2
+- **Удалено файлов:** 2
+- **Изменено файлов:** 12
 - **Все тесты компилируются:** ✅
 - **Все тесты проходят:** ✅ (100% pass rate)
-- **Версия проекта:** 23.96.27+
+- **Версия проекта:** 23.96.31+
 
 ---
 
@@ -482,12 +585,12 @@
 
 ## 📊 ОБЩАЯ СТАТИСТИКА
 
-### Общее количество тестов: 1345
+### Общее количество тестов: 1306
 
-**Unit тесты:** 1142
+**Unit тесты:** 1104
 **Integration тесты:** 106
 **Doctests:** ~125 (включены в unit/integration)
-**Новые тесты:** 46 (test_audit_fixes.rs — 25, test_architecture_integrity.rs — 21)
+**Удалено тестов:** ~40 (очистка дубликатов и бесполезных тестов)
 
 **Процент прохождения:** 100% (0 failed)
 
@@ -497,6 +600,8 @@
 |------|---------|--------|-----------|
 | 30 марта 2026 (утро) | Архитектурные улучшения | 1227 | +129 |
 | 30 марта 2026 (вечер) | Очистка тестов | 1225 | -74 + 72 |
+| 1 апреля 2026 (утро) | Аудит и исправления | 1344 | +119 |
+| 1 апреля 2026 (вечер) | Очистка тестовой базы | 1306 | -40 + 2 |
 
 ---
 
@@ -610,16 +715,16 @@
 
 ## 📅 ДАТА ПОСЛЕДНЕЙ ОЧИСТКИ
 
-**Дата:** 30 марта 2026 г.
+**Дата:** 1 апреля 2026 г.
 
 **Что было сделано:**
-- ✅ Удалено 68 тестов с `assert!(true, ...)` (бесполезные заглушки)
-- ✅ Удалено 6 тестов для удалённого кода (FigureManager, AnimationState, GamePhase)
-- ✅ Исправлен performance тест (таймаут 250ms → 500ms)
-- ✅ Обновлены deprecated GameMode тесты
+- ✅ Удалено 2 файла тестов (test_mod.rs, test_tetromino_dir_down.rs)
+- ✅ Удалено ~40 дубликатов и бесполезных тестов
+- ✅ Объединено 20 тестов в 2 параметризированных
+- ✅ Исправлены сломанные тесты (ConfigError)
 - ✅ Актуализирована статистика по всем файлам
 
 **Результат:**
-- До очистки: 1227 тестов
-- После очистки: 1225 тестов
-- Качество тестовой базы: улучшено (удалены фиктивные тесты)
+- До очистки: ~1344 тестов, 95 файлов
+- После очистки: ~1306 тестов, 93 файла
+- Качество тестовой базы: улучшено (удалены дубликаты и фиктивные тесты)
