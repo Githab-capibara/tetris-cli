@@ -532,7 +532,7 @@ fn test_arch_fixes_no_circular_dependencies() {
     let _dir = Direction::Down;
 
     // GameError должен работать независимо
-    let _err = GameError::validation_error("Тест");
+    let _err = GameError::ValidationError("Тест".to_string());
 
     // Проверяем что tetromino не зависит от game
     use crate::tetromino::{BagGenerator, ShapeType, Tetromino};

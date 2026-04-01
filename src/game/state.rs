@@ -37,6 +37,9 @@ use crate::tetromino::{BagGenerator, Tetromino};
 use super::board::GameBoard;
 use super::cache::RenderCache;
 use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+
+/// Позиция появления фигуры по X (центр поля минус половина ширины фигуры).
+const SPAWN_X: f32 = (GRID_WIDTH as f32 / 2.0) - 1.0;
 use super::mode_trait::GameModeTrait;
 use super::scoreboard::ScoreBoard;
 pub use super::stats::GameStats;
@@ -270,20 +273,6 @@ pub struct GameState {
     // ========================================================================
     /// Кэш для оптимизации отрисовки.
     render_cache: RenderCache,
-}
-
-/// Состояние завершения обновления.
-pub enum UpdateEndState {
-    /// Выход из игры.
-    Quit,
-    /// Проигрыш.
-    Lost,
-    /// Продолжить.
-    Continue,
-    /// Пауза.
-    Pause,
-    /// Победа (завершение режима спринт/марафон).
-    Won,
 }
 
 impl Default for GameState {
@@ -676,14 +665,12 @@ impl GameState {
     /// уже валидно, дополнительное ограничение не требуется.
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
-        use crate::validation::ValidationService;
 
-        // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
-        if let Err(e) = ValidationService::validate_f32_finite(value as f32) {
-            return Err(GameError::ValidationError(format!(
-                "Неверный таймер приземления: {}",
-                e.message
-            )));
+        // Валидация на NaN и Infinity через прямую проверку (H3)
+        if !value.is_finite() {
+            return Err(GameError::ValidationError(
+                "Неверный таймер приземления: значение не является конечным".to_string(),
+            ));
         }
 
         // Исправление H3: проверка на неотрицательность вместо .max(0.0)
@@ -794,14 +781,6 @@ impl GameState {
         self.scoreboard.add_score(points);
     }
 
-    /// Добавить очки к текущему счёту без проверки (для тестов).
-    ///
-    /// # Архитектурные заметки (A1)
-    /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn add_score_no_check(&mut self, points: u128) {
-        self.scoreboard.add_score(points);
-    }
-
     /// Добавить количество очищенных линий.
     ///
     /// # Архитектурные заметки (A1)
@@ -857,13 +836,6 @@ impl GameState {
         &self.render_cache.cached_timer_str
     }
 
-    /// Получить удержанную фигуру (ссылка на ссылку).
-    #[must_use]
-    #[allow(clippy::ref_option)]
-    pub fn get_held_shape_ref(&self) -> &Option<Tetromino> {
-        &self.held_shape
-    }
-
     /// Получить маску анимации строк (для view).
     #[must_use]
     pub fn get_animating_rows_mask(&self) -> u32 {
@@ -911,7 +883,7 @@ impl GameState {
         self.next_shape = Tetromino::from_bag(&mut self.bag);
 
         // Сбрасываем позицию текущей фигуры
-        *self.curr_shape.pos_mut() = (4.0, 0.0);
+        *self.curr_shape.pos_mut() = (SPAWN_X, 0.0);
 
         // Добавляем в статистику
         self.stats.add_piece(self.curr_shape.shape());
@@ -935,7 +907,8 @@ impl GameState {
         let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * super::constants::SPD_INC);
 
         // Валидация: скорость должна быть в допустимых пределах
-        self.fall_speed = calculated_speed.clamp(0.0, super::constants::MAX_FALL_SPEED);
+        self.fall_speed =
+            calculated_speed.clamp(INITIAL_FALL_SPD, super::constants::MAX_FALL_SPEED);
     }
 }
 
@@ -1020,7 +993,7 @@ impl crate::game::scoring::LinesAccess for GameState {
     }
 
     fn add_lines(&mut self, lines: u32) {
-        self.set_lines_cleared(self.lines_cleared() + lines);
+        self.set_lines_cleared(self.lines_cleared().saturating_add(lines));
     }
 }
 

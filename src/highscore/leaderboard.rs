@@ -27,10 +27,9 @@ use crate::config::keys::get_leaderboard_hmac_key;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use confy::{load, store};
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
-use super::sanitize::sanitize_player_name;
+use crate::validation::name::sanitize_player_name;
 
 /// Имя приложения для конфигурации.
 const APP_NAME: &str = "tetris-cli";
@@ -47,71 +46,18 @@ const MAX_LEADERBOARD_SIZE: usize = 5;
 /// Каждая запись содержит keyed hash подпись с уникальной солью,
 /// что предотвращает подделку результатов через редактирование конфига.
 ///
-/// ## Исправление #5 (TOCTOU) - КРИТИЧЕСКАЯ ДОКУМЕНТАЦИЯ
+/// ## Исправление #5 (TOCTOU)
 /// **Эта структура НЕ является потокобезопасной.**
 /// Методы валидации и чтения могут подвергаться TOCTOU уязвимости
 /// (Time-Of-Check-Time-Of-Use) в многопоточной среде.
 ///
-/// ### ⚠️ Критические ограничения
-///
-/// #### 1. Однопоточный код (БЕЗОПАСНО ✅)
-/// - Метод `score()` выполняет атомарную валидацию и возврат значения
-/// - Валидация хэша выполняется для того же значения, которое возвращается
-/// - Между проверкой и использованием значение не может измениться
-///
-/// #### 2. Многопоточный код (ТРЕБУЕТ СИНХРОНИЗАЦИИ ⚠️)
-/// - **НЕ БЕЗОПАСНО**: Не используйте `LeaderboardEntry` из нескольких потоков без синхронизации
-/// - **TOCTOU риск**: Метод `is_valid()` может устареть между вызовами
-/// - **Гонка данных**: Поля `score_value` и `hash` могут быть рассинхронизированы
-///
-/// ### Примеры безопасного использования
-///
-/// #### ✅ Однопоточный код (безопасно)
-/// ```ignore
-/// let entry = LeaderboardEntry::new("Player", 1000);
-/// let score = entry.score(); // Валидация и возврат атомарны
-/// assert!(entry.is_valid()); // Безопасная проверка
-/// ```
-///
-/// #### ✅ Многопоточный код с Mutex (безопасно)
-/// ```ignore
-/// use std::sync::{Arc, Mutex};
-/// let entry = Arc::new(Mutex::new(LeaderboardEntry::new("Player", 1000)));
-///
-/// // Поток 1
-/// let score = entry.lock().unwrap().score();
-///
-/// // Поток 2
-/// entry.lock().unwrap().is_valid();
-/// ```
-///
-/// #### ❌ Многопоточный код без синхронизации (НЕ БЕЗОПАСНО)
-/// ```ignore
-/// // ПОТЕНЦИАЛЬНАЯ УЯЗВИМОСТЬ TOCTOU:
-/// let entry = LeaderboardEntry::new("Player", 1000);
-///
-/// // Поток 1: проверяет валидность
-/// if entry.is_valid() {
-///     // Поток 2 может изменить данные между проверкой и использованием!
-///     let score = entry.score(); // TOCTOU уязвимость
-/// }
-/// ```
-///
-/// ### Технические детали TOCTOU
-/// - **Время проверки (Time-of-Check)**: вызов `is_valid()` или внутренняя проверка в `score()`
-/// - **Время использования (Time-of-Use)**: возврат значения `score_value`
-/// - **Окно уязвимости**: между проверкой хэша и возвратом значения
-///
-/// ### Гарантии атомарности
-/// - Метод `score()`: атомарная валидация + возврат (локальная копия)
-/// - Метод `is_valid()`: ТОЛЬКО проверка, не атомарна с другими операциями
-/// - Поля структуры: не атомарные типы данных (String, u128)
+/// ### Ограничения
+/// - **Однопоточный код**: метод `score()` выполняет атомарную валидацию и возврат значения
+/// - **Многопоточный код**: требует синхронизации через `Arc<Mutex<>>`
 ///
 /// ### Рекомендации по использованию
 /// 1. **Однопоточный код**: используйте напрямую, все методы безопасны
 /// 2. **Многопоточный код**: оборачивайте в `Arc<Mutex<LeaderboardEntry>>`
-/// 3. **Сериализация**: убедитесь что данные не изменяются во время сериализации
-/// 4. **Кэширование**: кэшируйте результат `is_valid()` если используете многократно
 ///
 /// ### Маркер потоковости
 /// Поле `_phantom: PhantomData<*mut ()>` явно указывает что тип:
@@ -127,10 +73,6 @@ pub struct LeaderboardEntry {
     salt: String,
     /// Хэш записи с солью.
     hash: String,
-    /// Маркер отсутствия потокобезопасности (!Send + !Sync).
-    /// Предотвращает случайное использование в многопоточном коде без синхронизации.
-    #[serde(skip)]
-    _phantom: PhantomData<*mut ()>,
 }
 
 impl LeaderboardEntry {
@@ -217,17 +159,12 @@ impl LeaderboardEntry {
     /// TOCTOU не применим. Метод score() выполняет атомарную валидацию и возврат
     /// значения в рамках одного потока без использования Mutex.
     #[must_use]
-    pub fn score(&self) -> u128 {
-        // Атомарное копирование значения (u128 копируется атомарно на большинстве платформ)
-        // Это предотвращает гонку данных между копированием и валидацией
+    pub fn score(&self) -> Option<u128> {
         let score_value = self.score_value;
-
-        // Атомарная валидация и возврат значения
         if !self.verify_hash_for_value(score_value) {
-            eprintln!("[PANIC SAFE] Предупреждение: запись не прошла валидацию!");
-            return 0;
+            return None;
         }
-        score_value
+        Some(score_value)
     }
 
     /// Возвращает Some(score) если запись валидна, None иначе.
@@ -333,7 +270,6 @@ impl LeaderboardEntry {
             score_value: score,
             salt,
             hash,
-            _phantom: PhantomData,
         }
     }
 
@@ -1024,11 +960,11 @@ impl Leaderboard {
 
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
-            // Если таблица полная, проверяем минимальный рекорд
+            // Если таблица полная, проверяем минимальный рекорд (H3)
             let min_score = self
                 .entries
                 .iter()
-                .map(|e| e.score_value)
+                .filter_map(LeaderboardEntry::score)
                 .min()
                 .unwrap_or(0);
             if score <= min_score {
@@ -1041,9 +977,8 @@ impl Leaderboard {
         let new_entry = LeaderboardEntry::new(&valid_name, score);
         self.entries.push(new_entry);
 
-        // Сортировка по убыванию очков
-        self.entries
-            .sort_by(|a, b| b.score_value.cmp(&a.score_value));
+        // Сортировка по убыванию очков (H4)
+        self.entries.sort_by_key(|b| std::cmp::Reverse(b.score()));
 
         // Оставляем только топ-5
         if self.entries.len() > MAX_LEADERBOARD_SIZE {

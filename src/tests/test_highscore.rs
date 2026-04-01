@@ -163,7 +163,7 @@ fn test_leaderboard_max_size() {
     let entries = leaderboard.get_entries();
     for entry in entries {
         assert!(
-            entry.score() >= 300,
+            entry.score() >= Some(300),
             "В таблице должны остаться рекорды от 300 и выше"
         );
     }
@@ -186,11 +186,31 @@ fn test_leaderboard_sorting() {
     let entries = leaderboard.get_entries();
 
     // Проверяем порядок по убыванию
-    assert_eq!(entries[0].score(), 2000, "Первый рекорд должен быть 2000");
-    assert_eq!(entries[1].score(), 1000, "Второй рекорд должен быть 1000");
-    assert_eq!(entries[2].score(), 500, "Третий рекорд должен быть 500");
-    assert_eq!(entries[3].score(), 300, "Четвёртый рекорд должен быть 300");
-    assert_eq!(entries[4].score(), 100, "Пятый рекорд должен быть 100");
+    assert_eq!(
+        entries[0].score(),
+        Some(2000),
+        "Первый рекорд должен быть 2000"
+    );
+    assert_eq!(
+        entries[1].score(),
+        Some(1000),
+        "Второй рекорд должен быть 1000"
+    );
+    assert_eq!(
+        entries[2].score(),
+        Some(500),
+        "Третий рекорд должен быть 500"
+    );
+    assert_eq!(
+        entries[3].score(),
+        Some(300),
+        "Четвёртый рекорд должен быть 300"
+    );
+    assert_eq!(
+        entries[4].score(),
+        Some(100),
+        "Пятый рекорд должен быть 100"
+    );
 }
 
 // ============================================================================

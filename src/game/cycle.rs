@@ -12,9 +12,10 @@
 use std::{thread::sleep, time::Duration};
 
 use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE};
-use super::state::{GameState, UpdateEndState};
+use super::state::GameState;
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io_traits::{InputReader, Renderer};
+use crate::types::UpdateEndState;
 use termion::color::Reset;
 
 // ============================================================================

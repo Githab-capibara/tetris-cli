@@ -86,91 +86,25 @@
 //!
 //! ## 🚀 Быстрый старт
 //!
-//! ### Пример использования библиотеки
-//!
-//! ```ignore
-//! // Импорт необходимых компонентов библиотеки
-//! use tetris_cli::game::GameState;
-//! use tetris_cli::io::{Canvas, KeyReader};
-//!
-//! // Создание нового состояния игры (классический режим)
-//! let mut state = GameState::new();
-//!
-//! // Инициализация канваса для отрисовки в терминале
-//! let mut cnv = Canvas::new().expect("Не удалось создать Canvas");
-//!
-//! // Инициализация читателя нажатий клавиш
-//! let mut inp = KeyReader::new();
-//!
-//! // Запуск игрового цикла
-//! // Третий параметр — строка для отображения рекорда
-//! let final_score = state.play(&mut cnv, &mut inp, &String::from("0"));
-//!
-//! // После завершения игры можно получить статистику
-//! let stats = state.get_stats();
-//! println!("Финальный счёт: {}", final_score);
-//! println!("Использовано фигур: {}", stats.total_pieces());
-//! ```
-//!
-//! ### Пример создания режима спринт
-//!
-//! ```ignore
-//! use tetris_cli::game::GameState;
-//!
-//! // Создание игры в режиме спринт (40 линий на время)
-//! let mut sprint_state = GameState::new_sprint();
-//!
-//! // Запуск таймера
-//! sprint_state.start_timer();
-//!
-//! // Игра идёт до очистки 40 линий
-//! ```
+//! Для запуска игры используйте команду `tetris-cli` или импортируйте модули:
+//! - [`game::GameState`] — основное состояние игры
+//! - [`io::Canvas`] и [`io::KeyReader`] — ввод/вывод
+//! - [`highscore::Leaderboard`] — таблица лидеров
+//! - [`controls::ControlsConfig`] — конфигурация управления
 //!
 //! ### Пример работы с таблицей лидеров
 //!
-//! ```ignore
-//! use tetris_cli::highscore::Leaderboard;
-//!
-//! // Загрузка таблицы лидеров из файла
-//! let mut leaderboard = Leaderboard::load();
-//!
-//! // Добавление нового рекорда
-//! leaderboard.add_score("Игрок".to_string(), 5000);
-//!
-//! // Сохранение обновлённой таблицы
-//! leaderboard.save();
-//!
-//! // Получение записей
-//! let entries = leaderboard.get_entries();
-//! for entry in entries {
-//!     println!("{}: {}", entry.name(), entry.score());
-//! }
-//! ```
+//! Используйте [`highscore::Leaderboard`] для работы с рекордами:
+//! - `Leaderboard::load()` — загрузка таблицы лидеров
+//! - `leaderboard.add_score()` — добавление рекорда
+//! - `leaderboard.save()` — сохранение таблицы
 //!
 //! ### Пример настройки управления
 //!
-//! ```ignore
-//! use tetris_cli::controls::ControlsConfig;
-//!
-//! // Создание конфигурации в стиле Vim (HJKL)
-//! let vim_config = ControlsConfig::custom(
-//!     b'h', // движение влево
-//!     b'l', // движение вправо
-//!     b'j', // мягкое падение
-//!     b'k', // жёсткое падение
-//!     b'y', // вращение влево
-//!     b'u', // вращение вправо
-//!     b'i', // удержание фигуры
-//!     b'o', // пауза
-//!     127,  // выход (Backspace)
-//! );
-//!
-//! // Валидация конфигурации
-//! assert!(vim_config.validate());
-//!
-//! // Сохранение в файл
-//! vim_config.save_to_file("vim_controls.json").unwrap();
-//! ```
+//! Используйте [`controls::ControlsConfig`] для настройки клавиш:
+//! - `ControlsConfig::custom()` — создание конфигурации с произвольными клавишами
+//! - `config.validate()` — проверка конфигурации на дубликаты
+//! - `config.save_to_file()` — сохранение в файл
 //!
 //! ## 🎯 Система очков
 //!
@@ -347,21 +281,6 @@
 //! println!("Всего фигур: {}", stats.total_pieces());
 //! println!("Максимальное комбо: {}", stats.max_combo);
 //! println!("Время игры: {:.2} сек", stats.get_elapsed_time());
-//! ```
-//!
-//! ### Работа с фигурами
-//!
-//! ```ignore
-//! use tetris_cli::tetromino::{Tetromino, ShapeType, BagGenerator};
-//! use tetris_cli::game::Dir;
-//!
-//! // Использование Bag Generator (рекомендуется)
-//! let mut bag = BagGenerator::new();
-//! let shape = Tetromino::from_bag(&mut bag);
-//!
-//! // Вращение фигуры
-//! shape.rotate(Dir::Right); // По часовой
-//! shape.rotate(Dir::Left);  // Против часовой
 //! ```
 //!
 //! ## 🔗 Ссылки

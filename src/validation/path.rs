@@ -139,8 +139,7 @@ impl PathValidator {
     /// Новый экземпляр `PathValidator`
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
-    #[must_use = "Валидатор должен быть использован для проверки путей"]
+    /// #[must_use] оставлен только на критических методах валидации.
     #[allow(dead_code)] // Может быть использовано для кастомных валидаторов
     pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
         Self {
@@ -288,8 +287,7 @@ impl PathValidator {
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
-    #[must_use = "Результат проверки длины пути должен быть обработан"]
+    /// #[must_use] оставлен только на критических методах валидации.
     #[track_caller]
     pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
@@ -325,20 +323,23 @@ impl PathValidator {
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    /// #[must_use] оставлен только на критических методах валидации.
     ///
     /// # Исправление аудита 2026-03-30
     /// Добавлена проверка на null байты для предотвращения null byte injection атак.
-    #[must_use = "Результат проверки символов пути должен быть обработан"]
+    ///
+    /// # Исправление M9 (MEDIUM)
+    /// Использует HashSet для O(1) поиска вместо O(n) линейного поиска.
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
+        use std::collections::HashSet;
+
         let path_str = path.to_str().ok_or_else(|| PathError {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
             kind: PathErrorKind::InvalidPath,
         })?;
 
         // Исправление аудита 2026-03-30: проверка на null байты
-        // Null байты могут использоваться для атак типа null byte injection
         if path_str.contains('\0') {
             return Err(PathError {
                 message: "Путь содержит null байт (\\0)".to_string(),
@@ -346,9 +347,11 @@ impl PathValidator {
             });
         }
 
-        // Проверяем каждый символ
+        // M9: используем HashSet для O(1) поиска
+        let allowed: HashSet<char> = self.allowed_chars.chars().collect();
+
         for ch in path_str.chars() {
-            if !self.allowed_chars.contains(ch) {
+            if !allowed.contains(&ch) {
                 return Err(PathError {
                     message: format!(
                         "Запрещённый символ в пути: {:?} (символ: '{}')",
@@ -377,12 +380,11 @@ impl PathValidator {
     /// Добавлен #[track_caller] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    /// #[must_use] оставлен только на критических методах валидации.
     ///
     /// # Исправление H9 (HIGH)
     /// Используется symlink_metadata() ПЕРЕД canonicalize() для защиты от symlink атак.
     /// Проверка выполняется без следования по symlink.
-    #[must_use = "Результат проверки symlink должен быть обработан"]
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[track_caller]
@@ -483,40 +485,26 @@ impl PathValidator {
     // Может быть использовано для дополнительной валидации
     #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
-        // Проверка на обычные последовательности ..
-        if path.contains("..") {
-            return Err(PathError {
-                message: format!("Path traversal не разрешён: {:?}", path),
-                kind: PathErrorKind::PathTraversal,
-            });
-        }
+        // Исправление H8: массив запрещённых паттернов для URL-encoding
+        const FORBIDDEN_PATTERNS: &[&str] = &[
+            "..",    // обычный path traversal
+            "%2e",   // encoded точка (.)
+            "%2f",   // encoded слеш (/)
+            "%5c",   // encoded backslash (\)
+            "%252e", // двойное URL-encoding точки
+            "%252f", // двойное URL-encoding слеша
+            "%255c", // двойное URL-encoding backslash
+        ];
 
-        // Исправление аудита 2026-03-31: проверка на URL-encoded последовательности
-        // Проверяем на наличие encoded символов которые могут использоваться для обхода
         let path_lower = path.to_lowercase();
 
-        // Проверка на encoded точки (%2e, %2E)
-        if path_lower.contains("%2e") {
-            return Err(PathError {
-                message: format!("URL-encoded path traversal не разрешён: {:?}", path),
-                kind: PathErrorKind::PathTraversal,
-            });
-        }
-
-        // Проверка на encoded слеши (%2f, %2F, %5c, %5C)
-        if path_lower.contains("%2f") || path_lower.contains("%5c") {
-            return Err(PathError {
-                message: format!("URL-encoded path traversal не разрешён: {:?}", path),
-                kind: PathErrorKind::PathTraversal,
-            });
-        }
-
-        // Проверка на двойное URL-encoding (%252e, %252f)
-        if path_lower.contains("%252e") || path_lower.contains("%252f") {
-            return Err(PathError {
-                message: format!("Двойной URL-encoding не разрешён: {:?}", path),
-                kind: PathErrorKind::PathTraversal,
-            });
+        for pattern in FORBIDDEN_PATTERNS {
+            if path_lower.contains(pattern) {
+                return Err(PathError {
+                    message: format!("Запрещённый паттерн в пути: {:?} ({})", path, pattern),
+                    kind: PathErrorKind::PathTraversal,
+                });
+            }
         }
 
         Ok(())

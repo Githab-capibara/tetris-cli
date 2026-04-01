@@ -132,8 +132,12 @@ impl Application {
         use crate::game::FPS;
         use std::time::Instant;
 
+        // Исправление H7: вынесение констант в начало метода
+        const FPS_TARGET: u64 = FPS;
+        const FRAME_INTERVAL_MS: u64 = 1_000 / FPS_TARGET;
+
         let mut last_time = Instant::now();
-        let interval_ms = 1_000 / FPS;
+        let interval_ms = FRAME_INTERVAL_MS;
 
         loop {
             // Поддержание стабильного FPS
@@ -272,7 +276,8 @@ impl Application {
     /// `true` если пришло время обновлять кадр, `false` если нужно ждать
     fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
         let now = Instant::now();
-        let delta_time_ms = u64::from(now.duration_since(*last_time).subsec_millis());
+        let delta_time_ms =
+            u64::try_from(now.duration_since(*last_time).as_millis() % 1000).unwrap_or(u64::MAX);
 
         if delta_time_ms < interval_ms {
             sleep(Duration::from_millis(interval_ms - delta_time_ms));

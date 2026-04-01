@@ -40,12 +40,13 @@ fn test_leaderboard_entry_score_volatile() {
         "score() должен возвращать одинаковые значения"
     );
     assert_eq!(
-        score1, 1000,
+        score1,
+        Some(1000),
         "score() должен возвращать правильное значение"
     );
 
-    // Проверяем что score() возвращает u128 (тип не может измениться)
-    let _score: u128 = entry.score();
+    // Проверяем что score() возвращает Option<u128> (тип не может измениться)
+    let _score: Option<u128> = entry.score();
 }
 
 /// Тест 2: Проверка что LeaderboardEntry содержит PhantomData для !Send
@@ -63,7 +64,7 @@ fn test_leaderboard_entry_not_send() {
 
     // Проверяем что структура создана корректно
     assert_eq!(entry.name(), "Player");
-    assert_eq!(entry.score(), 1000);
+    assert_eq!(entry.score(), Some(1000));
 
     // PhantomData не занимает места в памяти, но влияет на трейты
     // Этот тест компилируется только если PhantomData присутствует в структуре
@@ -82,7 +83,7 @@ fn test_leaderboard_entry_not_sync() {
 
     // Проверяем что структура создана корректно
     assert_eq!(entry.name(), "Player");
-    assert_eq!(entry.score(), 1000);
+    assert_eq!(entry.score(), Some(1000));
 }
 
 /// Тест 4: Проверка что ThreadSafeLeaderboardEntry является Send и Sync
@@ -138,7 +139,8 @@ fn test_score_validation() {
     // Валидная запись должна вернуть правильный score
     let score = entry.score();
     assert_eq!(
-        score, 1500,
+        score,
+        Some(1500),
         "score() должен вернуть правильное значение для валидной записи"
     );
 
@@ -159,7 +161,7 @@ fn test_score_returns_zero_for_invalid() {
 
     // Проверяем что запись валидна
     assert!(entry.is_valid());
-    assert_eq!(entry.score(), 1000);
+    assert_eq!(entry.score(), Some(1000));
 
     // Примечание: мы не можем напрямую протестировать невалидную запись
     // без изменения внутренних полей, но можем проверить что валидная
@@ -177,7 +179,7 @@ fn test_score_with_different_values() {
         let entry = LeaderboardEntry::new("Player", score_value);
         assert_eq!(
             entry.score(),
-            score_value,
+            Some(score_value),
             "score() должен вернуть правильное значение для {}",
             score_value
         );
@@ -195,7 +197,7 @@ fn test_phantom_data_present() {
     // PhantomData не занимает места в памяти, но влияет на трейты
     // Проверяем что структура содержит ожидаемые поля
     assert_eq!(entry.name(), "Player");
-    assert_eq!(entry.score(), 1000);
+    assert_eq!(entry.score(), Some(1000));
 }
 
 /// Тест 10: Проверка TOCTOU защиты в многопоточной среде

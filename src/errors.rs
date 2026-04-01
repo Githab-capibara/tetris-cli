@@ -28,70 +28,19 @@ use thiserror::Error;
 /// - `ValidationError` - ошибка валидации данных
 /// - `IoError` - ошибка ввода/вывода
 /// - `ScoreOverflow` - переполнение счёта
-///
-/// ## Пример использования
-/// ```ignore
-/// use tetris_cli::errors::GameError;
-///
-/// fn validate_score(score: u128) -> Result<(), GameError> {
-///     if score > 1_000_000 {
-///         return Err(GameError::ValidationError(
-///             "Счёт слишком большой".to_string()
-///         ));
-///     }
-///     Ok(())
-/// }
-/// ```
 #[derive(Error, Debug)]
 pub enum GameError {
     /// Ошибка валидации данных.
-    ///
-    /// Возникает при некорректных входных данных или нарушении инвариантов.
     #[error("Ошибка валидации: {0}")]
     ValidationError(String),
 
     /// Ошибка ввода/вывода.
-    ///
-    /// Автоматически конвертируется из `std::io::Error`.
     #[error("Ошибка ввода/вывода: {0}")]
     IoError(#[from] std::io::Error),
 
     /// Ошибка переполнения счёта.
-    ///
-    /// Возникает при попытке добавить очки, превышающие допустимый предел.
     #[error("Переполнение счёта: попытка превышения максимального значения")]
     ScoreOverflow,
-}
-
-impl GameError {
-    /// Создать ошибку валидации с сообщением.
-    ///
-    /// # Аргументы
-    /// * `message` - сообщение об ошибке
-    ///
-    /// # Возвращает
-    /// Новый экземпляр `GameError::ValidationError`
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let err = GameError::validation_error("Некорректное имя игрока");
-    /// ```
-    pub fn validation_error(message: impl Into<String>) -> Self {
-        Self::ValidationError(message.into())
-    }
-
-    /// Создать ошибку переполнения счёта.
-    ///
-    /// # Возвращает
-    /// Новый экземпляр `GameError::ScoreOverflow`
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let err = GameError::score_overflow();
-    /// ```
-    pub fn score_overflow() -> Self {
-        Self::ScoreOverflow
-    }
 }
 
 #[cfg(test)]
@@ -100,14 +49,14 @@ mod tests {
 
     #[test]
     fn test_validation_error() {
-        let err = GameError::validation_error("Тестовая ошибка");
+        let err = GameError::ValidationError("Тестовая ошибка".to_string());
         assert!(matches!(err, GameError::ValidationError(_)));
         assert!(err.to_string().contains("Тестовая ошибка"));
     }
 
     #[test]
     fn test_score_overflow() {
-        let err = GameError::score_overflow();
+        let err = GameError::ScoreOverflow;
         assert!(matches!(err, GameError::ScoreOverflow));
         assert!(err.to_string().contains("Переполнение счёта"));
     }

@@ -28,23 +28,11 @@ use crate::game::state::GameState;
 /// вместо прямого доступа к приватным полям.
 #[test]
 fn test_scoring_points_no_direct_access_to_gamestate_fields() {
-    // Проверяем что scoring/points.rs использует публичные методы
-    use crate::game::scoring::points::{
-        handle_hard_drop, handle_hold, handle_soft_drop, update_score_and_level,
-    };
+    use crate::game::scoring::{handle_hard_drop, handle_hold, handle_soft_drop};
 
     let mut state = GameState::new();
 
-    // Функции используют публичные методы GameState:
-    // - state.score() вместо state.scoreboard.score
-    // - state.set_score() вместо state.scoreboard.score = ...
-    // - state.level() вместо state.scoreboard.level
-    // - state.set_level() вместо state.scoreboard.level = ...
-
     // Проверяем что функции работают через публичный API
-    update_score_and_level(&mut state, 1);
-    assert!(state.score() > 0, "Счёт должен обновиться");
-
     handle_hold(&mut state);
     assert!(state.held_shape().is_some(), "Фигура должна быть удержана");
 
@@ -328,8 +316,7 @@ fn test_coupling_architecture_test() {
     let mut state = GameState::new();
 
     // scoring/points.rs использует публичные методы
-    use crate::game::scoring::points::update_score_and_level;
-    update_score_and_level(&mut state, 1);
+    crate::game::scoring::handle_hard_drop(&mut state);
 
     // scoring/lines.rs использует публичные методы
     use crate::game::scoring::lines::check_rows;

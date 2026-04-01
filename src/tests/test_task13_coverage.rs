@@ -7,205 +7,93 @@
 //! - TOCTOU маркер (!Send + !Sync)
 
 use crate::game::access::{BoardMutable, BoardReadonly};
-use crate::game::cache::StringCache;
 use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::scoring::lines::find_filled_lines;
-use crate::game::state::{GameState, GameStats};
+use crate::game::state::GameState;
 
 // ============================================================================
-// ТЕСТЫ ДЛЯ RENDER CACHE (StringCache)
+// ТЕСТЫ ДЛЯ RENDER CACHE
 // ============================================================================
 
 /// Тест 1: Проверка создания нового RenderCache
 #[test]
 fn test_render_cache_new() {
-    let cache = StringCache::new();
+    let cache = crate::game::cache::RenderCache::new();
     assert!(
-        cache.score_str.is_empty(),
+        cache.cached_score_str.is_empty(),
         "Начальный счёт должен быть пустой строкой"
     );
     assert!(
-        cache.level_str.is_empty(),
+        cache.cached_level_str.is_empty(),
         "Начальный уровень должен быть пустой строкой"
     );
     assert!(
-        cache.lines_str.is_empty(),
+        cache.cached_lines_str.is_empty(),
         "Начальные линии должны быть пустой строкой"
     );
     assert!(
-        cache.high_score_str.is_empty(),
+        cache.cached_high_score_str.is_empty(),
         "Начальный рекорд должен быть пустой строкой"
     );
     assert!(
-        cache.combo_str.is_empty(),
+        cache.cached_combo_str.is_empty(),
         "Начальное комбо должно быть пустой строкой"
     );
     assert!(
-        cache.timer_str.is_empty(),
+        cache.cached_timer_str.is_empty(),
         "Начальный таймер должен быть пустой строкой"
     );
 }
 
-/// Тест 2: Проверка обновления кэша счёта
+/// Тест 2: Проверка инициализации кэша
 #[test]
-#[allow(deprecated)]
-fn test_render_cache_update_score() {
-    let mut cache = StringCache::new();
-    cache.update(
-        100, // score
-        1,   // level
-        0,   // lines_cleared
-        "0", // high_score_display
-        0,   // combo
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
+fn test_render_cache_init() {
+    let mut cache = crate::game::cache::RenderCache::new();
+    cache.init_with_values(100, 1, 0, 0);
 
     assert_eq!(
-        cache.score_str.trim(),
-        "100",
+        cache.cached_score_str, "100",
         "Кэш счёта должен содержать '100'"
     );
-}
-
-/// Тест 3: Проверка обновления кэша уровня
-#[test]
-#[allow(deprecated)]
-fn test_render_cache_update_level() {
-    let mut cache = StringCache::new();
-    cache.update(
-        0,   // score
-        5,   // level
-        0,   // lines_cleared
-        "0", // high_score_display
-        0,   // combo
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
-
     assert_eq!(
-        cache.level_str.trim(),
-        "5",
-        "Кэш уровня должен содержать '5'"
+        cache.cached_level_str, "1",
+        "Кэш уровня должен содержать '1'"
+    );
+    assert_eq!(
+        cache.cached_lines_str, "0",
+        "Кэш линий должен содержать '0'"
+    );
+    assert_eq!(
+        cache.cached_high_score_str, "0",
+        "Кэш рекорда должен содержать '0'"
     );
 }
 
-/// Тест 4: Проверка обновления кэша линий
+/// Тест 3: Проверка обновления кэша
 #[test]
-#[allow(deprecated)]
-fn test_render_cache_update_lines() {
-    let mut cache = StringCache::new();
-    cache.update(
-        0,   // score
-        1,   // level
-        25,  // lines_cleared
-        "0", // high_score_display
-        0,   // combo
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
+fn test_render_cache_update_values() {
+    let mut cache = crate::game::cache::RenderCache::new();
+    cache.init_with_values(100, 1, 0, 0);
 
-    assert_eq!(
-        cache.lines_str.trim(),
-        "25",
-        "Кэш линий должен содержать '25'"
-    );
+    let old_score = cache.last_cached_score;
+    let old_level = cache.last_cached_level;
+
+    cache.init_with_values(200, 2, 10, 500);
+
+    assert_eq!(cache.last_cached_score, 200);
+    assert_eq!(cache.last_cached_level, 2);
+    assert_ne!(cache.last_cached_score, old_score);
+    assert_ne!(cache.last_cached_level, old_level);
 }
 
-/// Тест 5: Проверка обновления кэша комбо
+/// Тест 4: Проверка что RenderCache реализует Default
 #[test]
-#[allow(deprecated)]
-fn test_render_cache_update_combo() {
-    let mut cache = StringCache::new();
-    cache.update(
-        0,   // score
-        1,   // level
-        0,   // lines_cleared
-        "0", // high_score_display
-        3,   // combo (комбо x3)
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
-
-    assert_eq!(
-        cache.combo_str, "Комбо: x3",
-        "Кэш комбо должен содержать 'Комбо: x3'"
-    );
-}
-
-/// Тест 6: Проверка что кэш не обновляется без изменений
-#[test]
-#[allow(deprecated)]
-fn test_render_cache_no_update_without_changes() {
-    let mut cache = StringCache::new();
-
-    // Первое обновление
-    cache.update(
-        100, // score
-        1,   // level
-        0,   // lines_cleared
-        "0", // high_score_display
-        0,   // combo
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
-
-    let old_score_str = cache.score_str.clone();
-    let old_level_str = cache.level_str.clone();
-
-    // Второе обновление с теми же данными
-    cache.update(
-        100, // score (не изменился)
-        1,   // level (не изменился)
-        0,   // lines_cleared (не изменился)
-        "0", // high_score_display (не изменился)
-        0,   // combo (не изменился)
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
-
-    assert_eq!(
-        cache.score_str, old_score_str,
-        "Кэш счёта не должен измениться без изменений данных"
-    );
-    assert_eq!(
-        cache.level_str, old_level_str,
-        "Кэш уровня не должен измениться без изменений данных"
-    );
-}
-
-/// Тест 7: Проверка очистки кэша
-#[test]
-#[allow(deprecated)]
-fn test_render_cache_clear() {
-    let mut cache = StringCache::new();
-
-    // Заполняем кэш
-    cache.update(
-        1000,   // score
-        10,     // level
-        50,     // lines_cleared
-        "5000", // high_score_display
-        5,      // combo
-        &crate::game::mode_trait::ClassicMode,
-        &GameStats::default(),
-    );
-
-    // Очищаем кэш
-    cache.clear();
-
-    assert!(
-        cache.score_str.is_empty(),
-        "После очистки кэш счёта должен быть пустым"
-    );
-    assert!(
-        cache.level_str.is_empty(),
-        "После очистки кэш уровня должен быть пустым"
-    );
-    assert!(
-        cache.lines_str.is_empty(),
-        "После очистки кэш линий должен быть пустым"
-    );
+fn test_render_cache_default() {
+    let cache = crate::game::cache::RenderCache::default();
+    assert_eq!(cache.last_cached_score, 0);
+    assert_eq!(cache.last_cached_level, 0);
+    assert_eq!(cache.last_cached_lines, 0);
+    assert_eq!(cache.last_cached_combo, 0);
 }
 
 // ============================================================================

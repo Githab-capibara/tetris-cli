@@ -211,141 +211,62 @@ mod tests {
     // РАЗДЕЛ 3: ТЕСТЫ НА ЦЕЛОСТНОСТЬ КОМПОНЕНТОВ
     // ========================================================================
 
-    /// FigureState: создание, доступ к фигурам, hold механика.
+    /// GameState: создание, доступ к фигурам, hold механика.
     #[test]
-    fn test_figure_state_integrity() {
-        // Тест создания
-        let figure_state = tetris_cli::game::components::FigureState::new();
+    fn test_game_state_integrity() {
+        let state = tetris_cli::game::GameState::new();
 
-        // Тест доступа к фигурам
-        let curr = figure_state.curr_shape();
-        let next = figure_state.next_shape();
-        // shape() возвращает ShapeType — просто проверяем что фигуры существуют
+        let curr = state.curr_shape();
+        let next = state.next_shape();
         let _ = curr.shape();
         let _ = next.shape();
 
-        // Тест hold механики
         assert!(
-            figure_state.held_shape().is_none(),
+            state.held_shape().is_none(),
             "Начальная held_shape должна быть None"
         );
-        assert!(
-            figure_state.can_hold(),
-            "Начальный can_hold должен быть true"
-        );
-
-        // Тест setters
-        let mut state = tetris_cli::game::components::FigureState::new();
-        state.set_can_hold(false);
-        assert!(!state.can_hold());
+        assert!(state.can_hold(), "Начальный can_hold должен быть true");
     }
 
-    /// BoardState: создание, доступ к полю, filled_lines.
+    /// GameBoard: создание, доступ к полю.
     #[test]
-    fn test_board_state_integrity() {
-        // Тест создания
-        let board_state = tetris_cli::game::components::BoardState::new();
-
-        // Тест доступа к полю
-        let inner = board_state.inner();
-        assert_eq!(inner.get_filled_lines_count(), 0, "Начальное поле пустое");
-
-        // Тест filled_lines_mask
-        assert_eq!(
-            board_state.filled_lines_mask(),
-            0,
-            "Начальная маска должна быть 0"
-        );
-
-        // Тест установки маски
-        let mut state = tetris_cli::game::components::BoardState::new();
-        state.set_filled_lines_mask(0b1010);
-        assert_eq!(state.filled_lines_mask(), 0b1010);
-        assert_eq!(state.filled_lines_count(), 2);
+    fn test_game_board_integrity() {
+        let state = tetris_cli::game::GameState::new();
+        let blocks = state.get_blocks();
+        assert_eq!(blocks.len(), 20, "Поле должно иметь 20 строк");
+        assert_eq!(blocks[0].len(), 10, "Поле должно иметь 10 колонок");
     }
 
-    /// AnimationState: создание, управление анимациями.
+    /// Тест на целостность GameState.
     #[test]
-    fn test_animation_state_integrity() {
-        // Тест создания
-        let anim_state = tetris_cli::game::components::AnimationState::new();
-
-        // Тест начального состояния
-        assert_eq!(anim_state.animating_rows_mask(), 0);
-        assert!(!anim_state.is_hard_dropping());
-        assert!(!anim_state.has_active_animations());
-
-        // Тест управления анимациями
-        let mut state = tetris_cli::game::components::AnimationState::new();
-        state.add_row_to_animation(5);
-        assert_eq!(state.animating_rows_mask(), 1 << 5);
-
-        state.remove_row_from_animation(5);
-        assert_eq!(state.animating_rows_mask(), 0);
-
-        // Тест Hard Drop флага
-        state.set_is_hard_dropping(true);
-        assert!(state.is_hard_dropping());
-        assert!(state.has_active_animations());
-
-        state.set_is_hard_dropping(false);
-        assert!(!state.is_hard_dropping());
+    fn test_game_state_consistency() {
+        let state = tetris_cli::game::GameState::new();
+        assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+        assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
+        assert_eq!(state.lines_cleared(), 0, "Начальные линии должны быть 0");
+        assert!(state.can_hold(), "Начальный can_hold должен быть true");
     }
 
-    /// Тест на независимость FigureState от BoardState.
+    /// Тест на независимость GameState от внешних модулей.
     #[test]
-    fn test_figure_state_independence() {
-        let figure_state = tetris_cli::game::components::FigureState::new();
-        let board_state = tetris_cli::game::components::BoardState::new();
-
-        // FigureState не должен зависеть от BoardState
-        let _ = figure_state.curr_shape();
-        let _ = board_state.inner();
-
-        // Оба компонента должны работать независимо
-        assert!(figure_state.can_hold());
-        assert_eq!(board_state.filled_lines_count(), 0);
+    fn test_game_state_independence() {
+        let state = tetris_cli::game::GameState::new();
+        let _ = state.curr_shape();
+        let _ = state.get_blocks();
+        assert!(state.can_hold());
+        assert_eq!(state.lines_cleared(), 0);
     }
 
-    /// Тест на независимость AnimationState от других компонентов.
+    /// Тест на корректную работу spawn_new_piece через GameState.
     #[test]
-    fn test_animation_state_independence() {
-        let anim_state = tetris_cli::game::components::AnimationState::new();
-        let figure_state = tetris_cli::game::components::FigureState::new();
-
-        // AnimationState не должен влиять на FigureState
-        assert!(!anim_state.has_active_animations());
-        assert!(figure_state.can_hold());
-    }
-
-    /// Тест на корректную работу spawn_new_piece.
-    #[test]
-    fn test_figure_state_spawn_new_piece() {
-        let mut state = tetris_cli::game::components::FigureState::new();
+    fn test_game_state_spawn_new_piece() {
+        let mut state = tetris_cli::game::GameState::new();
         let old_next_shape = state.next_shape().shape();
 
         state.spawn_new_piece();
 
-        // next_shape должна перейти в curr_shape
         assert_eq!(state.curr_shape().shape(), old_next_shape);
-        // can_hold должен сброситься
         assert!(state.can_hold());
-    }
-
-    /// Тест на корректную работу clear_filled_lines.
-    #[test]
-    fn test_board_state_clear_filled_lines() {
-        let mut state = tetris_cli::game::components::BoardState::new();
-
-        // Устанавливаем заполненные линии
-        state.set_filled_lines_mask(0b1111);
-        assert_eq!(state.filled_lines_count(), 4);
-
-        // Очищаем линии
-        let cleared = state.clear_filled_lines();
-        assert_eq!(cleared, 4);
-        assert_eq!(state.filled_lines_mask(), 0);
-        assert_eq!(state.filled_lines_count(), 0);
     }
 
     // ========================================================================

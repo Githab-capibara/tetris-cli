@@ -55,6 +55,12 @@ pub use crate::errors::GameError as IoError;
 /// Обёртка над `RawTerminal` для удобной отрисовки текста и графики.
 /// Автоматически скрывает курсор при создании.
 /// Реализует Drop для автоматического сброса терминала при выходе или панике.
+///
+/// # Errors
+/// Методы могут возвращать ошибки в следующих случаях:
+/// - `Canvas::new()` - ошибка инициализации raw-режима терминала
+/// - `Canvas::try_default()` - критическая ошибка инициализации терминала
+/// - Методы отрисовки - ошибки записи в терминал (редко, обычно игнорируются)
 pub struct Canvas {
     out: CanvasOut,
 }
@@ -119,9 +125,8 @@ impl Default for Canvas {
 impl Canvas {
     /// Создать новый канвас и подготовить терминал.
     ///
-    /// # Возвращает
-    /// - `Ok(Canvas)` - новый экземпляр Canvas с инициализированным терминалом
-    /// - `Err(IoError)` - ошибка инициализации терминала
+    /// # Errors
+    /// Возвращает ошибку если не удалось инициализировать терминал.
     pub fn new() -> Result<Self, crate::errors::GameError> {
         let mut out = stdout().into_raw_mode().map_err(|e| {
             crate::errors::GameError::IoError(std::io::Error::new(
@@ -190,9 +195,8 @@ impl Canvas {
 
     /// Попытаться создать Canvas по умолчанию с обработкой ошибок.
     ///
-    /// # Возвращает
-    /// - `Ok(Canvas)` - успешно созданный Canvas (основной или fallback stub)
-    /// - `Err(IoError)` - критическая ошибка инициализации терминала
+    /// # Errors
+    /// Возвращает ошибку если не удалось инициализировать терминал.
     pub fn try_default() -> Result<Self, crate::errors::GameError> {
         Self::new().or_else(|_| Ok(Self::new_stub()))
     }

@@ -28,10 +28,10 @@
 //! 2. `execute_action()` - исполнитель действий (изменяет GameState)
 //! 3. `handle_input()` - комбинация парсера и исполнителя для удобства
 
-use crate::game::state::{GameState, UpdateEndState};
+use crate::game::state::GameState;
 use crate::game::types::GameAction;
 use crate::io::KEY_BACKSPACE;
-use crate::types::{Direction, RotationDirection};
+use crate::types::{Direction, RotationDirection, UpdateEndState};
 
 // ============================================================================
 // H5: ЧИСТЫЙ ПАРСЕР (БЕЗ ЗАВИСИМОСТИ ОТ СОСТОЯНИЯ)
@@ -41,26 +41,17 @@ use crate::types::{Direction, RotationDirection};
 ///
 /// # Аргументы
 /// * `key_code` - код нажатой клавиши
+/// * `config` - конфигурация управления
 ///
 /// # Возвращает
 /// - `Some(GameAction)` если клавиша соответствует действию
 /// - `None` если клавиша не распознана
 ///
-/// # Архитектурные заметки (H5)
-/// Чистая функция без побочных эффектов. Не зависит от GameState.
-/// Для изменения конфигурации управления нужно изменить только эту функцию.
+/// # Архитектурные заметки (H1, H5)
+/// Использует ControlsConfig для маппинга клавиш вместо хардкода.
 #[must_use]
-pub fn parse_input(key_code: u8) -> Option<GameAction> {
-    match key_code {
-        b'a' => Some(GameAction::MoveLeft),
-        b'd' => Some(GameAction::MoveRight),
-        b'q' => Some(GameAction::RotateLeft),
-        b'e' => Some(GameAction::RotateRight),
-        b'w' => Some(GameAction::HardDrop),
-        b's' => Some(GameAction::SoftDrop),
-        b'c' | b'C' => Some(GameAction::Hold),
-        _ => None,
-    }
+pub fn parse_input(key_code: u8, config: &crate::controls::ControlsConfig) -> Option<GameAction> {
+    config.map_key_to_action(key_code)
 }
 
 // ============================================================================
@@ -111,7 +102,8 @@ pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<Updat
             super::super::scoring::handle_hold(state);
             None
         }
-        GameAction::Pause | GameAction::Quit => None,
+        GameAction::Pause => Some(UpdateEndState::Pause),
+        GameAction::Quit => Some(UpdateEndState::Quit),
     }
 }
 
@@ -144,6 +136,7 @@ pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<Updat
 pub fn handle_input<T: crate::io_traits::InputReader>(
     state: &mut GameState,
     inp: &mut T,
+    config: &crate::controls::ControlsConfig,
 ) -> Option<UpdateEndState> {
     let key = inp.get_key();
 
@@ -153,19 +146,22 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
     // Обработка клавиши
     match key {
         Ok(Some(KEY_BACKSPACE)) => {
+            #[cfg(debug_assertions)]
             eprintln!("[INFO] Получена клавиша выхода (Backspace)");
             Some(UpdateEndState::Quit)
         }
         Ok(Some(b'p')) => {
+            #[cfg(debug_assertions)]
             eprintln!("[INFO] Получена клавиша паузы (P)");
             Some(UpdateEndState::Pause)
         }
         Ok(Some(key_code)) => {
             // Парсинг клавиши в действие
-            if let Some(action) = parse_input(key_code) {
+            if let Some(action) = parse_input(key_code, config) {
                 return execute_action(state, action);
             }
             // Неизвестная клавиша
+            #[cfg(debug_assertions)]
             eprintln!(
                 "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
                 char::from_u32(key_code as u32).unwrap_or('?'),
@@ -179,6 +175,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
         }
         Err(e) => {
             // Ошибка чтения ввода
+            #[cfg(debug_assertions)]
             eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
             None
         }
@@ -199,17 +196,12 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 /// Удалён мёртвый код - ветка Direction::Down в match больше не требуется.
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
     if state.can_move_curr_shape_direction(dir) {
+        let curr_shape = state.get_curr_shape_mut();
         match dir {
-            Direction::Left => {
-                let curr_shape = state.get_curr_shape_mut();
-                curr_shape.pos_mut().0 -= 1.0;
+            Direction::Left => curr_shape.pos_mut().0 -= 1.0,
+            Direction::Right => curr_shape.pos_mut().0 += 1.0,
+            Direction::Down => { /* обрабатывается отдельно в handle_soft_drop/handle_hard_drop */
             }
-            Direction::Right => {
-                let curr_shape = state.get_curr_shape_mut();
-                curr_shape.pos_mut().0 += 1.0;
-            }
-            // Исправление L3: Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
-            Direction::Down => {}
         }
     }
 }

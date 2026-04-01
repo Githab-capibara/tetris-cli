@@ -162,7 +162,7 @@ fn test_curr_and_next_shapes_different() {
 fn test_gamestate_can_save_score() {
     // Создаём состояние игры и добавляем очки
     let mut state = GameState::new();
-    state.add_score_no_check(500); // Добавляем очки для теста
+    state.add_score(500); // Добавляем очки для теста
 
     let score = state.score();
 
@@ -287,9 +287,9 @@ fn test_leaderboard_sorts_scores() {
 
     let entries = leaderboard.get_entries();
 
-    assert_eq!(entries[0].score(), 300, "Первый должен быть лучшим");
-    assert_eq!(entries[1].score(), 200, "Второй должен быть средним");
-    assert_eq!(entries[2].score(), 100, "Третий должен быть худшим");
+    assert_eq!(entries[0].score(), Some(300), "Первый должен быть лучшим");
+    assert_eq!(entries[1].score(), Some(200), "Второй должен быть средним");
+    assert_eq!(entries[2].score(), Some(100), "Третий должен быть худшим");
 }
 
 /// Тест 19: `SaveData` защита от подделки

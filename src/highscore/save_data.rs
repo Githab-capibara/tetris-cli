@@ -28,6 +28,12 @@ fn get_config_file_path() -> Option<PathBuf> {
     let mut config_path = PathBuf::from(home_dir);
     config_path.push(".config");
     config_path.push(APP_NAME);
+
+    // H12: создаём директорию если не существует
+    if let Err(e) = std::fs::create_dir_all(&config_path) {
+        eprintln!("[WARN] Не удалось создать директорию конфигурации: {}", e);
+    }
+
     config_path.push("config.toml");
 
     Some(config_path)
@@ -114,6 +120,9 @@ impl SaveData {
     ///
     /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлена обработка ошибок с попыткой загрузки из backup файла.
+    ///
+    /// # Исправление H10 (HIGH)
+    /// Методы загрузки консолидированы - общая логика вынесена в `load_with_validation()`
     pub fn load_config() -> Self {
         Self::load_config_result().unwrap_or_else(|e| {
             eprintln!("Предупреждение: {e}. Попытка загрузки из backup...");
@@ -139,21 +148,15 @@ impl SaveData {
     ///
     /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлен метод для загрузки из backup файла.
+    ///
+    /// # Исправление H10 (HIGH)
+    /// Использует консолидированный метод `load_with_validation()`
     fn load_backup_config() -> Result<Self, String> {
         let data: Self = load::<Self>(APP_NAME, Some("config_backup"))
             .map_err(|e| format!("Ошибка загрузки backup конфигурации: {e}"))?;
 
-        // Проверка целостности backup данных
-        match data.verify_and_get_score() {
-            Some(score) => {
-                if score > 0 {
-                    eprintln!("Информация: загружен backup рекорд со значением {score}");
-                }
-                Ok(data)
-            }
-            None if data.score != 0 => Err("Backup: обнаружена подделка рекорда".to_string()),
-            None => Err("Backup: рекорд не прошёл валидацию".to_string()),
-        }
+        // Проверка целостности backup данных (H10: вынесено в общий метод)
+        Self::load_with_validation(data)
     }
 
     /// Загрузить конфигурацию из файла с возвратом Result.
@@ -164,6 +167,9 @@ impl SaveData {
     ///
     /// # Примечания
     /// Этот метод использует единый стиль обработки ошибок с Result.
+    ///
+    /// # Исправление H10 (HIGH)
+    /// Использует консолидированный метод `load_with_validation()`
     fn load_config_result() -> Result<Self, String> {
         // Проверка размера файла перед загрузкой (Исправление #23)
         if let Some(config_path) = get_config_file_path() {
@@ -173,10 +179,24 @@ impl SaveData {
         let data: Self = load::<Self>(APP_NAME, Some("config"))
             .map_err(|e| format!("Ошибка загрузки конфигурации: {e}"))?;
 
-        // Дополнительная проверка целостности
+        // Дополнительная проверка целостности (H10: вынесено в общий метод)
+        Self::load_with_validation(data)
+    }
+
+    /// Консолидированный метод загрузки с валидацией.
+    ///
+    /// # Аргументы
+    /// * `data` - загруженные данные для валидации
+    ///
+    /// # Возвращает
+    /// - `Ok(SaveData)` - данные прошли валидацию
+    /// - `Err(String)` - данные не прошли валидацию
+    ///
+    /// # Исправление H10 (HIGH)
+    /// Общая логика валидации вынесена в отдельный метод для устранения дублирования.
+    fn load_with_validation(data: Self) -> Result<Self, String> {
         match data.verify_and_get_score() {
             Some(score) => {
-                // Логирование успешной загрузки
                 if score > 0 {
                     eprintln!("Информация: загружен рекорд со значением {score}");
                 }

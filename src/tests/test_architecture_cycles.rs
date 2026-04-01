@@ -39,7 +39,7 @@ fn test_no_circular_dependencies_game_modules() {
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
     use crate::game::board::GameBoard;
     use crate::game::mode_trait::{ClassicMode, GameModeTrait, MarathonMode, SprintMode};
-    use crate::game::rules::GameRules;
+    // GameRules модуль удалён
     use crate::game::scoreboard::ScoreBoard;
     use crate::game::scoring::lines::find_full_rows;
     use crate::game::state::GameState;
@@ -120,14 +120,6 @@ fn test_no_circular_dependencies_game_modules() {
         "MarathonMode должен работать независимо"
     );
 
-    // Проверяем что GameRules работает независимо
-    let rules = GameRules::new();
-    assert_eq!(
-        rules.get_line_score(4),
-        1800,
-        "GameRules должен работать независимо"
-    );
-
     // Проверяем что find_full_rows работает независимо
     let blocks = [[0i8; 10]; 20];
     let (mask, count) = find_full_rows(&blocks);
@@ -177,7 +169,7 @@ fn test_no_circular_dependencies_main_modules() {
     );
 
     // Проверяем что errors.rs независим
-    let _err = GameError::validation_error("Тест");
+    let _err = GameError::ValidationError("Тест".to_string());
 
     // Проверяем что types.rs независим
     let _dir = Direction::Left;
