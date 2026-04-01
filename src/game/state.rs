@@ -984,6 +984,8 @@ impl super::scoring::ScoringState for GameState {
 // ISP-1: РЕАЛИЗАЦИЯ УЗКИХ ТРЕЙТОВ ДЛЯ GameState
 // ============================================================================
 
+// Архитектурное улучшение 2026-04-01 (DRY2): ScoreAccess определён в scoring
+// Реализуем ScoreAccess из scoring для GameState
 impl crate::game::scoring::ScoreAccess for GameState {
     fn get_score(&self) -> u128 {
         self.score()

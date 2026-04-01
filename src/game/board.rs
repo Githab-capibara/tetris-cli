@@ -27,6 +27,9 @@ pub use super::access::{BoardMutable, BoardReadonly};
 /// ## Архитектурные заметки
 /// Выделено из `GameState` для соблюдения Single Responsibility Principle.
 /// Используется композиция в `GameState` через поле `board: GameBoard`.
+///
+/// Архитектурное улучшение 2026-04-01: Добавлены Debug и Clone для совместимости.
+#[derive(Debug, Clone)]
 pub struct GameBoard {
     /// Двумерный массив игрового поля.
     /// Каждый элемент хранит индекс цвета (i8), -1 = пусто.

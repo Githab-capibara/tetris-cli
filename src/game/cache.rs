@@ -5,6 +5,8 @@
 //!
 //! ## Архитектурные заметки
 //! Выделено из `state.rs` для улучшения организации кода и разделения ответственности.
+//!
+//! Архитектурное улучшение 2026-04-01 (YAGNI3): StringCache используется только в тестах.
 
 use super::mode_trait::GameModeTrait;
 use super::stats::GameStats;
@@ -21,10 +23,8 @@ use std::fmt::Write;
 /// - **Тестируемость**: можно тестировать кэширование отдельно
 ///
 /// # Архитектурные заметки
-/// TODO (#архитектура): Добавить #[`allow(dead_code)`] если модуль не используется в основном коде.
-/// В настоящее время используется только в тестах.
+/// StringCache используется только в тестах.
 #[derive(Clone, Default)]
-#[allow(dead_code)]
 pub struct StringCache {
     /// Кэшированная строка счёта.
     pub score_str: String,
@@ -50,7 +50,6 @@ pub struct StringCache {
     last_timer: f64,
 }
 
-#[allow(dead_code)]
 impl StringCache {
     /// Создать новый кэш строк.
     #[must_use]
