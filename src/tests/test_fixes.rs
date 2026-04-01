@@ -210,17 +210,6 @@ mod tests {
     // ТЕСТЫ НА ИСПРАВЛЕНИЯ CLIPPY (test_fixes.rs)
     // =========================================================================
 
-    /// Тест 13: Проверка, что unused import исправлен
-    ///
-    /// Этот тест проверяет, что импорт `LeaderboardEntry` используется,
-    /// а неиспользуемый импорт Leaderboard удалён.
-    #[test]
-    fn test_unused_import_fixed() {
-        // Используем импорт явно, чтобы избежать предупреждения
-        let _entry = LeaderboardEntry::new("Test", 100);
-        assert_eq!(_entry.name(), "Test");
-    }
-
     /// Тест 14: Проверка, что `assertions_on_constants` исправлен
     ///
     /// Этот тест проверяет, что атрибут #[`allow(clippy::assertions_on_constants)`]

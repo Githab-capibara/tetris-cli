@@ -15,6 +15,9 @@
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::assertions_on_constants)]
+#![allow(dead_code)]
+#![allow(clippy::no_effect_underscore_binding)]
+#![allow(clippy::items_after_statements)]
 
 // ============================================================================
 // ТЕСТ 1: ЛОГИКА НЕ ИМПОРТИРУЕТ ОТРИСОВКУ

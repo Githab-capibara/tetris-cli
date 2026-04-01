@@ -79,18 +79,6 @@ fn test_must_use_total_pieces() {
     assert_eq!(total, 0, "Общее количество фигур должно быть 0");
 }
 
-/// Тест 7: Проверка #[must_use] на get_elapsed_time()
-///
-/// Проверяем, что get_elapsed_time() имеет #[must_use].
-#[test]
-fn test_must_use_get_elapsed_time() {
-    let stats = crate::game::GameStats::new();
-
-    // Используем результат
-    let elapsed = stats.get_elapsed_time();
-    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
-}
-
 /// Тест 8: Проверка #[must_use] на score()
 ///
 /// Проверяем, что score() имеет #[must_use].

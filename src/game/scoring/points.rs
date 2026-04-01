@@ -18,6 +18,8 @@
 //! **TODO (#архитектура, COHESION-1):** Рассмотреть использование сеттеров
 //! в будущей рефакторизации.
 
+#![allow(clippy::absurd_extreme_comparisons)]
+
 use crate::game::constants::{
     LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };

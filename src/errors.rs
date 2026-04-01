@@ -15,6 +15,8 @@
 //! }
 //! ```
 
+#![allow(dead_code)]
+
 use thiserror::Error;
 
 /// Ошибка игры.

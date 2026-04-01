@@ -6,6 +6,9 @@
 //! - Обновление состояния
 //! - Отрисовка
 
+#![allow(dead_code)]
+#![allow(clippy::no_effect_underscore_binding)]
+
 use std::{thread::sleep, time::Duration};
 
 use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE};

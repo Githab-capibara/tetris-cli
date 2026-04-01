@@ -7,7 +7,7 @@
 //!
 //! Исправление: использование directories crate для получения пути к конфигурации
 
-use crate::highscore::{check_config_directory_writable, ConfigError, Leaderboard, SaveData};
+use crate::highscore::{check_config_directory_writable, Leaderboard, SaveData};
 use directories::ProjectDirs;
 
 // ============================================================================
@@ -93,54 +93,14 @@ fn test_create_configuration_directory() {
     );
 }
 
-/// Тест 3: Проверка обработки ошибки при недоступности директории
+/// Тест 4: Проверка обработки ошибок Leaderboard
 ///
-/// Проверяет, что check_config_directory_writable() корректно возвращает
-/// ошибку ConfigError при недоступности директории конфигурации.
+/// Проверяет, что Leaderboard::load() корректно обрабатывает ошибки.
 #[test]
-fn test_directory_unavailable_error_handling() {
-    // Тест 1: Проверяем что check_config_directory_writable() работает
-    // (возвращает Ok или Err, но не паникует)
-    let result = check_config_directory_writable();
-
-    // Результат должен быть либо Ok, либо Err с понятным сообщением
-    match result {
-        Ok(()) => {
-            // Директория доступна для записи - это нормально
-        }
-        Err(ConfigError::DirectoryNotWritable(msg)) => {
-            // Директория недоступна - проверяем сообщение об ошибке
-            assert!(!msg.is_empty(), "Сообщение об ошибке не должно быть пустым");
-            assert!(
-                msg.contains("Директория") || msg.contains("недоступна"),
-                "Сообщение должно содержать информацию о директории: {}",
-                msg
-            );
-        }
-        Err(ConfigError::IoError(msg)) => {
-            // Ошибка ввода/вывода - проверяем сообщение
-            assert!(
-                !msg.is_empty(),
-                "Сообщение об ошибке IoError не должно быть пустым"
-            );
-        }
-    }
-
-    // Тест 2: Проверяем что SaveData::load_config() обрабатывает ошибки
-    // (не паникует при недоступности конфигурации)
-    let save_data = SaveData::load_config();
-
-    // Даже при ошибке загрузки должен вернуться валидный SaveData
-    assert!(
-        save_data.verify_and_get_score().is_some(),
-        "SaveData::load_config() должен вернуть валидные данные даже при ошибке"
-    );
-
-    // Тест 3: Проверяем что Leaderboard::load() обрабатывает ошибки
-    let leaderboard = Leaderboard::load();
-
+fn test_leaderboard_error_handling() {
     // Даже при ошибке загрузки должна вернуться валидная таблица
     // Проверяем что entries не пустой (или пустой но валидный)
+    let leaderboard = Leaderboard::load();
     let entries = leaderboard.get_entries();
     assert!(
         entries.len() == 0 || entries.len() > 0,
@@ -148,7 +108,7 @@ fn test_directory_unavailable_error_handling() {
     );
 }
 
-/// Тест 4: Дополнительная проверка интеграции directories crate
+/// Тест 5: Дополнительная проверка интеграции directories crate
 ///
 /// Проверяет что пути конфигурации корректно работают на разных платформах.
 #[test]

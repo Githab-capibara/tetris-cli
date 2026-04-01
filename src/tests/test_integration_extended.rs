@@ -555,22 +555,6 @@ fn test_game_has_statistics() {
     assert_eq!(stats.total_pieces(), 1);
 }
 
-/// Тест 40: Игра имеет таймер
-#[test]
-fn test_game_has_timer() {
-    let mut state = GameState::new();
-
-    state.start_timer();
-    let stats = state.stats();
-    let elapsed = stats.get_elapsed_time();
-
-    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
-}
-
-// ============================================================================
-// ГРУППА ТЕСТОВ 41-50: Тесты производительности
-// ============================================================================
-
 /// Тест 41: Быстрое создание `GameState`
 #[test]
 fn test_fast_gamestate_creation() {

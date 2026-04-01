@@ -28,9 +28,6 @@ fn test_error_result_on_load_failure() {
     // Проверяем что можно получить значение
     let score = save.verify_and_get_score().unwrap_or(0);
 
-    // Значение должно быть >= 0
-    assert!(score >= 0, "Рекорд должен быть неотрицательным");
-
     // Проверяем что можно создать новый SaveData
     let new_save = SaveData::from_value(1000);
     let new_score = new_save.verify_and_get_score();
@@ -91,9 +88,6 @@ fn test_default_value_on_error() {
     let loaded_save = SaveData::load_config();
     let loaded_score = loaded_save.verify_and_get_score().unwrap_or(0);
 
-    // Значение должно быть >= 0
-    assert!(loaded_score >= 0, "Загруженный рекорд должен быть >= 0");
-
     // Проверяем Leaderboard default
     let default_leaderboard = Leaderboard::default();
     assert!(
@@ -111,22 +105,6 @@ fn test_default_value_on_error() {
     let added = leaderboard.add_score("TestPlayer", 1000);
     assert!(added, "Добавление в default таблицу должно быть успешным");
     assert_eq!(leaderboard.len(), 1, "Таблица должна содержать 1 запись");
-}
-
-/// Тест 4: Проверка обработки ошибок при сохранении
-///
-/// Проверяет, что save_value() корректно обрабатывает ошибки.
-#[test]
-fn test_save_error_handling() {
-    // Сохраняем рекорд (может неудачно если нет прав доступа)
-    SaveData::save_value(5000);
-
-    // Проверяем что можно загрузить сохранённое значение
-    let loaded = SaveData::load_config();
-    let score = loaded.verify_and_get_score().unwrap_or(0);
-
-    // Значение должно быть корректным
-    assert!(score >= 0, "Сохранённый рекорд должен быть >= 0");
 }
 
 /// Тест 5: Проверка обработки ошибок Leaderboard

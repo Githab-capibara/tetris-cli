@@ -10,6 +10,8 @@
 //! - [`path`] — валидация путей к файлам
 //! - [`ValidationService`] — централизованный сервис валидации
 
+#![allow(dead_code)]
+
 // Подмодули
 pub mod name;
 pub mod path;

@@ -306,7 +306,7 @@ impl ControlsConfig {
             use std::os::linux::fs::MetadataExt;
             let metadata = file.metadata()?;
             // Проверка что файл не является symlink через mode
-            if metadata.st_mode() & libc::S_IFMT as u32 == libc::S_IFLNK as u32 {
+            if metadata.st_mode() & libc::S_IFMT == libc::S_IFLNK {
                 return Err(io::Error::other("Файл является символической ссылкой"));
             }
         }

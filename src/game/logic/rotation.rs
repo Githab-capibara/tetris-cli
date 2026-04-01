@@ -18,6 +18,8 @@
 //! дублирует функциональность из `collision::can_rotate_curr_shape`.
 //! Используйте функцию из модуля `collision` для проверки вращения.
 
+#![allow(dead_code)]
+
 use crate::game::GameState;
 
 /// Базовое вращение фигуры без проверки коллизий.

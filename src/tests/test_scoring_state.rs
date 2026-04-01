@@ -6,6 +6,8 @@
 //!
 //! Исправление: добавлен trait ScoringState для инкапсуляции изменений состояния
 
+#![allow(clippy::items_after_statements)]
+
 use crate::game::scoring::ScoringState;
 use crate::game::GameState;
 

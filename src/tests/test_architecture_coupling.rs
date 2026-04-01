@@ -11,6 +11,7 @@
 
 #![allow(clippy::unnecessary_literal_bound)]
 #![allow(clippy::redundant_closure_for_method_calls)]
+#![allow(clippy::items_after_statements)]
 
 use crate::game::scoreboard::ScoreBoard;
 use crate::game::scoring::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess};

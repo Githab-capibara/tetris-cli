@@ -13,6 +13,8 @@
 //! - [`ScoreAccess`] (импортирован из [`crate::game::access`]) - доступ только на чтение
 //! - [`ScoreMutable`] - доступ на чтение и запись (расширяет ScoreAccess)
 
+#![allow(dead_code)]
+
 // Импортируем ScoreAccess из access.rs для избежания дублирования
 use crate::game::access::ScoreAccess;
 

@@ -14,6 +14,9 @@
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::assertions_on_constants)]
 #![allow(deprecated)]
+#![allow(clippy::items_after_statements)]
+#![allow(dead_code)]
+#![allow(clippy::no_effect_underscore_binding)]
 
 // ============================================================================
 // ТЕСТ 1: ОТСУТСТВИЕ DEPRECATED ПОЛЕЙ (C1, M4)

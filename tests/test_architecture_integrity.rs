@@ -776,7 +776,6 @@ mod tests {
                     .to_string();
             } else if trimmed.starts_with("pub struct ") && trimmed.contains('{') {
                 // Однострочная структура
-                continue;
             } else if in_pub_struct && trimmed.contains('{') {
                 // Начало тела структуры
             } else if in_pub_struct && trimmed.starts_with("pub ") && !trimmed.starts_with("pub fn")

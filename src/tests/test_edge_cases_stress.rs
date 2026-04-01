@@ -309,21 +309,6 @@ fn test_min_single_piece() {
     assert_eq!(stats.total_pieces(), 1, "Должна быть 1 фигура");
 }
 
-/// Тест 14: Проверка минимального времени игры
-///
-/// Проверяет что таймер работает с минимальными значениями.
-#[test]
-fn test_min_game_time() {
-    let mut state = GameState::new();
-    state.start_timer();
-
-    // Сразу останавливаем
-    state.stop_timer();
-
-    let elapsed = state.stats().get_elapsed_time();
-    assert!(elapsed >= 0.0, "Время должно быть неотрицательным");
-}
-
 /// Тест 15: Проверка минимального счёта
 ///
 /// Проверяет что счёт начинается с 0.
