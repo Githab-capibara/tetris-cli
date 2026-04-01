@@ -181,7 +181,11 @@ fn test_traits_are_narrow() {
     requires_board_mutable(&mut board);
 
     // ScoreAccess - только чтение очков
-    fn requires_score_access<S: ScoreAccess>(score: &S) {
+    fn requires_score_access<
+        S: ScoreAccess + crate::game::access::LevelAccess + crate::game::access::LinesAccess,
+    >(
+        score: &S,
+    ) {
         let _score_val = score.get_score();
         let _level = score.get_level();
         let _lines = score.get_lines_cleared();

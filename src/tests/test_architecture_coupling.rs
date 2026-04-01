@@ -210,7 +210,7 @@ fn test_coupling_reduced_through_traits() {
     use crate::game::scoring::{LevelAccess, ScoreAccess};
 
     // Функции могут работать с любыми типами реализующими трейты
-    fn add_bonus<S: ScoreAccess>(scoreable: &mut S, bonus: u128) {
+    fn add_bonus<S: ScoreAccess + crate::game::access::ScoreMutable>(scoreable: &mut S, bonus: u128) {
         scoreable.add_score(bonus);
     }
 
@@ -328,7 +328,8 @@ fn test_coupling_architecture_test() {
 
     // Трейты снижают связанность
     use crate::game::scoring::ScoreAccess;
-    fn use_score<S: ScoreAccess>(s: &mut S) {
+    use crate::game::access::ScoreMutable;
+    fn use_score<S: ScoreAccess + ScoreMutable>(s: &mut S) {
         s.add_score(100);
     }
     use_score(&mut state);

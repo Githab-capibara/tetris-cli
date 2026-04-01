@@ -56,7 +56,7 @@ fn test_score_access_contains_only_score_methods() {
         scoreable.get_score()
     }
 
-    fn use_score_access_mut<S: ScoreAccess>(scoreable: &mut S) {
+    fn use_score_access_mut<S: ScoreAccess + crate::game::access::ScoreMutable>(scoreable: &mut S) {
         scoreable.set_score(200);
         scoreable.add_score(100);
     }
@@ -333,7 +333,7 @@ fn test_scoring_state_can_be_used_through_narrow_traits() {
     let mut state = GameState::new();
 
     // Используем через ScoreAccess
-    fn use_score<S: ScoreAccess>(s: &mut S) {
+    fn use_score<S: ScoreAccess + crate::game::access::ScoreMutable>(s: &mut S) {
         s.set_score(100);
         s.add_score(50);
     }
