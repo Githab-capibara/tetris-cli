@@ -13,14 +13,36 @@
 //!
 //! ## Структура модуля
 //!
-//! Модуль разделён на два подмодуля:
+//! Модуль разделён на подмодули:
 //! - [`save_data`] — хранение одиночного рекорда (SaveData)
-//! - [`leaderboard`] — таблица лидеров (Leaderboard, LeaderboardEntry)
+//! - [`leaderboard`] — таблица лидеров (Leaderboard, LeaderboardEntry) - фасад
+//! - [`leaderboard_storage`] — хранилище записей (LeaderboardStorage)
+//! - [`leaderboard_validator`] — HMAC валидация (LeaderboardValidator)
+//! - [`leaderboard_repository`] — сериализация/персистентность (LeaderboardRepository)
+//!
+//! ## Архитектурное улучшение 2026-04-01 (CRITICAL #2)
+//! Large Class leaderboard.rs разделён на подкомпоненты:
+//! - `LeaderboardStorage` - хранение записей и управление коллекцией
+//! - `LeaderboardValidator` - HMAC валидация и проверка целостности
+//! - `LeaderboardRepository` - сериализация/десериализация и персистентность
+//! - `Leaderboard` - фасад для обратной совместимости
 
 // Подмодули
 pub mod leaderboard;
 mod save_data;
 
+// Новые подмодули компонентов (Архитектурное улучшение 2026-04-01)
+pub mod leaderboard_repository;
+pub mod leaderboard_storage;
+pub mod leaderboard_validator;
+
 // Re-export основных типов для обратной совместимости
 pub use leaderboard::Leaderboard;
+pub use leaderboard::LeaderboardEntry;
+pub use leaderboard::ThreadSafeLeaderboard;
 pub use save_data::SaveData;
+
+// Re-export компонентов
+pub use leaderboard_repository::LeaderboardRepository;
+pub use leaderboard_storage::LeaderboardStorage;
+pub use leaderboard_validator::LeaderboardValidator;

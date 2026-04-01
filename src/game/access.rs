@@ -186,12 +186,6 @@ pub trait BoardMutable: BoardReadonly {
 pub trait ScoreAccess {
     /// Получить текущий счёт.
     fn get_score(&self) -> u128;
-
-    /// Получить текущий уровень.
-    fn get_level(&self) -> u32;
-
-    /// Получить количество удалённых линий.
-    fn get_lines_cleared(&self) -> u32;
 }
 
 // ============================================================================
@@ -200,7 +194,7 @@ pub trait ScoreAccess {
 
 /// Трейт для доступа на чтение и запись к очкам и уровням.
 ///
-/// Расширяет [`ScoreAccess`] методами для изменения очков, уровней и линий.
+/// Расширяет [`ScoreAccess`] методами для изменения очков.
 ///
 /// ## Архитектурные заметки
 /// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
@@ -224,12 +218,64 @@ pub trait ScoreMutable: ScoreAccess {
 
     /// Установить счёт (для тестов).
     fn set_score(&mut self, score: u128);
+}
+
+// ============================================================================
+// ISP-1: УЗКИЕ ТРЕЙТЫ ДЛЯ SCORING (INTERFACE SEGREGATION PRINCIPLE)
+// ============================================================================
+
+/// Трейт для доступа к уровням.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с уровнями.
+///
+/// ## Архитектурные заметки
+/// Выделен для соблюдения Interface Segregation Principle.
+/// Для доступа из других модулей используйте `crate::game::access::LevelAccess`.
+pub trait LevelAccess {
+    /// Получить текущий уровень.
+    fn get_level(&self) -> u32;
 
     /// Установить текущий уровень.
     fn set_level(&mut self, level: u32);
+}
 
-    /// Установить количество удалённых линий.
+/// Трейт для доступа к линиям.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с линиями.
+///
+/// ## Архитектурные заметки
+/// Выделен для соблюдения Interface Segregation Principle.
+/// Для доступа из других модулей используйте `crate::game::access::LinesAccess`.
+pub trait LinesAccess {
+    /// Получить количество очищенных линий.
+    fn get_lines_cleared(&self) -> u32;
+
+    /// Установить количество очищенных линий.
     fn set_lines_cleared(&mut self, lines: u32);
+
+    /// Добавить количество очищенных линий.
+    fn add_lines(&mut self, lines: u32);
+}
+
+/// Трейт для доступа к комбо.
+///
+/// # ISP-1: Узкий интерфейс
+/// Предоставляет только методы для работы с комбо.
+///
+/// ## Архитектурные заметки
+/// Выделен для соблюдения Interface Segregation Principle.
+/// Для доступа из других модулей используйте `crate::game::access::ComboAccess`.
+pub trait ComboAccess {
+    /// Получить текущий комбо.
+    fn get_combo(&self) -> u32;
+
+    /// Установить текущий комбо.
+    fn set_combo(&mut self, combo: u32);
+
+    /// Сбросить комбо.
+    fn reset_combo(&mut self);
 }
 
 // ============================================================================
@@ -302,14 +348,6 @@ impl ScoreAccess for crate::game::state::GameState {
     fn get_score(&self) -> u128 {
         self.score()
     }
-
-    fn get_level(&self) -> u32 {
-        self.level()
-    }
-
-    fn get_lines_cleared(&self) -> u32 {
-        self.lines_cleared()
-    }
 }
 
 impl ScoreMutable for crate::game::state::GameState {
@@ -320,12 +358,46 @@ impl ScoreMutable for crate::game::state::GameState {
     fn set_score(&mut self, score: u128) {
         self.set_score(score);
     }
+}
+
+// ============================================================================
+// РЕАЛИЗАЦИЯ ISP-1 ТРЕЙТОВ ДЛЯ GameState
+// ============================================================================
+
+impl LevelAccess for crate::game::state::GameState {
+    fn get_level(&self) -> u32 {
+        self.level()
+    }
 
     fn set_level(&mut self, level: u32) {
         self.set_level(level);
     }
+}
+
+impl LinesAccess for crate::game::state::GameState {
+    fn get_lines_cleared(&self) -> u32 {
+        self.lines_cleared()
+    }
 
     fn set_lines_cleared(&mut self, lines: u32) {
         self.set_lines_cleared(lines);
+    }
+
+    fn add_lines(&mut self, lines: u32) {
+        self.add_lines_cleared(lines);
+    }
+}
+
+impl ComboAccess for crate::game::state::GameState {
+    fn get_combo(&self) -> u32 {
+        self.stats().combo_counter()
+    }
+
+    fn set_combo(&mut self, combo: u32) {
+        self.stats_mut().set_combo_counter(combo);
+    }
+
+    fn reset_combo(&mut self) {
+        self.stats_mut().set_combo_counter(0);
     }
 }

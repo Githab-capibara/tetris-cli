@@ -1,4 +1,4 @@
-//! Компонент состояния фигур.
+//! Менеджер фигур для управления состоянием фигур.
 //!
 //! # Ответственность
 //! - Управление текущей фигурой (curr_shape)
@@ -9,7 +9,7 @@
 //!
 //! ## Архитектурные заметки
 //! Выделено из `GameState` для соблюдения Single Responsibility Principle.
-//! `FigureState` инкапсулирует состояние фигур и предоставляет контролируемый доступ.
+//! `FigureManager` инкапсулирует состояние фигур и предоставляет контролируемый доступ.
 //!
 //! Архитектурное улучшение 2026-04-01: Выделение компонента для улучшения модульности.
 
@@ -17,7 +17,7 @@
 
 use crate::tetromino::{BagGenerator, Tetromino};
 
-/// Состояние фигур в игре.
+/// Менеджер фигур в игре.
 ///
 /// Инкапсулирует состояние всех фигур и предоставляет контролируемый доступ.
 ///
@@ -30,8 +30,8 @@ use crate::tetromino::{BagGenerator, Tetromino};
 ///
 /// ## Архитектурные заметки
 /// Выделено из `GameState` для соблюдения Single Responsibility Principle.
-/// Используется композиция в `GameState` через поле `figure_state: FigureState`.
-pub struct FigureState {
+/// Используется композиция в `GameState` через поле `figure_manager: FigureManager`.
+pub struct FigureManager {
     /// Текущая фигура.
     curr_shape: Tetromino,
     /// Следующая фигура (для предпросмотра).
@@ -44,17 +44,17 @@ pub struct FigureState {
     bag: BagGenerator,
 }
 
-impl Default for FigureState {
+impl Default for FigureManager {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl FigureState {
-    /// Создать новое состояние фигур.
+impl FigureManager {
+    /// Создать новый менеджер фигур.
     ///
     /// # Возвращает
-    /// Новый экземпляр `FigureState` с инициализированными фигурами из генератора.
+    /// Новый экземпляр `FigureManager` с инициализированными фигурами из генератора.
     pub fn new() -> Self {
         let mut bag = BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);
@@ -159,33 +159,33 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_figure_state_new() {
-        let state = FigureState::new();
-        assert!(state.can_hold());
-        assert!(state.held_shape().is_none());
+    fn test_figure_manager_new() {
+        let manager = FigureManager::new();
+        assert!(manager.can_hold());
+        assert!(manager.held_shape().is_none());
     }
 
     #[test]
-    fn test_figure_state_getters() {
-        let mut state = FigureState::new();
-        let curr = state.curr_shape();
-        let next = state.next_shape();
+    fn test_figure_manager_getters() {
+        let mut manager = FigureManager::new();
+        let curr = manager.curr_shape();
+        let next = manager.next_shape();
         assert_ne!(curr.shape(), next.shape());
     }
 
     #[test]
-    fn test_figure_state_setters() {
-        let mut state = FigureState::new();
-        state.set_can_hold(false);
-        assert!(!state.can_hold());
+    fn test_figure_manager_setters() {
+        let mut manager = FigureManager::new();
+        manager.set_can_hold(false);
+        assert!(!manager.can_hold());
     }
 
     #[test]
-    fn test_figure_state_spawn() {
-        let mut state = FigureState::new();
-        let old_next = state.next_shape().shape();
-        state.spawn_new_piece();
-        assert_eq!(state.curr_shape().shape(), old_next);
-        assert!(state.can_hold());
+    fn test_figure_manager_spawn() {
+        let mut manager = FigureManager::new();
+        let old_next = manager.next_shape().shape();
+        manager.spawn_new_piece();
+        assert_eq!(manager.curr_shape().shape(), old_next);
+        assert!(manager.can_hold());
     }
 }

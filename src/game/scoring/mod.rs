@@ -78,78 +78,11 @@ pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop
 // ============================================================================
 
 // Re-export трейтов из access.rs для устранения дублирования (Архитектурное улучшение 2026-04-01)
-// ScoreAccess не экспортируется чтобы избежать конфликта имён - используется локальный
-pub use super::access::{BoardMutable, BoardReadonly, ScoreMutable as ScoreAccessMutable};
-
-// ============================================================================
-// ISP-1: УЗКИЕ ТРЕЙТЫ ДЛЯ SCORING (INTERFACE SEGREGATION PRINCIPLE)
-// ============================================================================
-
-/// Трейт для доступа к очкам.
-///
-/// # ISP-1: Узкий интерфейс
-/// Предоставляет только методы для работы с очками.
-///
-/// Архитектурное улучшение 2026-04-01 (DRY2): ScoreAccess определён только здесь.
-/// Для доступа из других модулей используйте `crate::game::scoring::ScoreAccess`.
-pub trait ScoreAccess {
-    /// Получить текущий счёт.
-    fn get_score(&self) -> u128;
-
-    /// Установить новый счёт.
-    fn set_score(&mut self, score: u128);
-
-    /// Добавить очки к текущему счёту.
-    fn add_score(&mut self, points: u128);
-}
-
-/// Трейт для доступа к уровням.
-///
-/// # ISP-1: Узкий интерфейс
-/// Предоставляет только методы для работы с уровнями.
-///
-/// Архитектурное улучшение 2026-04-01: Удалено дублирование ScoreAccess.
-pub trait LevelAccess {
-    /// Получить текущий уровень.
-    fn get_level(&self) -> u32;
-
-    /// Установить текущий уровень.
-    fn set_level(&mut self, level: u32);
-}
-
-/// Трейт для доступа к линиям.
-///
-/// # ISP-1: Узкий интерфейс
-/// Предоставляет только методы для работы с линиями.
-///
-/// Архитектурное улучшение 2026-04-01: Удалено дублирование ScoreAccess.
-pub trait LinesAccess {
-    /// Получить количество очищенных линий.
-    fn get_lines_cleared(&self) -> u32;
-
-    /// Установить количество очищенных линий.
-    fn set_lines_cleared(&mut self, lines: u32);
-
-    /// Добавить количество очищенных линий.
-    fn add_lines(&mut self, lines: u32);
-}
-
-/// Трейт для доступа к комбо.
-///
-/// # ISP-1: Узкий интерфейс
-/// Предоставляет только методы для работы с комбо.
-///
-/// Архитектурное улучшение 2026-04-01: Удалено дублирование ScoreAccess.
-pub trait ComboAccess {
-    /// Получить текущий комбо.
-    fn get_combo(&self) -> u32;
-
-    /// Установить текущий комбо.
-    fn set_combo(&mut self, combo: u32);
-
-    /// Сбросить комбо.
-    fn reset_combo(&mut self);
-}
+// ScoreAccess, LevelAccess, LinesAccess, ComboAccess, ScoreMutable определены в access.rs
+// и переэкспортируются здесь для обратной совместимости
+pub use super::access::{
+    BoardMutable, BoardReadonly, ComboAccess, LevelAccess, LinesAccess, ScoreAccess, ScoreMutable,
+};
 
 // ============================================================================
 // TRAIT SCORINGSTATE (ОБЪЕДИНЁННЫЙ ТРЕЙТ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ)
@@ -168,7 +101,7 @@ pub trait ComboAccess {
 /// # ISP-1: Наследует узкие трейты
 /// Этот трейт объединяет узкие трейты для обратной совместимости.
 /// Для нового кода рекомендуется использовать специализированные трейты:
-/// - [`ScoreAccess`] для работы с очками
+/// - [`ScoreAccess`] + [`ScoreMutable`] для работы с очками
 /// - [`LevelAccess`] для работы с уровнями
 /// - [`LinesAccess`] для работы с линиями
 /// - [`ComboAccess`] для работы с комбо
@@ -181,7 +114,7 @@ pub trait ComboAccess {
 ///     state.set_score(new_score);
 /// }
 /// ```
-pub trait ScoringState: ScoreAccess + LevelAccess + LinesAccess + ComboAccess {
+pub trait ScoringState: ScoreAccess + ScoreMutable + LevelAccess + LinesAccess + ComboAccess {
     /// Получить скорость падения.
     fn fall_speed(&self) -> f32;
 

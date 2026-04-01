@@ -22,12 +22,23 @@
 //! - ✅ `GameStats` вынесен в отдельный модуль `game/stats.rs`
 //! - ✅ `RenderCache` вынесен в отдельный модуль `game/cache.rs`
 //! - ✅ GameState использует композицию вместо наследования
+//! - ✅ `FigureManager` выделен в отдельный компонент `game/components/figure_manager.rs`
+//! - ✅ `AnimationState` выделен в отдельный компонент `game/components/animation_state.rs`
+//! - ✅ `BoardState`/`FieldState` выделен в отдельный компонент `game/components/board_state.rs`
 //!
-//! ### В процессе (TODO):
-//! - ⏳ Выделить `GameBoard` - инкапсуляция состояния поля
-//! - ⏳ Выделить `ScoreBoard` - инкапсуляция состояния очков
-//! - ⏳ Выделить `FigureManager` - управление фигурами
-//! - ⏳ Выделить `AnimationState` - управление анимациями
+//! ## Архитектурное улучшение 2026-04-01 (CRITICAL #1)
+//! GameState разделён на специализированные компоненты:
+//! - [`FigureManager`] - управление фигурами (curr_shape, next_shape, held_shape, bag, can_hold)
+//! - [`AnimationState`] - управление анимациями (animating_rows_mask, is_hard_dropping)
+//! - [`BoardState`]/[`FieldState`] - управление полем (board, filled_lines_mask)
+//! - `ScoreBoard` - управление очками (score, level, lines_cleared)
+//! - `GameStats` - статистика игры
+//! - `RenderCache` - кэш для отрисовки
+//!
+//! [`FigureManager`]: crate::game::components::FigureManager
+//! [`AnimationState`]: crate::game::components::AnimationState
+//! [`BoardState`]: crate::game::components::BoardState
+//! [`FieldState`]: crate::game::components::FieldState
 
 #![allow(dead_code)]
 
@@ -36,6 +47,7 @@ use crate::tetromino::{BagGenerator, Tetromino};
 
 use super::board::GameBoard;
 use super::cache::RenderCache;
+use super::components::{AnimationState, FigureManager};
 use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 
 /// Позиция появления фигуры по X (центр поля минус половина ширины фигуры).
@@ -228,26 +240,22 @@ pub struct GameState {
     scoreboard: ScoreBoard,
 
     // ========================================================================
-    // === СОСТОЯНИЕ ФИГУР ===
+    // === КОМПОНЕНТЫ СОСТОЯНИЯ (АРХИТЕКТУРНОЕ УЛУЧШЕНИЕ 2026-04-01) ===
     // ========================================================================
-    /// Текущая фигура.
-    curr_shape: Tetromino,
-    /// Следующая фигура (для предпросмотра).
-    next_shape: Tetromino,
-    /// Удержанная фигура (None если ещё не использовалась).
-    held_shape: Option<Tetromino>,
-    /// Можно ли ещё менять удержанную фигуру в этом ходу.
-    can_hold: bool,
-    /// Генератор фигур по системе 7-bag.
-    bag: BagGenerator,
-
-    // ========================================================================
-    // === СОСТОЯНИЕ АНИМАЦИЙ ===
-    // ========================================================================
-    /// Строки для анимации (мигание при очистке).
-    animating_rows_mask: u32,
-    /// Флаг для анимации Hard Drop.
-    is_hard_dropping: bool,
+    /// Менеджер фигур.
+    ///
+    /// Инкапсулирует состояние фигур (curr_shape, next_shape, held_shape, can_hold, bag).
+    /// Используйте `figure_manager()` и `figure_manager_mut()` для доступа.
+    ///
+    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение FigureManager
+    figure_manager: FigureManager,
+    /// Состояние анимаций.
+    ///
+    /// Инкапсулирует состояние анимаций (animating_rows_mask, is_hard_dropping).
+    /// Используйте `animation_state()` и `animation_state_mut()` для доступа.
+    ///
+    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение AnimationState
+    animation_state: AnimationState,
 
     // ========================================================================
     // === ИГРОВАЯ ЛОГИКА ===
@@ -303,35 +311,28 @@ impl GameState {
     /// Внутренний метод создания состояния игры.
     #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
-        let mut bag = BagGenerator::new();
-        let curr_shape = Tetromino::from_bag(&mut bag);
-        let next_shape = Tetromino::from_bag(&mut bag);
-        let mut stats = GameStats::new();
-        stats.add_piece(curr_shape.shape());
-        if start_timer {
-            stats.start_timer();
-        }
         // Создаём объект трейта из enum
         let mode_trait = mode.as_trait();
 
         // Создаём новые компоненты
         let board = GameBoard::new();
         let scoreboard = ScoreBoard::new();
+        let figure_manager = FigureManager::new();
+        let animation_state = AnimationState::new();
+        let mut stats = GameStats::new();
+        
+        // Добавляем первую фигуру в статистику
+        stats.add_piece(figure_manager.curr_shape().shape());
+        if start_timer {
+            stats.start_timer();
+        }
 
         let mut game_state = Self {
             // Новые компоненты
             board,
             scoreboard,
-
-            // Состояние фигур
-            curr_shape,
-            next_shape,
-            held_shape: None,
-            can_hold: true,
-
-            // Состояние анимаций
-            animating_rows_mask: 0,
-            is_hard_dropping: false,
+            figure_manager,
+            animation_state,
 
             // Игровая логика
             fall_speed: INITIAL_FALL_SPD,
@@ -343,7 +344,6 @@ impl GameState {
             mode_trait,
 
             // Кэш для отрисовки
-            bag,
             render_cache: RenderCache::new(),
         };
         // Инициализация кэша начальными значениями
@@ -462,6 +462,62 @@ impl GameState {
         &mut self.scoreboard
     }
 
+    // ========================================================================
+    // МЕТОДЫ ДОСТУПА К КОМПОНЕНТАМ (CRITICAL #1)
+    // ========================================================================
+
+    /// Получить доступ к менеджеру фигур.
+    ///
+    /// # Возвращает
+    /// Ссылка на `FigureManager`
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Прямой доступ к компоненту FigureManager для сложной логики.
+    /// Для простых операций используйте специализированные методы:
+    /// - `curr_shape()`, `next_shape()`, `held_shape()`, `can_hold()`, `get_bag()`
+    #[must_use]
+    pub fn figure_manager(&self) -> &FigureManager {
+        &self.figure_manager
+    }
+
+    /// Получить мутуабельный доступ к менеджеру фигур.
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `FigureManager`
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Прямой доступ к компоненту FigureManager для сложной логики.
+    #[must_use]
+    pub fn figure_manager_mut(&mut self) -> &mut FigureManager {
+        &mut self.figure_manager
+    }
+
+    /// Получить доступ к состоянию анимаций.
+    ///
+    /// # Возвращает
+    /// Ссылка на `AnimationState`
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Прямой доступ к компоненту AnimationState для сложной логики.
+    /// Для простых операций используйте специализированные методы:
+    /// - `is_hard_dropping()`, `animating_rows_mask()`
+    #[must_use]
+    pub fn animation_state(&self) -> &AnimationState {
+        &self.animation_state
+    }
+
+    /// Получить мутуабельный доступ к состоянию анимаций.
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `AnimationState`
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Прямой доступ к компоненту AnimationState для сложной логики.
+    #[must_use]
+    pub fn animation_state_mut(&mut self) -> &mut AnimationState {
+        &mut self.animation_state
+    }
+
     /// Получить режим игры (enum для обратной совместимости).
     ///
     /// # Возвращает
@@ -502,21 +558,30 @@ impl GameState {
     }
 
     /// Получить текущую фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn curr_shape(&self) -> &Tetromino {
-        &self.curr_shape
+        self.figure_manager.curr_shape()
     }
 
     /// Получить следующую фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn next_shape(&self) -> &Tetromino {
-        &self.next_shape
+        self.figure_manager.next_shape()
     }
 
     /// Получить удержанную фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn held_shape(&self) -> Option<&Tetromino> {
-        self.held_shape.as_ref()
+        self.figure_manager.held_shape()
     }
 
     /// Получить скорость падения.
@@ -538,15 +603,21 @@ impl GameState {
     }
 
     /// Получить флаг Hard Drop.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
     pub fn is_hard_dropping(&self) -> bool {
-        self.is_hard_dropping
+        self.animation_state.is_hard_dropping()
     }
 
     /// Получить флаг возможности удержания.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn can_hold(&self) -> bool {
-        self.can_hold
+        self.figure_manager.can_hold()
     }
 
     /// Получить кэш для отрисовки.
@@ -691,69 +762,105 @@ impl GameState {
     }
 
     /// Установить флаг Hard Drop.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `AnimationState`.
     pub fn set_is_hard_dropping(&mut self, value: bool) {
-        self.is_hard_dropping = value;
+        self.animation_state.set_is_hard_dropping(value);
     }
 
     /// Установить флаг возможности удержания.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     pub fn set_can_hold(&mut self, value: bool) {
-        self.can_hold = value;
+        self.figure_manager.set_can_hold(value);
     }
 
     /// Установить текущую фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     pub fn set_curr_shape(&mut self, value: Tetromino) {
-        self.curr_shape = value;
+        self.figure_manager.set_curr_shape(value);
     }
 
     /// Установить следующую фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     pub fn set_next_shape(&mut self, value: Tetromino) {
-        self.next_shape = value;
+        self.figure_manager.set_next_shape(value);
     }
 
     /// Установить удержанную фигуру.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     pub fn set_held_shape(&mut self, value: Option<Tetromino>) {
-        self.held_shape = value;
+        self.figure_manager.set_held_shape(value);
     }
 
     /// Получить текущую фигуру (мутуабельная ссылка).
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
-        &mut self.curr_shape
+        self.figure_manager.curr_shape_mut()
     }
 
     /// Получить следующую фигуру (мутуабельная ссылка).
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
-        &mut self.next_shape
+        self.figure_manager.next_shape_mut()
     }
 
     /// Получить удержанную фигуру (мутуабельная ссылка).
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn get_held_shape_mut(&mut self) -> &mut Option<Tetromino> {
-        &mut self.held_shape
+        self.figure_manager.held_shape_mut()
     }
 
     /// Получить генератор фигур.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn get_bag(&self) -> &BagGenerator {
-        &self.bag
+        self.figure_manager.bag()
     }
 
     /// Получить генератор фигур (мутуабельная ссылка).
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
     pub fn get_bag_mut(&mut self) -> &mut BagGenerator {
-        &mut self.bag
+        self.figure_manager.bag_mut()
     }
 
     /// Получить маску анимации строк.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
     pub fn animating_rows_mask(&self) -> u32 {
-        self.animating_rows_mask
+        self.animation_state.animating_rows_mask()
     }
 
     /// Установить маску анимации строк.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `AnimationState`.
     pub fn set_animating_rows_mask(&mut self, value: u32) {
-        self.animating_rows_mask = value;
+        self.animation_state.set_animating_rows_mask(value);
     }
 
     /// Получить маску заполненных линий.
@@ -837,9 +944,12 @@ impl GameState {
     }
 
     /// Получить маску анимации строк (для view).
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
     pub fn get_animating_rows_mask(&self) -> u32 {
-        self.animating_rows_mask
+        self.animation_state.animating_rows_mask()
     }
 
     // ========================================================================
@@ -875,18 +985,18 @@ impl GameState {
     ///
     /// # Исправление M3 (MEDIUM)
     /// Инкапсулирует логику появления фигур с проверкой коллизий.
+    ///
+    /// # Архитектурные заметки (CRITICAL #1)
+    /// Делегирует вызов компоненту `FigureManager`.
     pub fn spawn_new_piece(&mut self) -> Option<()> {
-        // Предыдущая следующая фигура становится текущей
-        self.curr_shape = self.next_shape;
-
-        // Генерируем новую следующую фигуру
-        self.next_shape = Tetromino::from_bag(&mut self.bag);
+        // Используем FigureManager для появления новой фигуры
+        self.figure_manager.spawn_new_piece();
 
         // Сбрасываем позицию текущей фигуры
-        *self.curr_shape.pos_mut() = (SPAWN_X, 0.0);
+        *self.figure_manager.curr_shape_mut().pos_mut() = (SPAWN_X, 0.0);
 
         // Добавляем в статистику
-        self.stats.add_piece(self.curr_shape.shape());
+        self.stats.add_piece(self.figure_manager.curr_shape().shape());
 
         // Проверяем коллизию при появлении (игра окончена если коллизия)
         if !self.can_move_curr_shape_direction(crate::types::Direction::Down) {
@@ -929,11 +1039,11 @@ impl super::scoring::ScoringState for GameState {
     }
 
     fn animating_rows_mask(&self) -> u32 {
-        self.animating_rows_mask
+        self.animating_rows_mask()
     }
 
     fn set_animating_rows_mask(&mut self, mask: u32) {
-        self.animating_rows_mask = mask;
+        self.set_animating_rows_mask(mask);
     }
 
     fn stats(&self) -> &crate::game::stats::GameStats {
@@ -957,59 +1067,10 @@ impl super::scoring::ScoringState for GameState {
 // ISP-1: РЕАЛИЗАЦИЯ УЗКИХ ТРЕЙТОВ ДЛЯ GameState
 // ============================================================================
 
-// Архитектурное улучшение 2026-04-01 (DRY2): ScoreAccess определён в scoring
-// Реализуем ScoreAccess из scoring для GameState
-impl crate::game::scoring::ScoreAccess for GameState {
-    fn get_score(&self) -> u128 {
-        self.score()
-    }
-
-    fn set_score(&mut self, score: u128) {
-        self.set_score(score);
-    }
-
-    fn add_score(&mut self, points: u128) {
-        self.add_score(points);
-    }
-}
-
-impl crate::game::scoring::LevelAccess for GameState {
-    fn get_level(&self) -> u32 {
-        self.level()
-    }
-
-    fn set_level(&mut self, level: u32) {
-        self.set_level(level);
-    }
-}
-
-impl crate::game::scoring::LinesAccess for GameState {
-    fn get_lines_cleared(&self) -> u32 {
-        self.lines_cleared()
-    }
-
-    fn set_lines_cleared(&mut self, lines: u32) {
-        self.set_lines_cleared(lines);
-    }
-
-    fn add_lines(&mut self, lines: u32) {
-        self.set_lines_cleared(self.lines_cleared().saturating_add(lines));
-    }
-}
-
-impl crate::game::scoring::ComboAccess for GameState {
-    fn get_combo(&self) -> u32 {
-        self.stats().combo_counter()
-    }
-
-    fn set_combo(&mut self, combo: u32) {
-        self.stats_mut().set_combo_counter(combo);
-    }
-
-    fn reset_combo(&mut self) {
-        self.stats_mut().set_combo_counter(0);
-    }
-}
+// Архитектурное улучшение 2026-04-01 (DRY2): ScoreAccess определён в access.rs
+// Реализации трейтов ScoreAccess, LevelAccess, LinesAccess, ComboAccess
+// перемещены в access.rs для централизации и устранения дублирования.
+// См. src/game/access.rs для реализаций.
 
 // ============================================================================
 // ТЕСТЫ

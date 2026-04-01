@@ -65,6 +65,7 @@ pub mod components;
 pub mod cycle;
 pub mod events;
 pub mod logic;
+pub mod mode_registry;
 pub mod mode_trait;
 pub mod render;
 pub mod rules;
