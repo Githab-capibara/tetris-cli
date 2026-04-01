@@ -115,14 +115,6 @@ mod types_tests {
     }
 
     #[test]
-    fn test_rotation_direction_from_core() {
-        // Проверка что RotationDirection переэкспортирован из core
-        let _ = RotationDirection::Clockwise;
-        let _ = RotationDirection::CounterClockwise;
-        let _ = RotationDirection::NoRotation;
-    }
-
-    #[test]
     fn test_position_from_core() {
         // Проверка что Position переэкспортирован из core
         let pos = Position::new(5, 10);

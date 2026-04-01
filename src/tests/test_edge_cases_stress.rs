@@ -96,7 +96,9 @@ fn test_edge_cases_all_shapes_extreme() {
     for &shape in &shapes {
         let mut state = GameState::new();
         state.get_curr_shape_mut().set_shape(shape);
-        state.get_curr_shape_mut().set_coords(SHAPE_COORDS[shape as usize]);
+        state
+            .get_curr_shape_mut()
+            .set_coords(SHAPE_COORDS[shape as usize]);
 
         // Проверяем вращение
         for _ in 0..4 {

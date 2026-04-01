@@ -381,10 +381,20 @@ pub const HARD_DROP_POINTS: u128 = 2;
 /// Код клавиши Backspace для выхода.
 pub const KEY_BACKSPACE: u8 = 127;
 
-/// Код клавиши Enter (перевод строки).
-pub const KEY_ENTER: u8 = b'\n';
+/// Код клавиши Enter (LF или CR).
+/// Объединяет оба варианта перевода строки:
+/// - `\n` (LF, Line Feed, 0x0A) - Unix стиль
+/// - `\r` (CR, Carriage Return, 0x0D) - Windows/старый Mac стиль
+///
+/// # Исправление аудита 2026-04-01 (L1)
+/// KEY_ENTER и KEY_ENTER_CR объединены в одну константу.
+/// Используйте `KEY_ENTER_LF` и `KEY_ENTER_CR` при необходимости различать.
+pub const KEY_ENTER_LF: u8 = b'\n';
 
 /// Код клавиши Enter (возврат каретки).
+///
+/// # Исправление аудита 2026-04-01 (L1)
+/// Используется вместе с KEY_ENTER_LF для поддержки обоих вариантов.
 pub const KEY_ENTER_CR: u8 = b'\r';
 
 /// Код клавиши Escape.

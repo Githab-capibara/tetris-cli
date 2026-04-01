@@ -31,7 +31,6 @@
 /// |-----------|-------------------|
 /// | `Left` | `CounterClockwise` |
 /// | `Right` | `Clockwise` |
-/// | `Down` | `NoRotation` |
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub enum Direction {
     /// Движение вниз.
@@ -40,41 +39,6 @@ pub enum Direction {
     Left,
     /// Движение вправо.
     Right,
-}
-
-impl Direction {
-    /// Конвертировать [`Direction`] в [`RotationDirection`].
-    ///
-    /// # Возвращает
-    /// - [`RotationDirection::CounterClockwise`] для [`Direction::Left`]
-    /// - [`RotationDirection::Clockwise`] для [`Direction::Right`]
-    /// - [`RotationDirection::NoRotation`] для [`Direction::Down`]
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::core::{Direction, RotationDirection};
-    ///
-    /// assert_eq!(
-    ///     Direction::Left.to_rotation_direction(),
-    ///     RotationDirection::CounterClockwise
-    /// );
-    /// assert_eq!(
-    ///     Direction::Right.to_rotation_direction(),
-    ///     RotationDirection::Clockwise
-    /// );
-    /// assert_eq!(
-    ///     Direction::Down.to_rotation_direction(),
-    ///     RotationDirection::NoRotation
-    /// );
-    /// ```
-    #[must_use]
-    pub const fn to_rotation_direction(self) -> RotationDirection {
-        match self {
-            Direction::Left => RotationDirection::CounterClockwise,
-            Direction::Right => RotationDirection::Clockwise,
-            Direction::Down => RotationDirection::NoRotation,
-        }
-    }
 }
 
 /// Направление вращения фигуры.
@@ -90,7 +54,6 @@ impl Direction {
 /// match rotation {
 ///     RotationDirection::Clockwise => println!("Вращение по часовой"),
 ///     RotationDirection::CounterClockwise => println!("Вращение против часовой"),
-///     RotationDirection::NoRotation => println!("Без вращения"),
 /// }
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -99,8 +62,6 @@ pub enum RotationDirection {
     Clockwise,
     /// Против часовой стрелки (90° влево).
     CounterClockwise,
-    /// Без вращения (используется для `Direction::Down`).
-    NoRotation,
 }
 
 /// Позиция в пространстве (x, y).
@@ -263,22 +224,6 @@ mod core_tests {
     }
 
     #[test]
-    fn test_direction_to_rotation_direction() {
-        assert_eq!(
-            Direction::Left.to_rotation_direction(),
-            RotationDirection::CounterClockwise
-        );
-        assert_eq!(
-            Direction::Right.to_rotation_direction(),
-            RotationDirection::Clockwise
-        );
-        assert_eq!(
-            Direction::Down.to_rotation_direction(),
-            RotationDirection::NoRotation
-        );
-    }
-
-    #[test]
     fn test_direction_debug() {
         assert_eq!(format!("{:?}", Direction::Left), "Left");
         assert_eq!(format!("{:?}", Direction::Right), "Right");
@@ -301,7 +246,6 @@ mod core_tests {
     fn test_rotation_direction_variants() {
         let _ = RotationDirection::Clockwise;
         let _ = RotationDirection::CounterClockwise;
-        let _ = RotationDirection::NoRotation;
     }
 
     #[test]
@@ -311,7 +255,6 @@ mod core_tests {
             format!("{:?}", RotationDirection::CounterClockwise),
             "CounterClockwise"
         );
-        assert_eq!(format!("{:?}", RotationDirection::NoRotation), "NoRotation");
     }
 
     #[test]

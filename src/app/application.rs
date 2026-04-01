@@ -89,16 +89,13 @@ impl Application {
     ///
     /// # Исправление аудита 2026-03-30
     /// Использует Canvas::try_default() для безопасной инициализации с обработкой ошибок.
+    ///
+    /// # Исправление аудита 2026-04-01 (C1)
+    /// Упрощена обработка ошибок: используется прямой возврат через `?` оператор
+    /// вместо избыточного `.map_err()` с логированием.
     fn initialize_terminal() -> Result<(Canvas, KeyReader), GameError> {
         // Проверка размера терминала
-        let (width, height) = terminal_size().map_err(|e: std::io::Error| {
-            let msg = format!(
-                "Ошибка: не удалось получить размер терминала: {e}.\n\
-                 Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов."
-            );
-            eprintln!("{msg}");
-            GameError::IoError(e)
-        })?;
+        let (width, height) = terminal_size()?;
 
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
             let msg = format!(
@@ -112,11 +109,8 @@ impl Application {
 
         // Инициализация Canvas с безопасной обработкой ошибок (Исправление аудита #1)
         // Используем try_default() вместо new() для поддержки fallback режима
-        let canvas = Canvas::try_default().map_err(|e| {
-            let msg = format!("Ошибка инициализации терминала: {e}");
-            eprintln!("{msg}");
-            GameError::IoError(std::io::Error::other(msg))
-        })?;
+        let canvas =
+            Canvas::try_default().map_err(|e| GameError::IoError(std::io::Error::other(e)))?;
 
         let input = KeyReader::new();
 

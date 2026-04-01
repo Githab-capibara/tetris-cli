@@ -27,9 +27,11 @@ fn test_types_no_cyclic_dependencies() {
     use crate::types::{Direction, RotationDirection, UpdateEndState};
 
     // Проверяем, что типы работают независимо
-    let dir = Direction::Left;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::CounterClockwise);
+    let _dir = Direction::Left;
+    let _dir = Direction::Right;
+    let _dir = Direction::Down;
+    let _rotation = RotationDirection::Clockwise;
+    let _rotation = RotationDirection::CounterClockwise;
 
     let state = UpdateEndState::Continue;
     assert_eq!(format!("{:?}", state), "Continue");
@@ -344,26 +346,6 @@ fn test_arch_module_boundaries() {
     assert_eq!(game_state.score(), 0, "GameState должен работать");
     assert!(config.validate(), "ControlsConfig должен работать");
     assert!(matches!(shape, ShapeType::T), "ShapeType должен работать");
-}
-
-/// Проверка, что типы из types.rs не зависят от игровых модулей.
-#[test]
-fn test_types_independence() {
-    use crate::types::{Direction, RotationDirection};
-
-    // Direction должен работать независимо от game модуля
-    let dir = Direction::Left;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::CounterClockwise);
-
-    let dir = Direction::Right;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::Clockwise);
-
-    // Direction::Down теперь возвращает RotationDirection::NoRotation
-    let dir = Direction::Down;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::NoRotation);
 }
 
 // ============================================================================

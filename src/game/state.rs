@@ -628,8 +628,8 @@ impl GameState {
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
-        use crate::validation::ValidationService;
         use crate::errors::GameError;
+        use crate::validation::ValidationService;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value) {
@@ -669,8 +669,8 @@ impl GameState {
     /// # DRY-2: Централизация валидации
     /// Использует `ValidationService::validate_f32_finite()` для валидации.
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
-        use crate::validation::ValidationService;
         use crate::errors::GameError;
+        use crate::validation::ValidationService;
 
         // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
         if let Err(e) = ValidationService::validate_f32_finite(value as f32) {

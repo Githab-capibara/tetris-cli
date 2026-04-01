@@ -31,18 +31,21 @@ fn test_all_tetromino_creation() {
     ];
 
     for (shape_type, expected_fg, expected_coords) in shapes {
-    let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
+        let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
         assert_eq!(
-            tetromino.shape(), shape_type,
+            tetromino.shape(),
+            shape_type,
             "Фигура должна быть типа {shape_type:?}"
         );
         assert_eq!(
-            tetromino.fg(), expected_fg,
+            tetromino.fg(),
+            expected_fg,
             "Индекс цвета должен быть {expected_fg}"
         );
         assert_eq!(
-            tetromino.coords(), expected_coords,
+            tetromino.coords(),
+            expected_coords,
             "Координаты фигуры {shape_type:?} должны совпадать"
         );
     }
@@ -64,7 +67,8 @@ fn test_tetromino_t_rotation() {
     // Вращение по часовой
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "Координаты должны измениться после вращения"
     );
 
@@ -73,7 +77,8 @@ fn test_tetromino_t_rotation() {
         t.rotate(RotationDirection::Clockwise);
     }
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "После 4 вращений фигура должна вернуться в исходное состояние"
     );
 }
@@ -146,14 +151,16 @@ fn test_tetromino_o_no_rotation() {
     // Вращение по часовой
     t.rotate(RotationDirection::Clockwise);
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура не должна вращаться по часовой"
     );
 
     // Вращение против часовой
     t.rotate(RotationDirection::CounterClockwise);
     assert_eq!(
-        t.coords(), original_coords,
+        t.coords(),
+        original_coords,
         "O-фигура не должна вращаться против часовой"
     );
 }
@@ -175,7 +182,8 @@ fn test_tetromino_i_rotation() {
     // Исходная: (0,-1), (0,0), (0,1), (0,2) - вертикальная
     // После вращения: (1,0), (0,0), (-1,0), (-2,0) - горизонтальная
     assert_eq!(
-        t.coords()[0].1, 0,
+        t.coords()[0].1,
+        0,
         "После вращения все блоки должны быть на одной строке"
     );
 }
@@ -205,7 +213,8 @@ fn test_shape_color_index_match() {
 
         // Проверяем, что индекс цвета совпадает с индексом фигуры
         assert_eq!(
-            t.fg(), index as u8,
+            t.fg(),
+            index as u8,
             "Индекс цвета должен совпадать с индексом фигуры для {shape:?}"
         );
     }

@@ -351,8 +351,7 @@ fn test_modularity_hmac_centralization() {
 
     // hmac_sign и hmac_verify должны быть определены в hmac.rs
     assert!(
-        hmac_content.contains("pub fn hmac_sign")
-            || hmac_content.contains("pub fn hmac_verify"),
+        hmac_content.contains("pub fn hmac_sign") || hmac_content.contains("pub fn hmac_verify"),
         "hmac_sign и hmac_verify должны быть определены в crypto/hmac.rs"
     );
 
@@ -407,7 +406,10 @@ fn test_modularity_validation_service() {
 
     // Тест 1: validate_f32_finite существует и работает
     let result = ValidationService::validate_f32_finite(1.5);
-    assert!(result.is_ok(), "validate_f32_finite(1.5) должен возвращать Ok");
+    assert!(
+        result.is_ok(),
+        "validate_f32_finite(1.5) должен возвращать Ok"
+    );
 
     let result_nan = ValidationService::validate_f32_finite(f32::NAN);
     assert!(
@@ -417,7 +419,10 @@ fn test_modularity_validation_service() {
 
     // Тест 2: validate_u32_range существует и работает
     let result = ValidationService::validate_u32_range(5, 1, 10);
-    assert!(result.is_ok(), "validate_u32_range(5, 1, 10) должен возвращать Ok");
+    assert!(
+        result.is_ok(),
+        "validate_u32_range(5, 1, 10) должен возвращать Ok"
+    );
 
     let result_invalid = ValidationService::validate_u32_range(15, 1, 10);
     assert!(
@@ -614,6 +619,7 @@ fn test_code_rows_cleared_zero_protection() {
 #[test]
 fn test_code_has_collision_logic() {
     use std::fs;
+    use tetris_cli::game::board::GameBoard;
 
     let collision_path = "src/game/logic/collision.rs";
     let content = fs::read_to_string(collision_path).expect("Failed to read collision.rs");
@@ -625,8 +631,6 @@ fn test_code_has_collision_logic() {
     );
 
     // Интеграционный тест - функция работает корректно
-    use tetris_cli::game::board::GameBoard;
-
     let board = GameBoard::default();
     assert!(board.get_block(0, 0).is_some());
 }
@@ -736,10 +740,8 @@ fn test_scalability_thread_safe_leaderboard() {
 
     // Тест 3: ThreadSafeLeaderboard::get_best_score() безопасен
     let best_score = leaderboard.get_best_score();
-    assert!(
-        best_score >= 0,
-        "get_best_score() должен возвращать корректное значение"
-    );
+    // best_score имеет unsigned тип, поэтому >= 0 всегда истинно
+    let _ = best_score; // Просто проверяем что вызов работает
 }
 
 /// Тест 22: HMAC ключ константность
@@ -852,14 +854,12 @@ fn test_scalability_shapetype_naming() {
     let shape_type_path = "src/tetromino/shape_type.rs";
     let events_path = "src/game/types.rs";
 
-    let shape_content =
-        fs::read_to_string(shape_type_path).expect("Failed to read shape_type.rs");
+    let shape_content = fs::read_to_string(shape_type_path).expect("Failed to read shape_type.rs");
     let events_content = fs::read_to_string(events_path).expect("Failed to read types.rs");
 
     // ShapeType должен существовать
     assert!(
-        shape_content.contains("pub enum ShapeType")
-            || shape_content.contains("enum ShapeType"),
+        shape_content.contains("pub enum ShapeType") || shape_content.contains("enum ShapeType"),
         "ShapeType enum должен существовать"
     );
 
@@ -917,6 +917,7 @@ fn test_scalability_menu_loop_refactoring() {
 #[test]
 fn test_additional_sanitize_optimization() {
     use std::fs;
+    use tetris_cli::highscore::sanitize::sanitize_player_name;
 
     let sanitize_path = "src/validation/name.rs";
     let content = fs::read_to_string(sanitize_path).unwrap_or_else(|_| {
@@ -924,8 +925,6 @@ fn test_additional_sanitize_optimization() {
     });
 
     // Функция sanitize_player_name существует и работает
-    use tetris_cli::highscore::sanitize::sanitize_player_name;
-
     let name = sanitize_player_name("Player123");
     assert_eq!(name, "Player123");
 
@@ -946,6 +945,7 @@ fn test_additional_sanitize_optimization() {
 #[test]
 fn test_additional_find_filled_lines_optimization() {
     use std::fs;
+    use tetris_cli::game::scoring::lines::find_filled_lines;
 
     let lines_path = "src/game/scoring/lines.rs";
     let content = fs::read_to_string(lines_path).expect("Failed to read lines.rs");
@@ -957,11 +957,10 @@ fn test_additional_find_filled_lines_optimization() {
     );
 
     // Интеграционный тест - функция работает
-    use tetris_cli::game::scoring::lines::find_filled_lines;
-
+    // count имеет unsigned тип, поэтому >= 0 всегда истинно
     let board = [[0i8; 10]; 20];
-    let (count, mask) = find_filled_lines(&board);
-    assert!(count >= 0);
+    let (count, _mask) = find_filled_lines(&board);
+    let _ = count; // Просто проверяем что вызов работает
 }
 
 /// Тест 29: Проверка размера Tetromino

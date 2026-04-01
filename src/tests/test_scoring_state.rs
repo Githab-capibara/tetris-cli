@@ -160,9 +160,9 @@ fn test_scoring_state_set_fall_speed() {
 fn test_scoring_state_animating_rows_mask() {
     let state = GameState::new();
 
-    // Маска анимируемых строк должна быть >= 0
+    // Маска анимируемых строк — unsigned тип, просто проверяем вызов
     let mask = state.animating_rows_mask();
-    assert!(mask >= 0, "Маска анимируемых строк должна быть >= 0");
+    let _ = mask;
 }
 
 /// Тест 10: Проверка метода set_animating_rows_mask()
@@ -196,10 +196,8 @@ fn test_scoring_state_stats() {
     let stats = state.stats();
 
     // Проверяем что статистика существует
-    assert!(
-        stats.total_pieces() >= 0,
-        "Общее количество фигур должно быть >= 0"
-    );
+    let total = stats.total_pieces();
+    let _ = total;
 }
 
 /// Тест 12: Проверка метода stats_mut()
@@ -215,10 +213,7 @@ fn test_scoring_state_stats_mut() {
     // Проверяем что можем модифицировать статистику
     let initial_pieces = stats.total_pieces();
     // Статистика должна быть доступна для модификации
-    assert!(
-        initial_pieces >= 0,
-        "Общее количество фигур должно быть >= 0"
-    );
+    let _ = initial_pieces;
 }
 
 /// Тест 13: Проверка метода get_blocks()
@@ -304,5 +299,5 @@ fn test_scoring_state_comprehensive() {
 
     // Проверяем что статистика доступна
     let stats = state.stats();
-    assert!(stats.total_pieces() >= 0);
+    let _ = stats.total_pieces();
 }

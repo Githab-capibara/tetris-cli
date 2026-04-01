@@ -213,7 +213,7 @@ fn test_modes_integration_movement_in_all_modes() {
 /// Проверяет механику призрачной фигуры в каждом режиме.
 #[test]
 fn test_modes_integration_ghost_piece_in_all_modes() {
-    use crate::types::{Direction, RotationDirection};
+    use crate::types::Direction;
 
     let classic = GameState::new();
     let sprint = GameState::new_sprint();

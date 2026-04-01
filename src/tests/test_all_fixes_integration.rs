@@ -421,7 +421,12 @@ fn test_canvas_functions() {
 fn test_tetromino_copy_semantics() {
     use crate::tetromino::{ShapeType, Tetromino};
 
-    let original = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
+    let original = Tetromino::new(
+        (4.0, 0.0),
+        ShapeType::T,
+        [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        0,
+    );
 
     // Копирование через присваивание (Copy семантика)
     let copied = original;
@@ -430,7 +435,8 @@ fn test_tetromino_copy_semantics() {
     assert_eq!(original.pos(), copied.pos(), "Позиции должны совпадать");
     assert_eq!(original.shape(), copied.shape(), "Фигуры должны совпадать");
     assert_eq!(
-        original.coords(), copied.coords(),
+        original.coords(),
+        copied.coords(),
         "Координаты должны совпадать"
     );
     assert_eq!(original.fg(), copied.fg(), "Цвет должен совпадать");

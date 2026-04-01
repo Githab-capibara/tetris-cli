@@ -178,7 +178,8 @@ fn test_game_state_tetromino_interaction() {
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        curr.shape() as u8, curr.fg(),
+        curr.shape() as u8,
+        curr.fg(),
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
 }
@@ -321,7 +322,7 @@ fn test_all_shapes_in_game() {
 
     for &shape_type in &shapes {
         // Создаём фигуру вручную
-    let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
+        let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
 
         // Проверяем, что фигура валидна
         assert!(tetromino.fg() < 7, "Индекс цвета должен быть валидным");

@@ -144,8 +144,11 @@ pub(crate) fn try_wall_kick_offsets(
         pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);
 
-        if super::collision::check_rotation_collision(state, &kicked_shape.coords(), kicked_shape.pos())
-        {
+        if super::collision::check_rotation_collision(
+            state,
+            &kicked_shape.coords(),
+            kicked_shape.pos(),
+        ) {
             return Some((offset_x, offset_y));
         }
     }

@@ -51,7 +51,8 @@ fn test_game_state_next_shape_exists() {
 
     // Проверяем, что тип фигуры соответствует цвету
     assert_eq!(
-        next_shape.shape() as u8, next_shape.fg(),
+        next_shape.shape() as u8,
+        next_shape.fg(),
         "Индекс цвета должен соответствовать типу фигуры"
     );
 }
@@ -238,7 +239,12 @@ fn test_ghost_piece_boundary() {
 /// Проверяет корректность изменения координат при вращении.
 #[test]
 fn test_tetromino_rotate_clockwise() {
-    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
+    let mut tetromino = Tetromino::new(
+        (4.0, 0.0),
+        ShapeType::T,
+        [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        0,
+    );
 
     // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
     // Вращение по часовой: (x,y) -> (-y,x)
@@ -262,7 +268,12 @@ fn test_tetromino_rotate_clockwise() {
 /// Проверяет корректность изменения координат при вращении в обратную сторону.
 #[test]
 fn test_tetromino_rotate_counter_clockwise() {
-    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
+    let mut tetromino = Tetromino::new(
+        (4.0, 0.0),
+        ShapeType::T,
+        [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        0,
+    );
 
     // Вращение против часовой: (x,y) -> (y,-x)
     tetromino.rotate(RotationDirection::CounterClockwise);
@@ -280,21 +291,28 @@ fn test_tetromino_rotate_counter_clockwise() {
 /// Квадрат - единственная фигура, которая не меняет форму при вращении.
 #[test]
 fn test_tetromino_o_no_rotate() {
-    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::O, [(0, 0), (1, 0), (0, 1), (1, 1)], 5);
+    let mut tetromino = Tetromino::new(
+        (4.0, 0.0),
+        ShapeType::O,
+        [(0, 0), (1, 0), (0, 1), (1, 1)],
+        5,
+    );
 
     let original_coords = tetromino.coords();
 
     // Вращение по часовой
     tetromino.rotate(RotationDirection::Clockwise);
     assert_eq!(
-        tetromino.coords(), original_coords,
+        tetromino.coords(),
+        original_coords,
         "Квадрат не должен вращаться по часовой"
     );
 
     // Вращение против часовой
     tetromino.rotate(RotationDirection::CounterClockwise);
     assert_eq!(
-        tetromino.coords(), original_coords,
+        tetromino.coords(),
+        original_coords,
         "Квадрат не должен вращаться против часовой"
     );
 }
@@ -304,7 +322,12 @@ fn test_tetromino_o_no_rotate() {
 /// Проверяет, что 4 вращения возвращают фигуру в исходное состояние.
 #[test]
 fn test_tetromino_full_rotation_cycle() {
-    let mut tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, [(-1, 0), (0, 0), (1, 0), (0, 1)], 0);
+    let mut tetromino = Tetromino::new(
+        (4.0, 0.0),
+        ShapeType::T,
+        [(-1, 0), (0, 0), (1, 0), (0, 1)],
+        0,
+    );
 
     let original_coords = tetromino.coords();
 
@@ -314,7 +337,8 @@ fn test_tetromino_full_rotation_cycle() {
     }
 
     assert_eq!(
-        tetromino.coords(), original_coords,
+        tetromino.coords(),
+        original_coords,
         "После 4 вращений фигура должна вернуться в исходное состояние"
     );
 }
@@ -349,7 +373,8 @@ fn test_all_tetromino_rotate() {
         if *shape_type == ShapeType::O {
             // Квадрат не должен измениться
             assert_eq!(
-                tetromino.coords(), original_coords,
+                tetromino.coords(),
+                original_coords,
                 "Квадрат (O) не должен вращаться"
             );
         } else {

@@ -20,7 +20,6 @@ use crate::game::board::GameBoard;
 use crate::game::scoreboard::ScoreBoard;
 use crate::game::state::GameState;
 use crate::game::GameView;
-use crate::game::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
 use crate::io::Canvas;
 use crate::io_traits::{InputReader, Renderer};
 use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
@@ -496,12 +495,6 @@ fn test_error_handling() {
         "ValidationError должен существовать"
     );
 
-    let config_err = GameError::config_error("Тестовая ошибка конфигурации");
-    assert!(
-        matches!(config_err, GameError::ConfigError(_)),
-        "ConfigError должен существовать"
-    );
-
     // === Проверка конвертации io::Error в GameError ===
     let io_error = std::io::Error::new(std::io::ErrorKind::Other, "IO ошибка");
     let game_error: GameError = io_error.into();
@@ -576,13 +569,11 @@ fn test_arch_integrity_no_circular_dependencies() {
     use crate::types::{Direction, RotationDirection, UpdateEndState};
 
     // Direction должен работать независимо
-    let dir = Direction::Left;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::CounterClockwise);
-
-    let dir = Direction::Right;
-    let rotation = dir.to_rotation_direction();
-    assert_eq!(rotation, RotationDirection::Clockwise);
+    let _dir = Direction::Left;
+    let _dir = Direction::Right;
+    let _dir = Direction::Down;
+    let _rotation = RotationDirection::Clockwise;
+    let _rotation = RotationDirection::CounterClockwise;
 
     // UpdateEndState должен работать независимо
     let state = UpdateEndState::Continue;

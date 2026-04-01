@@ -134,7 +134,6 @@ const TEST_CONSTANT_VALUE: i32 = 12345;
 #[test]
 fn test_cfg_attr_only_in_test_mode() {
     // В тестовом режиме dead_code разрешён
-    let _unused_var = "This is unused in test";
 
     // Создаём GameState для проверки
     let state = GameState::new();
