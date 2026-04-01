@@ -21,8 +21,8 @@ use termion::{
     screen::ToMainScreen,
 };
 
-use super::terminal_backend::{TerminalBackend, TerminalInputBackend};
 use super::key_reader::KeyReader;
+use super::terminal_backend::{TerminalBackend, TerminalInputBackend};
 
 /// Реализация TerminalBackend на основе termion.
 ///
@@ -39,15 +39,15 @@ impl TermionBackend {
     /// Возвращает ошибку если не удалось инициализировать raw-режим терминала
     pub fn new() -> io::Result<Self> {
         let mut out = stdout().into_raw_mode()?;
-        
+
         // Очистка экрана и перемещение курсора
         write!(out, "{}{}", All, Goto(1, 1))?;
         out.flush()?;
-        
+
         // Скрытие курсора
         write!(out, "{Hide}")?;
         out.flush()?;
-        
+
         Ok(Self { out })
     }
 
@@ -59,13 +59,7 @@ impl TermionBackend {
 }
 
 impl TerminalBackend for TermionBackend {
-    fn draw_string(
-        &mut self,
-        text: &str,
-        x: u16,
-        y: u16,
-        fg: &dyn Color,
-    ) -> io::Result<()> {
+    fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) -> io::Result<()> {
         write!(
             self.out,
             "{}{}{}{}{}{}",
@@ -78,13 +72,7 @@ impl TerminalBackend for TermionBackend {
         )
     }
 
-    fn draw_strings(
-        &mut self,
-        lines: &[&str],
-        x: u16,
-        y: u16,
-        fg: &dyn Color,
-    ) -> io::Result<()> {
+    fn draw_strings(&mut self, lines: &[&str], x: u16, y: u16, fg: &dyn Color) -> io::Result<()> {
         let mut current_y = y;
         for line in lines {
             write!(

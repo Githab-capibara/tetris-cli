@@ -320,7 +320,7 @@ impl GameState {
         let figure_manager = FigureManager::new();
         let animation_state = AnimationState::new();
         let mut stats = GameStats::new();
-        
+
         // Добавляем первую фигуру в статистику
         stats.add_piece(figure_manager.curr_shape().shape());
         if start_timer {
@@ -996,7 +996,8 @@ impl GameState {
         *self.figure_manager.curr_shape_mut().pos_mut() = (SPAWN_X, 0.0);
 
         // Добавляем в статистику
-        self.stats.add_piece(self.figure_manager.curr_shape().shape());
+        self.stats
+            .add_piece(self.figure_manager.curr_shape().shape());
 
         // Проверяем коллизию при появлении (игра окончена если коллизия)
         if !self.can_move_curr_shape_direction(crate::types::Direction::Down) {
