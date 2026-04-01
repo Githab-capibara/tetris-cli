@@ -85,7 +85,7 @@ impl LeaderboardStorage {
 
         // Сортируем по убыванию счёта
         self.entries
-            .sort_by(|a, b| b.score().unwrap_or(0).cmp(&a.score().unwrap_or(0)));
+            .sort_by_key(|b| std::cmp::Reverse(b.score().unwrap_or(0)));
 
         // Обрезаем до максимального размера
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
