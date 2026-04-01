@@ -258,7 +258,7 @@ fn test_h5_h6_errors_documentation_exists() {
     let _entries = leaderboard.get_entries();
 
     // Тест проходит если код компилируется с документацией
-    assert!(true, "Код должен компилироваться с документацией");
+    // Код компилируется - тест проходит
 }
 
 /// Тест H7: Константы FPS вынесены в начало метода
@@ -334,7 +334,7 @@ fn test_h9_compute_signature_method_exists() {
     );
 
     // Тест проходит если код компилируется
-    assert!(true, "Метод compute_signature() должен существовать");
+    // Метод compute_signature() существует - тест проходит
 }
 
 /// Тест H10: Консолидированные методы загрузки конфига
@@ -409,7 +409,7 @@ fn test_m1_no_redundant_ignore_examples_in_lib() {
     assert_eq!(salt.len(), 64, "Длина соли должна быть 64 символа");
 
     // Тест проходит если код компилируется без предупреждений
-    assert!(true, "Код должен компилироваться без предупреждений");
+    // Код компилируется - тест проходит
 }
 
 /// Тест M3: Упрощённый Drop в canvas.rs
@@ -427,7 +427,7 @@ fn test_m3_simplified_canvas_drop() {
     drop(canvas);
 
     // Тест проходит если Drop не паникует
-    assert!(true, "Drop не должен паниковать");
+    // Drop не паниковал - тест проходит
 }
 
 /// Тест M4: #[must_use] только на критических методах
@@ -447,7 +447,7 @@ fn test_m4_must_use_only_on_critical_methods() {
     assert_eq!(sig.len(), 64);
 
     // Тест проходит если код компилируется с #[must_use] атрибутами
-    assert!(true, "Код должен компилироваться с #[must_use] атрибутами");
+    // Код компилируется - тест проходит
 }
 
 /// Тест M5: Мёртвый код помечен #[allow(dead_code)]
@@ -496,7 +496,7 @@ fn test_m7_sanitize_removed_uses_validation_name() {
     assert!(!is_valid_name_char('!'));
 
     // Тест проходит если validation::name модуль доступен
-    assert!(true, "validation::name модуль должен быть доступен");
+    // Модуль доступен - тест проходит
 }
 
 /// Тест M10: Оптимизация sanitize_player_name() в один проход
@@ -605,7 +605,7 @@ fn test_l4_simplified_exports() {
     let _leaderboard = Leaderboard::default();
 
     // Тест проходит если все типы экспортированы корректно
-    assert!(true, "Все типы должны быть экспортированы из exports.rs");
+    // Типы экспортированы - тест проходит
 }
 
 // ============================================================================
@@ -759,5 +759,5 @@ fn test_all_26_audit_fixes_complete_integration() {
     let _state = ExportedState::new();
 
     // Все 26 исправлений работают корректно
-    assert!(true, "Все 26 исправлений аудита работают корректно");
+    // Исправления работают - тест проходит
 }
