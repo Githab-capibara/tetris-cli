@@ -15,6 +15,7 @@
 #![allow(clippy::items_after_statements)]
 
 use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
+use crate::game::access::LevelAccess;
 use crate::game::state::GameState;
 
 // ============================================================================

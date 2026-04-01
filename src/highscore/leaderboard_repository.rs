@@ -132,7 +132,7 @@ mod tests {
         // Загрузка должна вернуть пустую таблицу если файл не существует
         let leaderboard = LeaderboardRepository::load();
         // Пустая таблица должна иметь 0 записей
-        assert_eq!(leaderboard.entries().len(), 0);
+        assert_eq!(leaderboard.get_entries().len(), 0);
     }
 
     #[test]
