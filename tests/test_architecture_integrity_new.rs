@@ -69,6 +69,7 @@ mod tests {
         for line in lines {
             let trimmed = line.trim();
             if trimmed.starts_with("use crate::game::") && !trimmed.contains("//") {
+                #[allow(clippy::panic_in_if_then)]
                 panic!(
                     "io/mod.rs не должен импортировать из crate::game::\n\
                      Нарушение: {trimmed}"

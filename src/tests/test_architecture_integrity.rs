@@ -499,7 +499,7 @@ fn test_error_handling() {
     );
 
     // === Проверка конвертации io::Error в GameError ===
-    let io_error = std::io::Error::new(std::io::ErrorKind::Other, "IO ошибка");
+    let io_error = std::io::Error::other("IO ошибка");
     let game_error: GameError = io_error.into();
     assert!(
         matches!(game_error, GameError::IoError(_)),
