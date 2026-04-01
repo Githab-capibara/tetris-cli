@@ -192,7 +192,10 @@ fn test_traits_are_narrow() {
 
     // ScoreMutable - изменение очков
     fn requires_score_mutable<
-        S: ScoreAccess + ScoreMutable + crate::game::access::LevelAccess + crate::game::access::LinesAccess,
+        S: ScoreAccess
+            + ScoreMutable
+            + crate::game::access::LevelAccess
+            + crate::game::access::LinesAccess,
     >(
         score: &mut S,
     ) {
@@ -245,7 +248,10 @@ fn test_dependencies_are_acyclic() {
     use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
     fn requires_traits<
         B: BoardReadonly + BoardMutable,
-        S: ScoreAccess + ScoreMutable + crate::game::access::LevelAccess + crate::game::access::LinesAccess,
+        S: ScoreAccess
+            + ScoreMutable
+            + crate::game::access::LevelAccess
+            + crate::game::access::LinesAccess,
     >(
         _board: &B,
         _score: &S,

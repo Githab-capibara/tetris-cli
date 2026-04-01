@@ -70,7 +70,7 @@ impl LeaderboardStorage {
     /// 3. Обрезает до MAX_LEADERBOARD_SIZE
     pub fn add_entry(&mut self, entry: LeaderboardEntry) -> bool {
         let score = entry.score().unwrap_or(0);
-        
+
         // Проверяем, войдёт ли запись в топ-5
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный счёт
@@ -80,19 +80,18 @@ impl LeaderboardStorage {
                 }
             }
         }
-        
+
         self.entries.push(entry);
-        
+
         // Сортируем по убыванию счёта
-        self.entries.sort_by(|a, b| {
-            b.score().unwrap_or(0).cmp(&a.score().unwrap_or(0))
-        });
-        
+        self.entries
+            .sort_by(|a, b| b.score().unwrap_or(0).cmp(&a.score().unwrap_or(0)));
+
         // Обрезаем до максимального размера
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
             self.entries.truncate(MAX_LEADERBOARD_SIZE);
         }
-        
+
         true
     }
 
@@ -121,7 +120,7 @@ impl LeaderboardStorage {
     pub fn get_best_score(&self) -> u128 {
         self.entries
             .first()
-            .and_then(|e| e.score())
+            .and_then(super::leaderboard::LeaderboardEntry::score)
             .unwrap_or(0)
     }
 
@@ -201,7 +200,7 @@ mod tests {
         storage.add_score("Player1", 1000);
         storage.add_score("Player2", 2000);
         storage.add_score("Player3", 500);
-        
+
         // Проверяем что отсортировано по убыванию
         assert_eq!(storage.get_best_score(), 2000);
         assert_eq!(storage.get_entry(0).unwrap().score(), Some(2000));
@@ -212,12 +211,12 @@ mod tests {
     #[test]
     fn test_storage_max_size() {
         let mut storage = LeaderboardStorage::new();
-        
+
         // Добавляем 6 записей (максимум 5)
         for i in 1..=6 {
             storage.add_score(&format!("Player{i}"), i * 100);
         }
-        
+
         // Должно остаться только 5 записей
         assert_eq!(storage.len(), 5);
         // Лучший счёт должен быть 600 (последний добавленный)

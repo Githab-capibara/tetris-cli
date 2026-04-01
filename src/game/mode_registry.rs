@@ -53,10 +53,10 @@ impl ModeRegistry {
         let mut registry = Self {
             factories: HashMap::new(),
         };
-        
+
         // Регистрируем стандартные режимы
         registry.register_default_modes();
-        
+
         registry
     }
 
@@ -65,7 +65,7 @@ impl ModeRegistry {
         self.register("classic", Box::new(|| Box::new(ClassicMode)));
         self.register("sprint", Box::new(|| Box::new(SprintMode::new())));
         self.register("marathon", Box::new(|| Box::new(MarathonMode::new())));
-        
+
         // Русские названия для обратной совместимости
         self.register("классика", Box::new(|| Box::new(ClassicMode)));
         self.register("спринт", Box::new(|| Box::new(SprintMode::new())));
@@ -127,7 +127,10 @@ impl ModeRegistry {
     /// # Возвращает
     /// Вектор с именами всех зарегистрированных режимов
     pub fn registered_names(&self) -> Vec<&str> {
-        self.factories.keys().map(|s| s.as_str()).collect()
+        self.factories
+            .keys()
+            .map(std::string::String::as_str)
+            .collect()
     }
 
     /// Получить глобальный реестр режимов.
@@ -139,7 +142,7 @@ impl ModeRegistry {
     /// Использует `std::sync::OnceLock` для ленивой инициализации.
     pub fn global() -> &'static Self {
         use std::sync::OnceLock;
-        
+
         static REGISTRY: OnceLock<ModeRegistry> = OnceLock::new();
         REGISTRY.get_or_init(ModeRegistry::new)
     }
@@ -198,13 +201,13 @@ mod tests {
     #[test]
     fn test_registry_create() {
         let registry = ModeRegistry::new();
-        
+
         let classic = registry.create("classic").unwrap();
         assert_eq!(classic.name(), "Классика");
-        
+
         let sprint = registry.create("sprint").unwrap();
         assert_eq!(sprint.name(), "Спринт");
-        
+
         let marathon = registry.create("marathon").unwrap();
         assert_eq!(marathon.name(), "Марафон");
     }

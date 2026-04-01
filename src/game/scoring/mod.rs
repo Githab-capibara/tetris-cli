@@ -114,7 +114,9 @@ pub use super::access::{
 ///     state.set_score(new_score);
 /// }
 /// ```
-pub trait ScoringState: ScoreAccess + ScoreMutable + LevelAccess + LinesAccess + ComboAccess {
+pub trait ScoringState:
+    ScoreAccess + ScoreMutable + LevelAccess + LinesAccess + ComboAccess
+{
     /// Получить скорость падения.
     fn fall_speed(&self) -> f32;
 

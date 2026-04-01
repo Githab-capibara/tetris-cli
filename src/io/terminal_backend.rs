@@ -50,13 +50,7 @@ pub trait TerminalBackend {
     ///
     /// # Errors
     /// Возвращает ошибку при неудачной записи в терминал
-    fn draw_string(
-        &mut self,
-        text: &str,
-        x: u16,
-        y: u16,
-        fg: &dyn Color,
-    ) -> io::Result<()>;
+    fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) -> io::Result<()>;
 
     /// Отрисовать строки в указанных позициях.
     ///
@@ -68,13 +62,7 @@ pub trait TerminalBackend {
     ///
     /// # Errors
     /// Возвращает ошибку при неудачной записи в терминал
-    fn draw_strings(
-        &mut self,
-        lines: &[&str],
-        x: u16,
-        y: u16,
-        fg: &dyn Color,
-    ) -> io::Result<()>;
+    fn draw_strings(&mut self, lines: &[&str], x: u16, y: u16, fg: &dyn Color) -> io::Result<()>;
 
     /// Очистить экран.
     ///

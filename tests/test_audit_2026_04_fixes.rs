@@ -66,7 +66,7 @@ fn test_c2_key_reader_handles_ascii_correctly() {
     for &ch in &ascii_chars {
         // Проверяем что ASCII байты находятся в допустимом диапазоне 1-255
         assert!(
-            ch >= 1 && ch <= 255,
+            (1..=255).contains(&ch),
             "ASCII символ {ch} должен быть в диапазоне 1-255"
         );
     }

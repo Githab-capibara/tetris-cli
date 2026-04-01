@@ -43,12 +43,7 @@ impl LeaderboardValidator {
     #[must_use]
     pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
         let salt_name_score = format!("{salt}{name}{score_value}");
-        hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            salt,
-            &salt_name_score,
-            hash,
-        )
+        hmac_verify_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score, hash)
     }
 
     /// Вычислить HMAC подпись для записи.
@@ -116,7 +111,7 @@ mod tests {
         let salt = "test_salt";
         let name = "Player";
         let score = 1000u128;
-        
+
         let hash = LeaderboardValidator::compute_signature(salt, name, score);
         assert!(!hash.is_empty());
         assert_eq!(hash.len(), 64); // SHA256 hex = 64 символа
@@ -127,7 +122,7 @@ mod tests {
         let salt = "test_salt";
         let name = "Player";
         let score = 1000u128;
-        
+
         let hash = LeaderboardValidator::compute_signature(salt, name, score);
         assert!(LeaderboardValidator::verify_hash(salt, name, score, &hash));
     }
@@ -138,15 +133,17 @@ mod tests {
         let name = "Player";
         let score = 1000u128;
         let wrong_hash = "invalid_hash";
-        
-        assert!(!LeaderboardValidator::verify_hash(salt, name, score, wrong_hash));
+
+        assert!(!LeaderboardValidator::verify_hash(
+            salt, name, score, wrong_hash
+        ));
     }
 
     #[test]
     fn test_validator_create_entry() {
         let name = "Player";
         let score = 1000u128;
-        
+
         let (salt, hash) = LeaderboardValidator::create_validated_entry(name, score);
         assert!(!salt.is_empty());
         assert!(!hash.is_empty());
