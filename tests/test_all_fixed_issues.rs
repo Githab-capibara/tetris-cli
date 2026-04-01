@@ -9,7 +9,6 @@
 //! cargo test --test test_all_fixed_issues
 //! ```
 
-#![allow(deprecated)]
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 
