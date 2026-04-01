@@ -141,24 +141,21 @@ impl Drop for Canvas {
     /// Упрощён сброс до минимально необходимых операций с минимальным риском паники.
     /// Используем write_all вместо write для атомарности операции.
     ///
-    /// # Исправление аудита 2026-03-30
-    /// Обёрнуто в catch_unwind для предотвращения паники при панике.
-    ///
     /// # M3: Обработка ошибок
     /// Добавлено логирование ошибок с префиксом "[PANIC SAFE]" для отладки проблем с терминалом.
+    ///
+    /// # Исправление аудита 2026-04-01 (M3)
+    /// Убран catch_unwind из Drop реализации. Операции write и flush не паникуют,
+    /// поэтому catch_unwind избыточен.
     fn drop(&mut self) {
         // Минимальный сброс: только показ курсора и flush
-        // Используем write_all для атомарности записи
-        // Исправление аудита 2026-03-30: catch_unwind для предотвращения паники
-        // M3: логирование ошибок с префиксом "[PANIC SAFE]"
-        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            if let Err(e) = write!(self.out, "{Show}") {
-                eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {}", e);
-            }
-            if let Err(e) = self.out.flush() {
-                eprintln!("[PANIC SAFE] Не удалось сбросить буфер в Drop: {}", e);
-            }
-        }));
+        // Исправление M3: убран catch_unwind так как write/flush не паникуют
+        if let Err(e) = write!(self.out, "{Show}") {
+            eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {}", e);
+        }
+        if let Err(e) = self.out.flush() {
+            eprintln!("[PANIC SAFE] Не удалось сбросить буфер в Drop: {}", e);
+        }
     }
 }
 

@@ -670,6 +670,10 @@ impl GameState {
     ///
     /// # DRY-2: Централизация валидации
     /// Использует `ValidationService::validate_f32_finite()` для валидации.
+    ///
+    /// # Исправление аудита 2026-04-01 (H3)
+    /// Убран избыточный `.max(0.0)` после валидации. Валидация гарантирует что значение
+    /// уже валидно, дополнительное ограничение не требуется.
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
         use crate::validation::ValidationService;
@@ -682,7 +686,15 @@ impl GameState {
             )));
         }
 
-        self.land_timer = value.max(0.0);
+        // Исправление H3: проверка на неотрицательность вместо .max(0.0)
+        if value < 0.0 {
+            return Err(GameError::ValidationError(format!(
+                "Таймер приземления не может быть отрицательным: {}",
+                value
+            )));
+        }
+
+        self.land_timer = value;
         Ok(())
     }
 

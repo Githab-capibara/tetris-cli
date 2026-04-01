@@ -460,8 +460,13 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// assert!(config.validate());
     /// ```
+    ///
+    /// # Исправление аудита 2026-04-01 (M6)
+    /// Использует HashSet<u8> вместо [bool; 256] для более идиоматичного кода.
     #[must_use]
     pub fn validate(&self) -> bool {
+        use std::collections::HashSet;
+
         // Сбор всех клавиш в массив для проверки
         let keys = [
             self.move_left,
@@ -475,17 +480,16 @@ impl ControlsConfig {
             self.quit,
         ];
 
-        // Проверка диапазона значений (1-255) и дубликатов за один проход O(n)
-        // Оптимизация: используем массив [bool; 256] вместо HashSet для эффективности
-        let mut seen = [false; 256];
+        // Проверка диапазона значений (1-255) и дубликатов с использованием HashSet
+        // Исправление M6: используем HashSet<u8> вместо [bool; 256]
+        let mut seen = HashSet::new();
         for &key in &keys {
             // Проверка: клавиша должна быть в диапазоне 1-255
             // 0 - невалидное значение (NULL байт)
             // 255+ зарезервированы для специальных клавиш
-            if key == 0 || seen[key as usize] {
+            if key == 0 || !seen.insert(key) {
                 return false; // Дубликат найден или невалидное значение
             }
-            seen[key as usize] = true;
         }
 
         true

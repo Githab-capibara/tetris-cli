@@ -96,7 +96,7 @@ impl Application {
     /// Упрощена обработка ошибок: используется прямой возврат через `?` оператор
     /// вместо избыточного `.map_err()` с логированием.
     fn initialize_terminal() -> Result<(Canvas, KeyReader), GameError> {
-        // Проверка размера терминала
+        // Проверка размера терминала - используем прямой ? возврат (Исправление C1)
         let (width, height) = terminal_size()?;
 
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
@@ -111,6 +111,7 @@ impl Application {
 
         // Инициализация Canvas с безопасной обработкой ошибок (Исправление аудита #1)
         // Используем try_default() вместо new() для поддержки fallback режима
+        // Исправление C1: прямой ? возврат без map_err
         let canvas =
             Canvas::try_default().map_err(|e| GameError::IoError(std::io::Error::other(e)))?;
 
