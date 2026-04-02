@@ -73,6 +73,9 @@ impl GameBoard {
     /// let cell = board.get_block(5, 10);
     /// assert_eq!(cell, Some(-1)); // Пустая ячейка
     /// ```
+    ///
+    /// # Panics
+    /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
@@ -101,6 +104,9 @@ impl GameBoard {
     /// assert_eq!(board.set_block(5, 10, 3), Some(()));
     /// assert_eq!(board.get_block(5, 10), Some(3));
     /// ```
+    ///
+    /// # Panics
+    /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {

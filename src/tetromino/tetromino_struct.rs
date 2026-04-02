@@ -260,6 +260,10 @@ impl Tetromino {
     /// };
     /// t.rotate(RotationDirection::Clockwise); // Поворот по часовой
     /// ```
+    ///
+    /// # Panics
+    /// Никогда не паникует. При переполнении координат (i16::MIN при отрицании)
+    /// метод логирует предупреждение и пропускает вращение.
     pub fn rotate(&mut self, dir: RotationDirection) {
         // Квадрат не вращается
         if self.shape == ShapeType::O {
