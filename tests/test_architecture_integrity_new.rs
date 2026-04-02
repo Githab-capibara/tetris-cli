@@ -68,8 +68,9 @@ mod tests {
         let lines: Vec<&str> = io_content.lines().collect();
         for line in lines {
             let trimmed = line.trim();
+            // Исправление Clippy: упрощение булевого выражения
             assert!(
-                !(trimmed.starts_with("use crate::game::") && !trimmed.contains("//")),
+                !trimmed.starts_with("use crate::game::") || trimmed.contains("//"),
                 "io/mod.rs не должен импортировать из crate::game::\n\
                  Нарушение: {trimmed}"
             );

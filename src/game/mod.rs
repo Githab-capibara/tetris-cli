@@ -284,7 +284,7 @@ impl GameState {
     /// state.fill_line_for_bench(10); // Заполнить линию 10
     /// ```
     #[cfg(feature = "bench")]
-    #[allow(clippy::missing_panics_doc)]
+    #[allow(clippy::missing_panics_doc, dead_code)]
     pub fn fill_line_for_bench(&mut self, line: usize) {
         use crate::io::GRID_HEIGHT;
         assert!(
@@ -299,6 +299,7 @@ impl GameState {
     ///
     /// Использует `check_rows()` для удаления заполненных линий.
     #[cfg(feature = "bench")]
+    #[allow(dead_code)]
     pub fn clear_lines_for_bench(&mut self) {
         self.check_rows();
     }
@@ -307,6 +308,7 @@ impl GameState {
     ///
     /// Использует `save_tetromino()` для сохранения фигуры в поле.
     #[cfg(feature = "bench")]
+    #[allow(dead_code)]
     pub fn save_tetromino_for_bench(&mut self) {
         self.save_tetromino();
     }

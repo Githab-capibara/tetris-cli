@@ -105,7 +105,6 @@ pub fn generate_salt() -> String {
 /// use tetris_cli::crypto::hmac_sha256;
 /// use tetris_cli::crypto::verify_hmac_sha256;
 /// ```
-
 #[cfg(test)]
 mod crypto_tests {
     use super::*;

@@ -1003,12 +1003,13 @@ impl Leaderboard {
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный рекорд (H3)
+            // Исправление E2: заменено unwrap_or(0) на unwrap_or_default()
             let min_score = self
                 .entries
                 .iter()
                 .filter_map(LeaderboardEntry::score)
                 .min()
-                .unwrap_or(0);
+                .unwrap_or_default();
             if score <= min_score {
                 return false;
             }
