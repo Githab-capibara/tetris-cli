@@ -286,6 +286,14 @@ impl Level {
     ///
     /// # Возвращает
     /// `true` если уровень был увеличен, `false` если достигнуто максимальное значение
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Level;
+    /// let mut level = Level::with_value(1);
+    /// assert!(level.increment());
+    /// assert_eq!(level.value(), 2);
+    /// ```
     #[must_use]
     #[inline]
     pub fn increment(&mut self) -> bool {
@@ -383,6 +391,14 @@ impl LinesCount {
     ///
     /// # Примечания
     /// Использует saturating_add для защиты от переполнения.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::LinesCount;
+    /// let mut lines = LinesCount::with_value(10);
+    /// lines.add(5);
+    /// assert_eq!(lines.value(), 15);
+    /// ```
     #[inline]
     pub fn add(&mut self, amount: u32) {
         self.0 = self.0.saturating_add(amount);
