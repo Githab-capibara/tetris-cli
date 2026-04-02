@@ -210,6 +210,9 @@ pub const BORDER: [&str; DISP_HEIGHT] = [
 /// use crate::constants::get_border_line;
 /// let top_border = get_border_line(5);
 /// ```
+///
+/// # Panics
+/// Никогда не паникует. Возвращает пустую строку при невалидном индексе.
 #[must_use]
 #[inline]
 pub const fn get_border_line(line_index: usize) -> &'static str {
