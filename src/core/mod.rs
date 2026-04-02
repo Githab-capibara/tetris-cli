@@ -31,6 +31,18 @@
 /// |-----------|-------------------|
 /// | `Left` | `CounterClockwise` |
 /// | `Right` | `Clockwise` |
+///
+/// # Пример использования
+/// ```
+/// use tetris_cli::core::Direction;
+///
+/// let dir = Direction::Left;
+/// match dir {
+///     Direction::Left => println!("Движение влево"),
+///     Direction::Right => println!("Движение вправо"),
+///     Direction::Down => println!("Движение вниз"),
+/// }
+/// ```
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub enum Direction {
     /// Движение вниз.
