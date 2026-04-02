@@ -641,18 +641,21 @@ impl GameState {
 
     /// Получить скорость падения.
     #[must_use]
+    #[inline]
     pub fn fall_speed(&self) -> f32 {
         self.fall_speed
     }
 
     /// Получить таймер приземления.
     #[must_use]
+    #[inline]
     pub fn land_timer(&self) -> f64 {
         self.land_timer
     }
 
     /// Получить расстояние Soft Drop.
     #[must_use]
+    #[inline]
     pub fn soft_drop_distance(&self) -> u32 {
         self.soft_drop_distance
     }
