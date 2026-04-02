@@ -208,6 +208,16 @@ impl Score {
     }
 
     /// Проверить, равны ли очки нулю.
+    ///
+    /// # Возвращает
+    /// `true` если счёт равен нулю
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Score;
+    /// let score = Score::with_value(0);
+    /// assert!(score.is_zero());
+    /// ```
     #[must_use]
     #[inline]
     pub fn is_zero(&self) -> bool {
