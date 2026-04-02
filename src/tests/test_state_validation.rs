@@ -10,7 +10,7 @@
 //! Функции `set_fall_speed()` и `set_land_timer()` проверяют значения
 //! на NaN и Infinity, возвращая `GameError::ValidationError` при невалидных значениях.
 
-use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
+use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
 use crate::errors::GameError;
 use crate::game::GameState;
 

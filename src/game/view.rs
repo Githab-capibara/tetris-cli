@@ -16,6 +16,25 @@ use crate::tetromino::Tetromino;
 /// Используется для уменьшения связанности между render.rs и GameState.
 /// Содержит только данные, необходимые для отрисовки.
 ///
+/// # Время жизни
+/// ## Параметр `'a`
+/// Параметр времени жизни `'a` гарантирует что `GameView` не живёт дольше `GameState`.
+/// Это обеспечивает безопасность ссылок на уровне компилятора.
+///
+/// ## Ограничения
+/// - `GameView<'a>` не может пережить `GameState` из которого создан
+/// - Компилятор автоматически проверяет время жизни ссылок
+/// - Попытка использовать `GameView` после удаления `GameState` вызовет ошибку компиляции
+///
+/// ## Пример
+/// ```ignore
+/// fn render_frame(state: &GameState) {
+///     let view = GameView::from_game_state(state);
+///     // view живёт только пока существует state
+///     render::draw(&view, &mut canvas);
+/// } // view и state уничтожаются здесь
+/// ```
+///
 /// ## Архитектурное назначение
 /// Этот struct решает проблему сильной связанности между модулем отрисовки
 /// и полным состоянием игры. Вместо передачи всего `GameState` в `render::draw()`,
@@ -34,10 +53,6 @@ use crate::tetromino::Tetromino;
 /// - Фигуры (текущая, следующая, удержанная)
 /// - Флаги анимации
 /// - Режим игры и статистику
-///
-/// ## Время жизни
-/// Параметр `'a` гарантирует, что `GameView` не живёт дольше `GameState`.
-/// Это обеспечивает безопасность ссылок на уровне компилятора.
 ///
 /// ## Пример использования
 /// ```ignore
@@ -461,7 +476,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{
+        use crate::constants::{
             BORDER_COLOR, COMBO_X, COMBO_Y, HIGH_SCORE_X, HIGH_SCORE_Y, LEVEL_X, LEVEL_Y, LINES_X,
             LINES_Y, SCORE_X, SCORE_Y,
         };
@@ -603,7 +618,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{PREVIEW_X, PREVIEW_Y};
+        use crate::constants::{PREVIEW_X, PREVIEW_Y};
         self.draw_shape_preview(
             canvas,
             self.next_shape,
@@ -634,7 +649,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{HOLD_PREVIEW_X, HOLD_PREVIEW_Y};
+        use crate::constants::{HOLD_PREVIEW_X, HOLD_PREVIEW_Y};
         if let Some(held) = self.held_shape {
             let is_faded = false; // can_hold не доступен в GameView
             self.draw_shape_preview(
@@ -672,7 +687,7 @@ impl<'a> GameView<'a> {
     ) where
         R: crate::io_traits::Renderer,
     {
-        use crate::game::constants::{BORDER_COLOR, DISP_HEIGHT, DISP_WIDTH, DRAW_OFFSET_X};
+        use crate::constants::{BORDER_COLOR, DISP_HEIGHT, DISP_WIDTH, DRAW_OFFSET_X};
         use crate::io::{SHAPE_STR, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;

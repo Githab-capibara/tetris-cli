@@ -22,13 +22,34 @@ use thiserror::Error;
 /// Представляет собой основной тип ошибок для проекта tetris-cli.
 /// Поддерживает автоматическую конвертацию из `std::io::Error`.
 ///
+/// # Сопоставление с образцом (Pattern Matching)
+/// Этот enum предназначен для использования с pattern matching:
+///
+/// ```ignore
+/// use tetris_cli::errors::GameError;
+///
+/// fn handle_error(err: &GameError) {
+///     match err {
+///         GameError::ValidationError(msg) => {
+///             eprintln!("Ошибка валидации: {}", msg);
+///         }
+///         GameError::IoError(io_err) => {
+///             eprintln!("Ошибка ввода/вывода: {}", io_err);
+///         }
+///         GameError::ScoreOverflow => {
+///             eprintln!("Переполнение счёта!");
+///         }
+///     }
+/// }
+/// ```
+///
 /// ## Варианты ошибок
-/// - `ValidationError` - ошибка валидации данных
-/// - `IoError` - ошибка ввода/вывода
-/// - `ScoreOverflow` - переполнение счёта
+/// - `ValidationError(String)` - ошибка валидации данных (содержит сообщение)
+/// - `IoError(std::io::Error)` - ошибка ввода/вывода (автоматическая конвертация)
+/// - `ScoreOverflow` - переполнение счёта (без данных)
 ///
 /// ## Конвертация из io::Error
-/// Этот enum реализует трейт `From<std::io::Error>` автоматически через атрибут `#[from]`:
+/// Этот enum содержит трейт `From<std::io::Error>` автоматически через атрибут `#[from]`:
 /// ```ignore
 /// use std::fs::File;
 /// use tetris_cli::errors::GameError;

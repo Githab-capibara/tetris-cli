@@ -1,6 +1,58 @@
 //! # Tetris CLI — Классическая игра Тетрис для терминала
 //!
 //! ## 📖 Описание проекта
+//!
+//! Tetris CLI — это классическая игра Тетрис, реализованная на Rust для терминала.
+//! Поддерживает все 7 типов тетрамино, систему очков, таблицу лидеров и несколько режимов игры.
+//!
+//! ## 🎮 Быстрый старт
+//!
+//! ### Пример запуска игры
+//!
+//! ```no_run
+//! use tetris_cli::app;
+//!
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     app::run();
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ### Пример работы с таблицей лидеров
+//!
+//! ```ignore
+//! use tetris_cli::highscore::Leaderboard;
+//!
+//! // Загрузка таблицы лидеров
+//! let mut leaderboard = Leaderboard::load();
+//!
+//! // Добавление рекорда
+//! if leaderboard.add_score("Player", 1000) {
+//!     leaderboard.save();
+//! }
+//!
+//! // Получение лучшего рекорда
+//! if let Some(entry) = leaderboard.get_entries().first() {
+//!     println!("Лучший рекорд: {}", entry.score().unwrap_or(0));
+//! }
+//! ```
+//!
+//! ### Пример настройки управления
+//!
+//! ```ignore
+//! use tetris_cli::controls::ControlsConfig;
+//!
+//! // Создание кастомной конфигурации
+//! let config = ControlsConfig::custom(
+//!     b'a', b'd', b's', b'w',  // движение
+//!     b'q', b'e', b'c', b'p', b'\x08', // вращение, hold, pause, quit
+//! );
+//!
+//! // Валидация конфигурации
+//! if config.validate() {
+//!     config.save_to_file("my_controls.json")?;
+//! }
+//! ```
 
 //! ## 🎮 Основные возможности
 //!

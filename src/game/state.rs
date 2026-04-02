@@ -49,6 +49,7 @@
 // (нет внешних импортов)
 
 // crate
+use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};
 
@@ -56,7 +57,6 @@ use crate::tetromino::{BagGenerator, Tetromino};
 use super::board::GameBoard;
 use super::cache::RenderCache;
 use super::components::{AnimationState, FigureManager};
-use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use super::mode_trait::GameModeTrait;
 use super::scoreboard::ScoreBoard;
 
@@ -226,6 +226,12 @@ impl GameMode {
 /// - `stats()` / `stats_mut()` - доступ к статистике
 /// - `get_mode_trait()` - доступ к режиму игры
 ///
+/// # Panics
+/// Методы `GameState` не паникуют в нормальных условиях.
+/// Паника возможна только при:
+/// - Выходе за пределы массива (внутренняя ошибка, не должно происходить)
+/// - Отравлении Mutex (в тестах с потоками)
+///
 /// ## Пример использования
 /// ```ignore
 /// let mut game = GameState::new();
@@ -318,46 +324,86 @@ impl GameState {
     }
 
     /// Внутренний метод создания состояния игры.
+    ///
+    /// # ISSUE-084: Исправление
+    /// Метод разбит на helper функции для улучшения читаемости:
+    /// - `create_mode_trait()` - создание режима игры
+    /// - `create_initial_stats()` - создание начальной статистики
+    /// - `init_render_cache()` - инициализация кэша отрисовки
     #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
-        // Создаём объект трейта из enum
-        let mode_trait = mode.as_trait();
-
-        // Создаём новые компоненты
-        let board = GameBoard::new();
-        let scoreboard = ScoreBoard::new();
+        let mode_trait = Self::create_mode_trait(mode);
         let figure_manager = FigureManager::new();
-        let animation_state = AnimationState::new();
-        let mut stats = GameStats::new();
+        let stats = Self::create_initial_stats(&figure_manager, start_timer);
+        let mut game_state = Self::create_base_state(mode_trait, figure_manager, stats);
 
-        // Добавляем первую фигуру в статистику
+        Self::init_render_cache(&mut game_state);
+        game_state
+    }
+
+    /// Создать объект режима игры из enum.
+    ///
+    /// # Аргументы
+    /// * `mode` - enum режима игры
+    ///
+    /// # Возвращает
+    /// Box<dyn GameModeTrait> с соответствующим режимом
+    #[allow(deprecated)]
+    fn create_mode_trait(mode: GameMode) -> Box<dyn GameModeTrait> {
+        mode.as_trait()
+    }
+
+    /// Создать начальную статистику игры.
+    ///
+    /// # Аргументы
+    /// * `figure_manager` - менеджер фигур для получения первой фигуры
+    /// * `start_timer` - запустить ли таймер
+    ///
+    /// # Возвращает
+    /// Инициализированный GameStats
+    fn create_initial_stats(figure_manager: &FigureManager, start_timer: bool) -> GameStats {
+        let mut stats = GameStats::new();
         stats.add_piece(figure_manager.curr_shape().shape());
         if start_timer {
             stats.start_timer();
         }
+        stats
+    }
 
-        let mut game_state = Self {
-            // Новые компоненты
-            board,
-            scoreboard,
+    /// Создать базовое состояние игры.
+    ///
+    /// # Аргументы
+    /// * `mode_trait` - режим игры
+    /// * `figure_manager` - менеджер фигур
+    /// * `stats` - статистика игры
+    ///
+    /// # Возвращает
+    /// Базовый GameState с инициализированными компонентами
+    fn create_base_state(
+        mode_trait: Box<dyn GameModeTrait>,
+        figure_manager: FigureManager,
+        stats: GameStats,
+    ) -> Self {
+        Self {
+            board: GameBoard::new(),
+            scoreboard: ScoreBoard::new(),
             figure_manager,
-            animation_state,
-
-            // Игровая логика
+            animation_state: AnimationState::new(),
             fall_speed: INITIAL_FALL_SPD,
             land_timer: LAND_TIME_DELAY_S,
             soft_drop_distance: 0,
-
-            // Статистика и режим
             stats,
             mode_trait,
-
-            // Кэш для отрисовки
             render_cache: RenderCache::new(),
-        };
-        // Инициализация кэша начальными значениями
+        }
+    }
+
+    /// Инициализировать кэш отрисовки начальными значениями.
+    ///
+    /// # Аргументы
+    /// * `game_state` - состояние игры (изменяемое)
+    fn init_render_cache(game_state: &mut Self) {
         game_state.render_cache.init_with_values(0, 1, 0, 0);
-        game_state
     }
 
     // ========================================================================
@@ -702,7 +748,7 @@ impl GameState {
     /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
     #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
-        use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
+        use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
         use crate::errors::GameError;
         use crate::validation::ValidationService;
 
@@ -999,12 +1045,13 @@ impl GameState {
     /// # Исправление M3 (MEDIUM)
     /// Инкапсулирует логику изменения скорости падения с валидацией.
     pub fn apply_gravity(&mut self) {
-        let new_speed = self.fall_speed + super::constants::SPD_INC;
+        use crate::constants::{MAX_FALL_SPEED, SPD_INC};
+        let new_speed = self.fall_speed + SPD_INC;
         // Валидация: скорость не должна превышать максимальную
-        if new_speed <= super::constants::MAX_FALL_SPEED {
+        if new_speed <= MAX_FALL_SPEED {
             self.fall_speed = new_speed;
         } else {
-            self.fall_speed = super::constants::MAX_FALL_SPEED;
+            self.fall_speed = MAX_FALL_SPEED;
         }
     }
 
@@ -1048,12 +1095,12 @@ impl GameState {
     /// # Исправление M3 (MEDIUM)
     /// Инкапсулирует логику расчёта скорости с валидацией диапазона.
     pub fn update_fall_speed(&mut self) {
+        use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, SPD_INC};
         let level = self.level();
-        let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * super::constants::SPD_INC);
+        let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * SPD_INC);
 
         // Валидация: скорость должна быть в допустимых пределах
-        self.fall_speed =
-            calculated_speed.clamp(INITIAL_FALL_SPD, super::constants::MAX_FALL_SPEED);
+        self.fall_speed = calculated_speed.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
     }
 }
 
@@ -1145,7 +1192,7 @@ mod state_tests {
     // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: DRY-2 ВАЛИДАЦИЯ set_fall_speed()
     // =========================================================================
 
-    use crate::game::constants::MAX_FALL_SPEED;
+    use crate::constants::MAX_FALL_SPEED;
 
     /// Тест: валидация set_fall_speed() через ValidationService без clamp()
     #[test]

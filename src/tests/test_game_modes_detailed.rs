@@ -9,8 +9,8 @@
 //!
 //! Все тесты проверяют корректность работы игровых режимов.
 
+use crate::constants::{LINES_PER_LEVEL, MARATHON_LINES, SPRINT_LINES};
 use crate::game::GameState;
-use crate::game::{LINES_PER_LEVEL, MARATHON_LINES, SPRINT_LINES};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-10: Детальные тесты Classic режима

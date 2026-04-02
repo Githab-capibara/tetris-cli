@@ -7,9 +7,8 @@
 //!
 //! Исправление: использование saturating_add() вместо обычного сложения
 
-use crate::game::{
-    GameState, COMBO_BONUS, HARD_DROP_POINTS, LINE_SCORES, PIECE_SCORE_INC, SOFT_DROP_POINTS,
-};
+use crate::constants::{COMBO_BONUS, HARD_DROP_POINTS, LINE_SCORES, PIECE_SCORE_INC, SOFT_DROP_POINTS};
+use crate::game::GameState;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Переполнение score

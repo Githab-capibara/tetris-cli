@@ -21,7 +21,7 @@
 
 #![allow(clippy::absurd_extreme_comparisons, clippy::items_after_statements)]
 
-use crate::game::constants::COMBO_BONUS;
+use crate::constants::COMBO_BONUS;
 
 /// Рассчитать бонус за комбо.
 ///

@@ -3,6 +3,7 @@
 //! # Содержимое
 //! - `SHAPE_COORDS` - координаты блоков для каждой фигуры
 //! - `SHAPE_COLORS` - цвета для отрисовки
+//! - Helper функции для доступа к координатам
 
 use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Yellow};
 
@@ -20,6 +21,11 @@ use termion::color::{Blue, Color, Cyan, Green, LightRed, LightYellow, Magenta, Y
 /// - Z: (0,-1), (0,0), (-1,0), (-1,1) - зеркальная S
 /// - O: (0,0), (1,0), (0,1), (1,1) - квадрат 2x2
 /// - I: (0,-1), (0,0), (0,1), (0,2) - вертикальная линия
+///
+/// ## ISSUE-081: Исправление
+/// Для доступа используйте helper функции:
+/// - `get_shape_coords(shape_index)` - получить координаты фигуры
+/// - `get_shape_block_coords(shape_index, block_index)` - получить координаты конкретного блока
 pub const SHAPE_COORDS: [[(i16, i16); 4]; 7] = [
     [(-1, 0), (0, 0), (1, 0), (0, 1)],   // T
     [(-1, -1), (0, -1), (0, 0), (0, 1)], // L
@@ -35,6 +41,10 @@ pub const SHAPE_COORDS: [[(i16, i16); 4]; 7] = [
 /// Индексы соответствуют SHAPE_COORDS:
 /// 0=T→Пурпурный, 1=L→Жёлтый, 2=J→Синий, 3=S→Зелёный,
 /// 4=Z→Св.красный, 5=O→Св.жёлтый, 6=I→Голубой
+///
+/// ## ISSUE-082: Исправление
+/// Для доступа используйте helper функции:
+/// - `get_shape_color(shape_index)` - получить цвет фигуры
 pub const SHAPE_COLORS: [&dyn Color; 7] = [
     &Magenta,
     &Yellow,
@@ -44,3 +54,80 @@ pub const SHAPE_COLORS: [&dyn Color; 7] = [
     &LightYellow,
     &Cyan,
 ];
+
+// ============================================================================
+// HELPER ФУНКЦИИ ДЛЯ ДОСТУПА (ISSUE-081, ISSUE-082)
+// ============================================================================
+
+/// Получить координаты блоков для фигуры.
+///
+/// # Аргументы
+/// * `shape_index` - индекс фигуры (0-6)
+///
+/// # Возвращает
+/// Срез координат [(i16, i16); 4]
+///
+/// # Пример
+/// ```ignore
+/// use crate::tetromino::constants::get_shape_coords;
+/// let t_coords = get_shape_coords(0); // T фигура
+/// ```
+#[must_use]
+pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
+    &SHAPE_COORDS[shape_index]
+}
+
+/// Получить координаты конкретного блока фигуры.
+///
+/// # Аргументы
+/// * `shape_index` - индекс фигуры (0-6)
+/// * `block_index` - индекс блока (0-3)
+///
+/// # Возвращает
+/// Координаты блока (x, y)
+///
+/// # Пример
+/// ```ignore
+/// use crate::tetromino::constants::get_shape_block_coords;
+/// let (x, y) = get_shape_block_coords(0, 0); // Первый блок T фигуры
+/// ```
+#[must_use]
+pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (i16, i16) {
+    SHAPE_COORDS[shape_index][block_index]
+}
+
+/// Получить цвет для фигуры.
+///
+/// # Аргументы
+/// * `shape_index` - индекс фигуры (0-6)
+///
+/// # Возвращает
+/// Ссылка на цвет
+///
+/// # Пример
+/// ```ignore
+/// use crate::tetromino::constants::get_shape_color;
+/// let color = get_shape_color(0); // Цвет T фигуры
+/// ```
+#[must_use]
+pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
+    SHAPE_COLORS[shape_index]
+}
+
+/// Получить количество фигур.
+///
+/// # Возвращает
+/// Количество типов фигур (7)
+#[must_use]
+pub const fn shape_count() -> usize {
+    SHAPE_COORDS.len()
+}
+
+/// Получить количество блоков в фигуре.
+///
+/// # Возвращает
+/// Количество блоков (4)
+#[must_use]
+pub const fn blocks_per_shape() -> usize {
+    4
+}

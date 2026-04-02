@@ -10,14 +10,22 @@
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
 //! - [`super::ScoringState`](super::ScoringState): trait для изменения состояния
 
-use super::super::constants::{
+use super::ScoringState;
+use crate::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
-use super::ScoringState;
 use crate::io::GRID_HEIGHT;
 
 /// Максимально допустимый счёт для защиты от переполнения.
+///
+/// # Исправление ISSUE-075
 /// Установлен в u128::MAX / 2 для безопасного начисления очков.
+/// Это предотвращает переполнение при добавлении больших бонусов.
+///
+/// # Обоснование
+/// u128::MAX = 340_282_366_920_938_463_463_374_607_431_768_211_455
+/// MAX_SCORE = u128::MAX / 2 оставляет запас для предотвращения переполнения
+/// при начислении очков за линии, комбо и бонусы.
 const MAX_SCORE: u128 = u128::MAX / 2;
 
 /// Найти все заполненные линии.
@@ -105,7 +113,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 /// * `state` - состояние игры (изменяемое)
 ///
 /// # Возвращает
-/// Количество удалённых линий
+/// `u32` - количество удалённых линий (0 если линий нет)
 ///
 /// # Пример
 /// ```ignore

@@ -25,6 +25,38 @@ use std::fmt;
 /// Представляет абстракцию ввода, отделяя конкретные клавиши от игровых действий.
 /// Используется для маппинга клавиш → действия в системе управления.
 ///
+/// # Использование
+/// ## Парсинг ввода
+/// ```ignore
+/// use tetris_cli::game::types::GameAction;
+/// use tetris_cli::controls::ControlsConfig;
+///
+/// let config = ControlsConfig::default_config();
+/// let key_code = b'a'; // Нажата клавиша 'a'
+///
+/// if let Some(action) = config.map_key_to_action(key_code) {
+///     match action {
+///         GameAction::MoveLeft => println!("Движение влево"),
+///         GameAction::MoveRight => println!("Движение вправо"),
+///         // ... другие действия
+///         _ => {}
+///     }
+/// }
+/// ```
+///
+/// ## Выполнение действий
+/// ```ignore
+/// use tetris_cli::game::types::GameAction;
+/// use tetris_cli::game::logic::input::execute_action;
+///
+/// let mut state = GameState::new();
+/// let action = GameAction::HardDrop;
+///
+/// if let Some(result) = execute_action(&mut state, action) {
+///     // Обработка результата (Pause, Quit)
+/// }
+/// ```
+///
 /// ## Архитектурные заметки
 /// Введение GameAction соответствует:
 /// - **Dependency Inversion Principle (DIP)** - модуль ввода зависит от абстракции

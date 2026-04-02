@@ -24,6 +24,14 @@ pub use crate::validation::path::DEFAULT_PATH_VALIDATOR;
 use crate::config::keys::get_controls_hmac_key;
 use crate::crypto::hmac::hmac_sign_with_salt;
 
+/// Placeholder для HMAC ключа в конфигурации управления.
+/// Используется для обратной совместимости при сохранении/загрузке.
+///
+/// # Исправление ISSUE-193 (2026-04-02)
+/// Вынесен в константу для предотвращения хардкода в коде.
+/// При загрузке этот placeholder игнорируется - проверяется только подпись.
+const HMAC_KEY_PLACEHOLDER: &str = "global_key_v1";
+
 /// Конфигурация управления с keyed hash подписью.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ControlsConfig {
@@ -229,6 +237,13 @@ impl ControlsConfig {
     /// - Конфигурация подписывается keyed hash
     /// - Используется `O_NOFOLLOW` для защиты от symlink атак
     ///
+    /// # Errors
+    /// Возвращает `io::Error` в следующих случаях:
+    /// - Не удалось получить текущую директорию
+    /// - Путь не прошёл валидацию (path traversal, запрещённые символы)
+    /// - Ошибка сериализации в JSON
+    /// - Ошибка записи в файл (нет прав, диск полон, и т.д.)
+    ///
     /// # Исправление E10 (HIGH): Устранена проблема генерации нового ключа
     /// Ранее при каждом сохранении генерировался новый HMAC ключ (hmac_key),
     /// что приводило к следующим проблемам:
@@ -265,7 +280,8 @@ impl ControlsConfig {
 
         // Для обратной совместимости сохраняем placeholder в hmac_key поле
         // но при загрузке он не используется - проверяется только подпись
-        let hmac_key_placeholder = "global_key_v1";
+        // Исправление ISSUE-193: используем константу вместо хардкода
+        let hmac_key_placeholder = HMAC_KEY_PLACEHOLDER;
 
         // Сериализуем конфигурацию без signature для вычисления хеша
         let config_for_hash = ControlsConfig {
@@ -301,7 +317,7 @@ impl ControlsConfig {
             hold: self.hold,
             pause: self.pause,
             quit: self.quit,
-            hmac_key: hmac_key_placeholder.to_string(),
+            hmac_key: HMAC_KEY_PLACEHOLDER.to_string(), // Исправление ISSUE-193: константа вместо хардкода
             signature,
         };
 
@@ -366,6 +382,15 @@ impl ControlsConfig {
     /// - Путь содержит последовательности `..` (path traversal)
     /// - Файл не найден или не может быть прочитан
     /// - JSON некорректен или не соответствует ожидаемой структуре
+    /// - HMAC подпись не совпадает (подделка конфигурации)
+    ///
+    /// # Errors
+    /// Возвращает `io::Error` в следующих случаях:
+    /// - Не удалось получить текущую директорию
+    /// - Путь не прошёл валидацию (path traversal, запрещённые символы)
+    /// - Файл не существует или не доступен для чтения
+    /// - Файл является symlink (защита от атак)
+    /// - Ошибка десериализации из JSON
     /// - HMAC подпись не совпадает (подделка конфигурации)
     ///
     /// # Безопасность
@@ -455,7 +480,7 @@ impl ControlsConfig {
             hold: config.hold,
             pause: config.pause,
             quit: config.quit,
-            hmac_key: "global_key_v1".to_string(), // Игнорируем hmac_key из файла
+            hmac_key: HMAC_KEY_PLACEHOLDER.to_string(), // Исправление ISSUE-193: константа вместо хардкода
             signature: String::new(),
         };
 
@@ -479,12 +504,51 @@ impl ControlsConfig {
         Ok(config)
     }
 
+    /// Валидировать HMAC ключ конфигурации.
+    ///
+    /// Проверяет:
+    /// 1. HMAC ключ не пустой
+    /// 2. HMAC ключ имеет минимальную длину (16 байт)
+    ///
+    /// # Возвращает
+    /// - `Ok(())` если ключ валиден
+    /// - `Err(String)` если ключ невалиден
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::controls::ControlsConfig;
+    ///
+    /// let config = ControlsConfig::default_config();
+    /// assert!(config.validate_hmac_key().is_ok());
+    /// ```
+    ///
+    /// # Исправление ISSUE-041
+    /// Метод интегрирован в ControlsConfig для лучшей когезии.
+    #[allow(dead_code)] // Публичный API для валидации HMAC ключа
+    pub fn validate_hmac_key(&self) -> Result<(), String> {
+        crate::config::keys::validate_hmac_key(
+            crate::config::keys::get_controls_hmac_key(),
+            "CONTROLS_HMAC_KEY",
+        )
+    }
+
     /// Валидировать конфигурацию управления.
     ///
     /// Проверяет:
     /// 1. Все клавиши находятся в допустимом диапазоне (1-255)
     /// 2. Нет дублирующихся клавиш (каждая клавиша уникальна)
-    /// 3. Quit клавиша (Backspace) не конфликтует с другими
+    /// 3. Quit клавиша (Backspace, код 127) не конфликтует с другими
+    ///
+    /// # Валидация quit клавиши (ISSUE-199)
+    /// ## Проверка quit клавиши
+    /// - **Код quit клавиши**: 127 (Backspace)
+    /// - **Диапазон**: 1-255 (0 невалидно)
+    /// - **Уникальность**: quit клавиша не должна совпадать с другими
+    ///
+    /// ## По умолчанию
+    /// ```ignore
+    /// quit: 127, // Backspace
+    /// ```
     ///
     /// # Возвращает
     /// - `true` если конфигурация валидна

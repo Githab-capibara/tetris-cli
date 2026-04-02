@@ -271,7 +271,7 @@ fn test_constants_not_exported_pub_crate() {
     );
 
     // Проверяем что константы доступны из game модуля
-    use crate::game::constants::{
+    use crate::constants::{
         FPS as GAME_FPS, GRID_HEIGHT as GAME_GRID_HEIGHT, GRID_WIDTH as GAME_GRID_WIDTH,
     };
 

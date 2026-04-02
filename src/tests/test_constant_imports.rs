@@ -1,8 +1,8 @@
-//! Тесты импортов констант из crate::game.
+//! Тесты импортов констант из crate::constants.
 //!
-//! Проверяют, что все константы доступны из crate::game и имеют корректные значения.
+//! Проверяют, что все константы доступны из crate::constants и имеют корректные значения.
 
-use crate::game::{
+use crate::constants::{
     ANIMATION_FRAME_SKIP, FPS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS, INITIAL_FALL_SPD,
     LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES, MARATHON_LINES,
     MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, MIN_Y, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC,

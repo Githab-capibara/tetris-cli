@@ -76,12 +76,6 @@ pub mod time;
 pub mod types;
 pub mod view;
 
-// Ре-экспорт констант для внутренних модулей game
-// Это позволяет использовать super::constants внутри game/
-pub mod constants {
-    pub use crate::constants::*;
-}
-
 // Подмодули scoring
 
 // Подмодули logic
@@ -89,43 +83,26 @@ pub mod constants {
 // Re-export основных типов для обратной совместимости
 // Исправление аудита 2026-03-31 (Проблема #1): GameError перемещён в errors.rs
 pub use crate::errors::GameError;
-#[allow(deprecated, unused_imports)]
+#[deprecated(since = "23.96.17", note = "Используйте GameModeTrait напрямую")]
 pub use state::GameMode;
-#[allow(unused_imports)]
 pub use state::GameResult;
 pub use state::GameState;
-#[allow(unused_imports)]
 pub use stats::GameStats;
 
-// Re-export констант из constants.rs (обратная совместимость)
-#[allow(unused_imports)]
-pub use constants::{
-    ANIMATION_FRAME_SKIP, COMBO_BONUS, FPS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS,
-    INITIAL_FALL_SPD, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL, LINE_SCORES,
-    MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, MIN_Y, PIECE_SCORE_FALL_MULT,
-    PIECE_SCORE_INC, SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
-};
-
 // Re-export трейтов и типов из access
-#[allow(unused_imports)]
 pub use access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
 
 // Re-export трейтов и типов из board
-#[allow(unused_imports)]
 pub use board::{
     BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait, GameBoard,
 };
 
 // Re-export ScoreBoard из scoreboard (трейты ScoreAccess и ScoreMutable теперь в access.rs)
-#[allow(unused_imports)]
 pub use scoreboard::ScoreBoard;
 
 // Re-export GameView и StringCache для отрисовки и кэширования
-#[allow(unused_imports)]
 pub use cache::StringCache;
-#[allow(unused_imports)]
 pub use scoring::lines::find_filled_lines;
-#[allow(unused_imports)]
 pub use view::GameView;
 
 // Константы для тестов (обратная совместимость)
@@ -136,7 +113,6 @@ pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
 };
 
-#[allow(unused_imports)]
 pub use scoring::{check_rows, find_full_rows, handle_hold, remove_rows};
 
 // Экспорт GameView для отрисовки (обратная совместимость)

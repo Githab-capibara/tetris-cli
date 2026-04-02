@@ -62,12 +62,12 @@ pub fn parse_input(key_code: u8, config: &crate::controls::ControlsConfig) -> Op
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `action` - игровое действие
+/// * `action` - игровое действие (GameAction)
 ///
 /// # Возвращает
-/// - `Some(UpdateEndState::Quit)` - выход в меню
-/// - `Some(UpdateEndState::Pause)` - пауза
-/// - `None` - продолжить обработку
+/// - `Some(UpdateEndState::Quit)` - если действие Quit (выход в меню)
+/// - `Some(UpdateEndState::Pause)` - если действие Pause (пауза)
+/// - `None` - для всех остальных действий (продолжить обработку)
 ///
 /// # Архитектурные заметки (H5)
 /// Эта функция обрабатывает абстрактные действия вместо конкретных клавиш.

@@ -6,8 +6,8 @@
 //! - find_filled_lines (поиск заполненных линий)
 //! - TOCTOU маркер (!Send + !Sync)
 
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::access::{BoardMutable, BoardReadonly};
-use crate::game::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::scoring::lines::find_filled_lines;
 use crate::game::state::GameState;
 

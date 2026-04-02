@@ -9,8 +9,8 @@
 //!
 //! Все тесты независимы и проверяют корректную работу режимов.
 
+use crate::constants::{MARATHON_LINES, SPRINT_LINES};
 use crate::game::GameState;
-use crate::game::{MARATHON_LINES, SPRINT_LINES};
 use crate::tetromino::ShapeType;
 
 // ============================================================================

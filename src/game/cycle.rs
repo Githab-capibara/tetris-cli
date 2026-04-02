@@ -11,11 +11,11 @@
 
 use std::{thread::sleep, time::Duration};
 
-use super::constants::{
+use super::{logic::update, render::update_cached_strings_extended, view::GameView};
+use crate::constants::{
     BORDER_COLOR, FRAME_DELAY_MS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE,
 };
-use super::state::GameState;
-use super::{logic::update, render::update_cached_strings_extended, view::GameView};
+use crate::game::state::GameState;
 use crate::io_traits::{InputReader, Renderer};
 use crate::types::UpdateEndState;
 use termion::color::Reset;
@@ -189,7 +189,10 @@ fn handle_input_result<R: Renderer>(input_result: &InputResult, cnv: &mut R) -> 
 /// - `Err(GameError)` - ошибка во время игрового цикла
 ///
 /// # Errors
-/// Возвращает ошибку `GameError` при сбое ввода/вывода, ошибке терминала или других критических ошибках во время игрового цикла.
+/// Возвращает ошибку `GameError` в следующих случаях:
+/// - `GameError::IoError` - ошибка ввода/вывода при чтении клавиш или отрисовке
+/// - `GameError::ValidationError` - ошибка валидации данных игры
+/// - Критические ошибки терминала или состояния игры
 ///
 /// # Архитектурные заметки (A8: Обработка ошибок, H1: DIP)
 /// Функция возвращает `Result<u128, GameError>` для явной обработки ошибок.
