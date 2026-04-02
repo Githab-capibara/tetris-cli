@@ -702,7 +702,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_score(&mut self, value: u128) {
-        self.scoreboard.set_score(value);
+        let _ = self.scoreboard.set_score(value);
     }
 
     /// Установить уровень.
@@ -712,7 +712,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_level(&mut self, value: u32) {
-        self.scoreboard.set_level(value);
+        let _ = self.scoreboard.set_level(value);
     }
 
     /// Установить количество удалённых линий.
@@ -720,7 +720,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_lines_cleared(&mut self, value: u32) {
-        self.scoreboard.set_lines_cleared(value);
+        let _ = self.scoreboard.set_lines_cleared(value);
     }
 
     /// Установить скорость падения.
