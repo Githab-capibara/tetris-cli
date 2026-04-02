@@ -114,27 +114,32 @@ impl Position {
 
     /// Получить координату X.
     #[must_use]
+    #[inline]
     pub const fn x(self) -> i16 {
         self.x
     }
 
     /// Получить координату Y.
     #[must_use]
+    #[inline]
     pub const fn y(self) -> i16 {
         self.y
     }
 
     /// Установить координату X.
+    #[inline]
     pub fn set_x(&mut self, x: i16) {
         self.x = x;
     }
 
     /// Установить координату Y.
+    #[inline]
     pub fn set_y(&mut self, y: i16) {
         self.y = y;
     }
 
     /// Установить обе координаты.
+    #[inline]
     pub fn set(&mut self, x: i16, y: i16) {
         self.x = x;
         self.y = y;

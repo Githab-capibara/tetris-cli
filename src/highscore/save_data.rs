@@ -228,6 +228,7 @@ impl SaveData {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    #[must_use = "SaveData должен быть использован"]
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
