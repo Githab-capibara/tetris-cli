@@ -539,7 +539,18 @@ impl Position {
     }
 
     /// Проверить, равна ли позиция нулю.
+    ///
+    /// # Возвращает
+    /// `true` если обе координаты равны нулю
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Position;
+    /// let pos = Position::new(0, 0);
+    /// assert!(pos.is_zero());
+    /// ```
     #[must_use]
+    #[inline]
     pub fn is_zero(self) -> bool {
         self.x == 0 && self.y == 0
     }
