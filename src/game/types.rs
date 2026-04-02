@@ -168,6 +168,14 @@ impl Score {
     ///
     /// # Примечания
     /// Использует saturating_add для защиты от переполнения.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Score;
+    /// let mut score = Score::with_value(100);
+    /// score.add(50);
+    /// assert_eq!(score.value(), 150);
+    /// ```
     #[inline]
     pub fn add(&mut self, points: u128) {
         self.0 = self.0.saturating_add(points);
@@ -180,6 +188,14 @@ impl Score {
     ///
     /// # Примечания
     /// Использует saturating_mul для защиты от переполнения.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Score;
+    /// let mut score = Score::with_value(100);
+    /// score.multiply(2);
+    /// assert_eq!(score.value(), 200);
+    /// ```
     #[inline]
     pub fn multiply(&mut self, multiplier: u128) {
         self.0 = self.0.saturating_mul(multiplier);
