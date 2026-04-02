@@ -87,6 +87,7 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 /// - Используется compiler_fence для предотвращения оптимизаций
 /// - Все операции выполняются независимо от результата
 #[must_use = "Результат проверки должен быть использован"]
+#[inline]
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_hash = hmac_sha256(key, data);
 
