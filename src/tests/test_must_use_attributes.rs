@@ -138,10 +138,10 @@ fn test_must_use_get_stats() {
     let state = GameState::new();
 
     // Используем результат
-    let stats = state.stats();
+    let st_stats = state.stats();
     // Первая фигура уже добавлена в статистику при создании GameState
     assert_eq!(
-        stats.total_pieces(),
+        st_stats.total_pieces(),
         1,
         "Общее количество фигур должно быть 1 (первая фигура)"
     );

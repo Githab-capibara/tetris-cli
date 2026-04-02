@@ -195,10 +195,10 @@ fn test_scoring_state_stats() {
     let state = GameState::new();
 
     // Получаем ссылку на статистику
-    let stats = state.stats();
+    let sc_stats = state.stats();
 
     // Проверяем что статистика существует
-    let total = stats.total_pieces();
+    let total = sc_stats.total_pieces();
     let _ = total;
 }
 
@@ -210,10 +210,10 @@ fn test_scoring_state_stats_mut() {
     let mut state = GameState::new();
 
     // Получаем изменяемую ссылку на статистику
-    let stats = state.stats_mut();
+    let stats_mut_var = state.stats_mut();
 
     // Проверяем что можем модифицировать статистику
-    let initial_pieces = stats.total_pieces();
+    let initial_pieces = stats_mut_var.total_pieces();
     // Статистика должна быть доступна для модификации
     let _ = initial_pieces;
 }
@@ -272,6 +272,7 @@ fn test_scoring_state_get_blocks_mut() {
 ///
 /// Проверяет, что все методы ScoringState работают вместе корректно.
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_scoring_state_comprehensive() {
     let mut state = GameState::new();
 
@@ -300,6 +301,6 @@ fn test_scoring_state_comprehensive() {
     assert_eq!(blocks.len(), crate::io::GRID_HEIGHT);
 
     // Проверяем что статистика доступна
-    let stats = state.stats();
-    let _ = stats.total_pieces();
+    let fin_stats = state.stats();
+    let _ = fin_stats.total_pieces();
 }

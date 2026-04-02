@@ -9,15 +9,16 @@ use crate::types::RotationDirection;
 ///
 /// Проверяем базовую функцию проверки вращения.
 #[test]
+#[allow(clippy::similar_names)] // Допустимо для тестов с направлениями вращения
 fn test_can_rotate_curr_shape_basic() {
     let state = GameState::new();
 
     // В начале игры вращение должно быть возможно
-    let can_rotate_cw = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let can_rotate_ccw = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
+    let rotate_cw = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    let rotate_ccw = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
 
     assert!(
-        can_rotate_cw || can_rotate_ccw,
+        rotate_cw || rotate_ccw,
         "Хотя бы одно направление вращения должно быть доступно"
     );
 }

@@ -27,8 +27,8 @@
 /// ```
 ///
 /// ## Соответствие направлений
-/// | Direction | RotationDirection |
-/// |-----------|-------------------|
+/// | Direction | `RotationDirection` |
+/// |-----------|---------------------|
 /// | `Left` | `CounterClockwise` |
 /// | `Right` | `Clockwise` |
 ///
@@ -65,8 +65,8 @@ pub enum Direction {
 /// Отдельный enum предотвращает панику при передаче неправильного направления.
 ///
 /// ## Соответствие направлениям
-/// | RotationDirection | Direction |
-/// |-------------------|-----------|
+/// | `RotationDirection` | `Direction` |
+/// |---------------------|-------------|
 /// | `Clockwise` | `Right` |
 /// | `CounterClockwise` | `Left` |
 ///

@@ -459,9 +459,9 @@ fn test_next_piece_preview() {
 #[test]
 fn test_game_statistics() {
     let state = GameState::new();
-    let stats = state.stats();
+    let st_stats = state.stats();
 
-    assert_eq!(stats.total_pieces(), 1, "В начале должна быть 1 фигура");
+    assert_eq!(st_stats.total_pieces(), 1, "В начале должна быть 1 фигура");
 }
 
 // ============================================================================
@@ -550,9 +550,9 @@ fn test_marathon_game_has_goal() {
 #[test]
 fn test_game_has_statistics() {
     let state = GameState::new();
-    let stats = state.stats();
+    let st_stats = state.stats();
 
-    assert_eq!(stats.total_pieces(), 1);
+    assert_eq!(st_stats.total_pieces(), 1);
 }
 
 /// Тест 41: Быстрое создание `GameState`

@@ -245,6 +245,7 @@ fn test_game_board_access_lines_cleared() {
 
 /// Тест 17: Проверка получения и установки скорости падения
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_game_board_access_fall_spd() {
     let mut state = GameState::new();
 
@@ -262,6 +263,7 @@ fn test_game_board_access_fall_spd() {
 
 /// Тест 18: Проверка получения и установки таймера приземления
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_game_board_access_land_timer() {
     let mut state = GameState::new();
 

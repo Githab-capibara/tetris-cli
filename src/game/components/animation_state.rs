@@ -42,6 +42,7 @@ impl AnimationState {
     ///
     /// # Возвращает
     /// Новый экземпляр `AnimationState` с выключенными анимациями.
+    #[must_use = "Состояние анимации должно быть использовано"]
     pub fn new() -> Self {
         Self {
             animating_rows_mask: 0,

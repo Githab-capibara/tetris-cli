@@ -131,9 +131,10 @@ fn check_collision_direction<T: BoardReadonly>(
     dir: Direction,
 ) -> bool {
     let (shape_x, shape_y) = pos;
-    // Потеря точности допустима: координаты фигуры в пределах поля
+    // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_WIDTH)
     #[allow(clippy::cast_possible_wrap)]
     let shape_block_x = shape_x as i16;
+    // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
     #[allow(clippy::cast_possible_wrap)]
     let shape_block_y = shape_y as i16;
 
@@ -196,9 +197,10 @@ pub fn check_rotation_collision<T: BoardReadonly>(
     pos: (f32, f32),
 ) -> bool {
     let (shape_x, shape_y) = pos;
-    // Потеря точности допустима: координаты фигуры в пределах поля
+    // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_WIDTH)
     #[allow(clippy::cast_possible_wrap)]
     let shape_block_x = shape_x as i16;
+    // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
     #[allow(clippy::cast_possible_wrap)]
     let shape_block_y = shape_y as i16;
 
@@ -234,6 +236,7 @@ pub fn check_rotation_collision<T: BoardReadonly>(
 /// ## Архитектурные заметки
 /// Эта функция является обёрткой для wall_kick::can_rotate_with_wall_kick
 /// и может быть удалена в будущем при прямом использовании wall_kick модуля.
+#[must_use = "Результат проверки вращения должен быть использован"]
 pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
     // Исправление В2: полное делегирование в wall_kick модуль для устранения дублирования
     super::wall_kick::can_rotate_with_wall_kick(state, dir)

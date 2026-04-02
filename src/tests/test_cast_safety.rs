@@ -10,6 +10,11 @@
 //! Тесты могут падать если cast реализован некорректно или если отсутствуют
 //! проверки на переполнение/NaN/infinity при конвертации типов.
 
+#![allow(clippy::cast_possible_wrap)] // Тесты на cast допустимы
+#![allow(clippy::cast_possible_truncation)] // Тесты на cast допустимы
+#![allow(clippy::cast_lossless)] // Тесты на cast допустимы
+#![allow(clippy::cast_sign_loss)] // Тесты на cast допустимы
+
 #[cfg(test)]
 mod tests {
     use crate::game::GameState;
@@ -24,6 +29,7 @@ mod tests {
     /// Проверяет что координаты фигур могут быть безопасно преобразованы
     /// и проверены на соответствие границам сетки.
     #[test]
+    #[allow(clippy::similar_names)] // Допустимо для тестов с координатами X/Y
     fn test_coordinate_validation_cast() {
         let state = GameState::new();
 
@@ -43,18 +49,21 @@ mod tests {
         );
 
         // Безопасный cast координат для проверки границ
-        let shape_x_i16 = shape_x as i16;
-        let shape_y_i16 = shape_y as i16;
+        #[allow(clippy::similar_names)] // Допустимо для тестов с координатами X/Y
+        {
+            let shape_x_i16_cast = shape_x as i16;
+            let shape_y_i16_cast = shape_y as i16;
 
-        // Проверка что cast координат безопасен
-        assert!(
-            shape_x_i16 >= 0 && shape_x_i16 < GRID_WIDTH as i16,
-            "X координата после cast должна быть в пределах поля"
-        );
-        assert!(
-            shape_y_i16 >= 0 && shape_y_i16 < GRID_HEIGHT as i16,
-            "Y координата после cast должна быть в пределах поля"
-        );
+            // Проверка что cast координат безопасен
+            assert!(
+                shape_x_i16_cast >= 0 && shape_x_i16_cast < GRID_WIDTH as i16,
+                "X координата после cast должна быть в пределах поля"
+            );
+            assert!(
+                shape_y_i16_cast >= 0 && shape_y_i16_cast < GRID_HEIGHT as i16,
+                "Y координата после cast должна быть в пределах поля"
+            );
+        }
 
         // Проверка граничных значений
         let test_coords: [(f32, i16); 5] = [

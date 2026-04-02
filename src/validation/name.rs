@@ -69,6 +69,7 @@ const MAX_NAME_LENGTH: usize = 32;
 ///
 /// # Исправление #6 (LOW)
 /// Используется `matches!` макрос с диапазонами для читаемой whitelist проверки.
+#[must_use = "Результат проверки символа должен быть использован"]
 pub fn is_valid_name_char(c: char) -> bool {
     // Whitelist подход: разрешаем только безопасные символы
     !c.is_control()
@@ -118,6 +119,7 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// assert_eq!(sanitize_player_name("<script>"), "script");
 /// assert_eq!(sanitize_player_name("Игрок"), "Игрок");
 /// ```
+#[must_use = "Очищенное имя должно быть использовано"]
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
     if trimmed.is_empty() {

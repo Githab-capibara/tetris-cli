@@ -186,14 +186,14 @@ fn test_arch_integrity_module_boundaries() {
 
     // BagGenerator должен быть доступен напрямую
     let mut bag2 = BagGenerator::new();
-    let shape1 = Tetromino::from_bag(&mut bag2);
-    let shape2 = Tetromino::from_bag(&mut bag2);
+    let bag_shape1 = Tetromino::from_bag(&mut bag2);
+    let bag_shape2 = Tetromino::from_bag(&mut bag2);
 
     // 7-bag гарантирует что каждые 7 фигур содержат все типы
     // Проверяем что BagGenerator работает корректно
     assert!(
         matches!(
-            shape1.shape(),
+            bag_shape1.shape(),
             ShapeType::T
                 | ShapeType::L
                 | ShapeType::J
@@ -235,6 +235,7 @@ fn test_arch_integrity_module_boundaries() {
 /// - Методы-мутаторы GameState работают корректно
 /// - score/level/lines_cleared изменяются только через методы
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_encapsulation() {
     let mut state = GameState::new();
 
@@ -769,9 +770,9 @@ fn test_architecture_backward_compatibility() {
     // === Проверка что GameStats доступен ===
     use crate::game::GameStats;
 
-    let stats = GameStats::new();
-    assert_eq!(stats.combo_counter(), 0);
-    assert_eq!(stats.max_combo(), 0);
+    let gs_stats = GameStats::new();
+    assert_eq!(gs_stats.combo_counter(), 0);
+    assert_eq!(gs_stats.max_combo(), 0);
 
     // === Проверка что GameView доступен ===
     let view = GameView::from_game_state(&state);

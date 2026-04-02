@@ -300,10 +300,10 @@ fn test_min_single_line() {
 #[test]
 fn test_min_single_piece() {
     let state = GameState::new();
-    let stats = state.stats();
+    let st_stats = state.stats();
 
     // В начале игры должна быть 1 фигура
-    assert_eq!(stats.total_pieces(), 1, "Должна быть 1 фигура");
+    assert_eq!(st_stats.total_pieces(), 1, "Должна быть 1 фигура");
 }
 
 /// Тест 15: Проверка минимального счёта

@@ -40,6 +40,7 @@ impl BoardState {
     ///
     /// # Возвращает
     /// Новый экземпляр `BoardState` с пустым полем.
+    #[must_use = "Состояние поля должно быть использовано"]
     pub fn new() -> Self {
         Self {
             inner: GameBoard::new(),

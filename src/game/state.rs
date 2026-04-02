@@ -63,6 +63,7 @@ use super::scoreboard::ScoreBoard;
 pub use super::stats::GameStats;
 
 /// Позиция появления фигуры по X (центр поля минус половина ширины фигуры).
+// cast: usize -> f32, потеря точности допустима: GRID_WIDTH константа (10)
 const SPAWN_X: f32 = (GRID_WIDTH as f32 / 2.0) - 1.0;
 
 // ============================================================================
@@ -307,18 +308,21 @@ impl Default for GameState {
 impl GameState {
     /// Создать новое состояние игры.
     #[allow(deprecated)]
+    #[must_use = "Состояние игры должно быть использовано"]
     pub fn new() -> Self {
         Self::new_internal(GameMode::Classic, false)
     }
 
     /// Создать новое состояние игры для режима спринт.
     #[allow(deprecated)]
+    #[must_use = "Состояние игры для спринта должно быть использовано"]
     pub fn new_sprint() -> Self {
         Self::new_internal(GameMode::Sprint, true)
     }
 
     /// Создать новое состояние игры для режима марафон.
     #[allow(deprecated)]
+    #[must_use = "Состояние игры для марафона должно быть использовано"]
     pub fn new_marathon() -> Self {
         Self::new_internal(GameMode::Marathon, true)
     }
@@ -1205,6 +1209,7 @@ mod state_tests {
 
     /// Тест: валидация set_fall_speed() через ValidationService без clamp()
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_validation_no_clamp() {
         let mut state = GameState::new();
 
@@ -1234,6 +1239,7 @@ mod state_tests {
 
     /// Тест: обработка NaN в set_fall_speed()
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_nan_rejected() {
         let mut state = GameState::new();
         let initial_speed = state.fall_speed();
@@ -1258,6 +1264,7 @@ mod state_tests {
 
     /// Тест: обработка Infinity в set_fall_speed()
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_infinity_rejected() {
         let mut state = GameState::new();
         let initial_speed = state.fall_speed();
@@ -1276,6 +1283,7 @@ mod state_tests {
 
     /// Тест: обработка отрицательных значений в set_fall_speed()
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_negative_rejected() {
         let mut state = GameState::new();
         let initial_speed = state.fall_speed();
@@ -1294,6 +1302,7 @@ mod state_tests {
 
     /// Тест: обработка значений вне диапазона в set_fall_speed()
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_out_of_range() {
         let mut state = GameState::new();
         let initial_speed = state.fall_speed();
@@ -1325,6 +1334,7 @@ mod state_tests {
 
     /// Тест: set_fall_speed() использует ValidationService (DRY-2)
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_uses_validation_service() {
         let mut state = GameState::new();
 

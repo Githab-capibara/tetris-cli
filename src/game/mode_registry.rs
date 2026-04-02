@@ -49,6 +49,7 @@ impl ModeRegistry {
     ///
     /// # Возвращает
     /// Новый экземпляр `ModeRegistry` с зарегистрированными стандартными режимами
+    #[must_use = "Реестр режимов должен быть использован"]
     pub fn new() -> Self {
         let mut registry = Self {
             factories: HashMap::new(),
@@ -106,6 +107,7 @@ impl ModeRegistry {
     /// let mode = registry.create("sprint").unwrap();
     /// assert_eq!(mode.name(), "Спринт");
     /// ```
+    #[must_use = "Режим игры должен быть использован"]
     pub fn create(&self, name: &str) -> Option<Box<dyn GameModeTrait>> {
         let factory = self.factories.get(&name.to_lowercase())?;
         Some(factory())
@@ -118,6 +120,7 @@ impl ModeRegistry {
     ///
     /// # Возвращает
     /// `true` если режим зарегистрирован
+    #[must_use = "Результат проверки регистрации режима должен быть использован"]
     pub fn is_registered(&self, name: &str) -> bool {
         self.factories.contains_key(&name.to_lowercase())
     }
@@ -126,6 +129,7 @@ impl ModeRegistry {
     ///
     /// # Возвращает
     /// Вектор с именами всех зарегистрированных режимов
+    #[must_use = "Список зарегистрированных режимов должен быть использован"]
     pub fn registered_names(&self) -> Vec<&str> {
         self.factories
             .keys()

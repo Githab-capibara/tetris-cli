@@ -448,18 +448,18 @@ fn test_sprint_timer() {
 fn test_game_stats_in_different_modes() {
     // Классический режим
     let classic_state = GameState::new();
-    let classic_stats = classic_state.stats();
+    let classic_st = classic_state.stats();
     assert_eq!(
-        classic_stats.total_pieces(),
+        classic_st.total_pieces(),
         1,
         "В начале игры должна быть 1 фигура"
     );
 
     // Режим спринт
     let sprint_state = GameState::new_sprint();
-    let sprint_stats = sprint_state.stats();
+    let sprint_st = sprint_state.stats();
     assert_eq!(
-        sprint_stats.total_pieces(),
+        sprint_st.total_pieces(),
         1,
         "В начале спринта должна быть 1 фигура"
     );

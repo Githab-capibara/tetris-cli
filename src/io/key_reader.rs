@@ -113,6 +113,7 @@ impl KeyReader {
     ///
     /// let reader = KeyReader::new();
     /// ```
+    #[must_use = "Читатель клавиш должен быть использован"]
     pub fn new() -> Self {
         let inp = async_stdin();
         Self { inp }

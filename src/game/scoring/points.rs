@@ -68,6 +68,7 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
     }
     // Конвертация безопасна - значение в диапазоне [0, u32::MAX)
     // Исправление #25: явная конвертация после проверки диапазона
+    // cast: f32 -> u32, потеря точности/знака допустима: значение проверено на диапазон [0, u32::MAX)
     value as u32
 }
 
@@ -222,7 +223,7 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 fn check_game_over_condition(state: &GameState) -> bool {
     use crate::constants::MIN_Y;
 
-    // Потеря точности допустима: координаты фигуры в пределах поля
+    // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
     let shape_block_y = state.curr_shape().pos().1 as i16;
     state.curr_shape().coords().iter().any(|&(_, coord_y)| {
         let block_y = coord_y + shape_block_y;

@@ -45,6 +45,7 @@ pub struct BagGenerator {
 
 impl BagGenerator {
     /// Создать новый генератор с пустым мешком.
+    #[must_use = "Генератор фигур должен быть использован"]
     pub fn new() -> Self {
         let mut bag = Self {
             bag: [ShapeType::T; 7], // Временная инициализация, заполнится в fill_bag()

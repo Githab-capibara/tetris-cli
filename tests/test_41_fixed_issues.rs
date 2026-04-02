@@ -1275,9 +1275,10 @@ fn test_documentation_gamestats_export() {
 
     // Тест 2: Интеграционный тест - GameStats доступен
     let state = GameState::default();
-    let stats = state.stats();
+    let st_stats = state.stats();
     // t_pieces() имеет unsigned тип, поэтому >= 0 всегда истинно
-    let _t_pieces = stats.t_pieces(); // Просто проверяем что вызов работает
+    let t_pieces_cnt = st_stats.t_pieces(); // Просто проверяем что вызов работает
+    let _ = t_pieces_cnt;
 }
 
 /// Тест 41: Оптимизация импортов

@@ -441,6 +441,7 @@ fn test_redundant_traits_removed() {
 /// - FigureManager (через GameState) имеет публичные методы
 /// - Доступ к фигурам осуществляется через методы
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_figure_manager_public_methods() {
     use crate::game::state::GameState;
     use crate::tetromino::ShapeType;

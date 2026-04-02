@@ -425,9 +425,9 @@ fn test_todo_comments_for_dead_code() {
                     // Проверяем есть ли TODO в соседних строках (±5 строк)
                     let start = idx.saturating_sub(5);
                     let end = (idx + 5).min(content.lines().count());
-                    let context: Vec<&str> =
+                    let ctx_lines: Vec<&str> =
                         content.lines().skip(start).take(end - start).collect();
-                    let has_todo = context.iter().any(|l| l.contains("TODO"));
+                    let has_todo = ctx_lines.iter().any(|l| l.contains("TODO"));
 
                     if has_todo {
                         dead_code_with_todo += 1;

@@ -62,15 +62,16 @@ fn test_classic_mode_initial_lines() {
 
 /// Тест 5: Classic режим - прогрессия уровней
 #[test]
+#[allow(clippy::similar_names)] // Допустимо для тестов с похожими именами уровней
 fn test_classic_mode_level_progression() {
     // Проверяем формулу расчёта уровня
-    let level_0_lines = 1;
-    let level_10_lines = 10 / LINES_PER_LEVEL + 1;
-    let level_20_lines = 20 / LINES_PER_LEVEL + 1;
+    let lvl0_lines = 1;
+    let lv10_lines = 10 / LINES_PER_LEVEL + 1;
+    let lv20_lines = 20 / LINES_PER_LEVEL + 1;
 
-    assert_eq!(level_0_lines, 1, "0 линий = уровень 1");
-    assert_eq!(level_10_lines, 2, "10 линий = уровень 2");
-    assert_eq!(level_20_lines, 3, "20 линий = уровень 3");
+    assert_eq!(lvl0_lines, 1, "0 линий = уровень 1");
+    assert_eq!(lv10_lines, 2, "10 линий = уровень 2");
+    assert_eq!(lv20_lines, 3, "20 линий = уровень 3");
 }
 
 /// Тест 6: Classic режим - игра до проигрыша

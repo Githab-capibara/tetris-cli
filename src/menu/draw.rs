@@ -88,6 +88,7 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
             entry.name(),
             entry.score().unwrap_or(0)
         );
+        // cast: usize -> u16, потеря точности допустима: количество записей <= 5
         cnv.draw_string(
             &line,
             (3, (3 + i) as u16),

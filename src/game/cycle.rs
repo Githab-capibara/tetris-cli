@@ -230,9 +230,9 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
 
     loop {
         // Поддержание стабильного FPS (вынесено в отдельную функцию)
-        if let Some(_delta_time_ms) = maintain_fps(&mut last_time, interval_ms) {
+        if let Some(delta_time_ms) = maintain_fps(&mut last_time, interval_ms) {
             // Обработка ввода и обновления состояния
-            let input_result = handle_input(state, inp, _delta_time_ms);
+            let input_result = handle_input(state, inp, delta_time_ms);
 
             // Обработка результата ввода (вынесено в отдельную функцию)
             if let Some(final_score) = handle_input_result(&input_result, cnv) {

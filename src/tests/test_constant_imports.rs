@@ -52,6 +52,7 @@ fn test_initial_fall_spd_constant() {
 ///
 /// Проверяем максимальную скорость падения для защиты от переполнения.
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_max_fall_speed_constant() {
     assert_eq!(
         MAX_FALL_SPEED, 1000.0,
@@ -179,6 +180,7 @@ fn test_piece_score_inc_constant() {
 ///
 /// Проверяем множитель очков за падение.
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_piece_score_fall_mult_constant() {
     assert_eq!(
         PIECE_SCORE_FALL_MULT, 50.0,

@@ -475,6 +475,7 @@ fn test_state_no_redundant_todos() {
 ///
 /// Проверяет, что модуль game работает корректно.
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_no_components_reference() {
     use crate::game::GameState;
 
@@ -562,6 +563,7 @@ fn test_score_overflow_protection_integration() {
 ///
 /// Проверяет что валидация работает корректно.
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_state_validation_integration() {
     use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
     use crate::game::GameState;

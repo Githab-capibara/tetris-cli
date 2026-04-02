@@ -63,7 +63,7 @@ impl Time {
     #[allow(clippy::cast_possible_truncation)]
     pub fn from_secs(secs: f64) -> Self {
         // Конвертируем секунды в миллисекунды для большей точности
-        // Потеря точности допустима: округление до 1 мс достаточно для игры
+        // cast: f64 -> u64, потеря знака допустима: время неотрицательное, округление до 1 мс достаточно для игры
         let millis = (secs * 1000.0).round() as u64;
         Self {
             inner: Duration::from_millis(millis),
@@ -311,6 +311,7 @@ mod time_tests {
     use super::*;
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_from_secs() {
         let time = Time::from_secs(1.5);
         assert_eq!(time.as_secs_f64(), 1.5);
@@ -318,6 +319,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_from_millis() {
         let time = Time::from_millis(1500);
         assert_eq!(time.as_secs_f64(), 1.5);
@@ -337,6 +339,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_add() {
         let t1 = Time::from_secs(1.0);
         let t2 = Time::from_secs(0.5);
@@ -345,6 +348,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_sub() {
         let t1 = Time::from_secs(2.0);
         let t2 = Time::from_secs(0.5);
@@ -353,6 +357,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_sub_saturating() {
         let t1 = Time::from_secs(1.0);
         let t2 = Time::from_secs(2.0);
@@ -361,6 +366,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_mul() {
         let time = Time::from_secs(1.5);
         let doubled = time.mul(2);
@@ -410,6 +416,7 @@ mod time_tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_time_default() {
         let time = Time::default();
         assert_eq!(time.as_secs_f64(), 0.0);

@@ -180,6 +180,7 @@ impl GameState {
     ///
     /// # Возвращает
     /// `true` если движение возможно
+    #[must_use = "Результат проверки движения должен быть использован"]
     pub fn can_move_curr_shape_direction(&self, dir: crate::types::Direction) -> bool {
         can_move_curr_shape_direction(self, dir)
     }
@@ -192,6 +193,7 @@ impl GameState {
     /// # Возвращает
     /// `true` если вращение возможно
     #[allow(dead_code)] // Внутренний API для игровых механик
+    #[must_use = "Результат проверки вращения должен быть использован"]
     pub fn can_rotate_curr_shape(&self, dir: crate::types::RotationDirection) -> bool {
         can_rotate_curr_shape(self, dir)
     }
@@ -230,6 +232,7 @@ impl GameState {
     ///
     /// Используется для отрисовки призрачной фигуры (предпросмотр приземления).
     #[allow(dead_code)] // Внутренний API для игровых механик
+    #[must_use = "Результат проверки движения призрака должен быть использован"]
     pub fn can_move_ghost_shape_direction(&self, dir: crate::types::Direction) -> bool {
         can_move_curr_shape_direction(self, dir)
     }
