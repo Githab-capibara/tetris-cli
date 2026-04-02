@@ -151,6 +151,7 @@ pub trait BoardMutable: BoardReadonly {
     ///
     /// # Errors
     /// Возвращает [`crate::errors::GameError`] если значение невалидно.
+    #[must_use = "Ошибка установки скорости должна быть обработана"]
     fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::errors::GameError> {
         Err(crate::errors::GameError::ValidationError(
             "Этот тип не поддерживает установку скорости падения".to_string(),
@@ -166,6 +167,7 @@ pub trait BoardMutable: BoardReadonly {
     ///
     /// # Errors
     /// Возвращает [`crate::errors::GameError`] если значение невалидно.
+    #[must_use = "Ошибка установки таймера должна быть обработана"]
     fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::errors::GameError> {
         Err(crate::errors::GameError::ValidationError(
             "Этот тип не поддерживает установку таймера приземления".to_string(),
