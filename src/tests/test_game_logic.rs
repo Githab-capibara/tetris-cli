@@ -355,6 +355,7 @@ fn test_line_score_calculation() {
 ///
 /// Проверяет формулу: уровень = (линии / 10) + 1
 #[test]
+#[allow(clippy::erasing_op)] // Тест проверяет граничный случай 0 / N
 fn test_level_calculation_from_lines() {
     // Уровень 1: 0-9 линий
     assert_eq!((0 / LINES_PER_LEVEL) + 1, 1, "0 линий = уровень 1");
