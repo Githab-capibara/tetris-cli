@@ -162,6 +162,7 @@ impl StringCache {
     /// Получить кэшированную строку счёта.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn score(&self) -> &str {
         &self.score_str
     }
@@ -169,6 +170,7 @@ impl StringCache {
     /// Получить кэшированную строку уровня.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn level(&self) -> &str {
         &self.level_str
     }
@@ -176,6 +178,7 @@ impl StringCache {
     /// Получить кэшированную строку линий.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn lines(&self) -> &str {
         &self.lines_str
     }
@@ -183,6 +186,7 @@ impl StringCache {
     /// Получить кэшированную строку рекорда.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn high_score(&self) -> &str {
         &self.high_score_str
     }
@@ -190,6 +194,7 @@ impl StringCache {
     /// Получить кэшированную строку комбо.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn combo(&self) -> &str {
         &self.combo_str
     }
@@ -197,6 +202,7 @@ impl StringCache {
     /// Получить кэшированную строку таймера.
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
+    #[inline]
     pub fn timer(&self) -> &str {
         &self.timer_str
     }
