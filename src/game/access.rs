@@ -204,7 +204,11 @@ pub trait BoardMutable: BoardReadonly {
 /// ```
 pub trait ScoreAccess {
     /// Получить текущий счёт.
-    fn get_score(&self) -> u128;
+    #[must_use]
+    #[inline]
+    fn get_score(&self) -> u128 {
+        0
+    }
 }
 
 // ============================================================================
@@ -364,6 +368,7 @@ impl BoardMutable for crate::game::state::GameState {
 }
 
 impl ScoreAccess for crate::game::state::GameState {
+    #[inline]
     fn get_score(&self) -> u128 {
         self.score()
     }
