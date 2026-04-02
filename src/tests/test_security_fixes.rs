@@ -486,7 +486,7 @@ fn test_invalid_utf8_handling_in_key_reader() {
     for &byte in &ascii_bytes {
         // Проверяем что байты ASCII диапазона считаются валидными
         let is_ascii = byte <= 0x7F;
-        assert!(is_ascii, "Байт {} должен быть в ASCII диапазоне", byte);
+        assert!(is_ascii, "Байт {byte} должен быть в ASCII диапазоне");
     }
 
     // Тест 2: Проверка что невалидные первые байты UTF-8 отбрасываются
@@ -500,8 +500,7 @@ fn test_invalid_utf8_handling_in_key_reader() {
             || (0xF0..=0xF4).contains(&byte);
         assert!(
             !is_valid_first_byte,
-            "Байт 0x{:02X} должен быть невалидным первым байтом UTF-8",
-            byte
+            "Байт 0x{byte:02X} должен быть невалидным первым байтом UTF-8"
         );
     }
 
@@ -511,8 +510,7 @@ fn test_invalid_utf8_handling_in_key_reader() {
         let is_2byte = (0xC2..=0xDF).contains(&byte);
         assert!(
             is_2byte,
-            "Байт 0x{:02X} должен быть валидным первым байтом 2-байтовой последовательности",
-            byte
+            "Байт 0x{byte:02X} должен быть валидным первым байтом 2-байтовой последовательности"
         );
     }
 
@@ -521,8 +519,7 @@ fn test_invalid_utf8_handling_in_key_reader() {
         let is_3byte = (0xE0..=0xEF).contains(&byte);
         assert!(
             is_3byte,
-            "Байт 0x{:02X} должен быть валидным первым байтом 3-байтовой последовательности",
-            byte
+            "Байт 0x{byte:02X} должен быть валидным первым байтом 3-байтовой последовательности"
         );
     }
 
@@ -531,8 +528,7 @@ fn test_invalid_utf8_handling_in_key_reader() {
         let is_4byte = (0xF0..=0xF4).contains(&byte);
         assert!(
             is_4byte,
-            "Байт 0x{:02X} должен быть валидным первым байтом 4-байтовой последовательности",
-            byte
+            "Байт 0x{byte:02X} должен быть валидным первым байтом 4-байтовой последовательности"
         );
     }
 }

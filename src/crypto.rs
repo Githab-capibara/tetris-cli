@@ -344,7 +344,7 @@ mod crypto_tests {
     fn test_hmac_sha256_score_data() {
         let score_data = "12345678";
         let salt = "abcdef1234567890";
-        let combined = format!("{}{}", salt, score_data);
+        let combined = format!("{salt}{score_data}");
 
         let key = "save_data_hmac_key";
         let signature = hmac_sha256(key, &combined);

@@ -271,8 +271,7 @@ impl PathValidator {
         // Исправление H7: используем кэшированный canonical_path
         let canonical_current_dir = current_dir.canonicalize().map_err(|e| PathError {
             message: format!(
-                "Не удалось получить canonical путь текущей директории: {}",
-                e
+                "Не удалось получить canonical путь текущей директории: {e}"
             ),
             kind: PathErrorKind::InvalidPath,
         })?;
@@ -367,8 +366,7 @@ impl PathValidator {
             if !allowed.contains(&ch) {
                 return Err(PathError {
                     message: format!(
-                        "Запрещённый символ в пути: {:?} (символ: '{}')",
-                        path_str, ch
+                        "Запрещённый символ в пути: {path_str:?} (символ: '{ch}')"
                     ),
                     kind: PathErrorKind::ForbiddenCharacters,
                 });
@@ -557,7 +555,7 @@ impl PathValidator {
         for pattern in FORBIDDEN_PATTERNS {
             if path_lower.contains(pattern) {
                 return Err(PathError {
-                    message: format!("Запрещённый паттерн в пути: {:?} ({})", path, pattern),
+                    message: format!("Запрещённый паттерн в пути: {path:?} ({pattern})"),
                     kind: PathErrorKind::PathTraversal,
                 });
             }
@@ -636,7 +634,7 @@ mod validation_path_tests {
             message: "Тестовая ошибка".to_string(),
             kind: PathErrorKind::TooLong,
         };
-        let display = format!("{}", error);
+        let display = format!("{error}");
         assert!(display.contains("Тестовая ошибка"));
         assert!(display.contains("TooLong"));
     }

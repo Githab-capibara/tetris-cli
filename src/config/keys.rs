@@ -168,8 +168,7 @@ pub fn get_save_data_hmac_key() -> &'static str {
 pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
     if key.trim().is_empty() {
         return Err(format!(
-            "HMAC ключ '{}' не установлен. Пожалуйста, установите переменную окружения TETRIS_HMAC_KEY",
-            key_name
+            "HMAC ключ '{key_name}' не установлен. Пожалуйста, установите переменную окружения TETRIS_HMAC_KEY"
         ));
     }
 

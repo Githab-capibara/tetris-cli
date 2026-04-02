@@ -55,7 +55,7 @@ fn test_validation_service_structure() {
     assert!(matches!(error.kind, ValidationErrorKind::OutOfRange));
 
     // Проверяем Display реализацию
-    let display = format!("{}", error);
+    let display = format!("{error}");
     assert!(display.contains("Ошибка валидации"));
 
     // Проверяем что ValidationErrorKind имеет правильные варианты

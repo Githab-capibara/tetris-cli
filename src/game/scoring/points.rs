@@ -218,9 +218,11 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 ///
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
+#[allow(clippy::cast_possible_wrap)]
 fn check_game_over_condition(state: &GameState) -> bool {
     use crate::constants::MIN_Y;
 
+    // Потеря точности допустима: координаты фигуры в пределах поля
     let shape_block_y = state.curr_shape().pos().1 as i16;
     state.curr_shape().coords().iter().any(|&(_, coord_y)| {
         let block_y = coord_y + shape_block_y;
@@ -301,7 +303,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
         let combo_bonus = {
             let stats_mut_ref = state.stats_mut();
             let new_combo = stats_mut_ref.combo_counter().saturating_add(1);
-            let _ = stats_mut_ref.set_combo_counter(new_combo);
+            let () = stats_mut_ref.set_combo_counter(new_combo);
             if new_combo > 1 {
                 // Инкапсуляция: используем add_score() вместо прямого доступа
                 // Исправление C1: saturating_mul для защиты от переполнения
@@ -314,7 +316,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
             let _ = state.add_score(bonus);
         }
     } else {
-        let _ = state.stats_mut().set_combo_counter(0);
+        let () = state.stats_mut().set_combo_counter(0);
     }
 }
 

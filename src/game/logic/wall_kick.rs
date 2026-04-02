@@ -88,6 +88,7 @@ pub const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
 ///     println!("Вращение успешно!");
 /// }
 /// ```
+#[allow(clippy::cast_lossless)]
 pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationDirection) -> bool {
     // Проверяем прямое вращение без смещения
     if super::collision::can_rotate_curr_shape(state, dir) {
@@ -101,6 +102,7 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
         {
             let curr_shape = state.get_curr_shape_mut();
             let pos = curr_shape.pos_mut();
+            // Потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
             pos.0 += offset_x as f32;
             pos.1 += offset_y as f32;
         }
@@ -133,7 +135,7 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 ///
 /// ## Исправление #4 (HIGH)
 /// Функция сделана pub(crate) для использования из collision.rs.
-#[allow(dead_code)]
+#[allow(dead_code, clippy::cast_lossless)]
 pub(crate) fn try_wall_kick_offsets(
     state: &GameState,
     dir: crate::types::RotationDirection,
@@ -141,6 +143,7 @@ pub(crate) fn try_wall_kick_offsets(
     for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
         let mut kicked_shape = *state.curr_shape();
         let pos = kicked_shape.pos_mut();
+        // Потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
         pos.0 += offset_x as f32;
         pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);

@@ -254,7 +254,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Комбо не может быть отрицательным (гарантируется типом u32)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_combo_counter(&mut self, value: u32) {
         self.combo_counter = value;
     }

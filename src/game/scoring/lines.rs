@@ -163,6 +163,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     let mut combo_counter = state.stats().combo_counter();
 
     // Исправление C3 (CRITICAL): Обработка ошибки переполнения счёта
+    // Потеря точности допустима: remove_count <= GRID_HEIGHT (20)
+    #[allow(clippy::cast_possible_truncation)]
     if let Err(e) =
         update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter)
     {
@@ -172,16 +174,18 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     }
 
     state.set_score(score);
-    let _ = state.stats_mut().set_combo_counter(combo_counter);
+    let () = state.stats_mut().set_combo_counter(combo_counter);
 
     // Обновление количества очищенных линий (ISP-1: используем get_lines_cleared)
     let lines_cleared = state.get_lines_cleared().saturating_add(remove_count);
-    let _ = state.set_lines_cleared(lines_cleared);
+    let () = state.set_lines_cleared(lines_cleared);
 
     // Увеличение скорости игры
     let fall_speed = state.fall_speed();
     // Исправление E4 (HIGH): Явная обработка ошибки set_fall_speed()
     // Вместо игнорирования ошибки через let _ = ..., явно обрабатываем результат
+    // Потеря точности допустима: remove_count <= GRID_HEIGHT (20)
+    #[allow(clippy::cast_precision_loss)]
     let new_fall_speed = fall_speed + SPD_INC * remove_count as f32;
     if let Err(e) = state.set_fall_speed(new_fall_speed) {
         // Логгируем ошибку но продолжаем работу (не критично)

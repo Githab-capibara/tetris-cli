@@ -707,8 +707,7 @@ fn test_no_panic_at_extreme_values_integration() {
         }));
         assert!(
             result.is_ok(),
-            "set_fall_speed({}) не должен вызывать панику",
-            value
+            "set_fall_speed({value}) не должен вызывать панику"
         );
     }
 
@@ -722,8 +721,7 @@ fn test_no_panic_at_extreme_values_integration() {
         }));
         assert!(
             result.is_ok(),
-            "set_land_timer({}) не должен вызывать панику",
-            value
+            "set_land_timer({value}) не должен вызывать панику"
         );
     }
 

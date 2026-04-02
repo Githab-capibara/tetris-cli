@@ -580,7 +580,7 @@ fn test_arch_integrity_no_circular_dependencies() {
 
     // UpdateEndState должен работать независимо
     let state = UpdateEndState::Continue;
-    assert_eq!(format!("{:?}", state), "Continue");
+    assert_eq!(format!("{state:?}"), "Continue");
 
     // === Проверка независимости constants.rs ===
     use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH};

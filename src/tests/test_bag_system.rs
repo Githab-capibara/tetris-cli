@@ -541,9 +541,7 @@ fn test_all_pieces_distribution_statistics() {
         let count = counts[shape as usize];
         assert!(
             (70..=130).contains(&count),
-            "{:?}-фигур должно быть около 100 (получено {})",
-            shape,
-            count
+            "{shape:?}-фигур должно быть около 100 (получено {count})"
         );
     }
 
@@ -560,9 +558,7 @@ fn test_all_pieces_distribution_statistics() {
     // Разница между мин и макс не должна превышать 50
     assert!(
         max_count - min_count < 50,
-        "Разница между мин и макс должна быть меньше 50 (мин={}, макс={})",
-        min_count,
-        max_count
+        "Разница между мин и макс должна быть меньше 50 (мин={min_count}, макс={max_count})"
     );
 }
 

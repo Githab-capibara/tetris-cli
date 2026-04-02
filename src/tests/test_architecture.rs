@@ -38,7 +38,7 @@ fn test_types_no_cyclic_dependencies() {
     let _rotation = RotationDirection::CounterClockwise;
 
     let state = UpdateEndState::Continue;
-    assert_eq!(format!("{:?}", state), "Continue");
+    assert_eq!(format!("{state:?}"), "Continue");
 }
 
 /// Проверка, что crypto.rs зависит только от внешних библиотек.

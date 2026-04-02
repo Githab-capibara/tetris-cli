@@ -58,7 +58,7 @@ fn test_unicode_variation_selectors_range() {
     for vs in 0xFE00..=0xFE0F {
         let ch =
             char::from_u32(vs).expect("Failed to convert variation selector codepoint to char");
-        let name = format!("Player{}Name", ch);
+        let name = format!("Player{ch}Name");
         let entry = LeaderboardEntry::new(&name, 1000);
 
         assert!(
@@ -126,7 +126,7 @@ fn test_unicode_disallowed_emoji() {
     let emojis = ["😀", "😂", "🎮", "🎯", "🏆"];
 
     for &emoji in &emojis {
-        let name = format!("Player{}Name", emoji);
+        let name = format!("Player{emoji}Name");
         let entry = LeaderboardEntry::new(&name, 1000);
 
         assert!(
@@ -150,7 +150,7 @@ fn test_unicode_disallowed_control_chars() {
             continue;
         }
 
-        let name = format!("Player{}Name", ch);
+        let name = format!("Player{ch}Name");
         let entry = LeaderboardEntry::new(&name, 1000);
 
         assert!(
@@ -180,7 +180,7 @@ fn test_unicode_bidi_control_chars() {
     ];
 
     for &(ch, name) in &bidi_chars {
-        let player_name = format!("Player{}Name", ch);
+        let player_name = format!("Player{ch}Name");
         let entry = LeaderboardEntry::new(&player_name, 1000);
 
         assert!(
@@ -203,7 +203,7 @@ fn test_unicode_outside_bmp() {
     ];
 
     for &ch in &outside_bmp {
-        let name = format!("Player{}Name", ch);
+        let name = format!("Player{ch}Name");
         let entry = LeaderboardEntry::new(&name, 1000);
 
         assert!(

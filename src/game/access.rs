@@ -413,7 +413,7 @@ impl LevelAccess for crate::game::state::GameState {
 
     #[inline]
     fn set_level(&mut self, level: u32) {
-        let _ = self.set_level(level);
+        let () = self.set_level(level);
     }
 }
 
@@ -425,7 +425,7 @@ impl LinesAccess for crate::game::state::GameState {
 
     #[inline]
     fn set_lines_cleared(&mut self, lines: u32) {
-        let _ = self.set_lines_cleared(lines);
+        let () = self.set_lines_cleared(lines);
     }
 
     #[inline]
@@ -442,11 +442,11 @@ impl ComboAccess for crate::game::state::GameState {
 
     #[inline]
     fn set_combo(&mut self, combo: u32) {
-        let _ = self.stats_mut().set_combo_counter(combo);
+        let () = self.stats_mut().set_combo_counter(combo);
     }
 
     #[inline]
     fn reset_combo(&mut self) {
-        let _ = self.stats_mut().set_combo_counter(0);
+        let () = self.stats_mut().set_combo_counter(0);
     }
 }

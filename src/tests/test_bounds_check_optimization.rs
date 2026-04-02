@@ -112,7 +112,7 @@ fn test_collision_with_other_pieces() {
     let can_move = can_move_curr_shape_direction(&state, Direction::Down);
 
     // Восстанавливаем оригинальную позицию
-    let _ = state.get_curr_shape_mut().set_pos(original_pos);
+    let () = state.get_curr_shape_mut().set_pos(original_pos);
 
     assert!(
         !can_move,

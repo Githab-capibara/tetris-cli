@@ -295,9 +295,7 @@ fn test_marathon_mode_game_length() {
     // Marathon режим длиннее Sprint
     assert!(
         MARATHON_LINES > SPRINT_LINES,
-        "Marathon режим должен быть длиннее Sprint ({} > {})",
-        MARATHON_LINES,
-        SPRINT_LINES
+        "Marathon режим должен быть длиннее Sprint ({MARATHON_LINES} > {SPRINT_LINES})"
     );
 }
 
@@ -393,8 +391,7 @@ fn test_all_modes_have_different_goals() {
 
     assert_ne!(
         SPRINT_LINES, MARATHON_LINES,
-        "Sprint и Marathon должны иметь разные цели ({} vs {})",
-        SPRINT_LINES, MARATHON_LINES
+        "Sprint и Marathon должны иметь разные цели ({SPRINT_LINES} vs {MARATHON_LINES})"
     );
 }
 
@@ -451,9 +448,7 @@ fn test_sprint_mode_faster_win() {
     // Sprint требует меньше линий чем Marathon
     assert!(
         SPRINT_LINES < MARATHON_LINES,
-        "Sprint должен быть короче Marathon ({} < {})",
-        SPRINT_LINES,
-        MARATHON_LINES
+        "Sprint должен быть короче Marathon ({SPRINT_LINES} < {MARATHON_LINES})"
     );
 }
 
@@ -463,7 +458,6 @@ fn test_marathon_mode_long_game() {
     // Marathon - самый длинный режим
     assert_eq!(
         MARATHON_LINES, 150,
-        "Marathon должен быть самым длинным режимом ({} линий)",
-        MARATHON_LINES
+        "Marathon должен быть самым длинным режимом ({MARATHON_LINES} линий)"
     );
 }

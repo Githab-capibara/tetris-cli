@@ -328,7 +328,7 @@ mod test_constants_centralization {
         for module_path in &modules {
             if Path::new(module_path).exists() {
                 let content = fs::read_to_string(module_path)
-                    .unwrap_or_else(|_| panic!("Failed to read {}", module_path));
+                    .unwrap_or_else(|_| panic!("Failed to read {module_path}"));
 
                 // Модуль должен импортировать константы или использовать их через crate::constants
                 let imports_constants = content.contains("use crate::constants::")
@@ -338,8 +338,7 @@ mod test_constants_centralization {
                 if content.contains("GRID_WIDTH") || content.contains("GRID_HEIGHT") {
                     assert!(
                         imports_constants,
-                        "{} должен импортировать константы из constants.rs",
-                        module_path
+                        "{module_path} должен импортировать константы из constants.rs"
                     );
                 }
             }
@@ -571,8 +570,7 @@ mod test_validation {
             method_body.contains("clamp")
                 || method_body.contains(".max(")
                 || method_body.contains("MIN_LEVEL"),
-            "set_level должен использовать clamp для валидации.\nТело метода: {}",
-            method_body
+            "set_level должен использовать clamp для валидации.\nТело метода: {method_body}"
         );
 
         println!("✅ ScoreBoard::set_level валидирует максимальный уровень");
@@ -644,8 +642,7 @@ mod test_field_encapsulation {
         for getter in &getters {
             assert!(
                 state_content.contains(getter),
-                "GameState должен иметь геттер {}",
-                getter
+                "GameState должен иметь геттер {getter}"
             );
         }
 
@@ -702,8 +699,7 @@ mod test_canvas_drop_error_handling {
         // Проверяем наличие логирования ошибок
         assert!(
             drop_implementation.contains("eprintln!") || drop_implementation.contains("log::"),
-            "Canvas::drop() должен логирировать ошибки через eprintln! или log!\nНайден код: {}",
-            drop_implementation
+            "Canvas::drop() должен логирировать ошибки через eprintln! или log!\nНайден код: {drop_implementation}"
         );
 
         // Проверяем что есть обработка ошибок через if let Err
@@ -793,8 +789,7 @@ mod test_no_circular_dependencies {
                     assert!(
                         !content.contains("use super::render::")
                             && !content.contains("use crate::game::render::"),
-                        "{:?} не должен импортировать render (нарушение границ)",
-                        path
+                        "{path:?} не должен импортировать render (нарушение границ)"
                     );
                 }
             }
@@ -833,8 +828,7 @@ mod test_module_boundaries {
                     assert!(
                         !content.contains("use super::render")
                             && !content.contains("use crate::game::render"),
-                        "{:?} не должен импортировать из render/",
-                        path
+                        "{path:?} не должен импортировать из render/"
                     );
                 }
             }
@@ -867,8 +861,7 @@ mod test_module_boundaries {
                     assert!(
                         !content.contains("use super::render")
                             && !content.contains("use crate::game::render"),
-                        "{:?} не должен импортировать из render/",
-                        path
+                        "{path:?} не должен импортировать из render/"
                     );
                 }
             }
@@ -895,8 +888,7 @@ mod test_module_boundaries {
                     assert!(
                         !content.contains("use super::logic")
                             && !content.contains("use crate::game::logic"),
-                        "{:?} не должен импортировать из logic/",
-                        path
+                        "{path:?} не должен импортировать из logic/"
                     );
                 }
             }
@@ -1161,14 +1153,11 @@ mod test_integration {
 
         assert!(
             checks_passed == total_checks,
-            "Все архитектурные компоненты должны существовать: {}/{}",
-            checks_passed,
-            total_checks
+            "Все архитектурные компоненты должны существовать: {checks_passed}/{total_checks}"
         );
 
         println!(
-            "✅ Архитектурная целостность подтверждена: {}/{}",
-            checks_passed, total_checks
+            "✅ Архитектурная целостность подтверждена: {checks_passed}/{total_checks}"
         );
     }
 }

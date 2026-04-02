@@ -522,8 +522,7 @@ fn test_m10_sanitize_player_name_single_pass() {
         let result = sanitize_player_name(input);
         assert_eq!(
             result, expected,
-            "sanitize_player_name(\"{}\") должен возвращать \"{}\"",
-            input, expected
+            "sanitize_player_name(\"{input}\") должен возвращать \"{expected}\""
         );
     }
 

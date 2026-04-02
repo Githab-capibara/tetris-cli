@@ -626,11 +626,8 @@ fn test_rotation_at_wall_and_movement() {
     // Это допустимое поведение для некоторых фигур у стены
     assert!(
         can_move_right || can_move_left || !can_rotate_after,
-        "После вращения у стены: движение вправо = {}, влево = {}, вращение = {}. \
-         Это известный edge case wall kick.",
-        can_move_right,
-        can_move_left,
-        can_rotate_after
+        "После вращения у стены: движение вправо = {can_move_right}, влево = {can_move_left}, вращение = {can_rotate_after}. \
+         Это известный edge case wall kick."
     );
 }
 

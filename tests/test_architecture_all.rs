@@ -647,8 +647,7 @@ fn test_scalability_shapetype_naming() {
     let tetromino_type_count = shape_content.matches("TetrominoType").count();
     assert!(
         tetromino_type_count <= 1,
-        "TetrominoType не должен использоваться (найдено: {})",
-        tetromino_type_count
+        "TetrominoType не должен использоваться (найдено: {tetromino_type_count})"
     );
 }
 
@@ -767,8 +766,7 @@ fn test_additional_tetromino_size_check() {
     let size = size_of::<tetris_cli::tetromino::Tetromino>();
     assert!(
         size <= 40,
-        "Размер Tetromino должен быть <= 40 байт (фактический: {})",
-        size
+        "Размер Tetromino должен быть <= 40 байт (фактический: {size})"
     );
 }
 
