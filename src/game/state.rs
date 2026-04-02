@@ -746,6 +746,11 @@ impl GameState {
     ///
     /// # Исправление аудита 2026-04-02 (B1)
     /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
+    ///
+    /// # Errors
+    /// Возвращает [`GameError::ValidationError`] если:
+    /// - `value` не является конечным числом (NaN или Infinity)
+    /// - `value` выходит за пределы диапазона [INITIAL_FALL_SPD, MAX_FALL_SPEED]
     #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
