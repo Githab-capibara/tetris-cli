@@ -69,7 +69,6 @@ const MAX_NAME_LENGTH: usize = 32;
 ///
 /// # Исправление #6 (LOW)
 /// Используется `matches!` макрос с диапазонами для читаемой whitelist проверки.
-#[inline]
 pub fn is_valid_name_char(c: char) -> bool {
     // Whitelist подход: разрешаем только безопасные символы
     !c.is_control()

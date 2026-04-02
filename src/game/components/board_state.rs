@@ -47,30 +47,45 @@ impl BoardState {
     }
 
     /// Получить доступ к внутреннему GameBoard.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Ссылка на `GameBoard`
+    #[must_use = "GameBoard должен быть использован"]
     pub fn inner(&self) -> &GameBoard {
         &self.inner
     }
 
     /// Получить мутуабельный доступ к внутреннему GameBoard.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `GameBoard`
+    #[must_use = "Мутуабельный GameBoard должен быть использован"]
     pub fn inner_mut(&mut self) -> &mut GameBoard {
         &mut self.inner
     }
 
     /// Получить битовую маску заполненных линий.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Битовая маска заполненных линий
+    #[must_use = "Маска заполненных линий должна быть использована"]
     pub fn filled_lines_mask(&self) -> u32 {
         self.inner.get_filled_lines_mask()
     }
 
     /// Установить битовую маску заполненных линий.
+    ///
+    /// # Аргументы
+    /// * `mask` - битовая маска заполненных линий
     pub fn set_filled_lines_mask(&mut self, mask: u32) {
         self.inner.set_filled_lines_mask(mask);
     }
 
     /// Получить количество заполненных линий.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Количество заполненных линий
+    #[must_use = "Количество заполненных линий должно быть использовано"]
     pub fn filled_lines_count(&self) -> u32 {
         self.inner.get_filled_lines_count()
     }
@@ -78,7 +93,17 @@ impl BoardState {
     /// Очистить заполненные линии.
     ///
     /// # Возвращает
-    /// Количество очищенных линий.
+    /// Количество очищенных линий
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::components::BoardState;
+    ///
+    /// let mut state = BoardState::new();
+    /// state.set_filled_lines_mask(0b1010);
+    /// let cleared = state.clear_filled_lines();
+    /// assert_eq!(cleared, 2);
+    /// ```
     pub fn clear_filled_lines(&mut self) -> u32 {
         self.inner.clear_filled_lines()
     }

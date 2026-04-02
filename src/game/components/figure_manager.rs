@@ -94,51 +94,78 @@ impl FigureManager {
     }
 
     /// Получить генератор фигур.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Ссылка на `BagGenerator`
+    #[must_use = "Генератор фигур должен быть использован"]
     pub fn bag(&self) -> &BagGenerator {
         &self.bag
     }
 
     /// Получить генератор фигур (мутуабельная ссылка).
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на `BagGenerator`
+    #[must_use = "Мутуабельный генератор фигур должен быть использован"]
     pub fn bag_mut(&mut self) -> &mut BagGenerator {
         &mut self.bag
     }
 
     /// Установить текущую фигуру.
+    ///
+    /// # Аргументы
+    /// * `value` - новая текущая фигура
     pub fn set_curr_shape(&mut self, value: Tetromino) {
         self.curr_shape = value;
     }
 
     /// Установить следующую фигуру.
+    ///
+    /// # Аргументы
+    /// * `value` - новая следующая фигура
     pub fn set_next_shape(&mut self, value: Tetromino) {
         self.next_shape = value;
     }
 
     /// Установить удержанную фигуру.
+    ///
+    /// # Аргументы
+    /// * `value` - новая удержанная фигура
     pub fn set_held_shape(&mut self, value: Option<Tetromino>) {
         self.held_shape = value;
     }
 
     /// Установить флаг возможности удержания.
+    ///
+    /// # Аргументы
+    /// * `value` - значение флага возможности удержания
     pub fn set_can_hold(&mut self, value: bool) {
         self.can_hold = value;
     }
 
     /// Получить текущую фигуру (мутуабельная ссылка).
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на текущую фигуру
+    #[must_use = "Мутуабельная текущая фигура должна быть использована"]
     pub fn curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
 
     /// Получить следующую фигуру (мутуабельная ссылка).
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на следующую фигуру
+    #[must_use = "Мутуабельная следующая фигура должна быть использована"]
     pub fn next_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.next_shape
     }
 
     /// Получить удержанную фигуру (мутуабельная ссылка).
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Мутуабельная ссылка на удержанную фигуру
+    #[must_use = "Мутуабельная удержанная фигура должна быть использована"]
     pub fn held_shape_mut(&mut self) -> &mut Option<Tetromino> {
         &mut self.held_shape
     }
@@ -147,6 +174,16 @@ impl FigureManager {
     ///
     /// Перемещает next_shape в curr_shape, генерирует новую next_shape из bag.
     /// Сбрасывает can_hold в true.
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::components::FigureManager;
+    ///
+    /// let mut manager = FigureManager::new();
+    /// let old_curr = manager.curr_shape().shape();
+    /// manager.spawn_new_piece();
+    /// // curr_shape теперь содержит предыдущую next_shape
+    /// ```
     pub fn spawn_new_piece(&mut self) {
         self.curr_shape = self.next_shape;
         self.next_shape = Tetromino::from_bag(&mut self.bag);

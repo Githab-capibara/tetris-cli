@@ -50,23 +50,35 @@ impl AnimationState {
     }
 
     /// Получить маску анимируемых строк.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// Битовая маска анимируемых строк
+    #[must_use = "Маска анимации должна быть использована"]
     pub fn animating_rows_mask(&self) -> u32 {
         self.animating_rows_mask
     }
 
     /// Установить маску анимируемых строк.
+    ///
+    /// # Аргументы
+    /// * `mask` - битовая маска строк для анимации
     pub fn set_animating_rows_mask(&mut self, mask: u32) {
         self.animating_rows_mask = mask;
     }
 
     /// Получить флаг Hard Drop.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// `true` если активен Hard Drop
+    #[must_use = "Флаг Hard Drop должен быть использован"]
     pub fn is_hard_dropping(&self) -> bool {
         self.is_hard_dropping
     }
 
     /// Установить флаг Hard Drop.
+    ///
+    /// # Аргументы
+    /// * `value` - значение флага Hard Drop
     pub fn set_is_hard_dropping(&mut self, value: bool) {
         self.is_hard_dropping = value;
     }
@@ -75,6 +87,18 @@ impl AnimationState {
     ///
     /// # Аргументы
     /// * `row` - номер строки (0-19)
+    ///
+    /// # Паника
+    /// Паникует если `row >= 32` (выход за пределы битовой маски u32)
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::components::AnimationState;
+    ///
+    /// let mut state = AnimationState::new();
+    /// state.add_row_to_animation(5);
+    /// assert_eq!(state.animating_rows_mask(), 1 << 5);
+    /// ```
     pub fn add_row_to_animation(&mut self, row: u32) {
         if row < 32 {
             self.animating_rows_mask |= 1 << row;
@@ -85,6 +109,16 @@ impl AnimationState {
     ///
     /// # Аргументы
     /// * `row` - номер строки (0-19)
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::components::AnimationState;
+    ///
+    /// let mut state = AnimationState::new();
+    /// state.add_row_to_animation(5);
+    /// state.remove_row_from_animation(5);
+    /// assert_eq!(state.animating_rows_mask(), 0);
+    /// ```
     pub fn remove_row_from_animation(&mut self, row: u32) {
         if row < 32 {
             self.animating_rows_mask &= !(1 << row);
@@ -92,12 +126,26 @@ impl AnimationState {
     }
 
     /// Очистить маску анимации.
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::components::AnimationState;
+    ///
+    /// let mut state = AnimationState::new();
+    /// state.add_row_to_animation(5);
+    /// state.add_row_to_animation(10);
+    /// state.clear_animation_mask();
+    /// assert_eq!(state.animating_rows_mask(), 0);
+    /// ```
     pub fn clear_animation_mask(&mut self) {
         self.animating_rows_mask = 0;
     }
 
     /// Проверить, есть ли активные анимации.
-    #[must_use]
+    ///
+    /// # Возвращает
+    /// `true` если есть активные анимации
+    #[must_use = "Результат проверки анимаций должен быть использован"]
     pub fn has_active_animations(&self) -> bool {
         self.animating_rows_mask != 0 || self.is_hard_dropping
     }

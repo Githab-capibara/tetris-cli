@@ -53,8 +53,19 @@ pub struct StringCache {
 
 impl StringCache {
     /// Создать новый кэш строк.
+    ///
+    /// # Возвращает
+    /// Новый экземпляр `StringCache` с пустыми строками
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::cache::StringCache;
+    ///
+    /// let cache = StringCache::new();
+    /// assert!(cache.score_str.is_empty());
+    /// ```
     #[allow(dead_code)] // Используется только в тестах
-    #[must_use]
+    #[must_use = "Кэш строк должен быть использован"]
     pub fn new() -> Self {
         Self::default()
     }
@@ -75,6 +86,9 @@ impl StringCache {
     /// Это необходимо для функциональности — кэш должен обновлять все
     /// отображаемые значения одновременно. Разделение на несколько методов
     /// ухудшит производительность и читаемость.
+    ///
+    /// # #[track_caller]
+    /// Добавлен для отладки места вызова при панике.
     #[track_caller]
     #[allow(dead_code)] // Внутренний API для отрисовки
     #[allow(clippy::too_many_arguments)]

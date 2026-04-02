@@ -63,19 +63,52 @@ impl ScoreBoard {
     }
 
     /// Получить текущий счёт.
-    #[inline]
+    ///
+    /// # Возвращает
+    /// Текущий счёт (u128)
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::scoreboard::ScoreBoard;
+    ///
+    /// let scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.get_score(), 0);
+    /// ```
+    #[must_use = "Счёт должен быть использован"]
     pub fn get_score(&self) -> u128 {
         self.score
     }
 
     /// Получить текущий уровень.
-    #[inline]
+    ///
+    /// # Возвращает
+    /// Текущий уровень (u32)
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::scoreboard::ScoreBoard;
+    ///
+    /// let scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.get_level(), 1);
+    /// ```
+    #[must_use = "Уровень должен быть использован"]
     pub fn get_level(&self) -> u32 {
         self.level
     }
 
     /// Получить количество очищенных линий.
-    #[inline]
+    ///
+    /// # Возвращает
+    /// Количество очищенных линий (u32)
+    ///
+    /// # Пример
+    /// ```
+    /// use crate::game::scoreboard::ScoreBoard;
+    ///
+    /// let scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.get_lines_cleared(), 0);
+    /// ```
+    #[must_use = "Количество линий должно быть использовано"]
     pub fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
@@ -99,13 +132,12 @@ impl ScoreBoard {
     ///
     /// # Пример использования
     /// ```
-    /// use tetris_cli::game::scoreboard::ScoreBoard;
+    /// use crate::game::scoreboard::ScoreBoard;
     ///
     /// let mut scoreboard = ScoreBoard::new();
     /// assert_eq!(scoreboard.add_score(100), 100);
     /// assert_eq!(scoreboard.add_score(50), 150);
     /// ```
-    #[inline]
     #[must_use = "Новый счёт должен быть использован"]
     pub fn add_score(&mut self, points: u128) -> u128 {
         let old_score = self.score;
@@ -126,7 +158,6 @@ impl ScoreBoard {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на разумные пределы (максимум u128::MAX).
-    #[inline]
     pub fn set_score(&mut self, value: u128) {
         // Валидация (H3): u128 уже имеет естественные границы
         self.score = value;
@@ -142,7 +173,6 @@ impl ScoreBoard {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на разумные пределы (максимум 1000).
-    #[inline]
     pub fn set_level(&mut self, value: u32) {
         // Валидация (H3): ограничиваем уровень разумным максимумом
         const MAX_LEVEL: u32 = 1000;
@@ -165,7 +195,6 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.increment_level(), 2);
     /// assert_eq!(scoreboard.increment_level(), 3);
     /// ```
-    #[inline]
     #[must_use = "Новый уровень должен быть использован"]
     pub fn increment_level(&mut self) -> u32 {
         self.level = self.level.saturating_add(1);
@@ -191,7 +220,6 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.add_lines_cleared(5), 5);
     /// assert_eq!(scoreboard.add_lines_cleared(3), 8);
     /// ```
-    #[inline]
     #[must_use = "Новое количество линий должно быть использовано"]
     pub fn add_lines_cleared(&mut self, count: u32) -> u32 {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
@@ -202,7 +230,6 @@ impl ScoreBoard {
     ///
     /// # Аргументы
     /// * `value` - новое значение количества линий
-    #[inline]
     pub fn set_lines_cleared(&mut self, value: u32) {
         self.lines_cleared = value;
     }
@@ -210,19 +237,16 @@ impl ScoreBoard {
 
 // S9: Удаление избыточных #[allow(clippy::too_many_arguments)] — методы имеют 0-1 аргумент
 impl ScoreAccess for ScoreBoard {
-    #[inline]
     fn get_score(&self) -> u128 {
         self.get_score()
     }
 }
 
 impl ScoreMutable for ScoreBoard {
-    #[inline]
     fn add_score(&mut self, points: u128) {
         let _ = self.add_score(points);
     }
 
-    #[inline]
     fn set_score(&mut self, value: u128) {
         self.set_score(value);
     }

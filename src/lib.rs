@@ -383,6 +383,7 @@ mod tests {
 
     // Новые детальные тесты (375 тестов)
     pub mod test_bag_system;
+    pub mod test_boundary_values;
     pub mod test_game_modes_detailed;
     pub mod test_game_movement;
     pub mod test_game_rotation;

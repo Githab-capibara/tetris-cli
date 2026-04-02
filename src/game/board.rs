@@ -64,6 +64,15 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(i8)` - значение ячейки (-1 = пусто, 0-6 = цвет)
     /// - `None` - если координаты выходят за пределы поля
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let board = GameBoard::new();
+    /// let cell = board.get_block(5, 10);
+    /// assert_eq!(cell, Some(-1)); // Пустая ячейка
+    /// ```
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
@@ -83,6 +92,15 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(())` - если ячейка успешно установлена
     /// - `None` - если координаты выходят за пределы поля
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let mut board = GameBoard::new();
+    /// assert_eq!(board.set_block(5, 10, 3), Some(()));
+    /// assert_eq!(board.get_block(5, 10), Some(3));
+    /// ```
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
@@ -97,6 +115,15 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Битовая маска где каждый бит соответствует линии поля.
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let mut board = GameBoard::new();
+    /// board.set_filled_lines_mask(0b1010);
+    /// assert_eq!(board.get_filled_lines_mask(), 0b1010);
+    /// ```
     pub fn get_filled_lines_mask(&self) -> u32 {
         self.filled_lines
     }
@@ -112,7 +139,8 @@ impl GameBoard {
     /// Получить количество заполненных линий.
     ///
     /// # Возвращает
-    /// Количество установленных битов в маске.
+    /// Количество установленных битов в маске
+    #[must_use = "Количество заполненных линий должно быть использовано"]
     pub fn get_filled_lines_count(&self) -> u32 {
         self.filled_lines.count_ones()
     }
@@ -120,11 +148,17 @@ impl GameBoard {
     /// Очистить заполненные линии.
     ///
     /// # Возвращает
-    /// Количество очищенных линий.
+    /// Количество очищенных линий
     ///
-    /// # Примечания
-    /// Этот метод только сбрасывает маску.
-    /// Фактическое удаление линий должно выполняться отдельно.
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let mut board = GameBoard::new();
+    /// board.set_filled_lines_mask(0b1111);
+    /// let count = board.clear_filled_lines();
+    /// assert_eq!(count, 4);
+    /// ```
     pub fn clear_filled_lines(&mut self) -> u32 {
         let count = self.get_filled_lines_count();
         self.filled_lines = 0;
@@ -135,6 +169,15 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Ссылка на [[i8; GRID_WIDTH]; GRID_HEIGHT]
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let board = GameBoard::new();
+    /// let blocks = board.get_blocks();
+    /// assert_eq!(blocks[0][0], -1); // Пустая ячейка
+    /// ```
     pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
@@ -143,6 +186,15 @@ impl GameBoard {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на [[i8; GRID_WIDTH]; GRID_HEIGHT]
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use crate::game::board::GameBoard;
+    ///
+    /// let mut board = GameBoard::new();
+    /// let blocks = board.get_blocks_mut();
+    /// blocks[0][0] = 1; // Установить блок
+    /// ```
     pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &mut self.blocks
     }

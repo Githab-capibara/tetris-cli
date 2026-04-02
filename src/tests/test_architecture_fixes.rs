@@ -465,7 +465,7 @@ fn test_figure_manager_public_methods() {
 
     // Проверяем что можно получить мутабельную ссылку на текущую фигуру
     let curr_shape_mut = state.get_curr_shape_mut();
-    curr_shape_mut.pos().0 += 1.0;
+    curr_shape_mut.pos_mut().0 += 1.0;
 
     assert_eq!(
         state.curr_shape().pos().0,
