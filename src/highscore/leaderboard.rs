@@ -39,7 +39,8 @@ use crate::validation::name::sanitize_player_name;
 const APP_NAME: &str = "tetris-cli";
 
 /// Максимальное количество рекордов в таблице лидеров.
-const MAX_LEADERBOARD_SIZE: usize = 5;
+/// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
+use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.

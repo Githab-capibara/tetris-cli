@@ -20,7 +20,8 @@ use crate::config::keys::get_leaderboard_hmac_key;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 
 /// Максимальное количество рекордов в таблице лидеров.
-const MAX_LEADERBOARD_SIZE: usize = 5;
+/// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
+use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 
 /// Хранилище записей таблицы лидеров.
 ///
