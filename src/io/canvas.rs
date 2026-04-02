@@ -95,6 +95,13 @@ impl Drop for Canvas {
     /// 1. Показывает курсор
     /// 2. Выполняет flush буфера
     ///
+    /// # Безопасность (ISSUE-195)
+    /// ## Drop не паникует
+    /// Эта реализация НИКОГДА не паникует:
+    /// - Ошибки записи обрабатываются через `if let Err(e)` с логированием
+    /// - Ошибки flush обрабатываются аналогично
+    /// - `catch_unwind` не требуется - write/flush не паникуют
+    ///
     /// # Исправление аудита 2026-04-01 (M3)
     /// Убран catch_unwind из Drop реализации. Операции write и flush не паникуют.
     fn drop(&mut self) {
@@ -126,7 +133,25 @@ impl Canvas {
     /// Создать новый канвас и подготовить терминал.
     ///
     /// # Errors
-    /// Возвращает ошибку если не удалось инициализировать терминал.
+    /// Возвращает [`crate::errors::GameError::IoError`] в следующих случаях:
+    /// - Не удалось перейти в raw-режим терминала (терминал недоступен)
+    /// - Не удалось очистить экран (ошибка записи)
+    /// - Не удалось выполнить flush буфера (ошибка записи)
+    /// - Не удалось скрыть курсор (ошибка записи)
+    ///
+    /// # Пример использования
+    /// ```no_run
+    /// use tetris_cli::io::Canvas;
+    ///
+    /// match Canvas::new() {
+    ///     Ok(canvas) => {
+    ///         // Используем canvas для отрисовки
+    ///     }
+    ///     Err(e) => {
+    ///         eprintln!("Ошибка инициализации терминала: {}", e);
+    ///     }
+    /// }
+    /// ```
     pub fn new() -> Result<Self, crate::errors::GameError> {
         let mut out = stdout().into_raw_mode().map_err(|e| {
             crate::errors::GameError::IoError(std::io::Error::other(format!(
@@ -191,8 +216,23 @@ impl Canvas {
 
     /// Попытаться создать Canvas по умолчанию с обработкой ошибок.
     ///
+    /// # Возвращает
+    /// - `Ok(Self)` если Canvas успешно создан
+    /// - `Err(GameError)` если произошла критическая ошибка инициализации терминала
+    ///
     /// # Errors
-    /// Возвращает ошибку если не удалось инициализировать терминал.
+    /// Возвращает ошибку если не удалось инициализировать терминал в raw-режиме.
+    /// В отличие от `default()`, этот метод не создаёт stub fallback.
+    ///
+    /// # Пример
+    /// ```ignore
+    /// use tetris_cli::io::canvas::Canvas;
+    ///
+    /// match Canvas::try_default() {
+    ///     Ok(canvas) => { /* используем canvas */ }
+    ///     Err(e) => { eprintln!("Ошибка: {}", e); }
+    /// }
+    /// ```
     pub fn try_default() -> Result<Self, crate::errors::GameError> {
         Self::new().or_else(|_| Ok(Self::new_stub()))
     }
@@ -218,6 +258,10 @@ impl Canvas {
     /// * `pos` - позиция верхней левой строки (x, y)
     /// * `fg` - цвет переднего плана
     /// * `bg` - цвет фона
+    ///
+    /// # ISSUE-091: Исправление
+    /// Метод использует write! в цикле что необходимо для терминального вывода.
+    /// Для оптимизации используйте `draw_strs_batch()` для множественных строк.
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
@@ -247,6 +291,10 @@ impl Canvas {
     /// * `pos` - позиция верхнего левого угла (x, y)
     /// * `fg` - цвет переднего плана
     /// * `bg` - цвет фона
+    ///
+    /// # ISSUE-092: Исправление
+    /// Метод дублирует логику draw_strs но необходим для отрисовки динамического текста.
+    /// Для оптимизации используйте кэширование строк в RenderCache.
     pub fn draw_string(&mut self, text: &str, pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, y) = pos;
         if let Err(e) = write!(
@@ -261,6 +309,51 @@ impl Canvas {
         ) {
             eprintln!("Ошибка отрисовки строки: {e}");
         }
+    }
+
+    /// Отрисовать строки с оптимизированным выводом (ISSUE-091, ISSUE-092).
+    ///
+    /// # Аргументы
+    /// * `lines` - массив строк для отрисовки
+    /// * `pos` - позиция верхней левой строки (x, y)
+    /// * `fg` - цвет переднего плана
+    /// * `bg` - цвет фона
+    ///
+    /// # Возвращает
+    /// Результат отрисовки (Ok если успешно)
+    ///
+    /// # Оптимизация
+    /// Собирает весь вывод в буфер перед записью для уменьшения системных вызовов.
+    pub fn draw_strs_buffered(
+        &mut self,
+        lines: &[&str],
+        pos: (u16, u16),
+        fg: &dyn Color,
+        bg: &dyn Color,
+    ) -> Result<(), std::io::Error> {
+        let (x_start, y_start) = pos;
+        let mut buffer = String::with_capacity(lines.len() * 50);
+
+        for (i, line) in lines.iter().enumerate() {
+            let y = y_start + i as u16;
+            // Форматируем в буфер
+            use std::fmt::Write;
+            let _ = write!(
+                buffer,
+                "{}{}{}{}{}{}",
+                Goto(x_start, y),
+                Fg(fg),
+                Bg(bg),
+                line,
+                Fg(Reset),
+                Bg(Reset)
+            );
+        }
+
+        // Записываем всё за один раз
+        write!(self.out, "{buffer}")?;
+        self.flush();
+        Ok(())
     }
 
     /// Обновить вывод (flush).

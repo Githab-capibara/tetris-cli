@@ -312,7 +312,6 @@ fn test_import_graph_is_acyclic() {
 /// - crypto/validator.rs не зависит от game
 #[test]
 fn test_no_circular_dependencies_crypto() {
-    use crate::crypto::validator::HmacValidator;
     use crate::crypto::{generate_salt, hash, hmac_sha256, verify_hmac_sha256};
 
     // Проверяем что hash работает независимо
@@ -336,13 +335,7 @@ fn test_no_circular_dependencies_crypto() {
     let is_valid = verify_hmac_sha256("ключ", "данные", &correct_signature);
     assert!(is_valid, "verify_hmac_sha256 должен работать независимо");
 
-    // Проверяем что HmacValidator работает независимо
-    let validator = HmacValidator::new("ключ");
-    let sig = validator.sign("данные");
-    assert!(
-        validator.verify("данные", &sig),
-        "HmacValidator должен работать независимо"
-    );
+    // ISSUE-043: HmacValidator удалён - используем напрямую hmac_sha256/verify_hmac_sha256
 }
 
 /// Тест: проверка что validation модуль не имеет циклов.

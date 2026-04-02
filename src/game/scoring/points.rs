@@ -24,15 +24,22 @@ use crate::game::state::GameState;
 use crate::tetromino::Tetromino;
 use crate::types::UpdateEndState;
 
+/// Максимальное безопасное значение f32 для конвертации в u32.
+///
+/// # Исправление ISSUE-074
+/// Константа вынесена на уровень модуля для переиспользования.
+/// u32::MAX = 4_294_967_295, используем явное значение для избежания потери точности.
+const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
+
 /// Безопасно конвертировать f32 в u32 с защитой от переполнения.
 ///
 /// # Аргументы
 /// * `value` - значение для конвертации
 ///
 /// # Возвращает
-/// - `u32` если значение в допустимом диапазоне
+/// - `u32` в диапазоне [0, u32::MAX] если значение корректно
 /// - `0` если значение NaN, отрицательное или бесконечное
-/// - `u32::MAX` если значение превышает максимальное
+/// - `u32::MAX` если значение превышает максимальное representable значение
 ///
 /// # Исправление C1 (CRITICAL)
 /// Использует явную проверку границ вместо clamp для избежания потери точности.
@@ -47,12 +54,6 @@ use crate::types::UpdateEndState;
 /// # Видимость
 /// Функция публична для тестирования (pub(crate)).
 pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
-    // Проверка на переполнение - используем точную границу
-    // u32::MAX = 4_294_967_295, используем явное значение для избежания потери точности
-    // Исправление аудита 2026-03-30: точная граница вместо u32::MAX as f32
-    const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
-
-    // Исправление #25 (HIGH): корректная проверка диапазона перед конвертацией
     // Проверка на NaN и бесконечность
     if !value.is_finite() {
         return 0;
@@ -81,7 +82,7 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
 /// # Исправление C1
 /// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
 pub fn handle_hard_drop(state: &mut GameState) {
-    use crate::game::constants::HARD_DROP_POINTS;
+    use crate::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
 
     let start_y = state.curr_shape().pos().1;
@@ -97,9 +98,10 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
+    // ISSUE-053: add_score возвращает u128, используем let _ = для игнорирования
     let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
-    // Игнорируем ошибку, так как 0.0 - валидное значение
-    let _ = state.set_land_timer(0.0);
+    // Устанавливаем таймер в 0.0 — это всегда валидное значение, ошибка невозможна
+    state.set_land_timer(0.0).ok();
     state.set_is_hard_dropping(true);
 }
 
@@ -113,8 +115,11 @@ pub fn handle_hard_drop(state: &mut GameState) {
 ///
 /// # Исправление C1
 /// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
+///
+/// # Исправление ISSUE-054
+/// add_score() возвращает u128, используем let _ = для игнорирования.
 pub fn handle_soft_drop(state: &mut GameState) {
-    use crate::game::constants::SOFT_DROP_POINTS;
+    use crate::constants::SOFT_DROP_POINTS;
     use crate::types::Direction;
 
     if state.can_move_curr_shape_direction(Direction::Down) {
@@ -124,6 +129,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // Исправление C1: saturating_mul для защиты от переполнения
+        // ISSUE-054: add_score возвращает u128, используем let _ = для игнорирования
         let _ = state.add_score(SOFT_DROP_POINTS);
     }
 }
@@ -174,7 +180,7 @@ pub fn handle_hold(state: &mut GameState) {
 /// Использует ранний выход (early return) для проверки проигрыша
 /// и явный возврат результата для улучшения читаемости.
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
-    use crate::game::constants::{MARATHON_LINES, SPRINT_LINES};
+    use crate::constants::{MARATHON_LINES, SPRINT_LINES};
 
     // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
     // Исправление M6: ранний выход для улучшения читаемости
@@ -213,7 +219,7 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn check_game_over_condition(state: &GameState) -> bool {
-    use crate::game::constants::MIN_Y;
+    use crate::constants::MIN_Y;
 
     let shape_block_y = state.curr_shape().pos().1 as i16;
     state.curr_shape().coords().iter().any(|&(_, coord_y)| {
@@ -238,8 +244,11 @@ fn check_game_over_condition(state: &GameState) -> bool {
 ///
 /// # Исправление аудита 2026-03-30
 /// Использует safe_f32_to_u32() для консистентности вместо ручного clamp.
+///
+/// # Исправление ISSUE-055
+/// add_score() возвращает u128, используем let _ = для игнорирования.
 pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
-    use crate::game::constants::{
+    use crate::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
     };
 
@@ -251,12 +260,14 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
+    // ISSUE-055: add_score возвращает u128, используем let _ = для игнорирования
     let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop
     // Исправление C1: saturating_mul для защиты от переполнения
     let soft_drop_distance = state.soft_drop_distance();
     if soft_drop_distance > 0 {
+        // ISSUE-055: add_score возвращает u128, используем let _ = для игнорирования
         let _ = state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
         state.set_soft_drop_distance(0);
     }
@@ -265,8 +276,8 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     state.set_is_hard_dropping(false);
 
     // Сброс таймера приземления
-    // Игнорируем ошибку, так как LAND_TIME_DELAY_S - константное валидное значение
-    let _ = state.set_land_timer(LAND_TIME_DELAY_S);
+    // LAND_TIME_DELAY_S — константное валидное значение, ошибка невозможна
+    state.set_land_timer(LAND_TIME_DELAY_S).ok();
 }
 
 /// Обновить счётчик комбо после удаления линий.
@@ -284,7 +295,7 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 /// # Исправление C1
 /// Использует saturating_mul для защиты от переполнения при начислении комбо-бонуса.
 pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
-    use crate::game::constants::COMBO_BONUS;
+    use crate::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
         let combo_bonus = {
@@ -636,7 +647,7 @@ mod points_tests {
     /// Тест M6: проверка что check_game_over_condition используется для раннего выхода
     #[test]
     fn test_fix_m6_check_game_over_condition_for_early_exit() {
-        use crate::game::constants::MIN_Y;
+        use crate::constants::MIN_Y;
         use crate::game::GameState;
 
         let mut state = GameState::new();

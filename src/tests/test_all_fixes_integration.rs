@@ -17,7 +17,7 @@ use crate::types::{Direction, RotationDirection};
 /// Проверяем, что GameStats и константы работают вместе.
 #[test]
 fn test_game_stats_and_constants_integration() {
-    use crate::game::{COMBO_BONUS, LINE_SCORES};
+    use crate::constants::{COMBO_BONUS, LINE_SCORES};
 
     let mut state = GameState::new();
 
@@ -304,7 +304,7 @@ fn test_all_fixes_comprehensive_integration() {
     );
 
     // 2. Константы
-    use crate::game::{HARD_DROP_POINTS, LINE_SCORES, SOFT_DROP_POINTS};
+    use crate::constants::{HARD_DROP_POINTS, LINE_SCORES, SOFT_DROP_POINTS};
     assert_eq!(LINE_SCORES[0], 100);
     assert_eq!(HARD_DROP_POINTS, 2);
     assert_eq!(SOFT_DROP_POINTS, 1);
@@ -562,7 +562,7 @@ fn test_score_overflow_protection_integration() {
 /// Проверяет что валидация работает корректно.
 #[test]
 fn test_state_validation_integration() {
-    use crate::game::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
+    use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
     use crate::game::GameState;
 
     let mut state = GameState::new();
@@ -642,8 +642,8 @@ fn test_controls_toctou_protection_integration() {
 /// - TOCTOU защита в controls.rs
 #[test]
 fn test_all_new_fixes_comprehensive_integration() {
+    use crate::constants::INITIAL_FALL_SPD;
     use crate::controls::ControlsConfig;
-    use crate::game::constants::INITIAL_FALL_SPD;
     use crate::game::GameState;
 
     // 1. Защита от переполнения счёта (проверка через GameState)
@@ -665,7 +665,7 @@ fn test_all_new_fixes_comprehensive_integration() {
     // Clamp валидация
     assert!(state.set_fall_speed(5.0).is_ok());
     assert!(state.fall_speed() >= INITIAL_FALL_SPD);
-    assert!(state.fall_speed() <= crate::game::constants::MAX_FALL_SPEED);
+    assert!(state.fall_speed() <= crate::constants::MAX_FALL_SPEED);
 
     assert!(state.set_land_timer(0.2).is_ok());
     assert!(state.land_timer() >= 0.0);

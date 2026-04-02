@@ -20,11 +20,11 @@ pub use cache::update_cached_strings_extended;
 // ОСНОВНЫЕ ФУНКЦИИ ОТРИСОВКИ
 // ============================================================================
 
-use super::constants::{
+use super::view::GameView;
+use crate::constants::{
     BORDER, BORDER_COLOR, COMBO_X, COMBO_Y, HIGH_SCORE_X, HIGH_SCORE_Y, LEVEL_X, LEVEL_Y, LINES_X,
     LINES_Y, PREVIEW_X, PROGRESS_Y, SCORE_X, SCORE_Y, SPRINT_LINES, TIMER_Y,
 };
-use super::view::GameView;
 use crate::io_traits::Renderer;
 use termion::color::Reset;
 

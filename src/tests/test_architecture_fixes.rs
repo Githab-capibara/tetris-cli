@@ -159,40 +159,28 @@ fn test_hmac_functions_exported() {
 /// Проверяет что validator.rs использует функции из crypto.rs.
 ///
 /// Тест проверяет что:
-/// - HmacValidator использует hmac_sha256 из crypto.rs
+/// - hmac_sha256/verify_hmac_sha256 работают корректно
 /// - Нет дублирования HMAC логики
+///
+/// # Исправление ISSUE-043
+/// HmacValidator удалён - используем напрямую hmac_sha256/verify_hmac_sha256.
 #[test]
 fn test_hmac_no_duplication() {
-    use crate::crypto::validator::HmacValidator;
     use crate::crypto::{hmac_sha256, verify_hmac_sha256};
 
     let key = "тестовый ключ";
     let data = "тестовые данные";
 
-    // Проверяем что HmacValidator работает
-    let validator = HmacValidator::new(key);
-    let signature = validator.sign(data);
+    // Проверяем что hmac_sha256 работает
+    let signature = hmac_sha256(key, data);
 
-    // Проверяем что подпись совпадает с прямой функцией
-    let direct_signature = hmac_sha256(key, data);
-    assert_eq!(
-        signature, direct_signature,
-        "HmacValidator должен использовать hmac_sha256 из crypto.rs"
-    );
-
-    // Проверяем что валидация работает
-    assert!(
-        validator.verify(data, &signature),
-        "HmacValidator должен проверять подпись"
-    );
-
-    // Проверяем что verify_hmac_sha256 тоже работает
+    // Проверяем что verify_hmac_sha256 работает
     assert!(
         verify_hmac_sha256(key, data, &signature),
-        "verify_hmac_sha256 должен работать"
+        "verify_hmac_sha256 должен проверять подпись"
     );
 
-    // Проверяем что нет дублирования - обе функции дают одинаковый результат
+    // Проверяем что нет дублирования - функции работают корректно
     assert_eq!(
         signature.len(),
         64,
@@ -821,7 +809,6 @@ fn test_render_uses_traits() {
 #[test]
 fn test_all_architecture_fixes_integration() {
     use crate::constants::{FPS, GRID_HEIGHT, GRID_WIDTH};
-    use crate::crypto::validator::HmacValidator;
     use crate::crypto::{hmac_sha256, verify_hmac_sha256};
     use crate::game::board::GameBoard;
     use crate::game::mode_trait::{ClassicMode, GameModeTrait, MarathonMode, SprintMode};
@@ -841,8 +828,7 @@ fn test_all_architecture_fixes_integration() {
     let signature = hmac_sha256(key, data);
     assert!(verify_hmac_sha256(key, data, &signature));
 
-    let validator = HmacValidator::new(key);
-    assert_eq!(validator.sign(data), signature);
+    // ISSUE-043: HmacValidator удалён - используем напрямую hmac_sha256/verify_hmac_sha256
 
     // 3. Проверяем GameModeTrait
     let modes: Vec<Box<dyn GameModeTrait>> = vec![

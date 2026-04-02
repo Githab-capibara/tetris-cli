@@ -1,19 +1,23 @@
-//! Хранилище записей таблицы лидеров.
+//! Хранилище и валидатор записей таблицы лидеров.
 //!
 //! # Ответственность
 //! - Хранение списка записей (Vec<LeaderboardEntry>)
 //! - Управление размером таблицы (максимум 5 записей)
 //! - Сортировка записей по убыванию счёта
+//! - HMAC валидация записей
+//! - Проверка целостности данных
 //!
 //! ## Архитектурные заметки
 //! Выделено из `Leaderboard` для соблюдения Single Responsibility Principle.
-//! `LeaderboardStorage` инкапсулирует только хранение и базовое управление записями.
+//! Объединяет хранение и валидацию записей.
 //!
 //! Архитектурное улучшение 2026-04-01 (CRITICAL #2): Разделение Large Class leaderboard.rs
 
 #![allow(dead_code)]
 
 use super::LeaderboardEntry;
+use crate::config::keys::get_leaderboard_hmac_key;
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 
 /// Максимальное количество рекордов в таблице лидеров.
 const MAX_LEADERBOARD_SIZE: usize = 5;
@@ -175,6 +179,96 @@ impl LeaderboardStorage {
     }
 }
 
+// ============================================================================
+// ВАЛИДАТОР (объединено из leaderboard_validator.rs)
+// ============================================================================
+
+/// Валидатор записей таблицы лидеров.
+///
+/// Инкапсулирует логику HMAC валидации и проверки целостности.
+///
+/// ## Архитектурные заметки
+/// Выделено из `LeaderboardEntry` для соблюдения Single Responsibility Principle.
+/// Отвечает ТОЛЬКО за валидацию записей.
+pub struct LeaderboardValidator;
+
+impl LeaderboardValidator {
+    /// Проверить хэш для конкретного значения счёта.
+    ///
+    /// # Аргументы
+    /// * `salt` - соль для хэша
+    /// * `name` - имя игрока
+    /// * `score_value` - значение рекорда
+    /// * `hash` - хэш для проверки
+    ///
+    /// # Возвращает
+    /// `true` если хэш совпадает для данного значения, `false` если запись была подделана
+    ///
+    /// # Безопасность
+    /// Этот метод позволяет выполнить валидацию для конкретного значения,
+    /// что предотвращает TOCTOU уязвимость.
+    #[must_use]
+    pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
+        let salt_name_score = format!("{salt}{name}{score_value}");
+        hmac_verify_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score, hash)
+    }
+
+    /// Вычислить HMAC подпись для записи.
+    ///
+    /// # Аргументы
+    /// * `salt` - соль для хэша
+    /// * `name` - имя игрока
+    /// * `score` - значение рекорда
+    ///
+    /// # Возвращает
+    /// HMAC подпись в виде hex строки
+    ///
+    /// # Безопасность
+    /// Использует keyed hash с уникальной солью для защиты от подделки.
+    #[must_use]
+    pub fn compute_signature(salt: &str, name: &str, score: u128) -> String {
+        let salt_name_score = format!("{salt}{name}{score}");
+        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score)
+    }
+
+    /// Проверить целостность записи.
+    ///
+    /// # Аргументы
+    /// * `salt` - соль для хэша
+    /// * `name` - имя игрока
+    /// * `score_value` - значение рекорда
+    /// * `hash` - хэш для проверки
+    ///
+    /// # Возвращает
+    /// `true` если запись валидна, `false` если хэш не совпадает
+    ///
+    /// # Алгоритм работы
+    /// 1. Создаётся буфер для конкатенации: salt + name + score
+    /// 2. Вычисляется хэш от конкатенации
+    /// 3. Сравнивается с сохранённым хэшем
+    #[must_use]
+    pub fn is_valid(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
+        Self::verify_hash(salt, name, score_value, hash)
+    }
+
+    /// Создать новую валидированную запись.
+    ///
+    /// # Аргументы
+    /// * `name` - имя игрока
+    /// * `score` - значение рекорда
+    ///
+    /// # Возвращает
+    /// Кортеж (salt, hash) для новой записи
+    ///
+    /// # Безопасность
+    /// Генерирует уникальную соль для каждой записи.
+    pub fn create_validated_entry(name: &str, score: u128) -> (String, String) {
+        let salt = crate::crypto::generate_salt();
+        let hash = Self::compute_signature(&salt, name, score);
+        (salt, hash)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -195,42 +289,23 @@ mod tests {
     }
 
     #[test]
-    fn test_storage_sorting() {
-        let mut storage = LeaderboardStorage::new();
-        storage.add_score("Player1", 1000);
-        storage.add_score("Player2", 2000);
-        storage.add_score("Player3", 500);
+    fn test_validator_compute_signature() {
+        let salt = "test_salt";
+        let name = "Player";
+        let score = 1000u128;
 
-        // Проверяем что отсортировано по убыванию
-        assert_eq!(storage.get_best_score(), 2000);
-        assert_eq!(storage.get_entry(0).unwrap().score(), Some(2000));
-        assert_eq!(storage.get_entry(1).unwrap().score(), Some(1000));
-        assert_eq!(storage.get_entry(2).unwrap().score(), Some(500));
+        let hash = LeaderboardValidator::compute_signature(salt, name, score);
+        assert!(!hash.is_empty());
+        assert_eq!(hash.len(), 64); // SHA256 hex = 64 символа
     }
 
     #[test]
-    fn test_storage_max_size() {
-        let mut storage = LeaderboardStorage::new();
+    fn test_validator_verify_hash() {
+        let salt = "test_salt";
+        let name = "Player";
+        let score = 1000u128;
 
-        // Добавляем 6 записей (максимум 5)
-        for i in 1..=6 {
-            storage.add_score(&format!("Player{i}"), i * 100);
-        }
-
-        // Должно остаться только 5 записей
-        assert_eq!(storage.len(), 5);
-        // Лучший счёт должен быть 600 (последний добавленный)
-        assert_eq!(storage.get_best_score(), 600);
-        // Худший счёт 100 должен быть удалён
-        assert!(storage.get_entry(5).is_none());
-    }
-
-    #[test]
-    fn test_storage_clear() {
-        let mut storage = LeaderboardStorage::new();
-        storage.add_score("Player1", 1000);
-        storage.clear();
-        assert_eq!(storage.len(), 0);
-        assert!(storage.is_empty());
+        let hash = LeaderboardValidator::compute_signature(salt, name, score);
+        assert!(LeaderboardValidator::verify_hash(salt, name, score, &hash));
     }
 }

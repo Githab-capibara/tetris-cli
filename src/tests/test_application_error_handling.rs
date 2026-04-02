@@ -14,7 +14,7 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::app::application::Application;
+    use crate::app::Application;
     use crate::game::GameError;
     use crate::highscore::{Leaderboard, SaveData};
 

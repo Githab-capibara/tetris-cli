@@ -198,11 +198,17 @@ impl PathValidator {
     /// * `current_dir` - текущая директория для проверки внутри директории
     ///
     /// # Возвращает
-    /// - `Ok(())` если путь валиден
-    /// - `Err(PathError)` если путь невалиден
+    /// - `Ok(PathBuf)` - валидный канонический путь
+    /// - `Err(PathError)` - если путь не проходит любую из проверок
     ///
     /// # Errors
-    /// Возвращает `PathError` если путь не проходит любую из проверок.
+    /// Возвращает `PathError` в следующих случаях:
+    /// - `PathErrorKind::AbsolutePath` - путь является абсолютным
+    /// - `PathErrorKind::PathTraversal` - путь содержит последовательности ..
+    /// - `PathErrorKind::TooLong` - путь превышает максимальную длину
+    /// - `PathErrorKind::ForbiddenCharacters` - путь содержит запрещённые символы
+    /// - `PathErrorKind::Symlink` - путь является символической ссылкой
+    /// - `PathErrorKind::InvalidPath` - путь не существует или не может быть канонизирован
     ///
     /// # Исправление #5 (CRITICAL)
     /// Canonicalize выполняется для надёжной защиты от symlink атак.
@@ -241,6 +247,10 @@ impl PathValidator {
 
         // Исправление H7: кэшируем результат canonicalize
         // Выполняем canonicalize один раз и используем результат многократно
+        // Исправление ISSUE-194: Проверка exists() перед canonicalize()
+        // canonicalize() паникует для несуществующих путей, поэтому:
+        // 1. Если файл существует - canonicalize() сам путь
+        // 2. Если файл не существует - canonicalize() родительскую директорию
         let canonical_path = if joined_path.exists() {
             joined_path.canonicalize().map_err(|e| PathError {
                 message: format!("Неверный путь {}: {}", joined_path.display(), e),
@@ -249,6 +259,7 @@ impl PathValidator {
         } else {
             // Если файл не существует, canonicalize родительской директории
             // Это позволяет создавать новые файлы в валидной директории
+            // ISSUE-194: Используем and_then() для безопасной обработки Option
             joined_path
                 .parent()
                 .and_then(|p: &Path| p.canonicalize().ok())

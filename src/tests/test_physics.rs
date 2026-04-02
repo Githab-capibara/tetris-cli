@@ -59,7 +59,7 @@ fn test_gravity_and_falling() {
 /// Проверяет, что скорость падения увеличивается с уровнем.
 #[test]
 fn test_falling_speed_increase() {
-    use crate::game::{INITIAL_FALL_SPD, SPD_INC};
+    use crate::constants::{INITIAL_FALL_SPD, SPD_INC};
 
     let initial = INITIAL_FALL_SPD;
     let after_one_line = initial + SPD_INC * 1.0;
