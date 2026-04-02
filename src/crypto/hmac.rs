@@ -49,6 +49,7 @@ type HmacSha256 = Hmac<Sha256>;
 /// Эта функция является основной - алиасы hmac_sign/hmac_verify удалены.
 #[allow(clippy::missing_panics_doc)]
 #[must_use = "HMAC подпись должна быть использована для проверки"]
+#[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
     // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
     // new_from_slice() никогда не вернёт ошибку для HMAC.
@@ -151,6 +152,7 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 /// # Исправление аудита 2026-04-02 (H1)
 /// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
+#[inline]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
     // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
     // Исправление ISSUE-197: Пустая соль допустима - просто конкатенируется без соли
@@ -202,6 +204,7 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 /// # Исправление аудита 2026-04-02 (H1)
 /// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
 #[must_use = "Результат проверки должен быть использован"]
+#[inline]
 pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {
     // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
     let mut salted_data = Vec::with_capacity(salt.len() + data.len());
