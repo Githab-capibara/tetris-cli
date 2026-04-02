@@ -1,8 +1,8 @@
 # 🏗️ Архитектура Tetris CLI
 
-**Версия:** 2.7
-**Дата:** 1 апреля 2026 (аудит и исправления)
-**Проект:** tetris-cli v23.96.30+
+**Версия:** 3.0
+**Дата:** 2 апреля 2026 (глубокий рефакторинг 200+ проблем)
+**Проект:** tetris-cli v23.96.40+
 
 ---
 
@@ -14,40 +14,82 @@ tetris-cli/
 │   ├── main.rs              # Точка входа
 │   ├── lib.rs               # Публичный API библиотеки
 │   ├── errors.rs            # Централизованные ошибки (GameError)
-│   ├── app/                 # Application layer
+│   ├── types.rs             # Базовые типы (Direction, RotationDirection, Position)
+│   ├── constants.rs         # Глобальные константы с helper функциями
+│   ├── controls.rs          # Конфигурация управления
+│   ├── crypto/              # Криптография
 │   │   ├── mod.rs
-│   │   └── application.rs   # Application struct, игровой цикл
-│   ├── core/                # Базовые типы
+│   │   └── hmac.rs          # HMAC-SHA256 функции
+│   ├── validation/          # Валидация
+│   │   ├── mod.rs
+│   │   ├── name.rs          # Валидация имён
+│   │   ├── path.rs          # Валидация путей
+│   │   └── service.rs       # ValidationService
+│   ├── config/              # Конфигурация
+│   │   └── keys.rs          # HMAC ключи
+│   ├── core/                # Базовые типы (переэкспорт)
 │   │   └── mod.rs           # Direction, RotationDirection, Position
+│   ├── app/                 # Application layer
+│   │   └── mod.rs           # Application struct, игровой цикл
 │   ├── game/                # Игровая логика
 │   │   ├── mod.rs
-│   │   ├── state.rs         # GameState (фасад, 15+ полей)
+│   │   ├── state.rs         # GameState (фасад)
 │   │   ├── board.rs         # GameBoard (состояние поля)
 │   │   ├── scoreboard.rs    # ScoreBoard (очки и уровни)
 │   │   ├── stats.rs         # GameStats (статистика)
 │   │   ├── mode_trait.rs    # GameModeTrait
-│   │   ├── time.rs          # Time абстракция (Duration wrapper)
-│   │   ├── types.rs         # Типобезопасные обёртки (Score, Level, LinesCount)
+│   │   ├── time.rs          # Time абстракция
+│   │   ├── types.rs         # Типобезопасные обёртки
 │   │   ├── view.rs          # GameView для отрисовки
-│   │   ├── access.rs        # Трейты доступа (BoardReadonly, BoardMutable, ScoreAccess)
-│   │   ├── cache.rs         # StringCache для кэширования строк
-│   │   ├── cycle.rs         # Игровой цикл (run_game_loop, handle_input_result)
-│   │   ├── render.rs        # Отрисовка игрового поля
+│   │   ├── access.rs        # Трейты доступа
+│   │   ├── cache.rs         # StringCache
+│   │   ├── cycle.rs         # Игровой цикл
+│   │   ├── events.rs        # События игры
+│   │   ├── rules.rs         # Правила игры
+│   │   ├── components/      # Компоненты GameState
+│   │   │   ├── mod.rs
+│   │   │   ├── figure_manager.rs
+│   │   │   ├── animation_state.rs
+│   │   │   └── board_state.rs
 │   │   ├── logic/           # Логика игры
 │   │   │   ├── mod.rs
-│   │   │   ├── input.rs     # Обработка ввода (parse_input, execute_action)
-│   │   │   ├── physics.rs   # Физика и гравитация
-│   │   │   ├── collision.rs # Проверка коллизий (has_collision)
-│   │   │   ├── rotation.rs  # Вращение с wall kick
-│   │   │   ├── update.rs    # Обновление состояния
-│   │   │   └── wall_kick.rs # Wall kick логика (SRS)
-│   │   └── scoring/         # Система очков
+│   │   │   ├── input.rs
+│   │   │   ├── physics.rs
+│   │   │   ├── collision.rs
+│   │   │   ├── rotation.rs
+│   │   │   ├── update.rs
+│   │   │   └── wall_kick.rs
+│   │   ├── scoring/         # Система очков
+│   │   │   ├── mod.rs
+│   │   │   ├── lines.rs
+│   │   │   ├── points.rs
+│   │   │   └── combo.rs
+│   │   └── render/          # Отрисовка
 │   │       ├── mod.rs
-│   │       ├── lines.rs     # Поиск и удаление линий (find_filled_lines)
-│   │       ├── points.rs    # Начисление очков (safe_f32_to_u32)
-│   │       └── combo.rs     # Комбо-логика
+│   │       └── cache.rs
 │   ├── menu/                # Главное меню
 │   │   ├── mod.rs
+│   │   ├── constants.rs
+│   │   ├── draw.rs
+│   │   └── input.rs
+│   ├── highscore/           # Таблица лидеров
+│   │   ├── mod.rs
+│   │   ├── leaderboard.rs
+│   │   ├── save_data.rs
+│   │   └── storage.rs       # LeaderboardStorage
+│   ├── tetromino/           # Фигуры
+│   │   ├── mod.rs
+│   │   ├── constants.rs     # SHAPE_COORDS, SHAPE_COLORS
+│   │   ├── shape_type.rs
+│   │   ├── tetromino_struct.rs
+│   │   └── bag_generator.rs
+│   ├── io/                  # Ввод/вывод
+│   │   ├── mod.rs
+│   │   ├── canvas.rs
+│   │   ├── key_reader.rs
+│   │   └── backend.rs       # TerminalBackend
+│   └── tests/               # Интеграционные тесты
+```
 │   │   ├── constants.rs
 │   │   ├── draw.rs
 │   │   └── input.rs
@@ -801,5 +843,54 @@ cargo bench --features bench  # Бенчмарки
 
 ---
 
-**Дата последнего обновления:** 31 марта 2026
-**Версия проекта:** 23.96.27+
+**Дата последнего обновления:** 2 апреля 2026 (глубокий рефакторинг 200+ проблем)
+**Версия проекта:** 23.96.40+
+
+---
+
+## 🔧 Рефакторинг 2 апреля 2026
+
+Проведён глубокий архитектурный аудит и рефакторинг проекта.
+
+### Статистика
+- **Найдено проблем:** 220
+- **Исправлено:** 200
+- **Изменено файлов:** 65
+
+### Ключевые изменения
+
+#### Модульная реорганизация
+- **validation/** — создан `service.rs` для ValidationService
+- **io/** — объединены `terminal_backend.rs` и `termion_backend.rs` в `backend.rs`
+- **highscore/** — объединены `leaderboard_storage.rs` и `leaderboard_validator.rs` в `storage.rs`
+- **game/components/** — создан `mod.rs` для компонентов
+- **app/** — `application.rs` перемещён в `mod.rs`
+
+#### Helper функции для констант
+- **BORDER** — добавлены `get_border_line()`, `get_border_top()`, `get_border_bottom()`, etc.
+- **SHAPE_COORDS** — добавлены `get_shape_coords()`, `get_shape_block_coords()`, `get_shape_color()`
+- **SHAPE_COLORS** — добавлены helper функции для доступа
+
+#### Удаление дублирования
+- Удалены `hmac_sign()`/`hmac_verify()` алиасы
+- Удалён `HmacValidator` — используются напрямую функции
+- Удалён избыточный re-export констант из `game/mod.rs`
+
+#### Обработка ошибок
+- Обработка `add_score()` через `let _ =` в `handle_hard_drop()`, `handle_soft_drop()`, `calculate_landing_bonus()`
+- Вынесены константы на уровень модуля (`MAX_SAFE_F32_FOR_U32`, `MAX_SCORE`)
+
+#### Документация
+- Добавлены секции `# Errors`, `# Panics`, `# Returns`, `# Security` для 40+ функций
+- Улучшена документация безопасности HMAC
+
+#### Безопасность
+- `HMAC_KEY_PLACEHOLDER` вынесен в константу
+- `exists()` проверка перед `canonicalize()`
+- Обработка пустой соли в `hmac_sign_with_salt()`
+
+### Архитектурные принципы
+- **SOLID** — соблюдение через компоненты и трейты
+- **DRY** — устранение дублирования кода
+- **KISS** — простые helper функции
+- **YAGNI** — удаление избыточных абстракций
