@@ -533,6 +533,16 @@ impl Position {
     /// # Аргументы
     /// * `dx` - смещение по X
     /// * `dy` - смещение по Y
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::game::types::Position;
+    /// let mut pos = Position::new(5, 10);
+    /// pos.offset(2, -3);
+    /// assert_eq!(pos.x(), 7);
+    /// assert_eq!(pos.y(), 7);
+    /// ```
+    #[inline]
     pub fn offset(&mut self, dx: i16, dy: i16) {
         self.x = self.x.saturating_add(dx);
         self.y = self.y.saturating_add(dy);
