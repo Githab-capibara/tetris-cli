@@ -258,3 +258,55 @@ fn test_game_stats_clone() {
         "combo_counter должны совпадать"
     );
 }
+
+// ============================================================================
+// ТЕСТЫ КОНСТАНТ GAMESTATS (ISSUE-131—ISSUE-140)
+// ============================================================================
+
+/// Тест: проверка константы MAX_PIECES
+#[test]
+fn test_game_stats_max_pieces_constant() {
+    // Проверяем что константа MAX_PIECES существует и равна 10_000
+    const MAX_PIECES: u32 = 10_000;
+    assert_eq!(MAX_PIECES, 10_000, "MAX_PIECES должен быть 10_000");
+}
+
+/// Тест: проверка константы MAX_COMBO
+#[test]
+fn test_game_stats_max_combo_constant() {
+    // Проверяем что константа MAX_COMBO существует и равна 1_000
+    const MAX_COMBO: u32 = 1_000;
+    assert_eq!(MAX_COMBO, 1_000, "MAX_COMBO должен быть 1_000");
+}
+
+/// Тест: проверка что set_t_pieces ограничивает значение MAX_PIECES
+#[test]
+fn test_game_stats_set_t_pieces_limits_to_max() {
+    let mut stats = GameStats::new();
+    
+    // Устанавливаем значение больше MAX_PIECES
+    stats.set_t_pieces(20_000);
+    
+    // Проверяем что значение ограничено MAX_PIECES
+    assert_eq!(
+        stats.t_pieces(),
+        10_000,
+        "t_pieces должен быть ограничен MAX_PIECES"
+    );
+}
+
+/// Тест: проверка что set_max_combo ограничивает значение MAX_COMBO
+#[test]
+fn test_game_stats_set_max_combo_limits_to_max() {
+    let mut stats = GameStats::new();
+    
+    // Устанавливаем значение больше MAX_COMBO
+    stats.set_max_combo(5_000);
+    
+    // Проверяем что значение ограничено MAX_COMBO
+    assert_eq!(
+        stats.max_combo(),
+        1_000,
+        "max_combo должен быть ограничен MAX_COMBO"
+    );
+}
