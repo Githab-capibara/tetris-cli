@@ -177,7 +177,7 @@ impl ScoreBoard {
     #[must_use = "ScoreBoard должен быть использован после модификации"]
     pub fn set_level(&mut self, value: u32) {
         // Валидация (H3): ограничиваем уровень разумным максимумом
-        const MAX_LEVEL: u32 = 1000;
+        use super::rules::MAX_LEVEL;
         self.level = value.clamp(1, MAX_LEVEL);
     }
 
