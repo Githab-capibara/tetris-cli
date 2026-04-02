@@ -224,6 +224,9 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// - `Ok(())` если очки успешно добавлены
 /// - `Err(GameError::ScoreOverflow)` если счёт превышает MAX_SCORE
 ///
+/// # Errors
+/// Возвращает [`crate::errors::GameError::ScoreOverflow`] если счёт превышает [`MAX_SCORE`].
+///
 /// # Примечания
 /// Формула расчёта очков:
 /// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
@@ -240,6 +243,7 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// # Исправление аудита 2026-04-01 (C3)
 /// Добавлена явная проверка переполнения перед добавлением очков
 /// с возвратом `GameError::ScoreOverflow`.
+#[must_use = "Ошибка переполнения счёта должна быть обработана"]
 fn update_score_for_lines(
     score: &mut u128,
     level: u32,
