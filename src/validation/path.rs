@@ -299,6 +299,7 @@ impl PathValidator {
     ///
     /// # Исправление M4 (MEDIUM)
     /// #[must_use] оставлен только на критических методах валидации.
+    #[must_use = "Результат валидации длины должен быть обработан"]
     #[track_caller]
     pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
         let path_str = path.to_str().ok_or_else(|| PathError {
@@ -341,6 +342,7 @@ impl PathValidator {
     ///
     /// # Исправление M9 (MEDIUM)
     /// Использует HashSet для O(1) поиска вместо O(n) линейного поиска.
+    #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
         use std::collections::HashSet;
@@ -403,6 +405,7 @@ impl PathValidator {
     /// - Блокировка symlink в родительских директориях
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
+    #[must_use = "Результат валидации symlink должен быть обработан"]
     #[track_caller]
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
         // NEW-147: Проверяем не только конечный путь, но и все родительские директории
@@ -468,6 +471,7 @@ impl PathValidator {
     /// # Errors
     /// Возвращает `PathError` если путь находится вне разрешённой директории.
     #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[must_use = "Результат валидации директории должен быть обработан"]
     pub fn validate_within_directory(&self, path: &Path, dir: &Path) -> Result<(), PathError> {
         let canonical_path = if path.exists() {
             path.canonicalize().map_err(|e| PathError {
@@ -503,6 +507,7 @@ impl PathValidator {
     #[allow(dead_code)]
     // Может быть использовано для дополнительной валидации
     #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[must_use = "Результат валидации абсолютного пути должен быть обработан"]
     pub fn validate_not_absolute(&self, path: &Path) -> Result<(), PathError> {
         if path.is_absolute() {
             return Err(PathError {
@@ -534,6 +539,7 @@ impl PathValidator {
     #[allow(dead_code)]
     // Может быть использовано для дополнительной валидации
     #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[must_use = "Результат валидации path traversal должен быть обработан"]
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
         // Исправление H8: массив запрещённых паттернов для URL-encoding
         const FORBIDDEN_PATTERNS: &[&str] = &[
