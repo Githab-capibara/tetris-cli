@@ -251,7 +251,7 @@ impl ScoreMutable for ScoreBoard {
     }
 
     fn set_score(&mut self, value: u128) {
-        self.set_score(value);
+        let _ = self.set_score(value);
     }
 }
 

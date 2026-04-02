@@ -172,7 +172,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     }
 
     state.set_score(score);
-    state.stats_mut().set_combo_counter(combo_counter);
+    let _ = state.stats_mut().set_combo_counter(combo_counter);
 
     // Обновление количества очищенных линий (ISP-1: используем get_lines_cleared)
     let lines_cleared = state.get_lines_cleared().saturating_add(remove_count);

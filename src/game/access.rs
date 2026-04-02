@@ -407,10 +407,10 @@ impl ComboAccess for crate::game::state::GameState {
     }
 
     fn set_combo(&mut self, combo: u32) {
-        self.stats_mut().set_combo_counter(combo);
+        let _ = self.stats_mut().set_combo_counter(combo);
     }
 
     fn reset_combo(&mut self) {
-        self.stats_mut().set_combo_counter(0);
+        let _ = self.stats_mut().set_combo_counter(0);
     }
 }
