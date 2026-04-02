@@ -11,7 +11,9 @@
 
 use std::{thread::sleep, time::Duration};
 
-use super::constants::{BORDER_COLOR, FPS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE};
+use super::constants::{
+    BORDER_COLOR, FRAME_DELAY_MS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE,
+};
 use super::state::GameState;
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
 use crate::io_traits::{InputReader, Renderer};
@@ -77,7 +79,7 @@ pub fn handle_input<T: InputReader>(
                     Ok(Some(KEY_BACKSPACE)) => return InputResult::Quit, // Backspace
                     Ok(Some(_) | None) | Err(_) => {}
                 }
-                sleep(Duration::from_millis(1_000 / FPS));
+                sleep(Duration::from_millis(FRAME_DELAY_MS));
             }
             InputResult::Continue
         }
@@ -221,7 +223,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
     high_score_display: &str,
 ) -> Result<u128, crate::errors::GameError> {
     let mut last_time = std::time::Instant::now();
-    let interval_ms = 1_000 / FPS;
+    let interval_ms = FRAME_DELAY_MS;
 
     loop {
         // Поддержание стабильного FPS (вынесено в отдельную функцию)
@@ -261,7 +263,7 @@ mod tests {
     #[test]
     fn test_maintain_fps_regulates_fps() {
         let mut last_time = std::time::Instant::now();
-        let interval_ms = 1_000 / FPS; // 16ms при 60 FPS
+        let interval_ms = FRAME_DELAY_MS;
 
         // Ждём немного меньше интервала
         std::thread::sleep(std::time::Duration::from_millis(interval_ms / 2));
@@ -278,7 +280,7 @@ mod tests {
     #[test]
     fn test_maintain_fps_returns_some_after_interval() {
         let mut last_time = std::time::Instant::now();
-        let interval_ms = 1_000 / FPS;
+        let interval_ms = FRAME_DELAY_MS;
 
         // Ждём больше интервала
         std::thread::sleep(std::time::Duration::from_millis(interval_ms + 10));
@@ -299,7 +301,7 @@ mod tests {
     #[test]
     fn test_maintain_fps_updates_last_time() {
         let mut last_time = std::time::Instant::now();
-        let interval_ms = 1_000 / FPS;
+        let interval_ms = FRAME_DELAY_MS;
 
         // Сохраняем старое значение
         let old_last_time = last_time;
@@ -321,7 +323,7 @@ mod tests {
     #[test]
     fn test_maintain_fps_handles_overflow() {
         let mut last_time = std::time::Instant::now();
-        let interval_ms = 1_000 / FPS;
+        let interval_ms = FRAME_DELAY_MS;
 
         // Вызываем maintain_fps немедленно (без ожидания)
         let result = maintain_fps(&mut last_time, interval_ms);

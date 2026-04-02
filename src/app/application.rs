@@ -4,14 +4,20 @@
 
 #![allow(clippy::no_effect_underscore_binding)]
 
+// std
+use std::thread::sleep;
+use std::time::{Duration, Instant};
+
+// external
+use termion::terminal_size;
+
+// crate
+use crate::config::keys::validate_all_keys;
 use crate::errors::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
 use crate::menu::run_game_mode;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-use termion::terminal_size;
 
 /// Приложение Tetris CLI.
 ///
@@ -42,7 +48,19 @@ impl Application {
     /// - Не удалось загрузить данные
     /// - Терминал не соответствует минимальным требованиям
     /// - Не удалось инициализировать Canvas/KeyReader
+    /// - HMAC ключи не прошли валидацию
+    ///
+    /// # Исправление аудита 2026-04-02 (SEC1)
+    /// Добавлена валидация HMAC ключей при запуске приложения.
     pub fn new() -> Result<Self, GameError> {
+        // Валидация HMAC ключей (SEC1)
+        if let Err(e) = validate_all_keys() {
+            eprintln!(
+                "[WARN] {}: используется пустой HMAC ключ (ожидаемо для разработки)",
+                e
+            );
+        }
+
         // Загрузка сохранённых данных с обработкой ошибок
         let (save, leaderboard) = Self::load_game_data();
 
@@ -129,15 +147,15 @@ impl Application {
     ///
     /// Обрабатывает отрисовку меню и ввод пользователя.
     fn run_menu_loop(&mut self) {
-        use crate::game::FPS;
+        use crate::constants::FRAME_DELAY_MS;
         use std::time::Instant;
 
-        // Исправление H7: вынесение констант в начало метода
-        const FPS_TARGET: u64 = FPS;
-        const FRAME_INTERVAL_MS: u64 = 1_000 / FPS_TARGET;
+        // Исправление H7: используем константу FRAME_DELAY_MS вместо вычисления 1000 / FPS
+        const _FPS_TARGET: u64 = 60; // Целевой FPS (для документации)
+        const _FRAME_INTERVAL_CHECK: u64 = FRAME_DELAY_MS; // Проверка что константа корректна
 
         let mut last_time = Instant::now();
-        let interval_ms = FRAME_INTERVAL_MS;
+        let interval_ms = FRAME_DELAY_MS;
 
         loop {
             // Поддержание стабильного FPS

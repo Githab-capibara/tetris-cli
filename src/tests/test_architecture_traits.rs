@@ -14,8 +14,8 @@
 #![allow(clippy::redundant_closure_for_method_calls)]
 #![allow(clippy::items_after_statements)]
 
-use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
 use crate::game::access::LevelAccess;
+use crate::game::access::{BoardMutable, BoardReadonly, ScoreAccess};
 use crate::game::state::GameState;
 
 // ============================================================================
@@ -260,7 +260,7 @@ fn test_no_duplicate_traits_in_scoreboard_rs() {
 
     // ScoreBoard должен реализовывать трейты из access.rs
     assert_eq!(scoreboard.get_score(), 0);
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
 
     // Если код компилируется - нет дублирования трейтов

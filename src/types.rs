@@ -7,7 +7,7 @@
 //! - [`Direction`] — направление движения фигуры (переэкспорт из [`crate::core`])
 //! - [`RotationDirection`] — направление вращения фигуры (переэкспорт из [`crate::core`])
 //! - [`Position`] — позиция в пространстве (переэкспорт из [`crate::core`])
-//! - [`GameAction`] — игровые действия
+//! - [`GameAction`] — игровые действия (переэкспорт из [`crate::game::types`])
 //! - [`UpdateEndState`] — состояние завершения обновления
 
 #![allow(dead_code)]
@@ -15,72 +15,8 @@
 // Переэкспорт базовых типов из core модуля для обратной совместимости
 pub use crate::core::{Direction, Position, RotationDirection};
 
-// ============================================================================
-// GAMEACTION ENUM (Абстракция ввода)
-// ============================================================================
-
-/// Перечисление игровых действий.
-///
-/// Представляет абстракцию ввода, отделяя конкретные клавиши от игровых действий.
-/// Используется для маппинга клавиш → действия в системе управления.
-///
-/// ## Архитектурные заметки
-/// Введение GameAction соответствует:
-/// - **Dependency Inversion Principle (DIP)** - модуль ввода зависит от абстракции
-/// - **Interface Segregation Principle (ISP)** - узкоспециализированный интерфейс
-/// - Уменьшает связанность между controls.rs и input.rs
-///
-/// ## Варианты
-/// - `MoveLeft` - движение фигуры влево
-/// - `MoveRight` - движение фигуры вправо
-/// - `SoftDrop` - ускоренное падение
-/// - `HardDrop` - мгновенное падение
-/// - `RotateLeft` - вращение против часовой стрелки
-/// - `RotateRight` - вращение по часовой стрелке
-/// - `Hold` - удержание фигуры
-/// - `Pause` - пауза
-/// - `Quit` - выход в меню
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GameAction {
-    /// Движение фигуры влево.
-    MoveLeft,
-    /// Движение фигуры вправо.
-    MoveRight,
-    /// Ускоренное падение (Soft Drop).
-    SoftDrop,
-    /// Мгновенное падение (Hard Drop).
-    HardDrop,
-    /// Вращение против часовой стрелки.
-    RotateLeft,
-    /// Вращение по часовой стрелке.
-    RotateRight,
-    /// Удержание фигуры.
-    Hold,
-    /// Пауза.
-    Pause,
-    /// Выход в меню.
-    Quit,
-}
-
-impl GameAction {
-    /// Проверить, является ли действие движением.
-    #[must_use]
-    pub const fn is_movement(self) -> bool {
-        matches!(self, Self::MoveLeft | Self::MoveRight)
-    }
-
-    /// Проверить, является ли действие вращением.
-    #[must_use]
-    pub const fn is_rotation(self) -> bool {
-        matches!(self, Self::RotateLeft | Self::RotateRight)
-    }
-
-    /// Проверить, является ли действие падением.
-    #[must_use]
-    pub const fn is_drop(self) -> bool {
-        matches!(self, Self::SoftDrop | Self::HardDrop)
-    }
-}
+// R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
+pub use crate::game::types::GameAction;
 
 // ============================================================================
 /// Состояние завершения обновления.

@@ -247,7 +247,7 @@ fn test_encapsulation() {
     assert_eq!(state.score(), 500, "Счёт должен измениться через set_score");
 
     // Проверяем что add_score работает корректно
-    state.add_score(250);
+    let _ = state.add_score(250);
     assert_eq!(state.score(), 750, "add_score должен добавить очки");
 
     // === Проверка инкапсуляции уровня ===
@@ -283,7 +283,7 @@ fn test_encapsulation() {
         "Количество линий должно измениться через set_lines_cleared"
     );
 
-    state.add_lines_cleared(10);
+    let _ = state.add_lines_cleared(10);
     assert_eq!(
         state.lines_cleared(),
         60,
@@ -645,7 +645,7 @@ fn test_solid_principles() {
 
     // ScoreBoard отвечает только за очки
     let mut scoreboard = ScoreBoard::new();
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
     // ScoreBoard не должен отвечать за поле или фигуры
 

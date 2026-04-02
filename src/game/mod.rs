@@ -56,11 +56,10 @@
 //! // game.play(&mut cnv, &mut inp, &high_score_display);
 //! ```
 
-// Подмодули
+// Подмодули (S7: алфавитный порядок)
 pub mod access;
 pub mod board;
 pub mod cache;
-// constants больше не является отдельным файлом - используем ре-экспорт из crate::constants
 pub mod components;
 pub mod cycle;
 pub mod events;

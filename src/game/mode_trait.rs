@@ -33,6 +33,32 @@
 /// Определяет интерфейс для всех режимов игры.
 /// Каждый режим должен реализовать проверку условия победы,
 /// получение целевого количества линий и название режима.
+///
+/// # Методы
+/// - [`check_win_condition`](Self::check_win_condition) - проверка условия победы
+/// - [`get_target_lines`](Self::get_target_lines) - получение целевого количества линий
+/// - [`name`](Self::name) - получение названия режима
+///
+/// # Пример реализации
+/// ```ignore
+/// use crate::game::mode_trait::GameModeTrait;
+///
+/// struct CustomMode;
+///
+/// impl GameModeTrait for CustomMode {
+///     fn check_win_condition(&self, lines: u32) -> bool {
+///         lines >= 100
+///     }
+///
+///     fn get_target_lines(&self) -> Option<u32> {
+///         Some(100)
+///     }
+///
+///     fn name(&self) -> &str {
+///         "Custom"
+///     }
+/// }
+/// ```
 pub trait GameModeTrait: Send + Sync {
     /// Проверить условие победы.
     ///
@@ -40,20 +66,48 @@ pub trait GameModeTrait: Send + Sync {
     /// * `lines` - количество очищенных линий
     ///
     /// # Возвращает
-    /// `true` если условие победы выполнено
+    /// `true` если условие победы выполнено, `false` иначе
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::mode_trait::{GameModeTrait, SprintMode};
+    ///
+    /// let mode = SprintMode::new();
+    /// assert!(!mode.check_win_condition(39));  // Ещё не победа
+    /// assert!(mode.check_win_condition(40));   // Победа!
+    /// ```
     fn check_win_condition(&self, lines: u32) -> bool;
 
     /// Получить целевое количество линий.
     ///
     /// # Возвращает
-    /// `Some(target)` для режимов с целью (Sprint, Marathon)
-    /// `None` для режимов без цели (Classic)
+    /// - `Some(target)` для режимов с целью (Sprint, Marathon)
+    /// - `None` для режимов без цели (Classic)
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::mode_trait::{GameModeTrait, SprintMode, ClassicMode};
+    ///
+    /// let sprint = SprintMode::new();
+    /// assert_eq!(sprint.get_target_lines(), Some(40));
+    ///
+    /// let classic = ClassicMode;
+    /// assert_eq!(classic.get_target_lines(), None);
+    /// ```
     fn get_target_lines(&self) -> Option<u32>;
 
     /// Получить название режима.
     ///
     /// # Возвращает
-    /// Человекочитаемое название режима
+    /// Человекочитаемое название режима на русском языке
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::mode_trait::{GameModeTrait, SprintMode};
+    ///
+    /// let mode = SprintMode::new();
+    /// assert_eq!(mode.name(), "Спринт");
+    /// ```
     fn name(&self) -> &str;
 }
 

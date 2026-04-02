@@ -26,7 +26,7 @@ fn test_edge_cases_1000_plus_lines() {
     let mut state = GameState::new();
 
     // Симулируем удаление 1000 линий напрямую через add_lines_cleared
-    state.add_lines_cleared(1000);
+    let _ = state.add_lines_cleared(1000);
 
     // Проверяем что линии корректно подсчитаны
     assert!(
@@ -51,7 +51,7 @@ fn test_edge_cases_max_score() {
 
     // Симулируем большой счёт (1 000 000 очков)
     for _ in 0..10_000 {
-        state.add_score(100);
+        let _ = state.add_score(100);
     }
 
     let score = state.score();

@@ -162,7 +162,7 @@ fn test_curr_and_next_shapes_different() {
 fn test_gamestate_can_save_score() {
     // Создаём состояние игры и добавляем очки
     let mut state = GameState::new();
-    state.add_score(500); // Добавляем очки для теста
+    let _ = state.add_score(500); // Добавляем очки для теста
 
     let score = state.score();
 

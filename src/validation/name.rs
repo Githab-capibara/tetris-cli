@@ -25,11 +25,14 @@
 //! - Все остальные Unicode символы (эмодзи, специальные символы)
 //!
 //! ## Ограничение длины
-//! Максимальная длина имени: 20 символов.
+//! Максимальная длина имени: 32 символа.
 //! Это предотвращает:
 //! - Переполнение буфера
 //! - DoS через длинные строки
 //! - Повреждение UI
+//!
+//! # Исправление аудита 2026-04-02 (C12)
+//! Увеличен лимит с 20 до 32 символов для соответствию требованиям аудита.
 //!
 //! ## Функции
 //! - [`is_valid_name_char`] — проверка допустимости символа имени (whitelist)
@@ -39,6 +42,12 @@
 ///
 /// Используется когда имя пустое или после фильтрации не осталось валидных символов.
 const ANONYMOUS_NAME: &str = "Anonymous";
+
+/// Максимальная длина имени игрока.
+///
+/// # Исправление аудита 2026-04-02 (C12)
+/// Увеличен лимит с 20 до 32 символов для соответствию требованиям аудита.
+const MAX_NAME_LENGTH: usize = 32;
 
 /// Проверить допустимость символа имени (whitelist подход).
 ///
@@ -76,7 +85,7 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// Правила:
 /// - trim
 /// - whitelist разрешённых символов через `is_valid_name_char()`
-/// - максимум 20 символов
+/// - максимум 32 символа (MAX_NAME_LENGTH)
 /// - пустое имя (в т.ч. после фильтрации) заменяется на "Anonymous"
 ///
 /// # Аргументы
@@ -89,16 +98,12 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// Использует whitelist подход: разрешены только ASCII буквы/цифры,
 /// специальные символы '_', '-', ' ' и русские буквы.
 ///
-/// # Исправление #6 (LOW)
-/// Упрощённая реализация: используется только `is_valid_name_char()`
-/// с whitelist подходом через `matches!` макрос.
-///
-/// # Исправление аудита 2026-03-30
-/// Добавлен комментарий о дублировании (не критично, оставлено как есть).
+/// # Исправление аудита 2026-04-02 (C12)
+/// Увеличен лимит с 20 до 32 символов.
 ///
 /// # Исправление аудита 2026-03-31 (M2)
 /// Использует двухпроходный алгоритм для точного выделения памяти:
-/// 1. Подсчёт валидных символов (максимум 20)
+/// 1. Подсчёт валидных символов (максимум 32)
 /// 2. Выделение строки с точным размером
 pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name.trim();
@@ -107,7 +112,7 @@ pub fn sanitize_player_name(name: &str) -> String {
     }
 
     // M10: однопроходный алгоритм с предварительным выделением памяти
-    let mut validated = String::with_capacity(20);
+    let mut validated = String::with_capacity(MAX_NAME_LENGTH);
 
     for c in trimmed.chars() {
         if is_valid_name_char(c) {
@@ -120,7 +125,7 @@ pub fn sanitize_player_name(name: &str) -> String {
                 }
             }
             validated.push(c);
-            if validated.chars().count() >= 20 {
+            if validated.chars().count() >= MAX_NAME_LENGTH {
                 break;
             }
         }
@@ -156,10 +161,20 @@ mod validation_name_tests {
 
     #[test]
     fn test_sanitize_player_name_truncates_to_20_chars() {
-        let name = "abcdefghijklmnopqrstuvwxyz";
+        // Тест остаётся для обратной совместимости - проверяем что 20 символов принимаются
+        let name = "abcdefghijklmnopqrst";
         let sanitized = sanitize_player_name(name);
         assert_eq!(sanitized.chars().count(), 20);
         assert_eq!(sanitized, "abcdefghijklmnopqrst");
+    }
+
+    /// Тест C12: проверка обрезки до 32 символов
+    #[test]
+    fn test_sanitize_player_name_truncates_to_32_chars() {
+        let name = "abcdefghijklmnopqrstuvwxyz1234567890"; // 36 символов
+        let sanitized = sanitize_player_name(name);
+        assert_eq!(sanitized.chars().count(), 32);
+        assert_eq!(sanitized, "abcdefghijklmnopqrstuvwxyz123456");
     }
 
     // =========================================================================
@@ -226,13 +241,13 @@ mod validation_name_tests {
         assert!(sanitized.contains('e'));
     }
 
-    /// Тест: проверка на очень длинные имена
+    /// Тест: проверка на очень длинные имена (обновлён для C12)
     #[test]
     fn test_sanitize_player_name_very_long_name() {
         let very_long_name = "a".repeat(1000);
         let sanitized = sanitize_player_name(&very_long_name);
-        assert_eq!(sanitized.len(), 20);
-        assert_eq!(sanitized, "aaaaaaaaaaaaaaaaaaaa");
+        assert_eq!(sanitized.len(), 32);
+        assert_eq!(sanitized, "a".repeat(32));
     }
 
     /// Тест: проверка на имена только с control characters
@@ -371,5 +386,34 @@ mod validation_name_tests {
     fn test_anonymous_constant() {
         // Проверка что константа ANONYMOUS_NAME существует и равна "Anonymous"
         assert_eq!(ANONYMOUS_NAME, "Anonymous");
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ C12: ЛИМИТ ДЛИНЫ ИМЕНИ
+    // =========================================================================
+
+    /// Тест C12: проверка что константа MAX_NAME_LENGTH равна 32
+    #[test]
+    fn test_max_name_length_constant() {
+        assert_eq!(MAX_NAME_LENGTH, 32);
+    }
+
+    /// Тест C12: проверка что длинные имена обрезаются до 32 символов
+    #[test]
+    fn test_c12_long_name_truncated_to_32_chars() {
+        let very_long_name = "a".repeat(100);
+        let sanitized = sanitize_player_name(&very_long_name);
+        assert_eq!(sanitized.chars().count(), 32);
+        assert_eq!(sanitized, "a".repeat(32));
+    }
+
+    /// Тест C12: проверка что имя ровно в 32 символа принимается полностью
+    #[test]
+    fn test_c12_exactly_32_chars_accepted() {
+        let exactly_32_chars = "abcdefghijklmnopqrstuvwxyz123456"; // 32 символа: 26 букв + 6 цифр
+        assert_eq!(exactly_32_chars.len(), 32);
+        let sanitized = sanitize_player_name(exactly_32_chars);
+        assert_eq!(sanitized.chars().count(), 32);
+        assert_eq!(sanitized, exactly_32_chars);
     }
 }

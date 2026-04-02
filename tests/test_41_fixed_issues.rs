@@ -1055,7 +1055,7 @@ fn test_tests_score_overflow_protection() {
 
     // Добавляем много очков - не должно быть паники
     for _ in 0..100 {
-        state.add_score(1_000_000_000);
+        let _ = state.add_score(1_000_000_000);
     }
 
     // Очки должны быть больше 0
@@ -1332,7 +1332,7 @@ fn test_all_41_fixes_integration() {
 
     // Тест 1: GameState работает
     let mut state = GameState::default();
-    state.add_score(100);
+    let _ = state.add_score(100);
     assert_eq!(state.score(), 100);
 
     // Тест 2: Leaderboard работает

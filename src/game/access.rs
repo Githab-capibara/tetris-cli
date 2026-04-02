@@ -352,7 +352,7 @@ impl ScoreAccess for crate::game::state::GameState {
 
 impl ScoreMutable for crate::game::state::GameState {
     fn add_score(&mut self, points: u128) {
-        self.add_score(points);
+        let _ = self.add_score(points);
     }
 
     fn set_score(&mut self, score: u128) {
@@ -384,7 +384,7 @@ impl LinesAccess for crate::game::state::GameState {
     }
 
     fn add_lines(&mut self, lines: u32) {
-        self.add_lines_cleared(lines);
+        let _ = self.add_lines_cleared(lines);
     }
 }
 
