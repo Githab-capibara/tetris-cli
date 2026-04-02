@@ -124,6 +124,8 @@ impl Position {
     /// ```
     /// use tetris_cli::core::Position;
     /// let pos = Position::new(5, 10);
+    /// assert_eq!(pos.x(), 5);
+    /// assert_eq!(pos.y(), 10);
     /// ```
     #[must_use]
     pub const fn new(x: i16, y: i16) -> Self {
