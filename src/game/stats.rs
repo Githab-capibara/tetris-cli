@@ -171,13 +171,19 @@ impl GameStats {
     // Сеттеры предназначены для внутреннего использования и тестов.
     // Все сеттеры включают валидацию диапазонов для предотвращения некорректных значений.
 
+    /// Разумный предел для счётчиков фигур.
+    const MAX_PIECES: u32 = 10_000;
+
+    /// Разумный предел для комбо.
+    const MAX_COMBO: u32 = 1_000;
+
     /// Установить количество фигур типа T.
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_t_pieces(&mut self, value: u32) {
-        self.t_pieces = value.min(10_000); // Разумный предел
+        self.t_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа L.
@@ -186,7 +192,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_l_pieces(&mut self, value: u32) {
-        self.l_pieces = value.min(10_000);
+        self.l_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа J.
@@ -195,7 +201,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_j_pieces(&mut self, value: u32) {
-        self.j_pieces = value.min(10_000);
+        self.j_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа S.
@@ -204,7 +210,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_s_pieces(&mut self, value: u32) {
-        self.s_pieces = value.min(10_000);
+        self.s_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа Z.
@@ -213,7 +219,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_z_pieces(&mut self, value: u32) {
-        self.z_pieces = value.min(10_000);
+        self.z_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа O.
@@ -222,7 +228,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_o_pieces(&mut self, value: u32) {
-        self.o_pieces = value.min(10_000);
+        self.o_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить количество фигур типа I.
@@ -231,7 +237,7 @@ impl GameStats {
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_i_pieces(&mut self, value: u32) {
-        self.i_pieces = value.min(10_000);
+        self.i_pieces = value.min(Self::MAX_PIECES);
     }
 
     /// Установить максимальное комбо.
@@ -241,7 +247,7 @@ impl GameStats {
     /// и ограничено разумным пределом в 1000
     #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_max_combo(&mut self, value: u32) {
-        self.max_combo = value.min(1_000); // Разумный предел для комбо
+        self.max_combo = value.min(Self::MAX_COMBO);
     }
 
     /// Установить текущее комбо.
