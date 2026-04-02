@@ -303,14 +303,19 @@ fn test_game_state_score_overflow_protection() {
 
     // Попытка установить больше MAX_SCORE должна ограничиваться
     state.set_score(u128::MAX);
-    assert!(
-        state.score() <= u128::MAX,
-        "Счёт не должен превышать u128::MAX"
-    );
+    // Тест проверяет что u128::MAX не вызывает переполнения
+    #[allow(clippy::absurd_extreme_comparisons)]
+    {
+        assert!(
+            state.score() <= u128::MAX,
+            "Счёт не должен превышать u128::MAX"
+        );
+    }
 }
 
 /// Тест T22: GameState отрицательные значения (не должны быть возможны)
 #[test]
+#[allow(clippy::absurd_extreme_comparisons)] // Тест проверяет что u128 не может быть отрицательным
 fn test_game_state_no_negative_values() {
     let state = GameState::new();
 
@@ -442,6 +447,7 @@ fn test_combo_counter_max_value() {
 
 /// Тест T31: Combo бонус при нулевом комбо
 #[test]
+#[allow(clippy::erasing_op)] // Тест проверяет граничный случай комбо = 1
 fn test_combo_bonus_at_zero() {
     // Бонус за первое комбо (комбо = 1) должен быть 0
     // Формула: COMBO_BONUS * (combo_counter - 1)
