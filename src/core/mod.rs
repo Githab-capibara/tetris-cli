@@ -145,18 +145,42 @@ impl Position {
     }
 
     /// Установить координату X.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::core::Position;
+    /// let mut pos = Position::new(0, 0);
+    /// pos.set_x(5);
+    /// assert_eq!(pos.x(), 5);
+    /// ```
     #[inline]
     pub fn set_x(&mut self, x: i16) {
         self.x = x;
     }
 
     /// Установить координату Y.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::core::Position;
+    /// let mut pos = Position::new(0, 0);
+    /// pos.set_y(10);
+    /// assert_eq!(pos.y(), 10);
+    /// ```
     #[inline]
     pub fn set_y(&mut self, y: i16) {
         self.y = y;
     }
 
     /// Установить обе координаты.
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::core::Position;
+    /// let mut pos = Position::new(0, 0);
+    /// pos.set(5, 10);
+    /// assert_eq!(pos.to_tuple(), (5, 10));
+    /// ```
     #[inline]
     pub fn set(&mut self, x: i16, y: i16) {
         self.x = x;
