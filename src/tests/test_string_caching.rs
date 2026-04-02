@@ -171,7 +171,7 @@ fn test_combo_cache_update() {
     );
 
     // Изменяем комбо через сеттер
-    state.stats_mut().set_combo_counter(3);
+    let _ = state.stats_mut().set_combo_counter(3);
 
     // Обновляем кэш
     use crate::game::render::update_cached_strings_extended;
