@@ -141,6 +141,7 @@ impl PathValidator {
     /// # Исправление M4 (MEDIUM)
     /// #[must_use] оставлен только на критических методах валидации.
     #[allow(dead_code)] // Может быть использовано для кастомных валидаторов
+    #[must_use = "Валидатор путей должен быть использован"]
     pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
         Self {
             max_length,

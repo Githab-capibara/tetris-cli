@@ -55,6 +55,7 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Новый экземпляр `FigureManager` с инициализированными фигурами из генератора.
+    #[must_use = "Менеджер фигур должен быть использован"]
     pub fn new() -> Self {
         let mut bag = BagGenerator::new();
         let curr_shape = Tetromino::from_bag(&mut bag);

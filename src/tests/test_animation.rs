@@ -309,6 +309,7 @@ fn test_animation_after_rotation() {
 
 /// Тест 21: Проверка что призрачная фигура является копией текущей
 #[test]
+#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_animation_ghost_is_copy() {
     let state = GameState::new();
     let current = state.curr_shape();

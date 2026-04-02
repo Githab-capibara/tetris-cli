@@ -340,6 +340,7 @@ impl Canvas {
         let mut buffer = String::with_capacity(lines.len() * 50);
 
         for (i, line) in lines.iter().enumerate() {
+            // cast: usize -> u16, потеря точности допустима: количество строк небольшое
             let y = y_start + i as u16;
             // Форматируем в буфер
             let _ = write!(

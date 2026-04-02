@@ -19,8 +19,8 @@ fn test_sanitize_zero_width_joiners() {
     );
 
     // Имя с zero-width joiner U+200D
-    let name_with_zwj = "Player\u{200D}Name";
-    let entry2 = LeaderboardEntry::new(name_with_zwj, 1000);
+    let player_zwj = "Player\u{200D}Name";
+    let entry2 = LeaderboardEntry::new(player_zwj, 1000);
 
     assert!(
         !entry2.name().contains('\u{200D}'),

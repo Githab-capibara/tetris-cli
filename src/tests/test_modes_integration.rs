@@ -274,12 +274,12 @@ fn test_modes_integration_next_shape_in_all_modes() {
 #[test]
 fn test_modes_integration_stats_in_classic() {
     let state = GameState::new();
-    let stats = state.stats();
+    let st_stats = state.stats();
 
-    assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
+    assert_eq!(st_stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
+    assert_eq!(st_stats.max_combo(), 0, "Комбо должно быть 0");
     assert!(
-        stats.start_time().is_none(),
+        st_stats.start_time().is_none(),
         "Таймер не должен быть запущен"
     );
 }
@@ -290,12 +290,12 @@ fn test_modes_integration_stats_in_classic() {
 #[test]
 fn test_modes_integration_stats_in_sprint() {
     let state = GameState::new_sprint();
-    let stats = state.stats();
+    let sp_stats = state.stats();
 
-    assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
+    assert_eq!(sp_stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
+    assert_eq!(sp_stats.max_combo(), 0, "Комбо должно быть 0");
     assert!(
-        stats.start_time().is_some(),
+        sp_stats.start_time().is_some(),
         "Таймер должен быть запущен для режима Sprint"
     );
 }
@@ -306,12 +306,12 @@ fn test_modes_integration_stats_in_sprint() {
 #[test]
 fn test_modes_integration_stats_in_marathon() {
     let state = GameState::new_marathon();
-    let stats = state.stats();
+    let m_stats = state.stats();
 
-    assert_eq!(stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
-    assert_eq!(stats.max_combo(), 0, "Комбо должно быть 0");
+    assert_eq!(m_stats.total_pieces(), 1, "Должна быть 1 начальная фигура");
+    assert_eq!(m_stats.max_combo(), 0, "Комбо должно быть 0");
     assert!(
-        stats.start_time().is_some(),
+        m_stats.start_time().is_some(),
         "Таймер должен быть запущен для режима Marathon"
     );
 }

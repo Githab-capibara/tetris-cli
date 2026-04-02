@@ -614,16 +614,16 @@ mod tests {
     #[test]
     fn test_time_type_safety() {
         let state_path = "src/game/state.rs";
-        let stats_path = "src/game/stats.rs";
+        let stats_file_path = "src/game/stats.rs";
 
         let state_content = fs::read_to_string(state_path).unwrap_or_default();
-        let stats_content = fs::read_to_string(stats_path).unwrap_or_default();
+        let stats_file_content = fs::read_to_string(stats_file_path).unwrap_or_default();
 
         // Проверяем что Time тип используется в коде
         let uses_time_type = state_content.contains("Time")
-            || stats_content.contains("Time")
+            || stats_file_content.contains("Time")
             || state_content.contains("game::time::Time")
-            || stats_content.contains("game::time::Time");
+            || stats_file_content.contains("game::time::Time");
 
         // Это предупреждение, не ошибка - Time может ещё не использоваться везде
         if !uses_time_type {

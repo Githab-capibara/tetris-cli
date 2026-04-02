@@ -466,12 +466,12 @@ fn test_combo_bonus_at_high_combo() {
     const COMBO_BONUS: u64 = 50;
 
     // Бонус за 10 комбо
-    let combo_10_bonus = COMBO_BONUS * 9; // (10 - 1) = 9
-    assert_eq!(combo_10_bonus, 450, "Бонус за 10 комбо должен быть 450");
+    let combo_ten_bonus = COMBO_BONUS * 9; // (10 - 1) = 9
+    assert_eq!(combo_ten_bonus, 450, "Бонус за 10 комбо должен быть 450");
 
     // Бонус за 100 комбо
-    let combo_100_bonus = COMBO_BONUS * 99; // (100 - 1) = 99
-    assert_eq!(combo_100_bonus, 4950, "Бонус за 100 комбо должен быть 4950");
+    let combo_hundred_bonus = COMBO_BONUS * 99; // (100 - 1) = 99
+    assert_eq!(combo_hundred_bonus, 4950, "Бонус за 100 комбо должен быть 4950");
 }
 
 // ============================================================================

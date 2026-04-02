@@ -122,6 +122,7 @@ impl SaveData {
     ///
     /// # Исправление H10 (HIGH)
     /// Методы загрузки консолидированы - общая логика вынесена в `load_with_validation()`
+    #[must_use = "Загруженные данные должны быть использованы"]
     pub fn load_config() -> Self {
         Self::load_config_result().unwrap_or_else(|e| {
             eprintln!("Предупреждение: {e}. Попытка загрузки из backup...");

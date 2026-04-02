@@ -46,6 +46,7 @@ impl LeaderboardStorage {
     ///
     /// # Возвращает
     /// Новый экземпляр `LeaderboardStorage` с пустым списком записей
+    #[must_use = "Хранилище рекордов должно быть использовано"]
     pub fn new() -> Self {
         Self {
             entries: Vec::with_capacity(MAX_LEADERBOARD_SIZE),
@@ -263,6 +264,7 @@ impl LeaderboardValidator {
     ///
     /// # Безопасность
     /// Генерирует уникальную соль для каждой записи.
+    #[must_use = "Результат создания записи должен быть использован"]
     pub fn create_validated_entry(name: &str, score: u128) -> (String, String) {
         let salt = crate::crypto::generate_salt();
         let hash = Self::compute_signature(&salt, name, score);

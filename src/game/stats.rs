@@ -80,6 +80,7 @@ pub struct GameStats {
 
 impl GameStats {
     /// Создать новую статистику.
+    #[must_use = "Статистика игры должна быть использована"]
     pub fn new() -> Self {
         Self::default()
     }
