@@ -158,7 +158,6 @@ impl ScoreBoard {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на разумные пределы (максимум u128::MAX).
-    #[must_use = "ScoreBoard должен быть использован после модификации"]
     pub fn set_score(&mut self, value: u128) {
         // Валидация (H3): u128 уже имеет естественные границы
         self.score = value;
@@ -174,7 +173,6 @@ impl ScoreBoard {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на разумные пределы (максимум 1000).
-    #[must_use = "ScoreBoard должен быть использован после модификации"]
     pub fn set_level(&mut self, value: u32) {
         // Валидация (H3): ограничиваем уровень разумным максимумом
         use super::rules::MAX_LEVEL;
@@ -232,7 +230,6 @@ impl ScoreBoard {
     ///
     /// # Аргументы
     /// * `value` - новое значение количества линий
-    #[must_use = "ScoreBoard должен быть использован после модификации"]
     pub fn set_lines_cleared(&mut self, value: u32) {
         self.lines_cleared = value;
     }

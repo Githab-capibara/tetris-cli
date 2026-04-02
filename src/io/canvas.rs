@@ -322,6 +322,9 @@ impl Canvas {
     /// # Возвращает
     /// Результат отрисовки (Ok если успешно)
     ///
+    /// # Errors
+    /// Возвращает ошибку если запись в терминал не удалась
+    ///
     /// # Оптимизация
     /// Собирает весь вывод в буфер перед записью для уменьшения системных вызовов.
     pub fn draw_strs_buffered(
@@ -331,13 +334,14 @@ impl Canvas {
         fg: &dyn Color,
         bg: &dyn Color,
     ) -> Result<(), std::io::Error> {
+        use std::fmt::Write;
+
         let (x_start, y_start) = pos;
         let mut buffer = String::with_capacity(lines.len() * 50);
 
         for (i, line) in lines.iter().enumerate() {
             let y = y_start + i as u16;
             // Форматируем в буфер
-            use std::fmt::Write;
             let _ = write!(
                 buffer,
                 "{}{}{}{}{}{}",
