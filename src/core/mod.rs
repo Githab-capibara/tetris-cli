@@ -193,13 +193,34 @@ impl Position {
     /// # Аргументы
     /// * `dx` - смещение по X
     /// * `dy` - смещение по Y
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::core::Position;
+    /// let mut pos = Position::new(5, 10);
+    /// pos.offset(2, -3);
+    /// assert_eq!(pos.x(), 7);
+    /// assert_eq!(pos.y(), 7);
+    /// ```
+    #[inline]
     pub fn offset(&mut self, dx: i16, dy: i16) {
         self.x = self.x.saturating_add(dx);
         self.y = self.y.saturating_add(dy);
     }
 
     /// Проверить, равна ли позиция нулю.
+    ///
+    /// # Возвращает
+    /// `true` если обе координаты равны нулю
+    ///
+    /// # Пример
+    /// ```
+    /// use tetris_cli::core::Position;
+    /// assert!(Position::new(0, 0).is_zero());
+    /// assert!(!Position::new(1, 0).is_zero());
+    /// ```
     #[must_use]
+    #[inline]
     pub const fn is_zero(self) -> bool {
         self.x == 0 && self.y == 0
     }
