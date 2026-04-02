@@ -90,66 +90,77 @@ impl GameStats {
 
     /// Получить количество фигур типа T.
     #[must_use]
+    #[inline]
     pub fn t_pieces(&self) -> u32 {
         self.t_pieces
     }
 
     /// Получить количество фигур типа L.
     #[must_use]
+    #[inline]
     pub fn l_pieces(&self) -> u32 {
         self.l_pieces
     }
 
     /// Получить количество фигур типа J.
     #[must_use]
+    #[inline]
     pub fn j_pieces(&self) -> u32 {
         self.j_pieces
     }
 
     /// Получить количество фигур типа S.
     #[must_use]
+    #[inline]
     pub fn s_pieces(&self) -> u32 {
         self.s_pieces
     }
 
     /// Получить количество фигур типа Z.
     #[must_use]
+    #[inline]
     pub fn z_pieces(&self) -> u32 {
         self.z_pieces
     }
 
     /// Получить количество фигур типа O.
     #[must_use]
+    #[inline]
     pub fn o_pieces(&self) -> u32 {
         self.o_pieces
     }
 
     /// Получить количество фигур типа I.
     #[must_use]
+    #[inline]
     pub fn i_pieces(&self) -> u32 {
         self.i_pieces
     }
 
     /// Получить максимальное комбо.
     #[must_use]
+    #[inline]
     pub fn max_combo(&self) -> u32 {
         self.max_combo
     }
 
     /// Получить текущее комбо.
     #[must_use]
+    #[inline]
     pub fn combo_counter(&self) -> u32 {
         self.combo_counter
     }
 
     /// Получить время начала игры.
     #[must_use]
+    #[inline]
     pub fn start_time(&self) -> Option<Instant> {
         self.start_time
     }
 
     /// Получить время окончания игры.
     #[must_use]
+    #[inline]
     pub fn end_time(&self) -> Option<Instant> {
         self.end_time
     }

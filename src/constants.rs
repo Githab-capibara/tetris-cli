@@ -211,6 +211,7 @@ pub const BORDER: [&str; DISP_HEIGHT] = [
 /// let top_border = get_border_line(5);
 /// ```
 #[must_use]
+#[inline]
 pub const fn get_border_line(line_index: usize) -> &'static str {
     if line_index < BORDER.len() {
         BORDER[line_index]
@@ -224,6 +225,7 @@ pub const fn get_border_line(line_index: usize) -> &'static str {
 /// # Возвращает
 /// Строку верхней границы
 #[must_use]
+#[inline]
 pub const fn get_border_top() -> &'static str {
     BORDER[5]
 }
@@ -233,6 +235,7 @@ pub const fn get_border_top() -> &'static str {
 /// # Возвращает
 /// Строку нижней границы
 #[must_use]
+#[inline]
 pub const fn get_border_bottom() -> &'static str {
     BORDER[DISP_HEIGHT - 1]
 }
@@ -242,6 +245,7 @@ pub const fn get_border_bottom() -> &'static str {
 /// # Возвращает
 /// Строку "Счёт: "
 #[must_use]
+#[inline]
 pub const fn get_border_score_header() -> &'static str {
     BORDER[1]
 }
@@ -251,6 +255,7 @@ pub const fn get_border_score_header() -> &'static str {
 /// # Возвращает
 /// Строку "Рекорд: "
 #[must_use]
+#[inline]
 pub const fn get_border_high_score_header() -> &'static str {
     BORDER[2]
 }
@@ -260,6 +265,7 @@ pub const fn get_border_high_score_header() -> &'static str {
 /// # Возвращает
 /// Строку "Уровень: "
 #[must_use]
+#[inline]
 pub const fn get_border_level_header() -> &'static str {
     BORDER[3]
 }
@@ -269,6 +275,7 @@ pub const fn get_border_level_header() -> &'static str {
 /// # Возвращает
 /// Строку "Линии: "
 #[must_use]
+#[inline]
 pub const fn get_border_lines_header() -> &'static str {
     BORDER[4]
 }
@@ -278,6 +285,7 @@ pub const fn get_border_lines_header() -> &'static str {
 /// # Возвращает
 /// Количество линий (25)
 #[must_use]
+#[inline]
 pub const fn border_line_count() -> usize {
     DISP_HEIGHT
 }
