@@ -293,11 +293,11 @@ fn test_game_state_max_score() {
 /// Тест T21: GameState переполнение счёта через set_score
 #[test]
 fn test_game_state_score_overflow_protection() {
+    use crate::game::scoring::lines::MAX_SCORE;
+
     let mut state = GameState::new();
 
     // MAX_SCORE = u128::MAX / 2
-    const MAX_SCORE: u128 = u128::MAX / 2;
-
     state.set_score(MAX_SCORE);
     assert_eq!(state.score(), MAX_SCORE, "Счёт должен быть MAX_SCORE");
 

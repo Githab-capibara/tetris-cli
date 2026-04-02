@@ -54,8 +54,8 @@ pub struct ControlsConfig {
     /// Выход.
     pub quit: u8,
     /// Внутренний HMAC ключ (не следует изменять напрямую).
-    #[doc(hidden)]
-    pub hmac_key: String,
+    /// Инкапсулирован для безопасности — используйте методы для работы с ключом.
+    hmac_key: String,
     /// Подпись конфигурации.
     signature: String,
 }
@@ -150,6 +150,40 @@ impl ControlsConfig {
     #[must_use]
     pub const fn quit(&self) -> u8 {
         self.quit
+    }
+
+    /// Геттер для HMAC ключа (только чтение).
+    /// Возвращает ссылку на ключ для HMAC подписи конфигурации.
+    ///
+    /// # Возвращает
+    /// Ссылку на строку с HMAC ключом.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let config = ControlsConfig::default_config();
+    /// let key = config.get_hmac_key();
+    /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей
+    #[must_use = "Ключ должен быть использован"]
+    pub fn get_hmac_key(&self) -> &str {
+        &self.hmac_key
+    }
+
+    /// Геттер для подписи конфигурации (только чтение).
+    /// Возвращает ссылку на HMAC подпись конфигурации.
+    ///
+    /// # Возвращает
+    /// Ссылку на строку с подписью.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let config = ControlsConfig::default_config();
+    /// let sig = config.get_signature();
+    /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей
+    #[must_use = "Подпись должна быть использована"]
+    pub fn get_signature(&self) -> &str {
+        &self.signature
     }
 
     /// Сеттеры для всех полей конфигурации (для тестов и обратной совместимости).
@@ -1062,12 +1096,12 @@ mod controls_tests {
 
         // Проверяем что hmac_key не пустой после загрузки
         assert!(
-            !loaded.hmac_key.is_empty(),
+            !loaded.get_hmac_key().is_empty(),
             "Загруженный HMAC ключ не должен быть пустым"
         );
         // Длина ключа зависит от внутренней константы CONTROLS_HMAC_KEY (28 символов)
         assert!(
-            !loaded.hmac_key.is_empty(),
+            !loaded.get_hmac_key().is_empty(),
             "Длина HMAC ключа должна быть больше 0"
         );
 
@@ -1190,7 +1224,7 @@ mod controls_tests {
 
         // Проверяем что hmac_key поле инициализируется
         assert!(
-            config.hmac_key.is_empty() || !config.hmac_key.is_empty(),
+            config.get_hmac_key().is_empty() || !config.get_hmac_key().is_empty(),
             "HMAC ключ должен быть установлен"
         );
 

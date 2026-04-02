@@ -98,11 +98,15 @@ impl Application {
         // Загрузка сохранённых данных с обработкой ошибок
         let (save, leaderboard) = Self::load_game_data();
 
-        // Проверка целостности рекорда (Исправление #2: unwrap_or_default с логированием)
-        let high_score = save.verify_and_get_score().unwrap_or_else(|| {
-            eprintln!("[ERROR] Рекорд не прошёл валидацию или отсутствует. Используется 0.");
-            0u128
-        });
+        // Проверка целостности рекорда (Исправление C3, C10: Result вместо Option)
+        // Используем verify_and_get_score_result() для явной обработки ошибок
+        let high_score = match save.verify_and_get_score_result() {
+            Ok(score) => score,
+            Err(e) => {
+                eprintln!("[ERROR] Рекорд не прошёл валидацию: {}. Используется 0.", e);
+                0u128
+            }
+        };
 
         // Проверка терминала и инициализация ввода/вывода
         let (canvas, input) = Self::initialize_terminal()?;
