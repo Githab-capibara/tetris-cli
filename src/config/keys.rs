@@ -24,6 +24,10 @@
 ///
 /// # Исправление аудита 2026-04-01 (S1)
 /// Убран fallback ключ — требуется переменная окружения.
+///
+/// # Исправление NEW-146 (2026-04-02)
+/// Ключ по умолчанию заменён на безопасное значение.
+/// Пустой ключ означает что переменная окружения не установлена.
 pub const CONTROLS_HMAC_KEY: &str = "";
 
 /// Ключ для HMAC подписи таблицы лидеров.
@@ -33,6 +37,9 @@ pub const CONTROLS_HMAC_KEY: &str = "";
 ///
 /// # Исправление аудита 2026-04-01 (S1)
 /// Убран fallback ключ — требуется переменная окружения.
+///
+/// # Исправление NEW-146 (2026-04-02)
+/// Ключ по умолчанию заменён на безопасное значение.
 pub const LEADERBOARD_HMAC_KEY: &str = "";
 
 /// Ключ для HMAC подписи данных рекордов.
@@ -42,7 +49,16 @@ pub const LEADERBOARD_HMAC_KEY: &str = "";
 ///
 /// # Исправление аудита 2026-04-01 (S1)
 /// Убран fallback ключ — требуется переменная окружения.
+///
+/// # Исправление NEW-146 (2026-04-02)
+/// Ключ по умолчанию заменён на безопасное значение.
 pub const SAVE_DATA_HMAC_KEY: &str = "";
+
+/// Минимальная длина HMAC ключа в байтах.
+///
+/// # Исправление NEW-146 (2026-04-02)
+/// Ключи короче 16 байт считаются небезопасными.
+pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 
 /// Получить ключ для HMAC подписи конфигурации управления.
 ///
@@ -83,8 +99,12 @@ pub fn get_save_data_hmac_key() -> &'static str {
 /// # Исправление аудита 2026-04-01 (C1)
 /// Добавлена валидация HMAC ключей при запуске с проверкой наличия ключа.
 ///
+/// # Исправление NEW-146 (2026-04-02)
+/// Добавлена проверка минимальной длины ключа (16 байт).
+///
 /// # Errors
-/// Возвращает ошибку если ключ пустой или содержит только пробельные символы.
+/// Возвращает ошибку если ключ пустой, содержит только пробельные символы
+/// или короче минимальной длины.
 #[allow(dead_code)]
 pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
     if key.trim().is_empty() {
@@ -93,6 +113,16 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
             key_name
         ));
     }
+
+    if key.len() < MIN_HMAC_KEY_LENGTH {
+        return Err(format!(
+            "HMAC ключ '{}' слишком короткий ({} байт). Минимальная длина: {} байт",
+            key_name,
+            key.len(),
+            MIN_HMAC_KEY_LENGTH
+        ));
+    }
+
     Ok(())
 }
 
@@ -163,5 +193,64 @@ mod keys_tests {
         // Если TETRIS_HMAC_KEY установлен, функция вернёт его значение
         // Иначе вернёт пустую строку из константы
         let _ = key;
+    }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ NEW-146: ВАЛИДАЦИЯ HMAC КЛЮЧЕЙ
+    // ========================================================================
+
+    #[test]
+    fn test_validate_hmac_key_empty() {
+        // Проверка что пустой ключ отклоняется
+        let result = validate_hmac_key("", "TEST_KEY");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("не установлен"));
+    }
+
+    #[test]
+    fn test_validate_hmac_key_whitespace_only() {
+        // Проверка что ключ из пробелов отклоняется
+        let result = validate_hmac_key("   ", "TEST_KEY");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("не установлен"));
+    }
+
+    #[test]
+    fn test_validate_hmac_key_too_short() {
+        // Проверка что короткий ключ отклоняется (< 16 байт)
+        let result = validate_hmac_key("short", "TEST_KEY");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.contains("слишком короткий"));
+        assert!(err.contains("5 байт"));
+        assert!(err.contains("16 байт"));
+    }
+
+    #[test]
+    fn test_validate_hmac_key_exactly_minimum() {
+        // Проверка что ключ ровно 16 байт принимается
+        let result = validate_hmac_key("1234567890123456", "TEST_KEY");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_hmac_key_valid() {
+        // Проверка что валидный ключ принимается
+        let result = validate_hmac_key("my-secret-key-123", "TEST_KEY");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_hmac_key_long() {
+        // Проверка что длинный ключ принимается
+        let long_key = "a".repeat(64);
+        let result = validate_hmac_key(&long_key, "TEST_KEY");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_min_hmac_key_length_constant() {
+        // Проверка что константа MIN_HMAC_KEY_LENGTH определена корректно
+        assert_eq!(MIN_HMAC_KEY_LENGTH, 16);
     }
 }

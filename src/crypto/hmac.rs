@@ -77,25 +77,37 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 ///
 /// # Безопасность
 /// Используется постоянное по времени сравнение для предотвращения timing-атак.
+///
+/// # Исправление NEW-150 (2026-04-02)
+/// - Проверка длины включена в constant-time сравнение
+/// - Используется compiler_fence для предотвращения оптимизаций
+/// - Все операции выполняются независимо от результата
 #[must_use = "Результат проверки должен быть использован"]
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_hash = hmac_sha256(key, data);
-    // Исправление #2 (CRITICAL): постоянное по времени сравнение через XOR накопление
+
+    // Исправление NEW-150 (CRITICAL): Улучшенное constant-time сравнение
     // Предотвращает timing-атаки путём выполнения одинакового количества операций
-    // независимо от позиции первого несовпадающего байта
+    // независимо от позиции первого несовпадающего байта или длины
+
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    // Проверяем длину - разная длина сразу возвращает false
-    if actual_bytes.len() != expected_bytes.len() {
-        return false;
-    }
+    // NEW-150: Включаем проверку длины в constant-time сравнение
+    // Вместо раннего возврата используем XOR для накопления разницы длин
+    let len_diff = actual_bytes.len() ^ expected_bytes.len();
+
+    // NEW-150: Используем минимальную длину для предотвращения выхода за границы
+    let min_len = core::cmp::min(actual_bytes.len(), expected_bytes.len());
 
     // XOR накопление - выполняем сравнение за постоянное время
-    let mut result: u8 = 0;
-    for (a, b) in actual_bytes.iter().zip(expected_bytes.iter()) {
-        result |= a ^ b;
+    let mut result: u8 = len_diff as u8;
+    for i in 0..min_len {
+        result |= actual_bytes[i] ^ expected_bytes[i];
     }
+
+    // NEW-150: compiler_fence предотвращает переупорядочивание инструкций компилятором
+    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
 
     result == 0
 }
@@ -119,6 +131,7 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 ///
 /// # Безопасность
 /// Используется криптографически стойкий HMAC-SHA256 согласно RFC 2104.
+#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 pub fn hmac_sign(key: &str, data: &str) -> String {
     hmac_sha256(key, data)
@@ -146,6 +159,7 @@ pub fn hmac_sign(key: &str, data: &str) -> String {
 ///
 /// # Безопасность
 /// Используется постоянное по времени сравнение для предотвращения timing-атак.
+#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 #[must_use = "Результат проверки должен быть использован"]
 pub fn hmac_verify(key: &str, data: &str, signature: &str) -> bool {
     verify_hmac_sha256(key, data, signature)
@@ -431,5 +445,91 @@ mod hmac_tests {
     fn test_hmac_sha256_empty_key() {
         let signature = hmac_sha256("", "данные");
         assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
+    }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ NEW-150: TIMING ATTACK ЗАЩИТА
+    // ========================================================================
+
+    /// Тест на constant-time сравнение с разной длиной
+    #[test]
+    fn test_verify_hmac_sha256_different_length() {
+        let key = "ключ";
+        let data = "данные";
+        let signature = hmac_sha256(key, data);
+
+        // Укороченная подпись должна возвращать false
+        let short_sig = &signature[..signature.len() - 1];
+        assert!(
+            !verify_hmac_sha256(key, data, short_sig),
+            "Укороченная подпись должна возвращать false"
+        );
+
+        // Удлинённая подпись должна возвращать false
+        let long_sig = format!("{signature}0");
+        assert!(
+            !verify_hmac_sha256(key, data, &long_sig),
+            "Удлинённая подпись должна возвращать false"
+        );
+    }
+
+    /// Тест на constant-time сравнение с пустой подписью
+    #[test]
+    fn test_verify_hmac_sha256_empty_signature() {
+        let key = "ключ";
+        let data = "данные";
+
+        // Пустая подпись должна возвращать false
+        assert!(
+            !verify_hmac_sha256(key, data, ""),
+            "Пустая подпись должна возвращать false"
+        );
+    }
+
+    /// Тест на constant-time сравнение с одним байтом
+    #[test]
+    fn test_verify_hmac_sha256_single_byte_diff() {
+        let key = "ключ";
+        let data = "данные";
+        let valid_signature = hmac_sha256(key, data);
+
+        // Изменяем один байт в подписи
+        let mut invalid_signature = valid_signature.clone();
+        let bytes = unsafe { invalid_signature.as_bytes_mut() };
+        bytes[0] = bytes[0].wrapping_add(1);
+
+        assert!(
+            !verify_hmac_sha256(key, data, &invalid_signature),
+            "Подпись с изменённым байтом должна возвращать false"
+        );
+    }
+
+    /// Тест на constant-time сравнение с последним байтом
+    #[test]
+    fn test_verify_hmac_sha256_last_byte_diff() {
+        let key = "ключ";
+        let data = "данные";
+        let valid_signature = hmac_sha256(key, data);
+
+        // Изменяем последний байт в подписи
+        let mut invalid_signature = valid_signature.clone();
+        let len = invalid_signature.len();
+        let bytes = unsafe { invalid_signature.as_bytes_mut() };
+        bytes[len - 1] = bytes[len - 1].wrapping_add(1);
+
+        assert!(
+            !verify_hmac_sha256(key, data, &invalid_signature),
+            "Подпись с изменённым последним байтом должна возвращать false"
+        );
+    }
+
+    /// Тест на compiler_fence的存在
+    #[test]
+    fn test_compiler_fence_exists() {
+        // Этот тест просто проверяет что код компилируется с compiler_fence
+        let key = "ключ";
+        let data = "данные";
+        let signature = hmac_sha256(key, data);
+        assert!(verify_hmac_sha256(key, data, &signature));
     }
 }

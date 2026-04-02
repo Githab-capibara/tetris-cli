@@ -64,6 +64,7 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(i8)` - значение ячейки (-1 = пусто, 0-6 = цвет)
     /// - `None` - если координаты выходят за пределы поля
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             Some(self.blocks[y][x])
@@ -82,6 +83,7 @@ impl GameBoard {
     /// # Возвращает
     /// - `Some(())` - если ячейка успешно установлена
     /// - `None` - если координаты выходят за пределы поля
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             self.blocks[y][x] = value;
