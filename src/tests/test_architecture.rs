@@ -440,9 +440,9 @@ fn test_hmac_key_usage() {
 fn test_menu_constants_documented() {
     use crate::menu::constants::{MENU_AUTHOR_X, MENU_RECORD_X, MENU_TITLE_X, MENU_TITLE_Y};
 
-    // Константы должны быть доступны
-    assert!(MENU_TITLE_X > 0, "MENU_TITLE_X должен быть положительным");
-    assert!(MENU_TITLE_Y > 0, "MENU_TITLE_Y должен быть положительным");
-    assert!(MENU_AUTHOR_X > 0, "MENU_AUTHOR_X должен быть положительным");
-    assert!(MENU_RECORD_X > 0, "MENU_RECORD_X должен быть положительным");
+    // Константы должны быть доступны и положительны
+    const { assert!(MENU_TITLE_X > 0, "MENU_TITLE_X должен быть положительным") };
+    const { assert!(MENU_TITLE_Y > 0, "MENU_TITLE_Y должен быть положительным") };
+    const { assert!(MENU_AUTHOR_X > 0, "MENU_AUTHOR_X должен быть положительным") };
+    const { assert!(MENU_RECORD_X > 0, "MENU_RECORD_X должен быть положительным") };
 }
