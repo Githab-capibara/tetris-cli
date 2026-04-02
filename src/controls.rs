@@ -583,7 +583,7 @@ impl ControlsConfig {
     /// - HMAC ключ пустой или содержит только пробелы
     /// - HMAC ключ короче MIN_HMAC_KEY_LENGTH (16 байт)
     #[allow(dead_code)] // Публичный API для валидации HMAC ключа
-    pub fn validate_hmac_key(&self) -> Result<(), String> {
+    pub fn validate_hmac_key() -> Result<(), String> {
         crate::config::keys::validate_hmac_key(
             crate::config::keys::get_controls_hmac_key(),
             "CONTROLS_HMAC_KEY",

@@ -83,7 +83,8 @@ pub mod view;
 // Re-export основных типов для обратной совместимости
 // Исправление аудита 2026-03-31 (Проблема #1): GameError перемещён в errors.rs
 pub use crate::errors::GameError;
-#[deprecated(since = "23.96.17", note = "Используйте GameModeTrait напрямую")]
+pub use mode_trait::GameModeTrait;
+#[allow(deprecated)] // Для обратной совместимости с тестами
 pub use state::GameMode;
 pub use state::GameResult;
 pub use state::GameState;

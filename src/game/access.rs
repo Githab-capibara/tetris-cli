@@ -264,7 +264,6 @@ pub trait LevelAccess {
     }
 
     /// Установить текущий уровень.
-    #[must_use = "LevelAccess должен быть использован после модификации"]
     fn set_level(&mut self, level: u32);
 }
 
@@ -285,11 +284,9 @@ pub trait LinesAccess {
     }
 
     /// Установить количество очищенных линий.
-    #[must_use = "LinesAccess должен быть использован после модификации"]
     fn set_lines_cleared(&mut self, lines: u32);
 
     /// Добавить количество очищенных линий.
-    #[must_use = "LinesAccess должен быть использован после модификации"]
     fn add_lines(&mut self, lines: u32);
 }
 
@@ -310,11 +307,9 @@ pub trait ComboAccess {
     }
 
     /// Установить текущий комбо.
-    #[must_use = "ComboAccess должен быть использован после модификации"]
     fn set_combo(&mut self, combo: u32);
 
     /// Сбросить комбо.
-    #[must_use = "ComboAccess должен быть использован после модификации"]
     fn reset_combo(&mut self);
 }
 

@@ -9,7 +9,8 @@
 #![allow(clippy::needless_range_loop)]
 #![allow(clippy::items_after_statements)]
 
-use crate::game::GameState;
+#[allow(deprecated)]
+use crate::game::{GameMode, GameState};
 use crate::types::{Direction, RotationDirection};
 
 /// Тест 1: Проверка совместной работы GameStats и констант
@@ -264,7 +265,7 @@ fn test_no_regressions() {
     assert_eq!(state.lines_cleared(), 0, "Линии должны быть 0");
     assert_eq!(
         state.get_mode(),
-        crate::game::GameMode::Classic,
+        GameMode::Classic,
         "Режим должен быть Classic"
     );
 

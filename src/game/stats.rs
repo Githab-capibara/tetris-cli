@@ -181,7 +181,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_t_pieces(&mut self, value: u32) {
         self.t_pieces = value.min(Self::MAX_PIECES);
     }
@@ -190,7 +189,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_l_pieces(&mut self, value: u32) {
         self.l_pieces = value.min(Self::MAX_PIECES);
     }
@@ -199,7 +197,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_j_pieces(&mut self, value: u32) {
         self.j_pieces = value.min(Self::MAX_PIECES);
     }
@@ -208,7 +205,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_s_pieces(&mut self, value: u32) {
         self.s_pieces = value.min(Self::MAX_PIECES);
     }
@@ -217,7 +213,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_z_pieces(&mut self, value: u32) {
         self.z_pieces = value.min(Self::MAX_PIECES);
     }
@@ -226,7 +221,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_o_pieces(&mut self, value: u32) {
         self.o_pieces = value.min(Self::MAX_PIECES);
     }
@@ -235,7 +229,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Значение должно быть в разумных пределах (менее 10000 для предотвращения ошибок)
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_i_pieces(&mut self, value: u32) {
         self.i_pieces = value.min(Self::MAX_PIECES);
     }
@@ -245,7 +238,6 @@ impl GameStats {
     /// # Валидация
     /// Комбо не может быть отрицательным (гарантируется типом u32)
     /// и ограничено разумным пределом в 1000
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_max_combo(&mut self, value: u32) {
         self.max_combo = value.min(Self::MAX_COMBO);
     }
@@ -262,7 +254,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Если `end_time` уже установлен, `start_time` не может быть позже него
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_start_time(&mut self, value: Option<Instant>) {
         // Валидация: start_time не должен быть позже end_time если оба установлены
         if let Some(start) = value {
@@ -280,7 +271,6 @@ impl GameStats {
     ///
     /// # Валидация
     /// Если `start_time` установлен, `end_time` не может быть раньше него
-    #[must_use = "GameStats должен быть использован после модификации"]
     pub fn set_end_time(&mut self, value: Option<Instant>) {
         // Валидация: end_time не должен быть раньше start_time если оба установлены
         if let Some(end) = value {
