@@ -311,15 +311,50 @@ impl SaveData {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    ///
+    /// # Устарело
+    /// Используйте [`Self::verify_and_get_score_result()`] для явной обработки ошибок.
     #[must_use]
+    #[deprecated(
+        since = "23.96.18",
+        note = "Используйте verify_and_get_score_result() для явной обработки ошибок"
+    )]
     pub fn verify_and_get_score(&self) -> Option<u128> {
+        self.verify_and_get_score_result().ok()
+    }
+
+    /// Проверить целостность рекорда и вернуть значение с обработкой ошибок.
+    ///
+    /// # Возвращает
+    /// - `Ok(u128)` - значение рекорда, если хэш совпадает
+    /// - `Err(String)` - если запись подделана, повреждена или произошла ошибка
+    ///
+    /// # Errors
+    /// Возвращает ошибку в следующих случаях:
+    /// - HMAC подпись не совпадает (подделка данных)
+    /// - Ошибка преобразования score в строку
+    ///
+    /// # Пример
+    /// ```no_run
+    /// use tetris_cli::highscore::SaveData;
+    /// let save = SaveData::from_value(1000);
+    /// match save.verify_and_get_score_result() {
+    ///     Ok(score) => println!("Рекорд: {}", score),
+    ///     Err(e) => eprintln!("Ошибка проверки: {}", e),
+    /// }
+    /// ```
+    ///
+    /// # Исправление C10 (CRITICAL)
+    /// Метод возвращает Result вместо Option для явной обработки ошибок.
+    #[must_use]
+    pub fn verify_and_get_score_result(&self) -> Result<u128, String> {
         let score_str = self.score.to_string();
         if hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash) {
-            Some(self.score)
+            Ok(self.score)
         } else {
             // Логирование попытки подделки
             eprintln!("Предупреждение: обнаружена подделка рекорда! Хэш не совпадает.");
-            None
+            Err("HMAC подпись не совпадает - возможна подделка рекорда".to_string())
         }
     }
 }

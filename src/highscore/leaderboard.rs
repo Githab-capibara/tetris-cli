@@ -24,7 +24,7 @@
 #![deny(clippy::mut_mutex_lock)]
 
 // std
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 // external
 use confy::{load, store};
@@ -421,8 +421,8 @@ impl LeaderboardEntry {
 /// let is_valid = entry.is_valid(); // Атомарная проверка
 /// ```
 pub struct ThreadSafeLeaderboardEntry {
-    /// Внутренние данные, защищённые Mutex.
-    inner: Mutex<LeaderboardEntryData>,
+    /// Внутренние данные, защищённые RwLock для лучшей производительности чтения.
+    inner: RwLock<LeaderboardEntryData>,
 }
 
 /// Внутренние данные записи (для сериализации).
@@ -450,6 +450,9 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует RwLock вместо Mutex для лучшей производительности чтения.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
@@ -458,7 +461,7 @@ impl ThreadSafeLeaderboardEntry {
         let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
-            inner: Mutex::new(LeaderboardEntryData {
+            inner: RwLock::new(LeaderboardEntryData {
                 name: valid_name,
                 score_value: score,
                 salt,
@@ -473,19 +476,22 @@ impl ThreadSafeLeaderboardEntry {
     /// Значение рекорда (u128) или 0 если валидация не прошла
     ///
     /// # Ошибки
-    /// Возвращает `None` если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// Возвращает `None` если RwLock отравлен (другой поток паниковал удерживая блокировку)
     ///
     /// # Безопасность
-    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
-    /// Валидация и возврат значения выполняются атомарно под блокировкой.
+    /// Метод использует RwLock для защиты от TOCTOU уязвимости.
+    /// Валидация и возврат значения выполняются атомарно под блокировкой чтения.
     ///
     /// # Исправление E2 (CRITICAL)
-    /// Изменён тип возврата на `Option<u128>` для обработки отравления Mutex.
+    /// Изменён тип возврата на `Option<u128>` для обработки отравления RwLock.
     /// Возвращает `None` вместо паники при `PoisonError`.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует read() вместо lock() для лучшей производительности чтения.
     ///
     /// # Returns
     /// - Значение рекорда (u128) если валидация прошла успешно
-    /// - 0 если Mutex отравлен или запись не прошла валидацию
+    /// - 0 если RwLock отравлен или запись не прошла валидацию
     ///
     /// # Устарело
     /// Используйте [`Self::score_safe()`] для явной обработки ошибок.
@@ -496,8 +502,8 @@ impl ThreadSafeLeaderboardEntry {
     )]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             let score_value = guard.score_value;
             let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
             if !hmac_verify_with_salt(
@@ -512,7 +518,7 @@ impl ThreadSafeLeaderboardEntry {
             return score_value;
         }
         // Graceful degradation: логируем ошибку вместо паники
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): Mutex poisoned - поток паниковал удерживая блокировку");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
         0
     }
 
@@ -520,21 +526,24 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Возвращает
     /// - `Some(u128)` — значение рекорда или 0 если валидация не прошла
-    /// - `None` — если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// - `None` — если RwLock отравлен (другой поток паниковал удерживая блокировку)
     ///
     /// # Errors
-    /// Этот метод не возвращает ошибки, но возвращает `None` при отравлении Mutex.
+    /// Этот метод не возвращает ошибки, но возвращает `None` при отравлении RwLock.
     ///
     /// # Безопасность
-    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
-    /// Валидация и возврат значения выполняются атомарно под блокировкой.
+    /// Метод использует RwLock для защиты от TOCTOU уязвимости.
+    /// Валидация и возврат значения выполняются атомарно под блокировкой чтения.
     ///
     /// # Исправление E2 (CRITICAL)
-    /// Возвращает `Option<u128>` для явной обработки отравления Mutex.
+    /// Возвращает `Option<u128>` для явной обработки отравления RwLock.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует read() вместо lock() для лучшей производительности чтения.
     #[must_use]
     pub fn score_safe(&self) -> Option<u128> {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             let score_value = guard.score_value;
             let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
             if !hmac_verify_with_salt(
@@ -551,7 +560,7 @@ impl ThreadSafeLeaderboardEntry {
             return Some(score_value);
         }
         // Логгируем ошибку и возвращаем None
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): Mutex poisoned");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): RwLock poisoned");
         None
     }
 
@@ -559,13 +568,16 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Возвращает
     /// - `Some(bool)` — `true` если хэш совпадает
-    /// - `None` — если Mutex отравлен (другой поток паниковал удерживая блокировку)
+    /// - `None` — если RwLock отравлен (другой поток паниковал удерживая блокировку)
     ///
     /// # Безопасность
-    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    /// Метод использует RwLock для защиты от TOCTOU уязвимости.
     ///
     /// # Исправление E2 (CRITICAL)
-    /// Изменён тип возврата на `Option<bool>` для обработки отравления Mutex.
+    /// Изменён тип возврата на `Option<bool>` для обработки отравления RwLock.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует read() вместо lock() для лучшей производительности чтения.
     ///
     /// # Устарело
     /// Используйте [`Self::is_valid_safe()`] для явной обработки ошибок.
@@ -575,8 +587,8 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте is_valid_safe() для безопасной обработки ошибок"
     )]
     pub fn is_valid(&self) -> bool {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
             return hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
@@ -585,7 +597,7 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.hash,
             );
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): Mutex poisoned");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): RwLock poisoned");
         false
     }
 
@@ -594,17 +606,20 @@ impl ThreadSafeLeaderboardEntry {
     /// # Возвращает
     /// - `Some(true)` — хэш совпадает
     /// - `Some(false)` — хэш не совпадает
-    /// - `None` — если Mutex отравлен
+    /// - `None` — если RwLock отравлен
     ///
     /// # Безопасность
-    /// Метод использует Mutex для защиты от TOCTOU уязвимости.
+    /// Метод использует RwLock для защиты от TOCTOU уязвимости.
     ///
     /// # Исправление E2 (CRITICAL)
-    /// Возвращает `Option<bool>` для явной обработки отравления Mutex.
+    /// Возвращает `Option<bool>` для явной обработки отравления RwLock.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует read() вместо lock() для лучшей производительности чтения.
     #[must_use]
     pub fn is_valid_safe(&self) -> Option<bool> {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
             return Some(hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
@@ -613,7 +628,7 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.hash,
             ));
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): Mutex poisoned");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
         None
     }
 
@@ -634,11 +649,11 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте name_safe() для безопасной обработки ошибок"
     )]
     pub fn name(&self) -> String {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             return guard.name.clone();
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): Mutex poisoned");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): RwLock poisoned");
         String::from("[ошибка доступа]")
     }
 
@@ -646,17 +661,20 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Возвращает
     /// - `Some(String)` — имя игрока
-    /// - `None` — если Mutex отравлен
+    /// - `None` — если RwLock отравлен
     ///
     /// # Исправление E2 (CRITICAL)
-    /// Возвращает `Option<String>` для явной обработки отравления Mutex.
+    /// Возвращает `Option<String>` для явной обработки отравления RwLock.
+    ///
+    /// # Исправление C9 (CRITICAL)
+    /// Использует read() вместо lock() для лучшей производительности чтения.
     #[must_use]
     pub fn name_safe(&self) -> Option<String> {
-        // Исправление аудита 2026-03-31: заменён match на if let для упрощения
-        if let Ok(guard) = self.inner.lock() {
+        // Исправление C9: используем read() вместо lock() для RwLock
+        if let Ok(guard) = self.inner.read() {
             return Some(guard.name.clone());
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): Mutex poisoned");
+        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): RwLock poisoned");
         None
     }
 }
