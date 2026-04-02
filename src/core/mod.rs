@@ -178,9 +178,12 @@ impl Position {
     /// ```
     /// use tetris_cli::core::Position;
     /// let pos = Position::new(5, 10);
-    /// assert_eq!(pos.to_tuple(), (5, 10));
+    /// let (x, y) = pos.to_tuple();
+    /// assert_eq!(x, 5);
+    /// assert_eq!(y, 10);
     /// ```
     #[must_use]
+    #[inline]
     pub const fn to_tuple(self) -> (i16, i16) {
         (self.x, self.y)
     }
