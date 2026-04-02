@@ -73,6 +73,7 @@ pub const SHAPE_COLORS: [&dyn Color; 7] = [
 /// let t_coords = get_shape_coords(0); // T фигура
 /// ```
 #[must_use]
+#[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
     &SHAPE_COORDS[shape_index]
 }
@@ -92,6 +93,7 @@ pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
 /// let (x, y) = get_shape_block_coords(0, 0); // Первый блок T фигуры
 /// ```
 #[must_use]
+#[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (i16, i16) {
     SHAPE_COORDS[shape_index][block_index]
 }
@@ -110,6 +112,7 @@ pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (
 /// let color = get_shape_color(0); // Цвет T фигуры
 /// ```
 #[must_use]
+#[allow(dead_code)] // Публичный API для будущих расширений
 pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
     SHAPE_COLORS[shape_index]
 }
@@ -119,6 +122,7 @@ pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
 /// # Возвращает
 /// Количество типов фигур (7)
 #[must_use]
+#[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn shape_count() -> usize {
     SHAPE_COORDS.len()
 }
@@ -128,6 +132,7 @@ pub const fn shape_count() -> usize {
 /// # Возвращает
 /// Количество блоков (4)
 #[must_use]
+#[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn blocks_per_shape() -> usize {
     4
 }
