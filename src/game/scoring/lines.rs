@@ -176,7 +176,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
 
     // Обновление количества очищенных линий (ISP-1: используем get_lines_cleared)
     let lines_cleared = state.get_lines_cleared().saturating_add(remove_count);
-    state.set_lines_cleared(lines_cleared);
+    let _ = state.set_lines_cleared(lines_cleared);
 
     // Увеличение скорости игры
     let fall_speed = state.fall_speed();

@@ -257,9 +257,14 @@ pub trait ScoreMutable: ScoreAccess {
 /// Для доступа из других модулей используйте `crate::game::access::LevelAccess`.
 pub trait LevelAccess {
     /// Получить текущий уровень.
-    fn get_level(&self) -> u32;
+    #[must_use]
+    #[inline]
+    fn get_level(&self) -> u32 {
+        0
+    }
 
     /// Установить текущий уровень.
+    #[must_use = "LevelAccess должен быть использован после модификации"]
     fn set_level(&mut self, level: u32);
 }
 
@@ -273,12 +278,18 @@ pub trait LevelAccess {
 /// Для доступа из других модулей используйте `crate::game::access::LinesAccess`.
 pub trait LinesAccess {
     /// Получить количество очищенных линий.
-    fn get_lines_cleared(&self) -> u32;
+    #[must_use]
+    #[inline]
+    fn get_lines_cleared(&self) -> u32 {
+        0
+    }
 
     /// Установить количество очищенных линий.
+    #[must_use = "LinesAccess должен быть использован после модификации"]
     fn set_lines_cleared(&mut self, lines: u32);
 
     /// Добавить количество очищенных линий.
+    #[must_use = "LinesAccess должен быть использован после модификации"]
     fn add_lines(&mut self, lines: u32);
 }
 
@@ -292,12 +303,18 @@ pub trait LinesAccess {
 /// Для доступа из других модулей используйте `crate::game::access::ComboAccess`.
 pub trait ComboAccess {
     /// Получить текущий комбо.
-    fn get_combo(&self) -> u32;
+    #[must_use]
+    #[inline]
+    fn get_combo(&self) -> u32 {
+        0
+    }
 
     /// Установить текущий комбо.
+    #[must_use = "ComboAccess должен быть использован после модификации"]
     fn set_combo(&mut self, combo: u32);
 
     /// Сбросить комбо.
+    #[must_use = "ComboAccess должен быть использован после модификации"]
     fn reset_combo(&mut self);
 }
 
@@ -389,38 +406,46 @@ impl ScoreMutable for crate::game::state::GameState {
 // ============================================================================
 
 impl LevelAccess for crate::game::state::GameState {
+    #[inline]
     fn get_level(&self) -> u32 {
         self.level()
     }
 
+    #[inline]
     fn set_level(&mut self, level: u32) {
-        self.set_level(level);
+        let _ = self.set_level(level);
     }
 }
 
 impl LinesAccess for crate::game::state::GameState {
+    #[inline]
     fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared()
     }
 
+    #[inline]
     fn set_lines_cleared(&mut self, lines: u32) {
-        self.set_lines_cleared(lines);
+        let _ = self.set_lines_cleared(lines);
     }
 
+    #[inline]
     fn add_lines(&mut self, lines: u32) {
         let _ = self.add_lines_cleared(lines);
     }
 }
 
 impl ComboAccess for crate::game::state::GameState {
+    #[inline]
     fn get_combo(&self) -> u32 {
         self.stats().combo_counter()
     }
 
+    #[inline]
     fn set_combo(&mut self, combo: u32) {
         let _ = self.stats_mut().set_combo_counter(combo);
     }
 
+    #[inline]
     fn reset_combo(&mut self) {
         let _ = self.stats_mut().set_combo_counter(0);
     }
