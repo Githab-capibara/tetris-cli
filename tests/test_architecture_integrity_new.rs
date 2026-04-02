@@ -68,7 +68,8 @@ mod tests {
         let lines: Vec<&str> = io_content.lines().collect();
         for line in lines {
             let trimmed = line.trim();
-            assert!(!(trimmed.starts_with("use crate::game::") && !trimmed.contains("//")), 
+            assert!(
+                !(trimmed.starts_with("use crate::game::") && !trimmed.contains("//")),
                 "io/mod.rs не должен импортировать из crate::game::\n\
                  Нарушение: {trimmed}"
             );
@@ -307,7 +308,8 @@ mod tests {
 
             // menu не должен импортировать GameState напрямую из game/state
             // Допустим импорт через game::GameState (ре-экспорт)
-            assert!(!content.contains("use crate::game::state::GameState"), 
+            assert!(
+                !content.contains("use crate::game::state::GameState"),
                 "{module_path} не должен импортировать напрямую из game/state.rs\n\
                  Используйте ре-экспорт через game::GameState"
             );

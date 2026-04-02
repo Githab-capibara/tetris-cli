@@ -24,6 +24,7 @@ use std::fmt::Write;
 ///
 /// # Архитектурные заметки
 /// StringCache используется только в тестах.
+#[allow(dead_code)] // Используется только в тестах
 #[derive(Clone, Default)]
 pub struct StringCache {
     /// Кэшированная строка счёта.
@@ -52,6 +53,7 @@ pub struct StringCache {
 
 impl StringCache {
     /// Создать новый кэш строк.
+    #[allow(dead_code)] // Используется только в тестах
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -74,6 +76,7 @@ impl StringCache {
     /// отображаемые значения одновременно. Разделение на несколько методов
     /// ухудшит производительность и читаемость.
     #[track_caller]
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
@@ -132,42 +135,49 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку счёта.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn score(&self) -> &str {
         &self.score_str
     }
 
     /// Получить кэшированную строку уровня.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn level(&self) -> &str {
         &self.level_str
     }
 
     /// Получить кэшированную строку линий.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn lines(&self) -> &str {
         &self.lines_str
     }
 
     /// Получить кэшированную строку рекорда.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn high_score(&self) -> &str {
         &self.high_score_str
     }
 
     /// Получить кэшированную строку комбо.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn combo(&self) -> &str {
         &self.combo_str
     }
 
     /// Получить кэшированную строку таймера.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     pub fn timer(&self) -> &str {
         &self.timer_str
     }
 
     /// Сбросить все кэшированные строки.
+    #[allow(dead_code)] // Внутренний API для отрисовки
     pub fn clear(&mut self) {
         self.score_str.clear();
         self.level_str.clear();

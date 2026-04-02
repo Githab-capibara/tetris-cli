@@ -34,6 +34,7 @@ use crate::crypto::{hmac_sha256, verify_hmac_sha256};
 /// // Проверка подписи
 /// assert!(validator.verify(data, &signature));
 /// ```
+#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 pub struct HmacValidator {
     /// Секретный ключ для HMAC.
     key: String,
@@ -52,6 +53,7 @@ impl HmacValidator {
     /// ```ignore
     /// let validator = HmacValidator::new("my_secret_key");
     /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use]
     pub fn new(key: &str) -> Self {
         Self {
@@ -68,6 +70,7 @@ impl HmacValidator {
     /// ```ignore
     /// let validator = HmacValidator::generate();
     /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use]
     pub fn generate() -> Self {
         let key = crate::crypto::generate_salt();
@@ -87,6 +90,7 @@ impl HmacValidator {
     /// let validator = HmacValidator::new("key");
     /// let signature = validator.sign("data");
     /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use]
     pub fn sign(&self, data: &str) -> String {
         hmac_sha256(&self.key, data)
@@ -110,6 +114,7 @@ impl HmacValidator {
     ///
     /// # Безопасность
     /// Используется постоянное по времени сравнение для предотвращения timing-атак.
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use]
     pub fn verify(&self, data: &str, signature: &str) -> bool {
         verify_hmac_sha256(&self.key, data, signature)
@@ -130,6 +135,7 @@ impl HmacValidator {
     /// let signature = validator.sign("data");
     /// assert_eq!(validator.verify_and_return("data", &signature), Some("data".to_string()));
     /// ```
+    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use]
     pub fn verify_and_return(&self, data: &str, signature: &str) -> Option<String> {
         if self.verify(data, signature) {
@@ -182,6 +188,7 @@ impl Default for HmacValidator {
 /// let signature = hmac_sha256(key, &format!("{}{}", salt, data));
 /// assert!(verify_salt_and_data(key, &salt, data, &signature));
 /// ```
+#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 #[must_use]
 pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
     let salt_and_data = format!("{salt}{data}");
@@ -204,6 +211,7 @@ pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signatur
 ///
 /// let signature = sign_salt_and_data("key", "salt", "data");
 /// ```
+#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 #[must_use]
 pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
     let salt_and_data = format!("{salt}{data}");

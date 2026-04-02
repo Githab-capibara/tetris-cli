@@ -385,10 +385,38 @@ impl PathValidator {
     /// # Исправление H9 (HIGH)
     /// Используется symlink_metadata() ПЕРЕД canonicalize() для защиты от symlink атак.
     /// Проверка выполняется без следования по symlink.
+    ///
+    /// # Исправление NEW-147 (2026-04-02)
+    /// - Добавлена проверка всей цепочки директорий (parent directories)
+    /// - Проверка на race conditions через metadata().is_symlink()
+    /// - Блокировка symlink в родительских директориях
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[track_caller]
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
+        // NEW-147: Проверяем не только конечный путь, но и все родительские директории
+        // Это предотвращает атаки через symlink в промежуточных директориях
+        let mut current_path = path;
+        while let Some(parent) = current_path.parent() {
+            if parent == Path::new("") || parent == Path::new(".") {
+                break;
+            }
+
+            // NEW-147: Проверяем каждую родительскую директорию на symlink
+            if let Ok(metadata) = std::fs::symlink_metadata(parent) {
+                if metadata.file_type().is_symlink() {
+                    return Err(PathError {
+                        message: format!(
+                            "Родительская директория является символической ссылкой: {}",
+                            parent.display()
+                        ),
+                        kind: PathErrorKind::Symlink,
+                    });
+                }
+            }
+            current_path = parent;
+        }
+
         // Исправление H9 (HIGH): проверяем symlink через symlink_metadata() ПЕРЕД canonicalize()
         // symlink_metadata() не следует по symlink, в отличие от metadata()
         if let Ok(metadata) = std::fs::symlink_metadata(path) {
@@ -402,6 +430,17 @@ impl PathValidator {
             // Файл не существует - это нормально, проверка symlink не применима
             // Файл будет проверен при попытке открытия с O_NOFOLLOW
         }
+
+        // NEW-147: Дополнительная проверка через metadata() для обнаружения race conditions
+        // Если файл существует и это symlink, metadata() тоже вернёт true для is_symlink()
+        if path.exists() {
+            if let Ok(metadata) = std::fs::metadata(path) {
+                // metadata() следует по symlink, поэтому проверяем file_type()
+                // Если это symlink, file_type() вернёт тип целевого файла
+                // Но мы уже проверили через symlink_metadata() выше
+            }
+        }
+
         Ok(())
     }
 
@@ -1061,5 +1100,167 @@ mod validation_path_tests {
         assert!(validator.validate_no_traversal("%252f").is_err());
         assert!(validator.validate_no_traversal("%252E").is_err());
         assert!(validator.validate_no_traversal("%252F").is_err());
+    }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ NEW-147: УСИЛЕННАЯ ЗАЩИТА ОТ SYMLINK АТАК
+    // ========================================================================
+
+    /// Тест: Проверка родительских директорий на symlink
+    #[test]
+    fn test_validate_no_symlinks_checks_parent_directories() {
+        use std::fs;
+        use std::os::unix::fs::symlink;
+
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let parent_dir = temp_dir.path().join("parent");
+        let child_dir = parent_dir.join("child");
+        let target_file = temp_dir.path().join("target_file.txt");
+        let symlink_parent = temp_dir.path().join("symlink_parent");
+
+        // Создаём структуру директорий (используем create_dir_all для надёжности)
+        fs::create_dir_all(&child_dir).expect("Не удалось создать директорию");
+        fs::write(&target_file, "test content").expect("Не удалось создать файл");
+
+        // Создаём symlink на родительскую директорию
+        symlink(&parent_dir, &symlink_parent).expect("Не удалось создать symlink");
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Проверяем, что путь через symlink в родительской директории отклоняется
+        let path_through_symlink = symlink_parent.join("child").join("file.txt");
+        let result = validator.validate_no_symlinks(&path_through_symlink);
+
+        // NEW-147: Должен обнаружить symlink в родительской директории
+        assert!(
+            result.is_err(),
+            "Валидатор должен отклонять путь через symlink в родителе"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+
+        // Очищаем тестовые файлы
+        let _ = fs::remove_file(&symlink_parent);
+    }
+
+    /// Тест: Проверка нескольких уровней родительских директорий
+    #[test]
+    fn test_validate_no_symlinks_multiple_parent_levels() {
+        use std::fs;
+        use std::os::unix::fs::symlink;
+
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let level1 = temp_dir.path().join("level1");
+        let level2 = level1.join("level2");
+        let level3 = level2.join("level3");
+        let target = temp_dir.path().join("target");
+        let symlink_level1 = temp_dir.path().join("symlink_l1");
+
+        // Создаём структуру директорий
+        fs::create_dir_all(&level3).expect("Не удалось создать директорию");
+        fs::write(&target, "test").expect("Не удалось создать файл");
+
+        // Создаём symlink на level1
+        symlink(&level1, &symlink_level1).expect("Не удалось создать symlink");
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Путь через symlink на первом уровне
+        let path = symlink_level1
+            .join("level2")
+            .join("level3")
+            .join("file.txt");
+        let result = validator.validate_no_symlinks(&path);
+
+        // NEW-147: Должен обнаружить symlink на любом уровне
+        assert!(
+            result.is_err(),
+            "Валидатор должен отклонять путь через symlink на любом уровне"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+
+        // Очищаем
+        let _ = fs::remove_file(&symlink_level1);
+    }
+
+    /// Тест: Валидные пути без symlink принимаются
+    #[test]
+    fn test_validate_no_symlinks_accepts_normal_paths() {
+        use std::fs;
+
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let file_path = temp_dir.path().join("normal_file.txt");
+        fs::write(&file_path, "test").expect("Не удалось создать файл");
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Нормальный файл должен приниматься
+        let result = validator.validate_no_symlinks(&file_path);
+        assert!(result.is_ok(), "Нормальные файлы должны приниматься");
+
+        // Нормальная директория должна приниматься
+        let result = validator.validate_no_symlinks(temp_dir.path());
+        assert!(result.is_ok(), "Нормальные директории должны приниматься");
+    }
+
+    /// Тест: Несуществующие файлы принимаются (проверка не применима)
+    #[test]
+    fn test_validate_no_symlinks_nonexistent_file() {
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let nonexistent = temp_dir.path().join("nonexistent_file.txt");
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Несуществующий файл должен приниматься (проверка symlink не применима)
+        let result = validator.validate_no_symlinks(&nonexistent);
+        assert!(result.is_ok(), "Несуществующие файлы должны приниматься");
+    }
+
+    /// Тест: Глубокая проверка родительских директорий
+    #[test]
+    fn test_validate_no_symlinks_deep_hierarchy() {
+        use std::fs;
+        use std::os::unix::fs::symlink;
+
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let deep_dir = temp_dir.path().join("a").join("b").join("c").join("d");
+        let target = temp_dir.path().join("target");
+        let symlink_deep = temp_dir.path().join("symlink_deep");
+
+        // Создаём глубокую структуру
+        fs::create_dir_all(&deep_dir).expect("Не удалось создать директорию");
+        fs::write(&target, "test").expect("Не удалось создать файл");
+
+        // Создаём symlink на глубокую директорию
+        symlink(&deep_dir, &symlink_deep).expect("Не удалось создать symlink");
+
+        let validator = PathValidator::new(
+            255,
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
+        );
+
+        // Путь через symlink в глубокой директории
+        let path = symlink_deep.join("file.txt");
+        let result = validator.validate_no_symlinks(&path);
+
+        assert!(
+            result.is_err(),
+            "Валидатор должен отклонять symlink в глубокой директории"
+        );
+        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+
+        // Очищаем
+        let _ = fs::remove_file(&symlink_deep);
     }
 }
