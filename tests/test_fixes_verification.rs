@@ -230,8 +230,7 @@ fn test_canonicalize_caching() {
     let canonical_usage_count = content.matches("canonical_path").count();
     assert!(
         canonical_usage_count >= 2,
-        "canonicalize должен вызываться один раз, результат использоваться многократно (найдено: {} использований)",
-        canonical_usage_count
+        "canonicalize должен вызываться один раз, результат использоваться многократно (найдено: {canonical_usage_count} использований)"
     );
 
     // Проверка 3: Комментарий об оптимизации H7
@@ -327,7 +326,7 @@ fn test_deprecated_attributes() {
     }
 
     // Выводим количество deprecated для мониторинга
-    println!("📝 Найдено #[deprecated] атрибутов: {}", deprecated_count);
+    println!("📝 Найдено #[deprecated] атрибутов: {deprecated_count}");
 
     // Тест проходит всегда - это informational тест
     // Если deprecated есть, проверяем что они имеют сообщение
@@ -441,10 +440,9 @@ fn test_todo_comments_for_dead_code() {
     }
 
     // Выводим статистику
-    println!("📝 #[allow(dead_code)] с TODO: {}", dead_code_with_todo);
+    println!("📝 #[allow(dead_code)] с TODO: {dead_code_with_todo}");
     println!(
-        "📝 #[allow(dead_code)] без TODO: {}",
-        dead_code_without_todo
+        "📝 #[allow(dead_code)] без TODO: {dead_code_without_todo}"
     );
 
     // Тест проходит всегда - это informational тест

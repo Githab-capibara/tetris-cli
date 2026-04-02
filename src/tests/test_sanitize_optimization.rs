@@ -55,7 +55,7 @@ fn test_sanitize_variation_selectors() {
     for vs in 0xFE00..=0xFE0F {
         let ch =
             char::from_u32(vs).expect("Failed to convert variation selector codepoint to char");
-        let name = format!("Player{}Name", ch);
+        let name = format!("Player{ch}Name");
         let entry = LeaderboardEntry::new(&name, 1000);
 
         assert!(

@@ -104,36 +104,31 @@ fn test_no_god_objects() {
     // GameState не должен быть God Object
     assert!(
         game_state_size < 10240,
-        "GameState не должен быть God Object (размер: {} байт, лимит: 10KB)",
-        game_state_size
+        "GameState не должен быть God Object (размер: {game_state_size} байт, лимит: 10KB)"
     );
 
     // GameBoard не должен быть God Object
     assert!(
         board_size < 1024,
-        "GameBoard не должен быть God Object (размер: {} байт, лимит: 1KB)",
-        board_size
+        "GameBoard не должен быть God Object (размер: {board_size} байт, лимит: 1KB)"
     );
 
     // ScoreBoard не должен быть God Object
     assert!(
         scoreboard_size < 256,
-        "ScoreBoard не должен быть God Object (размер: {} байт, лимит: 256 байт)",
-        scoreboard_size
+        "ScoreBoard не должен быть God Object (размер: {scoreboard_size} байт, лимит: 256 байт)"
     );
 
     // GameStats не должен быть God Object
     assert!(
         stats_size < 512,
-        "GameStats не должен быть God Object (размер: {} байт, лимит: 512 байт)",
-        stats_size
+        "GameStats не должен быть God Object (размер: {stats_size} байт, лимит: 512 байт)"
     );
 
     // GameView не должен быть God Object
     assert!(
         view_size < 1024,
-        "GameView не должен быть God Object (размер: {} байт, лимит: 1KB)",
-        view_size
+        "GameView не должен быть God Object (размер: {view_size} байт, лимит: 1KB)"
     );
 
     // Проверяем что GameState использует композицию

@@ -161,6 +161,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
                 return execute_action(state, action);
             }
             // Неизвестная клавиша
+            // Потеря точности допустима: key_code < 256 (u8)
             #[cfg(debug_assertions)]
             eprintln!(
                 "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
@@ -176,7 +177,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
         Err(e) => {
             // Ошибка чтения ввода
             #[cfg(debug_assertions)]
-            eprintln!("[ERROR] Ошибка чтения ввода: {}", e);
+            eprintln!("[ERROR] Ошибка чтения ввода: {e}");
             None
         }
     }

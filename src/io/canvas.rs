@@ -106,10 +106,10 @@ impl Drop for Canvas {
     /// Убран catch_unwind из Drop реализации. Операции write и flush не паникуют.
     fn drop(&mut self) {
         if let Err(e) = write!(self.out, "{Show}") {
-            eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {}", e);
+            eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {e}");
         }
         if let Err(e) = self.out.flush() {
-            eprintln!("[PANIC SAFE] Не удалось сбросить буфер в Drop: {}", e);
+            eprintln!("[PANIC SAFE] Не удалось сбросить буфер в Drop: {e}");
         }
     }
 }
@@ -193,13 +193,13 @@ impl Canvas {
         match stdout().into_raw_mode() {
             Ok(mut out) => {
                 if let Err(e) = write!(out, "{}{}", All, Goto(1, 1)) {
-                    eprintln!("Warning: failed to clear terminal: {}", e);
+                    eprintln!("Warning: failed to clear terminal: {e}");
                 }
                 if let Err(e) = out.flush() {
-                    eprintln!("Warning: failed to flush terminal: {}", e);
+                    eprintln!("Warning: failed to flush terminal: {e}");
                 }
                 if let Err(e) = write!(out, "{Hide}") {
-                    eprintln!("Warning: failed to hide cursor: {}", e);
+                    eprintln!("Warning: failed to hide cursor: {e}");
                 }
                 Self {
                     out: CanvasOut::Raw(out),
@@ -275,12 +275,12 @@ impl Canvas {
                 Fg(Reset),
                 Bg(Reset)
             ) {
-                eprintln!("Warning: failed to draw string: {}", e);
+                eprintln!("Warning: failed to draw string: {e}");
             }
             y += 1;
         }
         if let Err(e) = self.out.flush() {
-            eprintln!("Warning: failed to flush terminal: {}", e);
+            eprintln!("Warning: failed to flush terminal: {e}");
         }
     }
 

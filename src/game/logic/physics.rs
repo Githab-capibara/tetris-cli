@@ -21,14 +21,17 @@ use crate::types::Direction;
 /// # Возвращает
 /// - `true` - фигура приземлилась, требуется обработка
 /// - `false` - фигура ещё падает
+#[allow(clippy::cast_precision_loss)]
 pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     if state.can_move_curr_shape_direction(Direction::Down) {
         let fall_speed = state.fall_speed();
         let curr_shape = state.get_curr_shape_mut();
+        // Потеря точности допустима: delta_time_ms небольшое значение (обычно 16-100 мс)
         curr_shape.pos_mut().1 += fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
         false
     } else if state.land_timer() > 0.0 {
         let land_timer = state.land_timer();
+        // Потеря точности допустима: MILLIS_PER_SECOND точно представляется в f64
         let new_timer = land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);
         // H6: защита от отрицательного таймера
         let _ = state.set_land_timer(new_timer.max(0.0));

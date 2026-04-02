@@ -47,7 +47,7 @@ impl ValidationService {
     pub fn validate_f32_finite(value: f32) -> Result<(), ValidationError> {
         if value.is_nan() || value.is_infinite() {
             return Err(ValidationError {
-                message: format!("Значение {} не является конечным (NaN/Infinity)", value),
+                message: format!("Значение {value} не является конечным (NaN/Infinity)"),
                 kind: ValidationErrorKind::NotFinite,
             });
         }
@@ -81,8 +81,7 @@ impl ValidationService {
         if value < min || value > max {
             return Err(ValidationError {
                 message: format!(
-                    "Значение {} вне допустимого диапазона [{}, {}]",
-                    value, min, max
+                    "Значение {value} вне допустимого диапазона [{min}, {max}]"
                 ),
                 kind: ValidationErrorKind::OutOfRange,
             });
@@ -117,8 +116,7 @@ impl ValidationService {
         if value < min || value > max {
             return Err(ValidationError {
                 message: format!(
-                    "Значение {} вне допустимого диапазона [{}, {}]",
-                    value, min, max
+                    "Значение {value} вне допустимого диапазона [{min}, {max}]"
                 ),
                 kind: ValidationErrorKind::OutOfRange,
             });

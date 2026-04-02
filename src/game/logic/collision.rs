@@ -30,6 +30,8 @@ use crate::types::Direction;
 /// # Исправление ISSUE-076
 /// Добавлен явный тип `Range<i16>` для читаемости.
 /// Используется для проверки границ в проверке коллизий.
+/// Потеря точности допустима: GRID_WIDTH константа (10)
+#[allow(clippy::cast_possible_wrap)]
 const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 
 /// Проверить валидность позиции для одного блока (границы и столкновения).
@@ -85,6 +87,8 @@ fn is_position_valid<T: BoardReadonly>(
     }
 
     // Проверка наличия блока в сетке
+    // Потеря точности допустима: check_y/check_x проверены на границы в VALID_X_RANGE
+    #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
     if board
         .get_blocks()
         .get(check_y as usize)
@@ -127,7 +131,10 @@ fn check_collision_direction<T: BoardReadonly>(
     dir: Direction,
 ) -> bool {
     let (shape_x, shape_y) = pos;
+    // Потеря точности допустима: координаты фигуры в пределах поля
+    #[allow(clippy::cast_possible_wrap)]
     let shape_block_x = shape_x as i16;
+    #[allow(clippy::cast_possible_wrap)]
     let shape_block_y = shape_y as i16;
 
     // Исправление M22: используем any() для раннего выхода при обнаружении коллизии
@@ -189,7 +196,10 @@ pub fn check_rotation_collision<T: BoardReadonly>(
     pos: (f32, f32),
 ) -> bool {
     let (shape_x, shape_y) = pos;
+    // Потеря точности допустима: координаты фигуры в пределах поля
+    #[allow(clippy::cast_possible_wrap)]
     let shape_block_x = shape_x as i16;
+    #[allow(clippy::cast_possible_wrap)]
     let shape_block_y = shape_y as i16;
 
     for coord in coords {

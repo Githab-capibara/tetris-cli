@@ -265,8 +265,7 @@ impl GameState {
         use crate::io::GRID_HEIGHT;
         assert!(
             line < GRID_HEIGHT,
-            "Индекс линии должен быть меньше {}",
-            GRID_HEIGHT
+            "Индекс линии должен быть меньше {GRID_HEIGHT}"
         );
         self.get_blocks_mut()[line] = [1i8; crate::io::GRID_WIDTH];
     }

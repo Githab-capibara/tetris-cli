@@ -292,7 +292,7 @@ impl LeaderboardEntry {
         let valid_name = sanitize_player_name(name);
 
         let salt = crate::crypto::generate_salt();
-        let salt_name_score = format!("{salt}{valid_name}{}", score);
+        let salt_name_score = format!("{salt}{valid_name}{score}");
         let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
@@ -987,7 +987,7 @@ impl Leaderboard {
         };
 
         store(APP_NAME, Some(config_name), self)
-            .map_err(|e| format!("Ошибка сохранения {}: {e}", config_name))
+            .map_err(|e| format!("Ошибка сохранения {config_name}: {e}"))
     }
 
     /// Добавить новый рекорд в таблицу лидеров.
@@ -1045,8 +1045,7 @@ impl Leaderboard {
 
         if entries_from_player >= 3 {
             eprintln!(
-                "Предупреждение: игрок '{}' достиг лимита записей (максимум 3)",
-                valid_name
+                "Предупреждение: игрок '{valid_name}' достиг лимита записей (максимум 3)"
             );
             return false;
         }
@@ -1450,13 +1449,11 @@ mod thread_safe_tests {
         // 5 разных игроков могут добавить по 3 записи каждый
         for i in 1..=5 {
             for j in 1..=3 {
-                let player_name = format!("Player{}", i);
+                let player_name = format!("Player{i}");
                 let score = i * 1000 + j * 100;
                 assert!(
                     leaderboard.add_score(&player_name, score),
-                    "Игрок {} должен иметь возможность добавить запись {}",
-                    i,
-                    j
+                    "Игрок {i} должен иметь возможность добавить запись {j}"
                 );
             }
         }

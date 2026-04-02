@@ -31,7 +31,7 @@ fn get_config_file_path() -> Option<PathBuf> {
 
     // H12: создаём директорию если не существует
     if let Err(e) = std::fs::create_dir_all(&config_path) {
-        eprintln!("[WARN] Не удалось создать директорию конфигурации: {}", e);
+        eprintln!("[WARN] Не удалось создать директорию конфигурации: {e}");
     }
 
     config_path.push("config.toml");
@@ -53,8 +53,7 @@ fn check_config_file_size(path: &PathBuf) -> Result<(), String> {
             let file_size = metadata.len();
             if file_size > MAX_CONFIG_FILE_SIZE {
                 return Err(format!(
-                    "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-                    file_size, MAX_CONFIG_FILE_SIZE
+                    "Файл конфигурации слишком большой: {file_size} байт (максимум {MAX_CONFIG_FILE_SIZE} байт)"
                 ));
             }
             Ok(())
@@ -195,15 +194,15 @@ impl SaveData {
     /// # Исправление H10 (HIGH)
     /// Общая логика валидации вынесена в отдельный метод для устранения дублирования.
     fn load_with_validation(data: Self) -> Result<Self, String> {
-        match data.verify_and_get_score() {
-            Some(score) => {
+        match data.verify_and_get_score_result() {
+            Ok(score) => {
                 if score > 0 {
                     eprintln!("Информация: загружен рекорд со значением {score}");
                 }
                 Ok(data)
             }
-            None if data.score != 0 => Err("Обнаружена подделка рекорда".to_string()),
-            None => Err("Рекорд не прошёл валидацию".to_string()),
+            Err(_) if data.score != 0 => Err("Обнаружена подделка рекорда".to_string()),
+            Err(_) => Err("Рекорд не прошёл валидацию".to_string()),
         }
     }
 

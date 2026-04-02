@@ -507,8 +507,7 @@ impl ControlsConfig {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
-                    "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-                    file_size, MAX_CONFIG_FILE_SIZE
+                    "Файл конфигурации слишком большой: {file_size} байт (максимум {MAX_CONFIG_FILE_SIZE} байт)"
                 ),
             ));
         }
@@ -1061,8 +1060,7 @@ mod controls_tests {
         let error = result.unwrap_err();
         assert!(
             error.to_string().contains("слишком большим") || error.to_string().contains("максимум"),
-            "Ошибка должна упоминать превышение размера: {}",
-            error
+            "Ошибка должна упоминать превышение размера: {error}"
         );
 
         // Очищаем тестовый файл
@@ -1173,8 +1171,7 @@ mod controls_tests {
             error.to_string().contains("HMAC")
                 || error.to_string().contains("подпись")
                 || error.to_string().contains("подделка"),
-            "Ошибка должна упоминать HMAC или подделку: {}",
-            error
+            "Ошибка должна упоминать HMAC или подделку: {error}"
         );
 
         // Очищаем тестовый файл
@@ -1193,8 +1190,7 @@ mod controls_tests {
         let file_size = max_size + 1;
 
         let error_msg = format!(
-            "Файл конфигурации слишком большой: {} байт (максимум {} байт)",
-            file_size, max_size
+            "Файл конфигурации слишком большой: {file_size} байт (максимум {max_size} байт)"
         );
 
         assert!(
@@ -1202,11 +1198,11 @@ mod controls_tests {
             "Сообщение должно содержать 'слишком большой'"
         );
         assert!(
-            error_msg.contains(&format!("{}", file_size)),
+            error_msg.contains(&format!("{file_size}")),
             "Сообщение должно содержать размер файла"
         );
         assert!(
-            error_msg.contains(&format!("{}", max_size)),
+            error_msg.contains(&format!("{max_size}")),
             "Сообщение должно содержать максимальный размер"
         );
         assert!(

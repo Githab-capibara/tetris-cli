@@ -415,8 +415,7 @@ fn test_performance_tetromino_size_check() {
     let size = size_of::<tetris_cli::tetromino::Tetromino>();
     assert!(
         size <= 40,
-        "Размер Tetromino должен быть <= 40 байт (фактический: {})",
-        size
+        "Размер Tetromino должен быть <= 40 байт (фактический: {size})"
     );
 }
 
@@ -1088,8 +1087,7 @@ fn test_tests_error_logging() {
     // Допускаем несколько случаев, но не много
     assert!(
         ignore_count < 10,
-        "io.rs не должен игнорировать много ошибок (найдено: {})",
-        ignore_count
+        "io.rs не должен игнорировать много ошибок (найдено: {ignore_count})"
     );
 }
 
@@ -1313,8 +1311,7 @@ fn test_documentation_import_optimization() {
     let game_count = content.matches("pub mod game").count();
     assert!(
         game_count == 1,
-        "game модуль должен быть объявлен один раз (найдено: {})",
-        game_count
+        "game модуль должен быть объявлен один раз (найдено: {game_count})"
     );
 }
 
@@ -1366,8 +1363,7 @@ fn test_all_41_fixes_integration() {
     for file_path in &files {
         assert!(
             std::path::Path::new(file_path).exists(),
-            "Файл {} должен существовать",
-            file_path
+            "Файл {file_path} должен существовать"
         );
     }
 }

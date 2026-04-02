@@ -171,7 +171,7 @@ fn test_combo_cache_update() {
     );
 
     // Изменяем комбо через сеттер
-    let _ = state.stats_mut().set_combo_counter(3);
+    let () = state.stats_mut().set_combo_counter(3);
 
     // Обновляем кэш
     use crate::game::render::update_cached_strings_extended;
@@ -215,8 +215,7 @@ fn test_caching_performance() {
     // 10000 итераций кэширования должны выполняться < 50ms
     assert!(
         elapsed.as_millis() < 50,
-        "Кэширование {iterations} итераций должно выполняться < 50ms (прошло {:?})",
-        elapsed
+        "Кэширование {iterations} итераций должно выполняться < 50ms (прошло {elapsed:?})"
     );
 }
 

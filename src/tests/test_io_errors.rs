@@ -53,8 +53,7 @@ fn test_get_key_handles_invalid_utf8() {
 
         assert!(
             is_invalid,
-            "Байт 0x{:02X} должен быть распознан как невалидный",
-            invalid_byte
+            "Байт 0x{invalid_byte:02X} должен быть распознан как невалидный"
         );
     }
 }
@@ -77,8 +76,7 @@ fn test_get_key_handles_ascii_correctly() {
 
         assert!(
             is_ascii,
-            "Байт 0x{:02X} должен быть распознан как ASCII",
-            ascii_char
+            "Байт 0x{ascii_char:02X} должен быть распознан как ASCII"
         );
     }
 }
@@ -108,8 +106,7 @@ fn test_get_key_handles_multibyte_utf8() {
 
         assert!(
             is_valid_leading,
-            "Байт 0x{:02X} должен быть распознан как валидное начало UTF-8",
-            leading_byte
+            "Байт 0x{leading_byte:02X} должен быть распознан как валидное начало UTF-8"
         );
     }
 }
@@ -162,15 +159,14 @@ fn test_get_key_byte_range_handling() {
 
     // ASCII: 0x00-0x7F - должны обрабатываться
     for byte in [0x00u8, 0x20u8, 0x7Fu8] {
-        assert!(byte <= 0x7F, "ASCII байт 0x{:02X}", byte);
+        assert!(byte <= 0x7F, "ASCII байт 0x{byte:02X}");
     }
 
     // 2-байтовый UTF-8: 0xC2-0xDF
     for byte in [0xC2u8, 0xDFu8] {
         assert!(
             (0xC2..=0xDF).contains(&byte),
-            "2-байтовый UTF-8: 0x{:02X}",
-            byte
+            "2-байтовый UTF-8: 0x{byte:02X}"
         );
     }
 
@@ -178,8 +174,7 @@ fn test_get_key_byte_range_handling() {
     for byte in [0xE0u8, 0xEFu8] {
         assert!(
             (0xE0..=0xEF).contains(&byte),
-            "3-байтовый UTF-8: 0x{:02X}",
-            byte
+            "3-байтовый UTF-8: 0x{byte:02X}"
         );
     }
 
@@ -187,14 +182,13 @@ fn test_get_key_byte_range_handling() {
     for byte in [0xF0u8, 0xF4u8] {
         assert!(
             (0xF0..=0xF4).contains(&byte),
-            "4-байтовый UTF-8: 0x{:02X}",
-            byte
+            "4-байтовый UTF-8: 0x{byte:02X}"
         );
     }
 
     // Невалидные: 0xC0, 0xC1, 0xF5-0xFF
     for byte in [0xC0u8, 0xC1u8, 0xF5u8, 0xFFu8] {
         let is_invalid = byte == 0xC0 || byte == 0xC1 || byte >= 0xF5;
-        assert!(is_invalid, "Невалидный байт 0x{:02X}", byte);
+        assert!(is_invalid, "Невалидный байт 0x{byte:02X}");
     }
 }

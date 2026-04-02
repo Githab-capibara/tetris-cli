@@ -487,8 +487,7 @@ fn test_fix_e10_hmac_key_constancy() {
     // Должен быть только 1 (в комментарии о старом поведении)
     assert!(
         generate_salt_count <= 1,
-        "generate_salt() должен использоваться только в комментарии (найдено: {})",
-        generate_salt_count
+        "generate_salt() должен использоваться только в комментарии (найдено: {generate_salt_count})"
     );
 
     // Тест 3: Комментарий об исправлении E10

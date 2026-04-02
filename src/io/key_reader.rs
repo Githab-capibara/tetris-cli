@@ -69,14 +69,12 @@ impl Drop for KeyReader {
 
         if let Err(e) = write!(out, "{Show}") {
             eprintln!(
-                "[PANIC SAFE] Не удалось показать курсор в KeyReader::Drop: {}",
-                e
+                "[PANIC SAFE] Не удалось показать курсор в KeyReader::Drop: {e}"
             );
         }
         if let Err(e) = out.flush() {
             eprintln!(
-                "[PANIC SAFE] Не удалось сбросить буфер в KeyReader::Drop: {}",
-                e
+                "[PANIC SAFE] Не удалось сбросить буфер в KeyReader::Drop: {e}"
             );
         }
     }
@@ -167,7 +165,7 @@ impl KeyReader {
                         "[WARN] get_key(): невалидная UTF-8 последовательность: байты [{}]",
                         utf8_bytes[..=bytes_to_read]
                             .iter()
-                            .map(|b| format!("0x{:02X}", b))
+                            .map(|b| format!("0x{b:02X}"))
                             .collect::<Vec<_>>()
                             .join(", ")
                     );
@@ -243,19 +241,19 @@ impl KeyReader {
         let mut out = stdout();
 
         if let Err(e) = write!(out, "{Show}") {
-            eprintln!("Критическая ошибка: не удалось показать курсор: {}", e);
+            eprintln!("Критическая ошибка: не удалось показать курсор: {e}");
         }
 
         if let Err(e) = write!(out, "{ToMainScreen}") {
-            eprintln!("Критическая ошибка: не удалось вернуть экран: {}", e);
+            eprintln!("Критическая ошибка: не удалось вернуть экран: {e}");
         }
 
         if let Err(e) = write!(out, "\x1b[H") {
-            eprintln!("Критическая ошибка: не удалось переместить курсор: {}", e);
+            eprintln!("Критическая ошибка: не удалось переместить курсор: {e}");
         }
 
         if let Err(e) = out.flush() {
-            eprintln!("Критическая ошибка: не удалось выполнить flush: {}", e);
+            eprintln!("Критическая ошибка: не удалось выполнить flush: {e}");
         }
     }
 }

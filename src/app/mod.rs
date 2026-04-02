@@ -90,8 +90,7 @@ impl Application {
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
         if let Err(e) = validate_all_keys() {
             eprintln!(
-                "[WARN] {}: используется пустой HMAC ключ (ожидаемо для разработки)",
-                e
+                "[WARN] {e}: используется пустой HMAC ключ (ожидаемо для разработки)"
             );
         }
 
@@ -103,7 +102,7 @@ impl Application {
         let high_score = match save.verify_and_get_score_result() {
             Ok(score) => score,
             Err(e) => {
-                eprintln!("[ERROR] Рекорд не прошёл валидацию: {}. Используется 0.", e);
+                eprintln!("[ERROR] Рекорд не прошёл валидацию: {e}. Используется 0.");
                 0u128
             }
         };
@@ -155,6 +154,8 @@ impl Application {
         // Проверка размера терминала - используем прямой ? возврат (Исправление C1)
         let (width, height) = terminal_size()?;
 
+        // Потеря точности допустима: размеры терминала положительные значения
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         if (width as usize) < DISP_WIDTH || (height as usize) < DISP_HEIGHT {
             let msg = format!(
                 "Окно терминала слишком маленькое!\n\
@@ -542,7 +543,7 @@ mod tests {
             }
             Err(e) => {
                 // Ошибка терминала - тоже нормально для тестовой среды
-                eprintln!("Ожидаемая ошибка в тестовой среде: {}", e);
+                eprintln!("Ожидаемая ошибка в тестовой среде: {e}");
             }
         }
     }

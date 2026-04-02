@@ -705,7 +705,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_score(&mut self, value: u128) {
-        let _ = self.scoreboard.set_score(value);
+        let () = self.scoreboard.set_score(value);
     }
 
     /// Установить уровень.
@@ -715,7 +715,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_level(&mut self, value: u32) {
-        let _ = self.scoreboard.set_level(value);
+        let () = self.scoreboard.set_level(value);
     }
 
     /// Установить количество удалённых линий.
@@ -723,7 +723,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_lines_cleared(&mut self, value: u32) {
-        let _ = self.scoreboard.set_lines_cleared(value);
+        let () = self.scoreboard.set_lines_cleared(value);
     }
 
     /// Установить скорость падения.
@@ -827,8 +827,7 @@ impl GameState {
         // Исправление H3: проверка на неотрицательность вместо .max(0.0)
         if value < 0.0 {
             return Err(GameError::ValidationError(format!(
-                "Таймер приземления не может быть отрицательным: {}",
-                value
+                "Таймер приземления не может быть отрицательным: {value}"
             )));
         }
 
@@ -1105,6 +1104,8 @@ impl GameState {
     pub fn update_fall_speed(&mut self) {
         use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, SPD_INC};
         let level = self.level();
+        // Потеря точности допустима: level <= 15 (максимум для тетриса)
+        #[allow(clippy::cast_precision_loss)]
         let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * SPD_INC);
 
         // Валидация: скорость должна быть в допустимых пределах
@@ -1332,8 +1333,7 @@ mod state_tests {
             let result = state.set_fall_speed(valid_speed);
             assert!(
                 result.is_ok(),
-                "Валидное значение {} должно устанавливаться",
-                valid_speed
+                "Валидное значение {valid_speed} должно устанавливаться"
             );
         }
 
@@ -1348,8 +1348,7 @@ mod state_tests {
             let result = state.set_fall_speed(invalid_speed);
             assert!(
                 result.is_err(),
-                "Невалидное значение {} должно отклоняться",
-                invalid_speed
+                "Невалидное значение {invalid_speed} должно отклоняться"
             );
         }
     }

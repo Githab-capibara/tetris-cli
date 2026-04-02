@@ -213,9 +213,7 @@ fn test_rows_mask_validity() {
     // Проверяем, что маска в пределах поля
     assert!(
         rows_mask < (1u32 << GRID_HEIGHT),
-        "rows_mask ({}) не должен выходить за пределы поля ({} линий)",
-        rows_mask,
-        GRID_HEIGHT
+        "rows_mask ({rows_mask}) не должен выходить за пределы поля ({GRID_HEIGHT} линий)"
     );
 }
 

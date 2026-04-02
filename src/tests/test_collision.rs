@@ -223,8 +223,7 @@ fn test_collision_all_shapes_floor() {
 
         assert!(
             !state.can_move_curr_shape_direction(Direction::Down),
-            "Движение вниз должно быть заблокировано на полу для фигуры {:?}",
-            shape
+            "Движение вниз должно быть заблокировано на полу для фигуры {shape:?}"
         );
     }
 }

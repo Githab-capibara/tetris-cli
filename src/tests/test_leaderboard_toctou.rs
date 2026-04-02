@@ -180,8 +180,7 @@ fn test_score_with_different_values() {
         assert_eq!(
             entry.score(),
             Some(score_value),
-            "score() должен вернуть правильное значение для {}",
-            score_value
+            "score() должен вернуть правильное значение для {score_value}"
         );
     }
 }

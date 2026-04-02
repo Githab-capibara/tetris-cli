@@ -441,7 +441,10 @@ impl<'a> GameView<'a> {
         use termion::color::Reset;
 
         let (shape_x, shape_y) = self.curr_shape.pos();
+        // Потеря точности допустима: координаты фигуры в пределах поля
+        #[allow(clippy::cast_possible_wrap)]
         let shape_block_x = shape_x as i16;
+        #[allow(clippy::cast_possible_wrap)]
         let shape_block_y = shape_y as i16;
         let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
@@ -454,6 +457,8 @@ impl<'a> GameView<'a> {
                 canvas.draw_strs(
                     &[SHAPE_STR],
                     (x as u16, y as u16),
+                    // Потеря точности допустима: fg < 7 (количество фигур)
+                    #[allow(clippy::cast_possible_truncation)]
                     SHAPE_COLORS[self.curr_shape.fg() as usize],
                     &Reset,
                 );
@@ -555,6 +560,8 @@ impl<'a> GameView<'a> {
         let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
 
         // Вычисляем расстояние до препятствия напрямую
+        // Потеря точности допустима: координаты фигуры в пределах поля
+        #[allow(clippy::cast_possible_wrap)]
         let ghost_block_y = ghost_shape.pos().1 as i16;
         let mut max_drop_distance = grid_height_i16;
 
@@ -564,7 +571,11 @@ impl<'a> GameView<'a> {
 
             let mut dist_to_block = dist_to_floor;
             for y in (block_y + 1)..grid_height_i16 {
+                // Потеря точности допустима: координаты фигуры в пределах поля
+                #[allow(clippy::cast_possible_wrap)]
                 let x = coord_x + ghost_shape.pos().0 as i16;
+                // Потеря точности допустима: y и x проверены на границы
+                #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
                 if x >= 0 && x < grid_width_i16 && self.blocks[y as usize][x as usize] != -1 {
                     dist_to_block = y - block_y - 1;
                     break;
@@ -578,7 +589,10 @@ impl<'a> GameView<'a> {
 
         // Отрисовка призрачной фигуры (полупрозрачная)
         let (shape_x, shape_y) = ghost_shape.pos();
+        // Потеря точности допустима: координаты фигуры в пределах поля
+        #[allow(clippy::cast_possible_wrap)]
         let shape_block_x = shape_x as i16;
+        #[allow(clippy::cast_possible_wrap)]
         let shape_block_y = shape_y as i16;
         let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
 
@@ -587,10 +601,14 @@ impl<'a> GameView<'a> {
             let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X
             let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y
 
+            // Потеря точности допустима: GRID_WIDTH константа (10)
+            #[allow(clippy::cast_possible_wrap)]
             if x >= 0 && x < GRID_WIDTH as i16 {
                 canvas.draw_strs(
                     &["░░"],
                     (x as u16, y as u16),
+                    // Потеря точности допустима: fg < 7 (количество фигур)
+                    #[allow(clippy::cast_possible_truncation)]
                     SHAPE_COLORS[ghost_shape.fg() as usize],
                     &Reset,
                 );
@@ -702,11 +720,15 @@ impl<'a> GameView<'a> {
             let y = pos_y.cast_signed() + coord_y + 1;
 
             // Проверка всех границ
+            // Потеря точности допустима: DISP_WIDTH/DISP_HEIGHT константы
+            #[allow(clippy::cast_possible_wrap)]
             if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
                 let display_char = if is_faded { "░░" } else { SHAPE_STR };
                 canvas.draw_strs(
                     &[display_char],
                     (x as u16, y as u16),
+                    // Потеря точности допустима: fg < 7 (количество фигур)
+                    #[allow(clippy::cast_possible_truncation)]
                     SHAPE_COLORS[shape.fg() as usize],
                     &Reset,
                 );

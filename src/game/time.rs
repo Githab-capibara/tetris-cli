@@ -60,8 +60,10 @@ impl Time {
     /// assert_eq!(time.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn from_secs(secs: f64) -> Self {
         // Конвертируем секунды в миллисекунды для большей точности
+        // Потеря точности допустима: округление до 1 мс достаточно для игры
         let millis = (secs * 1000.0).round() as u64;
         Self {
             inner: Duration::from_millis(millis),
@@ -101,7 +103,9 @@ impl Time {
     /// assert_eq!(time.as_millis(), 1500);
     /// ```
     #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn as_millis(&self) -> u64 {
+        // Потеря точности допустима: Duration хранит время точно в мс
         self.inner.as_millis() as u64
     }
 
