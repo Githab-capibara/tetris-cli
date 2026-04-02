@@ -8,6 +8,8 @@
 //!
 //! Итого: 26 тестов (минимум 1 на каждую проблему)
 
+#![allow(clippy::items_after_statements)]
+
 use tetris_cli::*;
 
 // ============================================================================
@@ -596,9 +598,9 @@ fn test_l4_simplified_exports() {
 
     // Проверяем что основные типы экспортированы и могут быть использованы
     let _state = GameState::new();
-    let _direction = Direction::Down;
-    let _rotation = RotationDirection::Clockwise;
-    let _shape_type = ShapeType::T;
+    let _ = Direction::Down;
+    let _ = RotationDirection::Clockwise;
+    let _ = ShapeType::T;
     let _bag = BagGenerator::new();
     let _config = ControlsConfig::default_config();
     let _leaderboard = Leaderboard::default();
