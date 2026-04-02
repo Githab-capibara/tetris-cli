@@ -156,6 +156,7 @@ impl Score {
 
     /// Получить текущее значение очков.
     #[must_use]
+    #[inline]
     pub fn value(&self) -> u128 {
         self.0
     }
@@ -167,6 +168,7 @@ impl Score {
     ///
     /// # Примечания
     /// Использует saturating_add для защиты от переполнения.
+    #[inline]
     pub fn add(&mut self, points: u128) {
         self.0 = self.0.saturating_add(points);
     }
@@ -178,17 +180,20 @@ impl Score {
     ///
     /// # Примечания
     /// Использует saturating_mul для защиты от переполнения.
+    #[inline]
     pub fn multiply(&mut self, multiplier: u128) {
         self.0 = self.0.saturating_mul(multiplier);
     }
 
     /// Сбросить очки в ноль.
+    #[inline]
     pub fn reset(&mut self) {
         self.0 = 0;
     }
 
     /// Проверить, равны ли очки нулю.
     #[must_use]
+    #[inline]
     pub fn is_zero(&self) -> bool {
         self.0 == 0
     }
@@ -256,6 +261,7 @@ impl Level {
 
     /// Получить текущее значение уровня.
     #[must_use]
+    #[inline]
     pub fn value(self) -> u32 {
         self.0
     }
@@ -265,6 +271,7 @@ impl Level {
     /// # Возвращает
     /// `true` если уровень был увеличен, `false` если достигнуто максимальное значение
     #[must_use]
+    #[inline]
     pub fn increment(&mut self) -> bool {
         if self.0 < u32::MAX {
             self.0 += 1;
@@ -348,6 +355,7 @@ impl LinesCount {
 
     /// Получить текущее количество линий.
     #[must_use]
+    #[inline]
     pub fn value(self) -> u32 {
         self.0
     }
@@ -359,6 +367,7 @@ impl LinesCount {
     ///
     /// # Примечания
     /// Использует saturating_add для защиты от переполнения.
+    #[inline]
     pub fn add(&mut self, amount: u32) {
         self.0 = self.0.saturating_add(amount);
     }
