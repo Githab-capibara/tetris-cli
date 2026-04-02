@@ -54,7 +54,7 @@ fn test_scoring_points_uses_encapsulation() {
     // - add_lines_cleared() вместо прямого изменения поля
 
     let initial_score = state.score();
-    state.add_score(100);
+    let _ = state.add_score(100);
     assert_eq!(
         state.score(),
         initial_score + 100,
@@ -152,7 +152,7 @@ fn test_score_logic_encapsulated_in_scoreboard() {
     );
 
     // Инкапсуляция через методы
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
 
     scoreboard.set_level(5);
@@ -183,7 +183,7 @@ fn test_scoreboard_has_clear_public_api() {
     let _ = score;
 
     scoreboard.set_score(100);
-    scoreboard.add_score(50);
+    let _ = scoreboard.add_score(50);
 
     let level: u32 = scoreboard.get_level();
     let _ = level;
@@ -210,7 +210,10 @@ fn test_coupling_reduced_through_traits() {
     use crate::game::scoring::{LevelAccess, ScoreAccess};
 
     // Функции могут работать с любыми типами реализующими трейты
-    fn add_bonus<S: ScoreAccess + crate::game::access::ScoreMutable>(scoreable: &mut S, bonus: u128) {
+    fn add_bonus<S: ScoreAccess + crate::game::access::ScoreMutable>(
+        scoreable: &mut S,
+        bonus: u128,
+    ) {
         scoreable.add_score(bonus);
     }
 
@@ -324,11 +327,11 @@ fn test_coupling_architecture_test() {
 
     // ScoreBoard инкапсулирует логику
     let mut scoreboard = ScoreBoard::new();
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
 
     // Трейты снижают связанность
-    use crate::game::scoring::ScoreAccess;
     use crate::game::access::ScoreMutable;
+    use crate::game::scoring::ScoreAccess;
     fn use_score<S: ScoreAccess + ScoreMutable>(s: &mut S) {
         s.add_score(100);
     }

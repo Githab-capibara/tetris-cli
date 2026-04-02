@@ -30,6 +30,10 @@ use crate::game::access::{ScoreAccess, ScoreMutable};
 /// ## Архитектурные заметки
 /// Выделено из `GameState` для соблюдения Single Responsibility Principle.
 /// Используется композиция в `GameState` через поле `scoreboard: ScoreBoard`.
+///
+/// ## M19: Debug для отладки
+/// Добавлен #[derive(Debug)] для возможности отладки через fmt::Debug.
+#[derive(Debug)]
 pub struct ScoreBoard {
     /// Текущий счёт.
     score: u128,
@@ -86,9 +90,32 @@ impl ScoreBoard {
     ///
     /// # Примечания
     /// Использует saturating_add для защиты от переполнения u128.
+    ///
+    /// # Исправление аудита 2026-04-02 (C8)
+    /// Добавлено логирование при переполнении счёта.
+    ///
+    /// # Исправление аудита 2026-04-02 (H16)
+    /// Добавлен #[must_use] так как возвращаемое значение (новый счёт) важно.
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
+    ///
+    /// let mut scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.add_score(100), 100);
+    /// assert_eq!(scoreboard.add_score(50), 150);
+    /// ```
     #[inline]
+    #[must_use = "Новый счёт должен быть использован"]
     pub fn add_score(&mut self, points: u128) -> u128 {
+        let old_score = self.score;
         self.score = self.score.saturating_add(points);
+
+        // Логирование при переполнении (C8)
+        if self.score == u128::MAX && points > 0 && old_score < u128::MAX {
+            eprintln!("[WARN] Переполнение счёта: достигнут максимум u128::MAX");
+        }
+
         self.score
     }
 
@@ -126,7 +153,20 @@ impl ScoreBoard {
     ///
     /// # Возвращает
     /// Новый уровень после увеличения.
+    ///
+    /// # Исправление аудита 2026-04-02 (H16)
+    /// Добавлен #[must_use] так как возвращаемое значение (новый уровень) важно.
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
+    ///
+    /// let mut scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.increment_level(), 2);
+    /// assert_eq!(scoreboard.increment_level(), 3);
+    /// ```
     #[inline]
+    #[must_use = "Новый уровень должен быть использован"]
     pub fn increment_level(&mut self) -> u32 {
         self.level = self.level.saturating_add(1);
         self.level
@@ -139,7 +179,20 @@ impl ScoreBoard {
     ///
     /// # Возвращает
     /// Новое количество очищенных линий.
+    ///
+    /// # Исправление аудита 2026-04-02 (H16)
+    /// Добавлен #[must_use] так как возвращаемое значение (новое количество линий) важно.
+    ///
+    /// # Пример использования
+    /// ```
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
+    ///
+    /// let mut scoreboard = ScoreBoard::new();
+    /// assert_eq!(scoreboard.add_lines_cleared(5), 5);
+    /// assert_eq!(scoreboard.add_lines_cleared(3), 8);
+    /// ```
     #[inline]
+    #[must_use = "Новое количество линий должно быть использовано"]
     pub fn add_lines_cleared(&mut self, count: u32) -> u32 {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
         self.lines_cleared
@@ -155,9 +208,9 @@ impl ScoreBoard {
     }
 }
 
+// S9: Удаление избыточных #[allow(clippy::too_many_arguments)] — методы имеют 0-1 аргумент
 impl ScoreAccess for ScoreBoard {
     #[inline]
-    #[allow(clippy::too_many_arguments)]
     fn get_score(&self) -> u128 {
         self.get_score()
     }
@@ -165,13 +218,11 @@ impl ScoreAccess for ScoreBoard {
 
 impl ScoreMutable for ScoreBoard {
     #[inline]
-    #[allow(clippy::too_many_arguments)]
     fn add_score(&mut self, points: u128) {
-        self.add_score(points);
+        let _ = self.add_score(points);
     }
 
     #[inline]
-    #[allow(clippy::too_many_arguments)]
     fn set_score(&mut self, value: u128) {
         self.set_score(value);
     }
@@ -204,6 +255,16 @@ mod tests {
 
         scoreboard.set_score(500);
         assert_eq!(scoreboard.get_score(), 500);
+    }
+
+    #[test]
+    fn test_score_board_debug() {
+        // M19: тест для #[derive(Debug)]
+        let scoreboard = ScoreBoard::new();
+        let debug_str = format!("{scoreboard:?}");
+        assert!(debug_str.contains("score"));
+        assert!(debug_str.contains("level"));
+        assert!(debug_str.contains("lines_cleared"));
     }
 
     #[test]
@@ -240,7 +301,63 @@ mod tests {
 
         // Переполнение u128
         scoreboard.set_score(u128::MAX - 100);
-        scoreboard.add_score(200);
+        let _ = scoreboard.add_score(200);
         assert_eq!(scoreboard.get_score(), u128::MAX);
+    }
+
+    /// Тест C8: проверка логирования при переполнении счёта
+    #[test]
+    fn test_c8_score_overflow_with_logging() {
+        let mut scoreboard = ScoreBoard::new();
+
+        // Устанавливаем счёт близкий к максимуму
+        scoreboard.set_score(u128::MAX - 100);
+
+        // Добавляем больше очков чем осталось до максимума
+        let result = scoreboard.add_score(200);
+
+        // Проверяем что счёт достиг максимума
+        assert_eq!(result, u128::MAX);
+        assert_eq!(scoreboard.get_score(), u128::MAX);
+    }
+
+    /// Тест C8: проверка граничных условий u128::MAX
+    #[test]
+    fn test_c8_u128_max_boundary() {
+        let mut scoreboard = ScoreBoard::new();
+
+        // Устанавливаем точно в максимум
+        scoreboard.set_score(u128::MAX);
+
+        // Попытка добавить ещё очков должна остаться на максимуме
+        let result = scoreboard.add_score(1000);
+        assert_eq!(result, u128::MAX);
+
+        // Проверка что saturating_add работает корректно
+        scoreboard.set_score(u128::MAX - 1);
+        let result = scoreboard.add_score(1);
+        assert_eq!(result, u128::MAX);
+    }
+
+    /// Тест T5: тесты граничных условий u128::MAX для add_score
+    #[test]
+    fn test_t5_u128_max_boundary_conditions() {
+        let mut scoreboard = ScoreBoard::new();
+
+        // Тест 1: u128::MAX - 1 + 1 = u128::MAX
+        scoreboard.set_score(u128::MAX - 1);
+        assert_eq!(scoreboard.add_score(1), u128::MAX);
+
+        // Тест 2: u128::MAX + anything = u128::MAX
+        scoreboard.set_score(u128::MAX);
+        assert_eq!(scoreboard.add_score(u128::MAX), u128::MAX);
+
+        // Тест 3: 0 + u128::MAX = u128::MAX
+        scoreboard.set_score(0);
+        assert_eq!(scoreboard.add_score(u128::MAX), u128::MAX);
+
+        // Тест 4: u128::MAX - 1000 + 500 < u128::MAX
+        scoreboard.set_score(u128::MAX - 1000);
+        assert_eq!(scoreboard.add_score(500), u128::MAX - 500);
     }
 }

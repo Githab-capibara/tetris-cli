@@ -103,6 +103,9 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 /// let mut canvas = Canvas::new().unwrap();
 /// draw_game_stats(&mut canvas, "Классика", 1000, 5, 50, 100, 3, 120.5);
 /// ```
+// S9: Обоснование too_many_arguments — функция отрисовки требует 8 параметров
+// для отображения статистики. Это чистая функция отрисовки без состояния,
+// передача всех параметров явно соответствует функциональному стилю.
 #[track_caller]
 #[allow(clippy::too_many_arguments)]
 pub fn draw_game_stats(

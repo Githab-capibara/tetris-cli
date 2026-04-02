@@ -7,15 +7,100 @@
 //!
 //! # Использование
 //! ```ignore
-//! use tetris_cli::crypto::hmac::{hmac_sign, hmac_verify};
+//! use tetris_cli::crypto::hmac::{hmac_sign, hmac_verify, hmac_sha256};
 //!
-//! let signature = hmac_sign("key", "data");
+//! let signature = hmac_sha256("key", "data");
 //! assert!(hmac_verify("key", "data", &signature));
 //! ```
 
-use crate::crypto::{hmac_sha256, verify_hmac_sha256};
+use std::io::Write;
 
-/// Вычислить HMAC подпись данных.
+use ::hmac::{Hmac, Mac};
+use sha2::Sha256;
+
+/// Тип HMAC-SHA256.
+type HmacSha256 = Hmac<Sha256>;
+
+/// Вычислить HMAC-SHA256 подпись данных.
+///
+/// # Аргументы
+/// * `key` - секретный ключ
+/// * `data` - данные для подписи
+///
+/// # Возвращает
+/// Hex-строка из 64 символов (256 бит = 32 байта HMAC)
+///
+/// # Пример
+/// ```ignore
+/// use tetris_cli::crypto::hmac::hmac_sha256;
+/// let signature = hmac_sha256("ключ", "данные");
+/// assert_eq!(signature.len(), 64);
+/// ```
+///
+/// # Безопасность
+/// Используется криптографически стойкий HMAC-SHA256 согласно RFC 2104.
+/// Это обеспечивает надёжную защиту от подделки данных.
+///
+/// # Исправление аудита 2026-03-30
+/// Заменён .expect() на .unwrap() с комментарием о безопасности.
+/// HMAC-SHA256 поддерживает ключи любой длины, поэтому ошибка невозможна.
+#[allow(clippy::missing_panics_doc)]
+#[must_use = "HMAC подпись должна быть использована для проверки"]
+pub fn hmac_sha256(key: &str, data: &str) -> String {
+    // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
+    // new_from_slice() никогда не вернёт ошибку для HMAC.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
+    mac.update(data.as_bytes());
+    let result = mac.finalize();
+    hex::encode(result.into_bytes())
+}
+
+/// Проверить HMAC-SHA256 подпись.
+///
+/// # Аргументы
+/// * `key` - секретный ключ
+/// * `data` - данные
+/// * `expected_hash` - ожидаемая подпись
+///
+/// # Возвращает
+/// `true` если подпись верна
+///
+/// # Пример
+/// ```ignore
+/// use tetris_cli::crypto::hmac::{hmac_sha256, verify_hmac_sha256};
+/// let key = "секрет";
+/// let data = "данные";
+/// let signature = hmac_sha256(key, data);
+/// assert!(verify_hmac_sha256(key, data, &signature));
+/// ```
+///
+/// # Безопасность
+/// Используется постоянное по времени сравнение для предотвращения timing-атак.
+#[must_use = "Результат проверки должен быть использован"]
+pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
+    let actual_hash = hmac_sha256(key, data);
+    // Исправление #2 (CRITICAL): постоянное по времени сравнение через XOR накопление
+    // Предотвращает timing-атаки путём выполнения одинакового количества операций
+    // независимо от позиции первого несовпадающего байта
+    let actual_bytes = actual_hash.as_bytes();
+    let expected_bytes = expected_hash.as_bytes();
+
+    // Проверяем длину - разная длина сразу возвращает false
+    if actual_bytes.len() != expected_bytes.len() {
+        return false;
+    }
+
+    // XOR накопление - выполняем сравнение за постоянное время
+    let mut result: u8 = 0;
+    for (a, b) in actual_bytes.iter().zip(expected_bytes.iter()) {
+        result |= a ^ b;
+    }
+
+    result == 0
+}
+
+/// Вычислить HMAC подпись данных (алиас для hmac_sha256).
 ///
 /// # Аргументы
 /// * `key` - секретный ключ для HMAC
@@ -82,10 +167,15 @@ pub fn hmac_verify(key: &str, data: &str, signature: &str) -> bool {
 ///
 /// let signature = hmac_sign_with_salt("key", "salt", "data");
 /// ```
+///
+/// # Исправление аудита 2026-04-02 (H1)
+/// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
-    let salted_data = format!("{salt}{data}");
-    hmac_sha256(key, &salted_data)
+    // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
+    let mut salted_data = Vec::with_capacity(salt.len() + data.len());
+    write!(&mut salted_data, "{salt}{data}").expect("write! к Vec<u8> не может вернуть ошибку");
+    hmac_sha256(key, &String::from_utf8_lossy(&salted_data))
 }
 
 /// Проверить HMAC подпись для данных с солью.
@@ -109,10 +199,15 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 /// let signature = hmac_sign_with_salt(key, salt, data);
 /// assert!(hmac_verify_with_salt(key, salt, data, &signature));
 /// ```
+///
+/// # Исправление аудита 2026-04-02 (H1)
+/// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
 #[must_use = "Результат проверки должен быть использован"]
 pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {
-    let salted_data = format!("{salt}{data}");
-    verify_hmac_sha256(key, &salted_data, signature)
+    // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
+    let mut salted_data = Vec::with_capacity(salt.len() + data.len());
+    write!(&mut salted_data, "{salt}{data}").expect("write! к Vec<u8> не может вернуть ошибку");
+    verify_hmac_sha256(key, &String::from_utf8_lossy(&salted_data), signature)
 }
 
 // ============================================================================
@@ -247,5 +342,94 @@ mod hmac_tests {
 
         let signature = hmac_sign_with_salt("ключ", "соль", "данные: 你好🎮");
         assert_eq!(signature.len(), 64);
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ HMAC-SHA256 (ИСПРАВЛЕНИЕ H2)
+    // =========================================================================
+
+    /// Тест на детерминированность hmac_sha256
+    #[test]
+    fn test_hmac_sha256_deterministic() {
+        let sig1 = hmac_sha256("ключ", "данные");
+        let sig2 = hmac_sha256("ключ", "данные");
+        assert_eq!(sig1, sig2, "HMAC-SHA256 должен быть детерминированным");
+    }
+
+    /// Тест на разные ключи в hmac_sha256
+    #[test]
+    fn test_hmac_sha256_different_keys() {
+        let sig1 = hmac_sha256("ключ1", "данные");
+        let sig2 = hmac_sha256("ключ2", "данные");
+        assert_ne!(sig1, sig2, "Разные ключи должны давать разные HMAC");
+    }
+
+    /// Тест на разные данные в hmac_sha256
+    #[test]
+    fn test_hmac_sha256_different_data() {
+        let sig1 = hmac_sha256("ключ", "данные1");
+        let sig2 = hmac_sha256("ключ", "данные2");
+        assert_ne!(sig1, sig2, "Разные данные должны давать разные HMAC");
+    }
+
+    /// Тест на длину hmac_sha256
+    #[test]
+    fn test_hmac_sha256_length() {
+        let signature = hmac_sha256("ключ", "данные");
+        assert_eq!(
+            signature.len(),
+            64,
+            "Длина HMAC-SHA256 должна быть 64 символа (256 бит)"
+        );
+    }
+
+    /// Тест на валидную подпись verify_hmac_sha256
+    #[test]
+    fn test_verify_hmac_sha256_valid() {
+        let key = "тестовый ключ";
+        let data = "тестовые данные";
+        let signature = hmac_sha256(key, data);
+        assert!(
+            verify_hmac_sha256(key, data, &signature),
+            "Правильная HMAC подпись должна проходить проверку"
+        );
+    }
+
+    /// Тест на невалидный ключ в verify_hmac_sha256
+    #[test]
+    fn test_verify_hmac_sha256_invalid_key() {
+        let key = "ключ1";
+        let data = "данные";
+        let signature = hmac_sha256(key, data);
+        assert!(
+            !verify_hmac_sha256("ключ2", data, &signature),
+            "Неправильный ключ не должен проходить проверку HMAC"
+        );
+    }
+
+    /// Тест на невалидные данные в verify_hmac_sha256
+    #[test]
+    fn test_verify_hmac_sha256_invalid_data() {
+        let key = "ключ";
+        let data = "данные1";
+        let signature = hmac_sha256(key, data);
+        assert!(
+            !verify_hmac_sha256(key, "данные2", &signature),
+            "Неправильные данные не должны проходить проверку HMAC"
+        );
+    }
+
+    /// Тест на пустые данные в hmac_sha256
+    #[test]
+    fn test_hmac_sha256_empty_data() {
+        let signature = hmac_sha256("ключ", "");
+        assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
+    }
+
+    /// Тест на пустой ключ в hmac_sha256
+    #[test]
+    fn test_hmac_sha256_empty_key() {
+        let signature = hmac_sha256("", "данные");
+        assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
     }
 }

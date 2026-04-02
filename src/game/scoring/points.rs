@@ -98,7 +98,7 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
-    state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
+    let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     // Игнорируем ошибку, так как 0.0 - валидное значение
     let _ = state.set_land_timer(0.0);
     state.set_is_hard_dropping(true);
@@ -125,7 +125,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // Исправление C1: saturating_mul для защиты от переполнения
-        state.add_score(SOFT_DROP_POINTS);
+        let _ = state.add_score(SOFT_DROP_POINTS);
     }
 }
 
@@ -252,13 +252,13 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
-    state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
+    let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop
     // Исправление C1: saturating_mul для защиты от переполнения
     let soft_drop_distance = state.soft_drop_distance();
     if soft_drop_distance > 0 {
-        state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
+        let _ = state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
         state.set_soft_drop_distance(0);
     }
 
@@ -301,7 +301,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
             }
         };
         if let Some(bonus) = combo_bonus {
-            state.add_score(bonus);
+            let _ = state.add_score(bonus);
         }
     } else {
         state.stats_mut().set_combo_counter(0);
@@ -408,7 +408,7 @@ mod points_tests {
         state.set_score(max_score - 100);
 
         // Добавляем очки - должно сработать saturating_add
-        state.add_score(200);
+        let _ = state.add_score(200);
 
         // Счёт должен быть равен u128::MAX (насыщение)
         assert_eq!(

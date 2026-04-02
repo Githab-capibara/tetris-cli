@@ -205,11 +205,11 @@ fn test_game_board_access_score() {
     assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
 
     // Установка счёта
-    state.add_score(500);
+    let _ = state.add_score(500);
     assert_eq!(state.score(), 500, "Счёт должен быть 500");
 
     // Добавление очков
-    state.add_score(250);
+    let _ = state.add_score(250);
     assert_eq!(state.score(), 750, "Счёт должен быть 750");
 }
 

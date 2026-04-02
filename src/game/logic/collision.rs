@@ -357,7 +357,7 @@ mod collision_tests {
         // Устанавливаем блок под текущей фигурой
         let curr_y = state.curr_shape().pos().1 as i16;
         let blocks = state.get_blocks_mut();
-        if (curr_y + 1) < 20 {
+        if curr_y + 1 < 20 {
             blocks[(curr_y + 1) as usize][4] = 1; // Блок под фигурой
         }
 

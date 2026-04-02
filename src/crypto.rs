@@ -29,10 +29,6 @@
 //! - Регулярно обновляйте ключи HMAC
 //! - Не используйте один ключ для разных целей
 
-// Исправление аудита 2026-04-01 (M1)
-// Зарезервировано для будущего использования
-#![allow(dead_code)]
-
 // Подмодули
 pub mod hmac;
 pub mod validator;
@@ -40,17 +36,15 @@ pub mod validator;
 // Ре-экспорт основных функций из hmac для удобства
 pub use hmac::{hmac_sign, hmac_sign_with_salt, hmac_verify, hmac_verify_with_salt};
 
+// Ре-экспорт функций HMAC-SHA256 из hmac модуля (устранение дублирования H2)
+pub use hmac::{hmac_sha256, verify_hmac_sha256};
+
 // Ре-экспорт основных функций из validator для удобства
 pub use validator::{sign_salt_and_data, verify_salt_and_data};
 
-use ::hmac::{Hmac, Mac};
 use rand::rngs::StdRng;
 use rand::RngCore;
 use rand::SeedableRng;
-use sha2::Sha256;
-
-/// Тип HMAC-SHA256.
-type HmacSha256 = Hmac<Sha256>;
 
 /// Вычислить BLAKE3 хеш строки.
 ///
@@ -93,90 +87,23 @@ pub fn generate_salt() -> String {
     hex::encode(bytes)
 }
 
-/// Вычислить HMAC-SHA256 подпись данных.
-///
-/// # Аргументы
-/// * `key` - секретный ключ
-/// * `data` - данные для подписи
-///
-/// # Возвращает
-/// Hex-строка из 64 символов (256 бит = 32 байта HMAC)
-///
-/// # Panics
-/// Паникует если ключ не может быть использован (крайне маловероятно, т.к. HMAC поддерживает ключи любой длины)
-///
-/// # Пример
+// ============================================================================
+// HMAC-SHA256 ФУНКЦИИ ПЕРЕМЕЩЕНЫ В crypto/hmac.rs (ИСПРАВЛЕНИЕ H2)
+// ============================================================================
+// Функции hmac_sha256() и verify_hmac_sha256() перемещены в crypto/hmac.rs
+// для устранения дублирования кода.
+//
+// Для использования импортируйте из модуля hmac:
+/// ```ignore
+/// use tetris_cli::crypto::hmac::hmac_sha256;
+/// use tetris_cli::crypto::hmac::verify_hmac_sha256;
 /// ```
+//
+// Либо используйте ре-экспорт из crypto:
+/// ```ignore
 /// use tetris_cli::crypto::hmac_sha256;
-/// let signature = hmac_sha256("ключ", "данные");
-/// assert_eq!(signature.len(), 64);
+/// use tetris_cli::crypto::verify_hmac_sha256;
 /// ```
-///
-/// # Безопасность
-/// Используется криптографически стойкий HMAC-SHA256 согласно RFC 2104.
-/// Это обеспечивает надёжную защиту от подделки данных.
-///
-/// # Исправление #4 (ВЫСОКИЙ ПРИОРИТЕТ)
-/// Функция использует настоящий HMAC-SHA256 вместо простой конкатенации.
-///
-/// # Исправление аудита 2026-03-30
-/// Заменён .expect() на .unwrap() с комментарием о безопасности.
-/// HMAC-SHA256 поддерживает ключи любой длины, поэтому ошибка невозможна.
-#[allow(clippy::missing_panics_doc)]
-#[must_use = "HMAC подпись должна быть использована для проверки"]
-pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
-    // new_from_slice() никогда не вернёт ошибку для HMAC.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
-    mac.update(data.as_bytes());
-    let result = mac.finalize();
-    hex::encode(result.into_bytes())
-}
-
-/// Проверить HMAC-SHA256 подпись.
-///
-/// # Аргументы
-/// * `key` - секретный ключ
-/// * `data` - данные
-/// * `expected_hash` - ожидаемая подпись
-///
-/// # Возвращает
-/// `true` если подпись верна
-///
-/// # Пример
-/// ```
-/// use tetris_cli::crypto::{hmac_sha256, verify_hmac_sha256};
-/// let key = "секрет";
-/// let data = "данные";
-/// let signature = hmac_sha256(key, data);
-/// assert!(verify_hmac_sha256(key, data, &signature));
-/// ```
-///
-/// # Безопасность
-/// Используется постоянное по времени сравнение для предотвращения timing-атак.
-#[must_use = "Результат проверки должен быть использован"]
-pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
-    let actual_hash = hmac_sha256(key, data);
-    // Исправление #2 (CRITICAL): постоянное по времени сравнение через XOR накопление
-    // Предотвращает timing-атаки путём выполнения одинакового количества операций
-    // независимо от позиции первого несовпадающего байта
-    let actual_bytes = actual_hash.as_bytes();
-    let expected_bytes = expected_hash.as_bytes();
-
-    // Проверяем длину - разная длина сразу возвращает false
-    if actual_bytes.len() != expected_bytes.len() {
-        return false;
-    }
-
-    // XOR накопление - выполняем сравнение за постоянное время
-    let mut result: u8 = 0;
-    for (a, b) in actual_bytes.iter().zip(expected_bytes.iter()) {
-        result |= a ^ b;
-    }
-
-    result == 0
-}
 
 #[cfg(test)]
 mod crypto_tests {

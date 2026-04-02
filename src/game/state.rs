@@ -42,19 +42,28 @@
 
 #![allow(dead_code)]
 
+// std
+// (нет импортов std)
+
+// external
+// (нет внешних импортов)
+
+// crate
 use crate::io::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};
 
+// self (super)
 use super::board::GameBoard;
 use super::cache::RenderCache;
 use super::components::{AnimationState, FigureManager};
 use super::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+use super::mode_trait::GameModeTrait;
+use super::scoreboard::ScoreBoard;
+
+pub use super::stats::GameStats;
 
 /// Позиция появления фигуры по X (центр поля минус половина ширины фигуры).
 const SPAWN_X: f32 = (GRID_WIDTH as f32 / 2.0) - 1.0;
-use super::mode_trait::GameModeTrait;
-use super::scoreboard::ScoreBoard;
-pub use super::stats::GameStats;
 
 // ============================================================================
 // ТИПЫ ОШИБОК
@@ -717,23 +726,32 @@ impl GameState {
 
     /// Установить таймер приземления.
     ///
+    /// # Аргументы
+    /// * `value` - значение таймера в секундах
+    ///
     /// # Возвращает
     /// - `Ok(())` если значение установлено успешно
-    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity)
+    /// - `Err(GameError::ValidationError)` если значение невалидно
     ///
     /// # Errors
-    /// Возвращает [`crate::errors::GameError::Validation`] если значение является NaN или Infinity.
+    /// Возвращает [`crate::errors::GameError::ValidationError`] в следующих случаях:
+    /// - Значение является NaN или Infinity
+    /// - Значение отрицательное
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
-    /// Отрицательные значения заменяются на 0.
+    /// Отрицательные значения не допускаются.
     ///
     /// # DRY-2: Централизация валидации
-    /// Использует `ValidationService::validate_f32_finite()` для валидации.
+    /// Использует прямую проверку на конечность и неотрицательность.
     ///
-    /// # Исправление аудита 2026-04-01 (H3)
-    /// Убран избыточный `.max(0.0)` после валидации. Валидация гарантирует что значение
-    /// уже валидно, дополнительное ограничение не требуется.
+    /// # Пример использования
+    /// ```ignore
+    /// let mut state = GameState::new();
+    /// state.set_land_timer(0.5)?;  // Ok
+    /// state.set_land_timer(-1.0)?; // Ошибка: отрицательное значение
+    /// state.set_land_timer(f64::NAN)?; // Ошибка: NaN
+    /// ```
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
 
@@ -884,16 +902,24 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn add_score(&mut self, points: u128) {
-        self.scoreboard.add_score(points);
+    ///
+    /// # Исправление аудита 2026-04-02 (H16)
+    /// Добавлен #[must_use] так как возвращаемое значение (новый счёт) важно.
+    #[must_use = "Новый счёт должен быть использован"]
+    pub fn add_score(&mut self, points: u128) -> u128 {
+        self.scoreboard.add_score(points)
     }
 
     /// Добавить количество очищенных линий.
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn add_lines_cleared(&mut self, lines: u32) {
-        self.scoreboard.add_lines_cleared(lines);
+    ///
+    /// # Исправление аудита 2026-04-02 (H16)
+    /// Добавлен #[must_use] так как возвращаемое значение (новое количество линий) важно.
+    #[must_use = "Новое количество линий должно быть использовано"]
+    pub fn add_lines_cleared(&mut self, lines: u32) -> u32 {
+        self.scoreboard.add_lines_cleared(lines)
     }
 
     /// Увеличить уровень на 1.

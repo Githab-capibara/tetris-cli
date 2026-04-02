@@ -23,12 +23,16 @@
 #![allow(dead_code)]
 #![deny(clippy::mut_mutex_lock)]
 
-use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
-use confy::{load, store};
-use serde::{Deserialize, Serialize};
+// std
 use std::sync::{Arc, Mutex};
 
+// external
+use confy::{load, store};
+use serde::{Deserialize, Serialize};
+
+// crate
+use crate::config::keys::get_leaderboard_hmac_key;
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use crate::validation::name::sanitize_player_name;
 
 /// Имя приложения для конфигурации.
@@ -59,10 +63,10 @@ const MAX_LEADERBOARD_SIZE: usize = 5;
 /// 1. **Однопоточный код**: используйте напрямую, все методы безопасны
 /// 2. **Многопоточный код**: оборачивайте в `Arc<Mutex<LeaderboardEntry>>`
 ///
-/// ### Маркер потоковости
-/// Поле `_phantom: PhantomData<*mut ()>` явно указывает что тип:
-/// - `!Send` - нельзя передавать между потоками
-/// - `!Sync` - нельзя использовать из нескольких потоков одновременно
+/// ### Маркер потоковости (D8)
+/// Эта структура не реализует `Send + Sync` намеренно:
+/// - Сериализация через serde не добавляет автоматической потокобезопасности
+/// - Для многопоточного доступа используйте `ThreadSafeLeaderboardEntry`
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
@@ -871,8 +875,23 @@ impl Leaderboard {
 
     /// Сохранить таблицу лидеров в файл конфигурации.
     ///
+    /// # Возвращает
+    /// Ничего не возвращает. Ошибки логируются через eprintln!().
+    ///
+    /// # Errors
+    /// Метод обрабатывает ошибки внутри себя:
+    /// - При ошибке сохранения в основной файл пытается сохранить в backup
+    /// - При ошибке сохранения в backup логирует критическую ошибку
+    ///
     /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let leaderboard = Leaderboard::default();
+    /// leaderboard.add_score("Player", 1000);
+    /// leaderboard.save();  // Сохраняет в конфигурационный файл
+    /// ```
     pub fn save(&self) {
         if let Err(e) = store(APP_NAME, Some("leaderboard"), self) {
             eprintln!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
@@ -895,10 +914,20 @@ impl Leaderboard {
     /// - `Err(String)` если произошла ошибка сохранения конфигурации
     ///
     /// # Errors
-    /// Возвращает ошибку если не удалось сохранить конфигурацию через confy::store()
+    /// Возвращает ошибку если не удалось сохранить конфигурацию через `confy::store()`.
+    /// Ошибка содержит описание проблемы и имя конфигурации.
     ///
     /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлен метод для явного сохранения в backup файл.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let leaderboard = Leaderboard::default();
+    /// // Сохранение в основной файл
+    /// leaderboard.save_with_backup(false)?;
+    /// // Сохранение в backup файл
+    /// leaderboard.save_with_backup(true)?;
+    /// ```
     pub fn save_with_backup(&self, use_backup: bool) -> Result<(), String> {
         let config_name = if use_backup {
             "leaderboard_backup"
@@ -918,7 +947,13 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5),
-    /// `false` если рекорд недостаточно высок
+    /// `false` если рекорд недостаточно высок или достигнут лимит записей
+    ///
+    /// # Errors
+    /// Метод не возвращает ошибок, но может вернуть `false` в следующих случаях:
+    /// - Имя игрока не прошло валидацию (заменяется на "Anonymous")
+    /// - Игрок достиг лимита записей (максимум 3 на одного игрока)
+    /// - Рекорд недостаточно высок для попадания в топ-5
     ///
     /// # Исправление #24
     /// Добавлена валидация имени игрока перед добавлением в таблицу лидеров.
@@ -933,6 +968,13 @@ impl Leaderboard {
     /// намеренно (использует `PhantomData<*mut ()>` для маркировки).
     /// При использовании в многопоточной среде необходима внешняя синхронизация
     /// (например, `std::sync::Mutex<Leaderboard>`).
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let mut leaderboard = Leaderboard::default();
+    /// let added = leaderboard.add_score("Player", 1000);
+    /// assert_eq!(added, true);
+    /// ```
     #[must_use]
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         // Исправление #24: валидация имени игрока
@@ -974,6 +1016,8 @@ impl Leaderboard {
 
         // Добавление новой записи с валидированным именем
         // Исправление #9: передаём &str вместо String
+        // P2: Добавлено reserve() для предотвращения реаллокаций
+        self.entries.reserve(1);
         let new_entry = LeaderboardEntry::new(&valid_name, score);
         self.entries.push(new_entry);
 
@@ -992,6 +1036,15 @@ impl Leaderboard {
     ///
     /// # Возвращает
     /// Срез записей таблицы лидеров
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let leaderboard = Leaderboard::default();
+    /// leaderboard.add_score("Player1", 1000);
+    /// leaderboard.add_score("Player2", 2000);
+    /// let entries = leaderboard.get_entries();
+    /// assert_eq!(entries.len(), 2);
+    /// ```
     #[must_use]
     pub fn get_entries(&self) -> &[LeaderboardEntry] {
         &self.entries
@@ -1002,6 +1055,15 @@ impl Leaderboard {
     /// # Возвращает
     /// Лучший рекорд или 0, если таблица пуста
     /// Возвращает u128 для предотвращения переполнения.
+    ///
+    /// # Пример использования
+    /// ```ignore
+    /// let leaderboard = Leaderboard::default();
+    /// leaderboard.add_score("Player1", 1000);
+    /// leaderboard.add_score("Player2", 2000);
+    /// let best = leaderboard.get_best_score();
+    /// assert_eq!(best, 2000);
+    /// ```
     #[allow(dead_code)]
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
@@ -1297,5 +1359,72 @@ mod thread_safe_tests {
         // Вместо этого проверяем что документация корректна
         let _leaderboard = Leaderboard::default();
         // Тест проходит если код компилируется
+    }
+
+    // =========================================================================
+    // ТЕСТЫ ДЛЯ SEC2: RATE LIMITING
+    // =========================================================================
+
+    /// Тест SEC2: проверка rate limiting - максимум 3 записи на игрока
+    #[test]
+    fn test_sec2_rate_limiting_max_3_per_player() {
+        let mut leaderboard = Leaderboard::default();
+
+        // Добавляем 3 записи от одного игрока
+        assert!(leaderboard.add_score("Player1", 1000));
+        assert!(leaderboard.add_score("Player1", 2000));
+        assert!(leaderboard.add_score("Player1", 3000));
+
+        // 4-я запись должна быть отклонена
+        assert!(
+            !leaderboard.add_score("Player1", 4000),
+            "Игрок не должен иметь больше 3 записей"
+        );
+
+        // Проверяем что в таблице только 3 записи от Player1
+        let player_entries: Vec<_> = leaderboard
+            .entries
+            .iter()
+            .filter(|e| e.name() == "Player1")
+            .collect();
+        assert_eq!(player_entries.len(), 3);
+    }
+
+    /// Тест SEC2: проверка что разные игроки могут добавлять записи
+    #[test]
+    fn test_sec2_different_players_can_add_scores() {
+        let mut leaderboard = Leaderboard::default();
+
+        // 5 разных игроков могут добавить по 3 записи каждый
+        for i in 1..=5 {
+            for j in 1..=3 {
+                let player_name = format!("Player{}", i);
+                let score = i * 1000 + j * 100;
+                assert!(
+                    leaderboard.add_score(&player_name, score),
+                    "Игрок {} должен иметь возможность добавить запись {}",
+                    i,
+                    j
+                );
+            }
+        }
+
+        // В таблице должно остаться только топ-5
+        assert_eq!(leaderboard.entries.len(), 5);
+    }
+
+    /// Тест SEC2: проверка сообщения о лимите записей
+    #[test]
+    fn test_sec2_rate_limit_message() {
+        let mut leaderboard = Leaderboard::default();
+
+        // Добавляем 3 записи
+        let _ = leaderboard.add_score("TestPlayer", 1000);
+        let _ = leaderboard.add_score("TestPlayer", 2000);
+        let _ = leaderboard.add_score("TestPlayer", 3000);
+
+        // 4-я запись должна вернуть false и вывести сообщение
+        let result = leaderboard.add_score("TestPlayer", 4000);
+        assert!(!result, "Должно вернуть false при превышении лимита");
     }
 }

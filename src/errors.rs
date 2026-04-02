@@ -15,8 +15,6 @@
 //! }
 //! ```
 
-#![allow(dead_code)]
-
 use thiserror::Error;
 
 /// Ошибка игры.
@@ -28,17 +26,45 @@ use thiserror::Error;
 /// - `ValidationError` - ошибка валидации данных
 /// - `IoError` - ошибка ввода/вывода
 /// - `ScoreOverflow` - переполнение счёта
+///
+/// ## Конвертация из io::Error
+/// Этот enum реализует трейт `From<std::io::Error>` автоматически через атрибут `#[from]`:
+/// ```ignore
+/// use std::fs::File;
+/// use tetris_cli::errors::GameError;
+///
+/// fn load_config() -> Result<(), GameError> {
+///     let file = File::open("config.toml")?; // Автоматическая конвертация из io::Error
+///     // ...
+///     Ok(())
+/// }
+/// ```
+///
+/// ## M5: PartialEq не добавлен
+/// Enum содержит `std::io::Error`, который не реализует `PartialEq`.
+/// Добавление `PartialEq` невозможно без обёртки IoError в Arc и кастомной реализации.
+///
+/// ## S13: Clone не добавлен
+/// Enum содержит `std::io::Error`, который не реализует `Clone`.
+/// Добавление `Clone` невозможно без обёртки IoError в Arc.
 #[derive(Error, Debug)]
 pub enum GameError {
     /// Ошибка валидации данных.
+    ///
+    /// Содержит сообщение об ошибке валидации.
     #[error("Ошибка валидации: {0}")]
     ValidationError(String),
 
     /// Ошибка ввода/вывода.
+    ///
+    /// Автоматически конвертируется из `std::io::Error` через трейт `From`.
+    /// #[from] атрибут генерирует реализацию `From<std::io::Error>` автоматически.
     #[error("Ошибка ввода/вывода: {0}")]
     IoError(#[from] std::io::Error),
 
     /// Ошибка переполнения счёта.
+    ///
+    /// Возникает при попытке превышения максимального значения счёта (u128::MAX).
     #[error("Переполнение счёта: попытка превышения максимального значения")]
     ScoreOverflow,
 }

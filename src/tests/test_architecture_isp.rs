@@ -44,7 +44,7 @@ fn test_score_access_contains_only_score_methods() {
     assert_eq!(state.get_score(), 100, "Счёт должен обновиться");
 
     // add_score()
-    state.add_score(50);
+    let _ = state.add_score(50);
     assert_eq!(state.get_score(), 150, "Очки должны добавиться");
 
     // ScoreAccess не должен содержать методов для уровней, линий или комбо
@@ -80,7 +80,7 @@ fn test_score_access_does_not_contain_level_methods() {
     // ScoreAccess имеет только методы очков
     let _score: u128 = state.get_score();
     state.set_score(100);
-    state.add_score(50);
+    let _ = state.add_score(50);
 
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_level() // Не доступно через ScoreAccess
@@ -94,7 +94,7 @@ fn test_score_access_does_not_contain_lines_methods() {
     let mut state = GameState::new();
 
     // ScoreAccess имеет только методы очков
-    state.add_score(100);
+    let _ = state.add_score(100);
 
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_lines_cleared() // Не доступно через ScoreAccess
@@ -108,7 +108,7 @@ fn test_score_access_does_not_contain_combo_methods() {
     let mut state = GameState::new();
 
     // ScoreAccess имеет только методы очков
-    state.add_score(100);
+    let _ = state.add_score(100);
 
     // Эти методы НЕ доступны через ScoreAccess:
     // state.get_combo() // Не доступно через ScoreAccess

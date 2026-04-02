@@ -89,7 +89,7 @@ fn test_score_board_is_used() {
     assert_eq!(scoreboard.get_level(), 1);
     assert_eq!(scoreboard.get_lines_cleared(), 0);
 
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
 
     scoreboard.set_level(5);
@@ -146,7 +146,7 @@ fn test_components_have_correct_structure() {
 
     // ScoreBoard отвечает только за очки
     let mut scoreboard = ScoreBoard::new();
-    scoreboard.add_score(100);
+    let _ = scoreboard.add_score(100);
     assert_eq!(scoreboard.get_score(), 100);
 
     // Компоненты разделены - нет дублирования ответственности
