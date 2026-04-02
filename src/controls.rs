@@ -297,6 +297,16 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// config.save_to_file("my_controls.json").unwrap();
     /// ```
+    ///
+    /// # Errors
+    /// Возвращает `io::Error` если:
+    /// - Не удалось получить текущую директорию
+    /// - Путь не проходит валидацию (слишком длинный, содержит запрещённые символы)
+    /// - Путь является символической ссылкой
+    /// - Путь находится вне разрешённой директории
+    /// - Ошибка сериализации JSON
+    /// - Ошибка вычисления HMAC подписи
+    /// - Ошибка записи в файл
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR
@@ -444,6 +454,16 @@ impl ControlsConfig {
     /// 2. Затем проверяем fstat() что это не symlink
     /// 3. Только после всех проверок читаем данные
     ///
+    /// # Errors
+    /// Возвращает `io::Error` если:
+    /// - Не удалось получить текущую директорию
+    /// - Путь не проходит валидацию
+    /// - Файл является символической ссылкой (TOCTOU защита)
+    /// - Файл слишком большой (> MAX_CONFIG_FILE_SIZE)
+    /// - Ошибка чтения JSON
+    /// - Ошибка десериализации
+    /// - Ошибка валидации HMAC подписи
+    ///
     /// # Пример использования
     /// ```no_run
     /// use tetris_cli::controls::ControlsConfig;
@@ -558,6 +578,11 @@ impl ControlsConfig {
     ///
     /// # Исправление ISSUE-041
     /// Метод интегрирован в ControlsConfig для лучшей когезии.
+    ///
+    /// # Errors
+    /// Возвращает `Err(String)` если:
+    /// - HMAC ключ пустой или содержит только пробелы
+    /// - HMAC ключ короче MIN_HMAC_KEY_LENGTH (16 байт)
     #[allow(dead_code)] // Публичный API для валидации HMAC ключа
     pub fn validate_hmac_key(&self) -> Result<(), String> {
         crate::config::keys::validate_hmac_key(
