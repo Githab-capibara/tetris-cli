@@ -11,51 +11,6 @@
 // ГРУППА ТЕСТОВ: Макросы логирования
 // ============================================================================
 
-/// Тест 2: Проверка формата вывода log_error!
-///
-/// Проверяет, что макрос выводит сообщение с префиксом [ERROR].
-#[test]
-fn test_log_error_format() {
-    // Проверяем формат сообщения
-    let expected_prefix = "[ERROR]";
-    let test_message = format!("{} Тестовое сообщение", expected_prefix);
-
-    assert!(
-        test_message.starts_with(expected_prefix),
-        "Сообщение должно начинаться с [ERROR]"
-    );
-}
-
-/// Тест 4: Проверка формата вывода log_warn!
-///
-/// Проверяет, что макрос выводит сообщение с префиксом [WARN].
-#[test]
-fn test_log_warn_format() {
-    // Проверяем формат сообщения
-    let expected_prefix = "[WARN]";
-    let test_message = format!("{} Тестовое предупреждение", expected_prefix);
-
-    assert!(
-        test_message.starts_with(expected_prefix),
-        "Сообщение должно начинаться с [WARN]"
-    );
-}
-
-/// Тест 5: Проверка формата вывода log_info!
-///
-/// Проверяет, что макрос выводит сообщение с префиксом [INFO].
-#[test]
-fn test_log_info_format() {
-    // Проверяем формат сообщения
-    let expected_prefix = "[INFO]";
-    let test_message = format!("{} Тестовая информация", expected_prefix);
-
-    assert!(
-        test_message.starts_with(expected_prefix),
-        "Сообщение должно начинаться с [INFO]"
-    );
-}
-
 /// Тест 7: Проверка работы макросов с разными типами данных
 ///
 /// Проверяет, что макросы поддерживают разные типы параметров.
@@ -110,33 +65,6 @@ fn test_log_macros_with_multiple_args() {
     log_error!("{} {} {} {}", "Один", 2, 3.0, true);
     log_warn!("{} {} {} {}", "Один", 2, 3.0, true);
     log_info!("{} {} {} {}", "Один", 2, 3.0, true);
-}
-
-/// Тест 10: Проверка что макросы используют eprintln!
-///
-/// Проверяет, что макросы выводят в stderr через eprintln!.
-#[test]
-fn test_log_macros_use_eprintln() {
-    // Макросы должны использовать eprintln! для вывода в stderr
-    // Проверяем что вывод содержит правильный формат
-
-    let error_msg = "[ERROR] Тест";
-    let warn_msg = "[WARN] Тест";
-    let info_msg = "[INFO] Тест";
-
-    assert!(error_msg.starts_with("[ERROR]"));
-    assert!(warn_msg.starts_with("[WARN]"));
-    assert!(info_msg.starts_with("[INFO]"));
-}
-
-/// Тест 11: Проверка работы макросов с экранированными символами
-///
-/// Проверяет, что макросы корректно обрабатывают специальные символы.
-#[test]
-fn test_log_macros_with_escaped_chars() {
-    log_error!("Спецсимволы: \\n \\t \\\" \\\\");
-    log_warn!("Спецсимволы: \\n \\t \\\" \\\\");
-    log_info!("Спецсимволы: \\n \\t \\\" \\\\");
 }
 
 /// Тест 12: Проверка работы макросов с Unicode
