@@ -143,6 +143,8 @@ pub trait BoardMutable: BoardReadonly {
     /// Получить скорость падения (по умолчанию 0.0).
     ///
     /// Этот метод имеет реализацию по умолчанию для типов которые не поддерживают скорость падения.
+    #[must_use]
+    #[inline]
     fn get_fall_speed(&self) -> f32 {
         0.0
     }
@@ -159,6 +161,8 @@ pub trait BoardMutable: BoardReadonly {
     }
 
     /// Получить таймер приземления (по умолчанию 0.0).
+    #[must_use]
+    #[inline]
     fn get_land_timer(&self) -> f64 {
         0.0
     }
