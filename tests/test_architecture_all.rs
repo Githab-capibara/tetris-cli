@@ -1,13 +1,7 @@
-//! Тесты для всех 30 архитектурных проблем в проекте tetris-cli.
+//! Тесты для архитектурных проблем в проекте tetris-cli.
 //!
-//! Этот файл содержит тесты для проверки всех исправленных архитектурных проблем,
-//! сгруппированных по категориям:
-//! - Критические проблемы (4 теста)
-//! - Архитектура (5 тестов)
-//! - Модульность (4 теста)
-//! - Код (7 тестов)
-//! - Масштабируемость (6 тестов)
-//! - Дополнительные (4 теста)
+//! Этот файл содержит уникальные архитектурные тесты.
+//! Дублирующиеся тесты удалены (остались в test_41_fixed_issues.rs).
 //!
 //! ## Запуск тестов
 //! ```bash
@@ -18,89 +12,12 @@
 #![allow(clippy::too_many_lines)]
 
 // ============================================================================
-// КАТЕГОРИЯ 1: КРИТИЧЕСКИЕ ПРОБЛЕМЫ (4 теста)
+// КАТЕГОРИЯ 1: КРИТИЧЕСКИЕ ПРОБЛЕМЫ
 // ============================================================================
 
-/// Тест 2: ThreadSafeLeaderboardEntry без паники при отравлении Mutex
-///
-/// Проверяет что ThreadSafeLeaderboardEntry::score_safe() возвращает Option<u128>
-/// вместо паники при PoisonError.
-///
-/// # Архитектурная проблема E2 (CRITICAL)
-/// ThreadSafeLeaderboardEntry::score_safe() теперь возвращает Option<u128>
-/// и обрабатывает PoisonError через возврат None вместо паники.
-#[test]
-fn test_critical_thread_safe_score_no_panic() {
-    use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
-
-    // Тест 1: score_safe() возвращает Some(score) для валидной записи
-    let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000);
-    let score = entry.score_safe();
-    assert_eq!(
-        score,
-        Some(1000),
-        "score_safe() должен возвращать Some(score) для валидной записи"
-    );
-
-    // Тест 2: is_valid_safe() возвращает Option<bool>
-    let is_valid = entry.is_valid_safe();
-    assert!(
-        is_valid.is_some(),
-        "is_valid_safe() должен возвращать Some(bool)"
-    );
-
-    // Тест 3: name_safe() возвращает Option<String>
-    let name = entry.name_safe();
-    assert!(name.is_some(), "name_safe() должен возвращать Some(String)");
-    assert_eq!(name, Some("Player1".to_string()));
-}
-
-/// Тест 4: LeaderboardEntry TOCTOU документация и защита
-///
-/// Проверяет что LeaderboardEntry имеет подробную документацию о TOCTOU уязвимости
-/// и методах защиты.
-///
-/// # Архитектурная проблема E9 (CRITICAL)
-/// Добавлена подробная документация о TOCTOU уязвимостях в LeaderboardEntry:
-/// - Описание проблемы Time-Of-Check-Time-Of-Use
-/// - Примеры безопасного использования
-/// - Рекомендации по многопоточному доступу через Arc<Mutex<>>
-#[test]
-fn test_critical_leaderboard_toctou_documentation() {
-    use std::fs;
-
-    let leaderboard_path = "src/highscore/leaderboard.rs";
-    let content = fs::read_to_string(leaderboard_path).expect("Failed to read leaderboard.rs");
-
-    // Тест 1: Документация TOCTOU присутствует
-    assert!(
-        content.contains("TOCTOU") || content.contains("Time-Of-Check-Time-Of-Use"),
-        "leaderboard.rs должен содержать документацию о TOCTOU уязвимости"
-    );
-
-    // Тест 2: Документация о потокобезопасности
-    assert!(
-        content.contains("Потокобезопасность")
-            || content.contains("!Send")
-            || content.contains("!Sync"),
-        "Должна быть документация о потокобезопасности"
-    );
-
-    // Тест 3: PhantomData маркер для !Send + !Sync
-    assert!(
-        content.contains("PhantomData<*mut ()>"),
-        "LeaderboardEntry должен содержать PhantomData<*mut ()> для !Send + !Sync"
-    );
-
-    // Тест 4: ThreadSafeLeaderboardEntry существует
-    assert!(
-        content.contains("pub struct ThreadSafeLeaderboardEntry"),
-        "Должна существовать потокобезопасная обёртка ThreadSafeLeaderboardEntry"
-    );
-}
 
 // ============================================================================
-// КАТЕГОРИЯ 2: АРХИТЕКТУРА (5 тестов)
+// КАТЕГОРИЯ 2: АРХИТЕКТУРА
 // ============================================================================
 
 /// Тест 6: Абстракция времени Time модуль
