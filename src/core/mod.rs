@@ -270,12 +270,30 @@ impl Position {
     }
 }
 
+/// Конвертация кортежа (i16, i16) в Position.
+///
+/// # Пример
+/// ```
+/// use tetris_cli::core::Position;
+/// let pos: Position = (5, 10).into();
+/// assert_eq!(pos.x(), 5);
+/// assert_eq!(pos.y(), 10);
+/// ```
 impl From<(i16, i16)> for Position {
     fn from((x, y): (i16, i16)) -> Self {
         Self::new(x, y)
     }
 }
 
+/// Конвертация Position в кортеж (i16, i16).
+///
+/// # Пример
+/// ```
+/// use tetris_cli::core::Position;
+/// let pos = Position::new(5, 10);
+/// let tuple: (i16, i16) = pos.into();
+/// assert_eq!(tuple, (5, 10));
+/// ```
 impl From<Position> for (i16, i16) {
     fn from(pos: Position) -> Self {
         pos.to_tuple()
