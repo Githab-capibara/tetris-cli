@@ -697,6 +697,10 @@ impl GameState {
     /// # Исправление аудита 2026-03-31 (HIGH)
     /// Убран избыточный `clamp()` после валидации. Теперь используется только типизированная
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
+    ///
+    /// # Исправление аудита 2026-04-02 (B1)
+    /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
+    #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use super::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
         use crate::errors::GameError;
@@ -752,6 +756,10 @@ impl GameState {
     /// state.set_land_timer(-1.0)?; // Ошибка: отрицательное значение
     /// state.set_land_timer(f64::NAN)?; // Ошибка: NaN
     /// ```
+    ///
+    /// # Исправление аудита 2026-04-02 (B1)
+    /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
+    #[must_use = "Ошибка установки таймера должна быть обработана"]
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
 

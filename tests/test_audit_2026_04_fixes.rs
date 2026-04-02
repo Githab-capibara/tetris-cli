@@ -328,10 +328,9 @@ fn test_h9_compute_signature_method_exists() {
 
     // Проверяем что HMAC ключ существует
     let key = get_controls_hmac_key();
-    assert!(
-        !key.is_empty() || true,
-        "HMAC ключ должен быть определён (тест проходит даже с пустым ключом)"
-    );
+    // Тест проверяет что код компилируется и функция работает
+    // Пустой ключ допустим (означает что TETRIS_HMAC_KEY не установлена)
+    let _ = key;
 
     // Тест проходит если код компилируется
     // Метод compute_signature() существует - тест проходит
@@ -589,13 +588,13 @@ fn test_l3_simplified_error_constructors() {
 /// Проверяет что exports.rs содержит только необходимые экспорты.
 #[test]
 fn test_l4_simplified_exports() {
-    // Проверяем что основные типы экспортированы
+    // Импорты должны быть в начале функции (Clippy: items_after_statements)
     use tetris_cli::exports::{
         BagGenerator, ControlsConfig, Direction, GameState, Leaderboard, RotationDirection,
         ShapeType,
     };
 
-    // Проверяем что типы могут быть использованы
+    // Проверяем что основные типы экспортированы и могут быть использованы
     let _state = GameState::new();
     let _direction = Direction::Down;
     let _rotation = RotationDirection::Clockwise;
@@ -614,6 +613,7 @@ fn test_l4_simplified_exports() {
 
 /// Интеграционный тест: Проверка всех CRITICAL исправлений
 #[test]
+#[allow(clippy::items_after_statements)]
 fn test_all_critical_fixes_integration() {
     // C1: Валидация HMAC ключей
     use tetris_cli::config::keys::validate_hmac_key;
