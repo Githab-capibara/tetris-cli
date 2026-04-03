@@ -49,10 +49,9 @@ pub type HmacSha256 = Hmac<Sha256>;
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
-    // new_from_slice() никогда не вернёт ошибку для HMAC.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .expect("HMAC-SHA256 поддерживает ключи любой длины");
+    // HMAC-SHA256 принимает ключи любой длины, ошибка невозможна
+    let mut mac =
+        HmacSha256::new_from_slice(key.as_bytes()).expect("HMAC-SHA256 new_from_slice never fails");
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -478,10 +477,11 @@ mod hmac_tests {
         let data = "данные";
         let valid_signature = hmac_sha256(key, data);
 
-        // Изменяем один байт в подписи
-        let mut invalid_signature = valid_signature.clone();
-        let bytes = unsafe { invalid_signature.as_bytes_mut() };
-        bytes[0] = bytes[0].wrapping_add(1);
+        // Изменяем первый символ hex-строки (безопасная мутация через String)
+        let mut invalid_signature = valid_signature;
+        let first_char = invalid_signature.chars().next().unwrap();
+        let new_char = char::from_u32((first_char as u32 + 1) % 256).unwrap_or('x');
+        invalid_signature.replace_range(..1, &new_char.to_string());
 
         assert!(
             !verify_hmac_sha256(key, data, &invalid_signature),
@@ -496,11 +496,11 @@ mod hmac_tests {
         let data = "данные";
         let valid_signature = hmac_sha256(key, data);
 
-        // Изменяем последний байт в подписи
-        let mut invalid_signature = valid_signature.clone();
-        let len = invalid_signature.len();
-        let bytes = unsafe { invalid_signature.as_bytes_mut() };
-        bytes[len - 1] = bytes[len - 1].wrapping_add(1);
+        // Изменяем последний символ hex-строки
+        let mut invalid_signature = valid_signature;
+        let last_char = invalid_signature.pop().unwrap();
+        let new_char = char::from_u32((last_char as u32 + 1) % 256).unwrap_or('x');
+        invalid_signature.push(new_char);
 
         assert!(
             !verify_hmac_sha256(key, data, &invalid_signature),
