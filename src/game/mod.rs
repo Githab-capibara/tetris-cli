@@ -82,29 +82,15 @@ pub mod view;
 
 // Re-export основных типов для обратной совместимости
 // Исправление аудита 2026-03-31 (Проблема #1): GameError перемещён в errors.rs
-pub use crate::errors::GameError;
-pub use mode_trait::GameModeTrait;
-#[allow(deprecated)] // Для обратной совместимости с тестами
-pub use state::GameMode;
-pub use state::GameResult;
 pub use state::GameState;
-pub use stats::GameStats;
 
 // Re-export трейтов и типов из access
-pub use access::{BoardMutable, BoardReadonly, ScoreAccess, ScoreMutable};
 
 // Re-export трейтов и типов из board
-pub use board::{
-    BoardMutable as BoardMutableTrait, BoardReadonly as BoardReadonlyTrait, GameBoard,
-};
 
 // Re-export ScoreBoard из scoreboard (трейты ScoreAccess и ScoreMutable теперь в access.rs)
-pub use scoreboard::ScoreBoard;
 
-// Re-export GameView и StringCache для отрисовки и кэширования
-pub use cache::StringCache;
-pub use scoring::lines::find_filled_lines;
-pub use view::GameView;
+// Re-export GameView для отрисовки (StringCache теперь только для тестов)
 
 // Константы для тестов (обратная совместимость)
 
@@ -114,7 +100,7 @@ pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
 };
 
-pub use scoring::{check_rows, find_full_rows, handle_hold, remove_rows};
+pub use scoring::{check_rows, handle_hold};
 
 // Экспорт GameView для отрисовки (обратная совместимость)
 

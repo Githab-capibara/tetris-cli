@@ -13,8 +13,6 @@
 //! assert!(verify_hmac_sha256("key", "data", &signature));
 //! ```
 
-use std::io::Write;
-
 use ::hmac::{Hmac, Mac};
 use sha2::Sha256;
 
@@ -156,12 +154,10 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
-    // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
     // Исправление ISSUE-197: Пустая соль допустима - просто конкатенируется без соли
-    // Это позволяет использовать функцию как для данных с солью, так и без неё
-    let mut salted_data = Vec::with_capacity(salt.len() + data.len());
-    write!(&mut salted_data, "{salt}{data}").expect("write! к Vec<u8> не может вернуть ошибку");
-    hmac_sha256(key, &String::from_utf8_lossy(&salted_data))
+    // Используем format!() напрямую для снижения аллокаций (исправление #15)
+    let salted_data = format!("{salt}{data}");
+    hmac_sha256(key, &salted_data)
 }
 
 /// Проверить HMAC подпись для данных с солью.
@@ -208,10 +204,9 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {
-    // H1: Оптимизация - используем Vec<u8> с write! вместо format!()
-    let mut salted_data = Vec::with_capacity(salt.len() + data.len());
-    write!(&mut salted_data, "{salt}{data}").expect("write! к Vec<u8> не может вернуть ошибку");
-    verify_hmac_sha256(key, &String::from_utf8_lossy(&salted_data), signature)
+    // Используем format!() напрямую для снижения аллокаций (исправление #15)
+    let salted_data = format!("{salt}{data}");
+    verify_hmac_sha256(key, &salted_data, signature)
 }
 
 // ============================================================================
@@ -521,5 +516,47 @@ mod hmac_tests {
         let data = "данные";
         let signature = hmac_sha256(key, data);
         assert!(verify_hmac_sha256(key, data, &signature));
+    }
+
+    // ========================================================================
+    // ТЕСТЫ ДЛЯ HMAC SIGN/VERIFY С СОЛЬЮ (исправление #59-60)
+    // ========================================================================
+
+    /// Тест: hmac_sign_with_salt и hmac_verify_with_salt работают корректно
+    #[test]
+    fn test_hmac_sign_verify_with_salt_roundtrip() {
+        let key = "тестовый_ключ";
+        let salt = "уникальная_соль";
+        let data = "тестовые_данные";
+
+        let signature = hmac_sign_with_salt(key, salt, data);
+        assert!(
+            hmac_verify_with_salt(key, salt, data, &signature),
+            "Подпись с солью должна проходить проверку"
+        );
+    }
+
+    /// Тест: пустая соль допустима
+    #[test]
+    fn test_hmac_sign_verify_empty_salt() {
+        let key = "ключ";
+        let data = "данные";
+
+        let signature = hmac_sign_with_salt(key, "", data);
+        assert!(
+            hmac_verify_with_salt(key, "", data, &signature),
+            "Пустая соль должна быть допустима"
+        );
+    }
+
+    /// Тест: разные соли дают разные подписи
+    #[test]
+    fn test_hmac_different_salts_different_signatures() {
+        let key = "ключ";
+        let data = "данные";
+
+        let sig1 = hmac_sign_with_salt(key, "соль1", data);
+        let sig2 = hmac_sign_with_salt(key, "соль2", data);
+        assert_ne!(sig1, sig2, "Разные соли должны давать разные подписи");
     }
 }

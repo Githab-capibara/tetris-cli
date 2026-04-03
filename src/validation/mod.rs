@@ -18,7 +18,6 @@ pub mod service;
 
 // Re-export для удобства использования
 pub use name::is_valid_name_char;
-pub use name::sanitize_player_name;
 pub use service::ValidationService;
 
 // ============================================================================

@@ -35,10 +35,8 @@ pub mod validator;
 
 // Ре-экспорт функций HMAC-SHA256 из hmac модуля (устранение дублирования ISSUE-042)
 // hmac_sign/hmac_verify удалены - используйте напрямую hmac_sha256/verify_hmac_sha256
-pub use hmac::{hmac_sha256, hmac_sign_with_salt, hmac_verify_with_salt, verify_hmac_sha256};
 
 // Ре-экспорт основных функций из validator для удобства
-pub use validator::{sign_salt_and_data, verify_salt_and_data};
 
 use rand::rngs::StdRng;
 use rand::RngCore;

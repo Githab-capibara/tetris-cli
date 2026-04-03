@@ -126,8 +126,9 @@ pub fn sanitize_player_name(name: &str) -> String {
         return ANONYMOUS_NAME.to_string();
     }
 
-    // M10: однопроходный алгоритм с предварительным выделением памяти
+    // M10: однопроходный алгоритм с предварительным выделением памяти и счётчиком символов
     let mut validated = String::with_capacity(MAX_NAME_LENGTH);
+    let mut char_count = 0;
 
     for c in trimmed.chars() {
         if is_valid_name_char(c) {
@@ -140,7 +141,8 @@ pub fn sanitize_player_name(name: &str) -> String {
                 }
             }
             validated.push(c);
-            if validated.chars().count() >= MAX_NAME_LENGTH {
+            char_count += 1;
+            if char_count >= MAX_NAME_LENGTH {
                 break;
             }
         }

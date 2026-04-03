@@ -20,8 +20,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (S3): Выделение Canvas в отдельный модуль.
 
-#![allow(dead_code)]
-
 use std::io::{self, stdout, Stdout, Write};
 use termion::{
     clear::All,
@@ -36,15 +34,9 @@ use crate::io_traits::Renderer;
 // ИМПОРТ КОНСТАНТ
 // ============================================================================
 
-pub use crate::constants::{
-    DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH,
-};
-
 // ============================================================================
 // ОШИБКИ
 // ============================================================================
-
-pub use crate::errors::GameError as IoError;
 
 // ============================================================================
 // CANVAS
@@ -262,6 +254,7 @@ impl Canvas {
     /// # ISSUE-091: Исправление
     /// Метод использует write! в цикле что необходимо для терминального вывода.
     /// Для оптимизации используйте `draw_strs_batch()` для множественных строк.
+    /// Flush вызывается один раз после всех строк для уменьшения системных вызовов.
     pub fn draw_strs(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, mut y) = pos;
         for line in lines {
@@ -279,6 +272,7 @@ impl Canvas {
             }
             y += 1;
         }
+        // Flush вызывается один раз после всех строк (исправление #11)
         if let Err(e) = self.out.flush() {
             eprintln!("Warning: failed to flush terminal: {e}");
         }
@@ -337,7 +331,11 @@ impl Canvas {
         use std::fmt::Write;
 
         let (x_start, y_start) = pos;
-        let mut buffer = String::with_capacity(lines.len() * 50);
+        // Вычисляем capacity на основе суммарной длины строк (исправление #12)
+        // Каждая строка: ~30 байт на escape-последовательности + длина строки
+        const ESCAPE_OVERHEAD: usize = 60;
+        let total_len: usize = lines.iter().map(|s| s.len() + ESCAPE_OVERHEAD).sum();
+        let mut buffer = String::with_capacity(total_len);
 
         for (i, line) in lines.iter().enumerate() {
             // cast: usize -> u16, потеря точности допустима: количество строк небольшое

@@ -79,6 +79,7 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
 pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
     // Проверка валидности rows_mask
     if rows_mask >= (1u32 << GRID_HEIGHT) {
+        #[cfg(debug_assertions)]
         eprintln!(
             "Предупреждение: rows_mask ({}) выходит за пределы поля (максимум {})",
             rows_mask,

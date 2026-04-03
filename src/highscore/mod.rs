@@ -37,9 +37,6 @@ pub mod storage;
 // Re-export основных типов для обратной совместимости
 pub use leaderboard::Leaderboard;
 pub use leaderboard::LeaderboardEntry;
-pub use leaderboard::ThreadSafeLeaderboard;
 pub use save_data::SaveData;
 
 // Re-export компонентов
-pub use leaderboard_repository::LeaderboardRepository;
-pub use storage::{LeaderboardStorage, LeaderboardValidator};

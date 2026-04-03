@@ -18,8 +18,6 @@
 //! **TODO (#архитектура, COHESION-1):** Рассмотреть использование сеттеров
 //! в будущей рефакторизации.
 
-#![allow(clippy::absurd_extreme_comparisons)]
-
 use crate::game::state::GameState;
 use crate::tetromino::Tetromino;
 use crate::types::UpdateEndState;
@@ -99,7 +97,6 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
-    // ISSUE-053: add_score возвращает u128, используем let _ = для игнорирования
     let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     // Устанавливаем таймер в 0.0 — это всегда валидное значение, ошибка невозможна
     state.set_land_timer(0.0).ok();
@@ -130,7 +127,6 @@ pub fn handle_soft_drop(state: &mut GameState) {
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // Исправление C1: saturating_mul для защиты от переполнения
-        // ISSUE-054: add_score возвращает u128, используем let _ = для игнорирования
         let _ = state.add_score(SOFT_DROP_POINTS);
     }
 }
@@ -181,8 +177,6 @@ pub fn handle_hold(state: &mut GameState) {
 /// Использует ранний выход (early return) для проверки проигрыша
 /// и явный возврат результата для улучшения читаемости.
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
-    use crate::constants::{MARATHON_LINES, SPRINT_LINES};
-
     // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
     // Исправление M6: ранний выход для улучшения читаемости
     if check_game_over_condition(state) {
@@ -206,7 +200,7 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 
     // Проверка окончания режима (Исправление #24: вынесено в подфункцию)
     // Исправление M6: явный возврат результата
-    check_mode_completion(state, lines_cleared, SPRINT_LINES, MARATHON_LINES)
+    check_mode_completion(state)
 }
 
 /// Проверить условие проигрыша.
@@ -263,14 +257,12 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
-    // ISSUE-055: add_score возвращает u128, используем let _ = для игнорирования
     let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop
     // Исправление C1: saturating_mul для защиты от переполнения
     let soft_drop_distance = state.soft_drop_distance();
     if soft_drop_distance > 0 {
-        // ISSUE-055: add_score возвращает u128, используем let _ = для игнорирования
         let _ = state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
         state.set_soft_drop_distance(0);
     }
@@ -301,17 +293,16 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
-        let combo_bonus = {
-            let stats_mut_ref = state.stats_mut();
-            let new_combo = stats_mut_ref.combo_counter().saturating_add(1);
-            let () = stats_mut_ref.set_combo_counter(new_combo);
-            if new_combo > 1 {
-                // Инкапсуляция: используем add_score() вместо прямого доступа
-                // Исправление C1: saturating_mul для защиты от переполнения
-                Some(COMBO_BONUS.saturating_mul(u128::from(new_combo - 1)))
-            } else {
-                None
-            }
+        // Сохраняем ссылку на stats_mut для избежания двойного вызова (исправление #14)
+        let stats_mut = state.stats_mut();
+        let new_combo = stats_mut.combo_counter().saturating_add(1);
+        let () = stats_mut.set_combo_counter(new_combo);
+        let combo_bonus = if new_combo > 1 {
+            // Инкапсуляция: используем add_score() вместо прямого доступа
+            // Исправление C1: saturating_mul для защиты от переполнения
+            Some(COMBO_BONUS.saturating_mul(u128::from(new_combo - 1)))
+        } else {
+            None
         };
         if let Some(bonus) = combo_bonus {
             let _ = state.add_score(bonus);
@@ -343,9 +334,6 @@ fn spawn_next_tetromino(state: &mut GameState) {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `lines_cleared` - количество удалённых линий
-/// * `sprint_lines` - целевое количество линий для спринта
-/// * `marathon_lines` - целевое количество линий для марафона
 ///
 /// # Возвращает
 /// - `Some(UpdateEndState::Won)` - режим завершён
@@ -353,15 +341,15 @@ fn spawn_next_tetromino(state: &mut GameState) {
 ///
 /// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
-fn check_mode_completion(
-    state: &mut GameState,
-    lines_cleared: u32,
-    sprint_lines: u32,
-    marathon_lines: u32,
-) -> Option<UpdateEndState> {
+///
+/// # Исправление 2.1
+/// Использует state.lines_cleared() вместо переданного параметра lines_cleared
+/// для получения общего количества очищенных линий.
+fn check_mode_completion(state: &mut GameState) -> Option<UpdateEndState> {
     let mode_trait = state.get_mode_trait();
+    let total_lines_cleared = state.lines_cleared();
 
-    if mode_trait.check_win_condition(lines_cleared) {
+    if mode_trait.check_win_condition(total_lines_cleared) {
         state.stats_mut().stop_timer();
         return Some(UpdateEndState::Won);
     }

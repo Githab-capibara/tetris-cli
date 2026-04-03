@@ -193,8 +193,14 @@ impl LeaderboardEntry {
     ///
     /// # Исправление C2 (TOCTOU)
     /// Добавлен атомарный метод для безопасной проверки и получения значения.
+    ///
+    /// # Устарело
+    /// Используйте [`Self::score()`] — оба метода выполняют одинаковую операцию.
     #[must_use]
-    #[allow(dead_code)]
+    #[deprecated(
+        since = "23.96.19",
+        note = "Используйте score() — оба метода выполняют одинаковую операцию"
+    )]
     pub fn get_valid_score(&self) -> Option<u128> {
         let score_value = self.score_value;
         if self.verify_hash_for_value(score_value) {
@@ -216,11 +222,15 @@ impl LeaderboardEntry {
     /// Этот метод позволяет выполнить валидацию для конкретного значения,
     /// что предотвращает TOCTOU уязвимость при использовании в методе `score()`.
     ///
+    /// # Исправление 2.2
+    /// Оптимизация: используется format! напрямую для избежания промежуточных аллокаций.
+    ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
-        let salt_name_score = format!("{}{}{}", self.salt, self.name, value);
+        // Оптимизация: используем format! напрямую (исправление #16)
+        let salt_name_score = format!("{}{}{value}", self.salt, self.name);
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
             &self.salt,

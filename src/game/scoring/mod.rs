@@ -60,8 +60,6 @@
 //! `ScoreAccess` и другие трейты импортируются из `super::access` для устранения дублирования.
 //! Этот модуль делает re-export для обратной совместимости.
 
-#![allow(dead_code)]
-
 // Подмодули
 pub mod combo;
 pub mod lines;
@@ -80,9 +78,7 @@ pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop
 // Re-export трейтов из access.rs для устранения дублирования (Архитектурное улучшение 2026-04-01)
 // ScoreAccess, LevelAccess, LinesAccess, ComboAccess, ScoreMutable определены в access.rs
 // и переэкспортируются здесь для обратной совместимости
-pub use super::access::{
-    BoardMutable, BoardReadonly, ComboAccess, LevelAccess, LinesAccess, ScoreAccess, ScoreMutable,
-};
+pub use super::access::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess, ScoreMutable};
 
 // ============================================================================
 // TRAIT SCORINGSTATE (ОБЪЕДИНЁННЫЙ ТРЕЙТ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ)

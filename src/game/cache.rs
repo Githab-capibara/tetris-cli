@@ -8,9 +8,9 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (YAGNI3): `StringCache` используется только в тестах.
 
-use super::mode_trait::GameModeTrait;
-use super::stats::GameStats;
-use std::fmt::Write;
+// ============================================================================
+// RENDERCACHE — ПРОДАКШЕН
+// ============================================================================
 
 /// Кэш строк для отрисовки UI.
 ///
@@ -35,7 +35,14 @@ use std::fmt::Write;
 ///
 /// # Архитектурные заметки
 /// `StringCache` используется только в тестах.
-#[allow(dead_code)] // Используется только в тестах
+#[cfg(test)]
+use super::mode_trait::GameModeTrait;
+#[cfg(test)]
+use super::stats::GameStats;
+#[cfg(test)]
+use std::fmt::Write;
+
+#[cfg(test)]
 #[derive(Clone, Default)]
 pub struct StringCache {
     /// Кэшированная строка счёта.
@@ -62,6 +69,7 @@ pub struct StringCache {
     last_timer: f64,
 }
 
+#[cfg(test)]
 impl StringCache {
     /// Создать новый кэш строк.
     ///
@@ -75,7 +83,6 @@ impl StringCache {
     /// let cache = StringCache::new();
     /// assert!(cache.score_str.is_empty());
     /// ```
-    #[allow(dead_code)] // Используется только в тестах
     #[must_use = "Кэш строк должен быть использован"]
     pub fn new() -> Self {
         Self::default()
@@ -101,7 +108,6 @@ impl StringCache {
     /// # #[`track_caller`]
     /// Добавлен для отладки места вызова при панике.
     #[track_caller]
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
@@ -160,7 +166,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку счёта.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn score(&self) -> &str {
@@ -168,7 +173,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку уровня.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn level(&self) -> &str {
@@ -176,7 +180,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку линий.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn lines(&self) -> &str {
@@ -184,7 +187,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку рекорда.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn high_score(&self) -> &str {
@@ -192,7 +194,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку комбо.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn combo(&self) -> &str {
@@ -200,7 +201,6 @@ impl StringCache {
     }
 
     /// Получить кэшированную строку таймера.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     #[must_use]
     #[inline]
     pub fn timer(&self) -> &str {
@@ -208,7 +208,6 @@ impl StringCache {
     }
 
     /// Сбросить все кэшированные строки.
-    #[allow(dead_code)] // Внутренний API для отрисовки
     pub fn clear(&mut self) {
         self.score_str.clear();
         self.level_str.clear();
