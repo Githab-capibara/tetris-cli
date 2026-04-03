@@ -1,10 +1,9 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 3 апреля 2026 г. (глубокая очистка тестовой базы)
+**Дата последней актуализации:** 3 апреля 2026 г. (финальная очистка)
 **Версия проекта:** 23.96.14+
-**Всего тестов:** ~200 тестов (проходят 100% в интеграции)
-**Тестовых файлов:** 23 (src/tests/ и tests/)
-**Всего файлов тестов:** 90 (удалено 4 файла дубликатов)
+**Всего тестов:** ~760 тестов (проходят 100%)
+**Тестовых файлов:** 5 интеграционных (tests/) + 30+ unit (src/tests/) + 60+ встроенных (#[cfg(test)])
 
 ---
 
@@ -13,9 +12,9 @@
 ### Структура тестовой базы:
 
 **Интеграционные тесты (`/tests/`):**
-- 8 файлов
-- ~179 тестов
-- Категории: architecture, audit, fixes, verification
+- 3 файла: test_all_fixed_issues.rs, test_architecture_integrity.rs, test_audit_2026_04_fixes.rs
+- Удалены: test_41_fixed_issues.rs (дубликат), test_fixes_verification.rs (дубликат)
+- ~55 тестов
 
 **Unit тесты (`/src/tests/`):**
 - 82 файла (удалены дубликаты: test_architecture_integrity_new, test_architecture_components, test_architecture_integrity, test_architecture_fixes_new)
