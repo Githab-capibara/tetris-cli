@@ -44,7 +44,6 @@
 //! validator.validate(path).unwrap();
 //! ```
 
-use std::collections::HashSet;
 use std::io;
 use std::path::Path;
 
@@ -173,6 +172,7 @@ impl PathValidator {
     ///
     /// # Исправление M4 (MEDIUM)
     /// Добавлен #[`must_use`] для предотвращения случайного неиспользования результата.
+    #[allow(dead_code)]
     #[must_use = "Результат валидации пути должен быть обработан"]
     #[track_caller]
     pub fn validate(&self, path: &Path) -> Result<(), PathError> {
@@ -338,7 +338,7 @@ impl PathValidator {
     /// Добавлена проверка на null байты для предотвращения null byte injection атак.
     ///
     /// # Исправление M9 (MEDIUM)
-    /// Использует статический `HashSet` для O(1) поиска вместо создания нового на каждом вызове.
+    /// Использует O(n) поиск через `contains` для избежания аллокаций HashSet.
     #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
@@ -347,7 +347,7 @@ impl PathValidator {
             kind: PathErrorKind::InvalidPath,
         })?;
 
-        // Исправление аудита 2026-03-30: проверка на null байты
+        // Проверка на null байты
         if path_str.contains('\0') {
             return Err(PathError {
                 message: "Путь содержит null байт (\\0)".to_string(),
@@ -355,10 +355,6 @@ impl PathValidator {
             });
         }
 
-        // M9: используем статический HashSet для предотвращения повторного создания
-        // Поскольку allowed_chars фиксирован для экземпляра валидатора, кэширование
-        // на уровне экземпляра более эффективно. Для DEFAULT_PATH_VALIDATOR
-        // можно использовать статический HashSet.
         if !Self::validate_characters_with_set(path_str, self.allowed_chars) {
             return Err(PathError {
                 message: format!("Запрещённый символ в пути: {path_str:?}"),
@@ -368,10 +364,9 @@ impl PathValidator {
         Ok(())
     }
 
-    /// Внутренняя функция проверки символов с использованием HashSet.
+    /// Внутренняя функция проверки символов.
     fn validate_characters_with_set(path_str: &str, allowed: &'static str) -> bool {
-        let allowed: HashSet<char> = allowed.chars().collect();
-        path_str.chars().all(|ch| allowed.contains(&ch))
+        path_str.chars().all(|ch| allowed.contains(ch))
     }
 
     /// Проверить отсутствие символических ссылок.
