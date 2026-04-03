@@ -31,7 +31,11 @@ mod tests {
         // Тест базовых значений
         assert_eq!(safe_f32_to_u32(0.0), 0, "0.0 должна конвертироваться в 0");
         assert_eq!(safe_f32_to_u32(1.0), 1, "1.0 должна конвертироваться в 1");
-        assert_eq!(safe_f32_to_u32(10.0), 10, "10.0 должна конвертироваться в 10");
+        assert_eq!(
+            safe_f32_to_u32(10.0),
+            10,
+            "10.0 должна конвертироваться в 10"
+        );
         assert_eq!(
             safe_f32_to_u32(100.0),
             100,
@@ -141,7 +145,10 @@ mod tests {
         );
 
         // Проверка что is_finite() возвращает false для infinity
-        assert!(!f32::INFINITY.is_finite(), "+infinity должен быть не-finite");
+        assert!(
+            !f32::INFINITY.is_finite(),
+            "+infinity должен быть не-finite"
+        );
 
         println!("✓ +infinity конвертируется в 0 корректно");
     }
@@ -176,21 +183,9 @@ mod tests {
     #[test]
     fn test_safe_f32_to_u32_negative_values() {
         // Тест небольших отрицательных значений
-        assert_eq!(
-            safe_f32_to_u32(-0.0),
-            0,
-            "-0.0 должна конвертироваться в 0"
-        );
-        assert_eq!(
-            safe_f32_to_u32(-0.1),
-            0,
-            "-0.1 должна конвертироваться в 0"
-        );
-        assert_eq!(
-            safe_f32_to_u32(-1.0),
-            0,
-            "-1.0 должна конвертироваться в 0"
-        );
+        assert_eq!(safe_f32_to_u32(-0.0), 0, "-0.0 должна конвертироваться в 0");
+        assert_eq!(safe_f32_to_u32(-0.1), 0, "-0.1 должна конвертироваться в 0");
+        assert_eq!(safe_f32_to_u32(-1.0), 0, "-1.0 должна конвертироваться в 0");
 
         // Тест больших отрицательных значений
         assert_eq!(
@@ -381,13 +376,7 @@ mod tests {
         }
 
         // Тест специальных значений
-        let special_values: [f32; 5] = [
-            f32::NAN,
-            f32::INFINITY,
-            f32::NEG_INFINITY,
-            -1.0,
-            -100.0,
-        ];
+        let special_values: [f32; 5] = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0, -100.0];
 
         for &val in special_values.iter() {
             let result = safe_f32_to_u32(val);
@@ -459,8 +448,7 @@ mod tests {
             let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
             assert_eq!(
-                drop_distance,
-                end_y as u32,
+                drop_distance, end_y as u32,
                 "Расстояние Hard Drop должно конвертироваться корректно"
             );
         }

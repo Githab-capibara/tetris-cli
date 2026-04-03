@@ -61,8 +61,7 @@ mod tests {
                 match e {
                     IoError::Initialization(msg) => {
                         assert!(
-                            msg.contains("не удалось создать Canvas")
-                                || msg.contains("терминал"),
+                            msg.contains("не удалось создать Canvas") || msg.contains("терминал"),
                             "Сообщение об ошибке инициализации должно быть понятным"
                         );
                     }
@@ -340,10 +339,8 @@ mod tests {
     /// Проверяет что std::io::Error конвертируется в IoError::RawMode.
     #[test]
     fn test_from_std_io_error_for_io_error() {
-        let std_error = std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "тестовая ошибка ввода/вывода",
-        );
+        let std_error =
+            std::io::Error::new(std::io::ErrorKind::Other, "тестовая ошибка ввода/вывода");
 
         let io_error: IoError = std_error.into();
 

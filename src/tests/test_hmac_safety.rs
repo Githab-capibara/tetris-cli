@@ -159,7 +159,7 @@ mod tests {
 
     /// Тест 7: Проверка что unwrap_or_else() использует unreachable!().
     ///
-    /// Проверяет что в случае ошибки (что невозможно для HMAC) 
+    /// Проверяет что в случае ошибки (что невозможно для HMAC)
     /// вызывается unreachable!() с понятным сообщением.
     #[test]
     fn test_hmac_sha256_unreachable_pattern() {
@@ -167,18 +167,17 @@ mod tests {
         // new_from_slice() никогда не вернёт ошибку.
         // Этот тест проверяет что код компилируется с unwrap_or_else()
 
+        use crate::crypto::HmacSha256;
         use hmac::Mac;
         use sha2::Sha256;
-        use crate::crypto::HmacSha256;
 
         // Симулируем логику из hmac_sha256()
         let key = "test_key";
         let mac_result = HmacSha256::new_from_slice(key.as_bytes());
 
         // unwrap_or_else должен сработать без паники
-        let _mac = mac_result.unwrap_or_else(|_| {
-            unreachable!("HMAC поддерживает ключи любой длины")
-        });
+        let _mac =
+            mac_result.unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
 
         // Если тест дошёл до этой точки, значит unwrap_or_else() сработал
         println!("✓ unwrap_or_else() сработал корректно");
@@ -296,7 +295,8 @@ mod tests {
 
         // Создаём подписи с разным количеством несовпадающих символов
         let signature_one_diff = "b".to_string() + &valid_signature[1..];
-        let signature_many_diff = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+        let signature_many_diff =
+            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
         // Обе проверки должны вернуть false
         assert!(
@@ -391,7 +391,8 @@ mod tests {
             assert!(
                 verify_hmac_sha256(key, data, &signature),
                 "Подпись должна валидироваться для ключа '{}' и данных '{}'",
-                key, data
+                key,
+                data
             );
 
             // Проверяем что изменённые данные не валидируются
@@ -447,9 +448,7 @@ mod tests {
         let data = "deterministic_data";
 
         // Создаём 10 подписей
-        let signatures: Vec<String> = (0..10)
-            .map(|_| hmac_sha256(key, data))
-            .collect();
+        let signatures: Vec<String> = (0..10).map(|_| hmac_sha256(key, data)).collect();
 
         // Все подписи должны быть одинаковыми
         for i in 1..signatures.len() {

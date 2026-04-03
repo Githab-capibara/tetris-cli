@@ -352,7 +352,8 @@ impl Canvas {
                 line,
                 Fg(Reset),
                 Bg(Reset)
-            ).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            )
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         }
 
         // Записываем всё за один раз
