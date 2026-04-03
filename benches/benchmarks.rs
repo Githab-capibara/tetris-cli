@@ -42,7 +42,7 @@ use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::GameState;
 use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
 use tetris_cli::types::Direction;
-use tetris_cli::validation::sanitize_player_name;
+use tetris_cli::validation::name::sanitize_player_name;
 
 /// Главная функция для запуска бенчмарков.
 ///
