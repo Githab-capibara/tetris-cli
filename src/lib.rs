@@ -410,6 +410,8 @@ macro_rules! log_info {
 // Тесты разбиты по категориям для лучшей организации.
 
 #[cfg(test)]
+#[allow(clippy::all)]
+#[allow(unused_must_use)]
 mod tests {
     // Основные юнит-тесты
     pub mod test_game_logic;

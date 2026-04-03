@@ -172,7 +172,6 @@ mod tests {
 
         use crate::crypto::hmac::HmacSha256;
         use hmac::Mac;
-        use sha2::Sha256;
 
         // Симулируем логику из hmac_sha256()
         let key = "test_key";
