@@ -59,12 +59,15 @@ pub trait BoardReadonly {
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
 
     /// Получить значение ячейки игрового поля.
+    #[allow(dead_code)]
     fn get_block(&self, x: usize, y: usize) -> i8;
 
     /// Проверить, пуста ли ячейка.
+    #[allow(dead_code)]
     fn is_block_empty(&self, x: usize, y: usize) -> bool;
 
     /// Проверить, занята ли ячейка.
+    #[allow(dead_code)]
     fn is_block_occupied(&self, x: usize, y: usize) -> bool;
 
     /// Получить битовую маску заполненных линий.
@@ -72,12 +75,14 @@ pub trait BoardReadonly {
     /// # Возвращает
     /// Битовая маска где каждый бит соответствует линии поля.
     /// Бит установлен в 1 если линия заполнена.
+    #[allow(dead_code)]
     fn get_filled_lines_mask(&self) -> u32;
 
     /// Получить количество заполненных линий.
     ///
     /// # Возвращает
     /// Количество линий, которые необходимо удалить.
+    #[allow(dead_code)]
     fn get_filled_lines_count(&self) -> u32;
 }
 
@@ -106,17 +111,21 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
+#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
+    #[allow(dead_code)]
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
 
     /// Установить значение ячейки игрового поля.
+    #[allow(dead_code)]
     fn set_block(&mut self, x: usize, y: usize, value: i8);
 
     /// Установить битовую маску заполненных линий.
     ///
     /// # Аргументы
     /// * `mask` - битовая маска заполненных линий
+    #[allow(dead_code)]
     fn set_filled_lines_mask(&mut self, mask: u32);
 
     /// Очистить заполненные линии.
