@@ -23,8 +23,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (S3): Выделение `KeyReader` в отдельный модуль.
 
-#![allow(dead_code)]
-
 use std::io::{self, Read, Write};
 use termion::{async_stdin, cursor::Show, screen::ToMainScreen, AsyncReader};
 
@@ -257,7 +255,7 @@ impl KeyReader {
 
 impl InputReader for KeyReader {
     fn get_key(&mut self) -> io::Result<Option<u8>> {
-        self.get_key()
+        Self::get_key(self)
     }
 }
 
