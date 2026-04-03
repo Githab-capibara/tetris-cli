@@ -48,5 +48,8 @@ mod validation;
 /// ## Возвращает
 /// Ничего не возвращает. Паникует при ошибке инициализации.
 fn main() {
-    app::run();
+    if let Err(e) = app::run() {
+        eprintln!("[FATAL] Критическая ошибка: {e}");
+        std::process::exit(1);
+    }
 }
