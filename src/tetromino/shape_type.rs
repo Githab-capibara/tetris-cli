@@ -25,7 +25,7 @@
 /// let shape = ShapeType::T; // T-образная фигура
 /// assert_eq!(shape as usize, 0); // Индекс для доступа к координатам и цвету
 /// ```
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ShapeType {
     /// T-образная фигура (пурпурная).
     /// Форма: три блока в ряд с одним блоком сверху по центру

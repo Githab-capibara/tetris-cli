@@ -50,7 +50,7 @@ use std::time::Instant;
 /// - Все счётчики фигур не могут быть отрицательными (гарантируется типом u32)
 /// - `max_combo` не может уменьшаться при обновлении
 /// - `start_time` должен быть раньше `end_time` если оба установлены
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct GameStats {
     /// Количество фигур типа T.
     t_pieces: u32,
