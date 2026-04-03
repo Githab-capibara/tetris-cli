@@ -11,8 +11,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (CRITICAL #3): Terminal Backend Abstraction
 
-#![allow(dead_code)]
-
 use std::io::{self, stdout, Stdout, Write};
 use termion::{
     clear::All,

@@ -8,8 +8,6 @@
 //! Архитектурное улучшение 2026-04-01 (SOC2): Выделение функций обновления кэша
 //! из `render.rs` для улучшения разделения ответственности.
 
-#![allow(dead_code)]
-
 use super::super::state::GameState;
 use std::fmt::Write;
 

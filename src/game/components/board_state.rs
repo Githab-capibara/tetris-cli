@@ -10,8 +10,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01: Выделение компонента для улучшения модульности.
 
-#![allow(dead_code)]
-
 // Переэкспорт GameBoard из board.rs
 pub use crate::game::board::GameBoard;
 

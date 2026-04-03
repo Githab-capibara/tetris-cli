@@ -13,8 +13,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (CRITICAL #2): Разделение Large Class leaderboard.rs
 
-#![allow(dead_code)]
-
 use super::LeaderboardEntry;
 use crate::config::keys::get_leaderboard_hmac_key;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};

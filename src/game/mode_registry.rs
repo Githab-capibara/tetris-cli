@@ -11,8 +11,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (HIGH #5): `ModeRegistry` для регистрации режимов
 
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 
 use super::mode_trait::GameModeTrait;

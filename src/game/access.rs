@@ -106,6 +106,7 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
+#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -224,6 +225,7 @@ pub trait ScoreAccess {
 ///     score.add_score(bonus);
 /// }
 /// ```
+#[allow(dead_code)]
 pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
     fn add_score(&mut self, points: u128);
@@ -248,6 +250,7 @@ pub trait ScoreMutable: ScoreAccess {
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
 /// Для доступа из других модулей используйте `crate::game::access::LevelAccess`.
+#[allow(dead_code)]
 pub trait LevelAccess {
     /// Получить текущий уровень.
     #[must_use]
@@ -273,6 +276,7 @@ pub trait LevelAccess {
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
 /// Для доступа из других модулей используйте `crate::game::access::LinesAccess`.
+#[allow(dead_code)]
 pub trait LinesAccess {
     /// Получить количество очищенных линий.
     #[must_use]
@@ -301,6 +305,7 @@ pub trait LinesAccess {
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
 /// Для доступа из других модулей используйте `crate::game::access::ComboAccess`.
+#[allow(dead_code)]
 pub trait ComboAccess {
     /// Получить текущий комбо.
     #[must_use]
