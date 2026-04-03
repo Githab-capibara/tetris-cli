@@ -11,8 +11,6 @@
 //! - `key_reader.rs` - чтение клавиатуры
 //! - `backend.rs` - абстракция и реализация терминального бэкенда
 
-#![allow(dead_code)]
-
 // Подмодули
 pub mod backend;
 pub mod canvas;

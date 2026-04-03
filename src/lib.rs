@@ -383,7 +383,7 @@ pub use exports::*;
 #[macro_export]
 macro_rules! log_error {
     ($($arg:tt)*) => {{
-        eprintln!("[ERROR] {}", format!($($arg)*));
+        eprintln!("[ERROR] $($arg)*");
     }};
 }
 
@@ -391,7 +391,7 @@ macro_rules! log_error {
 #[macro_export]
 macro_rules! log_warn {
     ($($arg:tt)*) => {{
-        eprintln!("[WARN] {}", format!($($arg)*));
+        eprintln!("[WARN] $($arg)*");
     }};
 }
 
@@ -399,7 +399,7 @@ macro_rules! log_warn {
 #[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {{
-        eprintln!("[INFO] {}", format!($($arg)*));
+        eprintln!("[INFO] $($arg)*");
     }};
 }
 
