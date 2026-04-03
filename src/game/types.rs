@@ -478,7 +478,6 @@ impl From<LinesCount> for u32 {
 // ============================================================================
 
 // Re-export из `core::Position` для избежания дублирования
-pub use crate::core::Position;
 
 // ============================================================================
 // ТЕСТЫ
@@ -487,6 +486,7 @@ pub use crate::core::Position;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::Position;
 
     // ==================== Тесты для Score ====================
 

@@ -34,6 +34,7 @@ pub mod hmac;
 pub mod validator;
 
 // Реэкспорт HMAC функций для удобства импорта
+#[allow(unused_imports)]
 pub use hmac::{hmac_sha256, verify_hmac_sha256};
 
 // Ре-экспорт функций HMAC-SHA256 из hmac модуля (устранение дублирования ISSUE-042)

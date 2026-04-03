@@ -52,7 +52,7 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
     // SAFETY: HMAC-SHA256 поддерживает ключи любой длины, ошибка невозможна.
     // new_from_slice() никогда не вернёт ошибку для HMAC.
     let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
+        .expect("HMAC-SHA256 поддерживает ключи любой длины");
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())

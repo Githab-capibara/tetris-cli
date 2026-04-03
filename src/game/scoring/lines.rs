@@ -481,7 +481,15 @@ mod lines_tests {
         let _ = state.set_fall_speed(1.0);
 
         // Проверяем что методы действительно работают — значения изменились
-        assert_eq!(state.score(), 100, "set_score(100) должен установить счёт в 100");
-        assert_eq!(state.lines_cleared(), 5, "set_lines_cleared(5) должен установить линии в 5");
+        assert_eq!(
+            state.score(),
+            100,
+            "set_score(100) должен установить счёт в 100"
+        );
+        assert_eq!(
+            state.lines_cleared(),
+            5,
+            "set_lines_cleared(5) должен установить линии в 5"
+        );
     }
 }
