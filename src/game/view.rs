@@ -9,6 +9,12 @@ use super::state::GameState;
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::Tetromino;
 
+/// Вертикальное смещение фигур при отрисовке на игровом поле (строки от верха терминала).
+const SHAPE_DRAW_OFFSET_Y: u16 = 5;
+
+/// Горизонтальное смещение фигур при отрисовке на игровом поле (пиксели от левого края поля).
+const SHAPE_OFFSET_X: u16 = 2;
+
 /// Представление игрового состояния для отрисовки.
 ///
 /// Используется для уменьшения связанности между render.rs и `GameState`.
@@ -74,41 +80,41 @@ use crate::tetromino::Tetromino;
 pub struct GameView<'a> {
     // === UI элементы (кэшированные строки) ===
     /// Кэшированная строка счёта.
-    pub score: &'a str,
+    pub(crate) score: &'a str,
     /// Кэшированная строка уровня.
-    pub level: &'a str,
+    pub(crate) level: &'a str,
     /// Кэшированная строка количества линий.
-    pub lines: &'a str,
+    pub(crate) lines: &'a str,
     /// Кэшированная строка комбо (None если комбо нет).
-    pub combo: Option<&'a str>,
+    pub(crate) combo: Option<&'a str>,
     /// Кэшированная строка рекорда.
-    pub high_score: &'a str,
+    pub(crate) high_score: &'a str,
 
     // === Игровое поле ===
     /// Игровое поле (двумерный массив блоков).
-    pub blocks: &'a [[i8; GRID_WIDTH]; GRID_HEIGHT],
+    pub(crate) blocks: &'a [[i8; GRID_WIDTH]; GRID_HEIGHT],
 
     // === Фигуры ===
     /// Текущая падающая фигура.
-    pub curr_shape: &'a Tetromino,
+    pub(crate) curr_shape: &'a Tetromino,
     /// Следующая фигура (предпросмотр).
-    pub next_shape: &'a Tetromino,
+    pub(crate) next_shape: &'a Tetromino,
     /// Удержанная фигура (None если ещё не использовалась).
-    pub held_shape: Option<&'a Tetromino>,
+    pub(crate) held_shape: Option<&'a Tetromino>,
 
     // === Анимации ===
     /// Битовая маска строк для анимации очистки.
-    pub animating_rows: u32,
+    pub(crate) animating_rows: u32,
     /// Флаг анимации Hard Drop.
-    pub is_hard_dropping: bool,
+    pub(crate) is_hard_dropping: bool,
 
     // === Режим и статистика ===
     /// Режим игры (объект трейта).
-    pub mode: &'a dyn GameModeTrait,
+    pub(crate) mode: &'a dyn GameModeTrait,
     /// Количество очищенных линий.
-    pub lines_cleared: u32,
+    pub(crate) lines_cleared: u32,
     /// Прошедшее время игры (в секундах).
-    pub elapsed_time: f64,
+    pub(crate) elapsed_time: f64,
 }
 
 impl<'a> GameView<'a> {
@@ -135,6 +141,10 @@ impl<'a> GameView<'a> {
     /// - Время жизни `'a` гарантирует безопасность ссылок
     #[must_use = "Представление игры должно быть использовано"]
     pub fn from_game_state(state: &'a GameState) -> Self {
+        // I127: Намеренно создаём новый GameView каждый кадр.
+        // GameView содержит только ссылки и флаги (размер ~128 байт),
+        // поэтому аллокация на стеке — дешёвая операция.
+        // Избегание создания не требуется: это не узкое место производительности.
         GameView {
             score: state.get_cached_score_str(),
             level: state.get_cached_level_str(),
@@ -366,6 +376,75 @@ impl<'a> GameView<'a> {
     }
 
     // ========================================================================
+    // ГЕТТЕРЫ ДЛЯ ИНКАПСУЛИРОВАННЫХ ПОЛЕЙ (I014)
+    // ========================================================================
+    // Эти методы предоставляют доступ к полям GameView для внешнего кода
+    // после изменения видимости с pub на pub(crate).
+
+    /// Получить ссылку на игровое поле.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+        self.blocks
+    }
+
+    /// Получить ссылку на текущую фигуру.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn curr_shape(&self) -> &Tetromino {
+        self.curr_shape
+    }
+
+    /// Получить ссылку на следующую фигуру.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn next_shape(&self) -> &Tetromino {
+        self.next_shape
+    }
+
+    /// Получить ссылку на удержанную фигуру.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn held_shape(&self) -> Option<&Tetromino> {
+        self.held_shape
+    }
+
+    /// Получить ссылку на режим игры.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn mode(&self) -> &dyn GameModeTrait {
+        self.mode
+    }
+
+    /// Получить количество очищенных линий.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn lines_cleared(&self) -> u32 {
+        self.lines_cleared
+    }
+
+    /// Получить прошедшее время игры.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn elapsed_time(&self) -> f64 {
+        self.elapsed_time
+    }
+
+    /// Получить битовую маску анимирующихся строк.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn animating_rows(&self) -> u32 {
+        self.animating_rows
+    }
+
+    /// Получить флаг анимации Hard Drop.
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn is_hard_dropping(&self) -> bool {
+        self.is_hard_dropping
+    }
+
+    // ========================================================================
     // МЕТОДЫ ОТРИСОВКИ (Problem 2.5 - Feature Envy)
     // ========================================================================
     // Эти методы предоставляют готовую отрисовку через Renderer,
@@ -406,8 +485,8 @@ impl<'a> GameView<'a> {
                         canvas.draw_strs(
                             &[SHAPE_STR],
                             (
-                                (x * SHAPE_WIDTH + 2) as u16,
-                                (y + 5) as u16, // SHAPE_DRAW_OFFSET = 5
+                                (x * SHAPE_WIDTH + SHAPE_OFFSET_X as usize) as u16,
+                                (y + SHAPE_DRAW_OFFSET_Y as usize) as u16,
                             ),
                             SHAPE_COLORS[color_idx],
                             &Reset,
@@ -453,8 +532,12 @@ impl<'a> GameView<'a> {
 
         for coord in self.curr_shape.coords() {
             let (coord_x, coord_y) = coord;
-            let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X = 2
-            let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y = 5 + 0
+            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_OFFSET_X = 2
+            #[allow(clippy::cast_possible_wrap)]
+            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X as i16;
+            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_DRAW_OFFSET_Y = 5
+            #[allow(clippy::cast_possible_wrap)]
+            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET_Y as i16;
 
             if x >= 0 {
                 // cast: i16 -> u16, потеря знака допустима: координата x >= 0 после проверки
@@ -558,6 +641,9 @@ impl<'a> GameView<'a> {
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
+        // I128: Намеренно создаём полную копию Tetromino через *self.curr_shape.
+        // Tetromino реализует Copy и имеет небольшой размер (содержит координаты,
+        // тип фигуры и позицию), поэтому копирование дешевле, чем borrowing + mutация.
         let mut ghost_shape = *self.curr_shape;
 
         let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
@@ -604,8 +690,12 @@ impl<'a> GameView<'a> {
 
         for coord in ghost_shape.coords() {
             let (coord_x, coord_y) = coord;
-            let x = (coord_x + shape_block_x) * shape_width_i16 + 2; // SHAPE_OFFSET_X
-            let y = coord_y + shape_block_y + 5; // SHAPE_DRAW_OFFSET + SHAPE_OFFSET_Y
+            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_OFFSET_X = 2
+            #[allow(clippy::cast_possible_wrap)]
+            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X as i16;
+            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_DRAW_OFFSET_Y = 5
+            #[allow(clippy::cast_possible_wrap)]
+            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET_Y as i16;
 
             // cast: usize -> i16, потеря точности допустима: GRID_WIDTH константа (10)
             #[allow(clippy::cast_possible_wrap)]
