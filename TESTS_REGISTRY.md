@@ -1,9 +1,9 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 3 апреля 2026 г. (тотальная очистка тестовой базы)
-**Версия проекта:** 23.96.42+ (очистка тестов — этап 2)
-**Всего тестов:** ~1180 тестов (проходят 100%)
-**Всего файлов тестов:** 94 (удалено 2 файла)
+**Дата последней актуализации:** 3 апреля 2026 г. (очистка тестовой базы — этап 3)
+**Версия проекта:** 23.96.43+ (очистка тестов — удаление дубликатов)
+**Всего тестов:** ~1140 тестов (проходят 100%)
+**Всего файлов тестов:** 90 (удалено 4 файла дубликатов)
 
 ---
 
@@ -12,21 +12,33 @@
 ### Структура тестовой базы:
 
 **Интеграционные тесты (`/tests/`):**
-- 9 файлов
-- ~160 тестов (после удаления дубликатов)
+- 8 файлов
+- ~179 тестов
 - Категории: architecture, audit, fixes, verification
 
 **Unit тесты (`/src/tests/`):**
-- 85 файлов (удалён test_io_resource_leak.rs)
-- ~1020 тестов
+- 82 файла (удалены дубликаты: test_architecture_integrity_new, test_architecture_components, test_architecture_integrity, test_architecture_fixes_new)
+- ~961 тест
 - Категории: game, tetromino, controls, highscore, crypto, validation, io, architecture, physics, scoring
 
 **Встроенные тесты (`#[cfg(test)]`):**
-- 33 файла
-- ~300 тестов
+- 48 файлов
+- ~428 тестов
 - Категории: все модули проекта
 
-### Очистка тестовой базы (3 апреля 2026 — этап 2):
+### Очистка тестовой базы (3 апреля 2026 — этап 3):
+
+**Удалённые файлы (дубликаты):**
+- `src/tests/test_architecture_integrity_new.rs` — дублировал `tests/test_architecture_integrity_new.rs`
+- `src/tests/test_architecture_components.rs` — дублировал `tests/test_architecture_components.rs`
+- `src/tests/test_architecture_integrity.rs` — дублировал `tests/test_architecture_integrity.rs`
+- `src/tests/test_architecture_fixes_new.rs` — объединён с `src/tests/test_architecture_fixes.rs`
+
+**Удалённые тесты:**
+- `test_game_mode_enum_deprecated` — ignored тест для удалённого GameMode enum
+
+**Перемещённый код:**
+- `MockRenderer` — перенесён из `test_architecture_integrity.rs` в `test_architecture_separation.rs`
 
 **Удалённые файлы:**
 - `src/tests/test_io_resource_leak.rs` (5 пустых тестов)
