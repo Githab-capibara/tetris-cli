@@ -19,8 +19,6 @@
 //! TODO (#архитектура): Рассмотреть возможность восстановления этих функций
 //! если потребуется более сложная система комбо с множителями и бонусами.
 
-#![allow(clippy::absurd_extreme_comparisons, clippy::items_after_statements)]
-
 use crate::constants::COMBO_BONUS;
 
 /// Рассчитать бонус за комбо.

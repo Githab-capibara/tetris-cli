@@ -19,7 +19,6 @@ pub mod canvas;
 pub mod key_reader;
 
 // Re-export основных типов для обратной совместимости
-pub use backend::{TerminalBackend, TerminalInputBackend, TermionBackend};
 pub use canvas::Canvas;
 pub use key_reader::KeyReader;
 
@@ -29,7 +28,6 @@ pub use crate::constants::{
 };
 
 // Re-export ошибок
-pub use crate::errors::GameError as IoError;
 
 // ============================================================================
 // ТЕСТЫ

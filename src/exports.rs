@@ -48,4 +48,7 @@ pub use crate::highscore::{Leaderboard, SaveData};
 pub use crate::controls::ControlsConfig;
 
 // Экспорт криптографических утилит из модуля crypto
-pub use crate::crypto::{generate_salt, hash, hmac_sha256, verify_hmac_sha256};
+pub use crate::crypto::{generate_salt, hash};
+// HMAC-функции из подмодуля hmac
+#[allow(unused_imports)]
+pub use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};

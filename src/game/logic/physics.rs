@@ -34,7 +34,9 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
         // Потеря точности допустима: MILLIS_PER_SECOND точно представляется в f64
         let new_timer = land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);
         // H6: защита от отрицательного таймера
-        let _ = state.set_land_timer(new_timer.max(0.0));
+        // Ошибка игнорируется: LAND_TIME_DELAY_S — константное валидное значение,
+        // а new_timer.max(0.0) всегда >= 0, поэтому set_land_timer не может вернуть ошибку
+        state.set_land_timer(new_timer.max(0.0)).ok();
         false
     } else {
         true
@@ -59,5 +61,50 @@ mod physics_tests {
             state.curr_shape().pos().1 >= initial_y,
             "Y координата должна увеличиться или остаться"
         );
+    }
+
+    /// Тест: land_timer уменьшается корректно
+    #[test]
+    fn test_handle_falling_land_timer_decreases() {
+        let mut state = GameState::new();
+        // Устанавливаем начальную скорость чтобы фигура не падала
+        let _ = state.set_fall_speed(0.0);
+        // Устанавливаем land_timer
+        state.set_land_timer(0.5).ok();
+
+        // Фигура не может двигаться вниз — land_timer должен уменьшаться
+        let result = handle_falling(&mut state, 50);
+
+        assert!(!result, "Фигура ещё не приземлилась");
+        assert!(state.land_timer() < 0.5, "Land timer должен уменьшиться");
+    }
+
+    /// Тест: land_timer не становится отрицательным
+    #[test]
+    fn test_handle_falling_land_timer_non_negative() {
+        let mut state = GameState::new();
+        let _ = state.set_fall_speed(0.0);
+        state.set_land_timer(0.01).ok();
+
+        // Большой delta_time должен привести к timer = 0, а не к отрицательному
+        let _ = handle_falling(&mut state, 1000);
+
+        assert!(
+            state.land_timer() >= 0.0,
+            "Land timer не должен быть отрицательным"
+        );
+    }
+
+    /// Тест: handle_falling возвращает true когда фигура приземлилась
+    #[test]
+    fn test_handle_falling_returns_true_when_landed() {
+        let mut state = GameState::new();
+        let _ = state.set_fall_speed(0.0);
+        state.set_land_timer(0.0).ok();
+
+        // land_timer = 0 и фигура не может двигаться = приземление
+        let result = handle_falling(&mut state, 100);
+
+        assert!(result, "Фигура должна считаться приземлившейся");
     }
 }

@@ -102,9 +102,9 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
         {
             let curr_shape = state.get_curr_shape_mut();
             let pos = curr_shape.pos_mut();
-            // cast: i32 -> f32, потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
+            // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
             pos.0 += offset_x as f32;
-            // cast: i32 -> f32, потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
+            // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
             pos.1 += offset_y as f32;
         }
         let curr_shape = state.get_curr_shape_mut();
@@ -134,6 +134,12 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 /// 4. Проверяет коллизии
 /// 5. Возвращает смещение если вращение успешно
 ///
+/// ## Примечание о (0,0)
+/// Смещение (0,0) включено в таблицу WALL_KICK_OFFSETS первым элементом.
+/// Прямое вращение без смещения проверяется ДО вызова этой функции в
+/// `rotate_with_wall_kick`, поэтому возврат (0,0) из этой функции невозможен
+/// на практике — (0,0) уже было проверено ранее.
+///
 /// ## Исправление #4 (HIGH)
 /// Функция сделана pub(crate) для использования из collision.rs.
 #[allow(dead_code, clippy::cast_lossless)]
@@ -144,9 +150,9 @@ pub(crate) fn try_wall_kick_offsets(
     for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
         let mut kicked_shape = *state.curr_shape();
         let pos = kicked_shape.pos_mut();
-        // cast: i32 -> f32, потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
+        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
         pos.0 += offset_x as f32;
-        // cast: i32 -> f32, потеря точности допустима: offset_x/offset_y небольшие целые числа (±2)
+        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
         pos.1 += offset_y as f32;
         kicked_shape.rotate(dir);
 

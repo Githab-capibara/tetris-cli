@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
+use std::sync::OnceLock;
 
 // ============================================================================
 // ВАЛИДАТОР ПУТЕЙ (переэкспортирован из crate::validation)
@@ -104,49 +105,55 @@ impl ControlsConfig {
         }
     }
 
+    /// Получить ссылку на кэшированную конфигурацию по умолчанию.
+    ///
+    /// Использует `OnceLock` для ленивой инициализации — создаётся один раз
+    /// при первом вызове и переиспользуется в последующих вызовах.
+    /// Рекомендуется для использования в горячем пути (игровом цикле).
+    ///
+    /// # Исправление #10
+    /// Ранее `default_config()` вызывался каждый кадр, создавая новую структуру.
+    /// Теперь используется ленивая инициализация через `OnceLock`.
+    #[must_use]
+    pub fn default_config_ref() -> &'static Self {
+        static DEFAULT: OnceLock<ControlsConfig> = OnceLock::new();
+        DEFAULT.get_or_init(Self::default_config)
+    }
+
     /// Геттеры для всех полей конфигурации (для обратной совместимости).
     /// Предназначены для публичного API и обратной совместимости.
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn move_left(&self) -> u8 {
         self.move_left
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn move_right(&self) -> u8 {
         self.move_right
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn soft_drop(&self) -> u8 {
         self.soft_drop
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn hard_drop(&self) -> u8 {
         self.hard_drop
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn rotate_left(&self) -> u8 {
         self.rotate_left
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn rotate_right(&self) -> u8 {
         self.rotate_right
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn hold(&self) -> u8 {
         self.hold
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn pause(&self) -> u8 {
         self.pause
     }
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use]
     pub const fn quit(&self) -> u8 {
         self.quit
@@ -163,7 +170,6 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// let key = config.get_hmac_key();
     /// ```
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use = "Ключ должен быть использован"]
     pub fn get_hmac_key(&self) -> &str {
         &self.hmac_key
@@ -180,7 +186,6 @@ impl ControlsConfig {
     /// let config = ControlsConfig::default_config();
     /// let sig = config.get_signature();
     /// ```
-    #[allow(dead_code)] // Публичный API для внешних пользователей
     #[must_use = "Подпись должна быть использована"]
     pub fn get_signature(&self) -> &str {
         &self.signature
@@ -188,47 +193,38 @@ impl ControlsConfig {
 
     /// Сеттеры для всех полей конфигурации (для тестов и обратной совместимости).
     /// Возвращает self для возможности цепочки вызовов.
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_move_left(&mut self, value: u8) -> &mut Self {
         self.move_left = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_move_right(&mut self, value: u8) -> &mut Self {
         self.move_right = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_soft_drop(&mut self, value: u8) -> &mut Self {
         self.soft_drop = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_hard_drop(&mut self, value: u8) -> &mut Self {
         self.hard_drop = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_rotate_left(&mut self, value: u8) -> &mut Self {
         self.rotate_left = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_rotate_right(&mut self, value: u8) -> &mut Self {
         self.rotate_right = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_hold(&mut self, value: u8) -> &mut Self {
         self.hold = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_pause(&mut self, value: u8) -> &mut Self {
         self.pause = value;
         self
     }
-    #[allow(dead_code)] // Публичный API для тестов и внешних пользователей
     pub fn set_quit(&mut self, value: u8) -> &mut Self {
         self.quit = value;
         self
@@ -236,7 +232,6 @@ impl ControlsConfig {
 
     /// Сравнить только клавиши управления (игнорируя `hmac_key`).
     /// Используется в тестах для сравнения конфигураций.
-    #[allow(dead_code)] // Публичный API для тестов
     #[must_use]
     pub fn keys_match(&self, other: &Self) -> bool {
         self.move_left == other.move_left
@@ -307,7 +302,6 @@ impl ControlsConfig {
     /// - Ошибка сериализации JSON
     /// - Ошибка вычисления HMAC подписи
     /// - Ошибка записи в файл
-    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn save_to_file(&self, path: &str) -> io::Result<()> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR
         let current_dir = std::env::current_dir().map_err(|e| {
@@ -470,7 +464,6 @@ impl ControlsConfig {
     ///
     /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
     /// ```
-    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     pub fn load_from_file(path: &str) -> io::Result<Self> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR
         let current_dir = std::env::current_dir().map_err(|e| {
@@ -582,7 +575,6 @@ impl ControlsConfig {
     /// Возвращает `Err(String)` если:
     /// - HMAC ключ пустой или содержит только пробелы
     /// - HMAC ключ короче `MIN_HMAC_KEY_LENGTH` (16 байт)
-    #[allow(dead_code)] // Публичный API для валидации HMAC ключа
     pub fn validate_hmac_key() -> Result<(), String> {
         crate::config::keys::validate_hmac_key(
             crate::config::keys::get_controls_hmac_key(),
@@ -624,7 +616,6 @@ impl ControlsConfig {
     /// Использует две битовые маски u128 вместо `HashSet` для проверки дубликатов.
     /// Это более эффективно по памяти и быстрее для небольшого количества клавиш (9 шт).
     /// Две u128 достаточно для покрытия всего диапазона u8 (0-255).
-    #[allow(dead_code)] // Публичный API для валидации конфигурации
     #[must_use]
     pub fn validate(&self) -> bool {
         // Сбор всех клавиш в массив для проверки
@@ -702,7 +693,6 @@ impl ControlsConfig {
     /// );
     /// assert_eq!(config.move_left(), b'h');
     /// ```
-    #[allow(dead_code)]
     // Публичный API для создания пользовательской конфигурации
     #[must_use = "Конфигурация должна быть использована"]
     // S9: Обоснование too_many_arguments — это конструктор с 9 параметрами,

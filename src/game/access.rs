@@ -20,21 +20,6 @@
 //! use crate::game::access::BoardReadonly;
 //! ```
 
-// Исправление аудита 2026-04-01 (M2)
-// Трейты для будущего расширения API
-#![allow(dead_code)]
-
-//!
-//! fn `render_field`<T: BoardReadonly>(field: &T) {
-//!     for y in `0..GRID_HEIGHT` {
-//!         for x in `0..GRID_WIDTH` {
-//!             let block = `field.get_block(x`, y);
-//!             // Отрисовка блока...
-//!         }
-//!     }
-//! }
-//! ```
-
 use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
 // ============================================================================
@@ -204,6 +189,10 @@ pub trait BoardMutable: BoardReadonly {
 /// ```
 pub trait ScoreAccess {
     /// Получить текущий счёт.
+    ///
+    /// # Реализация по умолчанию
+    /// Возвращает 0; переопределите для реальных типов.
+    /// Этот метод должен быть переопределён конкретными реализациями.
     #[must_use]
     #[inline]
     fn get_score(&self) -> u128 {
@@ -252,6 +241,10 @@ pub trait ScoreMutable: ScoreAccess {
 /// # ISP-1: Узкий интерфейс
 /// Предоставляет только методы для работы с уровнями.
 ///
+/// ## Методы
+/// - `get_level()` — получить текущий уровень (по умолчанию возвращает 0)
+/// - `set_level()` — установить новый уровень
+///
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
 /// Для доступа из других модулей используйте `crate::game::access::LevelAccess`.
@@ -271,6 +264,11 @@ pub trait LevelAccess {
 ///
 /// # ISP-1: Узкий интерфейс
 /// Предоставляет только методы для работы с линиями.
+///
+/// ## Методы
+/// - `get_lines_cleared()` — получить количество очищенных линий (по умолчанию возвращает 0)
+/// - `set_lines_cleared()` — установить количество очищенных линий
+/// - `add_lines()` — добавить количество очищенных линий
 ///
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
@@ -294,6 +292,11 @@ pub trait LinesAccess {
 ///
 /// # ISP-1: Узкий интерфейс
 /// Предоставляет только методы для работы с комбо.
+///
+/// ## Методы
+/// - `get_combo()` — получить текущий комбо (по умолчанию возвращает 0)
+/// - `set_combo()` — установить текущий комбо
+/// - `reset_combo()` — сбросить счётчик комбо
 ///
 /// ## Архитектурные заметки
 /// Выделен для соблюдения Interface Segregation Principle.
@@ -322,16 +325,33 @@ impl BoardReadonly for crate::game::state::GameState {
         self.get_blocks()
     }
 
+    /// Безопасный доступ: возвращает -1 при выходе за границы.
     fn get_block(&self, x: usize, y: usize) -> i8 {
-        self.get_blocks()[y][x]
+        self.get_blocks()
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
     }
 
+    /// Безопасная проверка: возвращает true при выходе за границы.
     fn is_block_empty(&self, x: usize, y: usize) -> bool {
-        self.get_blocks()[y][x] == -1
+        self.get_blocks()
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
+            == -1
     }
 
+    /// Безопасная проверка: возвращает false при выходе за границы.
     fn is_block_occupied(&self, x: usize, y: usize) -> bool {
-        self.get_blocks()[y][x] != -1
+        self.get_blocks()
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
+            != -1
     }
 
     fn get_filled_lines_mask(&self) -> u32 {
@@ -388,11 +408,11 @@ impl ScoreAccess for crate::game::state::GameState {
 
 impl ScoreMutable for crate::game::state::GameState {
     fn add_score(&mut self, points: u128) {
-        let _ = self.add_score(points);
+        let _ = self.scoreboard_mut().add_score(points);
     }
 
     fn set_score(&mut self, score: u128) {
-        self.set_score(score);
+        self.scoreboard_mut().set_score(score);
     }
 }
 

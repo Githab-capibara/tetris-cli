@@ -91,21 +91,21 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 /// Получить ключ для HMAC подписи конфигурации управления.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_HMAC_KEY` или тестовое значение по умолчанию
+/// Ключ из переменной окружения `TETRIS_CONTROLS_HMAC_KEY` или тестовое значение по умолчанию
 ///
 /// # Безопасность
 /// ## ⚠️ Критическое замечание
 /// - **Тестовый ключ по умолчанию**: Используется только для разработки
-/// - **Продакшен**: Обязательно установите `TETRIS_HMAC_KEY` переменную окружения
+/// - **Продакшен**: Обязательно установите `TETRIS_CONTROLS_HMAC_KEY` переменную окружения
 /// - **Минимальная длина**: 16 байт (рекомендуется 32+ байта)
 ///
 /// ## Установка ключа
 /// ```bash
 /// # Для разработки
-/// export TETRIS_HMAC_KEY="my-development-key-32bytes!!"
+/// export TETRIS_CONTROLS_HMAC_KEY="my-development-key-32bytes!!"
 ///
 /// # Для продакшена (используйте генератор случайных ключей)
-/// export TETRIS_HMAC_KEY=$(openssl rand -hex 32)
+/// export TETRIS_CONTROLS_HMAC_KEY=$(openssl rand -hex 32)
 /// ```
 ///
 /// # Критическое замечание
@@ -114,18 +114,18 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 /// через `validate_hmac_key()` перед использованием.
 #[must_use]
 pub fn get_controls_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or(CONTROLS_HMAC_KEY)
+    option_env!("TETRIS_CONTROLS_HMAC_KEY").unwrap_or(CONTROLS_HMAC_KEY)
 }
 
 /// Получить ключ для HMAC подписи таблицы лидеров.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_HMAC_KEY` или тестовое значение по умолчанию
+/// Ключ из переменной окружения `TETRIS_LEADERBOARD_HMAC_KEY` или тестовое значение по умолчанию
 ///
 /// # Безопасность
 /// ## ⚠️ Критическое замечание
 /// - **Тестовый ключ по умолчанию**: Используется только для разработки
-/// - **Продакшен**: Обязательно установите `TETRIS_HMAC_KEY` переменную окружения
+/// - **Продакшен**: Обязательно установите `TETRIS_LEADERBOARD_HMAC_KEY` переменную окружения
 /// - **Минимальная длина**: 16 байт (рекомендуется 32+ байта)
 ///
 /// # Критическое замечание
@@ -133,20 +133,20 @@ pub fn get_controls_hmac_key() -> &'static str {
 /// Это означает что HMAC защита ослаблена. Вызывающий код ДОЛЖЕН проверить ключ.
 #[must_use]
 pub fn get_leaderboard_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or(LEADERBOARD_HMAC_KEY)
+    option_env!("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or(LEADERBOARD_HMAC_KEY)
 }
 
 /// Получить ключ для HMAC подписи данных рекордов.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_HMAC_KEY`
+/// Ключ из переменной окружения `TETRIS_SAVEDATA_HMAC_KEY` или тестовое значение по умолчанию
 ///
 /// # Критическое замечание
-/// ⚠️ **ВАЖНО**: Если переменная окружения не установлена, возвращается пустая строка.
+/// ⚠️ **ВАЖНО**: Если переменная окружения не установлена, возвращается тестовое значение.
 /// Это означает что HMAC защита отключена. Вызывающий код ДОЛЖЕН проверить ключ.
 #[must_use]
 pub fn get_save_data_hmac_key() -> &'static str {
-    option_env!("TETRIS_HMAC_KEY").unwrap_or(SAVE_DATA_HMAC_KEY)
+    option_env!("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or(SAVE_DATA_HMAC_KEY)
 }
 
 /// Проверить валидность HMAC ключа.

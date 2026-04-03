@@ -6,9 +6,6 @@
 //! - Обновление состояния
 //! - Отрисовка
 
-#![allow(dead_code)]
-#![allow(clippy::no_effect_underscore_binding)]
-
 use std::{thread::sleep, time::Duration};
 
 use super::{logic::update, render::update_cached_strings_extended, view::GameView};
@@ -156,6 +153,7 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
 ///
 /// # Аргументы
 /// * `input_result` - результат обработки ввода
+/// * `state` - состояние игры для получения финального счёта
 /// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
 ///
 /// # Возвращает
@@ -164,15 +162,19 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
-fn handle_input_result<R: Renderer>(input_result: &InputResult, cnv: &mut R) -> Option<u128> {
+fn handle_input_result<R: Renderer>(
+    input_result: &InputResult,
+    state: &GameState,
+    cnv: &mut R,
+) -> Option<u128> {
     match input_result {
         InputResult::Continue | InputResult::Pause => None,
         InputResult::Quit => Some(0),
         InputResult::GameOver => {
             handle_game_over(cnv);
-            Some(0)
+            Some(state.score())
         }
-        InputResult::Won => Some(0),
+        InputResult::Won => Some(state.score()),
     }
 }
 
@@ -235,7 +237,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
             let input_result = handle_input(state, inp, delta_time_ms);
 
             // Обработка результата ввода (вынесено в отдельную функцию)
-            if let Some(final_score) = handle_input_result(&input_result, cnv) {
+            if let Some(final_score) = handle_input_result(&input_result, state, cnv) {
                 return Ok(final_score);
             }
 
@@ -369,9 +371,10 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
         // InputResult::Continue должен вернуть None
-        let result = handle_input_result(&InputResult::Continue, &mut renderer);
+        let result = handle_input_result(&InputResult::Continue, &state, &mut renderer);
         assert!(result.is_none(), "Continue должен вернуть None");
     }
 
@@ -401,9 +404,10 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
         // InputResult::Pause должен вернуть None
-        let result = handle_input_result(&InputResult::Pause, &mut renderer);
+        let result = handle_input_result(&InputResult::Pause, &state, &mut renderer);
         assert!(result.is_none(), "Pause должен вернуть None");
     }
 
@@ -433,9 +437,10 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
         // InputResult::Quit должен вернуть Some(0)
-        let result = handle_input_result(&InputResult::Quit, &mut renderer);
+        let result = handle_input_result(&InputResult::Quit, &state, &mut renderer);
         assert_eq!(result, Some(0), "Quit должен вернуть Some(0)");
     }
 
@@ -465,10 +470,15 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
-        // InputResult::GameOver должен вернуть Some(0)
-        let result = handle_input_result(&InputResult::GameOver, &mut renderer);
-        assert_eq!(result, Some(0), "GameOver должен вернуть Some(0)");
+        // InputResult::GameOver должен вернуть Some(state.score())
+        let result = handle_input_result(&InputResult::GameOver, &state, &mut renderer);
+        assert_eq!(
+            result,
+            Some(0),
+            "GameOver должен вернуть Some(state.score())"
+        );
     }
 
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Won`
@@ -497,10 +507,11 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
-        // InputResult::Won должен вернуть Some(0)
-        let result = handle_input_result(&InputResult::Won, &mut renderer);
-        assert_eq!(result, Some(0), "Won должен вернуть Some(0)");
+        // InputResult::Won должен вернуть Some(state.score())
+        let result = handle_input_result(&InputResult::Won, &state, &mut renderer);
+        assert_eq!(result, Some(0), "Won должен вернуть Some(state.score())");
     }
 
     // =========================================================================
@@ -533,20 +544,21 @@ mod tests {
         }
 
         let mut renderer = MockRenderer;
+        let state = GameState::new();
 
         // Проверяем все варианты
-        assert!(handle_input_result(&InputResult::Continue, &mut renderer).is_none());
-        assert!(handle_input_result(&InputResult::Pause, &mut renderer).is_none());
+        assert!(handle_input_result(&InputResult::Continue, &state, &mut renderer).is_none());
+        assert!(handle_input_result(&InputResult::Pause, &state, &mut renderer).is_none());
         assert_eq!(
-            handle_input_result(&InputResult::Quit, &mut renderer),
+            handle_input_result(&InputResult::Quit, &state, &mut renderer),
             Some(0)
         );
         assert_eq!(
-            handle_input_result(&InputResult::GameOver, &mut renderer),
+            handle_input_result(&InputResult::GameOver, &state, &mut renderer),
             Some(0)
         );
         assert_eq!(
-            handle_input_result(&InputResult::Won, &mut renderer),
+            handle_input_result(&InputResult::Won, &state, &mut renderer),
             Some(0)
         );
     }

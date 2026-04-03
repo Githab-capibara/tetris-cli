@@ -34,8 +34,6 @@
 //! }
 //! ```
 
-#![allow(clippy::no_effect_underscore_binding)]
-
 // std
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -186,10 +184,6 @@ impl Application {
     fn run_menu_loop(&mut self) {
         use crate::constants::FRAME_DELAY_MS;
         use std::time::Instant;
-
-        // Исправление H7: используем константу FRAME_DELAY_MS вместо вычисления 1000 / FPS
-        const _FPS_TARGET: u64 = 60; // Целевой FPS (для документации)
-        const _FRAME_INTERVAL_CHECK: u64 = FRAME_DELAY_MS; // Проверка что константа корректна
 
         let mut last_time = Instant::now();
         let interval_ms = FRAME_DELAY_MS;
