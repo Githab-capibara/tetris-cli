@@ -239,17 +239,19 @@ impl ScoreBoard {
 // S9: Удаление избыточных #[allow(clippy::too_many_arguments)] — методы имеют 0-1 аргумент
 impl ScoreAccess for ScoreBoard {
     fn get_score(&self) -> u128 {
-        self.get_score()
+        // Вызываем inherent метод, а не трейт-метод (избегаем бесконечной рекурсии)
+        self.score
     }
 }
 
 impl ScoreMutable for ScoreBoard {
     fn add_score(&mut self, points: u128) {
+        // Новый счёт отбрасывается — трейт требует () возвращаемый тип
         let _ = self.add_score(points);
     }
 
     fn set_score(&mut self, value: u128) {
-        let () = self.set_score(value);
+        self.set_score(value);
     }
 }
 

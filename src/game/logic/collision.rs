@@ -22,7 +22,7 @@
 
 use crate::game::access::BoardReadonly;
 use crate::game::GameState;
-use crate::io::GRID_WIDTH;
+use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::types::Direction;
 
 /// Допустимый диапазон координат X для блоков на поле.
@@ -86,8 +86,15 @@ fn is_position_valid<T: BoardReadonly>(
         return true; // Позиция валидна выше поля
     }
 
+    // Проверка: если блок ниже поля — это коллизия (фигура не может упасть ниже)
+    // Потеря точности допустима: GRID_HEIGHT константа (20)
+    #[allow(clippy::cast_possible_wrap)]
+    if check_y >= GRID_HEIGHT as i16 {
+        return false; // Коллизия — блок ниже поля
+    }
+
     // Проверка наличия блока в сетке
-    // Потеря точности допустима: check_y/check_x проверены на границы в VALID_X_RANGE
+    // Потеря точности допустима: check_y/check_x проверены на границы в VALID_X_RANGE и выше
     #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
     if board
         .get_blocks()
@@ -383,5 +390,36 @@ mod collision_tests {
             !can_move,
             "Движение вниз при коллизии должно быть невозможно"
         );
+    }
+
+    /// Тест: проверка что блоки ниже поля считаются коллизией (не проваливаются)
+    #[test]
+    fn test_block_below_field_is_collision() {
+        use crate::io::GRID_HEIGHT;
+
+        // Создаём состояние и проверяем что GRID_HEIGHT корректно обрабатывается
+        // Блок на уровне GRID_HEIGHT должен считаться коллизией
+        let state = GameState::new();
+        let board = &state;
+
+        // Позиция ниже поля должна быть невалидной
+        assert!(
+            !is_position_valid_for_test(board, 5, GRID_HEIGHT as i16),
+            "Блок ниже поля должен считаться коллизией"
+        );
+        assert!(
+            !is_position_valid_for_test(board, 5, GRID_HEIGHT as i16 + 1),
+            "Блок далеко ниже поля должен считаться коллизией"
+        );
+        // Позиция в пределах поля должна быть валидной (если ячейка пуста)
+        assert!(
+            is_position_valid_for_test(board, 5, 0),
+            "Блок в верхней строке поля должен быть валидным"
+        );
+    }
+
+    /// Вспомогательная функция для тестирования is_position_valid
+    fn is_position_valid_for_test<T: BoardReadonly>(board: &T, x: i16, y: i16) -> bool {
+        is_position_valid(board, x, y, false)
     }
 }
