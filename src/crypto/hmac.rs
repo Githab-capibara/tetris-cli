@@ -17,7 +17,7 @@ use ::hmac::{Hmac, Mac};
 use sha2::Sha256;
 
 /// Тип HMAC-SHA256.
-type HmacSha256 = Hmac<Sha256>;
+pub type HmacSha256 = Hmac<Sha256>;
 
 /// Вычислить HMAC-SHA256 подпись данных.
 ///

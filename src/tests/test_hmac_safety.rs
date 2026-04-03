@@ -70,11 +70,13 @@ mod tests {
     /// Проверяет что HMAC-SHA256 работает с ключами средней длины (11-64 символа).
     #[test]
     fn test_hmac_sha256_medium_key() {
+        let key_32 = "a".repeat(32);
+        let key_64 = "a".repeat(64);
         let medium_keys = [
             "my_secret_key_123",
             "длинный_ключ_на_русском",
-            "a".repeat(32).as_str(),
-            "a".repeat(64).as_str(),
+            key_32.as_str(),
+            key_64.as_str(),
         ];
 
         for key in medium_keys {
@@ -136,13 +138,14 @@ mod tests {
     #[test]
     fn test_hmac_sha256_no_panic_on_valid_input() {
         // Эти данные не должны вызывать панику
+        let long_key = "a".repeat(1000);
         let test_cases = [
             ("", ""),
             ("key", "data"),
             ("", "data"),
             ("key", ""),
             ("ключ", "данные"),
-            ("a".repeat(1000).as_str(), "data"),
+            (long_key.as_str(), "data"),
         ];
 
         for (key, data) in test_cases {
@@ -167,7 +170,7 @@ mod tests {
         // new_from_slice() никогда не вернёт ошибку.
         // Этот тест проверяет что код компилируется с unwrap_or_else()
 
-        use crate::crypto::HmacSha256;
+        use crate::crypto::hmac::HmacSha256;
         use hmac::Mac;
         use sha2::Sha256;
 
@@ -375,12 +378,13 @@ mod tests {
     /// Проверяет полный цикл: создание подписи -> верификация.
     #[test]
     fn test_hmac_sign_verify_integration() {
+        let long_key = "a".repeat(1000);
         let test_cases = [
             ("key1", "data1"),
             ("key2", "data2"),
             ("", ""),
             ("ключ", "данные"),
-            ("a".repeat(1000).as_str(), "data"),
+            (long_key.as_str(), "data"),
         ];
 
         for (key, data) in test_cases {

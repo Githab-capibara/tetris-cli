@@ -176,9 +176,9 @@ fn test_error_context() {
 /// Проверяет комбинацию ? и unwrap_or_else.
 #[test]
 fn test_integration_question_and_unwrap_or_else() {
-    fn fallible(x: i32) -> Result<i32, &str> {
+    fn fallible(x: i32) -> Result<i32, String> {
         if x < 0 {
-            Err("negative")
+            Err("negative".to_string())
         } else {
             Ok(x + 1)
         }
@@ -220,10 +220,10 @@ fn test_integration_question_and_unwrap_or_else() {
 /// Проверяет ? оператор с различными типами ошибок.
 #[test]
 fn test_question_with_different_error_types() {
-    // ? с &str ошибкой
-    fn str_error(x: i32) -> Result<i32, &str> {
+    // ? с String ошибкой
+    fn str_error(x: i32) -> Result<i32, String> {
         if x < 0 {
-            Err("negative number")
+            Err("negative number".to_string())
         } else {
             Ok(x)
         }
@@ -231,7 +231,7 @@ fn test_question_with_different_error_types() {
 
     // ? с String ошибкой
     fn string_error(x: i32) -> Result<i32, String> {
-        str_error(x).map_err(|e| e.to_string())
+        str_error(x).map_err(|e: String| e)
     }
 
     // ? с custom ошибкой
@@ -242,9 +242,9 @@ fn test_question_with_different_error_types() {
         string_error(x).map_err(|e| CustomError(e))
     }
 
-    // Тест с &str
+    // Тест с String
     let result1 = str_error(5);
-    assert_eq!(result1, Ok(5), "? с &str должен работать");
+    assert_eq!(result1, Ok(5), "? с String должен работать");
 
     // Тест с String
     let result2 = string_error(5);

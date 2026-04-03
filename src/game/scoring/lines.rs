@@ -260,7 +260,7 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// Добавлена явная проверка переполнения перед добавлением очков
 /// с возвратом `GameError::ScoreOverflow`.
 #[must_use = "Ошибка переполнения счёта должна быть обработана"]
-fn update_score_for_lines(
+pub fn update_score_for_lines(
     score: &mut u128,
     level: u32,
     rows_cleared: usize,

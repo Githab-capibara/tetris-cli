@@ -586,6 +586,8 @@ mod game_tests {
     fn test_performance_find_full_rows() {
         use std::time::Instant;
 
+        use super::scoring::lines::find_full_rows;
+
         let state = GameState::new();
         let start = Instant::now();
 

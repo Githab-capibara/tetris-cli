@@ -11,6 +11,7 @@
 
 use crate::constants::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES};
 use crate::game::scoring::lines::{update_score_for_lines, MAX_SCORE};
+use crate::game::GameState;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Базовая защита от переполнения
@@ -122,7 +123,7 @@ fn test_saturating_add_overflow_protection() {
     );
 
     // Тест что нормальные значения работают корректно
-    let normal_score = 1000;
+    let normal_score: u128 = 1000;
     let result5 = normal_score.saturating_add(500);
     assert_eq!(
         result5, 1500,
