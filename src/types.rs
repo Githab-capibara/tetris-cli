@@ -13,10 +13,11 @@
 #![allow(dead_code)]
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
+#[allow(unused_imports)]
 pub use crate::core::{Direction, Position, RotationDirection};
 
 // R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
-#[allow(deprecated)]
+#[allow(deprecated, unused_imports)]
 pub use crate::game::types::GameAction;
 
 // ============================================================================

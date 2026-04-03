@@ -73,7 +73,7 @@ use std::fmt;
 /// - `Hold` - удержание фигуры
 /// - `Pause` - пауза
 /// - `Quit` - выход в меню
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum GameAction {
     /// Движение фигуры влево.
     MoveLeft,
@@ -140,9 +140,12 @@ pub struct Score(u128);
 
 impl Score {
     /// Создать новое значение очков с нулевым значением.
+    ///
+    /// # Примечания
+    /// Эквивалентно `Score::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
     pub fn new() -> Self {
-        Self(0)
+        Self::default()
     }
 
     /// Создать новое значение очков с указанным значением.
@@ -265,12 +268,21 @@ impl From<Score> for u128 {
 #[allow(dead_code)]
 pub struct Level(u32);
 
+impl Default for Level {
+    fn default() -> Self {
+        Self(1)
+    }
+}
+
 #[allow(dead_code)]
 impl Level {
     /// Создать новый уровень со значением 1 (начальный уровень).
+    ///
+    /// # Примечания
+    /// Эквивалентно `Level::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
     pub fn new() -> Self {
-        Self(1)
+        Self::default()
     }
 
     /// Создать новый уровень с указанным значением.
@@ -346,12 +358,6 @@ impl fmt::Display for Level {
     }
 }
 
-impl Default for Level {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 // ============================================================================
 // ТИП-ОБЁРТКА ДЛЯ ЛИНИЙ (LinesCount)
 // ============================================================================
@@ -373,9 +379,12 @@ pub struct LinesCount(u32);
 
 impl LinesCount {
     /// Создать новое значение с нулевым количеством линий.
+    ///
+    /// # Примечания
+    /// Эквивалентно `LinesCount::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
     pub fn new() -> Self {
-        Self(0)
+        Self::default()
     }
 
     /// Создать новое значение с указанным количеством линий.
@@ -468,115 +477,8 @@ impl From<LinesCount> for u32 {
 // СТРУКТУРА ПОЗИЦИИ (Position)
 // ============================================================================
 
-/// Структура для представления координат (x, y).
-///
-/// Решает проблему Data Clumps (Problem 2.4) для координат.
-/// Используется для устранения дублирования пар (i16, i16) в коде.
-///
-/// # Примеры
-/// ```
-/// use tetris_cli::game::types::Position;
-///
-/// let pos = Position::new(5, 10);
-/// assert_eq!(pos.x(), 5);
-/// assert_eq!(pos.y(), 10);
-/// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Position {
-    /// Координата X.
-    x: i16,
-    /// Координата Y.
-    y: i16,
-}
-
-impl Position {
-    /// Создать новую позицию с указанными координатами.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X
-    /// * `y` - координата Y
-    #[must_use]
-    pub const fn new(x: i16, y: i16) -> Self {
-        Self { x, y }
-    }
-
-    /// Получить координату X.
-    #[must_use]
-    pub const fn x(self) -> i16 {
-        self.x
-    }
-
-    /// Получить координату Y.
-    #[must_use]
-    pub const fn y(self) -> i16 {
-        self.y
-    }
-
-    /// Установить координату X.
-    pub fn set_x(&mut self, x: i16) {
-        self.x = x;
-    }
-
-    /// Установить координату Y.
-    pub fn set_y(&mut self, y: i16) {
-        self.y = y;
-    }
-
-    /// Установить обе координаты.
-    pub fn set(&mut self, x: i16, y: i16) {
-        self.x = x;
-        self.y = y;
-    }
-
-    /// Сдвинуть позицию на указанные значения.
-    ///
-    /// # Аргументы
-    /// * `dx` - смещение по X
-    /// * `dy` - смещение по Y
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::game::types::Position;
-    /// let mut pos = Position::new(5, 10);
-    /// pos.offset(2, -3);
-    /// assert_eq!(pos.x(), 7);
-    /// assert_eq!(pos.y(), 7);
-    /// ```
-    #[inline]
-    pub fn offset(&mut self, dx: i16, dy: i16) {
-        self.x = self.x.saturating_add(dx);
-        self.y = self.y.saturating_add(dy);
-    }
-
-    /// Проверить, равна ли позиция нулю.
-    ///
-    /// # Возвращает
-    /// `true` если обе координаты равны нулю
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::game::types::Position;
-    /// let pos = Position::new(0, 0);
-    /// assert!(pos.is_zero());
-    /// ```
-    #[must_use]
-    #[inline]
-    pub fn is_zero(self) -> bool {
-        self.x == 0 && self.y == 0
-    }
-}
-
-impl From<(i16, i16)> for Position {
-    fn from((x, y): (i16, i16)) -> Self {
-        Self::new(x, y)
-    }
-}
-
-impl From<Position> for (i16, i16) {
-    fn from(pos: Position) -> Self {
-        (pos.x, pos.y)
-    }
-}
+// Re-export из `core::Position` для избежания дублирования
+pub use crate::core::Position;
 
 // ============================================================================
 // ТЕСТЫ

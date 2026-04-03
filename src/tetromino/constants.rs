@@ -116,9 +116,3 @@ pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (
 pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
     SHAPE_COLORS[shape_index]
 }
-
-/// Количество типов фигур.
-pub const SHAPE_COUNT: usize = 7;
-
-/// Количество блоков в каждой фигуре.
-pub const BLOCKS_PER_SHAPE: usize = 4;

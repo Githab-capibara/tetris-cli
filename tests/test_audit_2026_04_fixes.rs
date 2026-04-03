@@ -540,20 +540,21 @@ fn test_m10_sanitize_player_name_single_pass() {
 // LOW ПРОБЛЕМЫ (L1, L3, L4)
 // ============================================================================
 
-/// Тест L1: Наличие модуля `key_codes` в constants.rs
+/// Тест L1: Константы клавиш доступны напрямую из constants
 ///
-/// Проверяет что константы клавиш сгруппированы в модуле `key_codes`.
+/// Проверяет что константы клавиш доступны напрямую из модуля constants.
 #[test]
-fn test_l1_key_codes_module_exists() {
-    use tetris_cli::constants::key_codes;
+fn test_l1_key_constants_direct() {
+    use tetris_cli::constants::{
+        KEY_BACKSPACE, KEY_ENTER_CR, KEY_ENTER_LF, KEY_ESCAPE, KEY_SPACE, KEY_TAB,
+    };
 
-    // Проверяем что константы в модуле существуют
-    assert_eq!(key_codes::BACKSPACE, 127, "BACKSPACE должен быть равен 127");
-    assert_eq!(key_codes::ENTER_LF, b'\n', "ENTER_LF должен быть b'\\n'");
-    assert_eq!(key_codes::ENTER_CR, b'\r', "ENTER_CR должен быть b'\\r'");
-    assert_eq!(key_codes::ESCAPE, 27, "ESCAPE должен быть равен 27");
-    assert_eq!(key_codes::TAB, 9, "TAB должен быть равен 9");
-    assert_eq!(key_codes::SPACE, b' ', "SPACE должен быть b' '");
+    assert_eq!(KEY_BACKSPACE, 127, "KEY_BACKSPACE должен быть равен 127");
+    assert_eq!(KEY_ENTER_LF, b'\n', "KEY_ENTER_LF должен быть b'\\n'");
+    assert_eq!(KEY_ENTER_CR, b'\r', "KEY_ENTER_CR должен быть b'\\r'");
+    assert_eq!(KEY_ESCAPE, 27, "KEY_ESCAPE должен быть равен 27");
+    assert_eq!(KEY_TAB, 9, "KEY_TAB должен быть равен 9");
+    assert_eq!(KEY_SPACE, b' ', "KEY_SPACE должен быть b' '");
 }
 
 /// Тест L3: Упрощённые конструкторы ошибок
@@ -671,9 +672,9 @@ fn test_all_medium_fixes_integration() {
 /// Интеграционный тест: Проверка всех LOW исправлений
 #[test]
 fn test_all_low_fixes_integration() {
-    // L1: key_codes модуль
-    use tetris_cli::constants::key_codes;
-    assert_eq!(key_codes::BACKSPACE, 127);
+    // L1: Константы клавиш напрямую из constants
+    use tetris_cli::constants::{KEY_BACKSPACE, KEY_ENTER_LF, KEY_SPACE};
+    assert_eq!(KEY_BACKSPACE, 127);
 
     // L3: Конструкторы ошибок
     use tetris_cli::errors::GameError;
@@ -731,11 +732,11 @@ fn test_all_26_audit_fixes_complete_integration() {
     assert_eq!(sanitize_player_name("Test"), "Test");
 
     // LOW (3)
-    use tetris_cli::constants::key_codes;
+    use tetris_cli::constants::{KEY_BACKSPACE, KEY_SPACE};
     use tetris_cli::errors::GameError;
     use tetris_cli::exports::GameState as ExportedState;
 
-    assert_eq!(key_codes::BACKSPACE, 127);
+    assert_eq!(KEY_BACKSPACE, 127);
     let _err = GameError::ValidationError("test".to_string());
     let _state = ExportedState::new();
 

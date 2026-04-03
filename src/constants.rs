@@ -552,38 +552,3 @@ pub const KEY_TAB: u8 = 9;
 
 /// Код клавиши Space (пробел).
 pub const KEY_SPACE: u8 = b' ';
-
-// ============================================================================
-// КОНСТАНТЫ КЛАВИШ (МОДУЛЬ)
-// ============================================================================
-
-/// Модуль с кодами клавиш для удобства использования.
-///
-/// # Исправление L1 (LOW)
-/// Константы клавиш сгруппированы в отдельном модуле.
-///
-/// # Устарело
-/// Используйте константы напрямую из `constants::KEY_*`.
-#[deprecated(
-    since = "23.96.19",
-    note = "Используйте константы KEY_* напрямую из constants"
-)]
-pub mod key_codes {
-    /// Код клавиши Backspace для выхода.
-    pub const BACKSPACE: u8 = super::KEY_BACKSPACE;
-
-    /// Код клавиши Enter (LF - Line Feed).
-    pub const ENTER_LF: u8 = super::KEY_ENTER_LF;
-
-    /// Код клавиши Enter (CR - Carriage Return).
-    pub const ENTER_CR: u8 = super::KEY_ENTER_CR;
-
-    /// Код клавиши Escape.
-    pub const ESCAPE: u8 = super::KEY_ESCAPE;
-
-    /// Код клавиши Tab.
-    pub const TAB: u8 = super::KEY_TAB;
-
-    /// Код клавиши Space (пробел).
-    pub const SPACE: u8 = super::KEY_SPACE;
-}
