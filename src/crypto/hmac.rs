@@ -508,7 +508,7 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на `compiler_fence的存在`
+    /// Тест на существование `compiler_fence`
     #[test]
     fn test_compiler_fence_exists() {
         // Этот тест просто проверяет что код компилируется с compiler_fence
