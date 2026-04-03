@@ -31,8 +31,11 @@ use termion::{
 use crate::io_traits::Renderer;
 
 // ============================================================================
-// ИМПОРТ КОНСТАНТ
+// КОНСТАНТЫ
 // ============================================================================
+
+/// Накладные расходы на escape-последовательности при форматировании строки.
+const ESCAPE_OVERHEAD: usize = 60;
 
 // ============================================================================
 // ОШИБКИ
@@ -333,7 +336,6 @@ impl Canvas {
         let (x_start, y_start) = pos;
         // Вычисляем capacity на основе суммарной длины строк (исправление #12)
         // Каждая строка: ~30 байт на escape-последовательности + длина строки
-        const ESCAPE_OVERHEAD: usize = 60;
         let total_len: usize = lines.iter().map(|s| s.len() + ESCAPE_OVERHEAD).sum();
         let mut buffer = String::with_capacity(total_len);
 
@@ -341,7 +343,7 @@ impl Canvas {
             // cast: usize -> u16, потеря точности допустима: количество строк небольшое
             let y = y_start + i as u16;
             // Форматируем в буфер
-            let _ = write!(
+            write!(
                 buffer,
                 "{}{}{}{}{}{}",
                 Goto(x_start, y),
@@ -350,7 +352,7 @@ impl Canvas {
                 line,
                 Fg(Reset),
                 Bg(Reset)
-            );
+            ).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         }
 
         // Записываем всё за один раз
