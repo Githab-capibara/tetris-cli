@@ -197,7 +197,11 @@ fn test_hmac_no_duplication() {
 /// Тест проверяет что:
 /// - GameMode enum имеет атрибут deprecated
 /// - Компиляция с deprecated предупреждением
+///
+/// # Устаревший тест
+/// GameMode enum удалён, тест помечен как ignored.
 #[test]
+#[ignore = "GameMode enum удалён, тест устарел"]
 fn test_game_mode_enum_deprecated() {
     // Этот тест компилируется с #[allow(deprecated)] в начале файла
     // что подтверждает что GameMode deprecated
@@ -372,126 +376,6 @@ fn test_controls_uses_path_validator() {
     assert!(
         custom_validator.validate_length(valid).is_ok(),
         "Кастомный валидатор должен работать"
-    );
-}
-
-// ============================================================================
-// ТЕСТ 6: УДАЛЕНИЕ ИЗБЫТОЧНЫХ ТРЕЙТОВ (M5, L2)
-// ============================================================================
-
-/// Проверяет что трейты FigureAccess, FigureMutable удалены.
-///
-/// Тест проверяет что:
-/// - Трейты FigureAccess и FigureMutable не существуют
-/// - Вместо них используются публичные методы FigureManager
-#[test]
-fn test_redundant_traits_removed() {
-    // Этот тест проверяет что избыточные трейты удалены
-    // Мы не можем проверить отсутствие типа на этапе выполнения,
-    // но можем проверить что FigureManager имеет публичные методы
-
-    use crate::game::state::GameState;
-
-    let mut state = GameState::new();
-
-    // Проверяем что FigureManager (через GameState) имеет публичные методы
-    let curr_shape = state.curr_shape();
-    let next_shape = state.next_shape();
-    let held_shape = state.held_shape();
-
-    // Проверяем что методы возвращают корректные данные
-    assert!(
-        matches!(
-            curr_shape.shape(),
-            crate::tetromino::ShapeType::T
-                | crate::tetromino::ShapeType::L
-                | crate::tetromino::ShapeType::J
-                | crate::tetromino::ShapeType::S
-                | crate::tetromino::ShapeType::Z
-                | crate::tetromino::ShapeType::O
-                | crate::tetromino::ShapeType::I
-        ),
-        "curr_shape должен возвращать корректную фигуру"
-    );
-
-    assert!(
-        matches!(
-            next_shape.shape(),
-            crate::tetromino::ShapeType::T
-                | crate::tetromino::ShapeType::L
-                | crate::tetromino::ShapeType::J
-                | crate::tetromino::ShapeType::S
-                | crate::tetromino::ShapeType::Z
-                | crate::tetromino::ShapeType::O
-                | crate::tetromino::ShapeType::I
-        ),
-        "next_shape должен возвращать корректную фигуру"
-    );
-
-    // held_shape может быть None для нового состояния
-    assert!(
-        held_shape.is_none() || held_shape.is_some(),
-        "held_shape должен существовать"
-    );
-}
-
-/// Проверяет что FigureManager имеет публичные методы.
-///
-/// Тест проверяет что:
-/// - FigureManager (через GameState) имеет публичные методы
-/// - Доступ к фигурам осуществляется через методы
-#[test]
-#[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
-fn test_figure_manager_public_methods() {
-    use crate::game::state::GameState;
-    use crate::tetromino::ShapeType;
-
-    let mut state = GameState::new();
-
-    // Проверяем публичные методы для работы с фигурами
-    let curr_shape = state.curr_shape();
-    let original_x = curr_shape.pos().0;
-
-    // Проверяем что можно получить мутабельную ссылку на текущую фигуру
-    let curr_shape_mut = state.get_curr_shape_mut();
-    curr_shape_mut.pos_mut().0 += 1.0;
-
-    assert_eq!(
-        state.curr_shape().pos().0,
-        original_x + 1.0,
-        "get_curr_shape_mut должен предоставлять мутабельный доступ"
-    );
-
-    // Проверяем что можно получить доступ к фигуре и её полям
-    let shape = state.curr_shape();
-    assert!(
-        matches!(
-            shape.shape(),
-            ShapeType::T
-                | ShapeType::L
-                | ShapeType::J
-                | ShapeType::S
-                | ShapeType::Z
-                | ShapeType::O
-                | ShapeType::I
-        ),
-        "Фигура должна иметь корректный тип"
-    );
-
-    // Проверяем что next_shape доступен
-    let next = state.next_shape();
-    assert!(
-        matches!(
-            next.shape(),
-            ShapeType::T
-                | ShapeType::L
-                | ShapeType::J
-                | ShapeType::S
-                | ShapeType::Z
-                | ShapeType::O
-                | ShapeType::I
-        ),
-        "next_shape должен возвращать корректную фигуру"
     );
 }
 

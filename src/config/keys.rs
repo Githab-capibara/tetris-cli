@@ -236,10 +236,20 @@ mod keys_tests {
 
     #[test]
     fn test_constants_are_different() {
-        // Проверка что функции загрузки ключей работают корректно
-        // Ключи загружаются из TETRIS_HMAC_KEY переменной окружения
-        assert_eq!(get_controls_hmac_key(), get_leaderboard_hmac_key());
-        assert_eq!(get_controls_hmac_key(), get_save_data_hmac_key());
+        // Проверка что все HMAC константы имеют уникальные значения
+        // для предотвращения кросс-протокол атак
+        assert_ne!(
+            CONTROLS_HMAC_KEY, LEADERBOARD_HMAC_KEY,
+            "CONTROLS_HMAC_KEY и LEADERBOARD_HMAC_KEY должны быть разными"
+        );
+        assert_ne!(
+            CONTROLS_HMAC_KEY, SAVE_DATA_HMAC_KEY,
+            "CONTROLS_HMAC_KEY и SAVE_DATA_HMAC_KEY должны быть разными"
+        );
+        assert_ne!(
+            LEADERBOARD_HMAC_KEY, SAVE_DATA_HMAC_KEY,
+            "LEADERBOARD_HMAC_KEY и SAVE_DATA_HMAC_KEY должны быть разными"
+        );
     }
 
     #[test]

@@ -451,7 +451,6 @@ mod tests {
     // Тесты критических проблем (20 тестов)
     pub mod test_controls_error_handling;
     pub mod test_game_negative_coords;
-    pub mod test_io_resource_leak;
 
     // Комплексные тесты для всех 12 исправленных проблем (36 тестов)
 

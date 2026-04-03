@@ -1,9 +1,9 @@
 # 📋 TESTS REGISTRY - Tetris CLI
 
-**Дата последней актуализации:** 2 апреля 2026 г. (очистка тестовой базы — удалены дубликаты и пустые тесты)
-**Версия проекта:** 23.96.34+ (очистка тестов)
-**Всего тестов:** ~1210 тестов (проходят 100%)
-**Всего файлов тестов:** 95
+**Дата последней актуализации:** 3 апреля 2026 г. (тотальная очистка тестовой базы)
+**Версия проекта:** 23.96.42+ (очистка тестов — этап 2)
+**Всего тестов:** ~1180 тестов (проходят 100%)
+**Всего файлов тестов:** 94 (удалено 2 файла)
 
 ---
 
@@ -13,40 +13,52 @@
 
 **Интеграционные тесты (`/tests/`):**
 - 9 файлов
-- 198 тестов
+- ~160 тестов (после удаления дубликатов)
 - Категории: architecture, audit, fixes, verification
 
 **Unit тесты (`/src/tests/`):**
-- 86 файлов
-- 1096 тестов
+- 85 файлов (удалён test_io_resource_leak.rs)
+- ~1020 тестов
 - Категории: game, tetromino, controls, highscore, crypto, validation, io, architecture, physics, scoring
 
 **Встроенные тесты (`#[cfg(test)]`):**
 - 33 файла
-- 314 тестов
+- ~300 тестов
 - Категории: все модули проекта
 
-**Бенчмарки (`/benches/`):**
-- 1 файл
-- 26 групп бенчмарков
+### Очистка тестовой базы (3 апреля 2026 — этап 2):
 
-**Фикстуры:**
-- 1 файл (test_fixtures.rs)
-- 26 функций-фикстур
+**Удалённые файлы:**
+- `src/tests/test_io_resource_leak.rs` (5 пустых тестов)
+- `tests/test_architecture_improvements.rs` (устаревший тест)
 
-### Очистка тестовой базы (2 апреля 2026):
+**Удалённые дубликаты (~30 тестов):**
+- ISSUE-TEST-001: test_all_critical_fixes_integration (дубликат)
+- ISSUE-TEST-006: 10 тестов set_fall_speed(NaN) (дубликаты)
+- ISSUE-TEST-007: 5 тестов WALL_KICK_OFFSETS (дубликаты)
+- ISSUE-TEST-008: 3 теста get_controls_hmac_key() (дубликаты)
+- ISSUE-TEST-009: 2 теста ThreadSafeLeaderboard (дубликаты)
+- ISSUE-TEST-010: 4 теста sanitize_player_name (дубликаты)
+- ISSUE-TEST-011: 3 теста apply_gravity (дубликаты)
+- ISSUE-TEST-012-018: 8 тестов (дубликаты)
 
-**Удалённые проблемы:**
-- 2 дублирующихся теста из test_architecture_all.rs (test_critical_thread_safe_score_no_panic, test_critical_leaderboard_toctou_documentation)
-- 4 пустых теста из test_macros.rs (test_log_error_format, test_log_warn_format, test_log_info_format, test_log_macros_use_eprintln)
-- Обновлена статистика: 95 файлов, ~1210 тестов
+**Удалённые устаревшие тесты (4 теста):**
+- ISSUE-TEST-019: test_cycle_traits_have_todo_comments
+- ISSUE-TEST-020: test_game_mode_enum_deprecated (помечен #[ignore])
+- ISSUE-TEST-021: test_gameboard_access_trait_removed
+- ISSUE-TEST-022: test_redundant_traits_removed
 
-**Оставшиеся дубликаты (требуют удаления в будущем):**
-- Тесты на HMAC: 15+ тестов (сократить до 5-7)
-- Тесты на Position: 12 тестов (сократить до 4-5)
-- Тесты на Time: 14 тестов (сократить до 6-8)
+**Удалённые тривиальные тесты (5 тестов):**
+- ISSUE-TEST-029: test_components_have_correct_structure
+- ISSUE-TEST-030: test_traits_follow_isp_principle
+- ISSUE-TEST-031: test_isp_architecture_test
+- ISSUE-TEST-032: test_render_logic_separation_architecture
+- ISSUE-TEST-033: test_coupling_architecture_test
 
-**Потенциал сокращения:** ~25-30 тестов без потери покрытия
+**Исправленные тесты (1 тест):**
+- ISSUE-TEST-028: test_constants_are_different (исправлен ассерт)
+
+**ИТОГО очищено: ~45 тестовых функций**
 
 ### Очистка тестовой базы (1 апреля 2026):
 

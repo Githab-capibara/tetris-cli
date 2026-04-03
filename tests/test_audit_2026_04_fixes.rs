@@ -612,26 +612,6 @@ fn test_l4_simplified_exports() {
 // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 // ============================================================================
 
-/// Интеграционный тест: Проверка всех CRITICAL исправлений
-#[test]
-#[allow(clippy::items_after_statements)]
-fn test_all_critical_fixes_integration() {
-    // C1: Валидация HMAC ключей
-    use tetris_cli::config::keys::validate_hmac_key;
-    assert!(validate_hmac_key("valid_key", "TEST").is_ok());
-    assert!(validate_hmac_key("", "TEST").is_err());
-
-    // C2: KeyReader ASCII
-    use tetris_cli::io::KeyReader;
-    let _reader = KeyReader::new();
-
-    // C3: TOCTOU документация
-    use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    let entry = LeaderboardEntry::new("Player", 1000);
-    assert!(entry.is_valid());
-    assert_eq!(entry.score(), Some(1000));
-}
-
 /// Интеграционный тест: Проверка всех HIGH исправлений
 #[test]
 fn test_all_high_fixes_integration() {

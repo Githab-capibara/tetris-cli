@@ -274,39 +274,3 @@ fn test_render_uses_gameview_for_decoupling() {
     // draw() не может изменять состояние через GameView
     let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
 }
-
-// ============================================================================
-// ТЕСТ 6: АРХИТЕКТУРНЫЙ ТЕСТ РАЗДЕЛЕНИЯ
-// ============================================================================
-
-/// Архитектурный тест что разделение render/logic соблюдается.
-#[test]
-fn test_render_logic_separation_architecture() {
-    // Архитектура разделения:
-    // - render.rs: отрисовка через GameView
-    // - logic/update.rs: обновление состояния
-    // - scoring/lines.rs: логика линий
-    // - scoring/points.rs: логика очков
-
-    let architecture = [
-        ("render.rs", "Отрисовка"),
-        ("logic/update.rs", "Обновление состояния"),
-        ("scoring/lines.rs", "Логика линий"),
-        ("scoring/points.rs", "Логика очков"),
-    ];
-
-    // Проверяем что все модули существуют
-    use crate::game::logic::update::update;
-    use crate::game::render::draw;
-    use crate::game::scoring::lines::check_rows;
-    use crate::game::scoring::points::{handle_hard_drop, handle_soft_drop};
-
-    // Все функции доступны из своих модулей
-    let _ = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
-    let _ = update::<crate::io::KeyReader>;
-    let _check_rows: fn(&mut crate::game::state::GameState) -> u32 = check_rows;
-    let _ = handle_hard_drop;
-    let _ = handle_soft_drop;
-
-    assert_eq!(architecture.len(), 4, "Должно быть 4 модуля");
-}
