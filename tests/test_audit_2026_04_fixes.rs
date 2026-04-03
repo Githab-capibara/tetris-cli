@@ -673,8 +673,9 @@ fn test_all_medium_fixes_integration() {
 #[test]
 fn test_all_low_fixes_integration() {
     // L1: Константы клавиш напрямую из constants
-    use tetris_cli::constants::{KEY_BACKSPACE, KEY_ENTER_LF, KEY_SPACE};
+    use tetris_cli::constants::{KEY_BACKSPACE, KEY_ENTER_LF};
     assert_eq!(KEY_BACKSPACE, 127);
+    let _ = KEY_ENTER_LF; // используем чтобы не было unused warning
 
     // L3: Конструкторы ошибок
     use tetris_cli::errors::GameError;
@@ -732,11 +733,12 @@ fn test_all_26_audit_fixes_complete_integration() {
     assert_eq!(sanitize_player_name("Test"), "Test");
 
     // LOW (3)
-    use tetris_cli::constants::{KEY_BACKSPACE, KEY_SPACE};
+    use tetris_cli::constants::KEY_BACKSPACE;
     use tetris_cli::errors::GameError;
     use tetris_cli::exports::GameState as ExportedState;
 
     assert_eq!(KEY_BACKSPACE, 127);
+    let _ = KEY_BACKSPACE; // suppress unused
     let _err = GameError::ValidationError("test".to_string());
     let _state = ExportedState::new();
 
