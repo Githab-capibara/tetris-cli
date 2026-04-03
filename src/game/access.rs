@@ -226,6 +226,7 @@ pub trait ScoreAccess {
 /// ```
 pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
+    #[allow(dead_code)]
     fn add_score(&mut self, points: u128);
 
     /// Установить счёт (для тестов).
@@ -257,6 +258,7 @@ pub trait LevelAccess {
     }
 
     /// Установить текущий уровень.
+    #[allow(dead_code)]
     fn set_level(&mut self, level: u32);
 }
 
@@ -285,6 +287,7 @@ pub trait LinesAccess {
     fn set_lines_cleared(&mut self, lines: u32);
 
     /// Добавить количество очищенных линий.
+    #[allow(dead_code)]
     fn add_lines(&mut self, lines: u32);
 }
 
@@ -305,14 +308,17 @@ pub trait ComboAccess {
     /// Получить текущий комбо.
     #[must_use]
     #[inline]
+    #[allow(dead_code)]
     fn get_combo(&self) -> u32 {
         0
     }
 
     /// Установить текущий комбо.
+    #[allow(dead_code)]
     fn set_combo(&mut self, combo: u32);
 
     /// Сбросить комбо.
+    #[allow(dead_code)]
     fn reset_combo(&mut self);
 }
 

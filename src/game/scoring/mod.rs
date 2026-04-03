@@ -66,7 +66,7 @@ pub mod lines;
 pub mod points;
 
 // Публичные экспорты из lines
-pub use lines::{check_rows, find_full_rows, remove_rows};
+pub use lines::check_rows;
 
 // Публичные экспорты из points
 pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};
@@ -124,6 +124,7 @@ pub trait ScoringState:
     fn set_fall_speed(&mut self, speed: f32) -> Result<(), &'static str>;
 
     /// Получить маску анимируемых строк.
+    #[allow(dead_code)]
     fn animating_rows_mask(&self) -> u32;
 
     /// Установить маску анимируемых строк.
