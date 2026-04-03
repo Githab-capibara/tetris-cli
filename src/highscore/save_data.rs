@@ -376,8 +376,9 @@ mod tests {
     /// Проверяет, что функция возвращает ошибку для файла > 1MB
     #[test]
     fn test_check_config_file_size_too_large() {
-        // Создаём временный файл
-        let test_path = PathBuf::from("test_config_large.toml");
+        // Создаём временную директорию
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let test_path = temp_dir.path().join("test_config_large.toml");
 
         // Создаём файл размером больше 1MB (1MB + 1 байт)
         let large_size = (MAX_CONFIG_FILE_SIZE + 1) as usize;
@@ -402,7 +403,8 @@ mod tests {
             "Ошибка должна упоминать превышение размера"
         );
 
-        // Очищаем тестовый файл
+        // Очищаем тестовый файл (удаляется автоматически при удалении temp_dir)
+        drop(file);
         let _ = fs::remove_file(&test_path);
     }
 
@@ -410,8 +412,9 @@ mod tests {
     /// Проверяет, что функция возвращает Ok для файла < 1MB
     #[test]
     fn test_check_config_file_size_ok() {
-        // Создаём временный файл
-        let test_path = PathBuf::from("test_config_small.toml");
+        // Создаём временную директорию
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let test_path = temp_dir.path().join("test_config_small.toml");
 
         // Создаём небольшой файл (1KB)
         let small_size = 1024;
@@ -427,7 +430,8 @@ mod tests {
         let result = check_config_file_size(&test_path);
         assert!(result.is_ok(), "Проверка файла < 1MB должна вернуть Ok");
 
-        // Очищаем тестовый файл
+        // Очищаем тестовый файл (удаляется автоматически при удалении temp_dir)
+        drop(file);
         let _ = fs::remove_file(&test_path);
     }
 
@@ -435,8 +439,9 @@ mod tests {
     /// Проверяет, что функция возвращает Ok для несуществующего файла
     #[test]
     fn test_check_config_file_size_not_found() {
-        // Путь к несуществующему файлу
-        let test_path = PathBuf::from("test_config_nonexistent.toml");
+        // Создаём временную директорию
+        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let test_path = temp_dir.path().join("test_config_nonexistent.toml");
 
         // Убеждаемся, что файл не существует
         let _ = fs::remove_file(&test_path);

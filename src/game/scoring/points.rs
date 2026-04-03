@@ -27,7 +27,7 @@ use crate::types::UpdateEndState;
 /// # Исправление ISSUE-074
 /// Константа вынесена на уровень модуля для переиспользования.
 /// `u32::MAX` = `4_294_967_295`, используем явное значение для избежания потери точности.
-const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
+const MAX_SAFE_F32_AS_U32: f32 = 4_294_967_295.0;
 
 /// Безопасно конвертировать f32 в u32 с защитой от переполнения.
 ///
@@ -61,7 +61,7 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
         return 0;
     }
     // Проверка на переполнение
-    if value >= MAX_SAFE_F32_FOR_U32 {
+    if value >= MAX_SAFE_F32_AS_U32 {
         return u32::MAX;
     }
     // Конвертация безопасна - значение в диапазоне [0, u32::MAX)
@@ -92,6 +92,8 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast
     // Исправление #1 (CRITICAL): защита от NaN, Infinity и переполнения
+    // Расстояние падения всегда неотрицательное (текущая позиция >= начальной),
+    // поэтому .abs() избыточен, но оставлен для самодокументирования.
     let drop_distance_f32 = (state.curr_shape().pos().1 - start_y).abs();
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 

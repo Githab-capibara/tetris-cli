@@ -184,6 +184,23 @@ pub fn move_piece_to_right_wall(state: &mut GameState) {
 // ФИКСТУРЫ ДЛЯ ФИГУР (TETROMINO)
 // ============================================================================
 
+/// Создаёт тестовую фигуру указанного типа в стандартной позиции.
+///
+/// # Аргументы
+/// * `shape` - тип фигуры для создания
+///
+/// # Возвращает
+/// Новый экземпляр `Tetromino` с указанной формой.
+#[must_use]
+fn create_test_piece_by_shape(shape: ShapeType) -> Tetromino {
+    Tetromino {
+        pos: (4.0, 0.0),
+        shape,
+        coords: SHAPE_COORDS[shape as usize],
+        fg: shape as usize,
+    }
+}
+
 /// Создаёт тестовую фигуру типа T в стандартной позиции.
 ///
 /// # Возвращает
@@ -195,12 +212,7 @@ pub fn move_piece_to_right_wall(state: &mut GameState) {
 /// ```
 #[must_use]
 pub fn create_test_t_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::T,
-        coords: SHAPE_COORDS[ShapeType::T as usize],
-        fg: ShapeType::T as usize,
-    }
+    create_test_piece_by_shape(ShapeType::T)
 }
 
 /// Создаёт тестовую фигуру типа L в стандартной позиции.
@@ -209,12 +221,7 @@ pub fn create_test_t_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой L.
 #[must_use]
 pub fn create_test_l_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::L,
-        coords: SHAPE_COORDS[ShapeType::L as usize],
-        fg: ShapeType::L as usize,
-    }
+    create_test_piece_by_shape(ShapeType::L)
 }
 
 /// Создаёт тестовую фигуру типа J в стандартной позиции.
@@ -223,12 +230,7 @@ pub fn create_test_l_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой J.
 #[must_use]
 pub fn create_test_j_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::J,
-        coords: SHAPE_COORDS[ShapeType::J as usize],
-        fg: ShapeType::J as usize,
-    }
+    create_test_piece_by_shape(ShapeType::J)
 }
 
 /// Создаёт тестовую фигуру типа S в стандартной позиции.
@@ -237,12 +239,7 @@ pub fn create_test_j_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой S.
 #[must_use]
 pub fn create_test_s_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::S,
-        coords: SHAPE_COORDS[ShapeType::S as usize],
-        fg: ShapeType::S as usize,
-    }
+    create_test_piece_by_shape(ShapeType::S)
 }
 
 /// Создаёт тестовую фигуру типа Z в стандартной позиции.
@@ -251,12 +248,7 @@ pub fn create_test_s_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой Z.
 #[must_use]
 pub fn create_test_z_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::Z,
-        coords: SHAPE_COORDS[ShapeType::Z as usize],
-        fg: ShapeType::Z as usize,
-    }
+    create_test_piece_by_shape(ShapeType::Z)
 }
 
 /// Создаёт тестовую фигуру типа O (квадрат) в стандартной позиции.
@@ -265,12 +257,7 @@ pub fn create_test_z_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой O.
 #[must_use]
 pub fn create_test_o_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::O,
-        coords: SHAPE_COORDS[ShapeType::O as usize],
-        fg: ShapeType::O as usize,
-    }
+    create_test_piece_by_shape(ShapeType::O)
 }
 
 /// Создаёт тестовую фигуру типа I в стандартной позиции.
@@ -279,12 +266,7 @@ pub fn create_test_o_piece() -> Tetromino {
 /// Новый экземпляр `Tetromino` с формой I.
 #[must_use]
 pub fn create_test_i_piece() -> Tetromino {
-    Tetromino {
-        pos: (4.0, 0.0),
-        shape: ShapeType::I,
-        coords: SHAPE_COORDS[ShapeType::I as usize],
-        fg: ShapeType::I as usize,
-    }
+    create_test_piece_by_shape(ShapeType::I)
 }
 
 /// Создаёт тестовую фигуру указанного типа.
