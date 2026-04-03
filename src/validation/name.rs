@@ -123,10 +123,7 @@ pub fn is_valid_name_char(c: char) -> bool {
 pub fn sanitize_player_name(name: &str) -> String {
     // Удаляем zero-width spaces перед trim (I090)
     let trimmed = name
-        .replace('\u{200B}', "")
-        .replace('\u{200C}', "")
-        .replace('\u{200D}', "")
-        .replace('\u{FEFF}', "")
+        .replace(['\u{200B}', '\u{200C}', '\u{200D}', '\u{FEFF}'], "")
         .trim()
         .to_string();
     if trimmed.is_empty() {
