@@ -50,8 +50,8 @@ fn test_fix_e1_canvas_graceful_degradation() {
     );
 
     // Тест 2: Проверяем что код содержит graceful degradation
-    let io_path = "src/io.rs";
-    let io_content = std::fs::read_to_string(io_path).expect("Failed to read io.rs");
+    let io_path = "src/io/canvas.rs";
+    let io_content = std::fs::read_to_string(io_path).expect("Failed to read io/canvas.rs");
 
     // Должен быть unwrap_or_else для graceful degradation
     assert!(
@@ -517,7 +517,7 @@ fn test_all_critical_fixes_integration() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
 
     // E1: Canvas graceful degradation - проверяем код, не создаём Canvas
-    let io_content = std::fs::read_to_string("src/io.rs").expect("Failed to read io.rs");
+    let io_content = std::fs::read_to_string("src/io/canvas.rs").expect("Failed to read io/canvas.rs");
     assert!(
         io_content.contains("unwrap_or_else"),
         "Canvas должен иметь graceful degradation"
