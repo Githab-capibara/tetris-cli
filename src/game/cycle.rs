@@ -51,7 +51,7 @@ pub enum InputResult {
 ///
 /// # Аргументы
 /// * `state` - состояние игры
-/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
+/// * `inp` - читатель нажатий клавиш (реализует трейт `InputReader`)
 /// * `delta_time_ms` - время с последнего кадра (мс)
 ///
 /// # Возвращает
@@ -127,7 +127,7 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
 ///
 /// # Возвращает
 /// - `Some(delta_time_ms)` - время прошло между кадрами
-/// - `None` - нужно продолжить ожидание (delta_time_ms < interval_ms)
+/// - `None` - нужно продолжить ожидание (`delta_time_ms` < `interval_ms`)
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
@@ -181,7 +181,7 @@ fn handle_input_result<R: Renderer>(input_result: &InputResult, cnv: &mut R) -> 
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 /// * `cnv` - канвас для отрисовки (реализует трейт Renderer)
-/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
+/// * `inp` - читатель нажатий клавиш (реализует трейт `InputReader`)
 /// * `high_score_display` - строка для отображения рекорда
 ///
 /// # Возвращает
@@ -262,7 +262,7 @@ mod tests {
     // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: maintain_fps()
     // =========================================================================
 
-    /// Тест: maintain_fps() корректно регулирует FPS
+    /// Тест: `maintain_fps()` корректно регулирует FPS
     #[test]
     fn test_maintain_fps_regulates_fps() {
         let mut last_time = std::time::Instant::now();
@@ -279,7 +279,7 @@ mod tests {
         );
     }
 
-    /// Тест: maintain_fps() возвращает Some когда интервал прошёл
+    /// Тест: `maintain_fps()` возвращает Some когда интервал прошёл
     #[test]
     fn test_maintain_fps_returns_some_after_interval() {
         let mut last_time = std::time::Instant::now();
@@ -300,7 +300,7 @@ mod tests {
         );
     }
 
-    /// Тест: maintain_fps() обновляет last_time
+    /// Тест: `maintain_fps()` обновляет `last_time`
     #[test]
     fn test_maintain_fps_updates_last_time() {
         let mut last_time = std::time::Instant::now();
@@ -322,7 +322,7 @@ mod tests {
         );
     }
 
-    /// Тест: maintain_fps() обрабатывает переполнение u128 -> u64
+    /// Тест: `maintain_fps()` обрабатывает переполнение u128 -> u64
     #[test]
     fn test_maintain_fps_handles_overflow() {
         let mut last_time = std::time::Instant::now();
@@ -342,7 +342,7 @@ mod tests {
     // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: handle_input_result()
     // =========================================================================
 
-    /// Тест: handle_input_result() правильно обрабатывает InputResult::Continue
+    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Continue`
     #[test]
     fn test_handle_input_result_continue() {
         // Создаём mock renderer
@@ -375,7 +375,7 @@ mod tests {
         assert!(result.is_none(), "Continue должен вернуть None");
     }
 
-    /// Тест: handle_input_result() правильно обрабатывает InputResult::Pause
+    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Pause`
     #[test]
     fn test_handle_input_result_pause() {
         struct MockRenderer;
@@ -407,7 +407,7 @@ mod tests {
         assert!(result.is_none(), "Pause должен вернуть None");
     }
 
-    /// Тест: handle_input_result() правильно обрабатывает InputResult::Quit
+    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Quit`
     #[test]
     fn test_handle_input_result_quit() {
         struct MockRenderer;
@@ -439,7 +439,7 @@ mod tests {
         assert_eq!(result, Some(0), "Quit должен вернуть Some(0)");
     }
 
-    /// Тест: handle_input_result() правильно обрабатывает InputResult::GameOver
+    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::GameOver`
     #[test]
     fn test_handle_input_result_game_over() {
         struct MockRenderer;
@@ -471,7 +471,7 @@ mod tests {
         assert_eq!(result, Some(0), "GameOver должен вернуть Some(0)");
     }
 
-    /// Тест: handle_input_result() правильно обрабатывает InputResult::Won
+    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Won`
     #[test]
     fn test_handle_input_result_won() {
         struct MockRenderer;
@@ -507,7 +507,7 @@ mod tests {
     // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
     // =========================================================================
 
-    /// Тест: все InputResult варианты обрабатываются корректно
+    /// Тест: все `InputResult` варианты обрабатываются корректно
     #[test]
     fn test_all_input_result_variants_handled() {
         struct MockRenderer;

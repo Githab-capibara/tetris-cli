@@ -7,7 +7,7 @@
 //! - Централизация HMAC (C4)
 //! - Разделение трейтов (H1)
 //! - DIP (H2)
-//! - SoC (H5)
+//! - `SoC` (H5)
 //! - Абстракция времени (H6)
 //! - Интеграционные тесты архитектуры
 
@@ -46,7 +46,7 @@ mod tests {
         );
     }
 
-    /// Проверить что Direction, RotationDirection, Position не импортируют
+    /// Проверить что Direction, `RotationDirection`, Position не импортируют
     /// из других модулей кроме std.
     #[test]
     fn test_core_types_are_independent() {
@@ -73,7 +73,7 @@ mod tests {
     // РАЗДЕЛ 2: ТЕСТЫ НА ЦЕЛОСТНОСТЬ КОМПОНЕНТОВ (C1)
     // ========================================================================
 
-    /// Проверить что GameState использует GameBoard, ScoreBoard,
+    /// Проверить что `GameState` использует `GameBoard`, `ScoreBoard`,
     /// а не хранит поля напрямую.
     #[test]
     fn test_game_state_uses_components() {
@@ -93,7 +93,7 @@ mod tests {
         );
     }
 
-    /// Проверить что GameBoard не зависит от ScoreBoard и наоборот
+    /// Проверить что `GameBoard` не зависит от `ScoreBoard` и наоборот
     /// (низкая связанность).
     #[test]
     fn test_components_are_independent() {
@@ -122,8 +122,8 @@ mod tests {
     // РАЗДЕЛ 3: ТЕСТЫ НА TOCTOU ЗАЩИТУ (C3)
     // ========================================================================
 
-    /// Проверить что score() и is_valid() атомарны.
-    /// LeaderboardEntry намеренно !Send + !Sync (PhantomData<*mut ()>),
+    /// Проверить что `score()` и `is_valid()` атомарны.
+    /// `LeaderboardEntry` намеренно !Send + !Sync (`PhantomData`<*mut ()>),
     /// поэтому тестируем атомарность в одном потоке.
     #[test]
     fn test_thread_safe_leaderboard_entry_is_atomic() {
@@ -189,7 +189,7 @@ mod tests {
         );
     }
 
-    /// Тест на целостность данных LeaderboardEntry.
+    /// Тест на целостность данных `LeaderboardEntry`.
     #[test]
     fn test_leaderboard_entry_thread_safety() {
         // LeaderboardEntry !Send + !Sync, поэтому тестируем целостность в одном потоке
@@ -248,7 +248,7 @@ mod tests {
     // РАЗДЕЛ 4: ТЕСТЫ НА ЦЕНТРАЛИЗАЦИЮ HMAC (C4)
     // ========================================================================
 
-    /// Проверить что hmac_sign и hmac_verify определены только в crypto::hmac модуле.
+    /// Проверить что `hmac_sign` и `hmac_verify` определены только в `crypto::hmac` модуле.
     #[test]
     fn test_hmac_functions_centralized() {
         let hmac_path = "src/crypto/hmac.rs";
@@ -328,7 +328,7 @@ mod tests {
     // РАЗДЕЛ 5: ТЕСТЫ НА РАЗДЕЛЕНИЕ ТРЕЙТОВ (H1)
     // ========================================================================
 
-    /// Проверить что ScoreAccess, LevelAccess, LinesAccess, ComboAccess
+    /// Проверить что `ScoreAccess`, `LevelAccess`, `LinesAccess`, `ComboAccess`
     /// разделены и не дублируют методы.
     #[test]
     fn test_scoring_traits_are_segregated() {
@@ -448,7 +448,7 @@ mod tests {
     // РАЗДЕЛ 6: ТЕСТЫ НА DIP (H2)
     // ========================================================================
 
-    /// Проверить что run_game_loop принимает &mut dyn Renderer,
+    /// Проверить что `run_game_loop` принимает &mut dyn Renderer,
     /// а не &mut Canvas.
     #[test]
     fn test_game_loop_uses_traits() {
@@ -509,7 +509,7 @@ mod tests {
     // РАЗДЕЛ 7: ТЕСТЫ НА SoC (H5)
     // ========================================================================
 
-    /// Проверить что parse_input() не изменяет состояние и возвращает только GameAction.
+    /// Проверить что `parse_input()` не изменяет состояние и возвращает только `GameAction`.
     #[test]
     fn test_input_parser_is_pure() {
         let input_path = "src/game/logic/input.rs";
@@ -548,7 +548,7 @@ mod tests {
         }
     }
 
-    /// Проверить что handle_input() использует parse_input() и execute_action() отдельно.
+    /// Проверить что `handle_input()` использует `parse_input()` и `execute_action()` отдельно.
     #[test]
     fn test_input_logic_separation() {
         let controls_path = "src/controls.rs";

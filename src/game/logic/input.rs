@@ -15,8 +15,8 @@
 //! Функция `handle_input()` использует трейт `InputReader` вместо конкретного типа `KeyReader`
 //! для соблюдения Dependency Inversion Principle.
 //!
-//! ## Исправление 7: GameAction enum
-//! Введена абстракция GameAction для отделения конкретных клавиш от игровых действий.
+//! ## Исправление 7: `GameAction` enum
+//! Введена абстракция `GameAction` для отделения конкретных клавиш от игровых действий.
 //! Это позволяет:
 //! - Изменять конфигурацию управления без изменения логики ввода
 //! - Легко добавлять новые действия
@@ -24,8 +24,8 @@
 //!
 //! ## H5: Разделение ввода и логики
 //! Модуль разделён на три уровня:
-//! 1. `parse_input()` - чистый парсер клавиш в GameAction (без состояния)
-//! 2. `execute_action()` - исполнитель действий (изменяет GameState)
+//! 1. `parse_input()` - чистый парсер клавиш в `GameAction` (без состояния)
+//! 2. `execute_action()` - исполнитель действий (изменяет `GameState`)
 //! 3. `handle_input()` - комбинация парсера и исполнителя для удобства
 
 use crate::game::state::GameState;
@@ -48,7 +48,7 @@ use crate::types::{Direction, RotationDirection, UpdateEndState};
 /// - `None` если клавиша не распознана
 ///
 /// # Архитектурные заметки (H1, H5)
-/// Использует ControlsConfig для маппинга клавиш вместо хардкода.
+/// Использует `ControlsConfig` для маппинга клавиш вместо хардкода.
 #[must_use]
 pub fn parse_input(key_code: u8, config: &crate::controls::ControlsConfig) -> Option<GameAction> {
     config.map_key_to_action(key_code)
@@ -62,7 +62,7 @@ pub fn parse_input(key_code: u8, config: &crate::controls::ControlsConfig) -> Op
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `action` - игровое действие (GameAction)
+/// * `action` - игровое действие (`GameAction`)
 ///
 /// # Возвращает
 /// - `Some(UpdateEndState::Quit)` - если действие Quit (выход в меню)
@@ -115,7 +115,7 @@ pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<Updat
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
-/// * `inp` - читатель нажатий клавиш (реализует трейт InputReader)
+/// * `inp` - читатель нажатий клавиш (реализует трейт `InputReader`)
 ///
 /// # Возвращает
 /// - `Some(UpdateEndState::Quit)` - выход в меню
@@ -130,9 +130,9 @@ pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<Updat
 /// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
 /// Это позволяет отслеживать проблемы с вводом во время отладки.
 ///
-/// # Исправление 7: GameAction enum
-/// Использует GameAction для абстракции ввода. Конкретные клавиши маппятся в
-/// GameAction через функцию `parse_input()`.
+/// # Исправление 7: `GameAction` enum
+/// Использует `GameAction` для абстракции ввода. Конкретные клавиши маппятся в
+/// `GameAction` через функцию `parse_input()`.
 pub fn handle_input<T: crate::io_traits::InputReader>(
     state: &mut GameState,
     inp: &mut T,
@@ -190,11 +190,11 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 /// * `dir` - направление движения
 ///
 /// # Исправление #4
-/// Удалена ветка Direction::Down как dead code — движение вниз
-/// обрабатывается отдельно в handle_soft_drop/handle_hard_drop.
+/// Удалена ветка `Direction::Down` как dead code — движение вниз
+/// обрабатывается отдельно в `handle_soft_drop/handle_hard_drop`.
 ///
 /// # Исправление аудита 2026-04-01 (L3)
-/// Удалён мёртвый код - ветка Direction::Down в match больше не требуется.
+/// Удалён мёртвый код - ветка `Direction::Down` в match больше не требуется.
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
     if state.can_move_curr_shape_direction(dir) {
         let curr_shape = state.get_curr_shape_mut();
@@ -214,7 +214,7 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
 /// * `dir` - направление вращения
 ///
 /// ## Исправление #4 (HIGH)
-/// Функция обновлена для использования wall_kick модуля.
+/// Функция обновлена для использования `wall_kick` модуля.
 fn handle_rotation_input(state: &mut GameState, dir: RotationDirection) {
     super::wall_kick::rotate_with_wall_kick(state, dir);
 }

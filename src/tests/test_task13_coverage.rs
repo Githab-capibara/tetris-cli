@@ -1,9 +1,9 @@
 //! Тесты для Задачи 13: Покрытие тестами.
 //!
 //! Этот модуль содержит тесты для:
-//! - RenderCache (кэширование строк отрисовки)
-//! - GameBoardAccess (трейт доступа к игровому полю)
-//! - find_filled_lines (поиск заполненных линий)
+//! - `RenderCache` (кэширование строк отрисовки)
+//! - `GameBoardAccess` (трейт доступа к игровому полю)
+//! - `find_filled_lines` (поиск заполненных линий)
 //! - TOCTOU маркер (!Send + !Sync)
 
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
@@ -15,7 +15,7 @@ use crate::game::state::GameState;
 // ТЕСТЫ ДЛЯ RENDER CACHE
 // ============================================================================
 
-/// Тест 1: Проверка создания нового RenderCache
+/// Тест 1: Проверка создания нового `RenderCache`
 #[test]
 fn test_render_cache_new() {
     let cache = crate::game::cache::RenderCache::new();
@@ -86,7 +86,7 @@ fn test_render_cache_update_values() {
     assert_ne!(cache.last_cached_level, old_level);
 }
 
-/// Тест 4: Проверка что RenderCache реализует Default
+/// Тест 4: Проверка что `RenderCache` реализует Default
 #[test]
 fn test_render_cache_default() {
     let cache = crate::game::cache::RenderCache::default();
@@ -393,9 +393,9 @@ fn test_find_filled_lines_different_block_values() {
 // ТЕСТЫ ДЛЯ TOCTOU МАРКЕР (!Send + !Sync)
 // ============================================================================
 
-/// Тест 25: Проверка что GameState используется только в одном потоке
+/// Тест 25: Проверка что `GameState` используется только в одном потоке
 ///
-/// Этот тест документирует что GameState не предназначен для передачи между потоками.
+/// Этот тест документирует что `GameState` не предназначен для передачи между потоками.
 /// TOCTOU (Time-of-check to time-of-use) уязвимости предотвращаются
 /// через отсутствие реализации Send + Sync.
 #[test]
@@ -430,19 +430,19 @@ fn test_toctou_marker_canvas_single_threaded() {
     let _ = result;
 }
 
-/// Тест 27: Проверка компиляции с GameState в замыкании
+/// Тест 27: Проверка компиляции с `GameState` в замыкании
 ///
-/// Этот тест проверяет что код с GameState компилируется корректно.
+/// Этот тест проверяет что код с `GameState` компилируется корректно.
 #[test]
 fn test_toctou_marker_closure_compilation() {
     // Проверяем что можно создать замыкание которое принимает GameState
-    let _closure = |state: &GameState| {
+    let closure = |state: &GameState| {
         // Используем state чтобы избежать предупреждения
         let _ = state.score();
     };
 
     let state = GameState::new();
-    _closure(&state);
+    closure(&state);
 }
 
 /// Тест 28: Проверка документации TOCTOU
@@ -457,7 +457,7 @@ fn test_toctou_marker_documentation() {
     // GameState должен быть !Send + !Sync для предотвращения TOCTOU уязвимостей
 }
 
-/// Тест 29: Проверка что GameState не имеет явной реализации Send
+/// Тест 29: Проверка что `GameState` не имеет явной реализации Send
 #[test]
 fn test_toctou_marker_no_explicit_send() {
     // Этот тест проверяет что GameState не реализует Send явно
@@ -469,7 +469,7 @@ fn test_toctou_marker_no_explicit_send() {
     assert_eq!(state.score(), 0);
 }
 
-/// Тест 30: Проверка что GameState не имеет явной реализации Sync
+/// Тест 30: Проверка что `GameState` не имеет явной реализации Sync
 #[test]
 fn test_toctou_marker_no_explicit_sync() {
     // Этот тест проверяет что GameState не реализует Sync явно

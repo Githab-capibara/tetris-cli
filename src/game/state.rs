@@ -6,32 +6,32 @@
 //! - Константы игры
 //!
 //! ## Архитектурные заметки
-//! ## Исправление #1 (Разделение GameState)
+//! ## Исправление #1 (Разделение `GameState`)
 //! - `GameStats` перемещён в отдельный модуль [`super::stats`]
 //! - `RenderCache` перемещён в отдельный модуль [`super::cache`]
 //! - `GameState` использует композицию: содержит `stats: GameStats`, `cache: RenderCache`
 //!
 //! ## Исправление #12 (MEDIUM SEVERITY) - SOLID принципы
-//! Начато разделение GameState для соблюдения Single Responsibility Principle:
-//! - `GameBoard` (в процессе) - состояние поля (blocks, filled_lines)
-//! - `ScoreBoard` (в процессе) - состояние очков (score, level, lines_cleared)
-//! - `FigureManager` (в процессе) - состояние фигур (curr_shape, next_shape, held_shape, bag)
-//! - `AnimationState` (в процессе) - состояние анимаций (animating_rows_mask, is_hard_dropping)
+//! Начато разделение `GameState` для соблюдения Single Responsibility Principle:
+//! - `GameBoard` (в процессе) - состояние поля (blocks, `filled_lines`)
+//! - `ScoreBoard` (в процессе) - состояние очков (score, level, `lines_cleared`)
+//! - `FigureManager` (в процессе) - состояние фигур (`curr_shape`, `next_shape`, `held_shape`, bag)
+//! - `AnimationState` (в процессе) - состояние анимаций (`animating_rows_mask`, `is_hard_dropping`)
 //!
 //! ### Выполнено:
 //! - ✅ `GameStats` вынесен в отдельный модуль `game/stats.rs`
 //! - ✅ `RenderCache` вынесен в отдельный модуль `game/cache.rs`
-//! - ✅ GameState использует композицию вместо наследования
+//! - ✅ `GameState` использует композицию вместо наследования
 //! - ✅ `FigureManager` выделен в отдельный компонент `game/components/figure_manager.rs`
 //! - ✅ `AnimationState` выделен в отдельный компонент `game/components/animation_state.rs`
 //! - ✅ `BoardState`/`FieldState` выделен в отдельный компонент `game/components/board_state.rs`
 //!
 //! ## Архитектурное улучшение 2026-04-01 (CRITICAL #1)
-//! GameState разделён на специализированные компоненты:
-//! - [`FigureManager`] - управление фигурами (curr_shape, next_shape, held_shape, bag, can_hold)
-//! - [`AnimationState`] - управление анимациями (animating_rows_mask, is_hard_dropping)
-//! - [`BoardState`]/[`FieldState`] - управление полем (board, filled_lines_mask)
-//! - `ScoreBoard` - управление очками (score, level, lines_cleared)
+//! `GameState` разделён на специализированные компоненты:
+//! - [`FigureManager`] - управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
+//! - [`AnimationState`] - управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
+//! - [`BoardState`]/[`FieldState`] - управление полем (board, `filled_lines_mask`)
+//! - `ScoreBoard` - управление очками (score, level, `lines_cleared`)
 //! - `GameStats` - статистика игры
 //! - `RenderCache` - кэш для отрисовки
 //!
@@ -72,7 +72,7 @@ const SPAWN_X: f32 = (GRID_WIDTH as f32 / 2.0) - 1.0;
 
 /// Тип результата игры.
 ///
-/// Использует централизованный GameError из модуля errors.
+/// Использует централизованный `GameError` из модуля errors.
 /// Для обратной совместимости с тестами.
 pub type GameResult<T> = Result<T, crate::errors::GameError>;
 
@@ -147,7 +147,7 @@ pub enum GameMode {
 
 #[allow(deprecated)]
 impl GameMode {
-    /// Преобразовать enum в объект трейта GameModeTrait.
+    /// Преобразовать enum в объект трейта `GameModeTrait`.
     ///
     /// # Возвращает
     /// Box<dyn GameModeTrait> с соответствующим режимом
@@ -181,7 +181,7 @@ impl GameMode {
     /// `false` для классического режима (победы нет, только проигрыш)
     ///
     /// # Архитектурные заметки
-    /// Этот метод делегирует вызов трейту GameModeTrait.
+    /// Этот метод делегирует вызов трейту `GameModeTrait`.
     #[must_use]
     pub fn check_win_condition(self, lines_cleared: u32) -> bool {
         self.as_trait().check_win_condition(lines_cleared)
@@ -204,13 +204,13 @@ impl GameMode {
 /// Состояние игры.
 ///
 /// Содержит всю информацию о текущем состоянии игры:
-/// - Счёт, уровень, количество линий (через ScoreBoard)
+/// - Счёт, уровень, количество линий (через `ScoreBoard`)
 /// - Текущая и следующая фигуры
 /// - Удержанная фигура (Hold)
-/// - Игровое поле (через GameBoard)
+/// - Игровое поле (через `GameBoard`)
 /// - Таймеры и скорость
 /// - Статистика игры
-/// - Режим игры (GameModeTrait)
+/// - Режим игры (`GameModeTrait`)
 ///
 /// # Архитектурные заметки
 /// ## Инкапсуляция и композиция
@@ -246,12 +246,12 @@ pub struct GameState {
     // ========================================================================
     /// Состояние игрового поля.
     ///
-    /// Инкапсулирует состояние поля (blocks, filled_lines).
+    /// Инкапсулирует состояние поля (blocks, `filled_lines`).
     /// Используйте `board()` и `board_mut()` для доступа.
     board: GameBoard,
     /// Состояние счёта и уровней.
     ///
-    /// Инкапсулирует состояние очков (score, level, lines_cleared).
+    /// Инкапсулирует состояние очков (score, level, `lines_cleared`).
     /// Используйте `scoreboard()` и `scoreboard_mut()` для доступа.
     scoreboard: ScoreBoard,
 
@@ -260,17 +260,17 @@ pub struct GameState {
     // ========================================================================
     /// Менеджер фигур.
     ///
-    /// Инкапсулирует состояние фигур (curr_shape, next_shape, held_shape, can_hold, bag).
+    /// Инкапсулирует состояние фигур (`curr_shape`, `next_shape`, `held_shape`, `can_hold`, bag).
     /// Используйте `figure_manager()` и `figure_manager_mut()` для доступа.
     ///
-    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение FigureManager
+    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение `FigureManager`
     figure_manager: FigureManager,
     /// Состояние анимаций.
     ///
-    /// Инкапсулирует состояние анимаций (animating_rows_mask, is_hard_dropping).
+    /// Инкапсулирует состояние анимаций (`animating_rows_mask`, `is_hard_dropping`).
     /// Используйте `animation_state()` и `animation_state_mut()` для доступа.
     ///
-    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение AnimationState
+    /// Архитектурное улучшение 2026-04-01 (CRITICAL #1): Выделение `AnimationState`
     animation_state: AnimationState,
 
     // ========================================================================
@@ -289,7 +289,7 @@ pub struct GameState {
     /// Статистика игры.
     stats: GameStats,
     /// Режим игры (объект трейта).
-    /// Использует трейт GameModeTrait вместо enum для лучшей расширяемости.
+    /// Использует трейт `GameModeTrait` вместо enum для лучшей расширяемости.
     mode_trait: Box<dyn GameModeTrait>,
 
     // ========================================================================
@@ -364,7 +364,7 @@ impl GameState {
     /// * `start_timer` - запустить ли таймер
     ///
     /// # Возвращает
-    /// Инициализированный GameStats
+    /// Инициализированный `GameStats`
     fn create_initial_stats(figure_manager: &FigureManager, start_timer: bool) -> GameStats {
         let mut stats = GameStats::new();
         stats.add_piece(figure_manager.curr_shape().shape());
@@ -382,7 +382,7 @@ impl GameState {
     /// * `stats` - статистика игры
     ///
     /// # Возвращает
-    /// Базовый GameState с инициализированными компонентами
+    /// Базовый `GameState` с инициализированными компонентами
     fn create_base_state(
         mode_trait: Box<dyn GameModeTrait>,
         figure_manager: FigureManager,
@@ -456,7 +456,7 @@ impl GameState {
     /// Получить режим игры (объект трейта).
     ///
     /// # Возвращает
-    /// Ссылка на объект трейта GameModeTrait
+    /// Ссылка на объект трейта `GameModeTrait`
     ///
     /// # Пример использования
     /// ```ignore
@@ -531,7 +531,7 @@ impl GameState {
     /// Ссылка на `FigureManager`
     ///
     /// # Архитектурные заметки (CRITICAL #1)
-    /// Прямой доступ к компоненту FigureManager для сложной логики.
+    /// Прямой доступ к компоненту `FigureManager` для сложной логики.
     /// Для простых операций используйте специализированные методы:
     /// - `curr_shape()`, `next_shape()`, `held_shape()`, `can_hold()`, `get_bag()`
     #[must_use]
@@ -545,7 +545,7 @@ impl GameState {
     /// Мутуабельная ссылка на `FigureManager`
     ///
     /// # Архитектурные заметки (CRITICAL #1)
-    /// Прямой доступ к компоненту FigureManager для сложной логики.
+    /// Прямой доступ к компоненту `FigureManager` для сложной логики.
     #[must_use]
     pub fn figure_manager_mut(&mut self) -> &mut FigureManager {
         &mut self.figure_manager
@@ -557,7 +557,7 @@ impl GameState {
     /// Ссылка на `AnimationState`
     ///
     /// # Архитектурные заметки (CRITICAL #1)
-    /// Прямой доступ к компоненту AnimationState для сложной логики.
+    /// Прямой доступ к компоненту `AnimationState` для сложной логики.
     /// Для простых операций используйте специализированные методы:
     /// - `is_hard_dropping()`, `animating_rows_mask()`
     #[must_use]
@@ -571,7 +571,7 @@ impl GameState {
     /// Мутуабельная ссылка на `AnimationState`
     ///
     /// # Архитектурные заметки (CRITICAL #1)
-    /// Прямой доступ к компоненту AnimationState для сложной логики.
+    /// Прямой доступ к компоненту `AnimationState` для сложной логики.
     #[must_use]
     pub fn animation_state_mut(&mut self) -> &mut AnimationState {
         &mut self.animation_state
@@ -580,11 +580,11 @@ impl GameState {
     /// Получить режим игры (enum для обратной совместимости).
     ///
     /// # Возвращает
-    /// Значение enum GameMode
+    /// Значение enum `GameMode`
     ///
     /// # Архитектурные заметки
     /// Метод сохранён для обратной совместимости с тестами.
-    /// Использует get_mode_trait() для получения режима.
+    /// Использует `get_mode_trait()` для получения режима.
     #[must_use]
     #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
     #[allow(deprecated)]
@@ -752,12 +752,12 @@ impl GameState {
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
     ///
     /// # Исправление аудита 2026-04-02 (B1)
-    /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
+    /// Добавлен #[`must_use`] для предотвращения игнорирования ошибок валидации.
     ///
     /// # Errors
     /// Возвращает [`GameError::ValidationError`] если:
     /// - `value` не является конечным числом (NaN или Infinity)
-    /// - `value` выходит за пределы диапазона [INITIAL_FALL_SPD, MAX_FALL_SPEED]
+    /// - `value` выходит за пределы диапазона [`INITIAL_FALL_SPD`, `MAX_FALL_SPEED`]
     #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
@@ -816,7 +816,7 @@ impl GameState {
     /// ```
     ///
     /// # Исправление аудита 2026-04-02 (B1)
-    /// Добавлен #[must_use] для предотвращения игнорирования ошибок валидации.
+    /// Добавлен #[`must_use`] для предотвращения игнорирования ошибок валидации.
     #[must_use = "Ошибка установки таймера должна быть обработана"]
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
@@ -969,7 +969,7 @@ impl GameState {
     /// Делегирует вызов компоненту `ScoreBoard`.
     ///
     /// # Исправление аудита 2026-04-02 (H16)
-    /// Добавлен #[must_use] так как возвращаемое значение (новый счёт) важно.
+    /// Добавлен #[`must_use`] так как возвращаемое значение (новый счёт) важно.
     #[must_use = "Новый счёт должен быть использован"]
     pub fn add_score(&mut self, points: u128) -> u128 {
         self.scoreboard.add_score(points)
@@ -981,7 +981,7 @@ impl GameState {
     /// Делегирует вызов компоненту `ScoreBoard`.
     ///
     /// # Исправление аудита 2026-04-02 (H16)
-    /// Добавлен #[must_use] так как возвращаемое значение (новое количество линий) важно.
+    /// Добавлен #[`must_use`] так как возвращаемое значение (новое количество линий) важно.
     #[must_use = "Новое количество линий должно быть использовано"]
     pub fn add_lines_cleared(&mut self, lines: u32) -> u32 {
         self.scoreboard.add_lines_cleared(lines)
@@ -1101,7 +1101,7 @@ impl GameState {
 
     /// Обновить скорость падения на основе уровня.
     ///
-    /// Вычисляет скорость по формуле: INITIAL_FALL_SPD + (level - 1) * SPD_INC
+    /// Вычисляет скорость по формуле: `INITIAL_FALL_SPD` + (level - 1) * `SPD_INC`
     ///
     /// # Исправление M3 (MEDIUM)
     /// Инкапсулирует логику расчёта скорости с валидацией диапазона.
@@ -1177,7 +1177,7 @@ mod state_tests {
 
     /// Тест: проверка методов доступа к состоянию
     ///
-    /// Проверяет что методы score(), level(), lines_cleared()
+    /// Проверяет что методы `score()`, `level()`, `lines_cleared()`
     /// возвращают корректные начальные значения.
     #[test]
     fn test_state_initial_values() {
@@ -1207,7 +1207,7 @@ mod state_tests {
 
     use crate::constants::MAX_FALL_SPEED;
 
-    /// Тест: валидация set_fall_speed() через ValidationService без clamp()
+    /// Тест: валидация `set_fall_speed()` через `ValidationService` без `clamp()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_validation_no_clamp() {
@@ -1237,7 +1237,7 @@ mod state_tests {
         );
     }
 
-    /// Тест: обработка NaN в set_fall_speed()
+    /// Тест: обработка NaN в `set_fall_speed()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_nan_rejected() {
@@ -1262,7 +1262,7 @@ mod state_tests {
         }
     }
 
-    /// Тест: обработка Infinity в set_fall_speed()
+    /// Тест: обработка Infinity в `set_fall_speed()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_infinity_rejected() {
@@ -1281,7 +1281,7 @@ mod state_tests {
         assert!(result.is_err(), "Negative Infinity должен быть отклонён");
     }
 
-    /// Тест: обработка отрицательных значений в set_fall_speed()
+    /// Тест: обработка отрицательных значений в `set_fall_speed()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_negative_rejected() {
@@ -1300,7 +1300,7 @@ mod state_tests {
         );
     }
 
-    /// Тест: обработка значений вне диапазона в set_fall_speed()
+    /// Тест: обработка значений вне диапазона в `set_fall_speed()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_out_of_range() {
@@ -1332,7 +1332,7 @@ mod state_tests {
         );
     }
 
-    /// Тест: set_fall_speed() использует ValidationService (DRY-2)
+    /// Тест: `set_fall_speed()` использует `ValidationService` (DRY-2)
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_uses_validation_service() {

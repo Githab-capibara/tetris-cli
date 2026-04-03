@@ -1,10 +1,10 @@
 //! Тесты для TOCTOU защиты в leaderboard.rs.
 //!
 //! Этот модуль содержит тесты для проверки исправления TOCTOU уязвимости:
-//! - LeaderboardEntry::score() использует volatile загрузку
-//! - Проверка !Send + !Sync для LeaderboardEntry
+//! - `LeaderboardEntry::score()` использует volatile загрузку
+//! - Проверка !Send + !Sync для `LeaderboardEntry`
 //!
-//! Исправление: использование std::hint::black_box для volatile загрузки
+//! Исправление: использование `std::hint::black_box` для volatile загрузки
 
 #![allow(deprecated)]
 
@@ -16,9 +16,9 @@ use std::thread;
 // ГРУППА ТЕСТОВ: TOCTOU защита
 // ============================================================================
 
-/// Тест 1: Проверка что score() использует volatile загрузку
+/// Тест 1: Проверка что `score()` использует volatile загрузку
 ///
-/// Проверяет, что метод score() использует std::hint::black_box
+/// Проверяет, что метод `score()` использует `std::hint::black_box`
 /// для предотвращения оптимизаций компилятора.
 #[test]
 fn test_leaderboard_entry_score_volatile() {
@@ -49,9 +49,9 @@ fn test_leaderboard_entry_score_volatile() {
     let _score: Option<u128> = entry.score();
 }
 
-/// Тест 2: Проверка что LeaderboardEntry содержит PhantomData для !Send
+/// Тест 2: Проверка что `LeaderboardEntry` содержит `PhantomData` для !Send
 ///
-/// Проверяет, что LeaderboardEntry содержит PhantomData<*mut ()> для
+/// Проверяет, что `LeaderboardEntry` содержит `PhantomData`<*mut ()> для
 /// маркировки !Send + !Sync.
 #[test]
 fn test_leaderboard_entry_not_send() {
@@ -70,9 +70,9 @@ fn test_leaderboard_entry_not_send() {
     // Этот тест компилируется только если PhantomData присутствует в структуре
 }
 
-/// Тест 3: Проверка что LeaderboardEntry содержит PhantomData для !Sync
+/// Тест 3: Проверка что `LeaderboardEntry` содержит `PhantomData` для !Sync
 ///
-/// Проверяет, что LeaderboardEntry содержит PhantomData<*mut ()> для
+/// Проверяет, что `LeaderboardEntry` содержит `PhantomData`<*mut ()> для
 /// маркировки !Sync.
 #[test]
 fn test_leaderboard_entry_not_sync() {
@@ -86,7 +86,7 @@ fn test_leaderboard_entry_not_sync() {
     assert_eq!(entry.score(), Some(1000));
 }
 
-/// Тест 4: Проверка что ThreadSafeLeaderboardEntry является Send и Sync
+/// Тест 4: Проверка что `ThreadSafeLeaderboardEntry` является Send и Sync
 ///
 /// Проверяет, что потокобезопасная обёрка правильно реализует Send и Sync.
 #[test]
@@ -102,9 +102,9 @@ fn test_thread_safe_leaderboard_entry_send_sync() {
     assert_sync::<ThreadSafeLeaderboardEntry>();
 }
 
-/// Тест 5: Проверка атомарности score() в ThreadSafeLeaderboardEntry
+/// Тест 5: Проверка атомарности `score()` в `ThreadSafeLeaderboardEntry`
 ///
-/// Проверяет, что ThreadSafeLeaderboardEntry::score() работает атомарно.
+/// Проверяет, что `ThreadSafeLeaderboardEntry::score()` работает атомарно.
 #[test]
 fn test_thread_safe_score_atomic() {
     let entry = ThreadSafeLeaderboardEntry::new("Player", 2000);
@@ -129,9 +129,9 @@ fn test_thread_safe_score_atomic() {
     );
 }
 
-/// Тест 6: Проверка валидации в score()
+/// Тест 6: Проверка валидации в `score()`
 ///
-/// Проверяет, что score() выполняет валидацию хэша.
+/// Проверяет, что `score()` выполняет валидацию хэша.
 #[test]
 fn test_score_validation() {
     let entry = LeaderboardEntry::new("Player", 1500);
@@ -151,9 +151,9 @@ fn test_score_validation() {
     );
 }
 
-/// Тест 7: Проверка что score() возвращает 0 для невалидной записи
+/// Тест 7: Проверка что `score()` возвращает 0 для невалидной записи
 ///
-/// Проверяет, что score() возвращает 0 если валидация не прошла.
+/// Проверяет, что `score()` возвращает 0 если валидация не прошла.
 #[test]
 fn test_score_returns_zero_for_invalid() {
     // Создаём валидную запись
@@ -170,7 +170,7 @@ fn test_score_returns_zero_for_invalid() {
 
 /// Тест 8: Проверка работы с разными значениями score
 ///
-/// Проверяет, что score() корректно работает с разными значениями.
+/// Проверяет, что `score()` корректно работает с разными значениями.
 #[test]
 fn test_score_with_different_values() {
     let scores = [0u128, 100u128, 1000u128, 10000u128, u128::MAX / 2];
@@ -185,9 +185,9 @@ fn test_score_with_different_values() {
     }
 }
 
-/// Тест 9: Проверка что PhantomData присутствует в структуре
+/// Тест 9: Проверка что `PhantomData` присутствует в структуре
 ///
-/// Проверяет, что LeaderboardEntry содержит PhantomData<*mut ()> для !Send + !Sync.
+/// Проверяет, что `LeaderboardEntry` содержит `PhantomData`<*mut ()> для !Send + !Sync.
 #[test]
 fn test_phantom_data_present() {
     // Проверяем размер структуры (должен включать PhantomData)
@@ -201,7 +201,7 @@ fn test_phantom_data_present() {
 
 /// Тест 10: Проверка TOCTOU защиты в многопоточной среде
 ///
-/// Проверяет, что ThreadSafeLeaderboardEntry можно безопасно использовать
+/// Проверяет, что `ThreadSafeLeaderboardEntry` можно безопасно использовать
 /// из нескольких потоков.
 #[test]
 fn test_toctou_protection_multithreaded() {
@@ -229,7 +229,7 @@ fn test_toctou_protection_multithreaded() {
 // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: match → if let
 // =========================================================================
 
-/// Тест: корректная обработка ошибки Mutex::lock() в score()
+/// Тест: корректная обработка ошибки `Mutex::lock()` в `score()`
 #[test]
 fn test_mutex_lock_error_handling_in_score() {
     let entry = ThreadSafeLeaderboardEntry::new("Player", 1000);
@@ -247,7 +247,7 @@ fn test_mutex_lock_error_handling_in_score() {
     );
 }
 
-/// Тест: корректная обработка ошибки Mutex::lock() в name()
+/// Тест: корректная обработка ошибки `Mutex::lock()` в `name()`
 #[test]
 fn test_mutex_lock_error_handling_in_name() {
     let entry = ThreadSafeLeaderboardEntry::new("TestPlayer", 500);
@@ -265,7 +265,7 @@ fn test_mutex_lock_error_handling_in_name() {
     );
 }
 
-/// Тест: потокобезопасность методов score() и name()
+/// Тест: потокобезопасность методов `score()` и `name()`
 #[test]
 fn test_thread_safety_of_score_and_name() {
     let entry = Arc::new(ThreadSafeLeaderboardEntry::new("ThreadPlayer", 9999));
@@ -304,7 +304,7 @@ fn test_thread_safety_of_score_and_name() {
     }
 }
 
-/// Тест: обработка отравления Mutex в score_safe()
+/// Тест: обработка отравления Mutex в `score_safe()`
 #[test]
 fn test_mutex_poison_handling_in_score_safe() {
     let entry = ThreadSafeLeaderboardEntry::new("Player", 1000);
@@ -319,7 +319,7 @@ fn test_mutex_poison_handling_in_score_safe() {
     assert_eq!(result.unwrap(), 1000);
 }
 
-/// Тест: обработка отравления Mutex в name_safe()
+/// Тест: обработка отравления Mutex в `name_safe()`
 #[test]
 fn test_mutex_poison_handling_in_name_safe() {
     let entry = ThreadSafeLeaderboardEntry::new("Player", 1000);
@@ -333,7 +333,7 @@ fn test_mutex_poison_handling_in_name_safe() {
     assert_eq!(result.unwrap(), "Player");
 }
 
-/// Тест: if let упрощение в score() (исправление аудита)
+/// Тест: if let упрощение в `score()` (исправление аудита)
 #[test]
 fn test_if_let_simplification_in_score() {
     // Этот тест проверяет что score() использует if let вместо match
@@ -344,7 +344,7 @@ fn test_if_let_simplification_in_score() {
     assert_eq!(entry.score_safe(), Some(1234));
 }
 
-/// Тест: if let упрощение в is_valid() (исправление аудита)
+/// Тест: if let упрощение в `is_valid()` (исправление аудита)
 #[test]
 fn test_if_let_simplification_in_is_valid() {
     let entry = ThreadSafeLeaderboardEntry::new("Player", 5678);

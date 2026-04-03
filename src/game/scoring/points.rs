@@ -28,7 +28,7 @@ use crate::types::UpdateEndState;
 ///
 /// # Исправление ISSUE-074
 /// Константа вынесена на уровень модуля для переиспользования.
-/// u32::MAX = 4_294_967_295, используем явное значение для избежания потери точности.
+/// `u32::MAX` = `4_294_967_295`, используем явное значение для избежания потери точности.
 const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
 
 /// Безопасно конвертировать f32 в u32 с защитой от переполнения.
@@ -37,7 +37,7 @@ const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
 /// * `value` - значение для конвертации
 ///
 /// # Возвращает
-/// - `u32` в диапазоне [0, u32::MAX] если значение корректно
+/// - `u32` в диапазоне [0, `u32::MAX`] если значение корректно
 /// - `0` если значение NaN, отрицательное или бесконечное
 /// - `u32::MAX` если значение превышает максимальное representable значение
 ///
@@ -49,7 +49,7 @@ const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
 /// # Исправление #25 (HIGH)
 /// Использует корректную проверку диапазона перед конвертацией.
 /// # Исправление аудита 2026-03-30
-/// Использует точную границу 4294967295.0 вместо u32::MAX as f32 для избежания потери точности.
+/// Использует точную границу 4294967295.0 вместо `u32::MAX` as f32 для избежания потери точности.
 ///
 /// # Видимость
 /// Функция публична для тестирования (pub(crate)).
@@ -78,10 +78,10 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
 /// * `state` - состояние игры (изменяемое)
 ///
 /// # Инкапсуляция (Задача HIGH)
-/// Использует методы GameState вместо прямого доступа к полям.
+/// Использует методы `GameState` вместо прямого доступа к полям.
 ///
 /// # Исправление C1
-/// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
+/// Использует `saturating_mul` для защиты от переполнения при начислении очков за падение.
 pub fn handle_hard_drop(state: &mut GameState) {
     use crate::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
@@ -112,13 +112,13 @@ pub fn handle_hard_drop(state: &mut GameState) {
 /// * `state` - состояние игры (изменяемое)
 ///
 /// # Инкапсуляция (Задача HIGH)
-/// Использует методы GameState вместо прямого доступа к полям.
+/// Использует методы `GameState` вместо прямого доступа к полям.
 ///
 /// # Исправление C1
-/// Использует saturating_mul для защиты от переполнения при начислении очков за падение.
+/// Использует `saturating_mul` для защиты от переполнения при начислении очков за падение.
 ///
 /// # Исправление ISSUE-054
-/// add_score() возвращает u128, используем let _ = для игнорирования.
+/// `add_score()` возвращает u128, используем let _ = для игнорирования.
 pub fn handle_soft_drop(state: &mut GameState) {
     use crate::constants::SOFT_DROP_POINTS;
     use crate::types::Direction;
@@ -240,16 +240,16 @@ fn check_game_over_condition(state: &GameState) -> bool {
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
 /// # Инкапсуляция (Задача HIGH)
-/// Использует методы GameState вместо прямого доступа к полям.
+/// Использует методы `GameState` вместо прямого доступа к полям.
 ///
 /// # Исправление C1
-/// Использует saturating_add и saturating_mul для защиты от переполнения.
+/// Использует `saturating_add` и `saturating_mul` для защиты от переполнения.
 ///
 /// # Исправление аудита 2026-03-30
-/// Использует safe_f32_to_u32() для консистентности вместо ручного clamp.
+/// Использует `safe_f32_to_u32()` для консистентности вместо ручного clamp.
 ///
 /// # Исправление ISSUE-055
-/// add_score() возвращает u128, используем let _ = для игнорирования.
+/// `add_score()` возвращает u128, используем let _ = для игнорирования.
 pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     use crate::constants::{
         LAND_TIME_DELAY_S, MAX_FALL_SPEED, PIECE_SCORE_FALL_MULT, PIECE_SCORE_INC, SOFT_DROP_POINTS,
@@ -293,10 +293,10 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
 /// # Инкапсуляция (Задача HIGH)
-/// Использует методы GameState вместо прямого доступа к полям.
+/// Использует методы `GameState` вместо прямого доступа к полям.
 ///
 /// # Исправление C1
-/// Использует saturating_mul для защиты от переполнения при начислении комбо-бонуса.
+/// Использует `saturating_mul` для защиты от переполнения при начислении комбо-бонуса.
 pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::constants::COMBO_BONUS;
 
@@ -412,7 +412,7 @@ mod points_tests {
     // ========================================================================
 
     /// Тест на защиту от переполнения при добавлении очков.
-    /// Проверяет что saturating_add предотвращает переполнение u128.
+    /// Проверяет что `saturating_add` предотвращает переполнение u128.
     #[test]
     fn test_score_overflow_protection() {
         let mut state = GameState::new();
@@ -602,7 +602,7 @@ mod points_tests {
         );
     }
 
-    /// Тест M6: проверка что handle_landing продолжает игру при отсутствии проигрыша
+    /// Тест M6: проверка что `handle_landing` продолжает игру при отсутствии проигрыша
     #[test]
     fn test_fix_m6_handle_landing_continues_on_no_loss() {
         use crate::game::GameState;
@@ -632,7 +632,7 @@ mod points_tests {
         );
     }
 
-    /// Тест M6: проверка явного возврата результата в handle_landing
+    /// Тест M6: проверка явного возврата результата в `handle_landing`
     #[test]
     fn test_fix_m6_handle_landing_explicit_return() {
         use crate::types::UpdateEndState;
@@ -647,7 +647,7 @@ mod points_tests {
         let _ = result;
     }
 
-    /// Тест M6: проверка что check_game_over_condition используется для раннего выхода
+    /// Тест M6: проверка что `check_game_over_condition` используется для раннего выхода
     #[test]
     fn test_fix_m6_check_game_over_condition_for_early_exit() {
         use crate::constants::MIN_Y;

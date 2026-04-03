@@ -1,7 +1,7 @@
 //! Тесты для архитектурных проблем в проекте tetris-cli.
 //!
 //! Этот файл содержит уникальные архитектурные тесты.
-//! Дублирующиеся тесты удалены (остались в test_41_fixed_issues.rs).
+//! Дублирующиеся тесты удалены (остались в `test_41_fixed_issues.rs`).
 //!
 //! ## Запуск тестов
 //! ```bash
@@ -52,12 +52,12 @@ fn test_architecture_time_abstraction() {
     );
 }
 
-/// Тест 7: Разделение ввода и логики (parse_input/execute_action)
+/// Тест 7: Разделение ввода и логики (`parse_input/execute_action`)
 ///
-/// Проверяет что parse_input() является чистой функцией без побочных эффектов.
+/// Проверяет что `parse_input()` является чистой функцией без побочных эффектов.
 ///
 /// # Архитектурная проблема H5
-/// Разделение ввода и логики через parse_input() и execute_action() функции.
+/// Разделение ввода и логики через `parse_input()` и `execute_action()` функции.
 #[test]
 fn test_architecture_input_logic_separation() {
     use std::fs;
@@ -93,9 +93,9 @@ fn test_architecture_input_logic_separation() {
     }
 }
 
-/// Тест 8: DIP - использование трейтов в run_game_loop
+/// Тест 8: DIP - использование трейтов в `run_game_loop`
 ///
-/// Проверяет что run_game_loop принимает &mut dyn Renderer вместо &mut Canvas.
+/// Проверяет что `run_game_loop` принимает &mut dyn Renderer вместо &mut Canvas.
 ///
 /// # Архитектурная проблема H2
 /// Dependency Inversion Principle - зависимость от абстракций, а не от конкретных типов.
@@ -113,7 +113,7 @@ fn test_architecture_dip_game_loop_traits() {
     );
 }
 
-/// Тест 9: SoC - разделение render и logic
+/// Тест 9: `SoC` - разделение render и logic
 ///
 /// Проверяет что логика игры отделена от отрисовки.
 ///
@@ -148,7 +148,7 @@ fn test_architecture_soc_render_logic_separation() {
 
 /// Тест 10: Централизация HMAC в crypto модуле
 ///
-/// Проверяет что hmac_sign и hmac_verify определены только в crypto::hmac модуле.
+/// Проверяет что `hmac_sign` и `hmac_verify` определены только в `crypto::hmac` модуле.
 ///
 /// # Архитектурная проблема C4
 /// Централизация HMAC логики в одном модуле для избежания дублирования.
@@ -207,12 +207,12 @@ fn test_modularity_constants_centralization() {
     );
 }
 
-/// Тест 12: ValidationService для централизованной валидации
+/// Тест 12: `ValidationService` для централизованной валидации
 ///
-/// Проверяет что ValidationService существует и предоставляет методы валидации.
+/// Проверяет что `ValidationService` существует и предоставляет методы валидации.
 ///
 /// # Архитектурная проблема
-/// Централизация валидации через ValidationService.
+/// Централизация валидации через `ValidationService`.
 #[test]
 fn test_modularity_validation_service() {
     use tetris_cli::validation::ValidationService;
@@ -244,12 +244,12 @@ fn test_modularity_validation_service() {
     );
 }
 
-/// Тест 13: GameAction enum для абстракции ввода
+/// Тест 13: `GameAction` enum для абстракции ввода
 ///
-/// Проверяет что GameAction enum существует и используется для абстракции ввода.
+/// Проверяет что `GameAction` enum существует и используется для абстракции ввода.
 ///
 /// # Архитектурная проблема
-/// Абстракция ввода через GameAction enum для снижения связанности.
+/// Абстракция ввода через `GameAction` enum для снижения связанности.
 #[test]
 fn test_modularity_game_action_enum() {
     use std::fs;
@@ -274,12 +274,12 @@ fn test_modularity_game_action_enum() {
 // КАТЕГОРИЯ 4: КОД (7 тестов)
 // ============================================================================
 
-/// Тест 15: Обработка ошибки set_fall_speed()
+/// Тест 15: Обработка ошибки `set_fall_speed()`
 ///
-/// Проверяет что scoring/lines.rs обрабатывает ошибку set_fall_speed().
+/// Проверяет что scoring/lines.rs обрабатывает ошибку `set_fall_speed()`.
 ///
 /// # Архитектурная проблема E4 (HIGH)
-/// В scoring/lines.rs добавлена явная обработка ошибки set_fall_speed().
+/// В scoring/lines.rs добавлена явная обработка ошибки `set_fall_speed()`.
 #[test]
 fn test_code_set_fall_speed_error_handling() {
     use std::fs;
@@ -311,12 +311,12 @@ fn test_code_set_fall_speed_error_handling() {
     );
 }
 
-/// Тест 17: rows_cleared=0 защита от паники
+/// Тест 17: `rows_cleared=0` защита от паники
 ///
-/// Проверяет что update_score_for_lines() не паникует при rows_cleared=0.
+/// Проверяет что `update_score_for_lines()` не паникует при `rows_cleared=0`.
 ///
 /// # Архитектурная проблема L2 (HIGH)
-/// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES.
+/// Добавлена явная проверка `rows_cleared` > 0 перед доступом к `LINE_SCORES`.
 #[test]
 fn test_code_rows_cleared_zero_protection() {
     use std::fs;
@@ -343,9 +343,9 @@ fn test_code_rows_cleared_zero_protection() {
     );
 }
 
-/// Тест 18: Инвертированная логика has_collision
+/// Тест 18: Инвертированная логика `has_collision`
 ///
-/// Проверяет что функция has_collision существует и работает корректно.
+/// Проверяет что функция `has_collision` существует и работает корректно.
 ///
 /// # Архитектурная проблема H1 (HIGH)
 /// Функция проверки коллизий использует инвертированную логику.
@@ -398,9 +398,9 @@ fn test_code_no_inline_attributes() {
     );
 }
 
-/// Тест 20: Семантические методы GameState
+/// Тест 20: Семантические методы `GameState`
 ///
-/// Проверяет что GameState имеет методы apply_gravity(), spawn_new_piece(), update_fall_speed().
+/// Проверяет что `GameState` имеет методы `apply_gravity()`, `spawn_new_piece()`, `update_fall_speed()`.
 ///
 /// # Архитектурная проблема M3 (MEDIUM)
 /// Добавлены семантические методы для улучшения инкапсуляции.
@@ -447,12 +447,12 @@ fn test_code_gamestate_semantic_methods() {
 // КАТЕГОРИЯ 5: МАСШТАБИРУЕМОСТЬ (6 тестов)
 // ============================================================================
 
-/// Тест 21: ThreadSafeLeaderboard race condition защита
+/// Тест 21: `ThreadSafeLeaderboard` race condition защита
 ///
-/// Проверяет что ThreadSafeLeaderboard использует Mutex для защиты от race condition.
+/// Проверяет что `ThreadSafeLeaderboard` использует Mutex для защиты от race condition.
 ///
 /// # Архитектурная проблема E6 (HIGH)
-/// ThreadSafeLeaderboard использует Arc<Mutex<Leaderboard>> для защиты от race condition.
+/// `ThreadSafeLeaderboard` использует Arc<Mutex<Leaderboard>> для защиты от race condition.
 #[test]
 fn test_scalability_thread_safe_leaderboard() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboard;
@@ -479,7 +479,7 @@ fn test_scalability_thread_safe_leaderboard() {
 
 /// Тест 23: Интерфейсное разделение ScoreAccess/ScoreMutable
 ///
-/// Проверяет что ScoreAccess и ScoreMutable разделены и не дублируют методы.
+/// Проверяет что `ScoreAccess` и `ScoreMutable` разделены и не дублируют методы.
 ///
 /// # Архитектурная проблема H1 (ISP)
 /// Interface Segregation Principle - узкие трейты вместо широких.
@@ -515,7 +515,7 @@ fn test_scalability_score_access_traits() {
 
 /// Тест 24: BoardReadonly/BoardMutable трейты
 ///
-/// Проверяет что трейты BoardReadonly и BoardMutable существуют и разделены.
+/// Проверяет что трейты `BoardReadonly` и `BoardMutable` существуют и разделены.
 ///
 /// # Архитектурная проблема
 /// Разделение трейтов доступа для снижения связанности.
@@ -545,12 +545,12 @@ fn test_scalability_board_access_traits() {
     );
 }
 
-/// Тест 25: ShapeType вместо TetrominoType
+/// Тест 25: `ShapeType` вместо `TetrominoType`
 ///
-/// Проверяет что используется ShapeType вместо TetrominoType.
+/// Проверяет что используется `ShapeType` вместо `TetrominoType`.
 ///
 /// # Архитектурная проблема C1
-/// Замена TetrominoType → ShapeType для согласованности именования.
+/// Замена `TetrominoType` → `ShapeType` для согласованности именования.
 #[test]
 fn test_scalability_shapetype_naming() {
     use std::fs;
@@ -575,12 +575,12 @@ fn test_scalability_shapetype_naming() {
     );
 }
 
-/// Тест 26: Рефакторинг run_menu_loop
+/// Тест 26: Рефакторинг `run_menu_loop`
 ///
-/// Проверяет что run_menu_loop() разбит на отдельные методы.
+/// Проверяет что `run_menu_loop()` разбит на отдельные методы.
 ///
 /// # Архитектурная проблема L4 (LOW)
-/// Разбиение функции run_menu_loop() на render_menu_frame(), process_menu_input(), check_exit_condition().
+/// Разбиение функции `run_menu_loop()` на `render_menu_frame()`, `process_menu_input()`, `check_exit_condition()`.
 #[test]
 fn test_scalability_menu_loop_refactoring() {
     use std::fs;
@@ -611,12 +611,12 @@ fn test_scalability_menu_loop_refactoring() {
 // КАТЕГОРИЯ 6: ДОПОЛНИТЕЛЬНЫЕ (4 теста)
 // ============================================================================
 
-/// Тест 27: Оптимизация sanitize_player_name
+/// Тест 27: Оптимизация `sanitize_player_name`
 ///
-/// Проверяет что sanitize_player_name использует однопроходный алгоритм.
+/// Проверяет что `sanitize_player_name` использует однопроходный алгоритм.
 ///
 /// # Архитектурная проблема M2 (MEDIUM)
-/// Оптимизация алгоритма sanitize_player_name.
+/// Оптимизация алгоритма `sanitize_player_name`.
 #[test]
 fn test_additional_sanitize_optimization() {
     use std::fs;
@@ -639,12 +639,12 @@ fn test_additional_sanitize_optimization() {
     assert_eq!(empty_name, "Anonymous");
 }
 
-/// Тест 28: Оптимизация find_filled_lines с SmallVec
+/// Тест 28: Оптимизация `find_filled_lines` с `SmallVec`
 ///
-/// Проверяет что find_filled_lines использует SmallVec для оптимизации.
+/// Проверяет что `find_filled_lines` использует `SmallVec` для оптимизации.
 ///
 /// # Архитектурная проблема M8 (MEDIUM)
-/// SmallVec<[usize; 4]> вместо Vec<usize> для снижения аллокаций.
+/// `SmallVec`<[usize; 4]> вместо Vec<usize> для снижения аллокаций.
 #[test]
 fn test_additional_find_filled_lines_optimization() {
     use std::fs;
@@ -671,7 +671,7 @@ fn test_additional_find_filled_lines_optimization() {
 /// Проверяет что размер структуры Tetromino не превышает 40 байт.
 ///
 /// # Архитектурная проблема M13 (MEDIUM)
-/// Compile-time assert: size_of::<Tetromino>() <= 40
+/// Compile-time assert: `size_of::`<Tetromino>() <= 40
 #[test]
 fn test_additional_tetromino_size_check() {
     use std::fs;
@@ -696,7 +696,7 @@ fn test_additional_tetromino_size_check() {
 
 /// Тест 30: Безопасная конвертация f32 → u32
 ///
-/// Проверяет что используется явная проверка границ вместо clamp().
+/// Проверяет что используется явная проверка границ вместо `clamp()`.
 ///
 /// # Архитектурная проблема C1 (CRITICAL)
 /// Реализована явная проверка границ для защиты от NaN, Infinity, переполнения.

@@ -146,9 +146,9 @@ pub trait TerminalInputBackend {
 // РЕАЛИЗАЦИЯ (TERMION)
 // ============================================================================
 
-/// Реализация TerminalBackend на основе termion.
+/// Реализация `TerminalBackend` на основе termion.
 ///
-/// Обёртка над RawTerminal для отрисовки в терминале.
+/// Обёртка над `RawTerminal` для отрисовки в терминале.
 pub struct TermionBackend {
     /// Внутренний raw терминал
     out: RawTerminal<Stdout>,
@@ -267,7 +267,7 @@ impl Drop for TermionBackend {
 
 /// Комбинированный бэкенд для ввода и вывода.
 ///
-/// Объединяет TermionBackend для вывода и KeyReader для ввода.
+/// Объединяет `TermionBackend` для вывода и `KeyReader` для ввода.
 pub struct TermionIOBackend {
     /// Бэкенд для вывода
     pub output: TermionBackend,

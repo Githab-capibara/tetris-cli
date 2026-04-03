@@ -25,10 +25,10 @@
 #![allow(dead_code)]
 
 //!
-//! fn render_field<T: BoardReadonly>(field: &T) {
-//!     for y in 0..GRID_HEIGHT {
-//!         for x in 0..GRID_WIDTH {
-//!             let block = field.get_block(x, y);
+//! fn `render_field`<T: BoardReadonly>(field: &T) {
+//!     for y in `0..GRID_HEIGHT` {
+//!         for x in `0..GRID_WIDTH` {
+//!             let block = `field.get_block(x`, y);
 //!             // Отрисовка блока...
 //!         }
 //!     }
@@ -222,7 +222,7 @@ pub trait ScoreAccess {
 /// ## Архитектурные заметки
 /// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
 /// Этот трейт расширяет [`ScoreAccess`] методами для изменения состояния.
-/// Разделение на ScoreAccess (чтение) и ScoreMutable (запись) позволяет
+/// Разделение на `ScoreAccess` (чтение) и `ScoreMutable` (запись) позволяет
 /// следовать Interface Segregation Principle и предоставлять минимально
 /// необходимый интерфейс для каждой функции.
 ///

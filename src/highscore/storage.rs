@@ -73,7 +73,7 @@ impl LeaderboardStorage {
     /// ## Алгоритм
     /// 1. Добавляет запись в вектор
     /// 2. Сортирует по убыванию счёта
-    /// 3. Обрезает до MAX_LEADERBOARD_SIZE
+    /// 3. Обрезает до `MAX_LEADERBOARD_SIZE`
     pub fn add_entry(&mut self, entry: LeaderboardEntry) -> bool {
         let score = entry.score().unwrap_or(0);
 
@@ -111,7 +111,7 @@ impl LeaderboardStorage {
     /// `true` если рекорд был добавлен в таблицу (вошёл в топ-5)
     ///
     /// ## Примечания
-    /// Этот метод создаёт LeaderboardEntry internally.
+    /// Этот метод создаёт `LeaderboardEntry` internally.
     /// Для готовых записей используйте `add_entry()`.
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         let entry = LeaderboardEntry::new(name, score);

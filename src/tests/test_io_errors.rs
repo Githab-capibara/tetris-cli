@@ -1,11 +1,11 @@
-//! Тесты для проверки обработки ошибок ввода в KeyReader.
+//! Тесты для проверки обработки ошибок ввода в `KeyReader`.
 //!
 //! Этот модуль тестирует корректную обработку ошибок ввода-вывода
 //! и работу с невалидными UTF-8 последовательностями.
 
 use crate::io::KeyReader;
 
-/// Тест: проверка что get_key() возвращает io::Result<Option<u8>>
+/// Тест: проверка что `get_key()` возвращает `io::Result`<Option<u8>>
 #[test]
 fn test_get_key_returns_io_result() {
     let mut reader = KeyReader::new();
@@ -25,7 +25,7 @@ fn test_get_key_returns_io_result() {
 
 /// Тест: проверка обработки невалидных UTF-8 последовательностей
 ///
-/// Проверяет что метод get_key() корректно обрабатывает невалидные
+/// Проверяет что метод `get_key()` корректно обрабатывает невалидные
 /// UTF-8 последовательности и возвращает Ok(None) вместо паники.
 #[test]
 fn test_get_key_handles_invalid_utf8() {
@@ -111,7 +111,7 @@ fn test_get_key_handles_multibyte_utf8() {
     }
 }
 
-/// Тест: проверка что get_key() не паникует при ошибке чтения
+/// Тест: проверка что `get_key()` не паникует при ошибке чтения
 #[test]
 fn test_get_key_no_panic_on_read_error() {
     let mut reader = KeyReader::new();
@@ -128,7 +128,7 @@ fn test_get_key_no_panic_on_read_error() {
     );
 }
 
-/// Тест: проверка Drop реализации KeyReader
+/// Тест: проверка Drop реализации `KeyReader`
 #[test]
 fn test_key_reader_drop() {
     // Создаём reader и явно уничтожаем его
@@ -144,7 +144,7 @@ fn test_key_reader_drop() {
 // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 // ============================================================================
 
-/// Тест: проверка что KeyReader реализует InputReader трейт
+/// Тест: проверка что `KeyReader` реализует `InputReader` трейт
 #[test]
 fn test_key_reader_implements_input_reader() {
     // Этот тест компилируется только если KeyReader реализует InputReader

@@ -3,7 +3,7 @@
 //! # Ответственность
 //! - Поиск заполненных линий
 //! - Удаление заполненных линий и сдвиг верхних линий вниз
-//! - Проверка и обработка заполненных линий (check_rows)
+//! - Проверка и обработка заполненных линий (`check_rows`)
 //!
 //! # Зависимости
 //! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
@@ -19,12 +19,12 @@ use crate::io::GRID_HEIGHT;
 /// Максимально допустимый счёт для защиты от переполнения.
 ///
 /// # Исправление ISSUE-075
-/// Установлен в u128::MAX / 2 для безопасного начисления очков.
+/// Установлен в `u128::MAX` / 2 для безопасного начисления очков.
 /// Это предотвращает переполнение при добавлении больших бонусов.
 ///
 /// # Обоснование
-/// u128::MAX = 340_282_366_920_938_463_463_374_607_431_768_211_455
-/// MAX_SCORE = u128::MAX / 2 оставляет запас для предотвращения переполнения
+/// `u128::MAX` = `340_282_366_920_938_463_463_374_607_431_768_211_455`
+/// `MAX_SCORE` = `u128::MAX` / 2 оставляет запас для предотвращения переполнения
 /// при начислении очков за линии, комбо и бонусы.
 ///
 /// # Исправление C7 (CRITICAL)
@@ -42,7 +42,7 @@ pub(crate) const MAX_SCORE: u128 = u128::MAX / 2;
 ///
 /// # Исправление #11 (LOW)
 /// Возвращает битовую маску `u32` для оптимизации использования памяти.
-/// Это устраняет необходимость в SmallVec и аллокациях.
+/// Это устраняет необходимость в `SmallVec` и аллокациях.
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Добавлено кэширование маски заполненных линий для предотвращения
@@ -75,7 +75,7 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
 ///
 /// # Исправление аудита 2026-04-01 (L2)
 /// Удалена избыточная проверка `y + rows_removed_below < GRID_HEIGHT` - это условие
-/// всегда истинно так как мы идём снизу вверх и rows_removed_below <= y.
+/// всегда истинно так как мы идём снизу вверх и `rows_removed_below` <= y.
 pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
     // Проверка валидности rows_mask
     if rows_mask >= (1u32 << GRID_HEIGHT) {
@@ -134,14 +134,14 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 /// - Улучшения тестируемости логики удаления линий
 ///
 /// # Исправление #6 (HIGH)
-/// Использует trait `ScoringState` вместо прямого доступа к полям GameState.
+/// Использует trait `ScoringState` вместо прямого доступа к полям `GameState`.
 ///
 /// # ISP-1: Использует узкие трейты
 /// Функция работает с любым типом реализующим `ScoringState` который включает:
-/// - `ScoreAccess` (get_score, set_score, add_score)
-/// - `LevelAccess` (get_level, set_level)
-/// - `LinesAccess` (get_lines_cleared, set_lines_cleared, add_lines)
-/// - `ComboAccess` (get_combo, set_combo, reset_combo)
+/// - `ScoreAccess` (`get_score`, `set_score`, `add_score`)
+/// - `LevelAccess` (`get_level`, `set_level`)
+/// - `LinesAccess` (`get_lines_cleared`, `set_lines_cleared`, `add_lines`)
+/// - `ComboAccess` (`get_combo`, `set_combo`, `reset_combo`)
 pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     // Поиск заполненных линий - используем битовую маску для оптимизации
     let (rows_mask, remove_count) = find_filled_lines(state.get_blocks());
@@ -210,8 +210,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
 /// - Без аллокаций в куче
 ///
 /// # Исправление #11 (LOW)
-/// Возвращает битовую маску `u32` вместо SmallVec<[usize; 4]> для оптимизации.
-/// Битовая маска занимает 4 байта вместо 24+ байт для SmallVec.
+/// Возвращает битовую маску `u32` вместо `SmallVec`<[usize; 4]> для оптимизации.
+/// Битовая маска занимает 4 байта вместо 24+ байт для `SmallVec`.
 #[must_use]
 pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     find_full_rows(blocks)
@@ -237,23 +237,23 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 ///
 /// # Возвращает
 /// - `Ok(())` если очки успешно добавлены
-/// - `Err(GameError::ScoreOverflow)` если счёт превышает MAX_SCORE
+/// - `Err(GameError::ScoreOverflow)` если счёт превышает `MAX_SCORE`
 ///
 /// # Errors
 /// Возвращает [`crate::errors::GameError::ScoreOverflow`] если счёт превышает [`MAX_SCORE`].
 ///
 /// # Примечания
 /// Формула расчёта очков:
-/// - Базовые очки за линии из LINE_SCORES[rows_cleared - 1]
-/// - Бонус за комбо: COMBO_BONUS × (combo_counter - 1)
-/// - Бонус за уровень: LEVEL_BONUS_MULT × (level - 1)
+/// - Базовые очки за линии из `LINE_SCORES`[`rows_cleared` - 1]
+/// - Бонус за комбо: `COMBO_BONUS` × (`combo_counter` - 1)
+/// - Бонус за уровень: `LEVEL_BONUS_MULT` × (level - 1)
 ///
 /// # Защита от переполнения
-/// Если счёт превышает MAX_SCORE, возвращается ошибка ScoreOverflow.
+/// Если счёт превышает `MAX_SCORE`, возвращается ошибка `ScoreOverflow`.
 ///
 /// # Исправление L2 (HIGH)
-/// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES
-/// для предотвращения паники при rows_cleared = 0.
+/// Добавлена явная проверка `rows_cleared` > 0 перед доступом к `LINE_SCORES`
+/// для предотвращения паники при `rows_cleared` = 0.
 ///
 /// # Исправление аудита 2026-04-01 (C3)
 /// Добавлена явная проверка переполнения перед добавлением очков
@@ -347,7 +347,7 @@ mod lines_tests {
     // ТЕСТЫ ДЛЯ #11: find_filled_lines() С БИТОВОЙ МАСКОЙ - ОПТИМИЗАЦИЯ
     // ========================================================================
 
-    /// Тест #11: проверка что find_filled_lines возвращает битовую маску
+    /// Тест #11: проверка что `find_filled_lines` возвращает битовую маску
     #[test]
     fn test_fix_11_find_filled_lines_returns_bitmask() {
         let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
@@ -359,7 +359,7 @@ mod lines_tests {
         assert_eq!(count, 0);
     }
 
-    /// Тест #11: проверка find_filled_lines с заполненными линиями
+    /// Тест #11: проверка `find_filled_lines` с заполненными линиями
     #[test]
     fn test_fix_11_find_filled_lines_with_full_rows() {
         let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
@@ -442,10 +442,10 @@ mod lines_tests {
     // ТЕСТЫ ДЛЯ ИНКАПСУЛЯЦИИ SCORING МОДУЛЯ
     // =========================================================================
 
-    /// Тест: проверка что scoring использует только публичные методы GameState
+    /// Тест: проверка что scoring использует только публичные методы `GameState`
     ///
     /// Этот тест документирует что модуль scoring использует только
-    /// публичные методы GameState для доступа к данным, соблюдая
+    /// публичные методы `GameState` для доступа к данным, соблюдая
     /// инкапсуляцию.
     #[test]
     fn test_scoring_uses_public_methods_only() {

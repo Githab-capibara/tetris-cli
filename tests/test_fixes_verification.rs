@@ -28,7 +28,7 @@ use std::path::Path;
 /// даже с очень большими значениями.
 ///
 /// # Исправление C1 (CRITICAL)
-/// Конвертация Duration::as_secs() возвращает u64, что безопасно
+/// Конвертация `Duration::as_secs()` возвращает u64, что безопасно
 /// даже для очень больших значений времени.
 #[test]
 fn test_safe_time_conversion() {
@@ -76,7 +76,7 @@ fn test_safe_time_conversion() {
 ///
 /// # Исправление C2 (CRITICAL)
 /// Добавлена подробная документация о потокобезопасности и TOCTOU
-/// уязвимостях в модуле highscore::leaderboard.
+/// уязвимостях в модуле `highscore::leaderboard`.
 #[test]
 fn test_leaderboard_entry_thread_safety_docs() {
     let leaderboard_path = "src/highscore/leaderboard.rs";
@@ -121,11 +121,11 @@ fn test_leaderboard_entry_thread_safety_docs() {
 
 /// H1. Тест оптимизации аллокаций строк
 ///
-/// Проверка что используется truncate + push_str вместо пересоздания строки.
+/// Проверка что используется truncate + `push_str` вместо пересоздания строки.
 ///
 /// # Исправление H1 (HIGH)
-/// Оптимизация аллокаций строк через использование with_capacity,
-/// truncate и push_str для предотвращения лишних реаллокаций.
+/// Оптимизация аллокаций строк через использование `with_capacity`,
+/// truncate и `push_str` для предотвращения лишних реаллокаций.
 #[test]
 fn test_string_allocation_optimization() {
     use tetris_cli::validation::name::sanitize_player_name;
@@ -158,10 +158,10 @@ fn test_string_allocation_optimization() {
 
 /// H2. Тест раннего выхода в проверке коллизий
 ///
-/// Проверка что .any() используется для раннего выхода.
+/// Проверка что .`any()` используется для раннего выхода.
 ///
 /// # Исправление H2 (HIGH)
-/// Использование .any() для раннего выхода в проверке коллизий
+/// Использование .`any()` для раннего выхода в проверке коллизий
 /// вместо полного прохода по всем элементам.
 #[test]
 fn test_collision_early_exit() {
@@ -349,7 +349,7 @@ fn test_deprecated_attributes() {
 
 /// L1. Тест именованных констант
 ///
-/// Проверка что KEY_BACKSPACE, KEY_ENTER существуют и имеют правильные значения.
+/// Проверка что `KEY_BACKSPACE`, `KEY_ENTER` существуют и имеют правильные значения.
 ///
 /// # Исправление L1 (LOW)
 /// Замена магических чисел на именованные константы для улучшения
@@ -398,10 +398,10 @@ fn test_named_constants() {
 
 /// L2. Тест TODO комментариев
 ///
-/// Проверка что #[allow(dead_code)] имеют TODO комментарии.
+/// Проверка что #[`allow(dead_code)`] имеют TODO комментарии.
 ///
 /// # Исправление L2 (LOW)
-/// Добавление TODO комментариев к коду с #[allow(dead_code)]
+/// Добавление TODO комментариев к коду с #[`allow(dead_code)`]
 /// для отслеживания технического долга.
 #[test]
 fn test_todo_comments_for_dead_code() {
@@ -441,9 +441,7 @@ fn test_todo_comments_for_dead_code() {
 
     // Выводим статистику
     println!("📝 #[allow(dead_code)] с TODO: {dead_code_with_todo}");
-    println!(
-        "📝 #[allow(dead_code)] без TODO: {dead_code_without_todo}"
-    );
+    println!("📝 #[allow(dead_code)] без TODO: {dead_code_without_todo}");
 
     // Тест проходит всегда - это informational тест
     // Предупреждаем если много dead_code без TODO

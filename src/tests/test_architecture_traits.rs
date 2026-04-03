@@ -128,7 +128,7 @@ fn test_no_duplicate_traits_in_board_rs() {
     let blocks = board.get_blocks();
     assert_eq!(blocks.len(), 20);
 
-    board.set_block(3, 3, 1);
+    let _ = board.set_block(3, 3, 1);
     assert_eq!(board.get_block(3, 3), Some(1));
 
     // Если код компилируется - нет дублирования трейтов
@@ -237,7 +237,7 @@ fn test_score_access_defined_only_in_access() {
     );
 }
 
-/// Вспомогательная функция для проверки что ScoreAccess определён в access.rs.
+/// Вспомогательная функция для проверки что `ScoreAccess` определён в access.rs.
 fn is_score_access_defined_in_access() -> bool {
     // ScoreAccess определён в crate::game::access
     true

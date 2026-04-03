@@ -291,7 +291,7 @@ fn test_validation_error_used_consistently() {
 // ТЕСТ 7: ИНТЕГРАЦИОННЫЕ ТЕСТЫ ВАЛИДАЦИИ
 // ============================================================================
 
-/// Интеграционный тест что валидация работает в GameState.
+/// Интеграционный тест что валидация работает в `GameState`.
 #[test]
 fn test_validation_integration_with_game_state() {
     let mut state = GameState::new();

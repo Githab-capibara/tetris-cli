@@ -21,7 +21,7 @@
 //!
 //! ## Генерация соли
 //! `generate_salt()` использует криптографически стойкий генератор случайных
-//! чисел (StdRng::from_os_rng) для создания уникальной соли 256 бит.
+//! чисел (`StdRng::from_os_rng`) для создания уникальной соли 256 бит.
 //!
 //! ## Рекомендации по использованию
 //! - Храните секретные ключи в переменных окружения, не в коде
@@ -87,7 +87,7 @@ pub fn hash(data: &str) -> String {
 ///
 /// # Безопасность
 /// ## Криптографическая стойкость
-/// - **OsRng (Operating System RNG)**: Использует аппаратные источники энтропии
+/// - **`OsRng` (Operating System RNG)**: Использует аппаратные источники энтропии
 /// - **256 бит энтропии**: Достаточно для защиты от brute-force атак
 /// - **Уникальность**: Вероятность коллизии 2^-256 (практически невозможна)
 ///
@@ -307,7 +307,7 @@ mod crypto_tests {
         assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
     }
 
-    /// Тест на verify_hmac_sha256 с изменённой подписью
+    /// Тест на `verify_hmac_sha256` с изменённой подписью
     #[test]
     fn test_verify_hmac_sha256_tampered_signature() {
         let key = "секретный ключ";
@@ -338,7 +338,7 @@ mod crypto_tests {
         assert!(verify_hmac_sha256(key, json_data, &signature));
     }
 
-    /// Тест на HMAC-SHA256 для интеграции с save_data.rs
+    /// Тест на HMAC-SHA256 для интеграции с `save_data.rs`
     /// Проверяет что HMAC работает с данными рекордов
     #[test]
     fn test_hmac_sha256_score_data() {
@@ -353,7 +353,7 @@ mod crypto_tests {
         assert!(verify_hmac_sha256(key, &combined, &signature));
     }
 
-    /// Тест на постоянное по времени сравнение в verify_hmac_sha256
+    /// Тест на постоянное по времени сравнение в `verify_hmac_sha256`
     #[test]
     fn test_verify_hmac_timing_safe_comparison() {
         let key = "timing_test_key";

@@ -1,6 +1,6 @@
-//! Тесты обработки unwrap() времени.
+//! Тесты обработки `unwrap()` времени.
 //!
-//! Проверяют, что get_current_time_ms_protected не паникует и корректно
+//! Проверяют, что `get_current_time_ms_protected` не паникует и корректно
 //! обрабатывает ошибки времени.
 
 use crate::highscore::leaderboard::LeaderboardEntry;

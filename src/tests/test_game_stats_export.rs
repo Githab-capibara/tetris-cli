@@ -1,13 +1,13 @@
-//! Тесты экспорта GameStats из crate::game.
+//! Тесты экспорта `GameStats` из `crate::game`.
 //!
-//! Проверяют, что GameStats корректно экспортирован и все поля доступны.
+//! Проверяют, что `GameStats` корректно экспортирован и все поля доступны.
 
 use crate::game::GameStats;
 use crate::tetromino::ShapeType;
 
-/// Тест 1: Проверка доступности GameStats из crate::game
+/// Тест 1: Проверка доступности `GameStats` из `crate::game`
 ///
-/// Убеждаемся, что GameStats можно импортировать из основного модуля game.
+/// Убеждаемся, что `GameStats` можно импортировать из основного модуля game.
 #[test]
 fn test_game_stats_export_available() {
     // Создаём новый экземпляр GameStats
@@ -26,9 +26,9 @@ fn test_game_stats_export_available() {
     );
 }
 
-/// Тест 2: Проверка поля t_pieces
+/// Тест 2: Проверка поля `t_pieces`
 ///
-/// Проверяем, что поле t_pieces доступно и корректно работает.
+/// Проверяем, что поле `t_pieces` доступно и корректно работает.
 #[test]
 fn test_game_stats_t_pieces_field() {
     let mut stats = GameStats::new();
@@ -54,9 +54,9 @@ fn test_game_stats_t_pieces_field() {
     );
 }
 
-/// Тест 3: Проверка поля i_pieces
+/// Тест 3: Проверка поля `i_pieces`
 ///
-/// Проверяем, что поле i_pieces доступно и корректно работает.
+/// Проверяем, что поле `i_pieces` доступно и корректно работает.
 #[test]
 fn test_game_stats_i_pieces_field() {
     let mut stats = GameStats::new();
@@ -81,9 +81,9 @@ fn test_game_stats_i_pieces_field() {
     );
 }
 
-/// Тест 4: Проверка поля max_combo
+/// Тест 4: Проверка поля `max_combo`
 ///
-/// Проверяем, что поле max_combo доступно и update_max_combo работает.
+/// Проверяем, что поле `max_combo` доступно и `update_max_combo` работает.
 #[test]
 fn test_game_stats_max_combo_field() {
     let mut stats = GameStats::new();
@@ -110,9 +110,9 @@ fn test_game_stats_max_combo_field() {
     assert_eq!(stats.max_combo(), 4, "max_combo не должно уменьшаться");
 }
 
-/// Тест 5: Проверка поля combo_counter
+/// Тест 5: Проверка поля `combo_counter`
 ///
-/// Проверяем, что поле combo_counter доступно и корректно работает.
+/// Проверяем, что поле `combo_counter` доступно и корректно работает.
 #[test]
 fn test_game_stats_combo_counter_field() {
     let mut stats = GameStats::new();
@@ -154,9 +154,9 @@ fn test_game_stats_combo_counter_field() {
     );
 }
 
-/// Тест 6: Проверка метода total_pieces()
+/// Тест 6: Проверка метода `total_pieces()`
 ///
-/// Проверяем, что метод total_pieces() корректно суммирует все фигуры.
+/// Проверяем, что метод `total_pieces()` корректно суммирует все фигуры.
 #[test]
 fn test_game_stats_total_pieces_method() {
     let mut stats = GameStats::new();
@@ -188,7 +188,7 @@ fn test_game_stats_total_pieces_method() {
     );
 }
 
-/// Тест 7: Проверка полей start_time и end_time
+/// Тест 7: Проверка полей `start_time` и `end_time`
 ///
 /// Проверяем, что таймер работает корректно.
 #[test]
@@ -222,9 +222,9 @@ fn test_game_stats_timer_fields() {
     assert!(elapsed >= 0.0);
 }
 
-/// Тест 8: Проверка Clone trait для GameStats
+/// Тест 8: Проверка Clone trait для `GameStats`
 ///
-/// Проверяем, что GameStats реализует Clone.
+/// Проверяем, что `GameStats` реализует Clone.
 #[test]
 fn test_game_stats_clone() {
     let mut stats = GameStats::new();
@@ -263,7 +263,7 @@ fn test_game_stats_clone() {
 // ТЕСТЫ КОНСТАНТ GAMESTATS (ISSUE-131—ISSUE-140)
 // ============================================================================
 
-/// Тест: проверка константы MAX_PIECES
+/// Тест: проверка константы `MAX_PIECES`
 #[test]
 fn test_game_stats_max_pieces_constant() {
     // Проверяем что константа MAX_PIECES существует и равна 10_000
@@ -271,7 +271,7 @@ fn test_game_stats_max_pieces_constant() {
     assert_eq!(MAX_PIECES, 10_000, "MAX_PIECES должен быть 10_000");
 }
 
-/// Тест: проверка константы MAX_COMBO
+/// Тест: проверка константы `MAX_COMBO`
 #[test]
 fn test_game_stats_max_combo_constant() {
     // Проверяем что константа MAX_COMBO существует и равна 1_000
@@ -279,14 +279,14 @@ fn test_game_stats_max_combo_constant() {
     assert_eq!(MAX_COMBO, 1_000, "MAX_COMBO должен быть 1_000");
 }
 
-/// Тест: проверка что set_t_pieces ограничивает значение MAX_PIECES
+/// Тест: проверка что `set_t_pieces` ограничивает значение `MAX_PIECES`
 #[test]
 fn test_game_stats_set_t_pieces_limits_to_max() {
     let mut stats = GameStats::new();
-    
+
     // Устанавливаем значение больше MAX_PIECES
     stats.set_t_pieces(20_000);
-    
+
     // Проверяем что значение ограничено MAX_PIECES
     assert_eq!(
         stats.t_pieces(),
@@ -295,14 +295,14 @@ fn test_game_stats_set_t_pieces_limits_to_max() {
     );
 }
 
-/// Тест: проверка что set_max_combo ограничивает значение MAX_COMBO
+/// Тест: проверка что `set_max_combo` ограничивает значение `MAX_COMBO`
 #[test]
 fn test_game_stats_set_max_combo_limits_to_max() {
     let mut stats = GameStats::new();
-    
+
     // Устанавливаем значение больше MAX_COMBO
     stats.set_max_combo(5_000);
-    
+
     // Проверяем что значение ограничено MAX_COMBO
     assert_eq!(
         stats.max_combo(),

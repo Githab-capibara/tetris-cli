@@ -42,11 +42,11 @@ type HmacSha256 = Hmac<Sha256>;
 /// Это обеспечивает надёжную защиту от подделки данных.
 ///
 /// # Исправление аудита 2026-03-30
-/// Заменён .expect() на .unwrap() с комментарием о безопасности.
+/// Заменён .`expect()` на .`unwrap()` с комментарием о безопасности.
 /// HMAC-SHA256 поддерживает ключи любой длины, поэтому ошибка невозможна.
 ///
 /// # Исправление ISSUE-042
-/// Эта функция является основной - алиасы hmac_sign/hmac_verify удалены.
+/// Эта функция является основной - алиасы `hmac_sign/hmac_verify` удалены.
 #[allow(clippy::missing_panics_doc)]
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
@@ -84,7 +84,7 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 ///
 /// # Исправление NEW-150 (2026-04-02)
 /// - Проверка длины включена в constant-time сравнение
-/// - Используется compiler_fence для предотвращения оптимизаций
+/// - Используется `compiler_fence` для предотвращения оптимизаций
 /// - Все операции выполняются независимо от результата
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
@@ -352,7 +352,7 @@ mod hmac_tests {
     // ТЕСТЫ ДЛЯ HMAC-SHA256 (ИСПРАВЛЕНИЕ H2)
     // =========================================================================
 
-    /// Тест на детерминированность hmac_sha256
+    /// Тест на детерминированность `hmac_sha256`
     #[test]
     fn test_hmac_sha256_deterministic() {
         let sig1 = hmac_sha256("ключ", "данные");
@@ -360,7 +360,7 @@ mod hmac_tests {
         assert_eq!(sig1, sig2, "HMAC-SHA256 должен быть детерминированным");
     }
 
-    /// Тест на разные ключи в hmac_sha256
+    /// Тест на разные ключи в `hmac_sha256`
     #[test]
     fn test_hmac_sha256_different_keys() {
         let sig1 = hmac_sha256("ключ1", "данные");
@@ -368,7 +368,7 @@ mod hmac_tests {
         assert_ne!(sig1, sig2, "Разные ключи должны давать разные HMAC");
     }
 
-    /// Тест на разные данные в hmac_sha256
+    /// Тест на разные данные в `hmac_sha256`
     #[test]
     fn test_hmac_sha256_different_data() {
         let sig1 = hmac_sha256("ключ", "данные1");
@@ -376,7 +376,7 @@ mod hmac_tests {
         assert_ne!(sig1, sig2, "Разные данные должны давать разные HMAC");
     }
 
-    /// Тест на длину hmac_sha256
+    /// Тест на длину `hmac_sha256`
     #[test]
     fn test_hmac_sha256_length() {
         let signature = hmac_sha256("ключ", "данные");
@@ -387,7 +387,7 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на валидную подпись verify_hmac_sha256
+    /// Тест на валидную подпись `verify_hmac_sha256`
     #[test]
     fn test_verify_hmac_sha256_valid() {
         let key = "тестовый ключ";
@@ -399,7 +399,7 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на невалидный ключ в verify_hmac_sha256
+    /// Тест на невалидный ключ в `verify_hmac_sha256`
     #[test]
     fn test_verify_hmac_sha256_invalid_key() {
         let key = "ключ1";
@@ -411,7 +411,7 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на невалидные данные в verify_hmac_sha256
+    /// Тест на невалидные данные в `verify_hmac_sha256`
     #[test]
     fn test_verify_hmac_sha256_invalid_data() {
         let key = "ключ";
@@ -423,14 +423,14 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на пустые данные в hmac_sha256
+    /// Тест на пустые данные в `hmac_sha256`
     #[test]
     fn test_hmac_sha256_empty_data() {
         let signature = hmac_sha256("ключ", "");
         assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
     }
 
-    /// Тест на пустой ключ в hmac_sha256
+    /// Тест на пустой ключ в `hmac_sha256`
     #[test]
     fn test_hmac_sha256_empty_key() {
         let signature = hmac_sha256("", "данные");
@@ -513,7 +513,7 @@ mod hmac_tests {
         );
     }
 
-    /// Тест на compiler_fence的存在
+    /// Тест на `compiler_fence的存在`
     #[test]
     fn test_compiler_fence_exists() {
         // Этот тест просто проверяет что код компилируется с compiler_fence

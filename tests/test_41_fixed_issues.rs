@@ -22,7 +22,7 @@
 // КРИТИЧЕСКИЕ ОШИБКИ (4 теста)
 // ============================================================================
 
-/// Тест 1: Canvas::default() использует graceful degradation
+/// Тест 1: `Canvas::default()` использует graceful degradation
 ///
 /// Проверяет что Canvas имеет обработку ошибок инициализации.
 ///
@@ -47,14 +47,14 @@ fn test_critical_canvas_graceful_degradation() {
     );
 }
 
-/// Тест 2: ThreadSafeLeaderboardEntry::score_safe() без паники
+/// Тест 2: `ThreadSafeLeaderboardEntry::score_safe()` без паники
 ///
-/// Проверяет что ThreadSafeLeaderboardEntry::score_safe() возвращает Option<u128>
+/// Проверяет что `ThreadSafeLeaderboardEntry::score_safe()` возвращает Option<u128>
 /// вместо паники при отравлении Mutex.
 ///
 /// # Исправление E2 (CRITICAL)
-/// ThreadSafeLeaderboardEntry::score_safe() теперь возвращает Option<u128>
-/// и обрабатывает PoisonError через возврат None вместо паники.
+/// `ThreadSafeLeaderboardEntry::score_safe()` теперь возвращает Option<u128>
+/// и обрабатывает `PoisonError` через возврат None вместо паники.
 #[test]
 fn test_critical_thread_safe_score_no_panic() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
@@ -83,12 +83,12 @@ fn test_critical_thread_safe_score_no_panic() {
 
 /// Тест 3: TOCTOU защита в controls.rs
 ///
-/// Проверяет что controls.rs использует O_NOFOLLOW для защиты от TOCTOU уязвимости.
+/// Проверяет что controls.rs использует `O_NOFOLLOW` для защиты от TOCTOU уязвимости.
 ///
 /// # Исправление E5 (CRITICAL)
 /// В controls.rs изменён порядок операций:
-/// 1. Сначала open(O_NOFOLLOW) - атомарная операция
-/// 2. Затем fstat() проверка на symlink
+/// 1. Сначала `open(O_NOFOLLOW)` - атомарная операция
+/// 2. Затем `fstat()` проверка на symlink
 #[test]
 fn test_critical_controls_toctou_protection() {
     use std::fs;
@@ -122,12 +122,12 @@ fn test_critical_controls_toctou_protection() {
     );
 }
 
-/// Тест 4: LeaderboardEntry TOCTOU документация
+/// Тест 4: `LeaderboardEntry` TOCTOU документация
 ///
-/// Проверяет что LeaderboardEntry имеет подробную документацию о TOCTOU уязвимости.
+/// Проверяет что `LeaderboardEntry` имеет подробную документацию о TOCTOU уязвимости.
 ///
 /// # Исправление E9 (CRITICAL)
-/// Добавлена подробная документация о TOCTOU уязвимостях в LeaderboardEntry.
+/// Добавлена подробная документация о TOCTOU уязвимостях в `LeaderboardEntry`.
 #[test]
 fn test_critical_leaderboard_toctou_documentation() {
     use std::fs;
@@ -166,7 +166,7 @@ fn test_critical_leaderboard_toctou_documentation() {
 // ЛОГИЧЕСКИЕ ОШИБКИ (5 тестов)
 // ============================================================================
 
-/// Тест 5: checked_neg() при вращении фигур
+/// Тест 5: `checked_neg()` при вращении фигур
 ///
 /// Проверяет что вращение фигур использует безопасные операции.
 ///
@@ -194,12 +194,12 @@ fn test_logic_checked_neg_rotation() {
     // Просто проверяем что вращение работает без паники
 }
 
-/// Тест 6: Обработка ошибки set_fall_speed()
+/// Тест 6: Обработка ошибки `set_fall_speed()`
 ///
-/// Проверяет что scoring/lines.rs обрабатывает ошибку set_fall_speed().
+/// Проверяет что scoring/lines.rs обрабатывает ошибку `set_fall_speed()`.
 ///
 /// # Исправление E4 (HIGH)
-/// В scoring/lines.rs добавлена явная обработка ошибки set_fall_speed().
+/// В scoring/lines.rs добавлена явная обработка ошибки `set_fall_speed()`.
 #[test]
 fn test_logic_set_fall_speed_error_handling() {
     use std::fs;
@@ -231,12 +231,12 @@ fn test_logic_set_fall_speed_error_handling() {
     );
 }
 
-/// Тест 9: rows_cleared=0 защита от паники
+/// Тест 9: `rows_cleared=0` защита от паники
 ///
-/// Проверяет что update_score_for_lines() не паникует при rows_cleared=0.
+/// Проверяет что `update_score_for_lines()` не паникует при `rows_cleared=0`.
 ///
 /// # Исправление L2 (HIGH)
-/// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES.
+/// Добавлена явная проверка `rows_cleared` > 0 перед доступом к `LINE_SCORES`.
 #[test]
 fn test_logic_rows_cleared_zero_protection() {
     use std::fs;
@@ -267,12 +267,12 @@ fn test_logic_rows_cleared_zero_protection() {
 // ПРОИЗВОДИТЕЛЬНОСТЬ (5 тестов)
 // ============================================================================
 
-/// Тест 10: Оптимизация sanitize_player_name
+/// Тест 10: Оптимизация `sanitize_player_name`
 ///
-/// Проверяет что sanitize_player_name использует однопроходный алгоритм.
+/// Проверяет что `sanitize_player_name` использует однопроходный алгоритм.
 ///
 /// # Исправление M2 (MEDIUM)
-/// Оптимизация алгоритма sanitize_player_name.
+/// Оптимизация алгоритма `sanitize_player_name`.
 #[test]
 fn test_performance_sanitize_optimization() {
     use std::fs;
@@ -296,9 +296,9 @@ fn test_performance_sanitize_optimization() {
     assert_eq!(empty_name, "Anonymous");
 }
 
-/// Тест 11: Оптимизация find_filled_lines
+/// Тест 11: Оптимизация `find_filled_lines`
 ///
-/// Проверяет что find_filled_lines оптимизирован.
+/// Проверяет что `find_filled_lines` оптимизирован.
 ///
 /// # Исправление M8 (MEDIUM)
 /// Оптимизация поиска заполненных линий.
@@ -328,7 +328,7 @@ fn test_performance_find_filled_lines_optimization() {
 /// Проверяет что размер структуры Tetromino не превышает 40 байт.
 ///
 /// # Исправление M13 (MEDIUM)
-/// Compile-time assert: size_of::<Tetromino>() <= 40
+/// Compile-time assert: `size_of::`<Tetromino>() <= 40
 #[test]
 fn test_performance_tetromino_size_check() {
     use std::fs;
@@ -352,12 +352,12 @@ fn test_performance_tetromino_size_check() {
     );
 }
 
-/// Тест 13: Оптимизация can_move_curr_shape_direction
+/// Тест 13: Оптимизация `can_move_curr_shape_direction`
 ///
-/// Проверяет что can_move_curr_shape_direction использует .any() для раннего выхода.
+/// Проверяет что `can_move_curr_shape_direction` использует .`any()` для раннего выхода.
 ///
 /// # Исправление M22 (MEDIUM)
-/// .any() для раннего выхода при обнаружении коллизии.
+/// .`any()` для раннего выхода при обнаружении коллизии.
 #[test]
 fn test_performance_can_move_optimization() {
     use std::fs;
@@ -401,17 +401,17 @@ fn test_performance_safe_cast_in_cycle() {
 
     // Тест 2: Интеграционный тест - время работает
     let duration = Duration::from_millis(16);
-    let _secs = duration.as_secs_f64();
-    assert!(_secs > 0.0);
+    let secs = duration.as_secs_f64();
+    assert!(secs > 0.0);
 }
 
 // ============================================================================
 // ЧИТАЕМОСТЬ (5 тестов)
 // ============================================================================
 
-/// Тест 15: Инвертированная логика has_collision
+/// Тест 15: Инвертированная логика `has_collision`
 ///
-/// Проверяет что функция has_collision существует и работает корректно.
+/// Проверяет что функция `has_collision` существует и работает корректно.
 ///
 /// # Исправление H1 (HIGH)
 /// Функция проверки коллизий использует инвертированную логику.
@@ -436,12 +436,12 @@ fn test_readability_has_collision_logic() {
     assert!(board.get_block(0, 0).is_some());
 }
 
-/// Тест 16: Рефакторинг run_menu_loop()
+/// Тест 16: Рефакторинг `run_menu_loop()`
 ///
-/// Проверяет что run_menu_loop() разбит на отдельные методы.
+/// Проверяет что `run_menu_loop()` разбит на отдельные методы.
 ///
 /// # Исправление L4 (LOW)
-/// Разбиение функции run_menu_loop() на render_menu_frame(), process_menu_input(), check_exit_condition().
+/// Разбиение функции `run_menu_loop()` на `render_menu_frame()`, `process_menu_input()`, `check_exit_condition()`.
 #[test]
 fn test_readability_menu_loop_refactoring() {
     use std::fs;
@@ -468,9 +468,9 @@ fn test_readability_menu_loop_refactoring() {
     );
 }
 
-/// Тест 17: Документирование WALL_KICK_OFFSETS
+/// Тест 17: Документирование `WALL_KICK_OFFSETS`
 ///
-/// Проверяет что WALL_KICK_OFFSETS имеет таблицу с описанием смещений.
+/// Проверяет что `WALL_KICK_OFFSETS` имеет таблицу с описанием смещений.
 ///
 /// # Исправление H4 (HIGH)
 /// Добавлена таблица с описанием каждого смещения.
@@ -500,9 +500,9 @@ fn test_readability_wall_kick_documentation() {
     );
 }
 
-/// Тест 18: Семантические методы GameState
+/// Тест 18: Семантические методы `GameState`
 ///
-/// Проверяет что GameState имеет методы apply_gravity(), spawn_new_piece(), update_fall_speed().
+/// Проверяет что `GameState` имеет методы `apply_gravity()`, `spawn_new_piece()`, `update_fall_speed()`.
 ///
 /// # Исправление M3 (MEDIUM)
 /// Добавлены семантические методы для улучшения инкапсуляции.
@@ -575,12 +575,12 @@ fn test_readability_application_error_handling() {
 // БЕЗОПАСНОСТЬ (5 тестов)
 // ============================================================================
 
-/// Тест 20: TOCTOU защита ThreadSafeLeaderboardEntry
+/// Тест 20: TOCTOU защита `ThreadSafeLeaderboardEntry`
 ///
-/// Проверяет что ThreadSafeLeaderboardEntry использует Arc<Mutex<>> для защиты данных.
+/// Проверяет что `ThreadSafeLeaderboardEntry` использует Arc<Mutex<>> для защиты данных.
 ///
 /// # Исправление H2 (HIGH)
-/// Добавлена потокобезопасная версия LeaderboardEntry.
+/// Добавлена потокобезопасная версия `LeaderboardEntry`.
 #[test]
 fn test_security_thread_safe_leaderboard_entry() {
     use std::sync::Arc;
@@ -603,7 +603,7 @@ fn test_security_thread_safe_leaderboard_entry() {
 
 /// Тест 22: Безопасная конвертация f32 → u32
 ///
-/// Проверяет что используется явная проверка границ вместо clamp().
+/// Проверяет что используется явная проверка границ вместо `clamp()`.
 ///
 /// # Исправление C1 (CRITICAL)
 /// Реализована явная проверка границ для защиты от NaN, Infinity, переполнения.
@@ -635,10 +635,10 @@ fn test_security_safe_f32_to_u32_cast() {
 
 /// Тест 23: Устранение дублирования проверки коллизий
 ///
-/// Проверяет что используется VALID_X_RANGE: Range<i16> для проверки границ.
+/// Проверяет что используется `VALID_X_RANGE`: Range<i16> для проверки границ.
 ///
 /// # Исправление C2 (CRITICAL)
-/// Добавлен VALID_X_RANGE для устранения дублирования проверки коллизий.
+/// Добавлен `VALID_X_RANGE` для устранения дублирования проверки коллизий.
 #[test]
 fn test_security_collision_check_deduplication() {
     use std::fs;
@@ -661,10 +661,10 @@ fn test_security_collision_check_deduplication() {
 
 /// Тест 24: Обработка ошибок в Application
 ///
-/// Проверяет что Application::new() возвращает Result<Self, GameError>.
+/// Проверяет что `Application::new()` возвращает Result<Self, `GameError`>.
 ///
 /// # Исправление C3 (CRITICAL)
-/// Application::new() возвращает Result<Self, GameError> с ? оператором.
+/// `Application::new()` возвращает Result<Self, `GameError`> с ? оператором.
 #[test]
 fn test_security_application_error_handling() {
     use std::fs;
@@ -720,9 +720,9 @@ fn test_best_practices_no_inline_attributes() {
     );
 }
 
-/// Тест 26: Централизация константы MAX_CONFIG_FILE_SIZE
+/// Тест 26: Централизация константы `MAX_CONFIG_FILE_SIZE`
 ///
-/// Проверяет что MAX_CONFIG_FILE_SIZE определена только в constants.rs.
+/// Проверяет что `MAX_CONFIG_FILE_SIZE` определена только в constants.rs.
 ///
 /// # Исправление M1 (MEDIUM)
 /// Константа перемещена в constants.rs, удалены дублирующие определения.
@@ -754,7 +754,7 @@ fn test_best_practices_constant_centralization() {
 
 /// Тест 27: Оптимизирован match в cycle.rs
 ///
-/// Проверяет что match паттерны объединены для InputResult::Continue и InputResult::Pause.
+/// Проверяет что match паттерны объединены для `InputResult::Continue` и `InputResult::Pause`.
 ///
 /// # Исправление L2 (LOW)
 /// Объединены паттерны match для снижения дублирования кода.
@@ -840,9 +840,9 @@ fn test_best_practices_improved_documentation() {
     );
 }
 
-/// Тест 30: Добавление #[must_use] атрибутов
+/// Тест 30: Добавление #[`must_use`] атрибутов
 ///
-/// Проверяет что #[must_use] добавлен к методам, результат которых должен быть использован.
+/// Проверяет что #[`must_use`] добавлен к методам, результат которых должен быть использован.
 ///
 /// # Исправление (Best Practice)
 /// Атрибуты добавлены ко всем методам, результат которых должен быть использован.
@@ -866,9 +866,9 @@ fn test_best_practices_must_use_attributes() {
     );
 }
 
-/// Тест 31: Добавление #[track_caller]
+/// Тест 31: Добавление #[`track_caller`]
 ///
-/// Проверяет что #[track_caller] используется в коде.
+/// Проверяет что #[`track_caller`] используется в коде.
 ///
 /// # Исправление (Best Practice)
 /// Добавлена трассировка вызовов для отладки.
@@ -903,12 +903,12 @@ fn test_best_practices_track_caller() {
 // ТЕСТЫ (5 тестов)
 // ============================================================================
 
-/// Тест 32: Замена TetrominoType → ShapeType
+/// Тест 32: Замена `TetrominoType` → `ShapeType`
 ///
-/// Проверяет что используется ShapeType вместо TetrominoType.
+/// Проверяет что используется `ShapeType` вместо `TetrominoType`.
 ///
 /// # Исправление C1 (CRITICAL)
-/// Переименование типа TetrominoType в ShapeType.
+/// Переименование типа `TetrominoType` в `ShapeType`.
 #[test]
 fn test_tests_shapetype_usage() {
     use std::fs;
@@ -935,10 +935,10 @@ fn test_tests_shapetype_usage() {
 
 /// Тест 33: Защита от переполнения очков
 ///
-/// Проверяет что scoreboard использует saturating_add() для защиты от переполнения.
+/// Проверяет что scoreboard использует `saturating_add()` для защиты от переполнения.
 ///
 /// # Исправление (Security)
-/// Операции сложения очков используют saturating_add().
+/// Операции сложения очков используют `saturating_add()`.
 #[test]
 fn test_tests_score_overflow_protection() {
     use std::fs;
@@ -997,10 +997,10 @@ fn test_tests_error_logging() {
 
 /// Тест 35: Документирование потокобезопасности
 ///
-/// Проверяет что LeaderboardEntry имеет документацию о потокобезопасности.
+/// Проверяет что `LeaderboardEntry` имеет документацию о потокобезопасности.
 ///
 /// # Исправление (Documentation)
-/// Добавлена документация о потокобезопасности LeaderboardEntry.
+/// Добавлена документация о потокобезопасности `LeaderboardEntry`.
 #[test]
 fn test_tests_thread_safety_documentation() {
     use std::fs;
@@ -1029,10 +1029,10 @@ fn test_tests_thread_safety_documentation() {
 
 /// Тест 36: Оптимизация аллокаций строк
 ///
-/// Проверяет что используется truncate(0) вместо clear() для сохранения capacity.
+/// Проверяет что используется truncate(0) вместо `clear()` для сохранения capacity.
 ///
 /// # Исправление (Performance)
-/// Используется truncate(0) вместо clear() для сохранения capacity.
+/// Используется truncate(0) вместо `clear()` для сохранения capacity.
 #[test]
 fn test_tests_string_allocation_optimization() {
     use std::fs;
@@ -1059,9 +1059,9 @@ fn test_tests_string_allocation_optimization() {
 // ДОКУМЕНТАЦИЯ (5 тестов)
 // ============================================================================
 
-/// Тест 37: Переименование поля fall_spd → fall_speed
+/// Тест 37: Переименование поля `fall_spd` → `fall_speed`
 ///
-/// Проверяет что поле переименовано в fall_speed.
+/// Проверяет что поле переименовано в `fall_speed`.
 ///
 /// # Исправление (Naming)
 /// Улучшена читаемость кода через переименование поля.
@@ -1124,10 +1124,10 @@ fn test_documentation_no_redundant_comments() {
 
 /// Тест 39: Устранение дублирования кода
 ///
-/// Проверяет что PathValidator существует и используется.
+/// Проверяет что `PathValidator` существует и используется.
 ///
 /// # Исправление (DRY)
-/// Выделен PathValidator для устранения дублирования.
+/// Выделен `PathValidator` для устранения дублирования.
 #[test]
 fn test_documentation_code_deduplication() {
     use std::fs;
@@ -1157,12 +1157,12 @@ fn test_documentation_code_deduplication() {
     );
 }
 
-/// Тест 40: Исправление экспорта GameStats
+/// Тест 40: Исправление экспорта `GameStats`
 ///
-/// Проверяет что GameStats экспортируется публично.
+/// Проверяет что `GameStats` экспортируется публично.
 ///
 /// # Исправление (API)
-/// Добавлен публичный экспорт GameStats для доступа к статистике игры.
+/// Добавлен публичный экспорт `GameStats` для доступа к статистике игры.
 #[test]
 fn test_documentation_gamestats_export() {
     use std::fs;

@@ -105,7 +105,7 @@ mod tests {
     // РАЗДЕЛ 2: ТЕСТЫ НА СОБЛЮДЕНИЕ ГРАНИЦ МОДУЛЕЙ
     // ========================================================================
 
-    /// Проверка что figure_state.rs импортирует только из core/ и tetromino/.
+    /// Проверка что `figure_state.rs` импортирует только из core/ и tetromino/.
     #[test]
     fn test_figure_state_module_boundaries() {
         let path = "src/game/components/figure_state.rs";
@@ -139,7 +139,7 @@ mod tests {
         }
     }
 
-    /// Проверка что board_state.rs импортирует только из core/ и game/board.rs.
+    /// Проверка что `board_state.rs` импортирует только из core/ и game/board.rs.
     #[test]
     fn test_board_state_module_boundaries() {
         let path = "src/game/components/board_state.rs";
@@ -159,7 +159,7 @@ mod tests {
         );
     }
 
-    /// Проверка что animation_state.rs минималистичен.
+    /// Проверка что `animation_state.rs` минималистичен.
     #[test]
     fn test_animation_state_minimalistic() {
         let path = "src/game/components/animation_state.rs";
@@ -211,7 +211,7 @@ mod tests {
     // РАЗДЕЛ 3: ТЕСТЫ НА ЦЕЛОСТНОСТЬ КОМПОНЕНТОВ
     // ========================================================================
 
-    /// GameState: создание, доступ к фигурам, hold механика.
+    /// `GameState`: создание, доступ к фигурам, hold механика.
     #[test]
     fn test_game_state_integrity() {
         let state = tetris_cli::game::GameState::new();
@@ -228,7 +228,7 @@ mod tests {
         assert!(state.can_hold(), "Начальный can_hold должен быть true");
     }
 
-    /// GameBoard: создание, доступ к полю.
+    /// `GameBoard`: создание, доступ к полю.
     #[test]
     fn test_game_board_integrity() {
         let state = tetris_cli::game::GameState::new();
@@ -237,7 +237,7 @@ mod tests {
         assert_eq!(blocks[0].len(), 10, "Поле должно иметь 10 колонок");
     }
 
-    /// Тест на целостность GameState.
+    /// Тест на целостность `GameState`.
     #[test]
     fn test_game_state_consistency() {
         let state = tetris_cli::game::GameState::new();
@@ -247,7 +247,7 @@ mod tests {
         assert!(state.can_hold(), "Начальный can_hold должен быть true");
     }
 
-    /// Тест на независимость GameState от внешних модулей.
+    /// Тест на независимость `GameState` от внешних модулей.
     #[test]
     fn test_game_state_independence() {
         let state = tetris_cli::game::GameState::new();
@@ -257,7 +257,7 @@ mod tests {
         assert_eq!(state.lines_cleared(), 0);
     }
 
-    /// Тест на корректную работу spawn_new_piece через GameState.
+    /// Тест на корректную работу `spawn_new_piece` через `GameState`.
     #[test]
     fn test_game_state_spawn_new_piece() {
         let mut state = tetris_cli::game::GameState::new();

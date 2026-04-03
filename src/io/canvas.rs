@@ -103,7 +103,7 @@ impl Drop for Canvas {
     /// - `catch_unwind` не требуется - write/flush не паникуют
     ///
     /// # Исправление аудита 2026-04-01 (M3)
-    /// Убран catch_unwind из Drop реализации. Операции write и flush не паникуют.
+    /// Убран `catch_unwind` из Drop реализации. Операции write и flush не паникуют.
     fn drop(&mut self) {
         if let Err(e) = write!(self.out, "{Show}") {
             eprintln!("[PANIC SAFE] Не удалось показать курсор в Drop: {e}");
@@ -293,8 +293,8 @@ impl Canvas {
     /// * `bg` - цвет фона
     ///
     /// # ISSUE-092: Исправление
-    /// Метод дублирует логику draw_strs но необходим для отрисовки динамического текста.
-    /// Для оптимизации используйте кэширование строк в RenderCache.
+    /// Метод дублирует логику `draw_strs` но необходим для отрисовки динамического текста.
+    /// Для оптимизации используйте кэширование строк в `RenderCache`.
     pub fn draw_string(&mut self, text: &str, pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
         let (x, y) = pos;
         if let Err(e) = write!(

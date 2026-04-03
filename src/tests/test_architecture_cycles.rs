@@ -68,7 +68,7 @@ fn test_no_circular_dependencies_game_modules() {
 
     // Проверяем что GameBoard работает независимо от GameState
     let mut board = GameBoard::new();
-    board.set_block(5, 5, 1);
+    let _ = board.set_block(5, 5, 1);
     assert_eq!(
         board.get_block(5, 5),
         Some(1),

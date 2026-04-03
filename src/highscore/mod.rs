@@ -14,10 +14,10 @@
 //! ## Структура модуля
 //!
 //! Модуль разделён на подмодули:
-//! - [`save_data`] — хранение одиночного рекорда (SaveData)
-//! - [`leaderboard`] — таблица лидеров (Leaderboard, LeaderboardEntry) - фасад
-//! - [`leaderboard_repository`] — сериализация/персистентность (LeaderboardRepository)
-//! - [`storage`] — хранилище и валидация записей (LeaderboardStorage, LeaderboardValidator)
+//! - [`save_data`] — хранение одиночного рекорда (`SaveData`)
+//! - [`leaderboard`] — таблица лидеров (Leaderboard, `LeaderboardEntry`) - фасад
+//! - [`leaderboard_repository`] — сериализация/персистентность (`LeaderboardRepository`)
+//! - [`storage`] — хранилище и валидация записей (`LeaderboardStorage`, `LeaderboardValidator`)
 //!
 //! ## Архитектурное улучшение 2026-04-01 (CRITICAL #2)
 //! Large Class leaderboard.rs разделён на подкомпоненты:

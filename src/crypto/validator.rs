@@ -14,7 +14,7 @@
 //! ```
 //!
 //! # Исправление ISSUE-043
-//! HmacValidator удалён - используйте напрямую hmac_sha256/verify_hmac_sha256.
+//! `HmacValidator` удалён - используйте напрямую `hmac_sha256/verify_hmac_sha256`.
 
 use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};
 
