@@ -12,8 +12,6 @@
 //!
 //! Архитектурное улучшение 2026-04-01 (CRITICAL #2): Разделение Large Class leaderboard.rs
 
-#![allow(dead_code)]
-
 use confy::{load, store};
 
 use super::Leaderboard;

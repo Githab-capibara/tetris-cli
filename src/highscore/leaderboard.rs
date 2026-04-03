@@ -20,7 +20,6 @@
 //! leaderboard.lock().unwrap().add_score("Player", 1000);
 //! ```
 
-#![allow(dead_code)]
 #![deny(clippy::mut_mutex_lock)]
 
 // std
