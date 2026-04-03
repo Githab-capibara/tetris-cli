@@ -59,15 +59,12 @@ pub trait BoardReadonly {
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
 
     /// Получить значение ячейки игрового поля.
-    #[allow(dead_code)]
     fn get_block(&self, x: usize, y: usize) -> i8;
 
     /// Проверить, пуста ли ячейка.
-    #[allow(dead_code)]
     fn is_block_empty(&self, x: usize, y: usize) -> bool;
 
     /// Проверить, занята ли ячейка.
-    #[allow(dead_code)]
     fn is_block_occupied(&self, x: usize, y: usize) -> bool;
 
     /// Получить битовую маску заполненных линий.
@@ -75,14 +72,12 @@ pub trait BoardReadonly {
     /// # Возвращает
     /// Битовая маска где каждый бит соответствует линии поля.
     /// Бит установлен в 1 если линия заполнена.
-    #[allow(dead_code)]
     fn get_filled_lines_mask(&self) -> u32;
 
     /// Получить количество заполненных линий.
     ///
     /// # Возвращает
     /// Количество линий, которые необходимо удалить.
-    #[allow(dead_code)]
     fn get_filled_lines_count(&self) -> u32;
 }
 
@@ -111,21 +106,17 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
-    #[allow(dead_code)]
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
 
     /// Установить значение ячейки игрового поля.
-    #[allow(dead_code)]
     fn set_block(&mut self, x: usize, y: usize, value: i8);
 
     /// Установить битовую маску заполненных линий.
     ///
     /// # Аргументы
     /// * `mask` - битовая маска заполненных линий
-    #[allow(dead_code)]
     fn set_filled_lines_mask(&mut self, mask: u32);
 
     /// Очистить заполненные линии.
@@ -235,7 +226,6 @@ pub trait ScoreAccess {
 /// ```
 pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
-    #[allow(dead_code)]
     fn add_score(&mut self, points: u128);
 
     /// Установить счёт (для тестов).
@@ -267,7 +257,6 @@ pub trait LevelAccess {
     }
 
     /// Установить текущий уровень.
-    #[allow(dead_code)]
     fn set_level(&mut self, level: u32);
 }
 
@@ -296,7 +285,6 @@ pub trait LinesAccess {
     fn set_lines_cleared(&mut self, lines: u32);
 
     /// Добавить количество очищенных линий.
-    #[allow(dead_code)]
     fn add_lines(&mut self, lines: u32);
 }
 
@@ -317,17 +305,14 @@ pub trait ComboAccess {
     /// Получить текущий комбо.
     #[must_use]
     #[inline]
-    #[allow(dead_code)]
     fn get_combo(&self) -> u32 {
         0
     }
 
     /// Установить текущий комбо.
-    #[allow(dead_code)]
     fn set_combo(&mut self, combo: u32);
 
     /// Сбросить комбо.
-    #[allow(dead_code)]
     fn reset_combo(&mut self);
 }
 

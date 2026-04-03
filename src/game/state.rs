@@ -40,8 +40,6 @@
 //! [`BoardState`]: crate::game::components::BoardState
 //! [`FieldState`]: crate::game::components::FieldState
 
-#![allow(dead_code)]
-
 // std
 // (нет импортов std)
 
@@ -717,7 +715,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_score(&mut self, value: u128) {
-        let () = self.scoreboard.set_score(value);
+        self.scoreboard.set_score(value);
     }
 
     /// Установить уровень.
@@ -727,7 +725,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_level(&mut self, value: u32) {
-        let () = self.scoreboard.set_level(value);
+        self.scoreboard.set_level(value);
     }
 
     /// Установить количество удалённых линий.
@@ -735,7 +733,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     pub fn set_lines_cleared(&mut self, value: u32) {
-        let () = self.scoreboard.set_lines_cleared(value);
+        self.scoreboard.set_lines_cleared(value);
     }
 
     /// Установить скорость падения.

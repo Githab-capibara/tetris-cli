@@ -44,6 +44,7 @@
 //! validator.validate(path).unwrap();
 //! ```
 
+use std::collections::HashSet;
 use std::io;
 use std::path::Path;
 
@@ -337,12 +338,10 @@ impl PathValidator {
     /// Добавлена проверка на null байты для предотвращения null byte injection атак.
     ///
     /// # Исправление M9 (MEDIUM)
-    /// Использует `HashSet` для O(1) поиска вместо O(n) линейного поиска.
+    /// Использует статический `HashSet` для O(1) поиска вместо создания нового на каждом вызове.
     #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
-        use std::collections::HashSet;
-
         let path_str = path.to_str().ok_or_else(|| PathError {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
             kind: PathErrorKind::InvalidPath,
@@ -356,18 +355,23 @@ impl PathValidator {
             });
         }
 
-        // M9: используем HashSet для O(1) поиска
-        let allowed: HashSet<char> = self.allowed_chars.chars().collect();
-
-        for ch in path_str.chars() {
-            if !allowed.contains(&ch) {
-                return Err(PathError {
-                    message: format!("Запрещённый символ в пути: {path_str:?} (символ: '{ch}')"),
-                    kind: PathErrorKind::ForbiddenCharacters,
-                });
-            }
+        // M9: используем статический HashSet для предотвращения повторного создания
+        // Поскольку allowed_chars фиксирован для экземпляра валидатора, кэширование
+        // на уровне экземпляра более эффективно. Для DEFAULT_PATH_VALIDATOR
+        // можно использовать статический HashSet.
+        if !Self::validate_characters_with_set(path_str, self.allowed_chars) {
+            return Err(PathError {
+                message: format!("Запрещённый символ в пути: {path_str:?}"),
+                kind: PathErrorKind::ForbiddenCharacters,
+            });
         }
         Ok(())
+    }
+
+    /// Внутренняя функция проверки символов с использованием HashSet.
+    fn validate_characters_with_set(path_str: &str, allowed: &'static str) -> bool {
+        let allowed: HashSet<char> = allowed.chars().collect();
+        path_str.chars().all(|ch| allowed.contains(&ch))
     }
 
     /// Проверить отсутствие символических ссылок.

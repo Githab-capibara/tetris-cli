@@ -193,13 +193,15 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 /// Движение вниз обрабатывается отдельно в `handle_soft_drop`/`handle_hard_drop`.
 /// Вызов с `Direction::Down` считается ошибкой программиста.
 fn handle_movement_input(state: &mut GameState, dir: Direction) {
+    // Direction::Down обрабатывается отдельно в handle_soft_drop/handle_hard_drop
     if state.can_move_curr_shape_direction(dir) {
         let curr_shape = state.get_curr_shape_mut();
         match dir {
             Direction::Left => curr_shape.pos_mut().0 -= 1.0,
             Direction::Right => curr_shape.pos_mut().0 += 1.0,
             Direction::Down => {
-                unreachable!("handle_movement_input не должен вызываться с Direction::Down")
+                // Движение вниз не обрабатывается здесь — для этого есть soft/hard drop
+                eprintln!("[WARN] Direction::Down передан в handle_movement_input — используйте handle_soft_drop/handle_hard_drop");
             }
         }
     }

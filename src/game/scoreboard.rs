@@ -13,8 +13,6 @@
 //! - [`ScoreAccess`] (импортирован из [`crate::game::access`]) - доступ только на чтение
 //! - [`ScoreMutable`] (импортирован из [`crate::game::access`]) - доступ на чтение и запись
 
-#![allow(dead_code)]
-
 // Импортируем трейты из access.rs для избежания дублирования
 use crate::game::access::{ScoreAccess, ScoreMutable};
 
@@ -280,7 +278,7 @@ mod tests {
     fn test_score_board_set_score() {
         let mut scoreboard = ScoreBoard::new();
 
-        let () = scoreboard.set_score(500);
+        scoreboard.set_score(500);
         assert_eq!(scoreboard.get_score(), 500);
     }
 
@@ -302,11 +300,11 @@ mod tests {
         assert_eq!(scoreboard.increment_level(), 3);
         assert_eq!(scoreboard.get_level(), 3);
 
-        let () = scoreboard.set_level(10);
+        scoreboard.set_level(10);
         assert_eq!(scoreboard.get_level(), 10);
 
         // Уровень не может быть меньше 1
-        let () = scoreboard.set_level(0);
+        scoreboard.set_level(0);
         assert_eq!(scoreboard.get_level(), 1);
     }
 
@@ -318,7 +316,7 @@ mod tests {
         assert_eq!(scoreboard.add_lines_cleared(3), 8);
         assert_eq!(scoreboard.get_lines_cleared(), 8);
 
-        let () = scoreboard.set_lines_cleared(20);
+        scoreboard.set_lines_cleared(20);
         assert_eq!(scoreboard.get_lines_cleared(), 20);
     }
 
@@ -327,7 +325,7 @@ mod tests {
         let mut scoreboard = ScoreBoard::new();
 
         // Переполнение u128
-        let () = scoreboard.set_score(u128::MAX - 100);
+        scoreboard.set_score(u128::MAX - 100);
         let _ = scoreboard.add_score(200);
         assert_eq!(scoreboard.get_score(), u128::MAX);
     }
@@ -338,7 +336,7 @@ mod tests {
         let mut scoreboard = ScoreBoard::new();
 
         // Устанавливаем счёт близкий к максимуму
-        let () = scoreboard.set_score(u128::MAX - 100);
+        scoreboard.set_score(u128::MAX - 100);
 
         // Добавляем больше очков чем осталось до максимума
         let result = scoreboard.add_score(200);
@@ -354,14 +352,14 @@ mod tests {
         let mut scoreboard = ScoreBoard::new();
 
         // Устанавливаем точно в максимум
-        let () = scoreboard.set_score(u128::MAX);
+        scoreboard.set_score(u128::MAX);
 
         // Попытка добавить ещё очков должна остаться на максимуме
         let result = scoreboard.add_score(1000);
         assert_eq!(result, u128::MAX);
 
         // Проверка что saturating_add работает корректно
-        let () = scoreboard.set_score(u128::MAX - 1);
+        scoreboard.set_score(u128::MAX - 1);
         let result = scoreboard.add_score(1);
         assert_eq!(result, u128::MAX);
     }
@@ -372,19 +370,19 @@ mod tests {
         let mut scoreboard = ScoreBoard::new();
 
         // Тест 1: u128::MAX - 1 + 1 = u128::MAX
-        let () = scoreboard.set_score(u128::MAX - 1);
+        scoreboard.set_score(u128::MAX - 1);
         assert_eq!(scoreboard.add_score(1), u128::MAX);
 
         // Тест 2: u128::MAX + anything = u128::MAX
-        let () = scoreboard.set_score(u128::MAX);
+        scoreboard.set_score(u128::MAX);
         assert_eq!(scoreboard.add_score(u128::MAX), u128::MAX);
 
         // Тест 3: 0 + u128::MAX = u128::MAX
-        let () = scoreboard.set_score(0);
+        scoreboard.set_score(0);
         assert_eq!(scoreboard.add_score(u128::MAX), u128::MAX);
 
         // Тест 4: u128::MAX - 1000 + 500 < u128::MAX
-        let () = scoreboard.set_score(u128::MAX - 1000);
+        scoreboard.set_score(u128::MAX - 1000);
         assert_eq!(scoreboard.add_score(500), u128::MAX - 500);
     }
 }

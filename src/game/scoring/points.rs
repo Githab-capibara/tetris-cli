@@ -298,7 +298,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
         // Сохраняем ссылку на stats_mut для избежания двойного вызова (исправление #14)
         let stats_mut = state.stats_mut();
         let new_combo = stats_mut.combo_counter().saturating_add(1);
-        let () = stats_mut.set_combo_counter(new_combo);
+        stats_mut.set_combo_counter(new_combo);
         let combo_bonus = if new_combo > 1 {
             // Инкапсуляция: используем add_score() вместо прямого доступа
             // Исправление C1: saturating_mul для защиты от переполнения
@@ -310,7 +310,7 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
             let _ = state.add_score(bonus);
         }
     } else {
-        let () = state.stats_mut().set_combo_counter(0);
+        state.stats_mut().set_combo_counter(0);
     }
 }
 

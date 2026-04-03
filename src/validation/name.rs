@@ -125,9 +125,9 @@ pub fn sanitize_player_name(name: &str) -> String {
     let trimmed = name
         .replace(['\u{200B}', '\u{200C}', '\u{200D}', '\u{FEFF}'], "")
         .trim()
-        .to_string();
+        .to_owned();
     if trimmed.is_empty() {
-        return ANONYMOUS_NAME.to_string();
+        return ANONYMOUS_NAME.to_owned();
     }
 
     // M10: однопроходный алгоритм с предварительным выделением памяти и счётчиком символов
