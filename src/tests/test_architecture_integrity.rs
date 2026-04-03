@@ -31,12 +31,12 @@ use crate::tetromino::{BagGenerator, ShapeType, Tetromino};
 // ТЕСТ 1: РАЗДЕЛЕНИЕ КОМПОНЕНТОВ (A1)
 // ============================================================================
 
-/// Проверка разделения компонентов GameState.
+/// Проверка разделения компонентов `GameState`.
 ///
 /// Тест проверяет что:
-/// - GameBoard существует и имеет правильные методы
-/// - ScoreBoard существует и имеет правильные методы
-/// - GameState использует компоненты через делегирование
+/// - `GameBoard` существует и имеет правильные методы
+/// - `ScoreBoard` существует и имеет правильные методы
+/// - `GameState` использует компоненты через делегирование
 #[test]
 fn test_component_separation() {
     use crate::game::board::GameBoard;
@@ -54,7 +54,7 @@ fn test_component_separation() {
         "Новое поле должно быть пустым"
     );
 
-    board.set_block(5, 10, 1);
+    let _ = board.set_block(5, 10, 1);
     assert_eq!(
         board.get_block(5, 10),
         Some(1),
@@ -148,7 +148,7 @@ fn test_component_separation() {
 /// Тест проверяет что:
 /// - Модуль tetromino/ имеет правильную структуру
 /// - Все подмодули доступны через ре-экспорт
-/// - ShapeType, Tetromino, BagGenerator импортируются корректно
+/// - `ShapeType`, Tetromino, `BagGenerator` импортируются корректно
 #[test]
 fn test_arch_integrity_module_boundaries() {
     // === Проверка структуры tetromino/ ===
@@ -232,8 +232,8 @@ fn test_arch_integrity_module_boundaries() {
 /// Проверка инкапсуляции через методы-мутаторы.
 ///
 /// Тест проверяет что:
-/// - Методы-мутаторы GameState работают корректно
-/// - score/level/lines_cleared изменяются только через методы
+/// - Методы-мутаторы `GameState` работают корректно
+/// - `score/level/lines_cleared` изменяются только через методы
 #[test]
 #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
 fn test_encapsulation() {
@@ -335,7 +335,7 @@ fn test_encapsulation() {
 // ТЕСТ 4: ИНВЕРСИЯ ЗАВИСИМОСТЕЙ (A7)
 // ============================================================================
 
-/// Mock-реализация InputReader для тестирования.
+/// Mock-реализация `InputReader` для тестирования.
 struct MockInputReader {
     keys: Vec<u8>,
     index: usize,
@@ -407,8 +407,8 @@ impl Renderer for MockRenderer {
 /// Проверка использования трейтов вместо конкретных типов.
 ///
 /// Тест проверяет что:
-/// - handle_input() принимает любой тип реализующий InputReader
-/// - Можно использовать mock-реализацию InputReader
+/// - `handle_input()` принимает любой тип реализующий `InputReader`
+/// - Можно использовать mock-реализацию `InputReader`
 #[test]
 fn test_dependency_inversion() {
     // === Проверка что MockInputReader работает ===
@@ -486,7 +486,7 @@ fn test_dependency_inversion() {
 /// Проверка явной обработки ошибок через Result.
 ///
 /// Тест проверяет что:
-/// - run_game_loop() возвращает Result
+/// - `run_game_loop()` возвращает Result
 /// - Ошибки корректно обрабатываются через ?
 #[test]
 fn test_error_handling() {
@@ -633,14 +633,14 @@ fn test_arch_integrity_no_circular_dependencies() {
 /// Проверка соблюдения принципов SOLID.
 ///
 /// Тест проверяет что:
-/// - Single Responsibility (GameBoard, ScoreBoard разделены)
+/// - Single Responsibility (`GameBoard`, `ScoreBoard` разделены)
 /// - Dependency Inversion (использование трейтов)
 #[test]
 fn test_solid_principles() {
     // === Single Responsibility Principle (SRP) ===
     // GameBoard отвечает только за поле
     let mut board = GameBoard::new();
-    board.set_block(5, 5, 1);
+    let _ = board.set_block(5, 5, 1);
     assert_eq!(board.get_block(5, 5), Some(1));
     // GameBoard не должен отвечать за очки или фигуры
 
@@ -722,7 +722,7 @@ fn test_solid_principles() {
 /// Проверка обратной совместимости API.
 ///
 /// Тест проверяет что:
-/// - deprecated поля GameState всё ещё работают
+/// - deprecated поля `GameState` всё ещё работают
 /// - старые API продолжают функционировать
 #[test]
 fn test_architecture_backward_compatibility() {

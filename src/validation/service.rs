@@ -80,9 +80,7 @@ impl ValidationService {
     pub fn validate_u32_range(value: u32, min: u32, max: u32) -> Result<(), ValidationError> {
         if value < min || value > max {
             return Err(ValidationError {
-                message: format!(
-                    "Значение {value} вне допустимого диапазона [{min}, {max}]"
-                ),
+                message: format!("Значение {value} вне допустимого диапазона [{min}, {max}]"),
                 kind: ValidationErrorKind::OutOfRange,
             });
         }
@@ -115,9 +113,7 @@ impl ValidationService {
     pub fn validate_f32_range(value: f32, min: f32, max: f32) -> Result<(), ValidationError> {
         if value < min || value > max {
             return Err(ValidationError {
-                message: format!(
-                    "Значение {value} вне допустимого диапазона [{min}, {max}]"
-                ),
+                message: format!("Значение {value} вне допустимого диапазона [{min}, {max}]"),
                 kind: ValidationErrorKind::OutOfRange,
             });
         }

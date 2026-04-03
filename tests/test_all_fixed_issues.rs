@@ -19,13 +19,13 @@ use std::thread;
 // КРИТИЧЕСКИЕ ПРОБЛЕМЫ (E1, E2, E5, E9)
 // ============================================================================
 
-/// Тест E1: Canvas::default() graceful degradation
+/// Тест E1: `Canvas::default()` graceful degradation
 ///
-/// Проверяет что Canvas::default() использует unwrap_or_else для graceful degradation
+/// Проверяет что `Canvas::default()` использует `unwrap_or_else` для graceful degradation
 /// при ошибке инициализации терминала.
 ///
 /// # Исправление E1 (CRITICAL)
-/// Canvas::default() теперь использует unwrap_or_else с fallback stub вместо паники.
+/// `Canvas::default()` теперь использует `unwrap_or_else` с fallback stub вместо паники.
 /// Это позволяет избежать краха приложения при недоступности терминала.
 ///
 /// # Пример использования
@@ -66,14 +66,14 @@ fn test_fix_e1_canvas_graceful_degradation() {
     );
 }
 
-/// Тест E2: ThreadSafeLeaderboardEntry::score_safe() без паники
+/// Тест E2: `ThreadSafeLeaderboardEntry::score_safe()` без паники
 ///
-/// Проверяет что ThreadSafeLeaderboardEntry::score_safe() возвращает Option<u128>
+/// Проверяет что `ThreadSafeLeaderboardEntry::score_safe()` возвращает Option<u128>
 /// вместо паники при отравлении Mutex.
 ///
 /// # Исправление E2 (CRITICAL)
-/// ThreadSafeLeaderboardEntry::score_safe() теперь возвращает Option<u128>
-/// и обрабатывает PoisonError через возврат None вместо паники.
+/// `ThreadSafeLeaderboardEntry::score_safe()` теперь возвращает Option<u128>
+/// и обрабатывает `PoisonError` через возврат None вместо паники.
 ///
 /// # Пример использования
 /// ```
@@ -124,12 +124,12 @@ fn test_fix_e2_thread_safe_score_no_panic() {
 
 /// Тест E5: TOCTOU защита в controls.rs
 ///
-/// Проверяет что controls.rs использует O_NOFOLLOW для защиты от TOCTOU уязвимости.
+/// Проверяет что controls.rs использует `O_NOFOLLOW` для защиты от TOCTOU уязвимости.
 ///
 /// # Исправление E5 (CRITICAL)
 /// В controls.rs изменён порядок операций:
-/// 1. Сначала open(O_NOFOLLOW) - атомарная операция
-/// 2. Затем fstat() проверка на symlink
+/// 1. Сначала `open(O_NOFOLLOW)` - атомарная операция
+/// 2. Затем `fstat()` проверка на symlink
 ///    Это устраняет TOCTOU уязвимость (Time-Of-Check-Time-Of-Use).
 ///
 /// # Пример
@@ -180,13 +180,13 @@ fn test_fix_e5_controls_toctou_protection() {
     );
 }
 
-/// Тест E9: LeaderboardEntry TOCTOU документация/защита
+/// Тест E9: `LeaderboardEntry` TOCTOU документация/защита
 ///
-/// Проверяет что LeaderboardEntry имеет подробную документацию о TOCTOU уязвимости
+/// Проверяет что `LeaderboardEntry` имеет подробную документацию о TOCTOU уязвимости
 /// и методах защиты.
 ///
 /// # Исправление E9 (CRITICAL)
-/// Добавлена подробная документация о TOCTOU уязвимостях в LeaderboardEntry:
+/// Добавлена подробная документация о TOCTOU уязвимостях в `LeaderboardEntry`:
 /// - Описание проблемы Time-Of-Check-Time-Of-Use
 /// - Примеры безопасного использования
 /// - Рекомендации по многопоточному доступу через Arc<Mutex<>>
@@ -240,15 +240,15 @@ fn test_fix_e9_leaderboard_toctou_documentation() {
 // ПРОБЛЕМЫ ВЫСОКОГО ПРИОРИТЕТА (E3, E4, E6, E10, L1, L2)
 // ============================================================================
 
-/// Тест E3: checked_neg() при вращении фигур
+/// Тест E3: `checked_neg()` при вращении фигур
 ///
-/// Проверяет что tetromino_struct.rs использует checked_neg() вместо saturating_neg()
+/// Проверяет что `tetromino_struct.rs` использует `checked_neg()` вместо `saturating_neg()`
 /// для предотвращения переполнения при вращении фигур.
 ///
 /// # Исправление E3 (CRITICAL)
-/// Замена saturating_neg() на checked_neg() с явной обработкой None:
-/// - saturating_neg() может вернуть некорректное значение для i16::MIN
-/// - checked_neg() возвращает None при переполнении, что позволяет обработать ошибку
+/// Замена `saturating_neg()` на `checked_neg()` с явной обработкой None:
+/// - `saturating_neg()` может вернуть некорректное значение для `i16::MIN`
+/// - `checked_neg()` возвращает None при переполнении, что позволяет обработать ошибку
 ///
 /// # Пример
 /// ```ignore
@@ -306,12 +306,12 @@ fn test_fix_e3_checked_neg_rotation() {
     );
 }
 
-/// Тест E4: Обработка ошибки set_fall_speed()
+/// Тест E4: Обработка ошибки `set_fall_speed()`
 ///
-/// Проверяет что scoring/lines.rs обрабатывает ошибку set_fall_speed().
+/// Проверяет что scoring/lines.rs обрабатывает ошибку `set_fall_speed()`.
 ///
 /// # Исправление E4 (HIGH)
-/// В scoring/lines.rs добавлена явная обработка ошибки set_fall_speed():
+/// В scoring/lines.rs добавлена явная обработка ошибки `set_fall_speed()`:
 /// ```ignore
 /// if let Err(e) = state.set_fall_speed(new_fall_speed) {
 ///     eprintln!("[WARN] set_fall_speed ошибка: {}", e);
@@ -362,11 +362,11 @@ fn test_fix_e4_set_fall_speed_error_handling() {
 /// # Исправление E10 (HIGH)
 /// Ранее при каждом сохранении генерировался новый HMAC ключ, что приводило к:
 /// - Невозможности загрузки старых конфигураций
-/// - Каждый save() делал предыдущий файл невалидным
+/// - Каждый `save()` делал предыдущий файл невалидным
 ///
 /// Новое решение:
 /// - Используется глобальный HMAC ключ из переменной окружения или константы
-/// - hmac_key поле сохранено для обратной совместимости но не используется
+/// - `hmac_key` поле сохранено для обратной совместимости но не используется
 ///
 /// # Пример
 /// ```ignore
@@ -432,13 +432,13 @@ fn test_fix_e10_hmac_key_constancy() {
     );
 }
 
-/// Тест L2: rows_cleared=0 защита от паники
+/// Тест L2: `rows_cleared=0` защита от паники
 ///
-/// Проверяет что update_score_for_lines() не паникует при rows_cleared=0.
+/// Проверяет что `update_score_for_lines()` не паникует при `rows_cleared=0`.
 ///
 /// # Исправление L2 (HIGH)
-/// Добавлена явная проверка rows_cleared > 0 перед доступом к LINE_SCORES
-/// для предотвращения паники при rows_cleared = 0.
+/// Добавлена явная проверка `rows_cleared` > 0 перед доступом к `LINE_SCORES`
+/// для предотвращения паники при `rows_cleared` = 0.
 ///
 /// # Пример
 /// ```ignore

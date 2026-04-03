@@ -241,7 +241,7 @@ pub type GameModeResult = Box<dyn GameModeTrait>;
 /// ```
 ///
 /// Архитектурное улучшение 2026-04-01 (O1): Factory функция для создания режимов
-/// вместо использования enum GameMode.
+/// вместо использования enum `GameMode`.
 #[must_use]
 pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
     match name {
@@ -355,7 +355,7 @@ mod tests {
         assert_eq!(marathon_clone.get_target_lines(), Some(150));
     }
 
-    /// Тест: проверка граничных значений для SprintMode
+    /// Тест: проверка граничных значений для `SprintMode`
     #[test]
     fn test_sprint_mode_boundaries() {
         let mode = SprintMode::new();
@@ -371,7 +371,7 @@ mod tests {
         assert!(mode.check_win_condition(100));
     }
 
-    /// Тест: проверка граничных значений для MarathonMode
+    /// Тест: проверка граничных значений для `MarathonMode`
     #[test]
     fn test_marathon_mode_boundaries() {
         let mode = MarathonMode::new();

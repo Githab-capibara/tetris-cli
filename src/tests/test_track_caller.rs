@@ -1,4 +1,4 @@
-//! Тесты #[track_caller] атрибутов.
+//! Тесты #[`track_caller`] атрибутов.
 //!
 //! Проверяют, что ошибки указывают на место вызова.
 
@@ -14,13 +14,13 @@ fn test_track_caller_panic_location() {
     panic_with_caller("тестовая паника");
 }
 
-/// Вспомогательная функция с track_caller
+/// Вспомогательная функция с `track_caller`
 #[track_caller]
 fn panic_with_caller(msg: &str) {
     panic!("{}", msg);
 }
 
-/// Тест 2: Проверка обработки ошибок с track_caller
+/// Тест 2: Проверка обработки ошибок с `track_caller`
 ///
 /// Проверяем, что ошибки обрабатываются корректно.
 #[test]
@@ -35,7 +35,7 @@ fn test_track_caller_error_handling() {
     // Если дошли сюда - ошибки обработаны корректно
 }
 
-/// Тест 3: Проверка assert с track_caller
+/// Тест 3: Проверка assert с `track_caller`
 ///
 /// Проверяем, что assert указывает на правильное место.
 #[test]
@@ -45,15 +45,15 @@ fn test_track_caller_assert_location() {
     assert_with_caller(false, "assertion failed");
 }
 
-/// Вспомогательная функция assert с track_caller
+/// Вспомогательная функция assert с `track_caller`
 #[track_caller]
 fn assert_with_caller(condition: bool, msg: &str) {
     assert!(condition, "{}", msg);
 }
 
-/// Тест 4: Проверка debug_assert с track_caller
+/// Тест 4: Проверка `debug_assert` с `track_caller`
 ///
-/// Проверяем, что debug_assert работает корректно.
+/// Проверяем, что `debug_assert` работает корректно.
 #[test]
 fn test_track_caller_debug_assert() {
     let state = GameState::new();
@@ -63,7 +63,7 @@ fn test_track_caller_debug_assert() {
     debug_assert!(state.level() == 1, "Уровень должен быть 1");
 }
 
-/// Тест 5: Проверка expect с track_caller
+/// Тест 5: Проверка expect с `track_caller`
 ///
 /// Проверяем, что expect указывает на правильное место.
 #[test]
@@ -74,7 +74,7 @@ fn test_track_caller_expect_location() {
     opt.expect_with_caller("Option был None");
 }
 
-/// Вспомогательная функция expect с track_caller
+/// Вспомогательная функция expect с `track_caller`
 trait OptionExt<T> {
     fn expect_with_caller(self, msg: &str) -> T;
 }
@@ -86,7 +86,7 @@ impl<T> OptionExt<T> for Option<T> {
     }
 }
 
-/// Тест 6: Проверка unwrap с track_caller
+/// Тест 6: Проверка unwrap с `track_caller`
 ///
 /// Проверяем, что unwrap указывает на правильное место.
 #[test]
@@ -97,7 +97,7 @@ fn test_track_caller_unwrap_location() {
     result.unwrap_with_caller();
 }
 
-/// Вспомогательная функция unwrap с track_caller
+/// Вспомогательная функция unwrap с `track_caller`
 trait ResultExt<T, E> {
     fn unwrap_with_caller(self) -> T;
 }
@@ -109,9 +109,9 @@ impl<T, E: std::fmt::Debug> ResultExt<T, E> for Result<T, E> {
     }
 }
 
-/// Тест 7: Проверка, что track_caller не влияет на производительность
+/// Тест 7: Проверка, что `track_caller` не влияет на производительность
 ///
-/// Проверяем, что track_caller не замедляет код.
+/// Проверяем, что `track_caller` не замедляет код.
 #[test]
 fn test_track_caller_performance() {
     use std::time::Instant;

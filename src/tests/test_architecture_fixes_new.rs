@@ -1,10 +1,10 @@
 //! Тесты на новые архитектурные исправления в tetris-cli.
 //!
 //! Этот модуль проверяет что все архитектурные исправления были применены:
-//! - GameBoardAccess удален или deprecated
-//! - ScoreAccess не дублируется
-//! - GameAction enum существует
-//! - game_rules модуль существует
+//! - `GameBoardAccess` удален или deprecated
+//! - `ScoreAccess` не дублируется
+//! - `GameAction` enum существует
+//! - `game_rules` модуль существует
 //! - constants не экспортируется pub(crate)
 //!
 //! ## Архитектурные принципы
@@ -24,7 +24,7 @@
 // ТЕСТ 2: SCOREACCESS НЕ ДУБЛИРУЕТСЯ
 // ============================================================================
 
-/// Тест: ScoreAccess не дублируется.
+/// Тест: `ScoreAccess` не дублируется.
 #[test]
 fn test_score_access_not_duplicated() {
     use crate::game::access::ScoreAccess;
@@ -75,7 +75,7 @@ fn test_score_access_not_duplicated() {
 // ТЕСТ 3: GAMEACTION ENUM СУЩЕСТВУЕТ
 // ============================================================================
 
-/// Тест: GameAction enum существует.
+/// Тест: `GameAction` enum существует.
 #[test]
 fn test_game_action_enum_exists() {
     use crate::game::types::GameAction;
@@ -130,7 +130,7 @@ fn test_game_action_enum_exists() {
 // ТЕСТ 4: GAME_RULES МОДУЛЬ СУЩЕСТВУЕТ
 // ============================================================================
 
-/// Тест: game_rules модуль существует.
+/// Тест: `game_rules` модуль существует.
 #[test]
 fn test_game_rules_module_exists() {
     use crate::constants::{

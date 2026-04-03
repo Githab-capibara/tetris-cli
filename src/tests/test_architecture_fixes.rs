@@ -1,11 +1,11 @@
 //! Тесты исправленных архитектурных проблем tetris-cli.
 //!
 //! Этот модуль проверяет все исправленные архитектурные проблемы:
-//! - Отсутствие deprecated полей в GameState
+//! - Отсутствие deprecated полей в `GameState`
 //! - Отсутствие дублирования HMAC функций
-//! - Использование GameModeTrait вместо enum
+//! - Использование `GameModeTrait` вместо enum
 //! - Централизация констант
-//! - Использование PathValidator
+//! - Использование `PathValidator`
 //! - Удаление избыточных трейтов
 //! - Целостность архитектуры
 //! - SOLID принципы
@@ -22,11 +22,11 @@
 // ТЕСТ 1: ОТСУТСТВИЕ DEPRECATED ПОЛЕЙ (C1, M4)
 // ============================================================================
 
-/// Проверяет что GameState не содержит deprecated полей.
+/// Проверяет что `GameState` не содержит deprecated полей.
 ///
 /// Тест проверяет что:
-/// - GameState использует композицию через GameBoard и ScoreBoard
-/// - Прямые поля blocks, score, level, lines_cleared удалены
+/// - `GameState` использует композицию через `GameBoard` и `ScoreBoard`
+/// - Прямые поля blocks, score, level, `lines_cleared` удалены
 /// - Доступ осуществляется через методы делегирования
 #[test]
 fn test_game_state_no_deprecated_fields() {
@@ -73,10 +73,10 @@ fn test_game_state_no_deprecated_fields() {
     );
 }
 
-/// Проверяет что размер GameState уменьшился.
+/// Проверяет что размер `GameState` уменьшился.
 ///
 /// Тест проверяет что:
-/// - Размер GameState разумный (не слишком большой)
+/// - Размер `GameState` разумный (не слишком большой)
 /// - Компоненты вынесены в отдельные структуры
 #[test]
 fn test_game_state_size_reduced() {
@@ -132,8 +132,8 @@ fn test_game_state_size_reduced() {
 /// Проверяет что HMAC функции экспортированы из crypto.rs.
 ///
 /// Тест проверяет что:
-/// - hmac_sha256 экспортирована из crypto.rs
-/// - verify_hmac_sha256 экспортирована из crypto.rs
+/// - `hmac_sha256` экспортирована из crypto.rs
+/// - `verify_hmac_sha256` экспортирована из crypto.rs
 /// - Функции работают корректно
 #[test]
 fn test_hmac_functions_exported() {
@@ -159,11 +159,11 @@ fn test_hmac_functions_exported() {
 /// Проверяет что validator.rs использует функции из crypto.rs.
 ///
 /// Тест проверяет что:
-/// - hmac_sha256/verify_hmac_sha256 работают корректно
+/// - `hmac_sha256/verify_hmac_sha256` работают корректно
 /// - Нет дублирования HMAC логики
 ///
 /// # Исправление ISSUE-043
-/// HmacValidator удалён - используем напрямую hmac_sha256/verify_hmac_sha256.
+/// `HmacValidator` удалён - используем напрямую `hmac_sha256/verify_hmac_sha256`.
 #[test]
 fn test_hmac_no_duplication() {
     use crate::crypto::{hmac_sha256, verify_hmac_sha256};
@@ -192,14 +192,14 @@ fn test_hmac_no_duplication() {
 // ТЕСТ 3: ИСПОЛЬЗОВАНИЕ GAMEMODETRAIT (H1, L1)
 // ============================================================================
 
-/// Проверяет что GameMode enum deprecated.
+/// Проверяет что `GameMode` enum deprecated.
 ///
 /// Тест проверяет что:
-/// - GameMode enum имеет атрибут deprecated
+/// - `GameMode` enum имеет атрибут deprecated
 /// - Компиляция с deprecated предупреждением
 ///
 /// # Устаревший тест
-/// GameMode enum удалён, тест помечен как ignored.
+/// `GameMode` enum удалён, тест помечен как ignored.
 #[test]
 #[ignore = "GameMode enum удалён, тест устарел"]
 fn test_game_mode_enum_deprecated() {
@@ -232,11 +232,11 @@ fn test_game_mode_enum_deprecated() {
     }
 }
 
-/// Проверяет что GameModeTrait используется.
+/// Проверяет что `GameModeTrait` используется.
 ///
 /// Тест проверяет что:
-/// - GameModeTrait определён и работает
-/// - ClassicMode, SprintMode, MarathonMode реализуют трейт
+/// - `GameModeTrait` определён и работает
+/// - `ClassicMode`, `SprintMode`, `MarathonMode` реализуют трейт
 /// - Трейт используется вместо enum
 #[test]
 fn test_game_mode_trait_used() {
@@ -338,11 +338,11 @@ fn test_io_imports_constants() {
 // ТЕСТ 5: ИСПОЛЬЗОВАНИЕ PATHVALIDATOR (M3)
 // ============================================================================
 
-/// Проверяет что controls.rs использует PathValidator.
+/// Проверяет что controls.rs использует `PathValidator`.
 ///
 /// Тест проверяет что:
-/// - PathValidator доступен из controls.rs
-/// - controls.rs импортирует PathValidator из validation
+/// - `PathValidator` доступен из controls.rs
+/// - controls.rs импортирует `PathValidator` из validation
 #[test]
 fn test_controls_uses_path_validator() {
     use crate::controls::DEFAULT_PATH_VALIDATOR;
@@ -505,12 +505,12 @@ fn test_game_does_not_depend_on_app() {
 // ТЕСТ 8: SOLID ПРИНЦИПЫ
 // ============================================================================
 
-/// Проверяет SRP для GameState (через количество полей).
+/// Проверяет SRP для `GameState` (через количество полей).
 ///
 /// Тест проверяет что:
-/// - GameState делегирует ответственность компонентам
-/// - GameBoard отвечает за поле
-/// - ScoreBoard отвечает за очки
+/// - `GameState` делегирует ответственность компонентам
+/// - `GameBoard` отвечает за поле
+/// - `ScoreBoard` отвечает за очки
 #[test]
 fn test_game_state_srp() {
     use crate::game::board::GameBoard;
@@ -519,7 +519,7 @@ fn test_game_state_srp() {
 
     // Проверяем что GameBoard отвечает только за поле
     let mut board = GameBoard::new();
-    board.set_block(5, 5, 1);
+    let _ = board.set_block(5, 5, 1);
     assert_eq!(board.get_block(5, 5), Some(1));
     // GameBoard не должен отвечать за очки или фигуры
 
@@ -542,11 +542,11 @@ fn test_game_state_srp() {
     );
 }
 
-/// Проверяет OCP для GameModeTrait.
+/// Проверяет OCP для `GameModeTrait`.
 ///
 /// Тест проверяет что:
 /// - Можно добавить новый режим без изменения существующего кода
-/// - GameModeTrait открыт для расширения
+/// - `GameModeTrait` открыт для расширения
 #[test]
 fn test_game_mode_ocp() {
     use crate::game::mode_trait::GameModeTrait;

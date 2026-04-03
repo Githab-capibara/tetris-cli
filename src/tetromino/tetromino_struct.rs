@@ -92,7 +92,7 @@ impl Tetromino {
     /// Получить тип фигуры.
     ///
     /// # Возвращает
-    /// ShapeType фигуры (T, L, J, S, Z, O, I)
+    /// `ShapeType` фигуры (T, L, J, S, Z, O, I)
     #[must_use]
     pub const fn shape(&self) -> ShapeType {
         self.shape
@@ -258,7 +258,7 @@ impl Tetromino {
     /// ```
     ///
     /// # Panics
-    /// Никогда не паникует. При переполнении координат (i16::MIN при отрицании)
+    /// Никогда не паникует. При переполнении координат (`i16::MIN` при отрицании)
     /// метод логирует предупреждение и пропускает вращение.
     pub fn rotate(&mut self, dir: RotationDirection) {
         // Квадрат не вращается

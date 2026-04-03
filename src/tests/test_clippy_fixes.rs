@@ -8,7 +8,7 @@ mod clippy_fixes_tests {
     use crate::highscore::leaderboard::LeaderboardEntry;
     use std::io;
 
-    /// Тест 1: Проверка что io::Error::other() правильно используется
+    /// Тест 1: Проверка что `io::Error::other()` правильно используется
     #[test]
     fn test_io_error_other() {
         let err = io::Error::other("test error");
@@ -16,7 +16,7 @@ mod clippy_fixes_tests {
         assert_eq!(err.to_string(), "test error");
     }
 
-    /// Тест 2: Проверка что LeaderboardEntry принимает &str без неоправданного借用
+    /// Тест 2: Проверка что `LeaderboardEntry` принимает &str без неоправданного借用
     #[test]
     fn test_leaderboard_entry_str_ref() {
         let name = "TestPlayer";
@@ -25,7 +25,7 @@ mod clippy_fixes_tests {
         assert_eq!(entry.score(), Some(1000));
     }
 
-    /// Тест 3: Проверка что диапазоны используют .contains() вместо manual check
+    /// Тест 3: Проверка что диапазоны используют .`contains()` вместо manual check
     #[test]
     fn test_range_contains() {
         let value = 2.5_f32;
@@ -35,7 +35,7 @@ mod clippy_fixes_tests {
         assert!(!(-2.0..=3.0).contains(&outside));
     }
 
-    /// Тест 4: Проверка что итераторы используются вместо needless_range_loop
+    /// Тест 4: Проверка что итераторы используются вместо `needless_range_loop`
     #[test]
     fn test_iterator_instead_of_range_loop() {
         let mut array = [0; 10];
@@ -49,7 +49,7 @@ mod clippy_fixes_tests {
         assert_eq!(array[9], 9);
     }
 
-    /// Тест 5: Проверка что empty string используется вместо String::new()
+    /// Тест 5: Проверка что empty string используется вместо `String::new()`
     #[test]
     fn test_empty_string_literal() {
         let entry = LeaderboardEntry::new("", 1000);

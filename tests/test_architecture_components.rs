@@ -4,13 +4,13 @@
 //! Каждый тест соответствует конкретной архитектурной проблеме из документации.
 //!
 //! ## Группы тестов:
-//! - C1: Разделение GameState на компоненты
+//! - C1: Разделение `GameState` на компоненты
 //! - C2: Инкапсуляция render.rs
 //! - C3: Централизация констант
 //! - H1: Dependency Inversion Principle
 //! - H3: Валидация данных
 //! - H4: Инкапсуляция полей
-//! - M3: Обработка ошибок в drop()
+//! - M3: Обработка ошибок в `drop()`
 //! - SOLID: Принципы проектирования
 
 #![allow(clippy::missing_panics_doc)]
@@ -27,17 +27,17 @@ use std::path::Path;
 mod test_game_state_components {
     use super::*;
 
-    /// Проверка что GameState использует композицию компонентов.
+    /// Проверка что `GameState` использует композицию компонентов.
     ///
     /// ## Требование (C1)
-    /// GameState должен содержать компоненты (GameBoard, ScoreBoard, FigureManager,
-    /// AnimationState, GamePhase), а не прямые поля.
+    /// `GameState` должен содержать компоненты (`GameBoard`, `ScoreBoard`, `FigureManager`,
+    /// `AnimationState`, `GamePhase`), а не прямые поля.
     ///
     /// ## Проверяемые компоненты:
-    /// - GameBoard - состояние поля
-    /// - ScoreBoard - состояние очков
-    /// - GameStats - статистика игры
-    /// - RenderCache - кэш отрисовки
+    /// - `GameBoard` - состояние поля
+    /// - `ScoreBoard` - состояние очков
+    /// - `GameStats` - статистика игры
+    /// - `RenderCache` - кэш отрисовки
     #[test]
     fn test_game_state_uses_components() {
         let state_path = "src/game/state.rs";
@@ -71,8 +71,8 @@ mod test_game_state_components {
     /// Проверка что компоненты независимы.
     ///
     /// ## Требование (C1)
-    /// GameBoard не должен зависеть от ScoreBoard.
-    /// FigureManager не должен зависеть от AnimationState.
+    /// `GameBoard` не должен зависеть от `ScoreBoard`.
+    /// `FigureManager` не должен зависеть от `AnimationState`.
     #[test]
     fn test_components_independence() {
         // Проверяем GameBoard
@@ -118,10 +118,10 @@ mod test_game_state_components {
     ///
     /// ## Требование (C1)
     /// Должны существовать трейты:
-    /// - FigureAccess, FigureMutable
-    /// - AnimationAccess, AnimationMutable
-    /// - BoardReadonly, BoardMutable
-    /// - ScoreAccess, ScoreMutable
+    /// - `FigureAccess`, `FigureMutable`
+    /// - `AnimationAccess`, `AnimationMutable`
+    /// - `BoardReadonly`, `BoardMutable`
+    /// - `ScoreAccess`, `ScoreMutable`
     #[test]
     fn test_component_access_traits() {
         let access_path = "src/game/access.rs";
@@ -181,15 +181,15 @@ mod test_game_state_components {
 mod test_render_encapsulation {
     use super::*;
 
-    /// Проверка что GameView имеет методы отрисовки.
+    /// Проверка что `GameView` имеет методы отрисовки.
     ///
     /// ## Требование (C2)
-    /// GameView должен иметь методы:
-    /// - draw_field()
-    /// - draw_next_shape()
-    /// - draw_held_shape()
-    /// - draw_ui()
-    /// - draw_ghost()
+    /// `GameView` должен иметь методы:
+    /// - `draw_field()`
+    /// - `draw_next_shape()`
+    /// - `draw_held_shape()`
+    /// - `draw_ui()`
+    /// - `draw_ghost()`
     #[test]
     fn test_game_view_has_draw_methods() {
         let view_path = "src/game/view.rs";
@@ -224,11 +224,11 @@ mod test_render_encapsulation {
         println!("✅ GameView имеет все необходимые методы отрисовки");
     }
 
-    /// Проверка что render.rs делегирует отрисовку GameView.
+    /// Проверка что render.rs делегирует отрисовку `GameView`.
     ///
     /// ## Требование (C2)
-    /// render::draw() должен вызывать методы GameView,
-    /// а не напрямую отрисовывать данные GameState.
+    /// `render::draw()` должен вызывать методы `GameView`,
+    /// а не напрямую отрисовывать данные `GameState`.
     #[test]
     fn test_render_delegates_to_game_view() {
         let render_path = "src/game/render.rs";
@@ -358,8 +358,8 @@ mod test_dependency_inversion {
     /// Проверка что cycle.rs использует трейты.
     ///
     /// ## Требование (H1)
-    /// run_game_loop<T: InputReader, R: Renderer> должен использовать трейты,
-    /// а не зависеть от конкретных типов KeyReader, Canvas.
+    /// `run_game_loop`<T: `InputReader`, R: Renderer> должен использовать трейты,
+    /// а не зависеть от конкретных типов `KeyReader`, Canvas.
     #[test]
     fn test_cycle_uses_traits() {
         let cycle_path = "src/game/cycle.rs";
@@ -392,7 +392,7 @@ mod test_dependency_inversion {
     /// Проверка что можно использовать моки.
     ///
     /// ## Требование (H1)
-    /// Должна быть возможность создать мок InputReader и передать в run_game_loop.
+    /// Должна быть возможность создать мок `InputReader` и передать в `run_game_loop`.
     #[test]
     fn test_can_use_mock_input_reader() {
         // Проверяем что трейт InputReader существует и публичен
@@ -421,7 +421,7 @@ mod test_dependency_inversion {
         println!("✅ Можно использовать моки InputReader и Renderer");
     }
 
-    /// Проверка что io_traits.rs экспортируется.
+    /// Проверка что `io_traits.rs` экспортируется.
     #[test]
     fn test_io_traits_exported() {
         let lib_path = "src/lib.rs";
@@ -444,10 +444,10 @@ mod test_dependency_inversion {
 mod test_validation {
     use super::*;
 
-    /// Проверка валидации NaN в set_fall_speed.
+    /// Проверка валидации NaN в `set_fall_speed`.
     ///
     /// ## Требование (H3)
-    /// set_fall_speed(f32::NAN) не должен устанавливать NaN.
+    /// `set_fall_speed(f32::NAN)` не должен устанавливать NaN.
     #[test]
     fn test_set_fall_speed_validates_nan() {
         let state_path = "src/game/state.rs";
@@ -478,10 +478,10 @@ mod test_validation {
         println!("✅ set_fall_speed валидирует NaN");
     }
 
-    /// Проверка валидации Infinity в set_fall_speed.
+    /// Проверка валидации Infinity в `set_fall_speed`.
     ///
     /// ## Требование (H3)
-    /// set_fall_speed(f32::INFINITY) не должен устанавливать Infinity.
+    /// `set_fall_speed(f32::INFINITY)` не должен устанавливать Infinity.
     #[test]
     fn test_set_fall_speed_validates_infinity() {
         let state_path = "src/game/state.rs";
@@ -511,10 +511,10 @@ mod test_validation {
         println!("✅ set_fall_speed валидирует Infinity");
     }
 
-    /// Проверка валидации уровня в ScoreBoard.
+    /// Проверка валидации уровня в `ScoreBoard`.
     ///
     /// ## Требование (H3)
-    /// set_level(1001) должен ограничить до 1000.
+    /// `set_level(1001)` должен ограничить до 1000.
     #[test]
     fn test_scoreboard_level_validates_max() {
         let scoreboard_path = "src/game/scoreboard.rs";
@@ -584,10 +584,10 @@ mod test_validation {
 mod test_field_encapsulation {
     use super::*;
 
-    /// Проверка что поля GameState приватные.
+    /// Проверка что поля `GameState` приватные.
     ///
     /// ## Требование (H4)
-    /// Поля GameState не должны быть доступны напрямую извне модуля.
+    /// Поля `GameState` не должны быть доступны напрямую извне модуля.
     #[test]
     fn test_game_state_fields_private() {
         let state_path = "src/game/state.rs";
@@ -620,7 +620,7 @@ mod test_field_encapsulation {
         println!("✅ Поля GameState приватные");
     }
 
-    /// Проверка что GameState имеет геттеры для всех полей.
+    /// Проверка что `GameState` имеет геттеры для всех полей.
     #[test]
     fn test_arch_comp_game_state_has_getters() {
         let state_path = "src/game/state.rs";
@@ -657,10 +657,10 @@ mod test_field_encapsulation {
 mod test_canvas_drop_error_handling {
     use super::*;
 
-    /// Проверка что Canvas::drop() логирует ошибки.
+    /// Проверка что `Canvas::drop()` логирует ошибки.
     ///
     /// ## Требование (M3)
-    /// При ошибке в drop() должно быть логирование через eprintln! или log!.
+    /// При ошибке в `drop()` должно быть логирование через eprintln! или log!.
     #[test]
     fn test_canvas_drop_logs_errors() {
         let io_path = "src/io.rs";
@@ -711,7 +711,7 @@ mod test_canvas_drop_error_handling {
         println!("✅ Canvas::drop() логирует ошибки");
     }
 
-    /// Проверка что KeyReader::drop() также логирует ошибки.
+    /// Проверка что `KeyReader::drop()` также логирует ошибки.
     #[test]
     fn test_key_reader_drop_logs_errors() {
         let io_path = "src/io.rs";
@@ -806,7 +806,7 @@ mod test_no_circular_dependencies {
 mod test_module_boundaries {
     use super::*;
 
-    /// Проверка что второй дубликат test_logic_does_not_import_render.
+    /// Проверка что второй дубликат `test_logic_does_not_import_render`.
     ///
     /// ## Требование
     /// Логика не должна зависеть от отрисовки.
@@ -908,7 +908,7 @@ mod test_solid_principles {
     /// Проверка Single Responsibility Principle.
     ///
     /// ## Требование
-    /// - GameState разделён на компоненты
+    /// - `GameState` разделён на компоненты
     /// - Каждый компонент отвечает за одну задачу
     #[test]
     fn test_srp_compliance() {
@@ -990,7 +990,7 @@ mod test_solid_principles {
     /// Проверка Interface Segregation Principle.
     ///
     /// ## Требование
-    /// BoardMutable разделён на BoardBlockAccess и BoardPhysicsAccess.
+    /// `BoardMutable` разделён на `BoardBlockAccess` и `BoardPhysicsAccess`.
     #[test]
     fn test_isp_compliance() {
         let access_path = "src/game/access.rs";
@@ -1156,8 +1156,6 @@ mod test_integration {
             "Все архитектурные компоненты должны существовать: {checks_passed}/{total_checks}"
         );
 
-        println!(
-            "✅ Архитектурная целостность подтверждена: {checks_passed}/{total_checks}"
-        );
+        println!("✅ Архитектурная целостность подтверждена: {checks_passed}/{total_checks}");
     }
 }

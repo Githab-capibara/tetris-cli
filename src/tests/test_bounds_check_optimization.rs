@@ -1,12 +1,12 @@
 //! Тесты оптимизации проверок границ.
 //!
-//! Проверяют корректность check_collision_direction и производительность.
+//! Проверяют корректность `check_collision_direction` и производительность.
 
 use crate::game::GameState;
 use crate::types::Direction;
 use serial_test::serial;
 
-/// Тест 1: Проверка корректности check_collision_direction
+/// Тест 1: Проверка корректности `check_collision_direction`
 ///
 /// Проверяем, что функция корректно определяет коллизии.
 #[test]
@@ -122,7 +122,7 @@ fn test_collision_with_other_pieces() {
     );
 }
 
-/// Тест 5: Проверка использования as cast вместо try_from
+/// Тест 5: Проверка использования as cast вместо `try_from`
 ///
 /// Проверяем, что оптимизация с as cast работает корректно.
 #[test]

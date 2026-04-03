@@ -166,7 +166,7 @@ fn test_traits_are_narrow() {
     // BoardMutable - чтение и запись
     fn requires_board_mutable<B: BoardMutable>(board: &mut B) {
         let _blocks = board.get_blocks();
-        board.set_block(0, 0, 1);
+        let _ = board.set_block(0, 0, 1);
     }
 
     let mut state = GameState::new();
@@ -309,7 +309,7 @@ fn test_architecture_integrity_comprehensive() {
     let _score = state.score();
 
     let mut board = GameBoard::new();
-    board.set_block(0, 0, 1);
+    let _ = board.set_block(0, 0, 1);
 
     let mut scoreboard = ScoreBoard::new();
     scoreboard.set_score(100);

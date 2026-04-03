@@ -1,8 +1,8 @@
 //! Тесты для Drop реализаций в io.rs.
 //!
 //! Этот модуль содержит тесты для проверки исправления #7 (HIGH):
-//! - Canvas::drop() логирует ошибки
-//! - KeyReader::drop() логирует ошибки
+//! - `Canvas::drop()` логирует ошибки
+//! - `KeyReader::drop()` логирует ошибки
 //!
 //! Исправление: упрощён сброс до минимально необходимых операций с логированием ошибок
 
@@ -16,7 +16,7 @@ use std::panic;
 // MOCK TERMINAL ДЛЯ ТЕСТОВ
 // ============================================================================
 
-/// MockTerminal для тестирования KeyReader
+/// `MockTerminal` для тестирования `KeyReader`
 pub struct MockTerminal {
     raw_mode_enabled: bool,
     key_buffer: Vec<u8>,
@@ -49,7 +49,7 @@ impl Default for MockTerminal {
 // ГРУППА ТЕСТОВ: Drop реализации
 // ============================================================================
 
-/// Тест 1: Проверка что Canvas::drop() не паникует
+/// Тест 1: Проверка что `Canvas::drop()` не паникует
 ///
 /// Проверяет, что Drop реализация Canvas безопасна и не вызывает панику
 /// даже при отсутствии терминала.
@@ -69,9 +69,9 @@ fn test_canvas_drop_no_panic() {
     assert!(result.is_ok(), "Canvas::drop() не должен вызывать панику");
 }
 
-/// Тест 2: Проверка что KeyReader::drop() не паникует
+/// Тест 2: Проверка что `KeyReader::drop()` не паникует
 ///
-/// Проверяет, что Drop реализация KeyReader безопасна и не вызывает панику.
+/// Проверяет, что Drop реализация `KeyReader` безопасна и не вызывает панику.
 #[test]
 fn test_key_reader_drop_no_panic() {
     // Создаём KeyReader
@@ -91,7 +91,7 @@ fn test_key_reader_drop_no_panic() {
 
 /// Тест 3: Проверка множественных Drop вызовов
 ///
-/// Проверяет, что множественные создания и уничтожения Canvas и KeyReader
+/// Проверяет, что множественные создания и уничтожения Canvas и `KeyReader`
 /// работают корректно без утечек ресурсов.
 #[test]
 fn test_multiple_drop_calls() {
@@ -139,10 +139,10 @@ fn test_drop_on_user_panic() {
     let _ = result; // Игнорируем результат - паника могла произойти или нет
 }
 
-/// Тест 5: Проверка что Drop KeyReader работает после get_key()
+/// Тест 5: Проверка что Drop `KeyReader` работает после `get_key()`
 ///
-/// Проверяет, что ресурсы KeyReader корректно освобождаются после
-/// использования метода get_key().
+/// Проверяет, что ресурсы `KeyReader` корректно освобождаются после
+/// использования метода `get_key()`.
 #[test]
 fn test_key_reader_drop_after_get_key() {
     let drop_result = panic::catch_unwind(|| {
@@ -186,7 +186,7 @@ fn test_drop_logging_exists() {
 // ТЕСТЫ ДЛЯ ИСПРАВЛЕНИЯ АУДИТА 2026-03-31: KeyReader Drop С MOCK
 // =========================================================================
 
-/// Тест: гарантия что raw_mode отключается после Drop с MockTerminal
+/// Тест: гарантия что `raw_mode` отключается после Drop с `MockTerminal`
 #[test]
 fn test_key_reader_drop_disables_raw_mode_with_mock() {
     // Создаём MockTerminal
@@ -207,7 +207,7 @@ fn test_key_reader_drop_disables_raw_mode_with_mock() {
     // MockTerminal уничтожен, raw-режим должен быть отключен
 }
 
-/// Тест: проверка что KeyReader реализует InputReader трейт
+/// Тест: проверка что `KeyReader` реализует `InputReader` трейт
 #[test]
 fn test_key_reader_implements_input_reader() {
     // Этот тест компилируется только если KeyReader реализует InputReader
@@ -215,7 +215,7 @@ fn test_key_reader_implements_input_reader() {
     assert_input_reader::<KeyReader>();
 }
 
-/// Тест: проверка что Drop срабатывает после использования get_key()
+/// Тест: проверка что Drop срабатывает после использования `get_key()`
 #[test]
 fn test_key_reader_drop_after_multiple_get_key_calls() {
     let drop_result = panic::catch_unwind(|| {

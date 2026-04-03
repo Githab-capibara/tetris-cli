@@ -89,7 +89,7 @@ impl LeaderboardRepository {
     /// - `Err(String)` если произошла ошибка сохранения конфигурации
     ///
     /// # Errors
-    /// Возвращает ошибку если не удалось сохранить конфигурацию через confy::store()
+    /// Возвращает ошибку если не удалось сохранить конфигурацию через `confy::store()`
     pub fn save_with_backup(leaderboard: &Leaderboard, use_backup: bool) -> Result<(), String> {
         let config_name = if use_backup {
             "leaderboard_backup"

@@ -139,7 +139,7 @@ impl PathValidator {
     /// Новый экземпляр `PathValidator`
     ///
     /// # Исправление M4 (MEDIUM)
-    /// #[must_use] оставлен только на критических методах валидации.
+    /// #[`must_use`] оставлен только на критических методах валидации.
     #[allow(dead_code)] // Может быть использовано для кастомных валидаторов
     #[must_use = "Валидатор путей должен быть использован"]
     pub const fn new(max_length: usize, allowed_chars: &'static str) -> Self {
@@ -170,10 +170,10 @@ impl PathValidator {
     /// - `PathErrorKind::Symlink` - путь является символической ссылкой
     ///
     /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    /// Добавлен #[`track_caller`] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    /// Добавлен #[`must_use`] для предотвращения случайного неиспользования результата.
     #[must_use = "Результат валидации пути должен быть обработан"]
     #[track_caller]
     pub fn validate(&self, path: &Path) -> Result<(), PathError> {
@@ -218,10 +218,10 @@ impl PathValidator {
     /// Кэширует результат canonicalize для предотвращения повторных вызовов.
     ///
     /// # Исправление H9 (HIGH)
-    /// Проверка symlink выполняется ПЕРЕД canonicalize() через symlink_metadata().
+    /// Проверка symlink выполняется ПЕРЕД `canonicalize()` через `symlink_metadata()`.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// Добавлен #[must_use] для предотвращения случайного неиспользования результата.
+    /// Добавлен #[`must_use`] для предотвращения случайного неиспользования результата.
     #[must_use = "Результат валидации пути должен быть обработан"]
     #[track_caller]
     pub fn validate_all(
@@ -271,9 +271,7 @@ impl PathValidator {
         // Проверка что путь находится внутри разрешённой директории
         // Исправление H7: используем кэшированный canonical_path
         let canonical_current_dir = current_dir.canonicalize().map_err(|e| PathError {
-            message: format!(
-                "Не удалось получить canonical путь текущей директории: {e}"
-            ),
+            message: format!("Не удалось получить canonical путь текущей директории: {e}"),
             kind: PathErrorKind::InvalidPath,
         })?;
 
@@ -295,10 +293,10 @@ impl PathValidator {
     /// Возвращает `PathError` если длина пути превышает `max_length`.
     ///
     /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    /// Добавлен #[`track_caller`] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// #[must_use] оставлен только на критических методах валидации.
+    /// #[`must_use`] оставлен только на критических методах валидации.
     #[must_use = "Результат валидации длины должен быть обработан"]
     #[track_caller]
     pub fn validate_length(&self, path: &Path) -> Result<(), PathError> {
@@ -332,16 +330,16 @@ impl PathValidator {
     /// Возвращает `PathError` если путь содержит символы, не входящие в `allowed_chars`.
     ///
     /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    /// Добавлен #[`track_caller`] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// #[must_use] оставлен только на критических методах валидации.
+    /// #[`must_use`] оставлен только на критических методах валидации.
     ///
     /// # Исправление аудита 2026-03-30
     /// Добавлена проверка на null байты для предотвращения null byte injection атак.
     ///
     /// # Исправление M9 (MEDIUM)
-    /// Использует HashSet для O(1) поиска вместо O(n) линейного поиска.
+    /// Использует `HashSet` для O(1) поиска вместо O(n) линейного поиска.
     #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
@@ -366,9 +364,7 @@ impl PathValidator {
         for ch in path_str.chars() {
             if !allowed.contains(&ch) {
                 return Err(PathError {
-                    message: format!(
-                        "Запрещённый символ в пути: {path_str:?} (символ: '{ch}')"
-                    ),
+                    message: format!("Запрещённый символ в пути: {path_str:?} (символ: '{ch}')"),
                     kind: PathErrorKind::ForbiddenCharacters,
                 });
             }
@@ -389,18 +385,18 @@ impl PathValidator {
     /// Возвращает `PathError` если путь является символической ссылкой.
     ///
     /// # Исправление #18
-    /// Добавлен #[track_caller] для лучшей трассировки ошибок.
+    /// Добавлен #[`track_caller`] для лучшей трассировки ошибок.
     ///
     /// # Исправление M4 (MEDIUM)
-    /// #[must_use] оставлен только на критических методах валидации.
+    /// #[`must_use`] оставлен только на критических методах валидации.
     ///
     /// # Исправление H9 (HIGH)
-    /// Используется symlink_metadata() ПЕРЕД canonicalize() для защиты от symlink атак.
+    /// Используется `symlink_metadata()` ПЕРЕД `canonicalize()` для защиты от symlink атак.
     /// Проверка выполняется без следования по symlink.
     ///
     /// # Исправление NEW-147 (2026-04-02)
     /// - Добавлена проверка всей цепочки директорий (parent directories)
-    /// - Проверка на race conditions через metadata().is_symlink()
+    /// - Проверка на race conditions через `metadata().is_symlink()`
     /// - Блокировка symlink в родительских директориях
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
@@ -469,7 +465,8 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если путь находится вне разрешённой директории.
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[allow(clippy::unused_self)]
+    // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации директории должен быть обработан"]
     pub fn validate_within_directory(&self, path: &Path, dir: &Path) -> Result<(), PathError> {
         let canonical_path = if path.exists() {
@@ -505,7 +502,8 @@ impl PathValidator {
     /// Возвращает `PathError` если путь является абсолютным.
     #[allow(dead_code)]
     // Может быть использовано для дополнительной валидации
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[allow(clippy::unused_self)]
+    // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации абсолютного пути должен быть обработан"]
     pub fn validate_not_absolute(&self, path: &Path) -> Result<(), PathError> {
         if path.is_absolute() {
@@ -537,7 +535,8 @@ impl PathValidator {
     /// - Комбинации: `%2e%2e%2f`, `%2e%2e/`, `..%2f` и т.д.
     #[allow(dead_code)]
     // Может быть использовано для дополнительной валидации
-    #[allow(clippy::unused_self)] // Будет использоваться с конфигурируемыми параметрами
+    #[allow(clippy::unused_self)]
+    // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации path traversal должен быть обработан"]
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
         // Исправление H8: массив запрещённых паттернов для URL-encoding
@@ -876,7 +875,7 @@ mod validation_path_tests {
     // ТЕСТЫ ДЛЯ H7: ОПТИМИЗАЦИЯ validate_all() С КЭШИРОВАНИЕМ
     // =========================================================================
 
-    /// Тест H7: проверка кэширования canonicalize в validate_all()
+    /// Тест H7: проверка кэширования canonicalize в `validate_all()`
     #[test]
     fn test_fix_h7_validate_all_caches_canonicalize() {
         let validator = PathValidator::new(
@@ -908,7 +907,7 @@ mod validation_path_tests {
         }
     }
 
-    /// Тест H7: проверка обработки несуществующих файлов в validate_all()
+    /// Тест H7: проверка обработки несуществующих файлов в `validate_all()`
     #[test]
     fn test_fix_h7_validate_all_nonexistent_file() {
         let validator = PathValidator::new(
@@ -929,7 +928,7 @@ mod validation_path_tests {
         );
     }
 
-    /// Тест H7: проверка что validate_all() выполняет все проверки
+    /// Тест H7: проверка что `validate_all()` выполняет все проверки
     #[test]
     fn test_fix_h7_validate_all_performs_all_checks() {
         let validator = PathValidator::new(

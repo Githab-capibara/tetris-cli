@@ -2,9 +2,9 @@
 //!
 //! Этот модуль проверяет архитектурные ограничения проекта:
 //! - Отсутствие циклических зависимостей между модулями
-//! - Целостность GameView
+//! - Целостность `GameView`
 //! - Реализация трейтов IO
-//! - Отсутствие публичных полей GameState
+//! - Отсутствие публичных полей `GameState`
 //! - Разделение ответственности модулей
 //! - Отсутствие deprecated функций
 //! - Централизация wall kick логики
@@ -87,9 +87,9 @@ fn test_game_submodules_no_cycles() {
 // ТЕСТ 2: ЦЕЛОСТНОСТЬ GameView
 // ============================================================================
 
-/// Проверка, что GameView корректно создаётся из GameState.
+/// Проверка, что `GameView` корректно создаётся из `GameState`.
 ///
-/// GameView должен предоставлять доступ ко всем необходимым данным
+/// `GameView` должен предоставлять доступ ко всем необходимым данным
 /// для отрисовки через неизменяемые ссылки.
 #[test]
 fn test_game_view_creation() {
@@ -146,7 +146,7 @@ fn test_game_view_creation() {
     );
 }
 
-/// Проверка, что GameView корректно работает в режиме спринт.
+/// Проверка, что `GameView` корректно работает в режиме спринт.
 #[test]
 fn test_game_view_sprint_mode() {
     use crate::game::{GameState, GameView};
@@ -190,10 +190,10 @@ fn test_renderer_trait_implementation() {
     requires_renderer(&canvas); // Должно компилироваться
 }
 
-/// Проверка, что KeyReader реализует трейт InputReader.
+/// Проверка, что `KeyReader` реализует трейт `InputReader`.
 ///
-/// Этот тест должен компилироваться только если KeyReader
-/// корректно реализует все методы трейта InputReader.
+/// Этот тест должен компилироваться только если `KeyReader`
+/// корректно реализует все методы трейта `InputReader`.
 #[test]
 fn test_input_reader_trait_implementation() {
     use crate::io::KeyReader;
@@ -235,9 +235,9 @@ fn test_canvas_as_dyn_renderer() {
 // ТЕСТ 4: ОТСУТСТВИЕ ПУБЛИЧНЫХ ПОЛЕЙ GameState
 // ============================================================================
 
-/// Проверка, что основные поля GameState имеют геттеры.
+/// Проверка, что основные поля `GameState` имеют геттеры.
 ///
-/// GameState должен предоставлять публичные методы для доступа
+/// `GameState` должен предоставлять публичные методы для доступа
 /// к своим полям вместо прямого доступа к полям.
 #[test]
 fn test_game_state_getters() {
@@ -246,9 +246,9 @@ fn test_game_state_getters() {
     let state = GameState::new();
 
     // Проверка существования геттеров
-    let _score = state.score();
-    let _level = state.level();
-    let _lines = state.lines_cleared();
+    let score = state.score();
+    let level = state.level();
+    let lines = state.lines_cleared();
     let _mode = state.get_mode_trait().name();
     let _blocks = state.get_blocks();
     let _curr_shape = state.curr_shape();
@@ -258,9 +258,9 @@ fn test_game_state_getters() {
     let _fall_spd = state.fall_speed();
 
     // Проверяем, что геттеры возвращают корректные начальные значения
-    assert_eq!(_score, 0, "Начальный счёт должен быть 0");
-    assert_eq!(_level, 1, "Начальный уровень должен быть 1");
-    assert_eq!(_lines, 0, "Начальное количество линий должно быть 0");
+    assert_eq!(score, 0, "Начальный счёт должен быть 0");
+    assert_eq!(level, 1, "Начальный уровень должен быть 1");
+    assert_eq!(lines, 0, "Начальное количество линий должно быть 0");
 }
 
 /// Проверка, что геттеры возвращают мутабельные ссылки где необходимо.
@@ -292,10 +292,10 @@ fn test_game_state_mutable_getters() {
 /// Проверка, что модули не экспортируют лишнего.
 ///
 /// Каждый модуль должен экспортировать только свои публичные API:
-/// - types.rs: только типы (Direction, RotationDirection, UpdateEndState)
-/// - crypto.rs: только функции хеширования (hash, generate_salt, hmac, verify_hmac)
-/// - io.rs: Canvas и KeyReader
-/// - io_traits.rs: трейты InputReader и Renderer
+/// - types.rs: только типы (Direction, `RotationDirection`, `UpdateEndState`)
+/// - crypto.rs: только функции хеширования (hash, `generate_salt`, hmac, `verify_hmac`)
+/// - io.rs: Canvas и `KeyReader`
+/// - `io_traits.rs`: трейты `InputReader` и Renderer
 /// - game/: игровые структуры и функции
 /// - highscore: таблица лидеров
 /// - controls: конфигурация управления
@@ -358,8 +358,8 @@ fn test_arch_module_boundaries() {
 
 /// Проверка, что в коде нет вызовов deprecated функций.
 ///
-/// highscore::generate_salt() не должен вызываться напрямую.
-/// Использовать только crypto::generate_salt()
+/// `highscore::generate_salt()` не должен вызываться напрямую.
+/// Использовать только `crypto::generate_salt()`
 #[test]
 fn test_no_deprecated_calls() {
     // Этот тест проверяет, что мы используем crypto::generate_salt
@@ -404,7 +404,7 @@ fn test_crypto_functions_are_canonical() {
 
 /// Тест: Централизация wall kick логики
 ///
-/// Проверяет, что can_rotate_curr_shape делегирует логику в wall_kick модуль.
+/// Проверяет, что `can_rotate_curr_shape` делегирует логику в `wall_kick` модуль.
 #[test]
 fn test_wall_kick_logic_centralization() {
     use crate::game::logic::wall_kick::can_rotate_with_wall_kick;

@@ -1,7 +1,7 @@
 //! Тесты граничных значений и переполнения.
 //!
 //! Этот файл содержит тесты для проверки обработки граничных значений:
-//! - u128::MAX, 0, отрицательные значения
+//! - `u128::MAX`, 0, отрицательные значения
 //! - Переполнение очков, комбо, линий
 //! - Обработка ошибок Result, Option
 //!
@@ -29,7 +29,7 @@ fn test_score_zero_value() {
     assert!(score.is_zero(), "Score должен быть нулевым");
 }
 
-/// Тест T2: Score с максимальным значением (u128::MAX)
+/// Тест T2: Score с максимальным значением (`u128::MAX`)
 #[test]
 fn test_score_max_value() {
     let score = Score::with_value(u128::MAX);
@@ -41,7 +41,7 @@ fn test_score_max_value() {
     assert!(!score.is_zero(), "Score с MAX не должен быть нулевым");
 }
 
-/// Тест T3: Score saturating_add при переполнении
+/// Тест T3: Score `saturating_add` при переполнении
 #[test]
 fn test_score_saturating_overflow() {
     let mut score = Score::with_value(u128::MAX);
@@ -63,7 +63,7 @@ fn test_score_saturating_overflow() {
     );
 }
 
-/// Тест T4: Score saturating_mul при переполнении
+/// Тест T4: Score `saturating_mul` при переполнении
 #[test]
 fn test_score_saturating_multiply() {
     let mut score = Score::with_value(u128::MAX / 2 + 1);
@@ -125,7 +125,7 @@ fn test_level_zero_becomes_minimum() {
     assert_eq!(level.value(), 1, "Level с 0 должен стать 1 (минимум)");
 }
 
-/// Тест T9: Level с u32::MAX
+/// Тест T9: Level с `u32::MAX`
 #[test]
 fn test_level_max_value() {
     let level = Level::with_value(u32::MAX);
@@ -153,7 +153,7 @@ fn test_level_increment_to_overflow() {
     assert_eq!(level.value(), u32::MAX, "Level должен остаться u32::MAX");
 }
 
-/// Тест T11: Level increment_by с переполнением
+/// Тест T11: Level `increment_by` с переполнением
 #[test]
 fn test_level_increment_by_overflow() {
     let mut level = Level::with_value(u32::MAX);
@@ -185,14 +185,14 @@ fn test_level_reset() {
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ ЛИНИЙ (LinesCount)
 // ============================================================================
 
-/// Тест T13: LinesCount с нулевым значением
+/// Тест T13: `LinesCount` с нулевым значением
 #[test]
 fn test_lines_count_zero() {
     let lines = LinesCount::new();
     assert_eq!(lines.value(), 0, "Новый LinesCount должен быть 0");
 }
 
-/// Тест T14: LinesCount с u32::MAX
+/// Тест T14: `LinesCount` с `u32::MAX`
 #[test]
 fn test_lines_count_max_value() {
     let lines = LinesCount::with_value(u32::MAX);
@@ -203,7 +203,7 @@ fn test_lines_count_max_value() {
     );
 }
 
-/// Тест T15: LinesCount saturating_add при переполнении
+/// Тест T15: `LinesCount` `saturating_add` при переполнении
 #[test]
 fn test_lines_count_saturating_overflow() {
     let mut lines = LinesCount::with_value(u32::MAX);
@@ -225,7 +225,7 @@ fn test_lines_count_saturating_overflow() {
     );
 }
 
-/// Тест T16: LinesCount increment до переполнения
+/// Тест T16: `LinesCount` increment до переполнения
 #[test]
 fn test_lines_count_increment_overflow() {
     let mut lines = LinesCount::with_value(u32::MAX);
@@ -242,7 +242,7 @@ fn test_lines_count_increment_overflow() {
     );
 }
 
-/// Тест T17: LinesCount reached с граничными значениями
+/// Тест T17: `LinesCount` reached с граничными значениями
 #[test]
 fn test_lines_count_reached_boundary() {
     let lines = LinesCount::with_value(100);
@@ -256,7 +256,7 @@ fn test_lines_count_reached_boundary() {
     );
 }
 
-/// Тест T18: LinesCount reset
+/// Тест T18: `LinesCount` reset
 #[test]
 fn test_lines_count_reset() {
     let mut lines = LinesCount::with_value(150);
@@ -268,7 +268,7 @@ fn test_lines_count_reset() {
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ GameState
 // ============================================================================
 
-/// Тест T19: GameState начальные значения
+/// Тест T19: `GameState` начальные значения
 #[test]
 fn test_game_state_initial_values() {
     let state = GameState::new();
@@ -282,7 +282,7 @@ fn test_game_state_initial_values() {
     );
 }
 
-/// Тест T20: GameState установка максимального счёта
+/// Тест T20: `GameState` установка максимального счёта
 #[test]
 fn test_game_state_max_score() {
     let mut state = GameState::new();
@@ -290,7 +290,7 @@ fn test_game_state_max_score() {
     assert_eq!(state.score(), u128::MAX, "Счёт должен быть u128::MAX");
 }
 
-/// Тест T21: GameState переполнение счёта через set_score
+/// Тест T21: `GameState` переполнение счёта через `set_score`
 #[test]
 fn test_game_state_score_overflow_protection() {
     use crate::game::scoring::lines::MAX_SCORE;
@@ -313,7 +313,7 @@ fn test_game_state_score_overflow_protection() {
     }
 }
 
-/// Тест T22: GameState отрицательные значения (не должны быть возможны)
+/// Тест T22: `GameState` отрицательные значения (не должны быть возможны)
 #[test]
 #[allow(clippy::absurd_extreme_comparisons)] // Тест проверяет что u128 не может быть отрицательным
 fn test_game_state_no_negative_values() {
@@ -332,7 +332,7 @@ fn test_game_state_no_negative_values() {
 // ТЕСТЫ ОБРАБОТКИ ОШИБОК (Result, Option)
 // ============================================================================
 
-/// Тест T23: LeaderboardEntry::score() возвращает Option
+/// Тест T23: `LeaderboardEntry::score()` возвращает Option
 #[test]
 fn test_leaderboard_entry_score_option() {
     let entry = LeaderboardEntry::new("Player", 1000);
@@ -345,7 +345,7 @@ fn test_leaderboard_entry_score_option() {
     assert_eq!(score, Some(1000), "Счёт должен быть 1000");
 }
 
-/// Тест T24: LeaderboardEntry::score() возвращает Option
+/// Тест T24: `LeaderboardEntry::score()` возвращает Option
 #[test]
 fn test_leaderboard_entry_score_option_handling() {
     let entry = LeaderboardEntry::new("Player", 2000);
@@ -355,7 +355,7 @@ fn test_leaderboard_entry_score_option_handling() {
     assert_eq!(score, Some(2000), "Счёт должен быть 2000");
 }
 
-/// Тест T25: LeaderboardEntry с невалидным хэшем
+/// Тест T25: `LeaderboardEntry` с невалидным хэшем
 #[test]
 fn test_leaderboard_entry_invalid_hash() {
     let entry = LeaderboardEntry::new("Player", 1000);
@@ -369,7 +369,7 @@ fn test_leaderboard_entry_invalid_hash() {
     assert_eq!(score, Some(1000), "Счёт должен быть 1000");
 }
 
-/// Тест T26: Leaderboard::add_score() возвращает bool
+/// Тест T26: `Leaderboard::add_score()` возвращает bool
 #[test]
 fn test_leaderboard_add_score_result() {
     let mut leaderboard = Leaderboard::default();
@@ -391,7 +391,7 @@ fn test_leaderboard_add_score_result() {
     );
 }
 
-/// Тест T27: Leaderboard::get_entries() возвращает Vec
+/// Тест T27: `Leaderboard::get_entries()` возвращает Vec
 #[test]
 fn test_leaderboard_get_entries() {
     let leaderboard = Leaderboard::default();
@@ -408,7 +408,7 @@ fn test_leaderboard_get_entries() {
     assert_eq!(entries.len(), 1, "Leaderboard должен содержать 1 запись");
 }
 
-/// Тест T28: Leaderboard::get_best_score() возвращает u128
+/// Тест T28: `Leaderboard::get_best_score()` возвращает u128
 #[test]
 fn test_leaderboard_get_best_score() {
     let leaderboard = Leaderboard::default();
@@ -471,7 +471,10 @@ fn test_combo_bonus_at_high_combo() {
 
     // Бонус за 100 комбо
     let combo_hundred_bonus = COMBO_BONUS * 99; // (100 - 1) = 99
-    assert_eq!(combo_hundred_bonus, 4950, "Бонус за 100 комбо должен быть 4950");
+    assert_eq!(
+        combo_hundred_bonus, 4950,
+        "Бонус за 100 комбо должен быть 4950"
+    );
 }
 
 // ============================================================================

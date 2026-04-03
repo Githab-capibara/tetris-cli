@@ -1,8 +1,8 @@
 //! Компонент состояния анимаций.
 //!
 //! # Ответственность
-//! - Управление маской анимируемых строк (animating_rows_mask)
-//! - Управление флагом Hard Drop (is_hard_dropping)
+//! - Управление маской анимируемых строк (`animating_rows_mask`)
+//! - Управление флагом Hard Drop (`is_hard_dropping`)
 //!
 //! ## Архитектурные заметки
 //! Выделено из `GameState` для соблюдения Single Responsibility Principle.

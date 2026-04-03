@@ -30,14 +30,14 @@ use crate::types::Direction;
 /// # Исправление ISSUE-076
 /// Добавлен явный тип `Range<i16>` для читаемости.
 /// Используется для проверки границ в проверке коллизий.
-/// Потеря точности допустима: GRID_WIDTH константа (10)
+/// Потеря точности допустима: `GRID_WIDTH` константа (10)
 #[allow(clippy::cast_possible_wrap)]
 const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 
 /// Проверить валидность позиции для одного блока (границы и столкновения).
 ///
 /// # Аргументы
-/// * `board` - объект с доступом только на чтение к полю (реализует трейт BoardReadonly)
+/// * `board` - объект с доступом только на чтение к полю (реализует трейт `BoardReadonly`)
 /// * `check_x` - координата X блока для проверки (относительно поля)
 /// * `check_y` - координата Y блока для проверки (относительно поля)
 /// * `ignore_above_field` - игнорировать блоки выше поля (Y < 0), полезно для вращения
@@ -56,7 +56,7 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// - `check_rotation_collision()` - проверка вращения
 ///
 /// # Исправление C2
-/// Используется Range::contains для проверки границ вместо множественных сравнений.
+/// Используется `Range::contains` для проверки границ вместо множественных сравнений.
 ///
 /// # Исправление аудита 2026-03-31 (H1)
 /// Функция переименована из `has_collision` в `is_position_valid` с прямой логикой:
@@ -123,7 +123,7 @@ fn is_position_valid<T: BoardReadonly>(
 ///
 /// # Исправление M22 (MEDIUM)
 /// Используется `.any()` с ранним выходом для оптимизации проверки коллизий.
-/// Вместо цикла с return false используется итератор с .any() для раннего прерывания.
+/// Вместо цикла с return false используется итератор с .`any()` для раннего прерывания.
 fn check_collision_direction<T: BoardReadonly>(
     board: &T,
     coords: &[(i16, i16)],
@@ -234,8 +234,8 @@ pub fn check_rotation_collision<T: BoardReadonly>(
 /// для централизации всей логики wall kick в одном модуле.
 ///
 /// ## Архитектурные заметки
-/// Эта функция является обёрткой для wall_kick::can_rotate_with_wall_kick
-/// и может быть удалена в будущем при прямом использовании wall_kick модуля.
+/// Эта функция является обёрткой для `wall_kick::can_rotate_with_wall_kick`
+/// и может быть удалена в будущем при прямом использовании `wall_kick` модуля.
 #[must_use = "Результат проверки вращения должен быть использован"]
 pub fn can_rotate_curr_shape(state: &GameState, dir: crate::types::RotationDirection) -> bool {
     // Исправление В2: полное делегирование в wall_kick модуль для устранения дублирования
@@ -269,7 +269,7 @@ mod collision_tests {
     // ТЕСТЫ ДЛЯ C2: ПРОВЕРКА КОЛЛИЗИЙ С VALID_X_RANGE - ГРАНИЦЫ
     // ========================================================================
 
-    /// Тест C2: проверка границы VALID_X_RANGE - левая граница
+    /// Тест C2: проверка границы `VALID_X_RANGE` - левая граница
     #[test]
     fn test_fix_c2_collision_left_boundary() {
         let state = GameState::new();
@@ -285,7 +285,7 @@ mod collision_tests {
         );
     }
 
-    /// Тест C2: проверка границы VALID_X_RANGE - правая граница
+    /// Тест C2: проверка границы `VALID_X_RANGE` - правая граница
     #[test]
     fn test_fix_c2_collision_right_boundary() {
         let state = GameState::new();
@@ -301,7 +301,7 @@ mod collision_tests {
         );
     }
 
-    /// Тест C2: проверка VALID_X_RANGE для отрицательных координат
+    /// Тест C2: проверка `VALID_X_RANGE` для отрицательных координат
     #[test]
     fn test_fix_c2_collision_negative_x() {
         let state = GameState::new();
@@ -317,7 +317,7 @@ mod collision_tests {
         );
     }
 
-    /// Тест C2: проверка VALID_X_RANGE за пределами поля
+    /// Тест C2: проверка `VALID_X_RANGE` за пределами поля
     #[test]
     fn test_fix_c2_collision_out_of_bounds_x() {
         let state = GameState::new();
@@ -333,7 +333,7 @@ mod collision_tests {
         );
     }
 
-    /// Тест C2: проверка is_position_valid с VALID_X_RANGE.contains()
+    /// Тест C2: проверка `is_position_valid` с `VALID_X_RANGE.contains()`
     #[test]
     fn test_fix_c2_is_position_valid_range_contains() {
         use crate::io::GRID_WIDTH;
@@ -353,7 +353,7 @@ mod collision_tests {
     // ТЕСТЫ ДЛЯ M22: can_move_curr_shape_direction С .any() - ОПТИМИЗАЦИЯ
     // ========================================================================
 
-    /// Тест M22: проверка что can_move_curr_shape_direction использует .any()
+    /// Тест M22: проверка что `can_move_curr_shape_direction` использует .`any()`
     /// Проверяет корректность работы функции с ранним выходом
     #[test]
     fn test_fix_m22_can_move_with_early_exit() {

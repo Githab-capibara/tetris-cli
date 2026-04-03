@@ -12,7 +12,7 @@ use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 
 /// Тест 1: Проверка раннего выхода при пустой ячейке
 ///
-/// find_full_rows должен делать ранний выход при обнаружении пустой ячейки.
+/// `find_full_rows` должен делать ранний выход при обнаружении пустой ячейки.
 #[test]
 fn test_find_full_rows_early_exit() {
     let state = GameState::new();
@@ -32,7 +32,7 @@ fn test_find_full_rows_early_exit() {
 
 /// Тест 2: Проверка корректности удаления линий
 ///
-/// Проверяем, что remove_rows корректно удаляет линии.
+/// Проверяем, что `remove_rows` корректно удаляет линии.
 #[test]
 fn test_remove_rows_correctness() {
     use crate::game::scoring::remove_rows;
@@ -108,9 +108,9 @@ fn test_remove_multiple_rows() {
     }
 }
 
-/// Тест 5: Проверка .all() с ранним выходом
+/// Тест 5: Проверка .`all()` с ранним выходом
 ///
-/// Проверяем, что .all() делает ранний выход при пустой ячейке.
+/// Проверяем, что .`all()` делает ранний выход при пустой ячейке.
 #[test]
 fn test_all_early_exit() {
     use crate::io::GRID_WIDTH;
@@ -200,9 +200,9 @@ fn test_top_rows_filled_empty() {
     }
 }
 
-/// Тест 8: Проверка валидности rows_mask
+/// Тест 8: Проверка валидности `rows_mask`
 ///
-/// Проверяем, что rows_mask не выходит за пределы поля.
+/// Проверяем, что `rows_mask` не выходит за пределы поля.
 #[test]
 fn test_rows_mask_validity() {
     use crate::io::GRID_HEIGHT;

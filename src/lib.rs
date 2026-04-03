@@ -1,3 +1,12 @@
+// Cast-операции намеренны и безопасны в контексте игры (координаты, очки, FPS).
+// Подробная валидация границ выполняется в логике игры.
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_possible_wrap)]
+#![allow(clippy::cast_lossless)]
+#![allow(clippy::unnecessary_cast)]
+
 //! # Tetris CLI — Классическая игра Тетрис для терминала
 //!
 //! ## 📖 Описание проекта

@@ -69,7 +69,7 @@ fn test_game_board_is_used() {
     assert_eq!(board.get_block(0, 0), Some(-1));
     assert_eq!(board.get_filled_lines_mask(), 0);
 
-    board.set_block(5, 10, 1);
+    let _ = board.set_block(5, 10, 1);
     assert_eq!(board.get_block(5, 10), Some(1));
 
     // GameBoard используется - не мёртвый код

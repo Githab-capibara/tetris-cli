@@ -50,10 +50,10 @@ fn test_c1_validate_hmac_key_rejects_empty() {
     );
 }
 
-/// Тест C2: Документирование UTF-8 ограничения KeyReader
+/// Тест C2: Документирование UTF-8 ограничения `KeyReader`
 ///
 /// Проверяет что `KeyReader` корректно обрабатывает ASCII символы.
-/// KeyReader ограничен ASCII для предотвращения проблем с UTF-8.
+/// `KeyReader` ограничен ASCII для предотвращения проблем с UTF-8.
 #[test]
 fn test_c2_key_reader_handles_ascii_correctly() {
     use tetris_cli::io::KeyReader;
@@ -116,9 +116,9 @@ fn test_c3_toctou_documentation_has_key_methods() {
 // HIGH ПРОБЛЕМЫ (H1-H10)
 // ============================================================================
 
-/// Тест H1: Замена format!() на .to_string() в src/game/state.rs
+/// Тест H1: Замена format!() на .`to_string()` в src/game/state.rs
 ///
-/// Проверяет что код использует .to_string() вместо format!() где это возможно.
+/// Проверяет что код использует .`to_string()` вместо format!() где это возможно.
 #[test]
 fn test_h1_to_string_instead_of_format_in_state() {
     use tetris_cli::game::state::GameState;
@@ -150,9 +150,9 @@ fn test_h1_to_string_instead_of_format_in_state() {
     );
 }
 
-/// Тест H2: Замена map_or() на is_none_or() в collision.rs
+/// Тест H2: Замена `map_or()` на `is_none_or()` в collision.rs
 ///
-/// Проверяет что используется is_none_or() для проверки опциональных значений.
+/// Проверяет что используется `is_none_or()` для проверки опциональных значений.
 #[test]
 fn test_h2_is_none_or_in_collision() {
     use tetris_cli::game::logic::collision::can_move_curr_shape_direction;
@@ -206,9 +206,9 @@ fn test_h3_ufcs_instead_of_closure_in_leaderboard() {
     }
 }
 
-/// Тест H4: Замена sort_by на sort_by_key в leaderboard.rs
+/// Тест H4: Замена `sort_by` на `sort_by_key` в leaderboard.rs
 ///
-/// Проверяет что используется sort_by_key() для сортировки рекордов.
+/// Проверяет что используется `sort_by_key()` для сортировки рекордов.
 #[test]
 fn test_h4_sort_by_key_in_leaderboard() {
     use tetris_cli::highscore::leaderboard::LeaderboardEntry;
@@ -311,9 +311,9 @@ fn test_h8_forbidden_url_encoding_patterns() {
     );
 }
 
-/// Тест H9: Метод compute_signature() в controls.rs
+/// Тест H9: Метод `compute_signature()` в controls.rs
 ///
-/// Проверяет наличие и работу метода compute_signature().
+/// Проверяет наличие и работу метода `compute_signature()`.
 #[test]
 fn test_h9_compute_signature_method_exists() {
     use tetris_cli::config::keys::get_controls_hmac_key;
@@ -394,7 +394,7 @@ fn test_h10_consolidated_config_load_methods() {
 
 /// Тест M1: Отсутствие избыточных ignore примеров в lib.rs
 ///
-/// Проверяет что документация не содержит избыточных #![allow(dead_code)].
+/// Проверяет что документация не содержит избыточных #![`allow(dead_code)`].
 #[test]
 fn test_m1_no_redundant_ignore_examples_in_lib() {
     // Этот тест проверяет что код компилируется без предупреждений
@@ -415,7 +415,7 @@ fn test_m1_no_redundant_ignore_examples_in_lib() {
 
 /// Тест M3: Упрощённый Drop в canvas.rs
 ///
-/// Проверяет что Drop реализация не использует catch_unwind.
+/// Проверяет что Drop реализация не использует `catch_unwind`.
 #[test]
 fn test_m3_simplified_canvas_drop() {
     use tetris_cli::io::Canvas;
@@ -431,9 +431,9 @@ fn test_m3_simplified_canvas_drop() {
     // Drop не паниковал - тест проходит
 }
 
-/// Тест M4: #[must_use] только на критических методах
+/// Тест M4: #[`must_use`] только на критических методах
 ///
-/// Проверяет что #[must_use] атрибут используется корректно.
+/// Проверяет что #[`must_use`] атрибут используется корректно.
 #[test]
 fn test_m4_must_use_only_on_critical_methods() {
     use tetris_cli::crypto::{generate_salt, hash, hmac_sha256};
@@ -451,7 +451,7 @@ fn test_m4_must_use_only_on_critical_methods() {
     // Код компилируется - тест проходит
 }
 
-/// Тест M5: Мёртвый код помечен #[allow(dead_code)]
+/// Тест M5: Мёртвый код помечен #[`allow(dead_code)`]
 ///
 /// Проверяет что неиспользуемый код помечен атрибутом.
 #[test]
@@ -475,9 +475,9 @@ fn test_m5_dead_code_marked_with_allow_attribute() {
     );
 }
 
-/// Тест M7: sanitize.rs удалён и используется validation::name
+/// Тест M7: sanitize.rs удалён и используется `validation::name`
 ///
-/// Проверяет что файл sanitize.rs не существует и используется validation::name.
+/// Проверяет что файл sanitize.rs не существует и используется `validation::name`.
 #[test]
 fn test_m7_sanitize_removed_uses_validation_name() {
     use tetris_cli::validation::name::{is_valid_name_char, sanitize_player_name};
@@ -500,9 +500,9 @@ fn test_m7_sanitize_removed_uses_validation_name() {
     // Модуль доступен - тест проходит
 }
 
-/// Тест M10: Оптимизация sanitize_player_name() в один проход
+/// Тест M10: Оптимизация `sanitize_player_name()` в один проход
 ///
-/// Проверяет что sanitize_player_name() работает за один проход.
+/// Проверяет что `sanitize_player_name()` работает за один проход.
 #[test]
 fn test_m10_sanitize_player_name_single_pass() {
     use tetris_cli::validation::name::sanitize_player_name;
@@ -540,9 +540,9 @@ fn test_m10_sanitize_player_name_single_pass() {
 // LOW ПРОБЛЕМЫ (L1, L3, L4)
 // ============================================================================
 
-/// Тест L1: Наличие модуля key_codes в constants.rs
+/// Тест L1: Наличие модуля `key_codes` в constants.rs
 ///
-/// Проверяет что константы клавиш сгруппированы в модуле key_codes.
+/// Проверяет что константы клавиш сгруппированы в модуле `key_codes`.
 #[test]
 fn test_l1_key_codes_module_exists() {
     use tetris_cli::constants::key_codes;

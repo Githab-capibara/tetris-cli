@@ -16,7 +16,7 @@
 #![allow(clippy::redundant_closure_for_method_calls)]
 #![allow(clippy::items_after_statements)]
 
-use crate::game::scoring::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess, ScoringState};
+use crate::game::scoring::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess};
 use crate::game::state::GameState;
 
 // ============================================================================

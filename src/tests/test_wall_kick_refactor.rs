@@ -5,7 +5,7 @@
 use crate::game::GameState;
 use crate::types::RotationDirection;
 
-/// Тест 1: Проверка, что can_rotate_curr_shape работает
+/// Тест 1: Проверка, что `can_rotate_curr_shape` работает
 ///
 /// Проверяем базовую функцию проверки вращения.
 #[test]
@@ -23,7 +23,7 @@ fn test_can_rotate_curr_shape_basic() {
     );
 }
 
-/// Тест 2: Проверка rotate_with_wall_kick
+/// Тест 2: Проверка `rotate_with_wall_kick`
 ///
 /// Проверяем функцию вращения с wall kick.
 #[test]
@@ -77,7 +77,7 @@ fn test_wall_kick_refactor_at_wall() {
 
 /// Тест 4: Проверка, что логика wall kick едина
 ///
-/// Проверяем, что can_rotate_curr_shape и rotate_with_wall_kick
+/// Проверяем, что `can_rotate_curr_shape` и `rotate_with_wall_kick`
 /// используют единую логику.
 #[test]
 fn test_wall_kick_logic_unity() {
@@ -98,7 +98,7 @@ fn test_wall_kick_logic_unity() {
 
 /// Тест 5: Проверка wall kick таблиц смещений
 ///
-/// Проверяем, что таблица смещений WALL_KICK_OFFSETS корректна.
+/// Проверяем, что таблица смещений `WALL_KICK_OFFSETS` корректна.
 #[test]
 fn test_wall_kick_offsets_table() {
     use crate::game::logic::wall_kick::WALL_KICK_OFFSETS;
@@ -154,8 +154,8 @@ fn test_wall_kick_all_shapes() {
 
 /// Тест 7: Проверка, что нет дублирования логики
 ///
-/// Проверяем, что try_rotation_with_kicks вызывается из can_rotate_curr_shape
-/// и rotate_with_wall_kick.
+/// Проверяем, что `try_rotation_with_kicks` вызывается из `can_rotate_curr_shape`
+/// и `rotate_with_wall_kick`.
 #[test]
 fn test_no_logic_duplication() {
     let mut state = GameState::new();

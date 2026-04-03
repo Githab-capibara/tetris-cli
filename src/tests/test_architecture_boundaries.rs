@@ -252,7 +252,7 @@ fn test_validation_is_autonomous() {
 /// - Соблюдение Single Responsibility Principle
 ///
 /// # Исправление ISSUE-043
-/// HmacValidator удалён - используем напрямую hmac_sha256/verify_hmac_sha256.
+/// `HmacValidator` удалён - используем напрямую `hmac_sha256/verify_hmac_sha256`.
 #[test]
 fn test_crypto_is_autonomous() {
     use crate::crypto::{generate_salt, hash, hmac_sha256, verify_hmac_sha256};

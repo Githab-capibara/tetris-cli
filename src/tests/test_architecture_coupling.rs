@@ -24,7 +24,7 @@ use crate::game::state::GameState;
 /// Тест что `scoring/points.rs` НЕ имеет прямого доступа к полям `GameState`.
 ///
 /// # Архитектурные заметки
-/// `scoring/points.rs` должен использовать публичные методы GameState
+/// `scoring/points.rs` должен использовать публичные методы `GameState`
 /// вместо прямого доступа к приватным полям.
 #[test]
 fn test_scoring_points_no_direct_access_to_gamestate_fields() {
@@ -72,7 +72,7 @@ fn test_scoring_points_uses_encapsulation() {
 /// Тест что `scoring/lines.rs` использует только публичные методы.
 ///
 /// # Архитектурные заметки
-/// `scoring/lines.rs` должен использовать публичные методы GameState
+/// `scoring/lines.rs` должен использовать публичные методы `GameState`
 /// для доступа к игровому полю и изменения состояния.
 #[test]
 fn test_scoring_lines_uses_public_methods_only() {
@@ -273,7 +273,7 @@ fn test_internal_logic_encapsulated() {
     // check_game_over_condition() // Не доступна
 }
 
-/// Тест что поля GameState приватные.
+/// Тест что поля `GameState` приватные.
 #[test]
 fn test_gamestate_fields_are_private() {
     // Поля GameState приватные:

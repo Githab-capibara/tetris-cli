@@ -13,9 +13,9 @@
 use crate::game::{GameMode, GameState};
 use crate::types::{Direction, RotationDirection};
 
-/// Тест 1: Проверка совместной работы GameStats и констант
+/// Тест 1: Проверка совместной работы `GameStats` и констант
 ///
-/// Проверяем, что GameStats и константы работают вместе.
+/// Проверяем, что `GameStats` и константы работают вместе.
 #[test]
 fn test_game_stats_and_constants_integration() {
     use crate::constants::{COMBO_BONUS, LINE_SCORES};
@@ -45,7 +45,7 @@ fn test_game_stats_and_constants_integration() {
     );
 }
 
-/// Тест 2: Проверка совместной работы Hard Drop и флага is_hard_dropping
+/// Тест 2: Проверка совместной работы Hard Drop и флага `is_hard_dropping`
 ///
 /// Проверяем, что Hard Drop и флаг работают вместе.
 #[test]
@@ -73,9 +73,9 @@ fn test_hard_drop_and_flag_integration() {
     assert!(state.score() > 0, "Очки за Hard Drop должны быть начислены");
 }
 
-/// Тест 3: Проверка совместной работы Direction::Down и Soft Drop
+/// Тест 3: Проверка совместной работы `Direction::Down` и Soft Drop
 ///
-/// Проверяем, что Direction::Down и Soft Drop работают вместе.
+/// Проверяем, что `Direction::Down` и Soft Drop работают вместе.
 #[test]
 fn test_direction_down_and_soft_drop_integration() {
     use crate::game::scoring::handle_soft_drop;
@@ -125,7 +125,7 @@ fn test_wall_kick_and_rotation_integration() {
 
 /// Тест 5: Проверка совместной работы sanitize и Unicode валидации
 ///
-/// Проверяем, что sanitize_player_name и Unicode валидация работают вместе.
+/// Проверяем, что `sanitize_player_name` и Unicode валидация работают вместе.
 #[test]
 fn test_sanitize_and_unicode_validation_integration() {
     use crate::highscore::leaderboard::LeaderboardEntry;
@@ -221,7 +221,7 @@ fn test_bounds_check_and_collision_integration() {
     );
 }
 
-/// Тест 8: Проверка совместной работы find_full_rows и remove_rows
+/// Тест 8: Проверка совместной работы `find_full_rows` и `remove_rows`
 ///
 /// Проверяем, что поиск и удаление линий работают вместе.
 #[test]
@@ -393,9 +393,9 @@ fn test_canvas_functions() {
     );
 }
 
-/// Тест 13: Проверка исправления О2 - отсутствие clone() на Copy типе
+/// Тест 13: Проверка исправления О2 - отсутствие `clone()` на Copy типе
 ///
-/// Проверяет, что Tetromino копируется через присваивание, а не через clone().
+/// Проверяет, что Tetromino копируется через присваивание, а не через `clone()`.
 #[test]
 fn test_tetromino_copy_semantics() {
     use crate::tetromino::{ShapeType, Tetromino};
@@ -439,7 +439,7 @@ fn test_module_order_lines() {
 
 /// Тест 15: Проверка обновления состояния игры
 ///
-/// Проверяет, что handle_landing работает корректно.
+/// Проверяет, что `handle_landing` работает корректно.
 #[test]
 fn test_handle_landing() {
     use crate::game::scoring::handle_landing;
@@ -457,7 +457,7 @@ fn test_handle_landing() {
 
 /// Тест 16: Проверка исправления Ч1 - отсутствие избыточных TODO
 ///
-/// Проверяет, что GameState работает корректно без избыточных TODO.
+/// Проверяет, что `GameState` работает корректно без избыточных TODO.
 #[test]
 fn test_state_no_redundant_todos() {
     use crate::game::GameState;
@@ -559,7 +559,7 @@ fn test_score_overflow_protection_integration() {
     assert_eq!(max_value.saturating_add(1), u128::MAX);
 }
 
-/// Тест 20: Интеграционный тест валидации fall_speed и land_timer
+/// Тест 20: Интеграционный тест валидации `fall_speed` и `land_timer`
 ///
 /// Проверяет что валидация работает корректно.
 #[test]
@@ -641,7 +641,7 @@ fn test_controls_toctou_protection_integration() {
 ///
 /// Проверяет совместную работу всех новых исправлений:
 /// - Защита от переполнения счёта
-/// - Валидация fall_speed и land_timer
+/// - Валидация `fall_speed` и `land_timer`
 /// - TOCTOU защита в controls.rs
 #[test]
 fn test_all_new_fixes_comprehensive_integration() {
@@ -701,7 +701,7 @@ fn test_no_panic_at_extreme_values_integration() {
 
     // 2. Экстремальные значения fall_speed не вызывают паник
     let mut state = GameState::new();
-    let extreme_values_f32 = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 0.0, 100000.0];
+    let extreme_values_f32 = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 0.0, 100_000.0];
 
     for &value in &extreme_values_f32 {
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -715,7 +715,7 @@ fn test_no_panic_at_extreme_values_integration() {
     }
 
     // 3. Экстремальные значения land_timer не вызывают паник
-    let extreme_values_f64 = [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, 100000.0];
+    let extreme_values_f64 = [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, 100_000.0];
 
     for &value in &extreme_values_f64 {
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

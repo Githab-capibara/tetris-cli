@@ -372,7 +372,7 @@ mod tests {
     use std::fs::{self, File};
     use std::io::Write;
 
-    /// Тест для check_config_file_size() с файлом больше 1MB
+    /// Тест для `check_config_file_size()` с файлом больше 1MB
     /// Проверяет, что функция возвращает ошибку для файла > 1MB
     #[test]
     fn test_check_config_file_size_too_large() {
@@ -406,7 +406,7 @@ mod tests {
         let _ = fs::remove_file(&test_path);
     }
 
-    /// Тест для check_config_file_size() с файлом меньше 1MB
+    /// Тест для `check_config_file_size()` с файлом меньше 1MB
     /// Проверяет, что функция возвращает Ok для файла < 1MB
     #[test]
     fn test_check_config_file_size_ok() {
@@ -431,7 +431,7 @@ mod tests {
         let _ = fs::remove_file(&test_path);
     }
 
-    /// Тест для check_config_file_size() с несуществующим файлом
+    /// Тест для `check_config_file_size()` с несуществующим файлом
     /// Проверяет, что функция возвращает Ok для несуществующего файла
     #[test]
     fn test_check_config_file_size_not_found() {

@@ -1,6 +1,6 @@
-//! Тесты импортов констант из crate::constants.
+//! Тесты импортов констант из `crate::constants`.
 //!
-//! Проверяют, что все константы доступны из crate::constants и имеют корректные значения.
+//! Проверяют, что все константы доступны из `crate::constants` и имеют корректные значения.
 
 use crate::constants::{
     ANIMATION_FRAME_SKIP, FPS, HARD_DROP_ANIM_INTERVAL_MS, HARD_DROP_POINTS, INITIAL_FALL_SPD,
@@ -9,7 +9,7 @@ use crate::constants::{
     SOFT_DROP_POINTS, SPD_INC, SPRINT_LINES,
 };
 
-/// Тест 1: Проверка LINE_SCORES
+/// Тест 1: Проверка `LINE_SCORES`
 ///
 /// Проверяем таблицу очков за очистку линий.
 #[test]
@@ -37,7 +37,7 @@ fn test_line_scores_constant() {
     );
 }
 
-/// Тест 2: Проверка INITIAL_FALL_SPD
+/// Тест 2: Проверка `INITIAL_FALL_SPD`
 ///
 /// Проверяем начальную скорость падения фигур.
 #[test]
@@ -48,7 +48,7 @@ fn test_initial_fall_spd_constant() {
     );
 }
 
-/// Тест 3: Проверка MAX_FALL_SPEED
+/// Тест 3: Проверка `MAX_FALL_SPEED`
 ///
 /// Проверяем максимальную скорость падения для защиты от переполнения.
 #[test]
@@ -68,7 +68,7 @@ fn test_fps_constant() {
     assert_eq!(FPS, 60, "FPS должен быть 60");
 }
 
-/// Тест 5: Проверка LAND_TIME_DELAY_S
+/// Тест 5: Проверка `LAND_TIME_DELAY_S`
 ///
 /// Проверяем задержку приземления фигуры.
 #[test]
@@ -79,7 +79,7 @@ fn test_land_time_delay_s_constant() {
     );
 }
 
-/// Тест 6: Проверка SOFT_DROP_POINTS
+/// Тест 6: Проверка `SOFT_DROP_POINTS`
 ///
 /// Проверяем очки за мягкое падение.
 #[test]
@@ -100,7 +100,7 @@ fn test_soft_drop_points_constant() {
     }
 }
 
-/// Тест 7: Проверка HARD_DROP_POINTS
+/// Тест 7: Проверка `HARD_DROP_POINTS`
 ///
 /// Проверяем очки за жёсткое падение.
 #[test]
@@ -122,7 +122,7 @@ fn test_hard_drop_points_constant() {
     }
 }
 
-/// Тест 9: Проверка LEVEL_BONUS_MULT
+/// Тест 9: Проверка `LEVEL_BONUS_MULT`
 ///
 /// Проверяем множитель бонуса за уровень.
 #[test]
@@ -146,7 +146,7 @@ fn test_level_bonus_mult_constant() {
     );
 }
 
-/// Тест 10: Проверка LINES_PER_LEVEL
+/// Тест 10: Проверка `LINES_PER_LEVEL`
 ///
 /// Проверяем количество линий для повышения уровня.
 #[test]
@@ -154,7 +154,7 @@ fn test_lines_per_level_constant() {
     assert_eq!(LINES_PER_LEVEL, 10, "Для повышения уровня нужно 10 линий");
 }
 
-/// Тест 11: Проверка SPD_INC
+/// Тест 11: Проверка `SPD_INC`
 ///
 /// Проверяем прирост скорости за уровень.
 #[test]
@@ -165,7 +165,7 @@ fn test_spd_inc_constant() {
     );
 }
 
-/// Тест 12: Проверка PIECE_SCORE_INC
+/// Тест 12: Проверка `PIECE_SCORE_INC`
 ///
 /// Проверяем базовые очки за фигуру.
 #[test]
@@ -176,7 +176,7 @@ fn test_piece_score_inc_constant() {
     );
 }
 
-/// Тест 13: Проверка PIECE_SCORE_FALL_MULT
+/// Тест 13: Проверка `PIECE_SCORE_FALL_MULT`
 ///
 /// Проверяем множитель очков за падение.
 #[test]
@@ -188,7 +188,7 @@ fn test_piece_score_fall_mult_constant() {
     );
 }
 
-/// Тест 14: Проверка MAX_LINES_PER_CLEAR
+/// Тест 14: Проверка `MAX_LINES_PER_CLEAR`
 ///
 /// Проверяем максимальное количество линий за один ход.
 #[test]
@@ -199,7 +199,7 @@ fn test_max_lines_per_clear_constant() {
     );
 }
 
-/// Тест 15: Проверка HARD_DROP_ANIM_INTERVAL_MS
+/// Тест 15: Проверка `HARD_DROP_ANIM_INTERVAL_MS`
 ///
 /// Проверяем интервал анимации Hard Drop.
 #[test]
@@ -210,7 +210,7 @@ fn test_hard_drop_anim_interval_ms_constant() {
     );
 }
 
-/// Тест 16: Проверка ANIMATION_FRAME_SKIP
+/// Тест 16: Проверка `ANIMATION_FRAME_SKIP`
 ///
 /// Проверяем количество кадров для пропуска при анимации.
 #[test]
@@ -221,7 +221,7 @@ fn test_animation_frame_skip_constant() {
     );
 }
 
-/// Тест 17: Проверка SPRINT_LINES
+/// Тест 17: Проверка `SPRINT_LINES`
 ///
 /// Проверяем количество линий для режима спринт.
 #[test]
@@ -229,7 +229,7 @@ fn test_sprint_lines_constant() {
     assert_eq!(SPRINT_LINES, 40, "Режим спринт требует 40 линий");
 }
 
-/// Тест 18: Проверка MARATHON_LINES
+/// Тест 18: Проверка `MARATHON_LINES`
 ///
 /// Проверяем количество линий для режима марафон.
 #[test]
@@ -237,7 +237,7 @@ fn test_marathon_lines_constant() {
     assert_eq!(MARATHON_LINES, 150, "Режим марафон требует 150 линий");
 }
 
-/// Тест 19: Проверка MIN_Y
+/// Тест 19: Проверка `MIN_Y`
 ///
 /// Проверяем минимальную допустимую координату Y.
 #[test]

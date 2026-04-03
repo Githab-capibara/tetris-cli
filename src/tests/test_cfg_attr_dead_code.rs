@@ -1,4 +1,4 @@
-//! Тесты #[cfg_attr(test, allow(dead_code))] атрибутов.
+//! Тесты #[`cfg_attr(test`, `allow(dead_code)`)] атрибутов.
 //!
 //! Проверяют, что атрибуты применены корректно для тестовых функций.
 
@@ -6,7 +6,7 @@ use crate::game::GameState;
 
 /// Тест 1: Проверка, что тестовые функции не вызывают предупреждений
 ///
-/// Проверяем, что dead_code не предупреждает в тестах.
+/// Проверяем, что `dead_code` не предупреждает в тестах.
 #[test]
 fn test_cfg_attr_no_dead_code_warnings() {
     // Эта функция использует другие тестовые функции
@@ -15,13 +15,13 @@ fn test_cfg_attr_no_dead_code_warnings() {
 }
 
 /// Вспомогательная функция для тестов
-/// #[cfg_attr(test, allow(dead_code))] позволяет не удалять эту функцию
+/// #[`cfg_attr(test`, `allow(dead_code)`)] позволяет не удалять эту функцию
 #[cfg_attr(test, allow(dead_code))]
 fn helper_function_for_tests(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Тест 2: Проверка тестовых структур с dead_code
+/// Тест 2: Проверка тестовых структур с `dead_code`
 ///
 /// Проверяем, что тестовые структуры не вызывают предупреждений.
 #[test]
@@ -36,14 +36,14 @@ fn test_cfg_attr_struct_no_warnings() {
 }
 
 /// Тестовая структура
-/// #[cfg_attr(test, allow(dead_code))] позволяет не удалять неиспользуемые поля
+/// #[`cfg_attr(test`, `allow(dead_code)`)] позволяет не удалять неиспользуемые поля
 #[cfg_attr(test, allow(dead_code))]
 struct TestStructForTests {
     value: i32,
     name: String,
 }
 
-/// Тест 3: Проверка тестовых enum с dead_code
+/// Тест 3: Проверка тестовых enum с `dead_code`
 ///
 /// Проверяем, что тестовые enum не вызывают предупреждений.
 #[test]
@@ -64,7 +64,7 @@ fn test_cfg_attr_enum_no_warnings() {
 }
 
 /// Тестовый enum
-/// #[cfg_attr(test, allow(dead_code))] позволяет не удалять неиспользуемые варианты
+/// #[`cfg_attr(test`, `allow(dead_code)`)] позволяет не удалять неиспользуемые варианты
 #[cfg_attr(test, allow(dead_code))]
 enum TestEnumForTests {
     VariantA(i32),
@@ -128,7 +128,7 @@ fn test_cfg_attr_test_only_constants() {
 #[cfg_attr(test, allow(dead_code))]
 const TEST_CONSTANT_VALUE: i32 = 12345;
 
-/// Тест 6: Проверка, что dead_code разрешён только в тестах
+/// Тест 6: Проверка, что `dead_code` разрешён только в тестах
 ///
 /// Проверяем, что атрибут работает только в тестовом режиме.
 #[test]
