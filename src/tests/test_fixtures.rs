@@ -608,7 +608,8 @@ pub fn assert_piece_has_four_blocks(piece: &Tetromino) {
 /// ```
 pub fn assert_piece_color_matches_type(piece: &Tetromino) {
     assert_eq!(
-        piece.shape() as usize, piece.fg(),
+        piece.shape() as usize,
+        piece.fg(),
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
 }

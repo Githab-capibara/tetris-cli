@@ -59,8 +59,8 @@ fn test_check_rows_benchmark_works() {
 #[test]
 fn test_rotate_benchmark_works() {
     use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
-    use crate::types::{Direction, RotationDirection};
     use crate::types::RotationDirection;
+    use crate::types::{Direction, RotationDirection};
     use std::time::Instant;
 
     // Создаём тестовую фигуру
@@ -80,7 +80,8 @@ fn test_rotate_benchmark_works() {
     // Проверяем что вращение работает корректно
     let original_coords = SHAPE_COORDS[0];
     assert_ne!(
-        tetromino.coords(), original_coords,
+        tetromino.coords(),
+        original_coords,
         "Вращение должно изменить координаты"
     );
 
