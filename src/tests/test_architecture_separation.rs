@@ -15,6 +15,47 @@
 #![allow(clippy::items_after_statements)]
 
 use crate::game::state::GameState;
+use crate::io_traits::Renderer;
+
+/// Mock-реализация Renderer для тестов (перенесена из test_architecture_integrity)
+pub struct MockRenderer {
+    flushed: bool,
+    reset: bool,
+}
+
+impl MockRenderer {
+    fn new() -> Self {
+        Self {
+            flushed: false,
+            reset: false,
+        }
+    }
+}
+
+impl Renderer for MockRenderer {
+    fn draw_strs(
+        &mut self,
+        _strings: &[&str],
+        _pos: (u16, u16),
+        _fg: &dyn termion::color::Color,
+        _bg: &dyn termion::color::Color,
+    ) {
+    }
+    fn draw_string(
+        &mut self,
+        _string: &str,
+        _pos: (u16, u16),
+        _fg: &dyn termion::color::Color,
+        _bg: &dyn termion::color::Color,
+    ) {
+    }
+    fn flush(&mut self) {
+        self.flushed = true;
+    }
+    fn reset(&mut self) {
+        self.reset = true;
+    }
+}
 
 // ============================================================================
 // ТЕСТ 1: CHECK_ROWS() НЕ ВЫЗЫВАЕТСЯ В RENDER.RS
@@ -96,7 +137,7 @@ fn test_render_function_does_not_contain_line_clearing_logic() {
 
     // Проверяем что draw() не изменяет состояние игры
     // draw() принимает &GameView (только чтение), а не &mut GameState
-    let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
+    let _draw_fn = draw::<MockRenderer>;
 
     // Если бы draw() содержала логику удаления линий, она бы принимала
     // &mut GameState вместо &GameView
@@ -251,7 +292,7 @@ fn test_render_and_logic_are_separated() {
 
     // render::draw() отрисовывает состояние
     // (не можем вызвать без Canvas, но проверяем что функция существует)
-    let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
+    let _draw_fn = draw::<MockRenderer>;
 }
 
 /// Тест что `render.rs` использует `GameView` для уменьшения связанности.
@@ -272,5 +313,5 @@ fn test_render_uses_gameview_for_decoupling() {
     assert!(!view.level.is_empty());
 
     // draw() не может изменять состояние через GameView
-    let _draw_fn = draw::<crate::tests::test_architecture_integrity::MockRenderer>;
+    let _draw_fn = draw::<MockRenderer>;
 }

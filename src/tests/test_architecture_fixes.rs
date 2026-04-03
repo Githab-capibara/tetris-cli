@@ -18,6 +18,8 @@
 #![allow(dead_code)]
 #![allow(clippy::no_effect_underscore_binding)]
 
+use crate::game::state::GameState;
+
 // ============================================================================
 // ТЕСТ 1: ОТСУТСТВИЕ DEPRECATED ПОЛЕЙ (C1, M4)
 // ============================================================================
@@ -191,46 +193,6 @@ fn test_hmac_no_duplication() {
 // ============================================================================
 // ТЕСТ 3: ИСПОЛЬЗОВАНИЕ GAMEMODETRAIT (H1, L1)
 // ============================================================================
-
-/// Проверяет что `GameMode` enum deprecated.
-///
-/// Тест проверяет что:
-/// - `GameMode` enum имеет атрибут deprecated
-/// - Компиляция с deprecated предупреждением
-///
-/// # Устаревший тест
-/// `GameMode` enum удалён, тест помечен как ignored.
-#[test]
-#[ignore = "GameMode enum удалён, тест устарел"]
-fn test_game_mode_enum_deprecated() {
-    // Этот тест компилируется с #[allow(deprecated)] в начале файла
-    // что подтверждает что GameMode deprecated
-
-    use crate::game::state::GameMode;
-
-    // Проверяем что enum всё ещё работает для обратной совместимости
-    #[allow(deprecated)]
-    let classic = GameMode::Classic;
-
-    #[allow(deprecated)]
-    let sprint = GameMode::Sprint;
-
-    #[allow(deprecated)]
-    let marathon = GameMode::Marathon;
-
-    // Проверяем что метод as_trait() работает
-    #[allow(deprecated)]
-    {
-        let mode_trait = classic.as_trait();
-        assert_eq!(mode_trait.name(), "Классика");
-
-        let sprint_trait = sprint.as_trait();
-        assert_eq!(sprint_trait.name(), "Спринт");
-
-        let marathon_trait = marathon.as_trait();
-        assert_eq!(marathon_trait.name(), "Марафон");
-    }
-}
 
 /// Проверяет что `GameModeTrait` используется.
 ///
@@ -736,4 +698,90 @@ fn test_all_architecture_fixes_integration() {
     let path_validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-");
     let valid_path = Path::new("test.txt");
     assert!(path_validator.validate_length(valid_path).is_ok());
+}
+
+// ============================================================================
+// ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ (из test_architecture_fixes_new.rs)
+// ============================================================================
+
+/// Тест: `ScoreAccess` не дублируется.
+#[test]
+fn test_score_access_not_duplicated() {
+    use crate::game::access::ScoreAccess;
+    use crate::game::scoreboard::ScoreBoard;
+
+    fn requires_score_access<S: ScoreAccess>(_score: &S) {}
+
+    let state = GameState::new();
+    requires_score_access(&state);
+
+    let scoreboard = ScoreBoard::new();
+    requires_score_access(&scoreboard);
+
+    assert_eq!(
+        state.score(),
+        0,
+        "ScoreAccess должен предоставлять доступ к очкам"
+    );
+    assert_eq!(
+        scoreboard.get_score(),
+        0,
+        "ScoreBoard должен реализовывать ScoreAccess"
+    );
+}
+
+/// Тест: `GameAction` enum существует.
+#[test]
+fn test_game_action_enum_exists() {
+    use crate::game::types::GameAction;
+
+    let actions = [
+        GameAction::MoveLeft,
+        GameAction::MoveRight,
+        GameAction::SoftDrop,
+        GameAction::HardDrop,
+        GameAction::RotateLeft,
+        GameAction::RotateRight,
+        GameAction::Hold,
+        GameAction::Pause,
+        GameAction::Quit,
+    ];
+
+    assert_eq!(actions.len(), 9, "GameAction должен иметь 9 вариантов");
+    assert!(actions[0].is_movement());
+    assert!(actions[2].is_drop());
+    assert!(actions[4].is_rotation());
+    assert!(GameAction::MoveLeft.is_movement());
+    assert!(!GameAction::MoveLeft.is_rotation());
+    assert!(GameAction::RotateLeft.is_rotation());
+    assert!(GameAction::HardDrop.is_drop());
+
+    let action = GameAction::MoveLeft;
+    let action_copy = action;
+    let action_clone = action;
+    assert_eq!(action, action_copy);
+    assert_eq!(action, action_clone);
+    assert_eq!(format!("{:?}", GameAction::MoveLeft), "MoveLeft");
+}
+
+/// Тест: константы централизованы в constants.rs
+#[test]
+fn test_game_rules_constants_centralized() {
+    use crate::constants::{
+        COMBO_BONUS, HARD_DROP_POINTS, LAND_TIME_DELAY_S, LEVEL_BONUS_MULT, LINES_PER_LEVEL,
+        LINE_SCORES, MARATHON_LINES, MAX_FALL_SPEED, MAX_LINES_PER_CLEAR, SOFT_DROP_POINTS,
+        SPRINT_LINES,
+    };
+
+    assert_eq!(LINE_SCORES.len(), 4);
+    assert_eq!(COMBO_BONUS, 50);
+    assert_eq!(LEVEL_BONUS_MULT, 500);
+    assert_eq!(SOFT_DROP_POINTS, 1);
+    assert_eq!(HARD_DROP_POINTS, 2);
+    assert!(MAX_FALL_SPEED > 0.0);
+    assert!(LAND_TIME_DELAY_S > 0.0);
+    assert_eq!(SPRINT_LINES, 40);
+    assert_eq!(MARATHON_LINES, 150);
+    assert_eq!(LINES_PER_LEVEL, 10);
+    assert_eq!(MAX_LINES_PER_CLEAR, 4);
 }
