@@ -28,8 +28,9 @@ pub mod tetromino_struct;
 
 // Ре-экспорт основных типов для обратной совместимости
 pub use bag_generator::BagGenerator;
-pub use constants::SHAPE_COLORS;
+pub use constants::{SHAPE_COORDS, SHAPE_COLORS};
 pub use shape_type::ShapeType;
 pub use tetromino_struct::Tetromino;
 
 // Ре-экспорт RotationDirection для обратной совместимости
+pub use crate::core::RotationDirection;

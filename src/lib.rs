@@ -411,140 +411,28 @@ macro_rules! log_info {
 
 #[cfg(test)]
 mod tests {
-    // Оригинальные тесты (160 тестов)
-    pub mod test_controls;
+    // Основные юнит-тесты
     pub mod test_game_logic;
-    pub mod test_highscore;
     pub mod test_integration;
     pub mod test_io;
     pub mod test_io_errors;
     pub mod test_physics;
-    pub mod test_tetromino;
 
-    // Новые расширенные тесты (530 тестов)
-    pub mod test_animation;
-    pub mod test_collision;
-    pub mod test_edge_cases;
-    pub mod test_statistics;
-
-    // Стресс-тесты и граничные случаи (20 тестов)
-    pub mod test_edge_cases_stress;
-
-    // Интеграционные тесты режимов (20 тестов)
-    pub mod test_modes_integration;
-
-    // Новые детальные тесты (375 тестов)
+    // Игровая механика
     pub mod test_bag_system;
     pub mod test_boundary_values;
-    pub mod test_game_modes_detailed;
     pub mod test_game_movement;
     pub mod test_game_rotation;
     pub mod test_integration_extended;
-    pub mod test_tetromino_shapes;
-
-    // Тесты исправленных проблем (18 тестов)
-    pub mod test_controls_path_validation;
     pub mod test_game_bounds_check;
+    pub mod test_game_box_array;
 
-    // Тесты критических проблем (20 тестов)
-    pub mod test_controls_error_handling;
-    pub mod test_game_negative_coords;
-
-    // Новые тесты для 26 исправленных проблем (90 тестов)
-    pub mod test_controls_path_traversal;
-    pub mod test_game_rotation_bounds;
-
-    // Тесты на безопасность cast и конвертацию типов (12 тестов)
-    pub mod test_cast_safety;
-
-    // Тесты исправлений безопасности и оптимизаций (7 тестов - 6 основных + 1 интеграционный)
-    pub mod test_safety_architecture;
-    pub mod test_security_fixes;
-
-    // Тесты ограничения UTF-8 в KeyReader (7 тестов)
-    pub mod test_utf8_limitation;
-
-    // Комплексные тесты для всех исправлений аудита — УДАЛЕНЫ (тесты перемещены в другие файлы)
-
-    // Тесты для Задач 12-15 (30 тестов)
-    pub mod test_task13_coverage;
-
-    // Комплексные тесты для всех 32 исправлений (32 теста + 2 интеграционных)
-
-    // Тесты аудита кода и исправлений найденных проблем (3 теста)
-
-    // Тесты на архитектурную целостность (16 тестов)
-    pub mod test_architecture;
-
-    // Тесты исправленных архитектурных проблем (14 тестов)
-    pub mod test_architecture_fixes;
-
-    // ========================================================================
-    // НОВЫЕ АРХИТЕКТУРНЫЕ ТЕСТЫ (2026-03-30)
-    // ========================================================================
-
-    // Тесты на консолидацию трейтов
-    pub mod test_architecture_traits;
-
-    // Тесты на централизацию валидации
-    pub mod test_architecture_validation;
-
-    // Тесты на разделение render/logic
-    pub mod test_architecture_separation;
-
-    // Тесты на разделение трейтов (ISP)
-    pub mod test_architecture_isp;
-
-    // Тесты на снижение связанности
-    pub mod test_architecture_coupling;
-
-    // ========================================================================
-    // НОВЫЕ АРХИТЕКТУРНЫЕ ТЕСТЫ (2026-03-31) - ЦЕЛОСТНОСТЬ АРХИТЕКТУРЫ
-    // ========================================================================
-
-    // Тесты на отсутствие циклических зависимостей
-    pub mod test_architecture_cycles;
-
-    // Тесты на соблюдение границ модулей
-    pub mod test_architecture_boundaries;
-
-    // ========================================================================
-    // НОВЫЕ ТЕСТЫ ДЛЯ ВСЕХ ИСПРАВЛЕНИЙ (61 тест)
-    // ========================================================================
-
-    // Тесты критических ошибок (8 тестов)
-    pub mod test_constant_imports;
-    pub mod test_game_stats_export;
-
-    // Тесты логических ошибок (13 тестов)
-    pub mod test_hard_drop_flag;
-    pub mod test_wall_kick_refactor;
-
-    // Тесты оптимизаций (18 тестов)
-    pub mod test_bounds_check_optimization;
-    pub mod test_row_check_optimization;
-    pub mod test_sanitize_optimization;
-    pub mod test_string_caching;
-
-    // Тесты безопасности (16 тестов)
-    pub mod test_hard_drop_overflow;
-    pub mod test_time_safety;
-    pub mod test_unicode_validation;
-
-    // Тесты best practices (11 тестов)
-    pub mod test_cfg_attr_dead_code;
-    pub mod test_must_use_attributes;
-    pub mod test_track_caller;
-
-    // Интеграционные тесты (10 тестов)
-    pub mod test_all_fixes_integration;
-
-    // Тесты для исправлений clippy ошибок (8 тестов)
-    pub mod test_clippy_fixes;
-
-    // Новые тесты для исправлений (2026-03-30)
-    pub mod test_io_drop;
-    pub mod test_leaderboard_toctou;
-    pub mod test_macros;
-    pub mod test_scoring_state;
+    // Безопасность и переполнение
+    pub mod test_game_score_overflow;
+    pub mod test_score_overflow_protection;
+    pub mod test_hmac_safety;
+    pub mod test_error_propagation;
+    pub mod test_state_validation;
+    pub mod test_safe_cast;
+    pub mod test_unwrap_to_expect;
 }

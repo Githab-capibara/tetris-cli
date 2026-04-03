@@ -13,9 +13,11 @@
 #![allow(dead_code)]
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
-pub use crate::core::{Direction, RotationDirection};
+pub use crate::core::{Direction, Position, RotationDirection};
 
 // R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
+#[allow(deprecated)]
+pub use crate::game::types::GameAction;
 
 // ============================================================================
 /// Состояние завершения обновления.
