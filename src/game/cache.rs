@@ -231,30 +231,31 @@ impl StringCache {
 /// # Архитектурные заметки
 /// Выделено из `GameState` для улучшения организации кода и уменьшения
 /// размера основной структуры.
+#[derive(Debug)]
 pub struct RenderCache {
     /// Кэшированная строка счёта для оптимизации отрисовки.
-    pub cached_score_str: String,
+    pub(crate) cached_score_str: String,
     /// Кэшированная строка уровня для оптимизации отрисовки.
-    pub cached_level_str: String,
+    pub(crate) cached_level_str: String,
     /// Кэшированная строка количества линий для оптимизации отрисовки.
-    pub cached_lines_str: String,
+    pub(crate) cached_lines_str: String,
     /// Кэшированная строка рекорда для оптимизации отрисовки.
-    pub cached_high_score_str: String,
+    pub(crate) cached_high_score_str: String,
     /// Кэшированная строка комбо для оптимизации отрисовки.
-    pub cached_combo_str: String,
+    pub(crate) cached_combo_str: String,
     /// Кэшированная строка таймера для оптимизации отрисовки.
-    pub cached_timer_str: String,
+    pub(crate) cached_timer_str: String,
 
     /// Последнее закэшированное значение счёта.
-    pub last_cached_score: u128,
+    pub(crate) last_cached_score: u128,
     /// Последнее закэшированное значение уровня.
-    pub last_cached_level: u32,
+    pub(crate) last_cached_level: u32,
     /// Последнее закэшированное значение количества линий.
-    pub last_cached_lines: u32,
+    pub(crate) last_cached_lines: u32,
     /// Последнее закэшированное значение рекорда.
-    pub last_cached_high_score: u128,
+    pub(crate) last_cached_high_score: u128,
     /// Последнее закэшированное значение комбо.
-    pub last_cached_combo: u32,
+    pub(crate) last_cached_combo: u32,
 }
 
 impl RenderCache {

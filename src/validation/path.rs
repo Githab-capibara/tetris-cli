@@ -51,7 +51,7 @@ use std::path::Path;
 /// Ошибка валидации пути.
 ///
 /// Содержит информацию о причине ошибки валидации.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PathError {
     /// Сообщение об ошибке.
     pub message: String,
@@ -60,7 +60,7 @@ pub struct PathError {
 }
 
 /// Типы ошибки валидации пути.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PathErrorKind {
     /// Путь слишком длинный.
     TooLong,
