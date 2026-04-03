@@ -117,22 +117,8 @@ pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
     SHAPE_COLORS[shape_index]
 }
 
-/// Получить количество фигур.
-///
-/// # Возвращает
-/// Количество типов фигур (7)
-#[must_use]
-#[allow(dead_code)] // Публичный API для будущих расширений
-pub const fn shape_count() -> usize {
-    SHAPE_COORDS.len()
-}
+/// Количество типов фигур.
+pub const SHAPE_COUNT: usize = 7;
 
-/// Получить количество блоков в фигуре.
-///
-/// # Возвращает
-/// Количество блоков (4)
-#[must_use]
-#[allow(dead_code)] // Публичный API для будущих расширений
-pub const fn blocks_per_shape() -> usize {
-    4
-}
+/// Количество блоков в каждой фигуре.
+pub const BLOCKS_PER_SHAPE: usize = 4;

@@ -121,7 +121,14 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// ```
 #[must_use = "Очищенное имя должно быть использовано"]
 pub fn sanitize_player_name(name: &str) -> String {
-    let trimmed = name.trim();
+    // Удаляем zero-width spaces перед trim (I090)
+    let trimmed = name
+        .replace('\u{200B}', "")
+        .replace('\u{200C}', "")
+        .replace('\u{200D}', "")
+        .replace('\u{FEFF}', "")
+        .trim()
+        .to_string();
     if trimmed.is_empty() {
         return ANONYMOUS_NAME.to_string();
     }

@@ -438,16 +438,6 @@ impl PathValidator {
             // Файл будет проверен при попытке открытия с O_NOFOLLOW
         }
 
-        // NEW-147: Дополнительная проверка через metadata() для обнаружения race conditions
-        // Если файл существует и это symlink, metadata() тоже вернёт true для is_symlink()
-        if path.exists() {
-            if let Ok(metadata) = std::fs::metadata(path) {
-                // metadata() следует по symlink, поэтому проверяем file_type()
-                // Если это symlink, file_type() вернёт тип целевого файла
-                // Но мы уже проверили через symlink_metadata() выше
-            }
-        }
-
         Ok(())
     }
 
