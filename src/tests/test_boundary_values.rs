@@ -441,14 +441,14 @@ fn test_leaderboard_get_best_score() {
 /// Тест T29: Combo счётчик с нулевым значением
 #[test]
 fn test_combo_counter_zero() {
-    let stats = crate::game::GameStats::new();
+    let stats = crate::game::stats::GameStats::new();
     assert_eq!(stats.combo_counter(), 0, "Начальное комбо должно быть 0");
 }
 
 /// Тест T30: Combo счётчик с максимальным значением
 #[test]
 fn test_combo_counter_max_value() {
-    let mut stats = crate::game::GameStats::new();
+    let mut stats = crate::game::stats::GameStats::new();
     stats.set_combo_counter(u32::MAX);
     assert_eq!(
         stats.combo_counter(),

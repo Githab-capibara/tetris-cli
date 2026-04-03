@@ -404,7 +404,6 @@ mod tests {
         );
 
         // Очищаем тестовый файл (удаляется автоматически при удалении temp_dir)
-        drop(file);
         let _ = fs::remove_file(&test_path);
     }
 
@@ -431,7 +430,6 @@ mod tests {
         assert!(result.is_ok(), "Проверка файла < 1MB должна вернуть Ok");
 
         // Очищаем тестовый файл (удаляется автоматически при удалении temp_dir)
-        drop(file);
         let _ = fs::remove_file(&test_path);
     }
 

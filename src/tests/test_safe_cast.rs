@@ -454,8 +454,8 @@ mod tests {
         }
 
         // Тест с отрицательным расстоянием (должно использовать abs)
-        let start_y_neg = 10.0;
-        let end_y_neg = 5.0;
+        let start_y_neg: f32 = 10.0;
+        let end_y_neg: f32 = 5.0;
         let drop_distance_f32 = (end_y_neg - start_y_neg).abs();
         let drop_distance = safe_f32_to_u32(drop_distance_f32);
         assert_eq!(
