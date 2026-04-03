@@ -129,7 +129,7 @@ fn test_no_circular_dependencies_game_modules() {
     // Проверяем что GameView работает независимо
     let view = GameView::from_game_state(&state);
     assert!(
-        !view.score.is_empty(),
+        !view.score_str().is_empty(),
         "GameView должен работать независимо"
     );
 }
@@ -286,7 +286,7 @@ fn test_import_graph_is_acyclic() {
 
     // Уровень 7: view.rs (зависит от state и types)
     let view = GameView::from_game_state(&state);
-    assert!(!view.score.is_empty(), "view должен зависеть от state");
+    assert!(!view.score_str().is_empty(), "view должен зависеть от state");
 
     // Проверяем что нет обратных зависимостей
     // (если бы они были, этот тест не скомпилировался бы)

@@ -309,8 +309,8 @@ fn test_render_uses_gameview_for_decoupling() {
     let view = GameView::from_game_state(&state);
 
     // view содержит только данные для отрисовки
-    assert!(!view.score.is_empty());
-    assert!(!view.level.is_empty());
+    assert!(!view.score_str().is_empty());
+    assert!(!view.level_str().is_empty());
 
     // draw() не может изменять состояние через GameView
     let _draw_fn = draw::<MockRenderer>;

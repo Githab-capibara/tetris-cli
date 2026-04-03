@@ -77,10 +77,10 @@ fn test_game_submodules_no_cycles() {
     let view = GameView::from_game_state(&state);
 
     // Проверяем, что view корректно ссылается на state
-    assert!(!view.score.is_empty());
-    assert_eq!(view.mode.name(), "Классика");
-    assert_eq!(view.level, "1");
-    assert_eq!(view.lines, "0");
+    assert!(!view.score_str().is_empty());
+    assert_eq!(view.mode().name(), "Классика");
+    assert_eq!(view.level_str(), "1");
+    assert_eq!(view.lines_str(), "0");
 }
 
 // ============================================================================
@@ -100,24 +100,24 @@ fn test_game_view_creation() {
     let view = GameView::from_game_state(&state);
 
     // Проверяем, что score не пустой
-    assert!(!view.score.is_empty(), "Score строка не должна быть пустой");
+    assert!(!view.score_str().is_empty(), "Score строка не должна быть пустой");
 
     // Проверяем режим игры
-    assert_eq!(view.mode.name(), "Классика", "Режим должен быть Classic");
+    assert_eq!(view.mode().name(), "Классика", "Режим должен быть Classic");
 
     // Проверяем, что уровень установлен
-    assert_eq!(view.level, "1", "Начальный уровень должен быть 1");
+    assert_eq!(view.level_str(), "1", "Начальный уровень должен быть 1");
 
     // Проверяем, что линии установлены
-    assert_eq!(view.lines, "0", "Начальное количество линий должно быть 0");
+    assert_eq!(view.lines_str(), "0", "Начальное количество линий должно быть 0");
 
     // Проверяем, что блоки доступны
-    assert_eq!(view.blocks.len(), 20, "Должно быть 20 рядов блоков");
-    assert_eq!(view.blocks[0].len(), 10, "Должно быть 10 колонок блоков");
+    assert_eq!(view.blocks().len(), 20, "Должно быть 20 рядов блоков");
+    assert_eq!(view.blocks()[0].len(), 10, "Должно быть 10 колонок блоков");
 
     // Проверяем, что текущая фигура доступна
     assert!(matches!(
-        view.curr_shape.shape(),
+        view.curr_shape().shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J
@@ -129,7 +129,7 @@ fn test_game_view_creation() {
 
     // Проверяем, что следующая фигура доступна
     assert!(matches!(
-        view.next_shape.shape(),
+        view.next_shape().shape(),
         ShapeType::T
             | ShapeType::L
             | ShapeType::J
@@ -141,7 +141,7 @@ fn test_game_view_creation() {
 
     // Проверяем, что удержанная фигура None в начале
     assert!(
-        view.held_shape.is_none(),
+        view.held_shape().is_none(),
         "Удержанная фигура должна быть None в начале"
     );
 }
@@ -154,9 +154,9 @@ fn test_game_view_sprint_mode() {
     let state = GameState::new_sprint();
     let view = GameView::from_game_state(&state);
 
-    assert_eq!(view.mode.name(), "Спринт", "Режим должен быть Sprint");
+    assert_eq!(view.mode().name(), "Спринт", "Режим должен быть Sprint");
     assert_eq!(
-        view.lines_cleared, 0,
+        view.lines_cleared(), 0,
         "Начальное количество линий должно быть 0"
     );
 }

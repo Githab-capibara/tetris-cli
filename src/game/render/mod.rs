@@ -60,18 +60,18 @@ pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
     cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
     // Отрисовка UI (счёт, уровень, линии, комбо, рекорд)
-    cnv.draw_string(view.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
+    cnv.draw_string(view.score_str(), (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
     cnv.draw_string(
-        view.high_score,
+        view.high_score_str(),
         (HIGH_SCORE_X, HIGH_SCORE_Y),
         BORDER_COLOR,
         &Reset,
     );
-    cnv.draw_string(view.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
-    cnv.draw_string(view.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
+    cnv.draw_string(view.level_str(), (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
+    cnv.draw_string(view.lines_str(), (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
 
     // Отрисовка счётчика комбо
-    if let Some(combo) = view.combo {
+    if let Some(combo) = view.combo_str() {
         cnv.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
     }
 
@@ -91,7 +91,7 @@ pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
     view.draw_held_shape(cnv);
 
     // Отрисовка таймера для режима спринт (цель 40 линий)
-    if view.mode.get_target_lines() == Some(40) {
+    if view.mode().get_target_lines() == Some(40) {
         draw_sprint_timer(view, cnv);
     }
 
@@ -108,9 +108,9 @@ pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
 /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 fn draw_sprint_timer<R: Renderer>(view: &GameView, cnv: &mut R) {
     // Форматируем таймер на лету из elapsed_time (ИСПРАВЛЕНИЕ #9: именованные константы)
-    let timer_str = format!("Время: {:.2}с", view.elapsed_time);
+    let timer_str = format!("Время: {:.2}с", view.elapsed_time());
     cnv.draw_string(&timer_str, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
 
-    let progress = format!("Цель: {}/{}", view.lines_cleared, SPRINT_LINES);
+    let progress = format!("Цель: {}/{}", view.lines_cleared(), SPRINT_LINES);
     cnv.draw_string(&progress, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
 }
