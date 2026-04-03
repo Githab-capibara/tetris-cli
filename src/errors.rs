@@ -154,4 +154,28 @@ mod tests {
             "Переполнение счёта: попытка превышения максимального значения"
         );
     }
+
+    #[test]
+    fn test_terminal_error() {
+        let err = GameError::TerminalError("Неподдерживаемый терминал".to_string());
+        assert!(matches!(err, GameError::TerminalError(_)));
+        assert!(err.to_string().contains("Неподдерживаемый терминал"));
+        assert!(err.to_string().contains("Ошибка терминала"));
+    }
+
+    #[test]
+    fn test_input_error() {
+        let err = GameError::InputError("Клавиатура недоступна".to_string());
+        assert!(matches!(err, GameError::InputError(_)));
+        assert!(err.to_string().contains("Клавиатура недоступна"));
+        assert!(err.to_string().contains("Ошибка ввода"));
+    }
+
+    #[test]
+    fn test_config_error() {
+        let err = GameError::ConfigError("Невалидный файл конфигурации".to_string());
+        assert!(matches!(err, GameError::ConfigError(_)));
+        assert!(err.to_string().contains("Невалидный файл конфигурации"));
+        assert!(err.to_string().contains("Ошибка конфигурации"));
+    }
 }

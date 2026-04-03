@@ -313,19 +313,31 @@ fn test_game_state_score_overflow_protection() {
     }
 }
 
-/// Тест T22: `GameState` отрицательные значения (не должны быть возможны)
+/// Тест T22: `GameState` проверка корректности значений после изменений
+///
+/// Проверяет, что операции над GameState дают ожидаемые результаты.
+/// Ранее тест проверял `score() >= 0` для u128, что всегда истинно.
+/// Заменён на осмысленную проверку корректности начисления очков.
 #[test]
-#[allow(clippy::absurd_extreme_comparisons)] // Тест проверяет что u128 не может быть отрицательным
-fn test_game_state_no_negative_values() {
-    let state = GameState::new();
+fn test_game_state_value_correctness() {
+    let mut state = GameState::new();
 
-    // Все публичные значения должны быть неотрицательными
-    assert!(state.score() >= 0, "Счёт не должен быть отрицательным");
-    assert!(state.level() >= 1, "Уровень не должен быть меньше 1");
-    assert!(
-        state.lines_cleared() >= 0,
-        "Количество линий не должно быть отрицательным"
-    );
+    // Проверяем что начальные значения корректны
+    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
+    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
+    assert_eq!(state.lines_cleared(), 0, "Начальное количество линий должно быть 0");
+
+    // Проверяем что set_score корректно изменяет значение
+    state.set_score(5000);
+    assert_eq!(state.score(), 5000, "Счёт должен быть 5000 после set_score(5000)");
+
+    // Проверяем что set_level корректно изменяет значение
+    state.set_level(10);
+    assert_eq!(state.level(), 10, "Уровень должен быть 10 после set_level(10)");
+
+    // Проверяем что set_lines_cleared корректно изменяет значение
+    state.set_lines_cleared(40);
+    assert_eq!(state.lines_cleared(), 40, "Линии должны быть 40 после set_lines_cleared(40)");
 }
 
 // ============================================================================

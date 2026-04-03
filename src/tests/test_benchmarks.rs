@@ -184,7 +184,8 @@ fn test_draw_benchmark_works() {
 #[test]
 fn test_benchmark_performance() {
     use crate::game::GameState;
-    use crate::tetromino::{Dir, ShapeType, Tetromino, SHAPE_COORDS};
+    use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
+    use crate::types::Direction;
     use std::time::Instant;
 
     let iterations = 10_000;

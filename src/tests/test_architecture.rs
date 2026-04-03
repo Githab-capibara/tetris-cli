@@ -414,9 +414,10 @@ fn test_wall_kick_logic_centralization() {
     let state = GameState::new();
 
     // Функция должна быть доступна и работать
-    let _can_rotate = can_rotate_with_wall_kick(&state, RotationDirection::Clockwise);
+    let can_rotate = can_rotate_with_wall_kick(&state, RotationDirection::Clockwise);
 
     // Функция вернула корректное значение bool
+    assert!(can_rotate, "Wall kick should allow rotation");
 }
 
 /// Тест: HMAC ключ из переменных окружения
