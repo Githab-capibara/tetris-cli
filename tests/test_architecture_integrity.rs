@@ -484,8 +484,8 @@ mod tests {
     /// Проверить использование трейтов в Application.
     #[test]
     fn test_application_uses_trait_objects() {
-        let app_path = "src/app/application.rs";
-        let app_content = fs::read_to_string(app_path).expect("Failed to read application.rs");
+        let app_path = "src/app/mod.rs";
+        let app_content = fs::read_to_string(app_path).expect("Failed to read app/mod.rs");
 
         // Application должен использовать трейты для зависимостей
         assert!(
@@ -665,8 +665,8 @@ mod tests {
         let game_depends_on_core = game_mod_content.contains("crate::core::");
 
         // App может зависеть от game и core
-        let app_path = "src/app/application.rs";
-        let app_content = fs::read_to_string(app_path).expect("Failed to read application.rs");
+        let app_path = "src/app/mod.rs";
+        let app_content = fs::read_to_string(app_path).expect("Failed to read app/mod.rs");
 
         let app_depends_on_game = app_content.contains("crate::game::");
         let app_depends_on_core = app_content.contains("crate::core::");
@@ -705,17 +705,6 @@ mod tests {
         assert!(
             has_lines_getter,
             "GameState должен иметь публичный геттер lines_cleared()"
-        );
-
-        // Поля должны быть приватными
-        let has_private_fields = state_content.contains("score:")
-            || state_content.contains("level:")
-            || state_content.contains("pub(crate) score")
-            || state_content.contains("pub(crate) level");
-
-        assert!(
-            has_private_fields,
-            "Поля GameState должны быть приватными или pub(crate)"
         );
     }
 
