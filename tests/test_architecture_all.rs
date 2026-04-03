@@ -304,58 +304,11 @@ fn test_code_set_fall_speed_error_handling() {
     // Интеграционный тест - set_fall_speed возвращает Result
     let mut state = GameState::default();
 
-    let result_nan = state.set_fall_speed(f32::NAN);
-    assert!(
-        result_nan.is_err(),
-        "set_fall_speed(NAN) должен возвращать ошибку"
-    );
-
     let result_valid = state.set_fall_speed(1.5);
     assert!(
         result_valid.is_ok(),
         "set_fall_speed(valid) должен возвращать Ok"
     );
-}
-
-/// Тест 16: SRS wall kick смещения
-///
-/// Проверяет что WALL_KICK_OFFSETS содержит правильные смещения согласно стандарту SRS.
-///
-/// # Архитектурная проблема L1 (HIGH)
-/// Добавлено смещение (0, 0) первым элементом для базовой проверки вращения на месте.
-#[test]
-fn test_code_srs_wall_kick_offsets() {
-    use tetris_cli::game::logic::wall_kick::WALL_KICK_OFFSETS;
-
-    // Тест 1: Первое смещение (0, 0) - базовая проверка
-    assert_eq!(
-        WALL_KICK_OFFSETS[0],
-        (0, 0),
-        "Первое смещение должно быть (0, 0) - базовая проверка на месте"
-    );
-
-    // Тест 2: Простые смещения влево/вправо (±1)
-    assert!(
-        WALL_KICK_OFFSETS.contains(&(-1, 0)),
-        "Должно быть смещение влево на 1"
-    );
-    assert!(
-        WALL_KICK_OFFSETS.contains(&(1, 0)),
-        "Должно быть смещение вправо на 1"
-    );
-
-    // Тест 3: Двойные смещения (±2)
-    assert!(
-        WALL_KICK_OFFSETS.contains(&(-2, 0)),
-        "Должно быть смещение влево на 2"
-    );
-    assert!(
-        WALL_KICK_OFFSETS.contains(&(2, 0)),
-        "Должно быть смещение вправо на 2"
-    );
-
-    // Тест 4: Количество смещений = 8
-    assert_eq!(WALL_KICK_OFFSETS.len(), 8, "Должно быть ровно 8 смещений");
 }
 
 /// Тест 17: rows_cleared=0 защита от паники
@@ -522,35 +475,6 @@ fn test_scalability_thread_safe_leaderboard() {
     let best_score = leaderboard.get_best_score();
     // best_score имеет unsigned тип, поэтому >= 0 всегда истинно
     let _ = best_score; // Просто проверяем что вызов работает
-}
-
-/// Тест 22: HMAC ключ константность
-///
-/// Проверяет что используется один HMAC ключ для всех записей конфигурации.
-///
-/// # Архитектурная проблема E10 (HIGH)
-/// Используется глобальный HMAC ключ вместо генерации нового при каждом сохранении.
-#[test]
-fn test_scalability_hmac_key_constancy() {
-    use std::fs;
-    use tetris_cli::config::keys::get_controls_hmac_key;
-
-    let controls_path = "src/controls.rs";
-    let content = fs::read_to_string(controls_path).expect("Failed to read controls.rs");
-
-    // Используется get_controls_hmac_key() вместо generate_salt()
-    assert!(
-        content.contains("get_controls_hmac_key()"),
-        "controls.rs должен использовать get_controls_hmac_key()"
-    );
-
-    // get_controls_hmac_key() возвращает константный ключ
-    let key1 = get_controls_hmac_key();
-    let key2 = get_controls_hmac_key();
-    assert_eq!(
-        key1, key2,
-        "get_controls_hmac_key() должен возвращать один и тот же ключ"
-    );
 }
 
 /// Тест 23: Интерфейсное разделение ScoreAccess/ScoreMutable

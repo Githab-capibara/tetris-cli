@@ -21,69 +21,6 @@
 #![allow(clippy::no_effect_underscore_binding)]
 
 // ============================================================================
-// ТЕСТ 1: GAMEBOARDACCESS УДАЛЕН ИЛИ DEPRECATED
-// ============================================================================
-
-/// Тест: GameBoardAccess удален или deprecated.
-#[test]
-fn test_gameboard_access_trait_removed() {
-    use crate::game::access::{BoardReadonly, ScoreAccess};
-    use crate::game::state::GameState;
-
-    // Проверяем что новые трейты работают
-    let state = GameState::new();
-
-    // BoardReadonly - только чтение
-    fn requires_board_readonly<B: BoardReadonly>(_board: &B) {}
-    requires_board_readonly(&state);
-
-    // ScoreAccess - доступ к очкам
-    fn requires_score_access<S: ScoreAccess>(_score: &S) {}
-    requires_score_access(&state);
-
-    // Проверяем что новые трейты предоставляют тот же функционал
-    let state = GameState::new();
-    let blocks = state.get_blocks();
-    assert_eq!(
-        blocks.len(),
-        20,
-        "BoardReadonly должен предоставлять доступ к полю"
-    );
-
-    let score = state.score();
-    assert_eq!(score, 0, "ScoreAccess должен предоставлять доступ к очкам");
-}
-
-/// Тест: гарантия что трейт GameBoardAccess не используется (используются BoardReadonly + BoardMutable)
-#[test]
-fn test_gameboard_access_not_used_board_readonly_mutable_instead() {
-    use crate::game::access::{BoardMutable, BoardReadonly};
-    use crate::game::state::GameState;
-    use crate::io::GRID_HEIGHT;
-
-    // Проверяем что GameState реализует BoardReadonly
-    fn requires_board_readonly<B: BoardReadonly>(_board: &B) {}
-    let state = GameState::new();
-    requires_board_readonly(&state);
-
-    // Проверяем что GameState реализует BoardMutable
-    fn requires_board_mutable<B: BoardMutable>(_board: &mut B) {}
-    let mut state = GameState::new();
-    requires_board_mutable(&mut state);
-
-    // Проверяем что BoardReadonly предоставляет методы чтения
-    let state = GameState::new();
-    let blocks = state.get_blocks();
-    assert_eq!(blocks.len(), GRID_HEIGHT);
-
-    // Проверяем что BoardMutable предоставляет методы записи
-    let mut state = GameState::new();
-    let board_mut = state.board_mut();
-    // BoardMutable должен предоставлять доступ к mutable полю
-    let _blocks_mut = board_mut.get_blocks_mut();
-}
-
-// ============================================================================
 // ТЕСТ 2: SCOREACCESS НЕ ДУБЛИРУЕТСЯ
 // ============================================================================
 

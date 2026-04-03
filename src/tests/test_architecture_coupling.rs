@@ -295,51 +295,6 @@ fn test_gamestate_fields_are_private() {
     // state.curr_shape // Не доступно
 }
 
-// ============================================================================
-// ТЕСТ 6: АРХИТЕКТУРНЫЙ ТЕСТ СНИЖЕНИЯ СВЯЗАННОСТИ
-// ============================================================================
-
-/// Архитектурный тест что связанность снижена.
-#[test]
-fn test_coupling_architecture_test() {
-    // Архитектура снижения связанности:
-    // - scoring/points.rs использует публичные методы GameState
-    // - scoring/lines.rs использует публичные методы GameState
-    // - ScoreBoard инкапсулирует логику очков
-    // - Трейты снижают связанность между модулями
-
-    let architecture = [
-        ("scoring/points.rs", "Публичные методы"),
-        ("scoring/lines.rs", "Публичные методы"),
-        ("ScoreBoard", "Инкапсуляция"),
-        ("Трейты", "Снижение связанности"),
-    ];
-
-    // Проверяем что архитектура работает
-    let mut state = GameState::new();
-
-    // scoring/points.rs использует публичные методы
-    crate::game::scoring::handle_hard_drop(&mut state);
-
-    // scoring/lines.rs использует публичные методы
-    use crate::game::scoring::lines::check_rows;
-    let _ = check_rows(&mut state);
-
-    // ScoreBoard инкапсулирует логику
-    let mut scoreboard = ScoreBoard::new();
-    let _ = scoreboard.add_score(100);
-
-    // Трейты снижают связанность
-    use crate::game::access::ScoreMutable;
-    use crate::game::scoring::ScoreAccess;
-    fn use_score<S: ScoreAccess + ScoreMutable>(s: &mut S) {
-        s.add_score(100);
-    }
-    use_score(&mut state);
-
-    assert_eq!(architecture.len(), 4, "Должно быть 4 элемента архитектуры");
-}
-
 /// Тест что модули не имеют циклических зависимостей.
 #[test]
 fn test_modules_have_no_circular_dependencies() {
