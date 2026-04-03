@@ -27,10 +27,15 @@ pub mod shape_type;
 pub mod tetromino_struct;
 
 // Ре-экспорт основных типов для обратной совместимости
+#[allow(unused_imports)]
 pub use bag_generator::BagGenerator;
-pub use constants::{SHAPE_COORDS, SHAPE_COLORS};
+#[allow(unused_imports)]
+pub use constants::{SHAPE_COLORS, SHAPE_COORDS};
+#[allow(unused_imports)]
 pub use shape_type::ShapeType;
+#[allow(unused_imports)]
 pub use tetromino_struct::Tetromino;
 
 // Ре-экспорт RotationDirection для обратной совместимости
+#[allow(unused_imports)]
 pub use crate::core::RotationDirection;

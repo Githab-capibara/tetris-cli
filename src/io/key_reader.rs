@@ -156,9 +156,7 @@ impl KeyReader {
                 utf8_bytes[1..=bytes_to_read].copy_from_slice(&remaining[..bytes_to_read]);
 
                 if std::str::from_utf8(&utf8_bytes[..=bytes_to_read]).is_err() {
-                    eprintln!(
-                        "[WARN] get_key(): невалидная UTF-8 последовательность: байты ["
-                    );
+                    eprintln!("[WARN] get_key(): невалидная UTF-8 последовательность: байты [");
                     for (i, b) in utf8_bytes[..=bytes_to_read].iter().enumerate() {
                         if i > 0 {
                             eprint!(", ");
