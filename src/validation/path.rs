@@ -194,7 +194,7 @@ impl PathValidator {
     ///
     /// # Аргументы
     /// * `path` - путь для проверки (строка)
-    /// * `current_dir` - текущая директория для проверки внутри директории
+    /// * `base_dir` - базовая директория для проверки внутри директории
     ///
     /// # Возвращает
     /// - `Ok(PathBuf)` - валидный канонический путь
@@ -225,10 +225,10 @@ impl PathValidator {
     pub fn validate_all(
         &self,
         path: &str,
-        current_dir: &Path,
+        base_dir: &Path,
     ) -> Result<std::path::PathBuf, PathError> {
         let full_path = Path::new(path);
-        let joined_path = current_dir.join(full_path);
+        let joined_path = base_dir.join(full_path);
 
         // Сначала проверяем абсолютный путь и базовые ограничения
         self.validate_not_absolute(full_path)?;
@@ -262,18 +262,18 @@ impl PathValidator {
             joined_path
                 .parent()
                 .and_then(|p: &Path| p.canonicalize().ok())
-                .unwrap_or_else(|| current_dir.to_path_buf())
+                .unwrap_or_else(|| base_dir.to_path_buf())
                 .join(joined_path.file_name().unwrap_or_default())
         };
 
         // Проверка что путь находится внутри разрешённой директории
         // Исправление H7: используем кэшированный canonical_path
-        let canonical_current_dir = current_dir.canonicalize().map_err(|e| PathError {
-            message: format!("Не удалось получить canonical путь текущей директории: {e}"),
+        let canonical_base_dir = base_dir.canonicalize().map_err(|e| PathError {
+            message: format!("Не удалось получить canonical путь базовой директории: {e}"),
             kind: PathErrorKind::InvalidPath,
         })?;
 
-        self.validate_within_directory(&canonical_path, &canonical_current_dir)?;
+        self.validate_within_directory(&canonical_path, &canonical_base_dir)?;
 
         Ok(canonical_path)
     }
@@ -656,6 +656,7 @@ mod validation_path_tests {
     /// Тест: Проверка защиты от symlink атак
     ///
     /// Проверяет, что валидатор отклоняет символические ссылки.
+    #[cfg(unix)]
     #[test]
     fn test_validate_symlink_attack() {
         use std::fs;

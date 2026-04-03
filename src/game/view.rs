@@ -67,16 +67,6 @@ const SHAPE_OFFSET_X: u16 = 2;
 /// println!("Счёт: {}", view.score);
 /// println!("Уровень: {}", view.level);
 /// ```
-///
-/// ## Архитектурные заметки
-/// ## Feature Envy (Problem 2.5)
-/// TODO (#архитектура, Problem 2.5): Добавить методы отрисовки в `GameView`
-/// для уменьшения Feature Envy между render.rs и `GameView`.
-/// В настоящее время render.rs имеет полный доступ к полям `GameView`.
-/// Рассмотрим возможность добавления методов:
-/// - `get_block(x, y)` - доступ к блокам
-/// - `is_row_animating(y)` - проверка анимации строки
-/// - `get_shape_display_char()` - получение символа для отрисовки фигуры
 pub struct GameView<'a> {
     // === UI элементы (кэшированные строки) ===
     /// Кэшированная строка счёта.

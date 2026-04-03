@@ -157,13 +157,15 @@ impl KeyReader {
 
                 if std::str::from_utf8(&utf8_bytes[..=bytes_to_read]).is_err() {
                     eprintln!(
-                        "[WARN] get_key(): невалидная UTF-8 последовательность: байты [{}]",
-                        utf8_bytes[..=bytes_to_read]
-                            .iter()
-                            .map(|b| format!("0x{b:02X}"))
-                            .collect::<Vec<_>>()
-                            .join(", ")
+                        "[WARN] get_key(): невалидная UTF-8 последовательность: байты ["
                     );
+                    for (i, b) in utf8_bytes[..=bytes_to_read].iter().enumerate() {
+                        if i > 0 {
+                            eprint!(", ");
+                        }
+                        eprint!("0x{b:02X}");
+                    }
+                    eprintln!("]");
                     return Ok(None);
                 }
 

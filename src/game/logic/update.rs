@@ -99,6 +99,7 @@ mod update_tests {
     use crate::game::GameState;
 
     #[test]
+    #[ignore = "Requires terminal input"]
     fn test_update_continue() {
         let mut state = GameState::new();
         let mut inp = crate::io::KeyReader::default();

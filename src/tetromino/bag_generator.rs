@@ -1,6 +1,21 @@
 //! Генератор фигур по системе 7-bag.
 //!
 //! Модуль определяет `BagGenerator` для гарантированного равномерного распределения фигур.
+//!
+//! # Как работает
+//! 1. Создаётся "мешок" со всеми 7 типами фигур
+//! 2. Мешок перемешивается алгоритмом Fisher-Yates
+//! 3. Фигуры берутся из мешка по очереди
+//! 4. Когда мешок пуст, создаётся новый
+//!
+//! # Пример использования
+//! ```ignore
+//! use tetris_cli::tetromino::bag_generator::BagGenerator;
+//!
+//! let mut bag = BagGenerator::new();
+//! // Получаем следующую фигуру — гарантировано равномерное распределение
+//! let shape = bag.next_shape();
+//! ```
 
 use crate::tetromino::shape_type::ShapeType;
 use rand::Rng;
@@ -39,8 +54,8 @@ const ALL_SHAPES: [ShapeType; 7] = [
 pub struct BagGenerator {
     /// Текущий мешок с фигурами.
     bag: [ShapeType; 7],
-    /// Индекс текущей фигуры в мешке.
-    index: usize,
+    /// Позиция текущей фигуры в мешке.
+    position: usize,
 }
 
 impl BagGenerator {
@@ -49,7 +64,7 @@ impl BagGenerator {
     pub fn new() -> Self {
         let mut bag = Self {
             bag: [ShapeType::T; 7], // Временная инициализация, заполнится в fill_bag()
-            index: 7, // Устанавливаем index=7, чтобы первый вызов next_shape() вызвал fill_bag()
+            position: 7, // Устанавливаем position=7, чтобы первый вызов next_shape() вызвал fill_bag()
         };
         bag.fill_bag(); // Заполняем мешок сразу при создании
         bag
@@ -91,7 +106,7 @@ impl BagGenerator {
             self.bag.swap(i, j);
         }
 
-        self.index = 0;
+        self.position = 0;
     }
 
     /// Получить следующую фигуру из мешка.
@@ -104,13 +119,13 @@ impl BagGenerator {
     /// - Гарантирует равномерное распределение фигур
     pub fn next_shape(&mut self) -> ShapeType {
         // Если мешок пуст, заполняем новый
-        if self.index >= self.bag.len() {
+        if self.position >= self.bag.len() {
             self.fill_bag();
         }
 
-        // Берём фигуру из мешка и увеличиваем индекс
-        let shape = self.bag[self.index];
-        self.index += 1;
+        // Берём фигуру из мешка и увеличиваем позицию
+        let shape = self.bag[self.position];
+        self.position += 1;
         shape
     }
 
@@ -121,11 +136,11 @@ impl BagGenerator {
         &self.bag
     }
 
-    /// Получить текущий индекс в мешке (для тестов).
+    /// Получить текущую позицию в мешке (для тестов).
     #[cfg(test)]
     #[must_use]
     pub fn get_index(&self) -> usize {
-        self.index
+        self.position
     }
 }
 
