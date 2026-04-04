@@ -77,25 +77,9 @@ pub mod time;
 pub mod types;
 pub mod view;
 
-// Подмодули scoring
-
-// Подмодули logic
-
 // Re-export основных типов для обратной совместимости
 // Исправление аудита 2026-03-31 (Проблема #1): GameError перемещён в errors.rs
 pub use state::GameState;
-
-// Re-export трейтов и типов из access
-
-// Re-export трейтов и типов из board
-
-// Re-export ScoreBoard из scoreboard (трейты ScoreAccess и ScoreMutable теперь в access.rs)
-
-// Re-export GameView для отрисовки (StringCache теперь только для тестов)
-
-// Константы для тестов (обратная совместимость)
-
-// Re-export типов из types.rs (обратная совместимость)
 
 pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,

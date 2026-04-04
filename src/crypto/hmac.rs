@@ -103,8 +103,10 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let min_len = core::cmp::min(actual_bytes.len(), expected_bytes.len());
 
     // XOR накопление - выполняем сравнение за постоянное время
-    // cast: usize -> u8, потеря точности допустима, т.к. результат используется для XOR сравнения
-    let mut result: u8 = len_diff as u8;
+    // SAFETY: len_diff — разница длин hex-строк HMAC-SHA256 (всегда 64 байта).
+    // Даже при невалидном входе разница < 256, поэтому truncation u8 безопасен.
+    #[allow(clippy::cast_possible_truncation)]
+    let mut result: u8 = (len_diff & 0xFF) as u8;
     for i in 0..min_len {
         result |= actual_bytes[i] ^ expected_bytes[i];
     }

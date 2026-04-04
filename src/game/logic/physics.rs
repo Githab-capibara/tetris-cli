@@ -8,8 +8,6 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, константы
 
-#![allow(dead_code)]
-
 use crate::constants::MILLIS_PER_SECOND;
 use crate::game::state::GameState;
 use crate::types::Direction;

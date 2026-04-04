@@ -87,7 +87,7 @@ impl ControlsConfig {
     /// use tetris_cli::controls::ControlsConfig;
     ///
     /// let config = ControlsConfig::default_config();
-    /// assert_eq!(config.move_left(), b'a');
+    /// assert_eq!(config.get_move_left(), b'a');
     /// ```
     #[must_use = "Конфигурация должна быть использована"]
     pub const fn default_config() -> Self {
@@ -123,40 +123,41 @@ impl ControlsConfig {
 
     /// Геттеры для всех полей конфигурации (для обратной совместимости).
     /// Предназначены для публичного API и обратной совместимости.
+    /// Переименованы с префиксом `get_` для устранения дублирования с публичными полями.
     #[must_use]
-    pub const fn move_left(&self) -> u8 {
+    pub const fn get_move_left(&self) -> u8 {
         self.move_left
     }
     #[must_use]
-    pub const fn move_right(&self) -> u8 {
+    pub const fn get_move_right(&self) -> u8 {
         self.move_right
     }
     #[must_use]
-    pub const fn soft_drop(&self) -> u8 {
+    pub const fn get_soft_drop(&self) -> u8 {
         self.soft_drop
     }
     #[must_use]
-    pub const fn hard_drop(&self) -> u8 {
+    pub const fn get_hard_drop(&self) -> u8 {
         self.hard_drop
     }
     #[must_use]
-    pub const fn rotate_left(&self) -> u8 {
+    pub const fn get_rotate_left(&self) -> u8 {
         self.rotate_left
     }
     #[must_use]
-    pub const fn rotate_right(&self) -> u8 {
+    pub const fn get_rotate_right(&self) -> u8 {
         self.rotate_right
     }
     #[must_use]
-    pub const fn hold(&self) -> u8 {
+    pub const fn get_hold(&self) -> u8 {
         self.hold
     }
     #[must_use]
-    pub const fn pause(&self) -> u8 {
+    pub const fn get_pause(&self) -> u8 {
         self.pause
     }
     #[must_use]
-    pub const fn quit(&self) -> u8 {
+    pub const fn get_quit(&self) -> u8 {
         self.quit
     }
 
@@ -692,7 +693,7 @@ impl ControlsConfig {
     /// let config = ControlsConfig::custom(
     ///     b'h', b'l', b'j', b'k', b'y', b'u', b'i', b'o', 127
     /// );
-    /// assert_eq!(config.move_left(), b'h');
+    /// assert_eq!(config.get_move_left(), b'h');
     /// ```
     // Публичный API для создания пользовательской конфигурации
     #[must_use = "Конфигурация должна быть использована"]
@@ -792,19 +793,19 @@ mod controls_tests {
         let config = ControlsConfig::default_config();
 
         // Проверка всех клавиш по умолчанию
-        assert_eq!(config.move_left(), b'a', "Движение влево должно быть 'a'");
-        assert_eq!(config.move_right(), b'd', "Движение вправо должно быть 'd'");
-        assert_eq!(config.soft_drop(), b's', "Мягкое падение должно быть 's'");
-        assert_eq!(config.hard_drop(), b'w', "Жёсткое падение должно быть 'w'");
-        assert_eq!(config.rotate_left(), b'q', "Вращение влево должно быть 'q'");
+        assert_eq!(config.get_move_left(), b'a', "Движение влево должно быть 'a'");
+        assert_eq!(config.get_move_right(), b'd', "Движение вправо должно быть 'd'");
+        assert_eq!(config.get_soft_drop(), b's', "Мягкое падение должно быть 's'");
+        assert_eq!(config.get_hard_drop(), b'w', "Жёсткое падение должно быть 'w'");
+        assert_eq!(config.get_rotate_left(), b'q', "Вращение влево должно быть 'q'");
         assert_eq!(
-            config.rotate_right(),
+            config.get_rotate_right(),
             b'e',
             "Вращение вправо должно быть 'e'"
         );
-        assert_eq!(config.hold(), b'c', "Удержание должно быть 'c'");
-        assert_eq!(config.pause(), b'p', "Пауза должна быть 'p'");
-        assert_eq!(config.quit(), 127, "Выход должен быть Backspace (127)");
+        assert_eq!(config.get_hold(), b'c', "Удержание должно быть 'c'");
+        assert_eq!(config.get_pause(), b'p', "Пауза должна быть 'p'");
+        assert_eq!(config.get_quit(), 127, "Выход должен быть Backspace (127)");
     }
 
     /// Тест 18: Проверка сохранения и загрузки конфигурации
@@ -985,10 +986,10 @@ mod controls_tests {
             127,  // quit
         );
 
-        assert_eq!(vim_config.move_left(), b'h');
-        assert_eq!(vim_config.move_right(), b'l');
-        assert_eq!(vim_config.soft_drop(), b'j');
-        assert_eq!(vim_config.hard_drop(), b'k');
+        assert_eq!(vim_config.get_move_left(), b'h');
+        assert_eq!(vim_config.get_move_right(), b'l');
+        assert_eq!(vim_config.get_soft_drop(), b'j');
+        assert_eq!(vim_config.get_hard_drop(), b'k');
         assert!(vim_config.validate());
 
         // Тест 2: Конфигурация с цифровой клавиатурой
@@ -1004,15 +1005,15 @@ mod controls_tests {
             b'7', // quit
         );
 
-        assert_eq!(numpad_config.move_left(), b'4');
-        assert_eq!(numpad_config.move_right(), b'6');
+        assert_eq!(numpad_config.get_move_left(), b'4');
+        assert_eq!(numpad_config.get_move_right(), b'6');
         assert!(numpad_config.validate());
 
         // Тест 3: Проверка, что кастомная конфигурация отличается от default
         let default_config = ControlsConfig::default_config();
         assert_ne!(
-            vim_config.move_left(),
-            default_config.move_left(),
+            vim_config.get_move_left(),
+            default_config.get_move_left(),
             "Кастомная конфигурация должна отличаться от стандартной"
         );
     }

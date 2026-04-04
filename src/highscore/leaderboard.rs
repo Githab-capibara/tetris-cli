@@ -1,5 +1,4 @@
 //! Модуль таблицы лидеров.
-#![allow(dead_code)]
 //!
 //! Предоставляет структуры для хранения и управления таблицей лидеров
 //! (топ-5 результатов) с защитой от подделки.
@@ -229,7 +228,6 @@ impl LeaderboardEntry {
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
-        // Оптимизация: используем format! напрямую (исправление #16)
         let salt_name_score = format!("{}{}{value}", self.salt, self.name);
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
