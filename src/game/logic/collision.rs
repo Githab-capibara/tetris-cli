@@ -100,7 +100,7 @@ fn is_position_valid<T: BoardReadonly>(
         .get_blocks()
         .get(check_y as usize)
         .and_then(|row| row.get(check_x as usize))
-        .is_none_or(|&cell| cell != -1)
+        .map_or(true, |&cell| cell != -1)
     {
         return false; // Столкновение с заполненной ячейкой - позиция невалидна
     }

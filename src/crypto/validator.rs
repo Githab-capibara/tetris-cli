@@ -40,7 +40,10 @@ pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
 ///
 /// # Устарело
 /// Используйте [`hmac_verify_with_salt`] напрямую.
-#[deprecated(since = "0.96.15", note = "Используйте hmac_verify_with_salt из hmac.rs")]
+#[deprecated(
+    since = "0.96.15",
+    note = "Используйте hmac_verify_with_salt из hmac.rs"
+)]
 #[allow(dead_code)]
 pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
     hmac_verify_with_salt(key, salt, data, expected_signature)

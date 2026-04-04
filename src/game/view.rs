@@ -570,7 +570,12 @@ impl<'a> GameView<'a> {
         renderer.draw_string(self.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда
-        renderer.draw_string(self.high_score, (HIGH_SCORE_X, HIGH_SCORE_Y), BORDER_COLOR, &Reset);
+        renderer.draw_string(
+            self.high_score,
+            (HIGH_SCORE_X, HIGH_SCORE_Y),
+            BORDER_COLOR,
+            &Reset,
+        );
 
         // Отрисовка уровня
         renderer.draw_string(self.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
@@ -785,8 +790,8 @@ impl<'a> GameView<'a> {
 
         for coord in shape.coords() {
             let (coord_x, coord_y) = coord;
-            let x = pos_x.cast_signed() + coord_x * shape_width_i16 + DRAW_OFFSET_X;
-            let y = pos_y.cast_signed() + coord_y + 1;
+            let x = pos_x as i16 + coord_x * shape_width_i16 + DRAW_OFFSET_X;
+            let y = pos_y as i16 + coord_y + 1;
 
             // Проверка всех границ
             // cast: usize -> i16, потеря точности допустима: DISP_WIDTH/DISP_HEIGHT константы

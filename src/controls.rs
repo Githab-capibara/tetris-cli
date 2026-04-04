@@ -793,11 +793,31 @@ mod controls_tests {
         let config = ControlsConfig::default_config();
 
         // Проверка всех клавиш по умолчанию
-        assert_eq!(config.get_move_left(), b'a', "Движение влево должно быть 'a'");
-        assert_eq!(config.get_move_right(), b'd', "Движение вправо должно быть 'd'");
-        assert_eq!(config.get_soft_drop(), b's', "Мягкое падение должно быть 's'");
-        assert_eq!(config.get_hard_drop(), b'w', "Жёсткое падение должно быть 'w'");
-        assert_eq!(config.get_rotate_left(), b'q', "Вращение влево должно быть 'q'");
+        assert_eq!(
+            config.get_move_left(),
+            b'a',
+            "Движение влево должно быть 'a'"
+        );
+        assert_eq!(
+            config.get_move_right(),
+            b'd',
+            "Движение вправо должно быть 'd'"
+        );
+        assert_eq!(
+            config.get_soft_drop(),
+            b's',
+            "Мягкое падение должно быть 's'"
+        );
+        assert_eq!(
+            config.get_hard_drop(),
+            b'w',
+            "Жёсткое падение должно быть 'w'"
+        );
+        assert_eq!(
+            config.get_rotate_left(),
+            b'q',
+            "Вращение влево должно быть 'q'"
+        );
         assert_eq!(
             config.get_rotate_right(),
             b'e',
