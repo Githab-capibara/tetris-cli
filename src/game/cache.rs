@@ -39,7 +39,6 @@
 use super::mode_trait::GameModeTrait;
 #[cfg(test)]
 use super::stats::GameStats;
-#[cfg(test)]
 use std::fmt::Write;
 
 #[cfg(test)]
@@ -288,15 +287,19 @@ impl RenderCache {
     /// * `level` - начальный уровень
     /// * `lines` - начальное количество линий
     /// * `high_score` - начальный рекорд
+    ///
+    /// # Исправление #7
+    /// Строки хранятся с padding ({:10}) для использования напрямую в отрисовке.
     pub fn init_with_values(&mut self, score: u128, level: u32, lines: u32, high_score: u128) {
         self.last_cached_score = score;
         self.last_cached_level = level;
         self.last_cached_lines = lines;
         self.last_cached_high_score = high_score;
-        self.cached_score_str = score.to_string();
-        self.cached_level_str = level.to_string();
-        self.cached_lines_str = lines.to_string();
-        self.cached_high_score_str = high_score.to_string();
+        // Исправление #7: храним с padding для прямой отрисовки без format!
+        let _ = write!(self.cached_score_str, "{score:10}");
+        let _ = write!(self.cached_level_str, "{level:10}");
+        let _ = write!(self.cached_lines_str, "{lines:10}");
+        self.cached_high_score_str = format!("{high_score:10}");
     }
 }
 
@@ -321,9 +324,10 @@ mod tests {
     fn test_render_cache_init_with_values() {
         let mut cache = RenderCache::new();
         cache.init_with_values(100, 2, 10, 500);
-        assert_eq!(cache.cached_score_str, "100");
-        assert_eq!(cache.cached_level_str, "2");
-        assert_eq!(cache.cached_lines_str, "10");
-        assert_eq!(cache.cached_high_score_str, "500");
+        // Исправление #7: строки хранятся с padding {:10}
+        assert_eq!(cache.cached_score_str, "       100");
+        assert_eq!(cache.cached_level_str, "         2");
+        assert_eq!(cache.cached_lines_str, "        10");
+        assert_eq!(cache.cached_high_score_str, "       500");
     }
 }

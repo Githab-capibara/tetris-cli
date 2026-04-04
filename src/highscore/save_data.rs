@@ -1,5 +1,4 @@
 //! Модуль сохранения данных рекордов.
-#![allow(dead_code)]
 //!
 //! Предоставляет структуры для хранения одиночного рекорда
 //! с защитой от подделки через хэширование с солью.
@@ -22,12 +21,23 @@ const APP_NAME: &str = "tetris-cli";
 ///
 /// # Возвращает
 /// Путь к файлу конфигурации или None при ошибке
+///
+/// # Исправление #3
+/// Сначала проверяется `XDG_CONFIG_HOME`, затем fallback на `HOME/.config`.
 fn get_config_file_path() -> Option<PathBuf> {
-    // confy 0.6 сам управляет путями к конфигурации
-    // Используем стандартный подход с переменной окружения HOME
-    let home_dir = std::env::var("HOME").ok()?;
-    let mut config_path = PathBuf::from(home_dir);
-    config_path.push(".config");
+    // Исправление #3: XDG_CONFIG_HOME → HOME/.config fallback
+    let config_base = std::env::var("XDG_CONFIG_HOME")
+        .ok()
+        .filter(|p| !p.is_empty())
+        .map(PathBuf::from)
+        .or_else(|| {
+            let home = std::env::var("HOME").ok()?;
+            let mut path = PathBuf::from(home);
+            path.push(".config");
+            Some(path)
+        })?;
+
+    let mut config_path = config_base;
     config_path.push(APP_NAME);
 
     // H12: создаём директорию если не существует

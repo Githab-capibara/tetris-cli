@@ -565,37 +565,18 @@ impl<'a> GameView<'a> {
         };
         use termion::color::Reset;
 
+        // Исправление #7: используем кэшированные строки напрямую (уже содержат padding)
         // Отрисовка счёта
-        renderer.draw_string(
-            &format!("{:10}", self.score),
-            (SCORE_X, SCORE_Y),
-            BORDER_COLOR,
-            &Reset,
-        );
+        renderer.draw_string(self.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
 
         // Отрисовка рекорда
-        renderer.draw_string(
-            &format!("{:10}", self.high_score),
-            (HIGH_SCORE_X, HIGH_SCORE_Y),
-            BORDER_COLOR,
-            &Reset,
-        );
+        renderer.draw_string(self.high_score, (HIGH_SCORE_X, HIGH_SCORE_Y), BORDER_COLOR, &Reset);
 
         // Отрисовка уровня
-        renderer.draw_string(
-            &format!("{:10}", self.level),
-            (LEVEL_X, LEVEL_Y),
-            BORDER_COLOR,
-            &Reset,
-        );
+        renderer.draw_string(self.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
 
         // Отрисовка линий
-        renderer.draw_string(
-            &format!("{:10}", self.lines),
-            (LINES_X, LINES_Y),
-            BORDER_COLOR,
-            &Reset,
-        );
+        renderer.draw_string(self.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
 
         // Отрисовка комбо (если есть)
         if let Some(combo) = self.combo {

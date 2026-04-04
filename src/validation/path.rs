@@ -369,6 +369,39 @@ impl PathValidator {
         path_str.chars().all(|ch| allowed.contains(ch))
     }
 
+    /// Поиск подстроки без учёта ASCII-регистра (без аллокации String).
+    ///
+    /// # Исправление #6
+    /// Заменяет `path.to_lowercase().contains(pattern)` чтобы избежать аллокации.
+    fn contains_ignore_ascii_case(haystack: &str, needle: &str) -> bool {
+        if needle.is_empty() {
+            return true;
+        }
+        let haystack_bytes = haystack.as_bytes();
+        let needle_bytes = needle.as_bytes();
+        let needle_len = needle_bytes.len();
+
+        if needle_len > haystack_bytes.len() {
+            return false;
+        }
+
+        for i in 0..=(haystack_bytes.len() - needle_len) {
+            let mut matched = true;
+            for j in 0..needle_len {
+                let h = haystack_bytes[i + j].to_ascii_lowercase();
+                let n = needle_bytes[j].to_ascii_lowercase();
+                if h != n {
+                    matched = false;
+                    break;
+                }
+            }
+            if matched {
+                return true;
+            }
+        }
+        false
+    }
+
     /// Проверить отсутствие символических ссылок.
     ///
     /// # Аргументы
@@ -537,10 +570,9 @@ impl PathValidator {
             "%255c", // двойное URL-encoding backslash
         ];
 
-        let path_lower = path.to_lowercase();
-
         for pattern in FORBIDDEN_PATTERNS {
-            if path_lower.contains(pattern) {
+            // Исправление #6: поиск без учёта регистра без аллокации String
+            if Self::contains_ignore_ascii_case(path, pattern) {
                 return Err(PathError {
                     message: format!("Запрещённый паттерн в пути: {path:?} ({pattern})"),
                     kind: PathErrorKind::PathTraversal,

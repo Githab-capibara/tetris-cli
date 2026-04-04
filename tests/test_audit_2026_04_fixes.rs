@@ -324,8 +324,8 @@ fn test_h9_compute_signature_method_exists() {
     // Создаём JSON для подписи (упрощённо)
     let config_json = format!(
         r#"{{"move_left":{},"move_right":{}}}"#,
-        config.move_left(),
-        config.move_right()
+        config.get_move_left(),
+        config.get_move_right()
     );
 
     // Проверяем что HMAC ключ существует
