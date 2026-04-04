@@ -151,7 +151,7 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 /// ```
 ///
 /// # Исправление аудита 2026-04-02 (H1)
-/// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
+/// Оптимизировано: используется `write!` в `Vec<u8>` вместо `format!()` для снижения аллокаций.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
@@ -201,7 +201,7 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 /// ```
 ///
 /// # Исправление аудита 2026-04-02 (H1)
-/// Оптимизировано: используется write! в Vec<u8> вместо format!() для снижения аллокаций.
+/// Оптимизировано: используется `write!` в `Vec<u8>` вместо `format!()` для снижения аллокаций.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {

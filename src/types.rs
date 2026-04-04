@@ -6,7 +6,7 @@
 //! ## Структура модуля
 //! - [`Direction`] — направление движения фигуры (переэкспорт из [`crate::core`])
 //! - [`RotationDirection`] — направление вращения фигуры (переэкспорт из [`crate::core`])
-//! - [`Position`] — позиция в пространстве (переэкспорт из [`crate::core`])
+//! - `Position` — позиция в пространстве (переэкспорт из [`crate::core`])
 //! - [`GameAction`] — игровые действия (переэкспорт из [`crate::game::types`])
 //! - [`UpdateEndState`] — состояние завершения обновления
 //!
@@ -17,7 +17,7 @@
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
 // Источник истины: crate::core (Position, Direction, RotationDirection)
-pub use crate::core::{Direction, Position, RotationDirection};
+pub use crate::core::{Direction, RotationDirection};
 
 // R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
 #[allow(deprecated, unused_imports)]
