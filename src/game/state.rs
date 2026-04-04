@@ -37,7 +37,7 @@
 //!
 //! [`FigureManager`]: crate::game::components::FigureManager
 //! [`AnimationState`]: crate::game::components::AnimationState
-//! [`BoardState`]: crate::game::components::BoardState
+//! [`BoardState`]: crate::game::components::board_state::BoardState
 
 // std
 // (нет импортов std)

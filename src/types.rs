@@ -17,7 +17,8 @@
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
 // Источник истины: crate::core (Position, Direction, RotationDirection)
-pub use crate::core::{Direction, RotationDirection};
+#[allow(unused_imports)]
+pub use crate::core::{Direction, Position, RotationDirection};
 
 // R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
 #[allow(deprecated, unused_imports)]

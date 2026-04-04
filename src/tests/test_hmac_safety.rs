@@ -296,7 +296,10 @@ mod tests {
         let valid_signature = hmac_sha256(key, data);
 
         // Создаём подписи с разным количеством несовпадающих символов
-        let signature_one_diff = "b".to_string() + &valid_signature[1..];
+        // Гарантированно меняем первый символ: если 'a' -> 'b', иначе -> 'a'
+        let first_char = valid_signature.chars().next().unwrap_or('x');
+        let new_first = if first_char == 'a' { 'b' } else { 'a' };
+        let signature_one_diff = format!("{new_first}{}", &valid_signature[1..]);
         let signature_many_diff =
             "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
