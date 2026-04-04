@@ -9,9 +9,14 @@
 //! - [`Position`] — позиция в пространстве (переэкспорт из [`crate::core`])
 //! - [`GameAction`] — игровые действия (переэкспорт из [`crate::game::types`])
 //! - [`UpdateEndState`] — состояние завершения обновления
+//!
+//! ## Архитектурное улучшение 2026-04-02 (#22)
+//! `Direction`, `RotationDirection` и `Position` определены в `crate::core` и
+//! переэкспортируются здесь для обратной совместимости. `crate::core` является
+//! единственным источником истины для этих типов.
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
-#[allow(unused_imports)]
+// Источник истины: crate::core (Position, Direction, RotationDirection)
 pub use crate::core::{Direction, Position, RotationDirection};
 
 // R1: GameAction переэкспортирован из game/types.rs для устранения дублирования

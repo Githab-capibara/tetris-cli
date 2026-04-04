@@ -1,76 +1,49 @@
 //! Модуль валидации данных с использованием HMAC.
 //!
 //! # Ответственность
-//! - Валидация HMAC подписей
+//! - Ре-экспорт HMAC функций для обратной совместимости
 //! - Проверка целостности данных
 //! - Защита от подделки данных
 //!
 //! # Использование
 //! ```ignore
-//! use tetris_cli::crypto::validator::{verify_salt_and_data, sign_salt_and_data};
+//! use tetris_cli::crypto::validator::{hmac_sign_with_salt, hmac_verify_with_salt};
 //!
-//! let signature = sign_salt_and_data("key", "salt", "data");
-//! assert!(verify_salt_and_data("key", "salt", "data", &signature));
+//! let signature = hmac_sign_with_salt("key", "salt", "data");
+//! assert!(hmac_verify_with_salt("key", "salt", "data", &signature));
 //! ```
 //!
 //! # Исправление ISSUE-043
-//! `HmacValidator` удалён - используйте напрямую `hmac_sha256/verify_hmac_sha256`.
+//! `HmacValidator` удалён — используйте напрямую `hmac_sha256/verify_hmac_sha256`.
+//!
+//! # Исправление аудита 2026-04-02 (#21)
+//! Функции `sign_salt_and_data` и `verify_salt_and_data` были дубликатами
+//! `hmac_sign_with_salt` и `hmac_verify_with_salt` из `hmac.rs`.
+//! Теперь они заменены на re-export для устранения дублирования.
 
-use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};
+// Re-export из hmac.rs для устранения дублирования (#21)
+#[allow(unused_imports)]
+pub use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 
-// ============================================================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВАЛИДАЦИИ ДАННЫХ
-// ============================================================================
-
-/// Проверить HMAC подпись для данных с солью.
+// Алиасы для обратной совместимости (deprecated)
+/// Алиас для `hmac_sign_with_salt` (обратная совместимость).
 ///
-/// # Аргументы
-/// * `key` - секретный ключ
-/// * `salt` - соль
-/// * `data` - данные
-/// * `expected_signature` - ожидаемая подпись
-///
-/// # Возвращает
-/// `true` если подпись верна
-///
-/// # Пример
-/// ```ignore
-/// use tetris_cli::crypto::validator::verify_salt_and_data;
-///
-/// let key = "secret";
-/// let salt = "random_salt";
-/// let data = "player_score";
-/// let signature = hmac_sha256(key, &format!("{}{}", salt, data));
-/// assert!(verify_salt_and_data(key, &salt, data, &signature));
-/// ```
-#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
-#[must_use]
-pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
-    let salt_and_data = format!("{salt}{data}");
-    verify_hmac_sha256(key, &salt_and_data, expected_signature)
+/// # Устарело
+/// Используйте [`hmac_sign_with_salt`] напрямую.
+#[deprecated(since = "0.96.15", note = "Используйте hmac_sign_with_salt из hmac.rs")]
+#[allow(dead_code)]
+pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
+    hmac_sign_with_salt(key, salt, data)
 }
 
-/// Вычислить HMAC подпись для данных с солью.
+/// Алиас для `hmac_verify_with_salt` (обратная совместимость).
 ///
-/// # Аргументы
-/// * `key` - секретный ключ
-/// * `salt` - соль
-/// * `data` - данные
-///
-/// # Возвращает
-/// Hex-строка HMAC-SHA256 подписи
-///
-/// # Пример
-/// ```ignore
-/// use tetris_cli::crypto::validator::sign_salt_and_data;
-///
-/// let signature = sign_salt_and_data("key", "salt", "data");
-/// ```
-#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
-#[must_use]
-pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
-    let salt_and_data = format!("{salt}{data}");
-    hmac_sha256(key, &salt_and_data)
+/// # Устарело
+/// Используйте [`hmac_verify_with_salt`] напрямую.
+#[deprecated(since = "0.96.15", note = "Используйте hmac_verify_with_salt из hmac.rs")]
+#[allow(dead_code)]
+pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
+    hmac_verify_with_salt(key, salt, data, expected_signature)
 }
 
 // ============================================================================
@@ -81,36 +54,46 @@ pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
 mod validator_tests {
     use super::*;
 
-    // Тесты для вспомогательных функций
     #[test]
-    fn test_verify_salt_and_data() {
+    fn test_re_export_sign_and_verify() {
+        let key = "test_key";
+        let salt = "test_salt";
+        let data = "test_data";
+        let signature = hmac_sign_with_salt(key, salt, data);
+
+        assert!(hmac_verify_with_salt(key, salt, data, &signature));
+    }
+
+    #[test]
+    fn test_re_export_invalid() {
+        let key = "test_key";
+        let salt = "test_salt";
+        let data = "test_data";
+        let wrong_signature = "invalid";
+
+        assert!(!hmac_verify_with_salt(key, salt, data, wrong_signature));
+    }
+
+    #[test]
+    fn test_re_export_deterministic() {
+        let key = "test_key";
+        let salt = "test_salt";
+        let data = "test_data";
+
+        let sig1 = hmac_sign_with_salt(key, salt, data);
+        let sig2 = hmac_sign_with_salt(key, salt, data);
+
+        assert_eq!(sig1, sig2);
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    fn test_deprecated_aliases_still_work() {
         let key = "test_key";
         let salt = "test_salt";
         let data = "test_data";
         let signature = sign_salt_and_data(key, salt, data);
 
         assert!(verify_salt_and_data(key, salt, data, &signature));
-    }
-
-    #[test]
-    fn test_verify_salt_and_data_invalid() {
-        let key = "test_key";
-        let salt = "test_salt";
-        let data = "test_data";
-        let wrong_signature = "invalid";
-
-        assert!(!verify_salt_and_data(key, salt, data, wrong_signature));
-    }
-
-    #[test]
-    fn test_sign_salt_and_data_deterministic() {
-        let key = "test_key";
-        let salt = "test_salt";
-        let data = "test_data";
-
-        let sig1 = sign_salt_and_data(key, salt, data);
-        let sig2 = sign_salt_and_data(key, salt, data);
-
-        assert_eq!(sig1, sig2);
     }
 }

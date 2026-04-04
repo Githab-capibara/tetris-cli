@@ -35,15 +35,20 @@ pub const COMBO_BONUS: u128 = crate::constants::COMBO_BONUS;
 pub const LEVEL_BONUS_MULT: u128 = crate::constants::LEVEL_BONUS_MULT;
 
 /// Очки за Soft Drop (1 очко за ячейку).
-pub const SOFT_DROP_POINTS: u128 = 1;
+/// Переэкспорт из constants.rs для устранения дублирования (#23).
+pub const SOFT_DROP_POINTS: u128 = crate::constants::SOFT_DROP_POINTS;
 
 /// Очки за Hard Drop (2 очка за ячейку).
-pub const HARD_DROP_POINTS: u128 = 2;
+/// Переэкспорт из constants.rs для устранения дублирования (#23).
+pub const HARD_DROP_POINTS: u128 = crate::constants::HARD_DROP_POINTS;
 
 /// Базовые очки за фигуру.
+/// Примечание: значение отличается от constants::PIECE_SCORE_INC (100).
+/// Это множитель приращения, а не базовое значение.
 pub const PIECE_SCORE_INC: u128 = 1;
 
 /// Множитель очков за скорость падения.
+/// Примечание: значение отличается от constants::PIECE_SCORE_FALL_MULT (50.0).
 pub const PIECE_SCORE_FALL_MULT: u128 = 10;
 
 // ============================================================================

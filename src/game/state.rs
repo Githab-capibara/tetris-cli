@@ -84,8 +84,12 @@ pub type GameResult<T> = Result<T, crate::errors::GameError>;
 ///
 /// # Архитектурные заметки
 /// ## Абстракции для режимов (Problem 2.8)
-/// Этот enum сохраняется для обратной совместимости.
-/// Для нового кода рекомендуется использовать `GameModeTrait` напрямую.
+/// Этот enum сохранён как основной API для создания режимов игры.
+/// Для расширяемости можно использовать `GameModeTrait` напрямую.
+///
+/// ## Исправление аудита 2026-04-02 (#26)
+/// Атрибут `#[deprecated]` удалён — enum остаётся основным API.
+/// `GameModeTrait` является расширяемой альтернативой для пользовательских режимов.
 ///
 /// ## Конвертация в трейт
 /// Используйте метод `as_trait()` для получения объекта трейта.
@@ -94,26 +98,6 @@ pub type GameResult<T> = Result<T, crate::errors::GameError>;
 /// - [`Classic`](GameMode::Classic) — классическая игра до проигрыша
 /// - [`Sprint`](GameMode::Sprint) — скоростной режим до 40 линий
 /// - [`Marathon`](GameMode::Marathon) — марафон до 150 линий
-///
-/// # Устарело
-/// Используйте [`GameModeTrait`](crate::game::mode_trait::GameModeTrait) напрямую вместо enum.
-///
-/// ## Пример использования нового API
-/// ```
-/// use tetris_cli::game::mode_trait::{GameModeTrait, ClassicMode, SprintMode};
-///
-/// // Вместо GameMode::Classic используйте:
-/// let mode: Box<dyn GameModeTrait> = Box::new(ClassicMode);
-///
-/// // Вместо GameMode::Sprint используйте:
-/// let sprint_mode: Box<dyn GameModeTrait> = Box::new(SprintMode::new());
-/// ```
-///
-/// ## Причина депрекейта
-/// Enum нарушает принцип открытости/закрытости (OCP) - для добавления нового режима
-/// требуется модификация существующего кода. Трейт `GameModeTrait` позволяет
-/// добавлять новые режимы без изменения существующего кода.
-#[deprecated(since = "23.96.17", note = "Используйте GameModeTrait напрямую")]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum GameMode {
     /// Классический режим — игра до проигрыша.
@@ -143,7 +127,6 @@ pub enum GameMode {
 // МЕТОДЫ ДЛЯ GAMEMODE
 // ============================================================================
 
-#[allow(deprecated)]
 impl GameMode {
     /// Преобразовать enum в объект трейта `GameModeTrait`.
     ///
@@ -167,7 +150,6 @@ impl GameMode {
     }
 }
 
-#[allow(deprecated)]
 impl GameMode {
     /// Проверить условие победы для текущего режима.
     ///
@@ -305,21 +287,18 @@ impl Default for GameState {
 
 impl GameState {
     /// Создать новое состояние игры.
-    #[allow(deprecated)]
     #[must_use = "Состояние игры должно быть использовано"]
     pub fn new() -> Self {
         Self::new_internal(GameMode::Classic, false)
     }
 
     /// Создать новое состояние игры для режима спринт.
-    #[allow(deprecated)]
     #[must_use = "Состояние игры для спринта должно быть использовано"]
     pub fn new_sprint() -> Self {
         Self::new_internal(GameMode::Sprint, true)
     }
 
     /// Создать новое состояние игры для режима марафон.
-    #[allow(deprecated)]
     #[must_use = "Состояние игры для марафона должно быть использовано"]
     pub fn new_marathon() -> Self {
         Self::new_internal(GameMode::Marathon, true)
@@ -332,7 +311,6 @@ impl GameState {
     /// - `create_mode_trait()` - создание режима игры
     /// - `create_initial_stats()` - создание начальной статистики
     /// - `init_render_cache()` - инициализация кэша отрисовки
-    #[allow(deprecated)]
     fn new_internal(mode: GameMode, start_timer: bool) -> Self {
         let mode_trait = Self::create_mode_trait(mode);
         let figure_manager = FigureManager::new();
@@ -350,7 +328,6 @@ impl GameState {
     ///
     /// # Возвращает
     /// Box<dyn GameModeTrait> с соответствующим режимом
-    #[allow(deprecated)]
     fn create_mode_trait(mode: GameMode) -> Box<dyn GameModeTrait> {
         mode.as_trait()
     }
@@ -592,7 +569,6 @@ impl GameState {
     /// возвращать Classic как fallback.
     #[must_use]
     #[deprecated(since = "23.96.14", note = "Используйте get_mode_trait() вместо enum")]
-    #[allow(deprecated)]
     pub fn get_mode(&self) -> GameMode {
         // Намеренно используется строковое сравнение для обратной совместимости.
         // Новые режимы, не перечисленные здесь, вернут Classic как fallback.
