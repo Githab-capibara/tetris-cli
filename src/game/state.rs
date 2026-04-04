@@ -30,7 +30,7 @@
 //! `GameState` разделён на специализированные компоненты:
 //! - [`FigureManager`] - управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
 //! - [`AnimationState`] - управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
-//! - [`BoardState`]/[`FieldState`] - управление полем (board, `filled_lines_mask`)
+//! - [`BoardState`] - управление полем (board, `filled_lines_mask`)
 //! - `ScoreBoard` - управление очками (score, level, `lines_cleared`)
 //! - `GameStats` - статистика игры
 //! - `RenderCache` - кэш для отрисовки
@@ -38,7 +38,6 @@
 //! [`FigureManager`]: crate::game::components::FigureManager
 //! [`AnimationState`]: crate::game::components::AnimationState
 //! [`BoardState`]: crate::game::components::BoardState
-//! [`FieldState`]: crate::game::components::FieldState
 
 // std
 // (нет импортов std)
@@ -131,7 +130,7 @@ impl GameMode {
     /// Преобразовать enum в объект трейта `GameModeTrait`.
     ///
     /// # Возвращает
-    /// Box<dyn GameModeTrait> с соответствующим режимом
+    /// `Box<dyn GameModeTrait>` с соответствующим режимом
     ///
     /// # Пример использования
     /// ```
@@ -714,14 +713,14 @@ impl GameState {
 
     /// Установить скорость падения.
     ///
-    /// Скорость ограничена диапазоном от [`INITIAL_FALL_SPD`] до [`MAX_FALL_SPEED`].
+    /// Скорость ограничена диапазоном от [`INITIAL_FALL_SPD`] до `MAX_FALL_SPEED`.
     ///
     /// # Возвращает
     /// - `Ok(())` если значение установлено успешно
-    /// - `Err(GameError::Validation)` если значение невалидно (NaN/Infinity или вне диапазона)
+    /// - `Err(GameError::ValidationError)` если значение невалидно (NaN/Infinity или вне диапазона)
     ///
     /// # Errors
-    /// Возвращает [`crate::errors::GameError::Validation`] если значение является NaN/Infinity или вне диапазона.
+    /// Возвращает [`crate::errors::GameError::ValidationError`] если значение является NaN/Infinity или вне диапазона.
     ///
     /// # Валидация (H3)
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
@@ -734,12 +733,12 @@ impl GameState {
     /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
     ///
     /// # Исправление аудита 2026-04-02 (B1)
-    /// Добавлен #[`must_use`] для предотвращения игнорирования ошибок валидации.
+    /// Добавлен `#[must_use]` для предотвращения игнорирования ошибок валидации.
     ///
     /// # Errors
-    /// Возвращает [`GameError::ValidationError`] если:
+    /// Возвращает [`crate::errors::GameError::ValidationError`] если:
     /// - `value` не является конечным числом (NaN или Infinity)
-    /// - `value` выходит за пределы диапазона [`INITIAL_FALL_SPD`, `MAX_FALL_SPEED`]
+    /// - `value` выходит за пределы диапазона [`INITIAL_FALL_SPD`, `crate::constants::MAX_FALL_SPEED`]
     #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
@@ -798,7 +797,7 @@ impl GameState {
     /// ```
     ///
     /// # Исправление аудита 2026-04-02 (B1)
-    /// Добавлен #[`must_use`] для предотвращения игнорирования ошибок валидации.
+    /// Добавлен `#[must_use]` для предотвращения игнорирования ошибок валидации.
     #[must_use = "Ошибка установки таймера должна быть обработана"]
     pub fn set_land_timer(&mut self, value: f64) -> Result<(), crate::errors::GameError> {
         use crate::errors::GameError;
@@ -951,7 +950,7 @@ impl GameState {
     /// Делегирует вызов компоненту `ScoreBoard`.
     ///
     /// # Исправление аудита 2026-04-02 (H16)
-    /// Добавлен #[`must_use`] так как возвращаемое значение (новый счёт) важно.
+    /// Добавлен `#[must_use]` так как возвращаемое значение (новый счёт) важно.
     #[must_use = "Новый счёт должен быть использован"]
     pub fn add_score(&mut self, points: u128) -> u128 {
         self.scoreboard.add_score(points)
@@ -963,7 +962,7 @@ impl GameState {
     /// Делегирует вызов компоненту `ScoreBoard`.
     ///
     /// # Исправление аудита 2026-04-02 (H16)
-    /// Добавлен #[`must_use`] так как возвращаемое значение (новое количество линий) важно.
+    /// Добавлен `#[must_use]` так как возвращаемое значение (новое количество линий) важно.
     #[must_use = "Новое количество линий должно быть использовано"]
     pub fn add_lines_cleared(&mut self, lines: u32) -> u32 {
         self.scoreboard.add_lines_cleared(lines)

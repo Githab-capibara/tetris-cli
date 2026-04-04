@@ -8,7 +8,7 @@
 //! # Зависимости
 //! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
-//! - [`super::ScoringState`](super::ScoringState): trait для изменения состояния
+//! - [`super::ScoringState`]: trait для изменения состояния
 
 use super::ScoringState;
 use std::io::Write;
@@ -245,7 +245,7 @@ fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_ma
 /// - `Err(GameError::ScoreOverflow)` если счёт превышает `MAX_SCORE`
 ///
 /// # Errors
-/// Возвращает [`crate::errors::GameError::ScoreOverflow`] если счёт превышает [`MAX_SCORE`].
+/// Возвращает [`crate::errors::GameError::ScoreOverflow`] если счёт превышает `MAX_SCORE`.
 ///
 /// # Примечания
 /// Формула расчёта очков:

@@ -16,4 +16,5 @@ pub mod figure_manager;
 
 // Re-export для удобства использования
 pub use animation_state::AnimationState;
+pub use board_state::BoardState;
 pub use figure_manager::FigureManager;

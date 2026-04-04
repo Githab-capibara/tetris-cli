@@ -14,7 +14,7 @@
 //! ## Структура модуля
 //!
 //! Модуль разделён на подмодули:
-//! - [`save_data`] — хранение одиночного рекорда (`SaveData`)
+//! - `save_data` — хранение одиночного рекорда (`SaveData`)
 //! - [`leaderboard`] — таблица лидеров (Leaderboard, `LeaderboardEntry`) - фасад
 //! - [`leaderboard_repository`] — сериализация/персистентность (`LeaderboardRepository`)
 //! - [`storage`] — хранилище и валидация записей (`LeaderboardStorage`, `LeaderboardValidator`)

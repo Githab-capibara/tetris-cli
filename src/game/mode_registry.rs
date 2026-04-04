@@ -180,7 +180,7 @@ pub fn create_mode(name: &str) -> Option<Box<dyn GameModeTrait>> {
 /// Factory функция для создания режима игры по умолчанию (Classic).
 ///
 /// # Возвращает
-/// Box<dyn GameModeTrait> с режимом Classic
+/// `Box<dyn GameModeTrait>` с режимом Classic
 #[must_use]
 pub fn create_default_mode() -> Box<dyn GameModeTrait> {
     ModeRegistry::global()

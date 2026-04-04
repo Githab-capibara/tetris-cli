@@ -259,7 +259,7 @@ pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
 /// Factory функция для создания режима игры по умолчанию (Classic).
 ///
 /// # Возвращает
-/// Box<dyn GameModeTrait> с режимом Classic
+/// `Box<dyn GameModeTrait>` с режимом Classic
 ///
 /// Архитектурное улучшение 2026-04-01 (O1): Factory функция для создания режимов.
 #[must_use]

@@ -9,7 +9,7 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
 //! - [`scoring.rs`](super::super::scoring): функции начисления очков
-//! - [`types.rs`](crate::types): `Direction`, `RotationDirection`, [`GameAction`](crate::game::types::GameAction)
+//! - [`types.rs`](crate::types): `Direction`, `RotationDirection`, [`GameAction`]
 //!
 //! ## Архитектурные заметки (A7: DIP)
 //! Функция `handle_input()` использует трейт `InputReader` вместо конкретного типа `KeyReader`
@@ -299,7 +299,11 @@ mod input_tests {
         let mut state = GameState::new();
         let result = execute_action(&mut state, GameAction::Quit);
 
-        assert_eq!(result, Some(UpdateEndState::Quit), "Quit должен вернуть Quit");
+        assert_eq!(
+            result,
+            Some(UpdateEndState::Quit),
+            "Quit должен вернуть Quit"
+        );
     }
 
     #[test]
@@ -312,10 +316,7 @@ mod input_tests {
         assert!(result.is_none(), "Hold не должен завершать игру");
         // Hold должен изменить can_hold если фигура ещё не удерживалась
         if initial_can_hold {
-            assert!(
-                !state.can_hold(),
-                "После Hold can_hold должен стать false"
-            );
+            assert!(!state.can_hold(), "После Hold can_hold должен стать false");
         }
     }
 
