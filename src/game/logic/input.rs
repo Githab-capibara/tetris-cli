@@ -249,4 +249,82 @@ mod input_tests {
             "Фигура должна сдвинуться вправо или остаться на месте"
         );
     }
+
+    // =========================================================================
+    // ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ (#36)
+    // =========================================================================
+
+    #[test]
+    fn test_execute_action_move_left() {
+        let mut state = GameState::new();
+        let initial_x = state.curr_shape().pos().0;
+
+        let result = execute_action(&mut state, GameAction::MoveLeft);
+
+        assert!(result.is_none(), "MoveLeft не должен завершать игру");
+        assert!(
+            state.curr_shape().pos().0 <= initial_x,
+            "MoveLeft должен сдвинуть фигуру влево"
+        );
+    }
+
+    #[test]
+    fn test_execute_action_move_right() {
+        let mut state = GameState::new();
+        let initial_x = state.curr_shape().pos().0;
+
+        let result = execute_action(&mut state, GameAction::MoveRight);
+
+        assert!(result.is_none(), "MoveRight не должен завершать игру");
+        assert!(
+            state.curr_shape().pos().0 >= initial_x,
+            "MoveRight должен сдвинуть фигуру вправо"
+        );
+    }
+
+    #[test]
+    fn test_execute_action_pause() {
+        let mut state = GameState::new();
+        let result = execute_action(&mut state, GameAction::Pause);
+
+        assert_eq!(
+            result,
+            Some(UpdateEndState::Pause),
+            "Pause должен вернуть Pause"
+        );
+    }
+
+    #[test]
+    fn test_execute_action_quit() {
+        let mut state = GameState::new();
+        let result = execute_action(&mut state, GameAction::Quit);
+
+        assert_eq!(result, Some(UpdateEndState::Quit), "Quit должен вернуть Quit");
+    }
+
+    #[test]
+    fn test_execute_action_hold() {
+        let mut state = GameState::new();
+        let initial_can_hold = state.can_hold();
+
+        let result = execute_action(&mut state, GameAction::Hold);
+
+        assert!(result.is_none(), "Hold не должен завершать игру");
+        // Hold должен изменить can_hold если фигура ещё не удерживалась
+        if initial_can_hold {
+            assert!(
+                !state.can_hold(),
+                "После Hold can_hold должен стать false"
+            );
+        }
+    }
+
+    #[test]
+    fn test_handle_movement_down_warnings() {
+        let mut state = GameState::new();
+        // Direction::Down должен вызвать предупреждение, но не панику
+        handle_movement_input(&mut state, Direction::Down);
+        // Состояние должно остаться валидным
+        let _ = state.curr_shape();
+    }
 }

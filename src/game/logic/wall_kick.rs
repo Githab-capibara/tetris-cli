@@ -329,4 +329,69 @@ mod wall_kick_tests {
             RotationDirection::CounterClockwise
         ));
     }
+
+    // =========================================================================
+    // ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ (#38)
+    // =========================================================================
+
+    #[test]
+    fn test_wall_kick_offsets_all_within_bounds() {
+        // Все смещения должны быть в пределах ±2 по X и ±1 по Y
+        for &(x, y) in &WALL_KICK_OFFSETS {
+            assert!(
+                x.abs() <= 2,
+                "Смещение по X ({x}) должно быть в пределах ±2"
+            );
+            assert!(
+                y.abs() <= 1,
+                "Смещение по Y ({y}) должно быть в пределах ±1"
+            );
+        }
+    }
+
+    #[test]
+    fn test_rotate_multiple_times_same_direction() {
+        let mut state = GameState::new();
+
+        // 4 вращения по часовой должны вернуть фигуру в исходное состояние
+        let initial_coords = state.curr_shape().coords();
+
+        for _ in 0..4 {
+            let result = rotate_with_wall_kick(&mut state, RotationDirection::Clockwise);
+            assert!(result, "Вращение должно быть успешным");
+        }
+
+        // После 4 вращений фигура должна вернуться к исходным координатам
+        // (для большинства фигур, кроме I-piece которая может отличаться на 1 из-за wall kick)
+        let final_coords = state.curr_shape().coords();
+        assert_eq!(
+            initial_coords, final_coords,
+            "После 4 вращений фигура должна вернуться к исходному состоянию"
+        );
+    }
+
+    #[test]
+    fn test_can_rotate_without_state_change() {
+        let state = GameState::new();
+        let initial_coords = state.curr_shape().coords();
+
+        // can_rotate_with_wall_kick не должен изменять состояние
+        let _ = can_rotate_with_wall_kick(&state, RotationDirection::Clockwise);
+
+        let final_coords = state.curr_shape().coords();
+        assert_eq!(
+            initial_coords, final_coords,
+            "can_rotate_with_wall_kick не должен изменять состояние"
+        );
+    }
+
+    #[test]
+    fn test_wall_kick_offsets_count() {
+        // Стандартная таблица SRS имеет 8 смещений
+        assert_eq!(
+            WALL_KICK_OFFSETS.len(),
+            8,
+            "Таблица wall kick должна содержать 8 смещений"
+        );
+    }
 }

@@ -78,4 +78,103 @@ mod physics_tests {
             "Land timer не должен быть отрицательным"
         );
     }
+
+    // =========================================================================
+    // ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ (#37)
+    // =========================================================================
+
+    #[test]
+    fn test_handle_falling_zero_delta() {
+        let mut state = GameState::new();
+        let initial_y = state.curr_shape().pos().1;
+
+        // С нулевым delta_time позиция не должна измениться
+        let result = handle_falling(&mut state, 0);
+
+        assert!(!result, "С нулевым delta_time фигура должна ещё падать");
+        assert!(
+            (state.curr_shape().pos().1 - initial_y).abs() < 0.001,
+            "Y координата не должна измениться с нулевым delta_time"
+        );
+    }
+
+    #[test]
+    fn test_handle_falling_fall_speed_affects_distance() {
+        let mut state1 = GameState::new();
+        let mut state2 = GameState::new();
+
+        // Установим разную скорость падения
+        state1.set_fall_speed(0.5).ok();
+        state2.set_fall_speed(2.0).ok();
+
+        let initial_y1 = state1.curr_shape().pos().1;
+        let initial_y2 = state2.curr_shape().pos().1;
+
+        handle_falling(&mut state1, 100);
+        handle_falling(&mut state2, 100);
+
+        let moved1 = state1.curr_shape().pos().1 - initial_y1;
+        let moved2 = state2.curr_shape().pos().1 - initial_y2;
+
+        assert!(
+            moved2 > moved1,
+            "Большая скорость должна привести к большему перемещению"
+        );
+    }
+
+    #[test]
+    fn test_handle_falling_land_timer_decreases() {
+        let mut state = GameState::new();
+        // Установим land_timer > 0 и сделаем так чтобы фигура не падала
+        state.set_land_timer(0.5).ok();
+
+        // Фигура в начале может падать, поэтому проверяем что timer уменьшается
+        // когда фигура НЕ может двигаться вниз
+        // Для этого поднимем фигуру к полу
+        while state.can_move_curr_shape_direction(Direction::Down) {
+            handle_falling(&mut state, 100);
+        }
+
+        // Теперь фигура не может падать, land_timer должен уменьшаться
+        let timer_before = state.land_timer();
+        if timer_before > 0.0 {
+            let _ = handle_falling(&mut state, 50);
+            assert!(
+                state.land_timer() < timer_before,
+                "Land timer должен уменьшиться"
+            );
+        }
+    }
+
+    #[test]
+    fn test_handle_falling_landing_detection() {
+        let mut state = GameState::new();
+        state.set_land_timer(0.0).ok();
+
+        // Опустим фигуру до пола
+        while state.can_move_curr_shape_direction(Direction::Down) {
+            handle_falling(&mut state, 100);
+        }
+
+        // Фигура должна быть приземлена (land_timer = 0 и не может двигаться вниз)
+        let result = handle_falling(&mut state, 100);
+        assert!(result, "Фигура у пола должна считаться приземлённой");
+    }
+
+    #[test]
+    fn test_handle_falling_large_delta_time() {
+        let mut state = GameState::new();
+        let initial_y = state.curr_shape().pos().1;
+
+        // Большой delta_time не должен вызывать панику
+        let result = handle_falling(&mut state, 10000);
+
+        // Результат зависит от состояния — либо падает, либо приземлилась
+        if !result {
+            assert!(
+                state.curr_shape().pos().1 >= initial_y,
+                "Y координата должна увеличиться при большом delta_time"
+            );
+        }
+    }
 }

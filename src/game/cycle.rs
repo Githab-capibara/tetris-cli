@@ -75,7 +75,11 @@ pub fn handle_input<T: InputReader>(
                 match key {
                     Ok(Some(b'p')) => break,
                     Ok(Some(KEY_BACKSPACE)) => return InputResult::Quit, // Backspace
-                    Ok(Some(_) | None) | Err(_) => {}
+                    Ok(Some(_) | None) => {}
+                    Err(e) => {
+                        // Логирование критической ошибки ввода (#30)
+                        eprintln!("[ERROR] Ошибка чтения ввода во время паузы: {e}");
+                    }
                 }
                 sleep(Duration::from_millis(FRAME_DELAY_MS));
             }

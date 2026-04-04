@@ -11,6 +11,8 @@
 //! - [`super::ScoringState`](super::ScoringState): trait для изменения состояния
 
 use super::ScoringState;
+use std::io::Write;
+
 use crate::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
@@ -152,6 +154,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     if remove_count > 0 {
         state.set_animating_rows_mask(rows_mask);
         print!("{BELL}");
+        // Исправление #31: flush после print! для гарантированного вывода bell
+        let _ = std::io::stdout().flush();
         state.stats_mut().update_max_combo(remove_count);
     }
 
