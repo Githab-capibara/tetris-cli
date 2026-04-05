@@ -83,6 +83,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                         &termion::color::White,
                         &termion::color::Reset,
                     );
+                    // Осознанное решение: flush на каждый символ для немедленной обратной связи (UX)
                     cnv.flush();
                 }
             }
@@ -96,6 +97,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                         &termion::color::White,
                         &termion::color::Reset,
                     );
+                    // Осознанное решение: flush на каждый символ для немедленной обратной связи (UX)
                     cnv.flush();
                 }
             }

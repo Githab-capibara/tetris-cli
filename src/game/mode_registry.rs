@@ -17,6 +17,10 @@ use super::mode_trait::GameModeTrait;
 use super::mode_trait::{ClassicMode, MarathonMode, SprintMode};
 
 /// Тип функции-фабрики для создания режимов.
+///
+/// Исправление проблемы 38: `Send + Sync` сохранены — `OnceLock` в `global()`
+/// требует `Sync` для `static` переменной. Для CLI это не влияет на производительность
+/// так как фабричные функции не содержат потоко-небезопасных данных.
 pub type ModeFactory = Box<dyn Fn() -> Box<dyn GameModeTrait> + Send + Sync>;
 
 /// Реестр режимов игры.
@@ -142,6 +146,10 @@ impl ModeRegistry {
     ///
     /// # Примечания
     /// Использует `std::sync::OnceLock` для ленивой инициализации.
+    ///
+    /// # Исправление проблемы 40
+    /// При первом вызове происходит 6 вставок в HashMap (регистрация режимов).
+    /// Это делается ОДИН РАЗ за всё время работы приложения — не оптимизировать.
     pub fn global() -> &'static Self {
         use std::sync::OnceLock;
 

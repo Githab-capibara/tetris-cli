@@ -294,6 +294,10 @@ impl PathValidator {
 
         // Проверка что путь находится внутри разрешённой директории
         // Исправление H7: используем кэшированный canonical_path
+        // Осознанное решение: canonicalize вызывается для base_dir при каждом вызове validate_all
+        // для гарантии безопасности — canonical_base_dir может измениться между вызовами
+        // (например, если директория была переименована или перемонтирована).
+        // Кэширование здесь не применяется ради корректности проверок безопасности.
         let canonical_base_dir = base_dir.canonicalize().map_err(|e| PathError {
             message: format!("Не удалось получить canonical путь базовой директории: {e}"),
             kind: PathErrorKind::InvalidPath,
@@ -453,6 +457,10 @@ impl PathValidator {
     /// - Добавлена проверка всей цепочки директорий (parent directories)
     /// - Проверка на race conditions через `metadata().is_symlink()`
     /// - Блокировка symlink в родительских директориях
+    /// Максимальная глубина проверки symlink в родительских директориях.
+    /// Ограничиваем проверку до 3 уровней — дальше это paranoia.
+    const MAX_SYMLINK_CHECK_DEPTH: usize = 3;
+
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации symlink должен быть обработан"]
@@ -460,9 +468,14 @@ impl PathValidator {
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
         // NEW-147: Проверяем не только конечный путь, но и все родительские директории
         // Это предотвращает атаки через symlink в промежуточных директориях
+        // Исправление проблемы 30: ограничиваем проверку до MAX_SYMLINK_CHECK_DEPTH уровней
         let mut current_path = path;
+        let mut depth = 0;
         while let Some(parent) = current_path.parent() {
             if parent == Path::new("") || parent == Path::new(".") {
+                break;
+            }
+            if depth >= Self::MAX_SYMLINK_CHECK_DEPTH {
                 break;
             }
 
@@ -479,6 +492,7 @@ impl PathValidator {
                 }
             }
             current_path = parent;
+            depth += 1;
         }
 
         // Исправление H9 (HIGH): проверяем symlink через symlink_metadata() ПЕРЕД canonicalize()

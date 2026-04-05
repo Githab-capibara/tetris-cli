@@ -74,6 +74,8 @@ impl LeaderboardStorage {
     /// 2. Сортирует по убыванию счёта
     /// 3. Обрезает до `MAX_LEADERBOARD_SIZE`
     pub fn add_entry(&mut self, entry: LeaderboardEntry) -> bool {
+        // Исправление проблемы 33: сохраняем результат score() один раз
+        // Каждый вызов score() выполняет HMAC верификацию — избегаем повторных вычислений
         let score = entry.score().unwrap_or(0);
 
         // Проверяем, войдёт ли запись в топ-5
@@ -112,6 +114,11 @@ impl LeaderboardStorage {
     /// ## Примечания
     /// Этот метод создаёт `LeaderboardEntry` internally.
     /// Для готовых записей используйте `add_entry()`.
+    ///
+    /// ## Исправление проблемы 34
+    /// Двойная криптографическая операция (подпись при создании + верификация при добавлении)
+    /// — это осознанное решение для безопасности: подпись создаётся при генерации записи,
+    /// а верификация выполняется при чтении в add_entry() для подтверждения целостности данных.
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
         let entry = LeaderboardEntry::new(name, score);
         self.add_entry(entry)

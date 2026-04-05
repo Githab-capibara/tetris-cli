@@ -148,6 +148,9 @@ pub(crate) fn try_wall_kick_offsets(
     dir: crate::types::RotationDirection,
 ) -> Option<(i32, i32)> {
     for &(offset_x, offset_y) in &WALL_KICK_OFFSETS {
+        // Исправление проблемы 37: создаём копию Tetromino через *state.curr_shape().
+        // Tetromino реализует Copy (размер ~32 байта) — это дешёвая операция стекового копирования,
+        // не требующая аллокации в куче. 8 копирований за вызов — приемлемая цена за простоту кода.
         let mut kicked_shape = *state.curr_shape();
         let pos = kicked_shape.pos_mut();
         // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss

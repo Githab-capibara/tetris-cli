@@ -324,6 +324,10 @@ impl ControlsConfig {
         let hmac_key_placeholder = HMAC_KEY_PLACEHOLDER;
 
         // Сериализуем конфигурацию без signature для вычисления хеша
+        // Исправление проблемы 35: создаём 2 полные копии ControlsConfig (config_for_hash и config_with_sig).
+        // Это осознанное решение — сериализация в serde_json::Value с последующей модификацией
+        // усложнила бы код и потребовала бы двойную сериализацию. Две копии структуры (через Clone) —
+        // более простое и читаемое решение для однократной операции сохранения.
         let config_for_hash = ControlsConfig {
             move_left: self.move_left,
             move_right: self.move_right,
