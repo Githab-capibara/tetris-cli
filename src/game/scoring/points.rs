@@ -51,6 +51,7 @@ const MAX_SAFE_F32_AS_U32: f32 = 4_294_967_295.0;
 ///
 /// # Видимость
 /// Функция публична для тестирования (pub(crate)).
+#[inline]
 pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
     // Проверка на NaN и бесконечность
     if !value.is_finite() {

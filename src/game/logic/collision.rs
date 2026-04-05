@@ -68,6 +68,7 @@ const VALID_X_RANGE: std::ops::Range<i16> = 0..GRID_WIDTH as i16;
 /// - Проверка заполненных ячеек: `cell == -1` означает пусто
 /// - Игнорирование `Y < 0` полезно для вращения (блоки могут быть выше поля)
 #[must_use]
+#[inline]
 fn is_position_valid<T: BoardReadonly>(
     board: &T,
     check_x: i16,

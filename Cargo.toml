@@ -44,6 +44,12 @@ name = "benchmarks"
 harness = false
 required-features = ["bench"]
 
+# Оптимизации для release-сборки
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
 # Настройки линтера clippy
 [lints.clippy]
 # Рекомендуемые проверки
