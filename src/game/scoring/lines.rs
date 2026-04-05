@@ -6,7 +6,7 @@
 //! - Проверка и обработка заполненных линий (`check_rows`)
 //!
 //! # Зависимости
-//! - [`crate::io::GRID_HEIGHT`](crate::io): высота игрового поля
+//! - [`crate::constants::GRID_HEIGHT`](crate::constants): высота игрового поля
 //! - [`super::super::state::GameState`](super::super::state): состояние игры
 //! - [`super::ScoringState`]: trait для изменения состояния
 
@@ -16,7 +16,7 @@ use std::io::Write;
 use crate::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
-use crate::io::GRID_HEIGHT;
+use crate::constants::GRID_HEIGHT;
 
 /// Максимально допустимый счёт для защиты от переполнения.
 ///
@@ -52,7 +52,7 @@ pub(crate) const MAX_SCORE: u128 = u128::MAX / 2;
 /// Битовая маска занимает 4 байта и может быть быстро скопирована.
 #[must_use]
 #[inline]
-pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
+pub fn find_full_rows(blocks: &[[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
     let mut remove_count = 0;
 
@@ -79,7 +79,7 @@ pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u
 /// # Исправление аудита 2026-04-01 (L2)
 /// Удалена избыточная проверка `y + rows_removed_below < GRID_HEIGHT` - это условие
 /// всегда истинно так как мы идём снизу вверх и `rows_removed_below` <= y.
-pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
+pub fn remove_rows(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
     // Проверка валидности rows_mask
     if rows_mask >= (1u32 << GRID_HEIGHT) {
         #[cfg(debug_assertions)]
@@ -106,7 +106,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows
 
     // Заполняем верхние строки пустыми значениями (-1)
     for row in blocks.iter_mut().take(rows_removed_below) {
-        *row = [-1; crate::io::GRID_WIDTH];
+        *row = [-1; crate::constants::GRID_WIDTH];
     }
 }
 
@@ -219,7 +219,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
 /// Возвращает битовую маску `u32` вместо `SmallVec`<[usize; 4]> для оптимизации.
 /// Битовая маска занимает 4 байта вместо 24+ байт для `SmallVec`.
 #[must_use]
-pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
+pub fn find_filled_lines(blocks: &[[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     find_full_rows(blocks)
 }
 
@@ -228,7 +228,7 @@ pub fn find_filled_lines(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) ->
 /// # Аргументы
 /// * `blocks` - игровое поле (изменяемое)
 /// * `rows_mask` - битовая маска удаляемых линий
-fn remove_lines(blocks: &mut [[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
+fn remove_lines(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT], rows_mask: u32) {
     // Используем существующую функцию удаления с битовой маской
     remove_rows(blocks, rows_mask);
 }
@@ -334,7 +334,7 @@ mod lines_tests {
 
     #[test]
     fn test_find_full_rows_empty() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
         let (mask, count) = find_full_rows(&blocks);
         assert_eq!(mask, 0);
         assert_eq!(count, 0);
@@ -342,9 +342,9 @@ mod lines_tests {
 
     #[test]
     fn test_remove_rows_single() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let mut blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
         // Заполняем последнюю строку
-        blocks[GRID_HEIGHT - 1] = [1i8; crate::io::GRID_WIDTH];
+        blocks[GRID_HEIGHT - 1] = [1i8; crate::constants::GRID_WIDTH];
 
         remove_rows(&mut blocks, 1u32 << (GRID_HEIGHT - 1));
 
@@ -359,7 +359,7 @@ mod lines_tests {
     /// Тест #11: проверка что `find_filled_lines` возвращает битовую маску
     #[test]
     fn test_fix_11_find_filled_lines_returns_bitmask() {
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
         let (mask, count) = find_filled_lines(&blocks);
 
         // Проверка типа возвращаемого значения - (u32, u32)
@@ -371,12 +371,12 @@ mod lines_tests {
     /// Тест #11: проверка `find_filled_lines` с заполненными линиями
     #[test]
     fn test_fix_11_find_filled_lines_with_full_rows() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let mut blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем несколько линий
-        blocks[5] = [1i8; crate::io::GRID_WIDTH];
-        blocks[10] = [2i8; crate::io::GRID_WIDTH];
-        blocks[15] = [3i8; crate::io::GRID_WIDTH];
+        blocks[5] = [1i8; crate::constants::GRID_WIDTH];
+        blocks[10] = [2i8; crate::constants::GRID_WIDTH];
+        blocks[15] = [3i8; crate::constants::GRID_WIDTH];
 
         let (mask, count) = find_filled_lines(&blocks);
 
@@ -389,13 +389,13 @@ mod lines_tests {
     /// Тест #11: проверка битовой маски с максимальным количеством линий (4)
     #[test]
     fn test_fix_11_find_filled_lines_max_tetris_lines() {
-        let mut blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let mut blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем 4 линии (максимум для тетриса)
-        blocks[16] = [1i8; crate::io::GRID_WIDTH];
-        blocks[17] = [2i8; crate::io::GRID_WIDTH];
-        blocks[18] = [3i8; crate::io::GRID_WIDTH];
-        blocks[19] = [4i8; crate::io::GRID_WIDTH];
+        blocks[16] = [1i8; crate::constants::GRID_WIDTH];
+        blocks[17] = [2i8; crate::constants::GRID_WIDTH];
+        blocks[18] = [3i8; crate::constants::GRID_WIDTH];
+        blocks[19] = [4i8; crate::constants::GRID_WIDTH];
 
         let (mask, count) = find_filled_lines(&blocks);
 
@@ -412,7 +412,7 @@ mod lines_tests {
         // Битовая маска u32 занимает 4 байта и не требует аллокаций в куче
         // Это оптимально для тетриса (максимум 4 линии за раз)
 
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
         let (mask, count) = find_filled_lines(&blocks);
 
         // Проверка что битовая маска корректно работает
@@ -436,7 +436,7 @@ mod lines_tests {
         // - Быстрые битовые операции
         // - Нет аллокаций в куче
 
-        let blocks = [[-1i8; crate::io::GRID_WIDTH]; GRID_HEIGHT];
+        let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
         let (mask, count) = find_filled_lines(&blocks);
 
         // Проверка что битовая маска корректно работает

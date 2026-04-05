@@ -47,7 +47,7 @@
 
 // crate
 use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
-use crate::io::GRID_HEIGHT;
+use crate::constants::GRID_HEIGHT;
 use crate::tetromino::{BagGenerator, Tetromino};
 
 // self (super)
@@ -735,11 +735,11 @@ impl GameState {
     /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
     ///
     /// # DRY-2: Централизация валидации
-    /// Использует `ValidationService::validate_f32_finite()` и `validate_f32_range()` для валидации.
+    /// Использует `validate_f32_finite()` и `validate_f32_range()` для валидации.
     ///
     /// # Исправление аудита 2026-03-31 (HIGH)
     /// Убран избыточный `clamp()` после валидации. Теперь используется только типизированная
-    /// валидация через `ValidationService::validate_f32_range()` для предотвращения дублирования.
+    /// валидация для предотвращения дублирования.
     ///
     /// # Исправление аудита 2026-04-02 (B1)
     /// Добавлен `#[must_use]` для предотвращения игнорирования ошибок валидации.
@@ -752,23 +752,17 @@ impl GameState {
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
         use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED};
         use crate::errors::GameError;
-        use crate::validation::ValidationService;
+        use crate::validation::service::{validate_f32_finite, validate_f32_range};
 
-        // Валидация на NaN и Infinity через централизованный сервис (DRY-2)
-        if let Err(e) = ValidationService::validate_f32_finite(value) {
-            return Err(GameError::ValidationError(format!(
-                "Неверная скорость падения: {}",
-                e.message
-            )));
+        // Валидация на NaN и Infinity через централизованную функцию (DRY-2)
+        if let Err(e) = validate_f32_finite(value) {
+            return Err(GameError::ValidationError(format!("Неверная скорость падения: {e}")));
         }
 
-        // Валидация диапазона через ValidationService (вместо clamp)
-        if let Err(e) =
-            ValidationService::validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED)
-        {
+        // Валидация диапазона через централизованную функцию (вместо clamp)
+        if let Err(e) = validate_f32_range(value, INITIAL_FALL_SPD, MAX_FALL_SPEED) {
             return Err(GameError::ValidationError(format!(
-                "Неверный диапазон скорости: {}",
-                e.message
+                "Неверный диапазон скорости: {e}"
             )));
         }
 
@@ -1139,11 +1133,11 @@ impl super::scoring::ScoringState for GameState {
         self.stats_mut()
     }
 
-    fn get_blocks(&self) -> &[[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT] {
+    fn get_blocks(&self) -> &[[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
         self.get_blocks()
     }
 
-    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT] {
+    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
         self.get_blocks_mut()
     }
 }

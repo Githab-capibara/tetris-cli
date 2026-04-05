@@ -27,7 +27,6 @@ pub use crate::types::{Direction, RotationDirection, UpdateEndState};
 pub use crate::errors::GameError;
 
 // Экспорт основных типов из модуля game
-#[allow(deprecated)]
 pub use crate::game::state::GameMode;
 pub use crate::game::state::GameState;
 pub use crate::game::stats::GameStats;
@@ -49,6 +48,3 @@ pub use crate::controls::ControlsConfig;
 
 // Экспорт криптографических утилит из модуля crypto
 pub use crate::crypto::{generate_salt, hash};
-// HMAC-функции из подмодуля hmac
-#[allow(unused_imports)]
-pub use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};

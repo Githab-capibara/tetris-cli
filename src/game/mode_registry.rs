@@ -65,11 +65,14 @@ impl ModeRegistry {
 
     /// Зарегистрировать стандартные режимы.
     fn register_default_modes(&mut self) {
+        // Английские названия — основные ключи реестра
         self.register("classic", Box::new(|| Box::new(ClassicMode)));
         self.register("sprint", Box::new(|| Box::new(SprintMode::new())));
         self.register("marathon", Box::new(|| Box::new(MarathonMode::new())));
 
-        // Русские названия для обратной совместимости
+        // Русские названия — дубли для обратной совместимости с CLI,
+        // где режимы выбирались по русским именам. Увеличивают размер HashMap,
+        // но это осознанное решение: ломать обратную совместимость не стоит.
         self.register("классика", Box::new(|| Box::new(ClassicMode)));
         self.register("спринт", Box::new(|| Box::new(SprintMode::new())));
         self.register("марафон", Box::new(|| Box::new(MarathonMode::new())));
@@ -164,36 +167,18 @@ impl Default for ModeRegistry {
     }
 }
 
-/// Factory функция для создания режима игры через глобальный реестр.
-///
-/// # Аргументы
-/// * `name` - название режима
-///
-/// # Возвращает
-/// - `Some(Box<dyn GameModeTrait>)` - объект режима
-/// - `None` - если режим не зарегистрирован
-///
-/// # Пример использования
-/// ```ignore
-/// use tetris_cli::game::mode_registry::create_mode;
-///
-/// let mode = create_mode("sprint").unwrap();
-/// assert_eq!(mode.name(), "Спринт");
-/// ```
-#[must_use]
-pub fn create_mode(name: &str) -> Option<Box<dyn GameModeTrait>> {
-    ModeRegistry::global().create(name)
-}
-
 /// Factory функция для создания режима игры по умолчанию (Classic).
 ///
 /// # Возвращает
 /// `Box<dyn GameModeTrait>` с режимом Classic
+///
+/// # Паника
+/// Паникует если режим "classic" не зарегистрирован — это указывает на сломанный реестр.
 #[must_use]
 pub fn create_default_mode() -> Box<dyn GameModeTrait> {
     ModeRegistry::global()
         .create("classic")
-        .unwrap_or_else(|| Box::new(ClassicMode))
+        .expect("classic mode must be registered in ModeRegistry")
 }
 
 #[cfg(test)]
@@ -251,8 +236,8 @@ mod tests {
     }
 
     #[test]
-    fn test_create_mode_function() {
-        let mode = create_mode("sprint");
+    fn test_create_mode_via_global_registry() {
+        let mode = ModeRegistry::global().create("sprint");
         assert!(mode.is_some());
         assert_eq!(mode.unwrap().name(), "Спринт");
     }

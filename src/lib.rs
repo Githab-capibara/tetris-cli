@@ -380,7 +380,11 @@ pub use exports::*;
 // ============================================================================
 
 /// Макрос для логирования ошибок с префиксом `"[ERROR]"`.
+///
+/// Использует `eprintln!` так как это CLI-приложение без logger framework.
+/// `eprintln!` гарантирует вывод в stderr даже при панике.
 #[macro_export]
+#[allow(clippy::print_stderr)]
 macro_rules! log_error {
     ($($arg:tt)*) => {{
         eprintln!("[ERROR] $($arg)*");
@@ -389,6 +393,7 @@ macro_rules! log_error {
 
 /// Макрос для логирования предупреждений с префиксом `"[WARN]"`.
 #[macro_export]
+#[allow(clippy::print_stderr)]
 macro_rules! log_warn {
     ($($arg:tt)*) => {{
         eprintln!("[WARN] $($arg)*");
@@ -397,6 +402,7 @@ macro_rules! log_warn {
 
 /// Макрос для логирования информации с префиксом `"[INFO]"`.
 #[macro_export]
+#[allow(clippy::print_stderr)]
 macro_rules! log_info {
     ($($arg:tt)*) => {{
         eprintln!("[INFO] $($arg)*");

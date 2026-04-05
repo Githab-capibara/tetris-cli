@@ -16,13 +16,9 @@
 //! единственным источником истины для этих типов.
 
 // Переэкспорт базовых типов из core модуля для обратной совместимости
-// Источник истины: crate::core (Position, Direction, RotationDirection)
-#[allow(unused_imports)]
-pub use crate::core::{Direction, Position, RotationDirection};
-
-// R1: GameAction переэкспортирован из game/types.rs для устранения дублирования
-#[allow(deprecated, unused_imports)]
-pub use crate::game::types::GameAction;
+// Источник истины: crate::core (Direction, RotationDirection)
+// Position удалён — не используется через этот re-export
+pub use crate::core::{Direction, RotationDirection};
 
 // ============================================================================
 /// Состояние завершения обновления.
@@ -42,6 +38,18 @@ pub enum UpdateEndState {
     Won,
 }
 
+impl std::fmt::Display for UpdateEndState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UpdateEndState::Quit => write!(f, "Quit"),
+            UpdateEndState::Lost => write!(f, "Lost"),
+            UpdateEndState::Continue => write!(f, "Continue"),
+            UpdateEndState::Pause => write!(f, "Pause"),
+            UpdateEndState::Won => write!(f, "Won"),
+        }
+    }
+}
+
 // ============================================================================
 // ТЕСТЫ
 // ============================================================================
@@ -49,6 +57,7 @@ pub enum UpdateEndState {
 #[cfg(test)]
 mod types_tests {
     use super::*;
+    use crate::game::types::GameAction;
 
     #[test]
     fn test_direction_from_core() {
@@ -60,8 +69,8 @@ mod types_tests {
 
     #[test]
     fn test_position_from_core() {
-        // Проверка что Position переэкспортирован из core
-        let pos = Position::new(5, 10);
+        // Position определяется в crate::core напрямую
+        let pos = crate::core::Position::new(5, 10);
         assert_eq!(pos.x(), 5);
         assert_eq!(pos.y(), 10);
     }

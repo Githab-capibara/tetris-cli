@@ -5,7 +5,7 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты работы с терминалом.
 
-use crate::io::{DISP_HEIGHT, DISP_WIDTH, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
+use crate::constants::{DISP_HEIGHT, DISP_WIDTH, GRID_WIDTH, SHAPE_STR, SHAPE_WIDTH};
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-4: Canvas

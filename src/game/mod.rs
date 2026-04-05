@@ -230,12 +230,12 @@ impl GameState {
     #[cfg(feature = "bench")]
     #[allow(clippy::missing_panics_doc, dead_code)]
     pub fn fill_line_for_bench(&mut self, line: usize) {
-        use crate::io::GRID_HEIGHT;
+        use crate::constants::GRID_HEIGHT;
         assert!(
             line < GRID_HEIGHT,
             "Индекс линии должен быть меньше {GRID_HEIGHT}"
         );
-        self.get_blocks_mut()[line] = [1i8; crate::io::GRID_WIDTH];
+        self.get_blocks_mut()[line] = [1i8; crate::constants::GRID_WIDTH];
     }
 
     /// Очистить заполненные линии для бенчмарков.
@@ -270,7 +270,7 @@ mod game_tests {
         COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINE_SCORES, SOFT_DROP_POINTS,
     };
     use crate::game::state::GameStats;
-    use crate::io::GRID_HEIGHT;
+    use crate::constants::GRID_HEIGHT;
     use crate::types::Direction;
 
     // Тесты Hard Drop

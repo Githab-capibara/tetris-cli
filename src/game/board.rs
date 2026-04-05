@@ -9,7 +9,7 @@
 //! Выделено из `GameState` для соблюдения Single Responsibility Principle (SRP).
 //! `GameBoard` инкапсулирует состояние поля и предоставляет контролируемый доступ.
 
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 
 // Переэкспорт трейтов доступа из access.rs для удобства
 pub use super::access::{BoardMutable, BoardReadonly};

@@ -12,7 +12,7 @@
 
 use crate::constants::{INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, Tetromino};
 use crate::types::{Direction, RotationDirection};
 

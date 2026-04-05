@@ -3,11 +3,12 @@
 //! ## Исправление #10 (menu.rs разделение)
 //! Выделено из `menu.rs` для улучшения читаемости и разделения ответственности.
 
+use crate::constants::MAX_LEADERBOARD_ENTRIES;
 use crate::highscore::Leaderboard;
 use crate::io::Canvas;
 use std::fmt::Write;
 
-use super::constants::{LEADERBOARD_MENU, MAX_LEADERBOARD_ENTRIES, MENU, MENU_COLOR};
+use super::constants::{LEADERBOARD_MENU, MENU, MENU_COLOR};
 
 /// Отрисовать главное меню.
 ///

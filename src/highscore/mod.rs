@@ -26,9 +26,12 @@
 //! - `LeaderboardRepository` - сериализация/десериализация и персистентность
 //! - `Leaderboard` - фасад для обратной совместимости
 
+// Имя приложения для конфигурации (используется во всех подмодулях highscore)
+pub const APP_NAME: &str = "tetris-cli";
+
 // Подмодули
 pub mod leaderboard;
-mod save_data;
+pub(crate) mod save_data;
 
 // Новые подмодули компонентов (Архитектурное улучшение 2026-04-01)
 pub mod leaderboard_repository;

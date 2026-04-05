@@ -6,7 +6,7 @@
 
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::Tetromino;
 
 /// Вертикальное смещение фигур при отрисовке на игровом поле (строки от верха терминала).
@@ -249,7 +249,7 @@ impl<'a> GameView<'a> {
     #[must_use]
     #[allow(dead_code, clippy::unused_self)]
     pub fn get_shape_display_char(&self) -> &str {
-        use crate::io::SHAPE_STR;
+        use crate::constants::SHAPE_STR;
         SHAPE_STR
     }
 
@@ -460,7 +460,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::io::{SHAPE_STR, SHAPE_WIDTH};
+        use crate::constants::{SHAPE_STR, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
@@ -507,7 +507,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::io::{SHAPE_STR, SHAPE_WIDTH};
+        use crate::constants::{SHAPE_STR, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
@@ -613,7 +613,7 @@ impl<'a> GameView<'a> {
     where
         R: crate::io_traits::Renderer,
     {
-        use crate::io::{GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
+        use crate::constants::{GRID_HEIGHT, GRID_WIDTH, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 
@@ -779,7 +779,7 @@ impl<'a> GameView<'a> {
         R: crate::io_traits::Renderer,
     {
         use crate::constants::{BORDER_COLOR, DISP_HEIGHT, DISP_WIDTH, DRAW_OFFSET_X};
-        use crate::io::{SHAPE_STR, SHAPE_WIDTH};
+        use crate::constants::{SHAPE_STR, SHAPE_WIDTH};
         use crate::tetromino::SHAPE_COLORS;
         use termion::color::Reset;
 

@@ -22,7 +22,7 @@
 
 use crate::game::access::BoardReadonly;
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::types::Direction;
 
 /// Допустимый диапазон координат X для блоков на поле.
@@ -347,7 +347,7 @@ mod collision_tests {
     /// Тест C2: проверка `is_position_valid` с `VALID_X_RANGE.contains()`
     #[test]
     fn test_fix_c2_is_position_valid_range_contains() {
-        use crate::io::GRID_WIDTH;
+        use crate::constants::GRID_WIDTH;
 
         // Проверка что VALID_X_RANGE корректно определён
         assert_eq!(VALID_X_RANGE.start, 0);
@@ -399,7 +399,7 @@ mod collision_tests {
     /// Тест: проверка что блоки ниже поля считаются коллизией (не проваливаются)
     #[test]
     fn test_block_below_field_is_collision() {
-        use crate::io::GRID_HEIGHT;
+        use crate::constants::GRID_HEIGHT;
 
         // Создаём состояние и проверяем что GRID_HEIGHT корректно обрабатывается
         // Блок на уровне GRID_HEIGHT должен считаться коллизией
