@@ -82,5 +82,4 @@ mod types_tests {
         assert_eq!(format!("{:?}", UpdateEndState::Pause), "Pause");
         assert_eq!(format!("{:?}", UpdateEndState::Won), "Won");
     }
-
 }
