@@ -141,15 +141,17 @@ impl StringCache {
 
         // Обновление рекорда
         if self.high_score_str != high_score_display {
-            self.high_score_str = high_score_display.to_string();
+            // Исправление проблемы 22: clear() + push_str() вместо to_string()
+            self.high_score_str.clear();
+            self.high_score_str.push_str(high_score_display);
         }
 
         // Обновление комбо
         if combo != self.last_combo {
+            // Исправление проблемы 23: clear() + write!() вместо format!()
+            self.combo_str.clear();
             if combo > 1 {
-                self.combo_str = format!("Комбо: x{combo}");
-            } else {
-                self.combo_str.clear();
+                let _ = write!(self.combo_str, "Комбо: x{combo}");
             }
             self.last_combo = combo;
         }
@@ -158,7 +160,9 @@ impl StringCache {
         if mode.get_target_lines() == Some(40) {
             let elapsed = stats.get_elapsed_time();
             if (elapsed - self.last_timer).abs() > f64::EPSILON {
-                self.timer_str = format!("Время: {elapsed:.2}с");
+                // Исправление проблемы 24: clear() + write!() вместо format!()
+                self.timer_str.clear();
+                let _ = write!(self.timer_str, "Время: {elapsed:.2}с");
                 self.last_timer = elapsed;
             }
         }
@@ -302,7 +306,9 @@ impl RenderCache {
         let _ = write!(self.cached_score_str, "{score:10}");
         let _ = write!(self.cached_level_str, "{level:10}");
         let _ = write!(self.cached_lines_str, "{lines:10}");
-        self.cached_high_score_str = format!("{high_score:10}");
+        // Исправление проблемы 21: используем write! вместо format! для переиспользования буфера
+        self.cached_high_score_str.clear();
+        let _ = write!(self.cached_high_score_str, "{high_score:10}");
     }
 }
 

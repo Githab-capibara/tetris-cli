@@ -160,10 +160,15 @@ impl GameMode {
     /// `false` для классического режима (победы нет, только проигрыш)
     ///
     /// # Архитектурные заметки
-    /// Этот метод делегирует вызов трейту `GameModeTrait`.
+    /// Исправление проблемы 39: используем match напрямую на enum вместо as_trait()
+    /// для предотвращения создания Box<dyn GameModeTrait> при каждом вызове.
     #[must_use]
     pub fn check_win_condition(self, lines_cleared: u32) -> bool {
-        self.as_trait().check_win_condition(lines_cleared)
+        match self {
+            GameMode::Classic => false,
+            GameMode::Sprint => lines_cleared >= 40,
+            GameMode::Marathon => lines_cleared >= 150,
+        }
     }
 
     /// Получить целевое количество линий для режима.
@@ -172,7 +177,11 @@ impl GameMode {
     /// Количество линий для победы (для Sprint/Marathon) или None для Classic
     #[must_use]
     pub fn get_target_lines(self) -> Option<u32> {
-        self.as_trait().get_target_lines()
+        match self {
+            GameMode::Classic => None,
+            GameMode::Sprint => Some(40),
+            GameMode::Marathon => Some(150),
+        }
     }
 }
 

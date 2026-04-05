@@ -5,6 +5,7 @@
 
 use crate::highscore::Leaderboard;
 use crate::io::Canvas;
+use std::fmt::Write;
 
 use super::constants::{LEADERBOARD_MENU, MAX_LEADERBOARD_ENTRIES, MENU, MENU_COLOR};
 
@@ -76,8 +77,12 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
     );
 
     let entries = leaderboard.get_entries();
+    // Исправление проблемы 27: используем write! в переиспользуемый буфер вместо format! в цикле
+    let mut line_buf = String::with_capacity(32);
     for (i, entry) in entries.iter().take(MAX_LEADERBOARD_ENTRIES).enumerate() {
-        let line = format!(
+        line_buf.clear();
+        let _ = write!(
+            line_buf,
             "{}. {:12} {:10}",
             i + 1,
             entry.name(),
@@ -85,7 +90,7 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
         );
         // cast: usize -> u16, потеря точности допустима: количество записей <= 5
         cnv.draw_string(
-            &line,
+            &line_buf,
             (3, (3 + i) as u16),
             MENU_COLOR,
             &termion::color::Reset,

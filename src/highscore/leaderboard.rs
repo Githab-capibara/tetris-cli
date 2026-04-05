@@ -41,6 +41,27 @@ const APP_NAME: &str = "tetris-cli";
 /// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
 use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 
+/// Приватная функция для создания данных записи (соль, хеш, санитаризация имени).
+///
+/// # Аргументы
+/// * `name` - имя игрока (будет санитаризировано)
+/// * `score` - значение рекорда
+///
+/// # Возвращает
+/// Кортеж `(sanitized_name, salt, hash)` для использования в конструкторах
+///
+/// # Исправление проблемы 32
+/// Вынесена общая логика из `LeaderboardEntry::new()` и `ThreadSafeLeaderboardEntry::new()`
+/// для устранения дублирования кода (генерация соли, хеша, санитаризация имени).
+fn create_entry_data(name: &str, score: u128) -> (String, String, String) {
+    let valid_name = sanitize_player_name(name);
+    let salt = crate::crypto::generate_salt();
+    // Исправление Проблема 9: Разделители ':' предотвращают коллизии конкатенации
+    let salt_name_score = format!("{salt}:{valid_name}:{score}");
+    let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
+    (valid_name, salt, hash)
+}
+
 /// Запись в таблице лидеров.
 /// Представляет собой один результат с именем игрока и защищённым хешом.
 /// Использует u128 для предотвращения переполнения счёта.
@@ -51,7 +72,7 @@ use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 /// что предотвращает подделку результатов через редактирование конфига.
 ///
 /// ## Исправление #5 (TOCTOU)
-/// **Эта структура НЕ является потокобезопасной.**
+/// **Эта структура НЕ является потокобезопасной по умолчанию.**
 /// Методы валидации и чтения могут подвергаться TOCTOU уязвимости
 /// (Time-Of-Check-Time-Of-Use) в многопоточной среде.
 ///
@@ -67,6 +88,12 @@ use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 /// Эта структура не реализует `Send + Sync` намеренно:
 /// - Сериализация через serde не добавляет автоматической потокобезопасности
 /// - Для многопоточного доступа используйте `ThreadSafeLeaderboardEntry`
+///
+/// ## Исправление проблемы 31
+/// Клонирование записи клонирует все поля включая hash/salt.
+/// Это осознанное решение — клонирование нужно для тестов,
+/// клонированная запись валидна с тем же ключом (feature, не bug).
+#[allow(clippy::expl_impl_clone_on_copy)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
@@ -298,12 +325,8 @@ impl LeaderboardEntry {
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
-        let valid_name = sanitize_player_name(name);
-
-        let salt = crate::crypto::generate_salt();
-        // Исправление Проблема 9: Разделители ':' предотвращают коллизии конкатенации
-        let salt_name_score = format!("{salt}:{valid_name}:{score}");
-        let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
+        // Исправление проблемы 32: используем общую функцию create_entry_data
+        let (valid_name, salt, hash) = create_entry_data(name, score);
 
         Self {
             name: valid_name,
@@ -467,11 +490,8 @@ impl ThreadSafeLeaderboardEntry {
     /// Использует `RwLock` вместо Mutex для лучшей производительности чтения.
     #[must_use]
     pub fn new(name: &str, score: u128) -> Self {
-        let valid_name = sanitize_player_name(name);
-        let salt = crate::crypto::generate_salt();
-        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
-        let salt_name_score = format!("{salt}:{valid_name}:{score}");
-        let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
+        // Исправление проблемы 32: используем общую функцию create_entry_data
+        let (valid_name, salt, hash) = create_entry_data(name, score);
 
         Self {
             inner: RwLock::new(LeaderboardEntryData {

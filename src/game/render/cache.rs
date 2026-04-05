@@ -70,9 +70,20 @@ fn update_cached_strings(state: &mut GameState) {
 pub fn update_cached_strings_extended(state: &mut GameState, high_score_display: &str) {
     update_cached_strings(state);
 
-    // Кэширование строки рекорда
+    // Исправление проблемы 26: объединяем все обновления в один блок с одним получением render_cache
+    let combo_counter = state.stats().combo_counter();
+    let is_sprint_mode = state.get_mode_trait().get_target_lines() == Some(40);
+    // Вычисляем elapsed ДО получения mutable borrow (проблема 26: borrow conflict)
+    let sprint_elapsed = if is_sprint_mode {
+        Some(state.stats().get_elapsed_time())
+    } else {
+        None
+    };
+
     {
         let render_cache = state.get_render_cache_mut();
+
+        // Кэширование строки рекорда
         // Исправление #4: используем clear() + push_str() для переиспользования буфера
         if render_cache.cached_high_score_str != high_score_display {
             render_cache.cached_high_score_str.clear();
@@ -80,40 +91,34 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
                 .cached_high_score_str
                 .push_str(high_score_display);
         }
-    }
 
-    // Кэширование строки комбо
-    let combo_counter = state.stats().combo_counter();
-    {
-        let render_cache = state.get_render_cache_mut();
+        // Кэширование строки комбо
+        // Исправление #4: используем clear() + write!() для переиспользования буфера
         if render_cache.last_cached_combo != combo_counter {
-            // Исправление #4: используем clear() + write!() для переиспользования буфера
             render_cache.cached_combo_str.clear();
             if combo_counter > 1 {
                 let _ = write!(render_cache.cached_combo_str, "Комбо: x{combo_counter}");
             }
             render_cache.last_cached_combo = combo_counter;
         }
-    }
 
-    // Кэширование строки таймера для режима спринт
-    if state.get_mode_trait().get_target_lines() == Some(40) {
-        let elapsed = state.stats().get_elapsed_time();
-        let render_cache = state.get_render_cache_mut();
-        // Сравниваем до форматирования — избегаем аллокации если значение не изменилось
-        let timer_matches = render_cache.last_cached_timer == (elapsed * 100.0).round() as i64;
-        if !timer_matches {
-            let timer_str = format!("Время: {elapsed:.2}с");
-            render_cache.cached_timer_str.clear();
-            render_cache.cached_timer_str.push_str(&timer_str);
-            render_cache.last_cached_timer = (elapsed * 100.0).round() as i64;
+        // Кэширование строки таймера для режима спринт
+        if is_sprint_mode {
+            let elapsed = sprint_elapsed.unwrap_or(0.0);
+            // Сравниваем до форматирования — избегаем аллокации если значение не изменилось
+            let timer_matches = render_cache.last_cached_timer == (elapsed * 100.0).round() as i64;
+            if !timer_matches {
+                // Исправление проблемы 25: write! напрямую в буфер вместо format!
+                render_cache.cached_timer_str.clear();
+                let _ = write!(render_cache.cached_timer_str, "Время: {elapsed:.2}с");
+                render_cache.last_cached_timer = (elapsed * 100.0).round() as i64;
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::game::cache::RenderCache;
 
     #[test]
