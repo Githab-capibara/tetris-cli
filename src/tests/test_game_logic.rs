@@ -113,7 +113,7 @@ fn test_collision_floor() {
 
     // Опускаем фигуру вниз до упора
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Дальнейшее движение вниз должно быть заблокировано
@@ -139,7 +139,7 @@ fn test_collision_with_fixed_blocks() {
 
     // Опускаем фигуру близко к полу для теста
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано

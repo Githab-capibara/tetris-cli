@@ -38,7 +38,7 @@ fn test_gravity_and_falling() {
     // Опускаем фигуру на 5 блоков
     for _ in 0..5 {
         if state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos().1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
     }
 
@@ -100,7 +100,7 @@ fn test_collision_with_fixed_pieces() {
 
     // Опускаем фигуру на пол
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
@@ -160,7 +160,7 @@ fn test_rotation_near_left_wall() {
     // Перемещаем фигуру к левой границе
     for _ in 0..5 {
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
+            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         }
     }
 
@@ -182,7 +182,7 @@ fn test_rotation_near_right_wall() {
     // Перемещаем фигуру к правой границе (но не вплотную)
     for _ in 0..3 {
         if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos().0 += 1.0;
+            state.get_curr_shape_mut().pos_mut().0 += 1.0;
         }
     }
 
@@ -207,7 +207,7 @@ fn test_rotation_near_floor() {
     // Опускаем фигуру близко к полу
     for _ in 0..15 {
         if state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos().1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
     }
 

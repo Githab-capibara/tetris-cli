@@ -47,7 +47,7 @@ fn test_all_pieces_move_left_right() {
 
         // Тест движения влево
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
+            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
             assert!(
                 state.curr_shape().pos().0 < initial_x,
                 "Фигура {shape_type:?} должна двигаться влево"
@@ -63,7 +63,7 @@ fn test_all_pieces_move_left_right() {
 
         let initial_x = state.curr_shape().pos().0;
         if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos().0 += 1.0;
+            state.get_curr_shape_mut().pos_mut().0 += 1.0;
             assert!(
                 state.curr_shape().pos().0 > initial_x,
                 "Фигура {shape_type:?} должна двигаться вправо"
@@ -83,7 +83,7 @@ fn test_piece_position_at_left_boundary() {
 
     // Двигаемся влево до упора
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
     let shape = state.curr_shape();
@@ -104,7 +104,7 @@ fn test_piece_position_at_right_boundary() {
 
     // Двигаемся вправо до упора
     while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
     }
 
     let shape = state.curr_shape();
@@ -125,7 +125,7 @@ fn test_piece_position_at_bottom_boundary() {
 
     // Опускаем фигуру до пола
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     let shape = state.curr_shape();
@@ -146,7 +146,7 @@ fn test_i_piece_at_left_boundary() {
 
     // Двигаемся влево до упора
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
     // I-фигура должна корректно обрабатывать границу
@@ -163,7 +163,7 @@ fn test_i_piece_at_right_boundary() {
 
     // Двигаемся вправо до упора
     while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
     }
 
     assert!(
@@ -179,13 +179,13 @@ fn test_o_piece_at_boundaries() {
 
     // Двигаемся влево до упора
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
     assert!(!state.can_move_curr_shape_direction(Direction::Left));
 
     // Двигаемся вправо до упора
     while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
     }
     assert!(!state.can_move_curr_shape_direction(Direction::Right));
 }
@@ -197,10 +197,10 @@ fn test_movement_in_corner() {
 
     // Двигаемся в левый нижний угол
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Движение влево и вниз должно быть заблокировано
@@ -266,7 +266,7 @@ fn test_move_in_narrow_space() {
     let moves_count = GRID_WIDTH / 4;
     for _ in 0..moves_count {
         if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
+            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         }
     }
 
@@ -286,7 +286,7 @@ fn test_obstacle_avoidance_left() {
     // Пытаемся двигаться влево
     let initial_x = state.curr_shape().pos().0;
     if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         assert!(
             state.curr_shape().pos().0 < initial_x,
             "Движение влево должно уменьшить X координату"
@@ -302,7 +302,7 @@ fn test_obstacle_avoidance_right() {
     // Пытаемся двигаться вправо
     let initial_x = state.curr_shape().pos().0;
     if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
         assert!(
             state.curr_shape().pos().0 > initial_x,
             "Движение вправо должно увеличить X координату"
@@ -330,7 +330,7 @@ fn test_collision_check_on_down_movement() {
 
     // Опускаем фигуру до пола
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Движение вниз должно быть заблокировано
@@ -366,7 +366,7 @@ fn test_soft_drop_acceleration() {
 
     // Симулируем мягкое падение
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
         assert!(
             state.curr_shape().pos().1 > initial_y,
             "Мягкое падение должно увеличить Y координату"
@@ -381,7 +381,7 @@ fn test_soft_drop_stop_at_floor() {
 
     // Опускаем фигуру до пола
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Падение должно остановиться
@@ -400,7 +400,7 @@ fn test_soft_drop_continuous_movement() {
 
     // Выполняем несколько мягких падений
     while state.can_move_curr_shape_direction(Direction::Down) && drops < 10 {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
         drops += 1;
     }
 
@@ -453,7 +453,7 @@ fn test_hard_drop_comprehensive() {
     let initial_y = state.curr_shape().pos().1;
 
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     assert!(
@@ -505,7 +505,7 @@ fn test_hard_drop_comprehensive() {
         let initial_y = state.curr_shape().pos().1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos().1 += 1.0;
+            state.get_curr_shape_mut().pos_mut().1 += 1.0;
         }
 
         assert!(
@@ -602,7 +602,7 @@ fn test_rotation_at_wall_and_movement() {
 
     // Двигаемся к левой стене
     while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
     // Используем rotate_with_wall_kick для вращения у стены

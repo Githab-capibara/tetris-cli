@@ -81,17 +81,17 @@ fn test_piece_movement_cycle() {
 
     // Двигаем влево
     if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
     // Двигаем вправо
     if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
     }
 
     // Двигаем вниз
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     // Проверяем, что позиция изменилась
@@ -117,7 +117,7 @@ fn test_piece_drop_to_floor() {
     // Опускаем фигуру до упора
     let mut drop_count = 0;
     while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
         drop_count += 1;
     }
 
