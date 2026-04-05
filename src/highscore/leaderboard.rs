@@ -286,7 +286,7 @@ impl LeaderboardEntry {
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     /// let entry = LeaderboardEntry::new("Player", 1000);
     /// assert_eq!(entry.name(), "Player");
-    /// assert_eq!(entry.score(), 1000);
+    /// assert_eq!(entry.score(), Some(1000));
     /// ```
     /// Использует u128 для предотвращения переполнения.
     ///

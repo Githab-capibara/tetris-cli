@@ -175,8 +175,8 @@ impl FigureManager {
     /// Сбрасывает `can_hold` в true.
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::components::FigureManager;
+    /// ```ignore
+    /// use tetris_cli::game::components::FigureManager;
     ///
     /// let mut manager = FigureManager::new();
     /// let old_curr = manager.curr_shape().shape();

@@ -563,11 +563,11 @@ impl ControlsConfig {
     /// - `Err(String)` если ключ невалиден
     ///
     /// # Пример использования
-    /// ```
+    /// ```ignore
     /// use tetris_cli::controls::ControlsConfig;
     ///
-    /// let config = ControlsConfig::default_config();
-    /// assert!(config.validate_hmac_key().is_ok());
+    /// // validate_hmac_key — associated function, требует переменную окружения
+    /// // ControlsConfig::validate_hmac_key().is_ok()
     /// ```
     ///
     /// # Исправление ISSUE-041

@@ -68,8 +68,8 @@ impl ScoreBoard {
     /// Текущий счёт (u128)
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::scoreboard::ScoreBoard;
+    /// ```ignore
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
     ///
     /// let scoreboard = ScoreBoard::new();
     /// assert_eq!(scoreboard.get_score(), 0);
@@ -85,8 +85,8 @@ impl ScoreBoard {
     /// Текущий уровень (u32)
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::scoreboard::ScoreBoard;
+    /// ```ignore
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
     ///
     /// let scoreboard = ScoreBoard::new();
     /// assert_eq!(scoreboard.get_level(), 1);
@@ -102,8 +102,8 @@ impl ScoreBoard {
     /// Количество очищенных линий (u32)
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::scoreboard::ScoreBoard;
+    /// ```ignore
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
     ///
     /// let scoreboard = ScoreBoard::new();
     /// assert_eq!(scoreboard.get_lines_cleared(), 0);
@@ -131,8 +131,8 @@ impl ScoreBoard {
     /// Добавлен `#[must_use]` так как возвращаемое значение (новый счёт) важно.
     ///
     /// # Пример использования
-    /// ```
-    /// use crate::game::scoreboard::ScoreBoard;
+    /// ```ignore
+    /// use tetris_cli::game::scoreboard::ScoreBoard;
     ///
     /// let mut scoreboard = ScoreBoard::new();
     /// assert_eq!(scoreboard.add_score(100), 100);

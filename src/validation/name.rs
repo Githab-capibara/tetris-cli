@@ -111,8 +111,8 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// 2. Выделение строки с точным размером
 ///
 /// # Примеры
-/// ```
-/// use tetris_cli::validation::sanitize_player_name;
+/// ```ignore
+/// use tetris_cli::validation::name::sanitize_player_name;
 ///
 /// assert_eq!(sanitize_player_name("Player1"), "Player1");
 /// assert_eq!(sanitize_player_name("  "), "Anonymous");

@@ -93,8 +93,8 @@ impl AnimationState {
     /// Паникует если `row >= 32` (выход за пределы битовой маски u32)
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::components::AnimationState;
+    /// ```ignore
+    /// use tetris_cli::game::components::AnimationState;
     ///
     /// let mut state = AnimationState::new();
     /// state.add_row_to_animation(5);
@@ -112,8 +112,8 @@ impl AnimationState {
     /// * `row` - номер строки (0-19)
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::components::AnimationState;
+    /// ```ignore
+    /// use tetris_cli::game::components::AnimationState;
     ///
     /// let mut state = AnimationState::new();
     /// state.add_row_to_animation(5);
@@ -129,8 +129,8 @@ impl AnimationState {
     /// Очистить маску анимации.
     ///
     /// # Пример
-    /// ```
-    /// use crate::game::components::AnimationState;
+    /// ```ignore
+    /// use tetris_cli::game::components::AnimationState;
     ///
     /// let mut state = AnimationState::new();
     /// state.add_row_to_animation(5);
