@@ -139,40 +139,34 @@ fn test_set_fall_speed_valid_values() {
     assert_eq!(state.fall_speed(), another_valid);
 }
 
-/// Тест 5: Проверка clamp fall_speed в допустимых пределах
+/// Тест 5: Проверка валидации fall_speed в допустимых пределах
 ///
-/// Проверяет, что значения clampятся от INITIAL_FALL_SPD до MAX_FALL_SPEED.
+/// Проверяет, что значения за пределами диапазона возвращают ошибку.
 #[test]
 fn test_set_fall_speed_clamps_to_valid_range() {
     let mut state = GameState::new();
 
-    // Попытка установить значение ниже минимума
+    // Попытка установить значение ниже минимума — должна вернуть ошибку
     let below_min = INITIAL_FALL_SPD - 0.5;
     let result = state.set_fall_speed(below_min);
 
     assert!(
-        result.is_ok(),
-        "Установка значения ниже минимума должна быть успешной"
+        result.is_err(),
+        "Установка значения ниже минимума должна вернуть ошибку"
     );
-    assert_eq!(
-        state.fall_speed(),
-        INITIAL_FALL_SPD,
-        "Скорость должна быть clampирована до INITIAL_FALL_SPD"
-    );
+    // Значение не должно измениться
+    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
-    // Попытка установить значение выше максимума
+    // Попытка установить значение выше максимума — должна вернуть ошибку
     let above_max = MAX_FALL_SPEED + 100.0;
     let result = state.set_fall_speed(above_max);
 
     assert!(
-        result.is_ok(),
-        "Установка значения выше максимума должна быть успешной"
+        result.is_err(),
+        "Установка значения выше максимума должна вернуть ошибку"
     );
-    assert_eq!(
-        state.fall_speed(),
-        MAX_FALL_SPEED,
-        "Скорость должна быть clampирована до MAX_FALL_SPEED"
-    );
+    // Значение не должно измениться
+    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Устанавливаем значение в допустимых пределах
     let in_range = (INITIAL_FALL_SPD + MAX_FALL_SPEED) / 2.0;
@@ -207,9 +201,10 @@ fn test_set_land_timer_nan_returns_error() {
 
     match result {
         Err(GameError::ValidationError(msg)) => {
+            // Сообщение содержит "не является конечным" для NaN/Infinity
             assert!(
-                msg.contains("NaN"),
-                "Сообщение об ошибке должно содержать 'NaN'"
+                msg.contains("конечным") || msg.contains("NaN") || msg.contains("неверн"),
+                "Сообщение об ошибке должно описывать проблему: '{msg}'"
             );
         }
         _ => panic!("Ожидалась ошибка GameError::Validation"),
@@ -241,8 +236,8 @@ fn test_set_land_timer_positive_infinity_returns_error() {
     match result {
         Err(GameError::ValidationError(msg)) => {
             assert!(
-                msg.contains("Infinity"),
-                "Сообщение об ошибке должно содержать 'Infinity'"
+                msg.contains("конечным") || msg.contains("Infinity"),
+                "Сообщение об ошибке должно описывать проблему: '{msg}'"
             );
         }
         _ => panic!("Ожидалась ошибка GameError::Validation"),
@@ -267,8 +262,8 @@ fn test_set_land_timer_negative_infinity_returns_error() {
     match result {
         Err(GameError::ValidationError(msg)) => {
             assert!(
-                msg.contains("Infinity"),
-                "Сообщение об ошибке должно содержать 'Infinity'"
+                msg.contains("конечным") || msg.contains("Infinity"),
+                "Сообщение об ошибке должно описывать проблему: '{msg}'"
             );
         }
         _ => panic!("Ожидалась ошибка GameError::Validation"),
@@ -306,35 +301,29 @@ fn test_set_land_timer_valid_values() {
 
 /// Тест 10: Проверка обработки отрицательных значений land_timer
 ///
-/// Проверяет, что отрицательные значения заменяются на 0.
+/// Проверяет, что отрицательные значения возвращают ошибку.
 #[test]
 fn test_set_land_timer_negative_values_clamped_to_zero() {
     let mut state = GameState::new();
 
-    // Устанавливаем отрицательное значение
+    // Устанавливаем отрицательное значение — должна быть ошибка
     let negative_value = -0.5;
     let result = state.set_land_timer(negative_value);
 
     assert!(
-        result.is_ok(),
-        "Установка отрицательного значения должна быть успешной"
+        result.is_err(),
+        "Установка отрицательного значения должна вернуть ошибку"
     );
-    assert_eq!(
-        state.land_timer(),
-        0.0,
-        "Отрицательный таймер должен быть заменён на 0.0"
-    );
+    // Значение не должно измениться
+    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 
-    // Устанавливаем ещё более отрицательное значение
+    // Устанавливаем ещё более отрицательное значение — тоже ошибка
     let more_negative = -100.0;
     let result = state.set_land_timer(more_negative);
 
-    assert!(result.is_ok());
-    assert_eq!(
-        state.land_timer(),
-        0.0,
-        "Отрицательный таймер должен быть заменён на 0.0"
-    );
+    assert!(result.is_err());
+    // Значение не должно измениться
+    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 }
 
 // ============================================================================

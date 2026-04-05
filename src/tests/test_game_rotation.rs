@@ -795,7 +795,13 @@ fn test_all_pieces_special_rotation() {
     ];
 
     for shape in &shapes {
-        let mut t = Tetromino::new((4.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
+        let shape_index = *shape as usize;
+        let mut t = Tetromino::new(
+            (4.0, 5.0),
+            *shape,
+            SHAPE_COORDS[shape_index],
+            shape_index as u8,
+        );
 
         let original_coords = t.coords();
 
