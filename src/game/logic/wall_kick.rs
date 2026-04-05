@@ -99,15 +99,13 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 
     // Пытаемся вращать с wall kick смещениями
     if let Some((offset_x, offset_y)) = try_wall_kick_offsets(state, dir) {
-        {
-            let curr_shape = state.get_curr_shape_mut();
-            let pos = curr_shape.pos_mut();
-            // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
-            pos.0 += offset_x as f32;
-            // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
-            pos.1 += offset_y as f32;
-        }
+        // Объединённое мутабельное заимствование: применяем смещение и вращение за один доступ
         let curr_shape = state.get_curr_shape_mut();
+        let pos = curr_shape.pos_mut();
+        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
+        pos.0 += offset_x as f32;
+        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
+        pos.1 += offset_y as f32;
         curr_shape.rotate(dir);
         return true;
     }

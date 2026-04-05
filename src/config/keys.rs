@@ -167,10 +167,26 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
 /// Возвращает ошибку если хотя бы один ключ пустой или слишком короткий.
 #[allow(dead_code)]
 pub fn validate_all_keys() -> Result<(), String> {
-    validate_hmac_key(get_controls_hmac_key(), "CONTROLS_HMAC_KEY")?;
-    validate_hmac_key(get_leaderboard_hmac_key(), "LEADERBOARD_HMAC_KEY")?;
-    validate_hmac_key(get_save_data_hmac_key(), "SAVE_DATA_HMAC_KEY")?;
-    Ok(())
+    let mut errors = Vec::new();
+
+    if let Err(e) = validate_hmac_key(get_controls_hmac_key(), "CONTROLS_HMAC_KEY") {
+        errors.push(e);
+    }
+    if let Err(e) = validate_hmac_key(get_leaderboard_hmac_key(), "LEADERBOARD_HMAC_KEY") {
+        errors.push(e);
+    }
+    if let Err(e) = validate_hmac_key(get_save_data_hmac_key(), "SAVE_DATA_HMAC_KEY") {
+        errors.push(e);
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(format!(
+            "Обнаружены проблемы с HMAC ключами: {}",
+            errors.join("; ")
+        ))
+    }
 }
 
 // ============================================================================
