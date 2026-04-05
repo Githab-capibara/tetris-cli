@@ -30,8 +30,8 @@ use serde::{Deserialize, Serialize};
 // crate
 use crate::config::keys::get_leaderboard_hmac_key;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
-use crate::validation::name::sanitize_player_name;
 use crate::highscore::APP_NAME;
+use crate::validation::name::sanitize_player_name;
 
 /// Максимальное количество рекордов в таблице лидеров.
 /// Переэкспорт из constants.rs для централизации констант (ISSUE-137).

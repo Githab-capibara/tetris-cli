@@ -28,9 +28,9 @@
 //! 2. `execute_action()` - исполнитель действий (изменяет `GameState`)
 //! 3. `handle_input()` - комбинация парсера и исполнителя для удобства
 
+use crate::constants::KEY_BACKSPACE;
 use crate::game::state::GameState;
 use crate::game::types::GameAction;
-use crate::constants::KEY_BACKSPACE;
 use crate::types::{Direction, RotationDirection, UpdateEndState};
 
 // ============================================================================

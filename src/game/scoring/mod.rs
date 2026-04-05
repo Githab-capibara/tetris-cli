@@ -140,5 +140,7 @@ pub trait ScoringState:
     fn get_blocks(&self) -> &[[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT];
 
     /// Получить игровое поле (изменяемое).
-    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT];
+    fn get_blocks_mut(
+        &mut self,
+    ) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT];
 }

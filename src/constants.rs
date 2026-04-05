@@ -52,7 +52,7 @@
 //! ## Использование
 //! ```
 //! use tetris_cli::constants::GRID_WIDTH;
-//! use tetris_cli::constants::FPS;
+//! use tetris_cli::constants::FRAME_DELAY_MS;
 //! ```
 
 use termion::color::White;

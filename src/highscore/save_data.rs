@@ -46,7 +46,10 @@ fn get_config_file_path() -> Result<PathBuf, String> {
 
     // Создаём директорию и возвращаем ошибку при неудаче
     std::fs::create_dir_all(&config_path).map_err(|e| {
-        format!("Не удалось создать директорию конфигурации {}: {e}", config_path.display())
+        format!(
+            "Не удалось создать директорию конфигурации {}: {e}",
+            config_path.display()
+        )
     })?;
 
     config_path.push("config.toml");

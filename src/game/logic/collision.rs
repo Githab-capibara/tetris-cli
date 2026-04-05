@@ -20,9 +20,9 @@
 //! - `true` = позиция валидна (нет коллизии)
 //! - `false` = коллизия обнаружена
 
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::access::BoardReadonly;
 use crate::game::GameState;
-use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::types::Direction;
 
 /// Допустимый диапазон координат X для блоков на поле.

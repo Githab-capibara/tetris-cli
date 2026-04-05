@@ -43,11 +43,11 @@ use termion::terminal_size;
 
 // crate
 use crate::config::keys::validate_all_keys;
+use crate::constants::{DISP_HEIGHT, DISP_WIDTH};
 use crate::errors::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader};
-use crate::constants::{DISP_HEIGHT, DISP_WIDTH};
 use crate::menu::run_game_mode;
 
 /// Приложение Tetris CLI.

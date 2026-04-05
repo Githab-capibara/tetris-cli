@@ -218,17 +218,31 @@ impl BoardReadonly for GameBoard {
 
     /// Безопасный доступ: возвращает -1 при выходе за границы.
     fn get_block(&self, x: usize, y: usize) -> i8 {
-        self.blocks.get(y).and_then(|row| row.get(x)).copied().unwrap_or(-1)
+        self.blocks
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
     }
 
     /// Безопасная проверка: возвращает true при выходе за границы (считается пустой).
     fn is_block_empty(&self, x: usize, y: usize) -> bool {
-        self.blocks.get(y).and_then(|row| row.get(x)).copied().unwrap_or(-1) == -1
+        self.blocks
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
+            == -1
     }
 
     /// Безопасная проверка: возвращает false при выходе за границы.
     fn is_block_occupied(&self, x: usize, y: usize) -> bool {
-        self.blocks.get(y).and_then(|row| row.get(x)).copied().unwrap_or(-1) != -1
+        self.blocks
+            .get(y)
+            .and_then(|row| row.get(x))
+            .copied()
+            .unwrap_or(-1)
+            != -1
     }
 
     fn get_filled_lines_mask(&self) -> u32 {

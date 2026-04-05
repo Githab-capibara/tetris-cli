@@ -46,8 +46,8 @@
 // (нет внешних импортов)
 
 // crate
-use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use crate::constants::GRID_HEIGHT;
+use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
 use crate::tetromino::{BagGenerator, Tetromino};
 
 // self (super)
@@ -161,7 +161,7 @@ impl GameMode {
     ///
     /// # Архитектурные заметки
     /// Исправление проблемы 39: используем match напрямую на enum вместо as_trait()
-    /// для предотвращения создания Box<dyn GameModeTrait> при каждом вызове.
+    /// для предотвращения создания `Box<dyn GameModeTrait>` при каждом вызове.
     #[must_use]
     pub fn check_win_condition(self, lines_cleared: u32) -> bool {
         match self {
@@ -756,7 +756,9 @@ impl GameState {
 
         // Валидация на NaN и Infinity через централизованную функцию (DRY-2)
         if let Err(e) = validate_f32_finite(value) {
-            return Err(GameError::ValidationError(format!("Неверная скорость падения: {e}")));
+            return Err(GameError::ValidationError(format!(
+                "Неверная скорость падения: {e}"
+            )));
         }
 
         // Валидация диапазона через централизованную функцию (вместо clamp)
@@ -1137,7 +1139,9 @@ impl super::scoring::ScoringState for GameState {
         self.get_blocks()
     }
 
-    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
+    fn get_blocks_mut(
+        &mut self,
+    ) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
         self.get_blocks_mut()
     }
 }

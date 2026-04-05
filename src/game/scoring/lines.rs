@@ -13,10 +13,10 @@
 use super::ScoringState;
 use std::io::Write;
 
+use crate::constants::GRID_HEIGHT;
 use crate::constants::{
     BELL, COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES, MAX_LINES_PER_CLEAR, SPD_INC,
 };
-use crate::constants::GRID_HEIGHT;
 
 /// Максимально допустимый счёт для защиты от переполнения.
 ///
@@ -38,8 +38,8 @@ use crate::constants::GRID_HEIGHT;
 ///   для безопасного добавления бонусов без риска переполнения
 /// - `saturating_add` — защита на уровне арифметики, гарантирующая что результат
 ///   никогда не превысит `u128::MAX` даже при ошибке в логике
-/// Это осознанная стратегия defence in depth: разные уровни защиты обеспечивают
-/// надёжность системы даже при непредвиденных сценариях.
+///   Это осознанная стратегия defence in depth: разные уровни защиты обеспечивают
+///   надёжность системы даже при непредвиденных сценариях.
 pub(crate) const MAX_SCORE: u128 = u128::MAX / 2;
 
 /// Найти все заполненные линии.
