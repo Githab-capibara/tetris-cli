@@ -226,8 +226,7 @@ fn test_stress_many_score_additions() {
 
     // 10000 начислений по 4 линии
     for _ in 0..10_000 {
-        update_score_for_lines(&mut score, level, 4, &mut combo_counter)
-            .ok(); // Игнорируем ошибки переполнения
+        update_score_for_lines(&mut score, level, 4, &mut combo_counter).ok(); // Игнорируем ошибки переполнения
     }
 
     // Счёт не должен превышать MAX_SCORE
