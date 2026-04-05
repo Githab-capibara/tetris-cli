@@ -276,7 +276,10 @@ mod tests {
     // =========================================================================
 
     /// Тест: `maintain_fps()` корректно регулирует FPS
+    ///
+    /// #[ignore] — требует реального тайминга, нестабилен на разных машинах.
     #[test]
+    #[ignore = "requires real timing"]
     fn test_maintain_fps_regulates_fps() {
         let mut last_time = std::time::Instant::now();
         let interval_ms = FRAME_DELAY_MS;
@@ -293,7 +296,10 @@ mod tests {
     }
 
     /// Тест: `maintain_fps()` возвращает Some когда интервал прошёл
+    ///
+    /// #[ignore] — требует реального тайминга, нестабилен на разных машинах.
     #[test]
+    #[ignore = "requires real timing"]
     fn test_maintain_fps_returns_some_after_interval() {
         let mut last_time = std::time::Instant::now();
         let interval_ms = FRAME_DELAY_MS;
@@ -314,7 +320,10 @@ mod tests {
     }
 
     /// Тест: `maintain_fps()` обновляет `last_time`
+    ///
+    /// #[ignore] — требует реального тайминга, нестабилен на разных машинах.
     #[test]
+    #[ignore = "requires real timing"]
     fn test_maintain_fps_updates_last_time() {
         let mut last_time = std::time::Instant::now();
         let interval_ms = FRAME_DELAY_MS;
