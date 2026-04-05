@@ -29,7 +29,12 @@ mod tests {
     fn test_hmac_sha256_medium_key() {
         let key_32 = "a".repeat(32);
         let key_64 = "a".repeat(64);
-        for key in ["my_secret_key_123", "длинный_ключ", key_32.as_str(), key_64.as_str()] {
+        for key in [
+            "my_secret_key_123",
+            "длинный_ключ",
+            key_32.as_str(),
+            key_64.as_str(),
+        ] {
             assert_eq!(hmac_sha256(key, "test_data").len(), 64);
         }
     }
@@ -55,7 +60,14 @@ mod tests {
     #[test]
     fn test_hmac_sha256_no_panic_on_valid_input() {
         let long_key = "a".repeat(1000);
-        for (key, data) in &[("", ""), ("key", "data"), ("", "data"), ("key", ""), ("ключ", "данные"), (long_key.as_str(), "data")] {
+        for (key, data) in &[
+            ("", ""),
+            ("key", "data"),
+            ("", "data"),
+            ("key", ""),
+            ("ключ", "данные"),
+            (long_key.as_str(), "data"),
+        ] {
             assert_eq!(hmac_sha256(key, data).len(), 64);
         }
     }
@@ -65,7 +77,8 @@ mod tests {
         use crate::crypto::hmac::HmacSha256;
         use hmac::Mac;
         let mac_result = HmacSha256::new_from_slice(b"test_key");
-        let _mac = mac_result.unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
+        let _mac =
+            mac_result.unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
     }
 
     // ========================================================================
@@ -104,7 +117,11 @@ mod tests {
     fn test_hmac_sha256_unicode() {
         let sig = hmac_sha256("секретный_ключ_🔑", "данные_с_Unicode_你好_🎮");
         assert_eq!(sig.len(), 64);
-        assert!(verify_hmac_sha256("секретный_ключ_🔑", "данные_с_Unicode_你好_🎮", &sig));
+        assert!(verify_hmac_sha256(
+            "секретный_ключ_🔑",
+            "данные_с_Unicode_你好_🎮",
+            &sig
+        ));
     }
 
     #[test]
@@ -120,7 +137,12 @@ mod tests {
     #[test]
     fn test_hmac_sign_verify_integration() {
         let long_key = "a".repeat(1000);
-        for (key, data) in &[("key1", "data1"), ("", ""), ("ключ", "данные"), (long_key.as_str(), "data")] {
+        for (key, data) in &[
+            ("key1", "data1"),
+            ("", ""),
+            ("ключ", "данные"),
+            (long_key.as_str(), "data"),
+        ] {
             let sig = hmac_sha256(key, data);
             assert!(verify_hmac_sha256(key, data, &sig));
             assert!(!verify_hmac_sha256(key, &format!("{data}x"), &sig));

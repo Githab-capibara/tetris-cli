@@ -249,7 +249,10 @@ fn test_h7_frame_delay_ms_defined() {
     use tetris_cli::constants::FRAME_DELAY_MS;
 
     // Проверяем что константа определена корректно
-    assert!(FRAME_DELAY_MS > 0, "FRAME_DELAY_MS должен быть положительным");
+    assert!(
+        FRAME_DELAY_MS > 0,
+        "FRAME_DELAY_MS должен быть положительным"
+    );
 }
 
 /// Тест H8: Массив запрещённых паттернов URL-encoding
@@ -540,7 +543,10 @@ fn test_l4_simplified_exports() {
     let state = GameState::new();
     assert!(state.level() >= 1, "GameState должен иметь уровень >= 1");
     let dir = Direction::Down;
-    assert!(matches!(dir, Direction::Down), "Direction::Down должен совпадать");
+    assert!(
+        matches!(dir, Direction::Down),
+        "Direction::Down должен совпадать"
+    );
     let _ = RotationDirection::Clockwise;
     let _ = ShapeType::T;
     let _bag = BagGenerator::new();

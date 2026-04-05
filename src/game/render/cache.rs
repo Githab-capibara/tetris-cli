@@ -116,4 +116,3 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
         }
     }
 }
-
