@@ -104,8 +104,7 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
-    let _ = state
-        .add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
+    let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     // Устанавливаем таймер в 0.0 — это всегда валидное значение
     state
         .set_land_timer(0.0)

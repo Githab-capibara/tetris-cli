@@ -177,7 +177,8 @@ fn test_fix_e5_controls_toctou_protection() {
 
     // Тест 4: Комментарий о том что O_NOFOLLOW обеспечивает защиту
     assert!(
-        content.contains("O_NOFOLLOW") && (content.contains("ELOOP") || content.contains("атомарн")),
+        content.contains("O_NOFOLLOW")
+            && (content.contains("ELOOP") || content.contains("атомарн")),
         "Должен быть комментарий о том что O_NOFOLLOW обеспечивает защиту от symlink"
     );
 

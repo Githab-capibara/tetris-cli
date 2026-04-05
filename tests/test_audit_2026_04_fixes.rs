@@ -263,20 +263,16 @@ fn test_h5_h6_errors_documentation_exists() {
     // Код компилируется - тест проходит
 }
 
-/// Тест H7: Константы FPS вынесены в начало метода
+/// Тест H7: Константа FRAME_DELAY_MS определена
 ///
-/// Проверяет что константы FPS определены в модуле constants.
+/// Проверяет что константа FRAME_DELAY_MS определена в модуле constants.
+/// Примечание: константа FPS была удалена как неиспользуемая (Пакет 3, аудит).
 #[test]
-fn test_h7_fps_constants_defined() {
-    use tetris_cli::constants::{FPS, FRAME_DELAY_MS};
+fn test_h7_frame_delay_ms_defined() {
+    use tetris_cli::constants::FRAME_DELAY_MS;
 
-    // Проверяем что константы определены корректно
-    assert_eq!(FPS, 60, "FPS должен быть равен 60");
-    assert_eq!(
-        FRAME_DELAY_MS,
-        1000 / FPS,
-        "FRAME_DELAY_MS должен вычисляться как 1000 / FPS"
-    );
+    // Проверяем что константа определена корректно
+    assert!(FRAME_DELAY_MS > 0, "FRAME_DELAY_MS должен быть положительным");
 }
 
 /// Тест H8: Массив запрещённых паттернов URL-encoding
@@ -634,9 +630,9 @@ fn test_all_high_fixes_integration() {
     let _ = lb.add_score("P2", 2000);
     assert_eq!(lb.get_entries().len(), 2);
 
-    // H7: FPS константы
-    use tetris_cli::constants::FPS;
-    assert_eq!(FPS, 60);
+    // FRAME_DELAY_MS константа (FPS удалён как неиспользуемый)
+    use tetris_cli::constants::FRAME_DELAY_MS;
+    assert!(FRAME_DELAY_MS > 0);
 
     // H8: URL-encoding паттерны
     use tetris_cli::validation::name::sanitize_player_name;
@@ -701,7 +697,7 @@ fn test_all_26_audit_fixes_complete_integration() {
 
     // HIGH (10)
     use tetris_cli::config::keys::get_controls_hmac_key;
-    use tetris_cli::constants::FPS;
+    use tetris_cli::constants::FRAME_DELAY_MS;
     use tetris_cli::controls::ControlsConfig;
     use tetris_cli::game::logic::collision::can_move_curr_shape_direction;
     use tetris_cli::game::GameState;
@@ -714,7 +710,7 @@ fn test_all_26_audit_fixes_complete_integration() {
     assert!(can_move_curr_shape_direction(&state, Direction::Down));
     let mut lb = Leaderboard::default();
     let _ = lb.add_score("P", 1000);
-    assert_eq!(FPS, 60);
+    assert!(FRAME_DELAY_MS > 0);
     assert_eq!(sanitize_player_name("P%"), "P");
     let config = ControlsConfig::default_config();
     assert!(config.validate());

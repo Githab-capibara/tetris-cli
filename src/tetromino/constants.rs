@@ -137,7 +137,10 @@ pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (
 #[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
-    SHAPE_COLORS.get(shape_index).copied().unwrap_or(SHAPE_COLORS[0])
+    SHAPE_COLORS
+        .get(shape_index)
+        .copied()
+        .unwrap_or(SHAPE_COLORS[0])
 }
 
 #[cfg(test)]

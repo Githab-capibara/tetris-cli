@@ -472,14 +472,11 @@ mod tests {
 
         impl EventHandler for AtomicHandler {
             fn handle(&mut self, _event: &GameEvent) {
-                self.count
-                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                self.count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             }
         }
 
-        dispatcher.subscribe(Box::new(AtomicHandler {
-            count: count_clone,
-        }));
+        dispatcher.subscribe(Box::new(AtomicHandler { count: count_clone }));
 
         dispatcher.dispatch(&GameEvent::GamePaused);
 

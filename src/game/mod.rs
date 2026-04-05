@@ -266,11 +266,11 @@ impl GameState {
 #[cfg(test)]
 mod game_tests {
     use super::*;
+    use crate::constants::GRID_HEIGHT;
     use crate::constants::{
         COMBO_BONUS, HARD_DROP_POINTS, INITIAL_FALL_SPD, LINE_SCORES, SOFT_DROP_POINTS,
     };
     use crate::game::state::GameStats;
-    use crate::constants::GRID_HEIGHT;
     use crate::types::Direction;
 
     // Тесты Hard Drop

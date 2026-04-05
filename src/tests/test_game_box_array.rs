@@ -7,8 +7,8 @@
 //!
 //! Исправление: использование Box<[[i8; GRID_WIDTH]; GRID_HEIGHT]> вместо [[i8; GRID_WIDTH]; GRID_HEIGHT]
 
-use crate::game::GameState;
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
+use crate::game::GameState;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ: Box для массива blocks

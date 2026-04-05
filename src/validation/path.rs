@@ -99,7 +99,8 @@ impl std::fmt::Display for PathError {
         write!(
             f,
             "Ошибка валидации пути: {} ({:?})",
-            self.message(), self.kind()
+            self.message(),
+            self.kind()
         )
     }
 }
@@ -431,6 +432,10 @@ impl PathValidator {
         false
     }
 
+    /// Максимальная глубина проверки symlink в родительских директориях.
+    /// Ограничиваем проверку до 3 уровней — дальше это paranoia.
+    const MAX_SYMLINK_CHECK_DEPTH: usize = 3;
+
     /// Проверить отсутствие символических ссылок.
     ///
     /// # Аргументы
@@ -441,7 +446,7 @@ impl PathValidator {
     /// - `Err(PathError)` если путь является symlink
     ///
     /// # Errors
-    /// Возвращает `PathError` если путь является символической ссылкой.
+    /// Возвращает `PathError` если путь является символической ссылкой или если родительская директория является symlink.
     ///
     /// # Исправление #18
     /// Добавлен `#[track_caller]` для лучшей трассировки ошибок.
@@ -457,10 +462,6 @@ impl PathValidator {
     /// - Добавлена проверка всей цепочки директорий (parent directories)
     /// - Проверка на race conditions через `metadata().is_symlink()`
     /// - Блокировка symlink в родительских директориях
-    /// Максимальная глубина проверки symlink в родительских директориях.
-    /// Ограничиваем проверку до 3 уровней — дальше это paranoia.
-    const MAX_SYMLINK_CHECK_DEPTH: usize = 3;
-
     #[allow(clippy::unused_self)]
     // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации symlink должен быть обработан"]
