@@ -292,6 +292,7 @@ pub fn update_score_for_lines(
     // Вместо checked_add используется saturating_add для защиты от переполнения
     *score = score.saturating_add(line_score);
     if *score > MAX_SCORE {
+        *score = MAX_SCORE; // Clamp к MAX_SCORE для сохранения инварианта
         return Err(GameError::ScoreOverflow);
     }
 
@@ -304,6 +305,7 @@ pub fn update_score_for_lines(
         // Исправление C3: упрощена проверка переполнения через saturating_add
         *score = score.saturating_add(combo_bonus);
         if *score > MAX_SCORE {
+            *score = MAX_SCORE; // Clamp к MAX_SCORE для сохранения инварианта
             return Err(GameError::ScoreOverflow);
         }
     }
@@ -313,6 +315,7 @@ pub fn update_score_for_lines(
     // Исправление C3: упрощена проверка переполнения через saturating_add
     *score = score.saturating_add(level_bonus);
     if *score > MAX_SCORE {
+        *score = MAX_SCORE; // Clamp к MAX_SCORE для сохранения инварианта
         return Err(GameError::ScoreOverflow);
     }
 

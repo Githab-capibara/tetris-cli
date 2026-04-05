@@ -43,7 +43,7 @@ fn test_c1_validate_hmac_key_rejects_empty() {
     );
 
     // Валидный ключ должен проходить проверку
-    let result_valid = validate_hmac_key("valid_key_123", "TEST_KEY");
+    let result_valid = validate_hmac_key("valid_key_at_least_16", "TEST_KEY");
     assert!(
         result_valid.is_ok(),
         "validate_hmac_key() должен принимать валидный ключ"
@@ -526,13 +526,13 @@ fn test_m10_sanitize_player_name_single_pass() {
         );
     }
 
-    // Проверяем ограничение длины (20 символов)
+    // Проверяем ограничение длины (32 символа — C12)
     let long_name = "a".repeat(100);
     let sanitized = sanitize_player_name(&long_name);
     assert_eq!(
         sanitized.chars().count(),
-        20,
-        "Длина имени должна быть ограничена 20 символами"
+        32,
+        "Длина имени должна быть ограничена 32 символами (C12)"
     );
 }
 
@@ -694,7 +694,7 @@ fn test_all_26_audit_fixes_complete_integration() {
     use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     use tetris_cli::io::KeyReader;
 
-    assert!(validate_hmac_key("key", "TEST").is_ok());
+    assert!(validate_hmac_key("valid_key_at_least_16", "TEST").is_ok());
     let _reader = KeyReader::new();
     let entry = LeaderboardEntry::new("Player", 1000);
     assert_eq!(entry.score(), Some(1000));
