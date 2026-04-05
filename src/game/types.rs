@@ -263,7 +263,6 @@ impl From<Score> for u128 {
 /// assert_eq!(level.value(), 2);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
 pub struct Level(u32);
 
 impl Default for Level {
@@ -272,7 +271,6 @@ impl Default for Level {
     }
 }
 
-#[allow(dead_code)]
 impl Level {
     /// Создать новый уровень со значением 1 (начальный уровень).
     ///
