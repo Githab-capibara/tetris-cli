@@ -13,10 +13,29 @@
 //! let key = CONTROLS_HMAC_KEY;
 //! ```
 
+use std::sync::Once;
+
 /// Минимальная длина HMAC ключа в байтах.
 ///
 /// Ключи короче 16 байт считаются небезопасными.
 pub const MIN_HMAC_KEY_LENGTH: usize = 16;
+
+// ============================================================================
+// LOG_ONCE ДЛЯ ПУСТЫХ HMAC КЛЮЧЕЙ (Исправление аудита 2026-04-05, Проблема 6)
+// ============================================================================
+
+/// Вывести предупреждение о пустом HMAC ключе ТОЛЬКО ОДИН РАЗ при первом вызове.
+/// Использует `std::sync::Once` для гарантии однократного вывода независимо от
+/// количества вызовов функции.
+fn log_once_empty_key(key_name: &str) {
+    static ONCE: Once = Once::new();
+    ONCE.call_once(|| {
+        eprintln!(
+            "[WARN] HMAC ключ '{key_name}' не установлен — используется пустая строка. \
+             Это ослабляет HMAC защиту. Установите соответствующую переменную окружения."
+        );
+    });
+}
 
 /// Получить ключ для HMAC подписи конфигурации управления.
 ///
@@ -46,7 +65,10 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 pub fn get_controls_hmac_key() -> &'static str {
     option_env!("TETRIS_CONTROLS_HMAC_KEY")
         .filter(|k| !k.trim().is_empty())
-        .unwrap_or("")
+        .unwrap_or_else(|| {
+            log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
+            ""
+        })
 }
 
 /// Получить ключ для HMAC подписи таблицы лидеров.
@@ -57,7 +79,10 @@ pub fn get_controls_hmac_key() -> &'static str {
 pub fn get_leaderboard_hmac_key() -> &'static str {
     option_env!("TETRIS_LEADERBOARD_HMAC_KEY")
         .filter(|k| !k.trim().is_empty())
-        .unwrap_or("")
+        .unwrap_or_else(|| {
+            log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
+            ""
+        })
 }
 
 /// Получить ключ для HMAC подписи данных рекордов.
@@ -68,7 +93,10 @@ pub fn get_leaderboard_hmac_key() -> &'static str {
 pub fn get_save_data_hmac_key() -> &'static str {
     option_env!("TETRIS_SAVEDATA_HMAC_KEY")
         .filter(|k| !k.trim().is_empty())
-        .unwrap_or("")
+        .unwrap_or_else(|| {
+            log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
+            ""
+        })
 }
 
 /// Проверить валидность HMAC ключа.

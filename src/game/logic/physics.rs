@@ -8,7 +8,7 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, константы
 
-use crate::constants::MILLIS_PER_SECOND;
+use crate::constants::{GRID_HEIGHT, MILLIS_PER_SECOND};
 use crate::game::state::GameState;
 use crate::types::Direction;
 
@@ -27,7 +27,11 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
         let fall_speed = state.fall_speed();
         let curr_shape = state.get_curr_shape_mut();
         // Потеря точности допустима: delta_time_ms небольшое значение (обычно 16-100 мс)
-        curr_shape.pos_mut().1 += fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
+        let fall_distance = fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
+        let current_y = curr_shape.pos().1;
+        // Ограничиваем падение нижней границей поля — фигура не может провалиться сквозь пол
+        let max_y = (GRID_HEIGHT - 1) as f32;
+        curr_shape.pos_mut().1 = (current_y + fall_distance).min(max_y);
         false
     } else if state.land_timer() > 0.0 {
         let land_timer = state.land_timer();
@@ -176,5 +180,40 @@ mod physics_tests {
                 "Y координата должна увеличиться при большом delta_time"
             );
         }
+    }
+
+    /// Тест: фигура не проваливается сквозь пол при большом delta_time
+    #[test]
+    fn test_handle_falling_no_phantom_pass_through_floor() {
+        use crate::constants::GRID_HEIGHT;
+
+        let mut state = GameState::new();
+        let max_y = (GRID_HEIGHT - 1) as f32;
+
+        // Огромный delta_time — фигура должна упасть до пола, но не ниже
+        handle_falling(&mut state, 1_000_000);
+
+        // Позиция Y не должна превышать максимальную границу поля
+        assert!(
+            state.curr_shape().pos().1 <= max_y,
+            "Y координата ({}) не должна превышать максимальную границу поля ({max_y})",
+            state.curr_shape().pos().1
+        );
+
+        // Продолжаем вызывать handle_falling пока фигура не приземлится
+        let mut iterations = 0;
+        loop {
+            let landed = handle_falling(&mut state, 1_000_000);
+            iterations += 1;
+            assert!(
+                state.curr_shape().pos().1 <= max_y,
+                "После итерации {iterations} Y координата ({}) превысила границу ({max_y})",
+                state.curr_shape().pos().1
+            );
+            if landed || iterations > 100 {
+                break;
+            }
+        }
+        assert!(iterations <= 100, "Фигура должна приземлиться за разумное число итераций");
     }
 }

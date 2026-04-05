@@ -53,9 +53,23 @@ use std::path::Path;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PathError {
     /// Сообщение об ошибке.
-    pub message: String,
+    message: String,
     /// Тип ошибки.
-    pub kind: PathErrorKind,
+    kind: PathErrorKind,
+}
+
+impl PathError {
+    /// Получить сообщение об ошибке.
+    #[must_use]
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// Получить тип ошибки.
+    #[must_use]
+    pub fn kind(&self) -> PathErrorKind {
+        self.kind.clone()
+    }
 }
 
 /// Типы ошибки валидации пути.
@@ -85,7 +99,7 @@ impl std::fmt::Display for PathError {
         write!(
             f,
             "Ошибка валидации пути: {} ({:?})",
-            self.message, self.kind
+            self.message(), self.kind()
         )
     }
 }
@@ -94,7 +108,7 @@ impl std::error::Error for PathError {}
 
 impl From<PathError> for io::Error {
     fn from(err: PathError) -> Self {
-        io::Error::new(io::ErrorKind::InvalidInput, err.message)
+        io::Error::new(io::ErrorKind::InvalidInput, err.message())
     }
 }
 
@@ -260,11 +274,22 @@ impl PathValidator {
             // Если файл не существует, canonicalize родительской директории
             // Это позволяет создавать новые файлы в валидной директории
             // ISSUE-194: Используем and_then() для безопасной обработки Option
-            joined_path
+            let parent_canonical = joined_path
                 .parent()
                 .and_then(|p: &Path| p.canonicalize().ok())
-                .unwrap_or_else(|| base_dir.to_path_buf())
-                .join(joined_path.file_name().unwrap_or_default())
+                .unwrap_or_else(|| base_dir.to_path_buf());
+
+            // Для директорий file_name() возвращает None — это ошибка,
+            // так как нельзя сформировать корректный путь без имени файла
+            let file_name = joined_path.file_name().ok_or_else(|| PathError {
+                message: format!(
+                    "Путь не содержит имя файла (возможно, это директория): {}",
+                    joined_path.display()
+                ),
+                kind: PathErrorKind::InvalidPath,
+            })?;
+
+            parent_canonical.join(file_name)
         };
 
         // Проверка что путь находится внутри разрешённой директории
@@ -560,6 +585,10 @@ impl PathValidator {
     #[must_use = "Результат валидации path traversal должен быть обработан"]
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
         // Исправление H8: массив запрещённых паттернов для URL-encoding
+        // Все паттерны в lowercase — это осознанный выбор.
+        // contains_ignore_ascii_case используется намеренно: входной путь может содержать
+        // mixed-case символы (%2E, %2e, %2F, %2f и т.д.), и мы должны детектить все варианты.
+        // Паттерны вида %252e (двойное кодирование) также покрыты.
         const FORBIDDEN_PATTERNS: &[&str] = &[
             "..",    // обычный path traversal
             "%2e",   // encoded точка (.)
@@ -713,8 +742,8 @@ mod validation_path_tests {
         assert!(result.is_err(), "Валидатор должен отклонять symlink");
 
         if let Err(e) = result {
-            assert_eq!(e.kind, PathErrorKind::Symlink);
-            assert!(e.message.contains("Символические ссылки не разрешены"));
+            assert_eq!(e.kind(), PathErrorKind::Symlink);
+            assert!(e.message().contains("Символические ссылки не разрешены"));
         }
 
         // Очищаем тестовые файлы
@@ -810,8 +839,8 @@ mod validation_path_tests {
         );
 
         if let Err(e) = result {
-            assert_eq!(e.kind, PathErrorKind::TooLong);
-            assert!(e.message.contains("Путь слишком длинный"));
+            assert_eq!(e.kind(), PathErrorKind::TooLong);
+            assert!(e.message().contains("Путь слишком длинный"));
         }
 
         // Тест 3: Пустой путь (должен проходить, длина 0)
@@ -1033,7 +1062,7 @@ mod validation_path_tests {
             result.is_err(),
             "URL-encoded '../' (%2e%2e%2f) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: `%2e%2e/` должен быть отклонён (URL-encoded `..` + обычный `/`)
@@ -1045,7 +1074,7 @@ mod validation_path_tests {
             result.is_err(),
             "URL-encoded '..' с обычным '/' (%2e%2e/) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: `..%2f` должен быть отклонён (обычный `..` + URL-encoded `/`)
@@ -1057,7 +1086,7 @@ mod validation_path_tests {
             result.is_err(),
             "Обычный '..' с URL-encoded '/' (..%2f) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: `%252e%252e%252f` должен быть отклонён (double encoding)
@@ -1069,7 +1098,7 @@ mod validation_path_tests {
             result.is_err(),
             "Double URL-encoding (%252e%252e%252f) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: `%5c` (URL-encoded backslash) должен быть отклонён
@@ -1081,7 +1110,7 @@ mod validation_path_tests {
             result.is_err(),
             "URL-encoded backslash (%5c) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: `%5C` (URL-encoded backslash uppercase) должен быть отклонён
@@ -1093,7 +1122,7 @@ mod validation_path_tests {
             result.is_err(),
             "URL-encoded backslash uppercase (%5C) должен быть отклонён"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::PathTraversal);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::PathTraversal);
     }
 
     /// Тест: валидные пути принимаются
@@ -1174,7 +1203,7 @@ mod validation_path_tests {
             result.is_err(),
             "Валидатор должен отклонять путь через symlink в родителе"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::Symlink);
 
         // Очищаем тестовые файлы
         let _ = fs::remove_file(&symlink_parent);
@@ -1217,7 +1246,7 @@ mod validation_path_tests {
             result.is_err(),
             "Валидатор должен отклонять путь через symlink на любом уровне"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::Symlink);
 
         // Очищаем
         let _ = fs::remove_file(&symlink_level1);
@@ -1293,7 +1322,7 @@ mod validation_path_tests {
             result.is_err(),
             "Валидатор должен отклонять symlink в глубокой директории"
         );
-        assert_eq!(result.unwrap_err().kind, PathErrorKind::Symlink);
+        assert_eq!(result.unwrap_err().kind(), PathErrorKind::Symlink);
 
         // Очищаем
         let _ = fs::remove_file(&symlink_deep);

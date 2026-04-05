@@ -157,14 +157,15 @@ impl KeyReader {
                 utf8_bytes[1..=bytes_to_read].copy_from_slice(&remaining[..bytes_to_read]);
 
                 if std::str::from_utf8(&utf8_bytes[..=bytes_to_read]).is_err() {
-                    eprintln!("[WARN] get_key(): невалидная UTF-8 последовательность: байты [");
-                    for (i, b) in utf8_bytes[..=bytes_to_read].iter().enumerate() {
-                        if i > 0 {
-                            eprint!(", ");
-                        }
-                        eprint!("0x{b:02X}");
-                    }
-                    eprintln!("]");
+                    // get_key() предназначен ТОЛЬКО для ASCII (0x00-0x7F).
+                    // UTF-8 последовательности намеренно игнорируются — используйте get_key_unicode() для Unicode.
+                    // debug_assert помогает обнаружить невалидный ввод в режиме разработки,
+                    // не засоряя stderr в релизной сборке.
+                    debug_assert!(
+                        false,
+                        "get_key(): невалидная UTF-8 последовательность: байты {:?}",
+                        &utf8_bytes[..=bytes_to_read]
+                    );
                     return Ok(None);
                 }
 
@@ -179,6 +180,13 @@ impl KeyReader {
     /// # Возвращает
     /// - `Some(char)` — символ Unicode
     /// - `None` — при ошибке чтения или невалидном UTF-8
+    ///
+    /// # Важно: этот метод БЛОКИРУЮЩИЙ
+    /// Он ждёт полной UTF-8 последовательности. Если терминал передаёт байты
+    /// медленно (например, по сети), метод заблокирует поток до получения
+    /// всех байтов. termion не предоставляет `read_ready()` для неблокирующей
+    /// проверки готовности — поэтому блокирующее поведение неизбено.
+    /// Для неблокирующего ASCII-ввода используйте `get_key()`.
     pub fn get_key_unicode(&mut self) -> Option<char> {
         let mut first_byte: [u8; 1] = [0];
 

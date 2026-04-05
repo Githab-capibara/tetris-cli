@@ -150,27 +150,31 @@ impl Canvas {
     /// ```
     pub fn new() -> Result<Self, crate::errors::GameError> {
         let mut out = stdout().into_raw_mode().map_err(|e| {
-            crate::errors::GameError::IoError(std::io::Error::other(format!(
-                "не удалось перейти в raw-режим терминала: {e}"
-            )))
+            crate::errors::GameError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("не удалось перейти в raw-режим терминала: {e}"),
+            ))
         })?;
 
         write!(out, "{}{}", All, Goto(1, 1)).map_err(|e| {
-            crate::errors::GameError::IoError(std::io::Error::other(format!(
-                "не удалось очистить экран: {e}"
-            )))
+            crate::errors::GameError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("не удалось очистить экран: {e}"),
+            ))
         })?;
 
         out.flush().map_err(|e| {
-            crate::errors::GameError::IoError(std::io::Error::other(format!(
-                "не удалось выполнить flush буфера: {e}"
-            )))
+            crate::errors::GameError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("не удалось выполнить flush буфера: {e}"),
+            ))
         })?;
 
         write!(out, "{Hide}").map_err(|e| {
-            crate::errors::GameError::IoError(std::io::Error::other(format!(
-                "не удалось скрыть курсор: {e}"
-            )))
+            crate::errors::GameError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("не удалось скрыть курсор: {e}"),
+            ))
         })?;
 
         Ok(Self {

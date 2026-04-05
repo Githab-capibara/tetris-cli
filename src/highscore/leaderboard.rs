@@ -228,7 +228,8 @@ impl LeaderboardEntry {
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
-        let salt_name_score = format!("{}{}{value}", self.salt, self.name);
+        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
+        let salt_name_score = format!("{}:{}:{value}", self.salt, self.name);
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
             &self.salt,
@@ -300,7 +301,8 @@ impl LeaderboardEntry {
         let valid_name = sanitize_player_name(name);
 
         let salt = crate::crypto::generate_salt();
-        let salt_name_score = format!("{salt}{valid_name}{score}");
+        // Исправление Проблема 9: Разделители ':' предотвращают коллизии конкатенации
+        let salt_name_score = format!("{salt}:{valid_name}:{score}");
         let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
@@ -342,7 +344,8 @@ impl LeaderboardEntry {
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn is_valid(&self) -> bool {
-        let salt_name_score = format!("{}{}{}", self.salt, self.name, self.score_value);
+        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
+        let salt_name_score = format!("{}:{}:{}", self.salt, self.name, self.score_value);
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
             &self.salt,
@@ -466,7 +469,8 @@ impl ThreadSafeLeaderboardEntry {
     pub fn new(name: &str, score: u128) -> Self {
         let valid_name = sanitize_player_name(name);
         let salt = crate::crypto::generate_salt();
-        let salt_name_score = format!("{salt}{valid_name}{score}");
+        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
+        let salt_name_score = format!("{salt}:{valid_name}:{score}");
         let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
 
         Self {
@@ -514,7 +518,7 @@ impl ThreadSafeLeaderboardEntry {
         // Исправление C9: используем read() вместо lock() для RwLock
         if let Ok(guard) = self.inner.read() {
             let score_value = guard.score_value;
-            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
+            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, score_value);
             if !hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
                 &guard.salt,
@@ -534,11 +538,9 @@ impl ThreadSafeLeaderboardEntry {
     /// Получить значение рекорда с безопасной обработкой ошибок.
     ///
     /// # Возвращает
-    /// - `Some(u128)` — значение рекорда или 0 если валидация не прошла
-    /// - `None` — если `RwLock` отравлен (другой поток паниковал удерживая блокировку)
-    ///
-    /// # Errors
-    /// Этот метод не возвращает ошибки, но возвращает `None` при отравлении `RwLock`.
+    /// - `Some(u128)` — значение рекорда если запись валидна
+    /// - `None` — если `RwLock` отравлен ИЛИ запись не прошла валидацию хэша
+    ///   (невозможно отличить ошибку блокировки от подделанной записи)
     ///
     /// # Безопасность
     /// Метод использует `RwLock` для защиты от TOCTOU уязвимости.
@@ -552,25 +554,19 @@ impl ThreadSafeLeaderboardEntry {
     #[must_use]
     pub fn score_safe(&self) -> Option<u128> {
         // Исправление C9: используем read() вместо lock() для RwLock
-        if let Ok(guard) = self.inner.read() {
-            let score_value = guard.score_value;
-            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, score_value);
-            if !hmac_verify_with_salt(
-                get_leaderboard_hmac_key(),
-                &guard.salt,
-                &salt_name_score,
-                &guard.hash,
-            ) {
-                eprintln!(
-                    "[WARN] ThreadSafeLeaderboardEntry::score_safe(): запись не прошла валидацию"
-                );
-                return Some(0);
-            }
-            return Some(score_value);
+        let guard = self.inner.read().ok()?;
+        let score_value = guard.score_value;
+        let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, score_value);
+        if !hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &guard.salt,
+            &salt_name_score,
+            &guard.hash,
+        ) {
+            // Запись не прошла валидацию — возможно подделана
+            return None;
         }
-        // Логгируем ошибку и возвращаем None
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score_safe(): RwLock poisoned");
-        None
+        Some(score_value)
     }
 
     /// Проверить валидность записи.
@@ -598,7 +594,7 @@ impl ThreadSafeLeaderboardEntry {
     pub fn is_valid(&self) -> bool {
         // Исправление C9: используем read() вместо lock() для RwLock
         if let Ok(guard) = self.inner.read() {
-            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
             return hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
                 &guard.salt,
@@ -629,7 +625,7 @@ impl ThreadSafeLeaderboardEntry {
     pub fn is_valid_safe(&self) -> Option<bool> {
         // Исправление C9: используем read() вместо lock() для RwLock
         if let Ok(guard) = self.inner.read() {
-            let salt_name_score = format!("{}{}{}", guard.salt, guard.name, guard.score_value);
+            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
             return Some(hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
                 &guard.salt,

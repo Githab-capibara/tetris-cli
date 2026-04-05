@@ -20,11 +20,15 @@ const APP_NAME: &str = "tetris-cli";
 /// Получить путь к файлу конфигурации confy.
 ///
 /// # Возвращает
-/// Путь к файлу конфигурации или None при ошибке
+/// - `Ok(PathBuf)` - путь к файлу конфигурации
+/// - `Err(String)` - если не удалось определить базовую директорию или создать директорию
 ///
 /// # Исправление #3
 /// Сначала проверяется `XDG_CONFIG_HOME`, затем fallback на `HOME/.config`.
-fn get_config_file_path() -> Option<PathBuf> {
+///
+/// # Исправление аудита 2026-04-05 (Проблема 18)
+/// Ошибка create_dir_all теперь возвращается вызывающему коду вместо игнорирования.
+fn get_config_file_path() -> Result<PathBuf, String> {
     // Исправление #3: XDG_CONFIG_HOME → HOME/.config fallback
     let config_base = std::env::var("XDG_CONFIG_HOME")
         .ok()
@@ -35,19 +39,20 @@ fn get_config_file_path() -> Option<PathBuf> {
             let mut path = PathBuf::from(home);
             path.push(".config");
             Some(path)
-        })?;
+        })
+        .ok_or_else(|| "Не удалось определить домашнюю директорию".to_string())?;
 
     let mut config_path = config_base;
     config_path.push(APP_NAME);
 
-    // H12: создаём директорию если не существует
-    if let Err(e) = std::fs::create_dir_all(&config_path) {
-        eprintln!("[WARN] Не удалось создать директорию конфигурации: {e}");
-    }
+    // Создаём директорию и возвращаем ошибку при неудаче
+    std::fs::create_dir_all(&config_path).map_err(|e| {
+        format!("Не удалось создать директорию конфигурации {}: {e}", config_path.display())
+    })?;
 
     config_path.push("config.toml");
 
-    Some(config_path)
+    Ok(config_path)
 }
 
 /// Проверить размер файла конфигурации.
@@ -183,7 +188,7 @@ impl SaveData {
     /// Использует консолидированный метод `load_with_validation()`
     fn load_config_result() -> Result<Self, String> {
         // Проверка размера файла перед загрузкой (Исправление #23)
-        if let Some(config_path) = get_config_file_path() {
+        if let Ok(config_path) = get_config_file_path() {
             check_config_file_size(&config_path)?;
         }
 
