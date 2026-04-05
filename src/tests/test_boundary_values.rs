@@ -95,17 +95,7 @@ fn test_score_from_u128_boundary() {
     );
 }
 
-/// Тест T6: Score конвертация в u128
-#[test]
-fn test_score_into_u128() {
-    let score = Score::with_value(u128::MAX);
-    let value: u128 = score.into();
-    assert_eq!(
-        value,
-        u128::MAX,
-        "Конвертация в u128 должна сохранять значение"
-    );
-}
+/// Тест T6: Score конвертация в u128 — удалён как дубликат (остался в src/game/types.rs)
 
 // ============================================================================
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ УРОВНЯ (Level)
@@ -173,13 +163,7 @@ fn test_level_increment_by_overflow() {
     assert_eq!(level.value(), u32::MAX, "Level должен остаться u32::MAX");
 }
 
-/// Тест T12: Level reset
-#[test]
-fn test_level_reset() {
-    let mut level = Level::with_value(100);
-    level.reset();
-    assert_eq!(level.value(), 1, "reset() должен вернуть уровень к 1");
-}
+/// Тест T12: Level reset — удалён как дубликат (остался в src/game/types.rs)
 
 // ============================================================================
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ ЛИНИЙ (LinesCount)
@@ -256,13 +240,7 @@ fn test_lines_count_reached_boundary() {
     );
 }
 
-/// Тест T18: `LinesCount` reset
-#[test]
-fn test_lines_count_reset() {
-    let mut lines = LinesCount::with_value(150);
-    lines.reset();
-    assert_eq!(lines.value(), 0, "reset() должен вернуть LinesCount к 0");
-}
+/// Тест T18: `LinesCount` reset — удалён как дубликат (остался в src/game/types.rs)
 
 // ============================================================================
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ GameState
