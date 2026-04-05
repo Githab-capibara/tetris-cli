@@ -68,7 +68,7 @@ fn main() {
 fn bench_find_full_rows(c: &mut Criterion) {
     let mut group: BenchmarkGroup<'_, _> = c.benchmark_group("find_full_rows");
 
-    // Пустое поле
+    // Пустое поле — инициализация ВЫНЕСЕНА из b.iter()
     group.bench_function("empty_field", |b| {
         b.iter(|| {
             let state = GameState::new();
@@ -76,24 +76,30 @@ fn bench_find_full_rows(c: &mut Criterion) {
         });
     });
 
-    // Поле с одной заполненной линией
+    // Поле с одной заполненной линией — инициализация ВЫНЕСЕНА
     group.bench_function("one_full_line", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.fill_line_for_bench(10);
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.fill_line_for_bench(10);
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
-    // Поле с несколькими заполненными линиями
+    // Поле с несколькими заполненными линиями — инициализация ВЫНЕСЕНА
     group.bench_function("multiple_full_lines", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            for line in [5, 10, 15, 18] {
-                state.fill_line_for_bench(line);
-            }
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                for line in [5, 10, 15, 18] {
+                    state.fill_line_for_bench(line);
+                }
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
     group.finish();
@@ -106,26 +112,36 @@ fn bench_find_full_rows(c: &mut Criterion) {
 fn bench_check_rows(c: &mut Criterion) {
     let mut group = c.benchmark_group("check_rows");
 
-    // Поле с одной заполненной линией
+    // Поле с одной заполненной линией — инициализация ВЫНЕСЕНА
     group.bench_function("clear_one_line", |b| {
-        b.iter(|| {
-            let mut game_state = GameState::new();
-            game_state.fill_line_for_bench(10);
-            game_state.clear_lines_for_bench();
-            black_box(game_state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut game_state = GameState::new();
+                game_state.fill_line_for_bench(10);
+                game_state
+            },
+            |mut game_state| {
+                game_state.clear_lines_for_bench();
+                black_box(game_state);
+            },
+        );
     });
 
-    // Поле с несколькими заполненными линиями
+    // Поле с несколькими заполненными линиями — инициализация ВЫНЕСЕНА
     group.bench_function("clear_multiple_lines", |b| {
-        b.iter(|| {
-            let mut game_state = GameState::new();
-            for line in [5, 10, 15] {
-                game_state.fill_line_for_bench(line);
-            }
-            game_state.clear_lines_for_bench();
-            black_box(game_state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut game_state = GameState::new();
+                for line in [5, 10, 15] {
+                    game_state.fill_line_for_bench(line);
+                }
+                game_state
+            },
+            |mut game_state| {
+                game_state.clear_lines_for_bench();
+                black_box(game_state);
+            },
+        );
     });
 
     // Tetris - 4 линии одновременно
