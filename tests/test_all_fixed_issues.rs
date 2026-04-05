@@ -167,13 +167,21 @@ fn test_fix_e5_controls_toctou_protection() {
         "Сначала должно быть open(), затем metadata() - защита от TOCTOU"
     );
 
-    // Тест 3: Проверка is_symlink() после открытия
+    // Тест 3: Проверка is_symlink() НЕ требуется после O_NOFOLLOW
+    // O_NOFOLLOW на уровне ядра отклоняет symlink через ELOOP,
+    // поэтому избыточная проверка is_symlink() удалена (Проблема 7 аудита 2026-04-05)
     assert!(
-        content.contains("is_symlink()"),
-        "Должна быть проверка is_symlink() после открытия файла"
+        !content.contains("is_symlink()"),
+        "is_symlink() проверка избыточна после O_NOFOLLOW и должна быть удалена"
     );
 
-    // Тест 4: Комментарий об исправлении E5
+    // Тест 4: Комментарий о том что O_NOFOLLOW обеспечивает защиту
+    assert!(
+        content.contains("O_NOFOLLOW") && (content.contains("ELOOP") || content.contains("атомарн")),
+        "Должен быть комментарий о том что O_NOFOLLOW обеспечивает защиту от symlink"
+    );
+
+    // Тест 5: Комментарий об исправлении E5
     assert!(
         content.contains("E5") || content.contains("TOCTOU"),
         "Должен быть комментарий об исправлении E5 (TOCTOU)"

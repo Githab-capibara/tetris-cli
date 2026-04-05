@@ -77,12 +77,19 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 /// ```
 ///
 /// # Безопасность
-/// Используется постоянное по времени сравнение для предотвращения timing-атак.
+/// Используется XOR-накопление для сравнения всех байтов независимо от позиции
+/// первого несовпадения. Это обеспечивает best-effort защиту от timing-атак
+/// на уровне приложения.
 ///
 /// # Исправление NEW-150 (2026-04-02)
 /// - Проверка длины включена в constant-time сравнение
 /// - Используется `compiler_fence` для предотвращения оптимизаций
 /// - Все операции выполняются независимо от результата
+///
+/// # Примечание о timing-атаках
+/// Текущая реализация — best-effort защита. `compiler_fence` предотвращает ТОЛЬКО
+/// переупорядочивание компилятором. Для полной защиты от timing-атак на уровне CPU
+/// используйте crate `subtle` (constant-time сравнение).
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
@@ -111,7 +118,8 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
         result |= actual_bytes[i] ^ expected_bytes[i];
     }
 
-    // NEW-150: compiler_fence предотвращает переупорядочивание инструкций компилятором
+    // NEW-150: compiler_fence предотвращает ТОЛЬКО переупорядочивание компилятором.
+    // Для полной защиты от timing-атак на уровне CPU используйте crate `subtle`.
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
 
     result == 0
@@ -155,9 +163,9 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
-    // Исправление ISSUE-197: Пустая соль допустима - просто конкатенируется без соли
-    // Используем format!() напрямую для снижения аллокаций (исправление #15)
-    let salted_data = format!("{salt}{data}");
+    // Исправление Проблема 8: Разделитель ':' предотвращает коллизии конкатенации
+    // hmac_sign_with_salt(key, "ab", "c") != hmac_sign_with_salt(key, "a", "bc")
+    let salted_data = format!("{salt}:{data}");
     hmac_sha256(key, &salted_data)
 }
 
@@ -205,8 +213,8 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {
-    // Используем format!() напрямую для снижения аллокаций (исправление #15)
-    let salted_data = format!("{salt}{data}");
+    // Исправление Проблема 8: Разделитель ':' для согласованности с hmac_sign_with_salt
+    let salted_data = format!("{salt}:{data}");
     verify_hmac_sha256(key, &salted_data, signature)
 }
 

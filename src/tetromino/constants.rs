@@ -60,13 +60,18 @@ pub const SHAPE_COLORS: [&dyn Color; 7] = [
 // HELPER ФУНКЦИИ ДЛЯ ДОСТУПА (ISSUE-081, ISSUE-082)
 // ============================================================================
 
+/// Количество фигур в массивах SHAPE_COORDS и SHAPE_COLORS (для документации).
+#[allow(dead_code)]
+const SHAPE_COUNT: usize = 7;
+
 /// Получить координаты блоков для фигуры.
 ///
 /// # Аргументы
 /// * `shape_index` - индекс фигуры (0-6)
 ///
 /// # Возвращает
-/// Срез координат [(i16, i16); 4]
+/// Срез координат [(i16, i16); 4]. При невалидном индексе возвращает
+/// координаты T-фигуры (индекс 0) как безопасное значение по умолчанию.
 ///
 /// # Пример
 /// ```ignore
@@ -74,9 +79,14 @@ pub const SHAPE_COLORS: [&dyn Color; 7] = [
 /// let t_coords = get_shape_coords(0); // T фигура
 /// ```
 #[must_use]
+#[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
-    &SHAPE_COORDS[shape_index]
+    if shape_index < SHAPE_COUNT {
+        &SHAPE_COORDS[shape_index]
+    } else {
+        &SHAPE_COORDS[0]
+    }
 }
 
 /// Получить координаты конкретного блока фигуры.
@@ -86,7 +96,8 @@ pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
 /// * `block_index` - индекс блока (0-3)
 ///
 /// # Возвращает
-/// Координаты блока (x, y)
+/// Координаты блока (x, y). При невалидном индексе фигуры или блока
+/// возвращает (0, 0) как безопасное значение по умолчанию.
 ///
 /// # Пример
 /// ```ignore
@@ -94,9 +105,19 @@ pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
 /// let (x, y) = get_shape_block_coords(0, 0); // Первый блок T фигуры
 /// ```
 #[must_use]
+#[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (i16, i16) {
-    SHAPE_COORDS[shape_index][block_index]
+    if shape_index < SHAPE_COUNT {
+        let coords = SHAPE_COORDS[shape_index];
+        if block_index < coords.len() {
+            coords[block_index]
+        } else {
+            (0, 0)
+        }
+    } else {
+        (0, 0)
+    }
 }
 
 /// Получить цвет для фигуры.
@@ -105,7 +126,8 @@ pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (
 /// * `shape_index` - индекс фигуры (0-6)
 ///
 /// # Возвращает
-/// Ссылка на цвет
+/// Ссылка на цвет. При невалидном индексе возвращает цвет T-фигуры (Magenta)
+/// как безопасное значение по умолчанию.
 ///
 /// # Пример
 /// ```ignore
@@ -113,7 +135,65 @@ pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (
 /// let color = get_shape_color(0); // Цвет T фигуры
 /// ```
 #[must_use]
+#[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub fn get_shape_color(shape_index: usize) -> &'static dyn Color {
-    SHAPE_COLORS[shape_index]
+    SHAPE_COLORS.get(shape_index).copied().unwrap_or(SHAPE_COLORS[0])
+}
+
+#[cfg(test)]
+mod constants_tests {
+    use super::*;
+
+    #[test]
+    fn test_get_shape_coords_valid_indices() {
+        for i in 0..7 {
+            let coords = get_shape_coords(i);
+            assert_eq!(coords.len(), 4, "Каждая фигура должна иметь 4 блока");
+        }
+    }
+
+    #[test]
+    fn test_get_shape_coords_invalid_index_returns_default() {
+        // Невалидный индекс должен вернуть координаты T-фигуры (индекс 0)
+        let default_coords = get_shape_coords(0);
+        assert_eq!(get_shape_coords(7), default_coords);
+        assert_eq!(get_shape_coords(100), default_coords);
+        assert_eq!(get_shape_coords(usize::MAX), default_coords);
+    }
+
+    #[test]
+    fn test_get_shape_block_coords_valid_indices() {
+        for i in 0..7 {
+            for b in 0..4 {
+                let _ = get_shape_block_coords(i, b); // не должно паниковать
+            }
+        }
+    }
+
+    #[test]
+    fn test_get_shape_block_coords_invalid_indices_return_default() {
+        assert_eq!(get_shape_block_coords(7, 0), (0, 0));
+        assert_eq!(get_shape_block_coords(0, 4), (0, 0));
+        assert_eq!(get_shape_block_coords(usize::MAX, usize::MAX), (0, 0));
+    }
+
+    #[test]
+    fn test_get_shape_color_valid_indices() {
+        for i in 0..7 {
+            let _ = get_shape_color(i); // не должно паниковать
+        }
+    }
+
+    #[test]
+    fn test_get_shape_color_invalid_index_returns_default() {
+        // Невалидный индекс должен вернуть цвет T-фигуры (индекс 0)
+        let default_color = get_shape_color(0);
+        // Сравниваем через адреса указателей, так как dyn Color не реализует PartialEq
+        assert!(
+            std::ptr::eq(get_shape_color(7) as *const _, default_color as *const _)
+                || std::ptr::eq(get_shape_color(100) as *const _, default_color as *const _),
+            "Невалидный индекс должен вернуть цвет по умолчанию"
+        );
+    }
 }

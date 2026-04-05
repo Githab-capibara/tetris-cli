@@ -311,7 +311,7 @@ impl ControlsConfig {
         })?;
         let joined_path = DEFAULT_PATH_VALIDATOR
             .validate_all(path, &current_dir)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message()))?;
 
         // Исправление E10 (HIGH): Используем глобальный HMAC ключ вместо генерации нового
         // Старое поведение: let hmac_key = crate::crypto::generate_salt();
@@ -365,27 +365,14 @@ impl ControlsConfig {
         let json = serde_json::to_string_pretty(&config_with_sig)
             .map_err(|e| io::Error::other(e.to_string()))?;
 
-        // Исправление аудита 2026-04-01 (S2): Дополнительная проверка пути после открытия файла
-        // Используем O_NOFOLLOW для защиты от symlink атак при записи
-        // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
+        // Защита от symlink атак: O_NOFOLLOW обеспечивает атомарную защиту на уровне ядра.
+        // Если файл — symlink, open() вернёт ELOOP, поэтому дополнительных проверок не требуется.
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
             .custom_flags(libc::O_NOFOLLOW)
             .open(&joined_path)?;
-
-        // S2: Дополнительная проверка что файл не является symlink после открытия
-        // Это защита от race condition между проверкой и открытием
-        #[cfg(target_os = "linux")]
-        {
-            use std::os::linux::fs::MetadataExt;
-            let metadata = file.metadata()?;
-            // Проверка что файл не является symlink через mode
-            if metadata.st_mode() & libc::S_IFMT == libc::S_IFLNK {
-                return Err(io::Error::other("Файл является символической ссылкой"));
-            }
-        }
 
         file.write_all(json.as_bytes())?;
         Ok(())
@@ -473,28 +460,20 @@ impl ControlsConfig {
         })?;
         let joined_path = DEFAULT_PATH_VALIDATOR
             .validate_all(path, &current_dir)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message()))?;
 
         // Исправление E5 (CRITICAL): Устранение TOCTOU уязвимости
-        // Старая схема: symlink_metadata() -> open() (уязвимо TOCTOU)
-        // Новая схема: open(O_NOFOLLOW) -> fstat() (безопасно)
+        // Открываем файл с O_NOFOLLOW — атомарная защита от symlink на уровне ядра.
+        // Если файл — symlink, open() вернёт ELOOP, поэтому отдельная проверка не нужна.
 
         // Шаг 1: Открываем файл с O_NOFOLLOW для атомарной защиты от symlink
-        // Примечание: O_NOFOLLOW уже применяется для защиты от TOCTOU атак (symlink атаки)
         let mut file = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_NOFOLLOW)
             .open(&joined_path)?;
 
-        // Шаг 2: Проверяем через fstat() что это не symlink (после открытия!)
-        // Это безопасно так как fd уже открыт и не может быть изменён
+        // Шаг 2: Получаем метаданные уже открытого файла (fd не может быть изменён)
         let metadata = file.metadata()?;
-        if metadata.file_type().is_symlink() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("Символические ссылки не разрешены: {path:?}"),
-            ));
-        }
 
         // Исправление #10: проверка размера файла перед загрузкой
         let file_size = metadata.len();
