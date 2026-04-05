@@ -3,7 +3,8 @@
 //! ## Исправление #10 (menu.rs разделение)
 //! Выделено из `menu.rs` для улучшения читаемости и разделения ответственности.
 
-use crate::io::{Canvas, KeyReader, KEY_BACKSPACE};
+use crate::constants::KEY_BACKSPACE;
+use crate::io::{Canvas, KeyReader};
 use crate::validation::is_valid_name_char;
 use std::{thread::sleep, time::Duration};
 

@@ -339,8 +339,8 @@ mod tests {
     fn test_wall_kick_offset_bounds() {
         // Косвенный тест бэкенда через константы поля
         // Проверяем что GRID_WIDTH и GRID_HEIGHT определены
-        assert!(crate::io::GRID_WIDTH > 0);
-        assert!(crate::io::GRID_HEIGHT > 0);
+        assert!(crate::constants::GRID_WIDTH > 0);
+        assert!(crate::constants::GRID_HEIGHT > 0);
     }
 
     #[test]

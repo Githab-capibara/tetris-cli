@@ -46,7 +46,8 @@ use crate::config::keys::validate_all_keys;
 use crate::errors::GameError;
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::io::{Canvas, KeyReader, DISP_HEIGHT, DISP_WIDTH};
+use crate::io::{Canvas, KeyReader};
+use crate::constants::{DISP_HEIGHT, DISP_WIDTH};
 use crate::menu::run_game_mode;
 
 /// Приложение Tetris CLI.
@@ -235,7 +236,7 @@ impl Application {
     /// # Возвращает
     /// `true` если нужно выйти из приложения
     fn check_exit_condition(key: u8) -> bool {
-        key == crate::io::KEY_BACKSPACE
+        key == crate::constants::KEY_BACKSPACE
     }
 
     /// Обработать ввод в меню.

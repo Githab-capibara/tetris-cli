@@ -19,45 +19,8 @@
 //! ```
 
 // Исправление M2: переэкспорт FRAME_DELAY_MS из crate::constants
-pub use crate::constants::FRAME_DELAY_MS;
-// Исправление C3: переэкспорт MAX_LEADERBOARD_ENTRIES из crate::constants
-pub use crate::constants::MAX_LEADERBOARD_ENTRIES;
-use crate::io::DISP_HEIGHT;
+pub use crate::constants::{DISP_HEIGHT, FRAME_DELAY_MS};
 use termion::color::White;
-
-// ============================================================================
-// КОНСТАНТЫ ПОЗИЦИЙ ЭЛЕМЕНТОВ МЕНЮ
-// ============================================================================
-
-/// Позиции элементов меню (X координаты).
-#[allow(dead_code)]
-pub const MENU_TITLE_X: u16 = 11;
-
-/// Позиция X для имени автора.
-#[allow(dead_code)]
-pub const MENU_AUTHOR_X: u16 = 11;
-
-/// Позиция X для блока управления.
-#[allow(dead_code)]
-pub const MENU_CONTROLS_X: u16 = 11;
-
-/// Позиция X для блока рекорда.
-#[allow(dead_code)]
-pub const MENU_RECORD_X: u16 = 11;
-
-/// Позиции элементов меню (Y координаты).
-///
-/// # Обоснование значения (3)
-/// Значение 3 выбрано как отступ от верха рамки.
-#[allow(dead_code)]
-pub const MENU_TITLE_Y: u16 = 3;
-
-/// Позиция Y для блока рекорда.
-///
-/// # Обоснование значения (21)
-/// Значение 21 выбрано как размещение в нижней части меню.
-#[allow(dead_code)]
-pub const MENU_RECORD_Y: u16 = 21;
 
 // ============================================================================
 // СТАТИЧЕСКИЕ СТРОКИ МЕНЮ
@@ -115,10 +78,6 @@ pub const LEADERBOARD_MENU: [&str; 8] = [
     "║ 4.                 ║",
     "║ 5.                 ║",
 ];
-
-/// Сообщение о паузе.
-#[allow(dead_code)]
-pub const PAUSE_MENU: [&str; 3] = ["╔════════╗", "║ ПАУЗА  ║", "╚════════╝"];
 
 // ============================================================================
 // ЦВЕТА ОТРИСОВКИ

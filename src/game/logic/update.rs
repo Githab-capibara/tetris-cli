@@ -70,10 +70,10 @@ pub fn save_tetromino(state: &mut GameState) {
     // Оптимизация: используем as вместо try_from() для const значений
     // cast: usize -> i16, потеря точности допустима: GRID_HEIGHT константа (20)
     #[allow(clippy::cast_possible_wrap)]
-    let grid_height_i16 = crate::io::GRID_HEIGHT as i16;
+    let grid_height_i16 = crate::constants::GRID_HEIGHT as i16;
     // cast: usize -> i16, потеря точности допустима: GRID_WIDTH константа (10)
     #[allow(clippy::cast_possible_wrap)]
-    let grid_width_i16 = crate::io::GRID_WIDTH as i16;
+    let grid_width_i16 = crate::constants::GRID_WIDTH as i16;
 
     let curr_shape = state.curr_shape();
     let fg = curr_shape.fg();
@@ -131,8 +131,8 @@ mod update_tests {
 
         // Хотя бы одна ячейка должна измениться (фигура сохранена)
         let mut changed = false;
-        for y in 0..crate::io::GRID_HEIGHT {
-            for x in 0..crate::io::GRID_WIDTH {
+        for y in 0..crate::constants::GRID_HEIGHT {
+            for x in 0..crate::constants::GRID_WIDTH {
                 if initial_blocks[y][x] != final_blocks[y][x] {
                     changed = true;
                 }
@@ -156,8 +156,8 @@ mod update_tests {
         save_tetromino(&mut state);
 
         // Проверяем что все ячейки в пределах допустимых значений (-1 или 0-6)
-        for y in 0..crate::io::GRID_HEIGHT {
-            for x in 0..crate::io::GRID_WIDTH {
+        for y in 0..crate::constants::GRID_HEIGHT {
+            for x in 0..crate::constants::GRID_WIDTH {
                 let cell = state.get_blocks()[y][x];
                 assert!(
                     cell == -1 || (0..=6).contains(&cell),

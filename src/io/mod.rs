@@ -20,11 +20,6 @@ pub mod key_reader;
 pub use canvas::Canvas;
 pub use key_reader::KeyReader;
 
-// Re-export констант
-pub use crate::constants::{
-    DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
-};
-
 // ============================================================================
 // ТЕСТЫ
 // ============================================================================

@@ -137,8 +137,8 @@ pub trait ScoringState:
     fn stats_mut(&mut self) -> &mut crate::game::stats::GameStats;
 
     /// Получить игровое поле (только чтение).
-    fn get_blocks(&self) -> &[[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
+    fn get_blocks(&self) -> &[[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT];
 
     /// Получить игровое поле (изменяемое).
-    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::io::GRID_WIDTH]; crate::io::GRID_HEIGHT];
+    fn get_blocks_mut(&mut self) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT];
 }

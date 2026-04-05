@@ -14,8 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-/// Имя приложения для конфигурации.
-const APP_NAME: &str = "tetris-cli";
+use super::APP_NAME;
 
 /// Получить путь к файлу конфигурации confy.
 ///

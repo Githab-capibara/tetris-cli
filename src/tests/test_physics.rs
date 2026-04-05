@@ -11,7 +11,7 @@
 //! Все тесты независимы и проверяют отдельные аспекты физической механики.
 
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::BagGenerator;
 use crate::types::{Direction, RotationDirection};
 

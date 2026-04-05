@@ -12,7 +12,7 @@
 //! Все тесты независимы и проверяют отдельные аспекты механики движения.
 
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::types::{Direction, RotationDirection};
 
 // ============================================================================

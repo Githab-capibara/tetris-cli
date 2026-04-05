@@ -30,7 +30,7 @@
 
 use crate::game::state::GameState;
 use crate::game::types::GameAction;
-use crate::io::KEY_BACKSPACE;
+use crate::constants::KEY_BACKSPACE;
 use crate::types::{Direction, RotationDirection, UpdateEndState};
 
 // ============================================================================

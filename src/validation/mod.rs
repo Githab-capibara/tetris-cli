@@ -16,34 +16,19 @@ pub mod service;
 
 // Re-export для удобства использования
 pub use name::is_valid_name_char;
-pub use service::ValidationService;
+// ValidationService заменён на свободные функции в module `service`
 
 // ============================================================================
 // ОШИБКИ ВАЛИДАЦИИ
 // ============================================================================
 
 /// Ошибка валидации числовых значений.
-#[derive(Debug, Clone, PartialEq)]
-pub struct ValidationError {
-    /// Сообщение об ошибке.
-    pub message: String,
-    /// Тип ошибки.
-    pub kind: ValidationErrorKind,
-}
-
-/// Типы ошибок валидации числовых значений.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ValidationErrorKind {
+#[derive(Debug, Clone, PartialEq, thiserror::Error)]
+pub enum ValidationError {
     /// Значение не является конечным (NaN или Infinity).
-    NotFinite,
+    #[error("Значение {value} не является конечным (NaN/Infinity)")]
+    NotFinite { value: f32 },
     /// Значение вне допустимого диапазона.
-    OutOfRange,
+    #[error("Значение {value} вне допустимого диапазона [{min}, {max}]")]
+    OutOfRange { value: f64, min: f64, max: f64 },
 }
-
-impl std::fmt::Display for ValidationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Ошибка валидации: {} ({:?})", self.message, self.kind)
-    }
-}
-
-impl std::error::Error for ValidationError {}

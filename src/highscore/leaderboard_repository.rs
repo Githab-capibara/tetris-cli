@@ -14,10 +14,7 @@
 
 use confy::{load, store};
 
-use super::Leaderboard;
-
-/// Имя приложения для конфигурации.
-const APP_NAME: &str = "tetris-cli";
+use super::{Leaderboard, APP_NAME};
 
 /// Репозиторий для работы с персистентностью таблицы лидеров.
 ///

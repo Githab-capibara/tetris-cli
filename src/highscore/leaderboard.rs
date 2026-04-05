@@ -20,8 +20,6 @@
 //! leaderboard.lock().unwrap().add_score("Player", 1000);
 //! ```
 
-#![deny(clippy::mut_mutex_lock)]
-
 // std
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -33,9 +31,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::keys::get_leaderboard_hmac_key;
 use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 use crate::validation::name::sanitize_player_name;
-
-/// Имя приложения для конфигурации.
-const APP_NAME: &str = "tetris-cli";
+use crate::highscore::APP_NAME;
 
 /// Максимальное количество рекордов в таблице лидеров.
 /// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
