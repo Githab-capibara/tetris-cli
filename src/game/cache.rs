@@ -255,6 +255,8 @@ pub struct RenderCache {
     pub(crate) last_cached_high_score: u128,
     /// Последнее закэшированное значение комбо.
     pub(crate) last_cached_combo: u32,
+    /// Последнее закэшированное значение таймера (elapsed * 100, округлённое).
+    pub(crate) last_cached_timer: i64,
 }
 
 impl RenderCache {
@@ -277,6 +279,7 @@ impl RenderCache {
             last_cached_lines: 0,
             last_cached_high_score: 0,
             last_cached_combo: 0,
+            last_cached_timer: 0,
         }
     }
 

@@ -31,6 +31,7 @@ pub use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 /// # Устарело
 /// Используйте [`hmac_sign_with_salt`] напрямую.
 #[deprecated(since = "0.96.15", note = "Используйте hmac_sign_with_salt из hmac.rs")]
+#[must_use = "Результат HMAC подписи должен быть использован"]
 #[allow(dead_code)]
 pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
     hmac_sign_with_salt(key, salt, data)
@@ -44,6 +45,7 @@ pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
     since = "0.96.15",
     note = "Используйте hmac_verify_with_salt из hmac.rs"
 )]
+#[must_use = "Результат проверки HMAC должен быть использован"]
 #[allow(dead_code)]
 pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
     hmac_verify_with_salt(key, salt, data, expected_signature)

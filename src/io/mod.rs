@@ -25,8 +25,6 @@ pub use crate::constants::{
     DISP_HEIGHT, DISP_WIDTH, GRID_HEIGHT, GRID_WIDTH, KEY_BACKSPACE, SHAPE_STR, SHAPE_WIDTH,
 };
 
-// Re-export ошибок
-
 // ============================================================================
 // ТЕСТЫ
 // ============================================================================

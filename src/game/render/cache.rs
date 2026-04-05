@@ -99,12 +99,14 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     // Кэширование строки таймера для режима спринт
     if state.get_mode_trait().get_target_lines() == Some(40) {
         let elapsed = state.stats().get_elapsed_time();
-        let timer_str = format!("Время: {elapsed:.2}с");
         let render_cache = state.get_render_cache_mut();
-        // Исправление #4: используем clear() + push_str() для переиспользования буфера
-        if render_cache.cached_timer_str != timer_str {
+        // Сравниваем до форматирования — избегаем аллокации если значение не изменилось
+        let timer_matches = render_cache.last_cached_timer == (elapsed * 100.0).round() as i64;
+        if !timer_matches {
+            let timer_str = format!("Время: {elapsed:.2}с");
             render_cache.cached_timer_str.clear();
             render_cache.cached_timer_str.push_str(&timer_str);
+            render_cache.last_cached_timer = (elapsed * 100.0).round() as i64;
         }
     }
 }
