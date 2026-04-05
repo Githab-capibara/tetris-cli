@@ -330,6 +330,8 @@ impl Application {
     fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
         let now = Instant::now();
         // ISSUE-079: безопасная конвертация u128 -> u64 без % 1000
+        // unwrap_or(u64::MAX): если delta > u64::MAX (практически невозможно),
+        // используем максимальное значение — sleep(0) пропустит задержку
         let delta_time_ms: u64 = now
             .duration_since(*last_time)
             .as_millis()
