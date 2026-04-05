@@ -1,9 +1,9 @@
 //! Представление игры для отрисовки.
-#![allow(dead_code)]
 //!
 //! Модуль содержит структуру `GameView` для предоставления
 //! неизменяемого представления состояния игры.
 //! Уменьшает связанность между render.rs и `GameState`.
+#![allow(dead_code)]
 
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
