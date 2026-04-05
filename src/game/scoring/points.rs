@@ -81,6 +81,10 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
 ///
 /// # Исправление C1
 /// Использует `saturating_mul` для защиты от переполнения при начислении очков за падение.
+///
+/// # Panics
+/// Может паниковать если `state` содержит некорректные координаты фигуры (NaN или бесконечность),
+/// что приведёт к бесконечному циклу в `while`. В нормальном игровом процессе невозможно.
 pub fn handle_hard_drop(state: &mut GameState) {
     use crate::constants::HARD_DROP_POINTS;
     use crate::types::Direction;
@@ -122,6 +126,9 @@ pub fn handle_hard_drop(state: &mut GameState) {
 ///
 /// # Исправление ISSUE-054
 /// `add_score()` возвращает u128, используем let _ = для игнорирования.
+///
+/// # Panics
+/// Не паникует. Все операции безопасны благодаря saturating-арифметике.
 pub fn handle_soft_drop(state: &mut GameState) {
     use crate::constants::SOFT_DROP_POINTS;
     use crate::types::Direction;
@@ -141,6 +148,10 @@ pub fn handle_soft_drop(state: &mut GameState) {
 ///
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
+///
+/// # Panics
+/// Может паниковать если `BagGenerator` исчерпан и `Tetromino::from_bag()` паникует.
+/// В нормальном игровом процессе bag всегда перегенерируется, поэтому паника невозможна.
 pub fn handle_hold(state: &mut GameState) {
     if state.can_hold() {
         let current_shape = *state.curr_shape();

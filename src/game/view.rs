@@ -810,3 +810,17 @@ impl<'a> GameView<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game::state::GameState;
+
+    /// Базовый тест: проверяет что GameView создаётся из GameState без паники.
+    #[test]
+    fn test_game_view_from_game_state() {
+        let state = GameState::new();
+        // Создаём view — если метод работает без паники, тест пройден
+        let _view = GameView::from_game_state(&state);
+    }
+}

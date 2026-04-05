@@ -560,7 +560,11 @@ mod game_tests {
     }
 
     // Тесты производительности
+    /// Тест производительности: find_full_rows
+    ///
+    /// #[ignore] — пороги зависят от машины, могут падать на CI/CD.
     #[test]
+    #[ignore = "performance threshold may fail on CI/CD"]
     fn test_performance_find_full_rows() {
         use std::time::Instant;
 
@@ -582,7 +586,11 @@ mod game_tests {
         );
     }
 
+    /// Тест производительности: save_tetromino
+    ///
+    /// #[ignore] — пороги зависят от машины, могут падать на CI/CD.
     #[test]
+    #[ignore = "performance threshold may fail on CI/CD"]
     fn test_performance_save_tetromino() {
         use std::time::Instant;
 
@@ -600,7 +608,11 @@ mod game_tests {
         );
     }
 
+    /// Тест производительности: check_collision_direction
+    ///
+    /// #[ignore] — пороги зависят от машины, могут падать на CI/CD.
     #[test]
+    #[ignore = "performance threshold may fail on CI/CD"]
     fn test_performance_check_collision_direction() {
         use std::time::Instant;
 

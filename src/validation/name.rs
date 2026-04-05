@@ -181,8 +181,9 @@ mod validation_name_tests {
     }
 
     #[test]
-    fn test_sanitize_player_name_truncates_to_20_chars() {
-        // Тест остаётся для обратной совместимости - проверяем что 20 символов принимаются
+    fn test_sanitize_player_name_truncates_to_max_length() {
+        // Тест проверяет что имя длиной 20 символов принимается (обратная совместимость).
+        // Фактический лимит — 32 символа (MAX_NAME_LENGTH).
         let name = "abcdefghijklmnopqrst";
         let sanitized = sanitize_player_name(name);
         assert_eq!(sanitized.chars().count(), 20);

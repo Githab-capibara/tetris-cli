@@ -462,13 +462,33 @@ mod tests {
     #[test]
     fn test_event_dispatcher_dispatch() {
         let mut dispatcher = EventDispatcher::new();
-        let mut handler = TestHandler::new();
+        // Используем Arc<AtomicUsize> для проверки что handler реально получил событие
+        let event_count = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let count_clone = event_count.clone();
 
-        dispatcher.subscribe(Box::new(handler));
+        struct AtomicHandler {
+            count: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+        }
+
+        impl EventHandler for AtomicHandler {
+            fn handle(&mut self, _event: &GameEvent) {
+                self.count
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            }
+        }
+
+        dispatcher.subscribe(Box::new(AtomicHandler {
+            count: count_clone,
+        }));
 
         dispatcher.dispatch(&GameEvent::GamePaused);
 
-        // Проверяем что событие доставлено (через новый handler так как старый перемещён)
+        // Проверяем что событие реально доставлено обработчику
+        assert_eq!(
+            event_count.load(std::sync::atomic::Ordering::SeqCst),
+            1,
+            "Обработчик должен получить ровно 1 событие"
+        );
         assert_eq!(dispatcher.subscriber_count(), 1);
     }
 

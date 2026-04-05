@@ -307,7 +307,9 @@ mod tests {
 
         // Заполнение линии
         for x in 0..GRID_WIDTH {
-            board.set_block(x, 10, 1).unwrap();
+            board
+                .set_block(x, 10, 1)
+                .expect("set_block should succeed for valid coordinates");
         }
 
         // Проверка через get_blocks
