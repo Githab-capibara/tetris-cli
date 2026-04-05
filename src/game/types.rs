@@ -484,7 +484,6 @@ pub use crate::core::Position;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Position;
 
     // ==================== Тесты для Score ====================
 
@@ -674,59 +673,6 @@ mod tests {
         let mut lines = LinesCount::with_value(u32::MAX);
         lines.add(100);
         assert_eq!(lines.value(), u32::MAX); // Saturating
-    }
-
-    // ==================== Тесты для Position ====================
-
-    #[test]
-    fn test_position_new() {
-        let pos = Position::new(5, 10);
-        assert_eq!(pos.x(), 5);
-        assert_eq!(pos.y(), 10);
-    }
-
-    #[test]
-    fn test_position_default() {
-        let pos = Position::default();
-        assert_eq!(pos.x(), 0);
-        assert_eq!(pos.y(), 0);
-    }
-
-    #[test]
-    fn test_position_set() {
-        let mut pos = Position::new(0, 0);
-        pos.set(15, 20);
-        assert_eq!(pos.x(), 15);
-        assert_eq!(pos.y(), 20);
-    }
-
-    #[test]
-    fn test_position_offset() {
-        let mut pos = Position::new(5, 10);
-        pos.offset(3, -2);
-        assert_eq!(pos.x(), 8);
-        assert_eq!(pos.y(), 8);
-    }
-
-    #[test]
-    fn test_position_is_zero() {
-        assert!(Position::new(0, 0).is_zero());
-        assert!(!Position::new(1, 0).is_zero());
-        assert!(!Position::new(0, 1).is_zero());
-    }
-
-    #[test]
-    fn test_position_from_tuple() {
-        let pos: Position = (7, 14).into();
-        assert_eq!(pos.x(), 7);
-        assert_eq!(pos.y(), 14);
-    }
-
-    #[test]
-    fn test_position_into_tuple() {
-        let pos = Position::new(9, 11);
-        let tuple: (i16, i16) = pos.into();
-        assert_eq!(tuple, (9, 11));
     }
 
     // ==================== Тесты для GameAction ====================

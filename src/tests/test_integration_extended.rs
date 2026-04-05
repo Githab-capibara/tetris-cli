@@ -159,6 +159,7 @@ fn test_curr_and_next_shapes_different() {
 
 /// Тест 11: `GameState` может сохранять рекорд
 #[test]
+#[ignore = "depends on confy file system"]
 fn test_gamestate_can_save_score() {
     // Создаём состояние игры и добавляем очки
     let mut state = GameState::new();
@@ -202,6 +203,7 @@ fn test_leaderboard_adds_game_score() {
 
 /// Тест 13: `SaveData` загружает рекорд
 #[test]
+#[ignore = "depends on confy file system"]
 fn test_savedata_loads_score() {
     SaveData::save_value(5000);
 

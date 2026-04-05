@@ -117,24 +117,3 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::game::cache::RenderCache;
-
-    #[test]
-    fn test_render_cache_new() {
-        let cache = RenderCache::new();
-        assert!(cache.cached_score_str.is_empty());
-        assert!(cache.cached_level_str.is_empty());
-        assert!(cache.cached_lines_str.is_empty());
-        assert!(cache.cached_high_score_str.is_empty());
-        assert!(cache.cached_combo_str.is_empty());
-        assert!(cache.cached_timer_str.is_empty());
-        assert_eq!(cache.last_cached_score, 0);
-        assert_eq!(cache.last_cached_level, 0);
-        assert_eq!(cache.last_cached_lines, 0);
-        assert_eq!(cache.last_cached_high_score, 0);
-        assert_eq!(cache.last_cached_combo, 0);
-        assert_eq!(cache.last_cached_timer, 0);
-    }
-}

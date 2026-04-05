@@ -240,29 +240,6 @@ fn test_h4_sort_by_key_in_leaderboard() {
     );
 }
 
-/// Тест H5-H6: Наличие раздела # Errors в документации
-///
-/// Проверяет что публичные функции имеют раздел # Errors в документации.
-#[test]
-fn test_h5_h6_errors_documentation_exists() {
-    // Этот тест проверяет наличие документации через компиляцию
-    // Если документация отсутствует, тесты всё равно пройдут,
-    // но это регрессионный тест для будущих изменений
-
-    use tetris_cli::game::state::GameState;
-    use tetris_cli::highscore::Leaderboard;
-
-    // Проверяем что методы существуют и работают
-    let state = GameState::new();
-    let _score = state.score();
-
-    let leaderboard = Leaderboard::default();
-    let _entries = leaderboard.get_entries();
-
-    // Тест проходит если код компилируется с документацией
-    // Код компилируется - тест проходит
-}
-
 /// Тест H7: Константа FRAME_DELAY_MS определена
 ///
 /// Проверяет что константа FRAME_DELAY_MS определена в модуле constants.
@@ -305,33 +282,6 @@ fn test_h8_forbidden_url_encoding_patterns() {
         sanitized_path, "PlayerNameTest",
         "Символы / и \\ должны быть удалены"
     );
-}
-
-/// Тест H9: Метод `compute_signature()` в controls.rs
-///
-/// Проверяет наличие и работу метода `compute_signature()`.
-#[test]
-fn test_h9_compute_signature_method_exists() {
-    use tetris_cli::config::keys::get_controls_hmac_key;
-    use tetris_cli::controls::ControlsConfig;
-
-    let config = ControlsConfig::default_config();
-
-    // Создаём JSON для подписи (упрощённо)
-    let config_json = format!(
-        r#"{{"move_left":{},"move_right":{}}}"#,
-        config.get_move_left(),
-        config.get_move_right()
-    );
-
-    // Проверяем что HMAC ключ существует
-    let key = get_controls_hmac_key();
-    // Тест проверяет что код компилируется и функция работает
-    // Пустой ключ допустим (означает что TETRIS_HMAC_KEY не установлена)
-    let _ = key;
-
-    // Тест проходит если код компилируется
-    // Метод compute_signature() существует - тест проходит
 }
 
 /// Тест H10: Консолидированные методы загрузки конфига
@@ -463,12 +413,6 @@ fn test_m5_dead_code_marked_with_allow_attribute() {
     let _controls_key = get_controls_hmac_key();
     let _leaderboard_key = get_leaderboard_hmac_key();
     let _save_data_key = get_save_data_hmac_key();
-
-    // Тест проходит если код компилируется без предупреждений
-    assert!(
-        true,
-        "Код должен компилироваться без предупреждений о мёртвом коде"
-    );
 }
 
 /// Тест M7: sanitize.rs удалён и используется `validation::name`
@@ -593,16 +537,15 @@ fn test_l4_simplified_exports() {
     };
 
     // Проверяем что основные типы экспортированы и могут быть использованы
-    let _state = GameState::new();
-    let _ = Direction::Down;
+    let state = GameState::new();
+    assert!(state.level() >= 1, "GameState должен иметь уровень >= 1");
+    let dir = Direction::Down;
+    assert!(matches!(dir, Direction::Down), "Direction::Down должен совпадать");
     let _ = RotationDirection::Clockwise;
     let _ = ShapeType::T;
     let _bag = BagGenerator::new();
     let _config = ControlsConfig::default_config();
     let _leaderboard = Leaderboard::default();
-
-    // Тест проходит если все типы экспортированы корректно
-    // Типы экспортированы - тест проходит
 }
 
 // ============================================================================

@@ -57,7 +57,6 @@ impl std::fmt::Display for UpdateEndState {
 #[cfg(test)]
 mod types_tests {
     use super::*;
-    use crate::game::types::GameAction;
 
     #[test]
     fn test_direction_from_core() {
@@ -84,74 +83,4 @@ mod types_tests {
         assert_eq!(format!("{:?}", UpdateEndState::Won), "Won");
     }
 
-    // ==================== Тесты для GameAction ====================
-
-    #[test]
-    fn test_game_action_variants() {
-        // Проверка всех вариантов
-        let _ = GameAction::MoveLeft;
-        let _ = GameAction::MoveRight;
-        let _ = GameAction::SoftDrop;
-        let _ = GameAction::HardDrop;
-        let _ = GameAction::RotateLeft;
-        let _ = GameAction::RotateRight;
-        let _ = GameAction::Hold;
-        let _ = GameAction::Pause;
-        let _ = GameAction::Quit;
-    }
-
-    #[test]
-    fn test_game_action_is_movement() {
-        assert!(GameAction::MoveLeft.is_movement());
-        assert!(GameAction::MoveRight.is_movement());
-        assert!(!GameAction::SoftDrop.is_movement());
-        assert!(!GameAction::HardDrop.is_movement());
-        assert!(!GameAction::RotateLeft.is_movement());
-        assert!(!GameAction::RotateRight.is_movement());
-        assert!(!GameAction::Hold.is_movement());
-        assert!(!GameAction::Pause.is_movement());
-        assert!(!GameAction::Quit.is_movement());
-    }
-
-    #[test]
-    fn test_game_action_is_rotation() {
-        assert!(!GameAction::MoveLeft.is_rotation());
-        assert!(!GameAction::MoveRight.is_rotation());
-        assert!(!GameAction::SoftDrop.is_rotation());
-        assert!(!GameAction::HardDrop.is_rotation());
-        assert!(GameAction::RotateLeft.is_rotation());
-        assert!(GameAction::RotateRight.is_rotation());
-        assert!(!GameAction::Hold.is_rotation());
-        assert!(!GameAction::Pause.is_rotation());
-        assert!(!GameAction::Quit.is_rotation());
-    }
-
-    #[test]
-    fn test_game_action_is_drop() {
-        assert!(!GameAction::MoveLeft.is_drop());
-        assert!(!GameAction::MoveRight.is_drop());
-        assert!(GameAction::SoftDrop.is_drop());
-        assert!(GameAction::HardDrop.is_drop());
-        assert!(!GameAction::RotateLeft.is_drop());
-        assert!(!GameAction::RotateRight.is_drop());
-        assert!(!GameAction::Hold.is_drop());
-        assert!(!GameAction::Pause.is_drop());
-        assert!(!GameAction::Quit.is_drop());
-    }
-
-    #[test]
-    fn test_game_action_debug() {
-        assert_eq!(format!("{:?}", GameAction::MoveLeft), "MoveLeft");
-        assert_eq!(format!("{:?}", GameAction::HardDrop), "HardDrop");
-    }
-
-    #[test]
-    fn test_game_action_copy_clone() {
-        let action = GameAction::MoveLeft;
-        let action_copy = action; // Copy
-        let action_clone = action; // Clone
-
-        assert_eq!(action, action_copy);
-        assert_eq!(action, action_clone);
-    }
 }
