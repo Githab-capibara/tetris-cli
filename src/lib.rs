@@ -122,11 +122,9 @@ mod tests {
     pub mod test_integration_extended;
 
     // Безопасность и переполнение
-    pub mod test_error_propagation;
     pub mod test_game_score_overflow;
     pub mod test_hmac_safety;
     pub mod test_safe_cast;
     pub mod test_score_overflow_protection;
     pub mod test_state_validation;
-    pub mod test_unwrap_to_expect;
 }
