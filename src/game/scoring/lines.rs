@@ -51,6 +51,7 @@ pub(crate) const MAX_SCORE: u128 = u128::MAX / 2;
 /// повторных вычислений при использовании в нескольких местах.
 /// Битовая маска занимает 4 байта и может быть быстро скопирована.
 #[must_use]
+#[inline]
 pub fn find_full_rows(blocks: &[[i8; crate::io::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
     let mut rows_mask: u32 = 0;
     let mut remove_count = 0;

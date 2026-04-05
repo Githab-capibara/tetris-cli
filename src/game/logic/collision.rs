@@ -175,6 +175,7 @@ fn check_collision_direction<T: BoardReadonly>(
 /// # Возвращает
 /// `true` если движение возможно
 #[must_use]
+#[inline]
 pub fn can_move_curr_shape_direction(state: &GameState, dir: Direction) -> bool {
     let curr_shape = state.curr_shape();
     // Инвертируем: check_collision_direction возвращает true при коллизии,
