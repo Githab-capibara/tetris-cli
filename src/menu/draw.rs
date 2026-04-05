@@ -39,7 +39,6 @@ use super::constants::{LEADERBOARD_MENU, MAX_LEADERBOARD_ENTRIES, MENU, MENU_COL
 /// let mut canvas = Canvas::new().unwrap();
 /// draw_menu(&mut canvas, "1000");
 /// ```
-#[track_caller]
 pub fn draw_menu(cnv: &mut Canvas, high_score_display: &str) {
     cnv.draw_strs(&MENU, (1, 1), MENU_COLOR, &termion::color::Reset);
     cnv.draw_string(
@@ -67,7 +66,6 @@ pub fn draw_menu(cnv: &mut Canvas, high_score_display: &str) {
 /// let leaderboard = Leaderboard::load();
 /// draw_leaderboard(&mut canvas, &leaderboard);
 /// ```
-#[track_caller]
 pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
     cnv.draw_strs(
         &LEADERBOARD_MENU,
@@ -123,7 +121,6 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 // S9: Обоснование too_many_arguments — функция отрисовки требует 8 параметров
 // для отображения статистики. Это чистая функция отрисовки без состояния,
 // передача всех параметров явно соответствует функциональному стилю.
-#[track_caller]
 #[allow(clippy::too_many_arguments)]
 pub fn draw_game_stats(
     cnv: &mut Canvas,
@@ -163,7 +160,6 @@ pub fn draw_game_stats(
 /// * `cnv` - канвас для отрисовки
 /// * `message` - сообщение для отображения
 /// * `y` - позиция Y для отрисовки
-#[track_caller]
 pub fn draw_record_message(cnv: &mut Canvas, message: &str, y: u16) {
     cnv.draw_string(message, (1, y), MENU_COLOR, &termion::color::Reset);
     cnv.flush();

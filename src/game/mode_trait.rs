@@ -153,13 +153,13 @@ impl SprintMode {
     /// Создать новый режим спринт.
     #[must_use]
     pub fn new() -> Self {
-        Self { target: 40 }
+        Self::default()
     }
 }
 
 impl Default for SprintMode {
     fn default() -> Self {
-        Self::new()
+        Self { target: 40 }
     }
 }
 
@@ -190,13 +190,13 @@ impl MarathonMode {
     /// Создать новый режим марафон.
     #[must_use]
     pub fn new() -> Self {
-        Self { target: 150 }
+        Self::default()
     }
 }
 
 impl Default for MarathonMode {
     fn default() -> Self {
-        Self::new()
+        Self { target: 150 }
     }
 }
 
@@ -238,22 +238,10 @@ pub type GameModeResult = Box<dyn GameModeTrait>;
 /// assert_eq!(mode.name(), "Спринт");
 /// ```
 ///
-/// Архитектурное улучшение 2026-04-01 (O1): Factory функция для создания режимов
-/// вместо использования enum `GameMode`.
+/// Архитектурное улучшение 2026-04-01 (O1): Делегирует ModeRegistry::global().
 #[must_use]
 pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
-    match name {
-        n if n.eq_ignore_ascii_case("classic") || n == "классика" || n == "классический" => {
-            Some(Box::new(ClassicMode))
-        }
-        n if n.eq_ignore_ascii_case("sprint") || n == "спринт" => {
-            Some(Box::new(SprintMode::new()))
-        }
-        n if n.eq_ignore_ascii_case("marathon") || n == "марафон" => {
-            Some(Box::new(MarathonMode::new()))
-        }
-        _ => None,
-    }
+    super::mode_registry::ModeRegistry::global().create(name)
 }
 
 /// Factory функция для создания режима игры по умолчанию (Classic).
@@ -261,10 +249,12 @@ pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
 /// # Возвращает
 /// `Box<dyn GameModeTrait>` с режимом Classic
 ///
-/// Архитектурное улучшение 2026-04-01 (O1): Factory функция для создания режимов.
+/// Архитектурное улучшение 2026-04-01 (O1): Делегирует ModeRegistry::global().
 #[must_use]
 pub fn create_default_game_mode() -> GameModeResult {
-    Box::new(ClassicMode)
+    super::mode_registry::ModeRegistry::global()
+        .create("classic")
+        .unwrap_or_else(|| Box::new(ClassicMode))
 }
 
 #[cfg(test)]
