@@ -111,7 +111,7 @@ fn test_piece_stays_within_bounds() {
 
     // Двигаем фигуру к левой границе
     while state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
     // Проверяем, что фигура не вышла за границу
@@ -332,7 +332,7 @@ fn test_gamestate_responds_to_input() {
     let initial_x = state.curr_shape().pos().0;
 
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         assert!(
             state.curr_shape().pos().0 < initial_x,
             "Движение влево должно уменьшить X"
@@ -360,7 +360,7 @@ fn test_hard_drop_command() {
 
     // Симулируем hard drop
     while state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     assert!(
@@ -377,7 +377,7 @@ fn test_soft_drop_command() {
 
     // Симулируем soft drop
     if state.can_move_curr_shape_direction(crate::types::Direction::Down) {
-        state.get_curr_shape_mut().pos().1 += 1.0;
+        state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
     assert!(
@@ -394,13 +394,13 @@ fn test_move_left_right() {
 
     // Движение влево
     if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-        state.get_curr_shape_mut().pos().0 -= 1.0;
+        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
     let after_left = state.curr_shape().pos().0;
 
     // Движение вправо
     if state.can_move_curr_shape_direction(crate::types::Direction::Right) {
-        state.get_curr_shape_mut().pos().0 += 1.0;
+        state.get_curr_shape_mut().pos_mut().0 += 1.0;
     }
     let after_right = state.curr_shape().pos().0;
 
@@ -727,7 +727,7 @@ fn test_overall_system_performance() {
     // Двигаем фигуру
     for _ in 0..100 {
         if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos().0 -= 1.0;
+            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         }
     }
 

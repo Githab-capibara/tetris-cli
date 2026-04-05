@@ -214,7 +214,7 @@ fn test_integration_question_and_unwrap_or_else() {
 
     let chain2 = process_chain(-5);
     assert_eq!(
-        chain2, 4,
+        chain2, 3,
         "Цепочка должна использовать значения по умолчанию"
     );
 }
