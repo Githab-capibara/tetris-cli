@@ -434,6 +434,7 @@ impl ScoreAccess for crate::game::state::GameState {
 
 impl ScoreMutable for crate::game::state::GameState {
     fn add_score(&mut self, points: u128) {
+        // add_score возвращает u128 (новый счёт), а не Result — saturating_add защищает от переполнения
         let _ = self.scoreboard_mut().add_score(points);
     }
 
@@ -471,6 +472,7 @@ impl LinesAccess for crate::game::state::GameState {
 
     #[inline]
     fn add_lines(&mut self, lines: u32) {
+        // add_lines_cleared возвращает u32 (общее количество линий), а не Result
         let _ = self.add_lines_cleared(lines);
     }
 }

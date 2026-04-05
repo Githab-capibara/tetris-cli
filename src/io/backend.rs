@@ -160,6 +160,10 @@ impl TermionBackend {
     pub fn new() -> io::Result<Self> {
         let mut out = stdout().into_raw_mode()?;
 
+        // Примечание: `async_stdin()` (используется в KeyReader) и `into_raw_mode()`
+        // управляют разными ресурсами: stdin vs stdout соответственно.
+        // Raw-режим не включается дважды — это разные операции с разными файловыми дескрипторами.
+
         // Очистка экрана и перемещение курсора
         write!(out, "{}{}", All, Goto(1, 1))?;
         out.flush()?;
@@ -239,14 +243,15 @@ impl TerminalBackend for TermionBackend {
 
 impl TerminalInputBackend for TermionBackend {
     fn read_key(&mut self) -> io::Result<Option<u8>> {
-        // Используем KeyReader для чтения клавиш
-        // В реальной реализации нужно хранить KeyReader внутри
-        // Для сейчас возвращаем None как заглушку
+        // TODO: Реализовать чтение клавиш через KeyReader.
+        // Сейчас ввод обрабатывается отдельно через KeyReader в TermionIOBackend.
+        // Эта заглушка возвращает None для соответствия трейту.
         Ok(None)
     }
 
     fn read_key_unicode(&mut self) -> Option<char> {
-        // Заглушка для UTF-8 ввода
+        // TODO: Реализовать чтение Unicode символов через KeyReader.
+        // Сейчас ввод обрабатывается отдельно через KeyReader в TermionIOBackend.
         None
     }
 }

@@ -201,7 +201,8 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
             Direction::Right => curr_shape.pos_mut().0 += 1.0,
             Direction::Down => {
                 // Движение вниз не обрабатывается здесь — для этого есть soft/hard drop
-                eprintln!("[WARN] Direction::Down передан в handle_movement_input — используйте handle_soft_drop/handle_hard_drop");
+                // debug_assert обнаружит ошибку программиста в debug сборке без спама в release
+                debug_assert!(false, "Direction::Down передан в handle_movement_input — используйте handle_soft_drop/handle_hard_drop");
             }
         }
     }
@@ -321,11 +322,10 @@ mod input_tests {
     }
 
     #[test]
-    fn test_handle_movement_down_warnings() {
+    #[should_panic(expected = "Direction::Down передан в handle_movement_input")]
+    fn test_handle_movement_down_assertion() {
         let mut state = GameState::new();
-        // Direction::Down должен вызвать предупреждение, но не панику
+        // Direction::Down должен вызвать debug_assert (паника в debug сборке)
         handle_movement_input(&mut state, Direction::Down);
-        // Состояние должно остаться валидным
-        let _ = state.curr_shape();
     }
 }

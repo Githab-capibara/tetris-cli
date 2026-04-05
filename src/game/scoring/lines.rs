@@ -156,6 +156,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
         state.set_animating_rows_mask(rows_mask);
         print!("{BELL}");
         // Исправление #31: flush после print! для гарантированного вывода bell
+        // Звуковой сигнал — не критично, ошибка flush не требует обработки
+        #[allow(clippy::let_underscore_untyped)]
         let _ = std::io::stdout().flush();
         state.stats_mut().update_max_combo(remove_count);
     }

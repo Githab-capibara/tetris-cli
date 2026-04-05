@@ -217,8 +217,7 @@ impl SaveData {
                 }
                 Ok(data)
             }
-            Err(_) if data.score != 0 => Err("Обнаружена подделка рекорда".to_string()),
-            Err(_) => Err("Рекорд не прошёл валидацию".to_string()),
+            Err(_) => Err("Рекорд не прошёл проверку целостности".to_string()),
         }
     }
 

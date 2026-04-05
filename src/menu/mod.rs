@@ -84,7 +84,7 @@ pub fn run_game_mode(
     let new_score = match state.play(cnv, inp, high_score_display) {
         Ok(score) => score,
         Err(e) => {
-            eprintln!("Ошибка игрового цикла: {e}");
+            eprintln!("[ERROR] Game loop failed: {e:?}");
             0
         }
     };

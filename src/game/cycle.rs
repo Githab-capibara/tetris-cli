@@ -70,15 +70,21 @@ pub fn handle_input<T: InputReader>(
         UpdateEndState::Won => InputResult::Won,
         UpdateEndState::Pause => {
             // Обработка паузы
+            let mut consecutive_errors = 0u32;
             loop {
                 let key = inp.get_key();
                 match key {
                     Ok(Some(b'p')) => break,
                     Ok(Some(KEY_BACKSPACE)) => return InputResult::Quit, // Backspace
-                    Ok(Some(_) | None) => {}
+                    Ok(Some(_) | None) => {
+                        consecutive_errors = 0;
+                    }
                     Err(e) => {
-                        // Логирование критической ошибки ввода (#30)
-                        eprintln!("[ERROR] Ошибка чтения ввода во время паузы: {e}");
+                        // Счётчик ошибок — после 5 подряд игнорируем чтобы не затоплять stderr
+                        consecutive_errors += 1;
+                        if consecutive_errors <= 5 {
+                            eprintln!("[ERROR] Ошибка чтения ввода во время паузы: {e}");
+                        }
                     }
                 }
                 sleep(Duration::from_millis(FRAME_DELAY_MS));
