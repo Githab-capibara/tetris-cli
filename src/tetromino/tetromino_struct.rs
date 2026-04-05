@@ -253,15 +253,10 @@ impl Tetromino {
     ///
     /// # Пример использования
     /// ```
-    /// use tetris_cli::tetromino::{Tetromino, ShapeType};
+    /// use tetris_cli::tetromino::{Tetromino, ShapeType, SHAPE_COORDS};
     /// use tetris_cli::types::RotationDirection;
     ///
-    /// let mut t = Tetromino {
-    ///     pos: (4.0, 0.0),
-    ///     shape: ShapeType::T,
-    ///     coords: [(-1, 0), (0, 0), (1, 0), (0, 1)],
-    ///     fg: 0,
-    /// };
+    /// let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
     /// t.rotate(RotationDirection::Clockwise); // Поворот по часовой
     /// ```
     ///

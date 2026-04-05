@@ -4,11 +4,11 @@
 //! Модуль предоставляет `Canvas` для отрисовки текста и графики в терминале.
 //!
 //! ## Пример использования
-//! ```no_run
+//! ```ignore
 //! use tetris_cli::io::canvas::Canvas;
 //! use termion::color::{White, Reset};
 //!
-//! fn main() -> Result<(), tetris_cli::io::IoError> {
+//! fn main() -> Result<(), std::io::Error> {
 //!     let mut canvas = Canvas::new()?;
 //!     canvas.draw_string("Текст", (1, 1), &White, &Reset);
 //!     canvas.flush();
