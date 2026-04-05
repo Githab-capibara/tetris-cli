@@ -55,7 +55,6 @@
 //! // Запуск игрового цикла
 //! // game.play(&mut cnv, &mut inp, &high_score_display);
 //! ```
-#![allow(dead_code)]
 
 // Подмодули (S7: алфавитный порядок)
 pub mod access;

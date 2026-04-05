@@ -19,7 +19,6 @@
 //! ```
 //!
 //! Архитектурное улучшение 2026-04-01 (S3): Выделение Canvas в отдельный модуль.
-#![allow(dead_code)]
 
 use std::io::{self, stdout, Stdout, Write};
 use termion::{

@@ -1,7 +1,6 @@
 //! Структура тетромино.
 //!
 //! Модуль определяет `Tetromino` - падающую фигуру в игре.
-#![allow(dead_code)]
 
 use crate::tetromino::bag_generator::BagGenerator;
 use crate::tetromino::constants::SHAPE_COORDS;

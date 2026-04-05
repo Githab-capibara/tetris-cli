@@ -31,7 +31,6 @@ use crate::io::{Canvas, KeyReader};
 /// * `cnv` - канвас для отрисовки
 /// * `inp` - читатель нажатий клавиш
 /// * `leaderboard` - таблица лидеров для отображения
-#[track_caller]
 pub fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Leaderboard) {
     draw::draw_leaderboard(cnv, leaderboard);
     input::wait_for_key(inp);
@@ -43,7 +42,6 @@ pub fn show_leaderboard(cnv: &mut Canvas, inp: &mut KeyReader, leaderboard: &Lea
 /// * `cnv` - канвас для отрисовки
 /// * `inp` - читатель нажатий клавиш
 /// * `game_state` - состояние игры для отображения статистики
-#[track_caller]
 pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameState) {
     let stats = game_state.stats();
     let mode_trait = game_state.get_mode_trait();
@@ -75,7 +73,6 @@ pub fn show_game_stats(cnv: &mut Canvas, inp: &mut KeyReader, game_state: &GameS
 ///
 /// # Возвращает
 /// Финальный счёт игрока
-#[track_caller]
 pub fn run_game_mode(
     cnv: &mut Canvas,
     inp: &mut KeyReader,
