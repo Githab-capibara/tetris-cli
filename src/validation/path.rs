@@ -47,10 +47,13 @@
 use std::io;
 use std::path::Path;
 
+use thiserror::Error;
+
 /// Ошибка валидации пути.
 ///
 /// Содержит информацию о причине ошибки валидации.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+#[error("Ошибка валидации пути: {message} ({kind:?})")]
 pub struct PathError {
     /// Сообщение об ошибке.
     message: String,
@@ -93,19 +96,6 @@ pub enum PathErrorKind {
     /// когда путь обрывается на середине строки.
     NullByte,
 }
-
-impl std::fmt::Display for PathError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Ошибка валидации пути: {} ({:?})",
-            self.message(),
-            self.kind()
-        )
-    }
-}
-
-impl std::error::Error for PathError {}
 
 impl From<PathError> for io::Error {
     fn from(err: PathError) -> Self {
