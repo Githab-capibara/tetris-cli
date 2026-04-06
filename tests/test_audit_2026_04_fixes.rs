@@ -10,6 +10,8 @@
 
 #![allow(clippy::items_after_statements)]
 
+mod common;
+
 use tetris_cli::*;
 
 // ============================================================================
