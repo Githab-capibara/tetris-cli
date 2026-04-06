@@ -37,8 +37,8 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 fn log_once_empty_key(key_name: &str) {
     static ONCE: Once = Once::new();
     ONCE.call_once(|| {
-        eprintln!(
-            "[WARN] HMAC ключ '{key_name}' не установлен — используется пустая строка. \
+        crate::log_warn!(
+            "HMAC ключ '{key_name}' не установлен — используется пустая строка. \
              Это ослабляет HMAC защиту. Установите соответствующую переменную окружения."
         );
     });

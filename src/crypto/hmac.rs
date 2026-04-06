@@ -50,9 +50,9 @@ pub type HmacSha256 = Hmac<Sha256>;
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, ошибка невозможна
-    let mut mac =
-        HmacSha256::new_from_slice(key.as_bytes()).expect("HMAC-SHA256 new_from_slice never fails");
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok
+    // unwrap безопасен: ошибка невозможна для HMAC-SHA256
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap();
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())

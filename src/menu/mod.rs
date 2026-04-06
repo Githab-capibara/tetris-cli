@@ -94,7 +94,7 @@ pub fn run_game_mode(
             if leaderboard.add_score(&name, new_score) {
                 leaderboard.save();
             } else {
-                eprintln!("Предупреждение: рекорд не сохранён в таблицу лидеров (rate limit).");
+                crate::log_warn!("Рекорд не сохранён в таблицу лидеров (rate limit).");
                 draw::draw_record_message(cnv, "Рекорд не сохранён (rate limit)", 23);
             }
         }
