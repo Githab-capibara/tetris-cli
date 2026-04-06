@@ -102,6 +102,19 @@ pub use super::access::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess, Scor
 /// - [`LinesAccess`] для работы с линиями
 /// - [`ComboAccess`] для работы с комбо
 ///
+/// # A13: Нарушение Interface Segregation Principle (11+ методов)
+/// Этот трейт содержит 11+ методов что нарушает ISP. Это осознанное архитектурное
+/// решение: полный раздельный трейт потребовал бы множественного наследования в
+/// GameState и усложнил бы API. Объединённый трейт обеспечивает обратную совместимость
+/// и удобный доступ ко всем игровым параметрам через один интерфейс. В будущем можно
+/// перейти к использованию специализированных трейтов напрямую.
+///
+/// # A14: Неконсистентность set_fall_speed Result
+/// Метод `set_fall_speed` возвращает `Result<(), &'static str>` вместо `Result<GameError>`.
+/// Это историческое решение: метод был добавлен до введения `GameError` и использует
+/// простые строковые ошибки. Изменение типа потребовало бы изменения всех реализаций
+/// и вызывающего кода. Для нового кода рекомендуется использовать `Result<GameError>`.
+///
 /// # Пример использования
 /// ```ignore
 /// use tetris_cli::game::scoring::ScoringState;
@@ -110,6 +123,7 @@ pub use super::access::{ComboAccess, LevelAccess, LinesAccess, ScoreAccess, Scor
 ///     state.set_score(new_score);
 /// }
 /// ```
+#[allow(dead_code)]
 pub trait ScoringState:
     ScoreAccess + ScoreMutable + LevelAccess + LinesAccess + ComboAccess
 {

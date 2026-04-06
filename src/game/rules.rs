@@ -43,13 +43,8 @@ pub const SOFT_DROP_POINTS: u128 = crate::constants::SOFT_DROP_POINTS;
 pub const HARD_DROP_POINTS: u128 = crate::constants::HARD_DROP_POINTS;
 
 /// Базовые очки за фигуру.
-///
-/// Примечание: значение отличается от `constants::PIECE_SCORE_INC` (100).
-/// Это осознанное различие: `constants::PIECE_SCORE_INC` — это приращение очков
-/// за фигуру в общей системе, а `rules::PIECE_SCORE_INC` — базовый множитель
-/// для формулы расчёта очков в бизнес-правилах. Они используются в разных
-/// контекстах и не должны быть объединены.
-pub const PIECE_SCORE_INC: u128 = 1;
+/// Переэкспорт из constants.rs для устранения дублирования (#23).
+pub const PIECE_SCORE_INC: u128 = crate::constants::PIECE_SCORE_INC;
 
 /// Множитель очков за скорость падения.
 ///

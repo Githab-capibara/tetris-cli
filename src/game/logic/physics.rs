@@ -219,4 +219,27 @@ mod physics_tests {
             "Фигура должна приземлиться за разумное число итераций"
         );
     }
+
+    /// Тест: handle_falling возвращает true для уже приземлённой фигуры.
+    /// Проверяет что фигура которая уже не может двигаться вниз и имеет land_timer = 0
+    /// корректно определяется как приземлённая.
+    #[test]
+    fn test_handle_falling_already_landed() {
+        let mut state = GameState::new();
+
+        // Опускаем фигуру до пола
+        while state.can_move_curr_shape_direction(Direction::Down) {
+            let _ = handle_falling(&mut state, 16);
+        }
+
+        // Устанавливаем land_timer в 0 — фигура уже приземлена
+        state.set_land_timer(0.0).ok();
+
+        // handle_falling должен вернуть true — фигура приземлилась
+        let result = handle_falling(&mut state, 16);
+        assert!(
+            result,
+            "Уже приземлённая фигура с land_timer = 0 должна вернуть true"
+        );
+    }
 }
