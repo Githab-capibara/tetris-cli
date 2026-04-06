@@ -395,7 +395,10 @@ impl BoardMutable for crate::game::state::GameState {
     }
 
     fn set_block(&mut self, x: usize, y: usize, value: i8) {
-        self.get_blocks_mut()[y][x] = value;
+        // Исправление S4: проверка границ перед записью для безопасности
+        if x < GRID_WIDTH && y < GRID_HEIGHT {
+            self.get_blocks_mut()[y][x] = value;
+        }
     }
 
     fn set_filled_lines_mask(&mut self, mask: u32) {

@@ -372,6 +372,9 @@ impl PathValidator {
     #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {
+        // P21: Path→String конвертация через to_str() необходима для Unicode-валидации.
+        // Это допустимо: проверка символов требует итерации по char, что невозможно
+        // без конвертации в &str. Аллокаций не происходит — to_str() возвращает ссылку.
         let path_str = path.to_str().ok_or_else(|| PathError {
             message: "Путь содержит невалидные UTF-8 символы".to_string(),
             kind: PathErrorKind::InvalidPath,
@@ -469,7 +472,8 @@ impl PathValidator {
     pub fn validate_no_symlinks(&self, path: &Path) -> Result<(), PathError> {
         // NEW-147: Проверяем не только конечный путь, но и все родительские директории
         // Это предотвращает атаки через symlink в промежуточных директориях
-        // Исправление проблемы 30: ограничиваем проверку до MAX_SYMLINK_CHECK_DEPTH уровней
+        // P22: O(depth) проверок — ограничение через MAX_SYMLINK_CHECK_DEPTH = 3
+        // предотвращает бесконечные циклы и чрезмерные syscall-ы.
         let mut current_path = path;
         let mut depth = 0;
         while let Some(parent) = current_path.parent() {
@@ -529,6 +533,11 @@ impl PathValidator {
     // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации директории должен быть обработан"]
     pub fn validate_within_directory(&self, path: &Path, dir: &Path) -> Result<(), PathError> {
+        // P23: canonicalize вызывается повторно здесь — это необходимо для безопасности.
+        // Даже если canonicalize уже вызывался в validate_all(), мы не можем полагаться
+        // на кэшированный результат, так как validate_within_directory — публичный метод
+        // который может вызываться независимо. Каждый вызов должен быть самодостаточным
+        // для гарантии security in depth.
         let canonical_path = if path.exists() {
             path.canonicalize().map_err(|e| PathError {
                 message: format!("Неверный путь {}: {}", path.display(), e),

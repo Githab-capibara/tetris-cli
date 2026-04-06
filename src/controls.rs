@@ -324,11 +324,9 @@ impl ControlsConfig {
         let hmac_key_placeholder = HMAC_KEY_PLACEHOLDER;
 
         // Сериализуем конфигурацию без signature для вычисления хеша
-        // Исправление проблемы 35: создаём 2 полные копии ControlsConfig (config_for_hash и config_with_sig).
-        // Это осознанное решение — сериализация в serde_json::Value с последующей модификацией
-        // усложнила бы код и потребовала бы двойную сериализацию. Две копии структуры (через Clone) —
-        // более простое и читаемое решение для однократной операции сохранения.
-        let config_for_hash = ControlsConfig {
+        // P1: Оптимизация — сериализуем один раз в Value, модифицируем, затем pretty-сериализуем
+        // вместо создания двух полных копий ControlsConfig (config_for_hash и config_with_sig)
+        let mut config_value = serde_json::to_value(&ControlsConfig {
             move_left: self.move_left,
             move_right: self.move_right,
             soft_drop: self.soft_drop,
@@ -340,33 +338,22 @@ impl ControlsConfig {
             quit: self.quit,
             hmac_key: hmac_key_placeholder.to_string(),
             signature: String::new(),
-        };
-
-        let config_json = serde_json::to_string(&config_for_hash)
-            .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
+        })
+        .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
         // Вычисляем HMAC-SHA256 подпись через hmac модуль
         // Исправление E10: Используем глобальный ключ напрямую без соли
         // Исправление H9: Вынесено в отдельный метод compute_signature()
+        let config_json = serde_json::to_string(&config_value)
+            .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
         let signature = Self::compute_signature(global_hmac_key, &config_json);
 
-        // Создаём итоговую конфигурацию с подписью
-        let config_with_sig = ControlsConfig {
-            move_left: self.move_left,
-            move_right: self.move_right,
-            soft_drop: self.soft_drop,
-            hard_drop: self.hard_drop,
-            rotate_left: self.rotate_left,
-            rotate_right: self.rotate_right,
-            hold: self.hold,
-            pause: self.pause,
-            quit: self.quit,
-            hmac_key: HMAC_KEY_PLACEHOLDER.to_string(), // Исправление ISSUE-193: константа вместо хардкода
-            signature,
-        };
+        // Модифицируем Value с подписью (вместо создания config_with_sig)
+        config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
+        config_value["signature"] = serde_json::Value::String(signature);
 
         // Сериализуем в JSON
-        let json = serde_json::to_string_pretty(&config_with_sig)
+        let json = serde_json::to_string_pretty(&config_value)
             .map_err(|e| io::Error::other(e.to_string()))?;
 
         // Защита от symlink атак: O_NOFOLLOW обеспечивает атомарную защиту на уровне ядра.
@@ -501,21 +488,18 @@ impl ControlsConfig {
 
         // Проверяем keyed hash подпись
         // Исправление E10 (HIGH): Используем глобальный HMAC ключ для проверки
-        let config_for_hash = ControlsConfig {
-            move_left: config.move_left,
-            move_right: config.move_right,
-            soft_drop: config.soft_drop,
-            hard_drop: config.hard_drop,
-            rotate_left: config.rotate_left,
-            rotate_right: config.rotate_right,
-            hold: config.hold,
-            pause: config.pause,
-            quit: config.quit,
-            hmac_key: HMAC_KEY_PLACEHOLDER.to_string(), // Исправление ISSUE-193: константа вместо хардкода
-            signature: String::new(),
-        };
+        // P2: Оптимизация — используем serde_json::to_value вместо создания config_for_hash
+        let mut config_value = serde_json::to_value(&config).map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Ошибка сериализации: {e}"),
+            )
+        })?;
+        config_value["hmac_key"] =
+            serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
+        config_value["signature"] = serde_json::Value::String(String::new());
 
-        let config_json = serde_json::to_string(&config_for_hash).map_err(|e| {
+        let config_json = serde_json::to_string(&config_value).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!("Ошибка сериализации: {e}"),

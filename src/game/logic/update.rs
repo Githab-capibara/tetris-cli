@@ -88,6 +88,10 @@ pub fn save_tetromino(state: &mut GameState) {
         #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
         if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
             // SAFETY: ShapeType 0..6, fits in i8
+            debug_assert!(
+                (0..=6).contains(&fg),
+                "fg должен быть в диапазоне 0..=6, получено {fg}"
+            );
             state.get_blocks_mut()[y as usize][x as usize] = fg as i8;
         }
     }
