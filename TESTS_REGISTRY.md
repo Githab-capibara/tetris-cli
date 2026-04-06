@@ -9,12 +9,12 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | ~640 | ✅ 100% pass |
-| Интеграционные тесты (tests/) | 26 | ✅ 100% pass |
+| Модульные тесты (src/) | ~676 | ✅ 100% pass |
+| Интеграционные тесты (tests/) | 27 | ✅ 100% pass |
 | Doctests (runnable) | 62 | ✅ 100% pass |
 | Doctests (ignored) | 113 | — ожидаемо |
 | Бенчмарки (benches/) | 24 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **~666** | ✅ |
+| **ИТОГО (запускаемые)** | **~703** | ✅ |
 | Ignored | 7 | — ожидаемо |
 
 ---
@@ -40,26 +40,30 @@
 
 ### Оптимизация:
 - Performance тесты в unit-тестах удалены — покрыты бенчмарками через criterion
-- Файл `test_io_utf8_handling.rs` сокращён с 5 до 2 содержательных тестов |
+- Файл `test_io_utf8_handling.rs` сокращён с 5 до 2 содержательных тестов
+
+### Добавленные файлы:
+- `test_collision.rs` (22 теста) — коллизии со стенами, блоками, границы поля
+- `test_io_utf8_handling.rs` (2 теста) — UTF-8 multibyte, валидные последовательности
+- `tests/common/mod.rs` — хелперы для интеграционных тестов
 
 ---
 
 ## 📁 СТРУКТУРА ТЕСТОВ
 
-### Интеграционные тесты (`tests/`) — 3 файла, 29 тестов
+### Интеграционные тесты (`tests/`) — 4 файла, 30 тестов (включая common/mod.rs)
 
 | Файл | Тестов | Описание |
 |------|--------|----------|
+| `common/mod.rs` | 0 | Хелперы для интеграционных тестов |
 | `test_all_fixed_issues.rs` | 2 | Исправленные issues, стресс-тест |
-| `test_architecture_integrity.rs` | 2 | Поточная безопасность LeaderboardEntry |
+| `test_architecture_integrity.rs` | 2 | Поточочная безопасность LeaderboardEntry |
 | `test_audit_2026_04_fixes.rs` | 25 | Все 26 исправлений аудита |
 
-### Модульные тесты (`src/tests/`) — 13 файлов
+### Модульные тесты (`src/tests/`) — 15 файлов (было 13, добавлены test_collision.rs и test_io_utf8_handling.rs)
 
 | Файл | Тестов | Описание |
 |------|--------|----------|
-| `test_integration.rs` | 20 | Полная инициализация, движение, вращение, производительность |
-| `test_integration_extended.rs` | 22 | Взаимодействие компонентов, производительность |
 | `test_collision.rs` | 22 | Коллизии со стенами, блоками, границы |
 | `test_game_rotation.rs` | 50 | Вращение всех фигур, стены, wall kick |
 | `test_bag_system.rs` | 27 | 7-bag рандомизация, Fisher-Yates, chi-square |
@@ -69,8 +73,15 @@
 | `test_boundary_values.rs` | 35 | Границы Score, Level, LinesCount, Combo |
 | `test_hmac_safety.rs` | 12 | HMAC ключи, Unicode, binary data, stress |
 | `test_io_errors.rs` | 3 | KeyReader panic, Drop, InputReader trait |
-| `test_io_utf8_handling.rs` | 5 | UTF-8 multibyte, ASCII, invalid sequences |
+| `test_io_utf8_handling.rs` | 2 | UTF-8 multibyte, валидные последовательности |
+| `test_integration.rs` | 20 | Полная инициализация, движение, вращение, производительность |
+| `test_integration_extended.rs` | 22 | Взаимодействие компонентов, производительность |
 | `test_game_bounds_check.rs` | 3 | f32→u64 конвертация, negative values |
+| `test_game_box_array.rs` | — | Box/Array tests |
+| `test_game_logic.rs` | — | Game logic tests |
+| `test_game_movement.rs` | — | Movement tests |
+| `test_io.rs` | — | IO tests |
+| `test_state_validation.rs` | — | State validation tests |
 
 ### Встроенные тесты (`#[cfg(test)]` в модулях)
 
