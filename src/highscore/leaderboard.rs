@@ -1380,18 +1380,9 @@ mod thread_safe_tests {
     /// потокобезопасным по умолчанию.
     #[test]
     fn test_leaderboard_not_send_sync() {
-        // Проверка что Leaderboard не реализует Send+Sync
-        // Это компилируется только если тип !Send + !Sync
-        // Функция требует Send, поэтому если тип не Send - код не скомпилируется
-        fn assert_not_send_sync<T: Send + ?Sized>() {}
-
-        // Этот тест должен показать что Leaderboard требует внешней синхронизации
-        // Закомментировано потому что Leaderboard намеренно не реализует Send
-        // assert_not_send_sync::<Leaderboard>();
-
-        // Вместо этого проверяем что документация корректна
+        // Leaderboard намеренно не реализует Send+Sync без внешней синхронизации.
+        // ThreadSafeLeaderboardEntry — thread-safe обёртка.
         let _leaderboard = Leaderboard::default();
-        // Тест проходит если код компилируется
     }
 
     // =========================================================================
