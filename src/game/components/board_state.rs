@@ -13,6 +13,8 @@
 // Переэкспорт GameBoard из board.rs
 pub use crate::game::board::GameBoard;
 
+// NOTE: BoardState is a thin wrapper around GameBoard. Consider using GameBoard directly for new code.
+
 /// Компонент состояния поля.
 ///
 /// Использует `GameBoard` из `super::board` для управления состоянием поля.

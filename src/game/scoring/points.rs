@@ -678,4 +678,41 @@ mod points_tests {
         // Должно быть true если фигура выше поля
         assert!(game_over, "Фигура выше поля должна вызывать game_over");
     }
+
+    /// Тест: handle_landing возвращает Won при выполнении условия победы (Sprint mode).
+    #[test]
+    fn test_handle_landing_win_condition() {
+        use crate::game::GameState;
+        use crate::types::UpdateEndState;
+
+        // Создаём состояние игры в режиме Sprint (цель: 40 линий)
+        let mut state = GameState::new_sprint();
+
+        // Устанавливаем lines_cleared на 39 — ещё не победа
+        state.set_lines_cleared(39);
+
+        // Фигура в нормальной позиции, не проигрыш
+        state.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state.save_tetromino();
+
+        // handle_landing должен вернуть None — игра продолжается (39 < 40)
+        let result = handle_landing(&mut state);
+        assert!(
+            result.is_none(),
+            "При 39 линиях в Sprint игра должна продолжаться"
+        );
+
+        // Теперь устанавливаем 40 линий — условие победы выполнено
+        let mut state2 = GameState::new_sprint();
+        state2.set_lines_cleared(40);
+        state2.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state2.save_tetromino();
+
+        // handle_landing должен вернуть Some(UpdateEndState::Won)
+        let result2 = handle_landing(&mut state2);
+        assert!(
+            matches!(result2, Some(UpdateEndState::Won)),
+            "При 40 линиях в Sprint handle_landing должен вернуть Won"
+        );
+    }
 }
