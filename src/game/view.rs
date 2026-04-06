@@ -95,8 +95,6 @@ pub struct GameView<'a> {
     // === Анимации ===
     /// Битовая маска строк для анимации очистки.
     pub(crate) animating_rows: u32,
-    /// Флаг анимации Hard Drop.
-    pub(crate) is_hard_dropping: bool,
 
     // === Режим и статистика ===
     /// Режим игры (объект трейта).
@@ -146,7 +144,6 @@ impl<'a> GameView<'a> {
             next_shape: state.next_shape(),
             held_shape: state.held_shape(),
             animating_rows: state.get_animating_rows_mask(),
-            is_hard_dropping: state.is_hard_dropping(),
             mode: state.get_mode_trait(),
             lines_cleared: state.lines_cleared(),
             elapsed_time: state.stats().get_elapsed_time(),
@@ -157,210 +154,39 @@ impl<'a> GameView<'a> {
     // МЕТОДЫ ОТРИСОВКИ (Problem 2.5 - Feature Envy)
     // ========================================================================
 
-    /// Получить блок по координатам.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X
-    /// * `y` - координата Y
-    ///
-    /// # Возвращает
-    /// Значение блока (-1 = пусто) или -1 если координаты вне границ
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn get_block(&self, x: usize, y: usize) -> i8 {
-        if x < GRID_WIDTH && y < GRID_HEIGHT {
-            self.blocks[y][x]
-        } else {
-            -1
-        }
-    }
-
-    /// Проверить, пуста ли ячейка.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X
-    /// * `y` - координата Y
-    ///
-    /// # Возвращает
-    /// `true` если ячейка пуста
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn is_block_empty(&self, x: usize, y: usize) -> bool {
-        self.get_block(x, y) == -1
-    }
-
-    /// Проверить, занята ли ячейка.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X
-    /// * `y` - координата Y
-    ///
-    /// # Возвращает
-    /// `true` если ячейка занята
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn is_block_occupied(&self, x: usize, y: usize) -> bool {
-        self.get_block(x, y) >= 0
-    }
-
-    /// Проверить, анимируется ли строка.
-    ///
-    /// # Аргументы
-    /// * `y` - координата Y строки
-    ///
-    /// # Возвращает
-    /// `true` если строка анимируется
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn is_row_animating(&self, y: usize) -> bool {
-        (self.animating_rows & (1 << y)) != 0
-    }
-
-    /// Получить цвет блока.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X
-    /// * `y` - координата Y
-    ///
-    /// # Возвращает
-    /// Индекс цвета блока или None если блок пуст
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn get_block_color(&self, x: usize, y: usize) -> Option<usize> {
-        let block = self.get_block(x, y);
-        // cast: i8 -> usize, потеря знака допустима: цвет блока неотрицательный (0-6)
-        if block >= 0 {
-            Some(block as usize)
-        } else {
-            None
-        }
-    }
-
-    /// Получить символ для отрисовки фигуры.
-    ///
-    /// # Возвращает
-    /// Символ для отрисовки блока фигуры
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// let ch = view.get_shape_display_char();
-    /// ```
-    #[must_use]
-    #[allow(dead_code, clippy::unused_self)]
-    pub const fn get_shape_display_char(&self) -> &str {
-        use crate::constants::SHAPE_STR;
-        SHAPE_STR
-    }
-
     // ========================================================================
     // МЕТОДЫ ОТРИСОВКИ UI (Problem 2.5 - Feature Envy)
     // ========================================================================
     // Эти методы предоставляют готовые строки для отрисовки UI.
 
     /// Получить строку счёта для отрисовки.
-    ///
-    /// # Возвращает
-    /// Кэшированную строку счёта
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// println!("Счёт: {}", view.score_str());
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub const fn score_str(&self) -> &str {
         self.score
     }
 
     /// Получить строку уровня для отрисовки.
-    ///
-    /// # Возвращает
-    /// Кэшированную строку уровня
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// println!("Уровень: {}", view.level_str());
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub const fn level_str(&self) -> &str {
         self.level
     }
 
     /// Получить строку линий для отрисовки.
-    ///
-    /// # Возвращает
-    /// Кэшированную строку количества линий
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// println!("Линии: {}", view.lines_str());
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub const fn lines_str(&self) -> &str {
         self.lines
     }
 
     /// Получить строку комбо для отрисовки.
-    ///
-    /// # Возвращает
-    /// Кэшированную строку комбо (None если комбо нет)
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// if let Some(combo) = view.combo_str() {
-    ///     println!("{}", combo);
-    /// }
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub const fn combo_str(&self) -> Option<&str> {
         self.combo
     }
 
     /// Получить строку рекорда для отрисовки.
-    ///
-    /// # Возвращает
-    /// Кэшированную строку рекорда
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// println!("Рекорд: {}", view.high_score_str());
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
     pub const fn high_score_str(&self) -> &str {
         self.high_score
-    }
-
-    /// Получить строку таймера для отрисовки.
-    ///
-    /// # Возвращает
-    /// Отформатированную строку таймера (только для режима Sprint)
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// if let Some(timer) = view.timer_str() {
-    ///     println!("{}", timer);
-    /// }
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
-    #[must_use]
-    pub fn timer_str(&self) -> Option<String> {
-        // Спринт режим имеет цель 40 линий
-        if self.mode.get_target_lines() == Some(40) {
-            Some(format!("Время: {:.2}с", self.elapsed_time))
-        } else {
-            None
-        }
     }
 
     // ========================================================================
@@ -369,67 +195,22 @@ impl<'a> GameView<'a> {
     // Эти методы предоставляют доступ к полям GameView для внешнего кода
     // после изменения видимости с pub на pub(crate).
 
-    /// Получить ссылку на игровое поле.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
-        self.blocks
-    }
-
-    /// Получить ссылку на текущую фигуру.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn curr_shape(&self) -> &Tetromino {
-        self.curr_shape
-    }
-
-    /// Получить ссылку на следующую фигуру.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn next_shape(&self) -> &Tetromino {
-        self.next_shape
-    }
-
-    /// Получить ссылку на удержанную фигуру.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn held_shape(&self) -> Option<&Tetromino> {
-        self.held_shape
-    }
-
     /// Получить ссылку на режим игры.
     #[must_use]
-    #[allow(dead_code)]
     pub fn mode(&self) -> &dyn GameModeTrait {
         self.mode
     }
 
     /// Получить количество очищенных линий.
     #[must_use]
-    #[allow(dead_code)]
     pub const fn lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 
     /// Получить прошедшее время игры.
     #[must_use]
-    #[allow(dead_code)]
     pub const fn elapsed_time(&self) -> f64 {
         self.elapsed_time
-    }
-
-    /// Получить битовую маску анимирующихся строк.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn animating_rows(&self) -> u32 {
-        self.animating_rows
-    }
-
-    /// Получить флаг анимации Hard Drop.
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn is_hard_dropping(&self) -> bool {
-        self.is_hard_dropping
     }
 
     // ========================================================================
@@ -538,51 +319,6 @@ impl<'a> GameView<'a> {
                     &Reset,
                 );
             }
-        }
-    }
-
-    /// Отрисовать UI (счёт, уровень, линии, комбо, рекорд).
-    ///
-    /// # Аргументы
-    /// * `renderer` - объект для отрисовки
-    ///
-    /// # Пример
-    /// ```ignore
-    /// let view = GameView::from_game_state(&state);
-    /// view.draw_ui(&mut canvas);
-    /// ```
-    #[allow(dead_code)] // Будет использоваться в будущей рефакторизации render.rs
-    pub fn draw_ui<R>(&self, renderer: &mut R)
-    where
-        R: crate::io_traits::Renderer,
-    {
-        use crate::constants::{
-            BORDER_COLOR, COMBO_X, COMBO_Y, HIGH_SCORE_X, HIGH_SCORE_Y, LEVEL_X, LEVEL_Y, LINES_X,
-            LINES_Y, SCORE_X, SCORE_Y,
-        };
-        use termion::color::Reset;
-
-        // Исправление #7: используем кэшированные строки напрямую (уже содержат padding)
-        // Отрисовка счёта
-        renderer.draw_string(self.score, (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
-
-        // Отрисовка рекорда
-        renderer.draw_string(
-            self.high_score,
-            (HIGH_SCORE_X, HIGH_SCORE_Y),
-            BORDER_COLOR,
-            &Reset,
-        );
-
-        // Отрисовка уровня
-        renderer.draw_string(self.level, (LEVEL_X, LEVEL_Y), BORDER_COLOR, &Reset);
-
-        // Отрисовка линий
-        renderer.draw_string(self.lines, (LINES_X, LINES_Y), BORDER_COLOR, &Reset);
-
-        // Отрисовка комбо (если есть)
-        if let Some(combo) = self.combo {
-            renderer.draw_string(combo, (COMBO_X, COMBO_Y), BORDER_COLOR, &Reset);
         }
     }
 

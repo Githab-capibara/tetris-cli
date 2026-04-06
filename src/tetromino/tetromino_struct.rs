@@ -182,7 +182,6 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `pos` - новая позиция (x, y)
-    #[allow(dead_code)]
     pub fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
     }
@@ -191,25 +190,14 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `shape` - новый тип фигуры
-    #[allow(dead_code)]
     pub fn set_shape(&mut self, shape: ShapeType) {
         self.shape = shape;
-    }
-
-    /// Установить индекс цвета.
-    ///
-    /// # Аргументы
-    /// * `fg` - новый индекс цвета (0-6)
-    #[allow(dead_code)]
-    pub fn set_fg(&mut self, fg: u8) {
-        self.fg = fg;
     }
 
     /// Установить координаты блоков.
     ///
     /// # Аргументы
     /// * `coords` - новый массив координат
-    #[allow(dead_code)]
     pub fn set_coords(&mut self, coords: [(i16, i16); 4]) {
         self.coords = coords;
     }

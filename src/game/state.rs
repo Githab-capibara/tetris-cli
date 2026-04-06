@@ -1076,58 +1076,6 @@ impl GameState {
 }
 
 // ============================================================================
-// РЕАЛИЗАЦИЯ TRAIT SCORINGSTATE ДЛЯ GameState
-// ============================================================================
-
-impl super::scoring::ScoringState for GameState {
-    fn fall_speed(&self) -> f32 {
-        self.fall_speed()
-    }
-
-    fn set_fall_speed(&mut self, speed: f32) -> Result<(), &'static str> {
-        match self.set_fall_speed(speed) {
-            Ok(()) => Ok(()),
-            Err(_) => Err("Ошибка установки скорости падения"),
-        }
-    }
-
-    fn animating_rows_mask(&self) -> u32 {
-        self.animating_rows_mask()
-    }
-
-    fn set_animating_rows_mask(&mut self, mask: u32) {
-        self.set_animating_rows_mask(mask);
-    }
-
-    fn stats(&self) -> &crate::game::stats::GameStats {
-        self.stats()
-    }
-
-    fn stats_mut(&mut self) -> &mut crate::game::stats::GameStats {
-        self.stats_mut()
-    }
-
-    fn get_blocks(&self) -> &[[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
-        self.get_blocks()
-    }
-
-    fn get_blocks_mut(
-        &mut self,
-    ) -> &mut [[i8; crate::constants::GRID_WIDTH]; crate::constants::GRID_HEIGHT] {
-        self.get_blocks_mut()
-    }
-}
-
-// ============================================================================
-// ISP-1: РЕАЛИЗАЦИЯ УЗКИХ ТРЕЙТОВ ДЛЯ GameState
-// ============================================================================
-
-// Архитектурное улучшение 2026-04-01 (DRY2): ScoreAccess определён в access.rs
-// Реализации трейтов ScoreAccess, LevelAccess, LinesAccess, ComboAccess
-// перемещены в access.rs для централизации и устранения дублирования.
-// См. src/game/access.rs для реализаций.
-
-// ============================================================================
 // ТЕСТЫ
 // ============================================================================
 
