@@ -114,13 +114,17 @@ impl GameState {
     /// - `render()` - отрисовка текущего кадра
     /// - `handle_game_over()` - обработка конца игры
     ///
-    /// Возвращает `Result` для явной обработки ошибок.
+    /// Возвращает финальный счёт игрока.
+    ///
+    /// # Исправление E11
+    /// Тип возврата изменён с `Result<u128, GameError>` на `u128`, так как
+    /// `run_game_loop` всегда успешно завершается и никогда не возвращает ошибку.
     pub fn play(
         &mut self,
         cnv: &mut crate::io::Canvas,
         inp: &mut crate::io::KeyReader,
         high_score_display: &str,
-    ) -> Result<u128, crate::errors::GameError> {
+    ) -> u128 {
         cycle::run_game_loop(self, cnv, inp, high_score_display)
     }
 

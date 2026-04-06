@@ -559,7 +559,7 @@ impl ThreadSafeLeaderboardEntry {
             &salt_name_score,
             &hash,
         ) {
-            eprintln!("Предупреждение: запись не прошла валидацию!");
+            eprintln!("[ERROR] Запись не прошла валидацию HMAC — возможная подделка!");
             return 0;
         }
         score_value

@@ -81,13 +81,7 @@ pub fn run_game_mode(
     save_to_leaderboard: bool,
     leaderboard: &mut Leaderboard,
 ) -> u128 {
-    let new_score = match state.play(cnv, inp, high_score_display) {
-        Ok(score) => score,
-        Err(e) => {
-            eprintln!("[ERROR] Game loop failed: {e:?}");
-            0
-        }
-    };
+    let new_score = state.play(cnv, inp, high_score_display);
 
     // Отображение статистики после завершения игры
     show_game_stats(cnv, inp, &state);

@@ -185,6 +185,8 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     if let Err(e) =
         update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter)
     {
+        // NOTE: On overflow, score is already updated before error is logged
+        // Очки уже были добавлены через saturating_add и ограничены MAX_SCORE до логирования
         // Логгируем ошибку переполнения
         eprintln!("[WARN] check_rows(): {e}");
         // Продолжаем работу - очки уже были добавлены через saturating_add
