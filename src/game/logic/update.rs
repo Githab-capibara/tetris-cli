@@ -60,8 +60,8 @@ pub fn update<T: InputReader>(
 /// * `state` - состояние игры (изменяемое)
 ///
 /// # Исправление #83
-/// Добавлен #[allow(clippy::cast_possible_wrap)] для приведения `fg as i8`.
-/// Значения ShapeType 0..=6 гарантированно помещаются в i8.
+/// Добавлен #[`allow(clippy::cast_possible_wrap)`] для приведения `fg as i8`.
+/// Значения `ShapeType` 0..=6 гарантированно помещаются в i8.
 #[allow(clippy::cast_possible_wrap)]
 pub fn save_tetromino(state: &mut GameState) {
     let (shape_x, shape_y) = state.curr_shape().pos();

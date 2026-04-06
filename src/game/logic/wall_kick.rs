@@ -90,7 +90,7 @@ pub const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
 /// ```
 ///
 /// # Исправление #84-85
-/// Добавлен #[allow(clippy::cast_precision_loss)] для приведения i32 -> f32.
+/// Добавлен #[`allow(clippy::cast_precision_loss)`] для приведения i32 -> f32.
 /// Значения -2..=2 точно представляются в f32 без потери точности.
 #[allow(clippy::cast_lossless, clippy::cast_precision_loss)]
 pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationDirection) -> bool {
@@ -137,7 +137,7 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 /// 5. Возвращает смещение если вращение успешно
 ///
 /// ## Примечание о (0,0)
-/// Смещение (0,0) включено в таблицу WALL_KICK_OFFSETS первым элементом.
+/// Смещение (0,0) включено в таблицу `WALL_KICK_OFFSETS` первым элементом.
 /// Прямое вращение без смещения проверяется ДО вызова этой функции в
 /// `rotate_with_wall_kick`, поэтому возврат (0,0) из этой функции невозможен
 /// на практике — (0,0) уже было проверено ранее.
@@ -146,7 +146,7 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 /// Функция сделана pub(crate) для использования из collision.rs.
 ///
 /// # Исправление #86-87
-/// Добавлен #[allow(clippy::cast_precision_loss)] для приведения i32 -> f32.
+/// Добавлен #[`allow(clippy::cast_precision_loss)`] для приведения i32 -> f32.
 /// Значения -2..=2 точно представляются в f32 без потери точности.
 #[allow(dead_code, clippy::cast_lossless, clippy::cast_precision_loss)]
 pub(crate) fn try_wall_kick_offsets(

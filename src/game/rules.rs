@@ -134,7 +134,7 @@ impl GameRules {
     /// assert_eq!(rules.get_line_score(4), 1800); // Tetris
     /// ```
     #[must_use]
-    pub fn get_line_score(self, lines: u32) -> u128 {
+    pub const fn get_line_score(self, lines: u32) -> u128 {
         if lines == 0 || lines > MAX_LINES_PER_CLEAR {
             return 0;
         }

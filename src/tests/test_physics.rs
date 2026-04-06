@@ -164,8 +164,14 @@ fn test_rotation_near_left_wall() {
     let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
     // Результат должен быть bool (не паника)
-    assert!(can_rotate_right || !can_rotate_right, "can_rotate_right должен вернуть bool");
-    assert!(can_rotate_left || !can_rotate_left, "can_rotate_left должен вернуть bool");
+    assert!(
+        can_rotate_right || !can_rotate_right,
+        "can_rotate_right должен вернуть bool"
+    );
+    assert!(
+        can_rotate_left || !can_rotate_left,
+        "can_rotate_left должен вернуть bool"
+    );
 }
 
 /// Тест 10: Проверка вращения у правой стены

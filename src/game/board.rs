@@ -79,7 +79,7 @@ impl GameBoard {
     /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
     #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use = "Значение ячейки должно быть использовано"]
-    pub fn get_block(&self, x: usize, y: usize) -> Option<i8> {
+    pub const fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             Some(self.blocks[y][x])
         } else {
@@ -134,7 +134,7 @@ impl GameBoard {
     /// assert_eq!(board.get_filled_lines_mask(), 0b1010);
     /// ```
     #[must_use = "Битовая маска заполненных линий должна быть использована"]
-    pub fn get_filled_lines_mask(&self) -> u32 {
+    pub const fn get_filled_lines_mask(&self) -> u32 {
         self.filled_lines
     }
 
@@ -151,7 +151,7 @@ impl GameBoard {
     /// # Возвращает
     /// Количество установленных битов в маске
     #[must_use = "Количество заполненных линий должно быть использовано"]
-    pub fn get_filled_lines_count(&self) -> u32 {
+    pub const fn get_filled_lines_count(&self) -> u32 {
         self.filled_lines.count_ones()
     }
 
@@ -189,7 +189,7 @@ impl GameBoard {
     /// assert_eq!(blocks[0][0], -1); // Пустая ячейка
     /// ```
     #[must_use = "Ссылка на массив поля должна быть использована"]
-    pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub const fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &self.blocks
     }
 

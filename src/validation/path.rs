@@ -109,7 +109,7 @@ impl std::error::Error for PathError {}
 
 impl From<PathError> for io::Error {
     fn from(err: PathError) -> Self {
-        io::Error::new(io::ErrorKind::InvalidInput, err.message())
+        Self::new(io::ErrorKind::InvalidInput, err.message())
     }
 }
 
@@ -368,7 +368,7 @@ impl PathValidator {
     /// Добавлена проверка на null байты для предотвращения null byte injection атак.
     ///
     /// # Исправление M9 (MEDIUM)
-    /// Использует O(n) поиск через `contains` для избежания аллокаций HashSet.
+    /// Использует O(n) поиск через `contains` для избежания аллокаций `HashSet`.
     #[must_use = "Результат валидации символов должен быть обработан"]
     #[track_caller]
     pub fn validate_characters(&self, path: &Path) -> Result<(), PathError> {

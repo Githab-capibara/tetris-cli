@@ -50,7 +50,10 @@ use crate::types::{Direction, RotationDirection, UpdateEndState};
 /// # Архитектурные заметки (H1, H5)
 /// Использует `ControlsConfig` для маппинга клавиш вместо хардкода.
 #[must_use]
-pub fn parse_input(key_code: u8, config: &crate::controls::ControlsConfig) -> Option<GameAction> {
+pub const fn parse_input(
+    key_code: u8,
+    config: &crate::controls::ControlsConfig,
+) -> Option<GameAction> {
     config.map_key_to_action(key_code)
 }
 
@@ -165,7 +168,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
             #[cfg(debug_assertions)]
             eprintln!(
                 "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
-                char::from_u32(key_code as u32).unwrap_or('?'),
+                char::from_u32(u32::from(key_code)).unwrap_or('?'),
                 key_code
             );
             None

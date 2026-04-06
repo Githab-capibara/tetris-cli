@@ -26,7 +26,7 @@ use super::APP_NAME;
 /// Сначала проверяется `XDG_CONFIG_HOME`, затем fallback на `HOME/.config`.
 ///
 /// # Исправление аудита 2026-04-05 (Проблема 18)
-/// Ошибка create_dir_all теперь возвращается вызывающему коду вместо игнорирования.
+/// Ошибка `create_dir_all` теперь возвращается вызывающему коду вместо игнорирования.
 fn get_config_file_path() -> Result<PathBuf, String> {
     // Исправление #3: XDG_CONFIG_HOME → HOME/.config fallback
     let config_base = std::env::var("XDG_CONFIG_HOME")
@@ -97,10 +97,10 @@ pub enum ConfigError {
 impl std::fmt::Display for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ConfigError::DirectoryNotWritable(dir) => {
+            Self::DirectoryNotWritable(dir) => {
                 write!(f, "Директория конфигурации недоступна для записи: {dir}")
             }
-            ConfigError::IoError(msg) => write!(f, "Ошибка ввода/вывода: {msg}"),
+            Self::IoError(msg) => write!(f, "Ошибка ввода/вывода: {msg}"),
         }
     }
 }
