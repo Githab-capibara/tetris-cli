@@ -314,11 +314,6 @@ impl LeaderboardEntry {
     /// - TOCTOU: метод не подвержен уязвимости Time-Of-Check-Time-Of-Use,
     ///   так как проверяет хэш для текущего значения `score_value`
     ///
-    /// # Рекомендация
-    /// Для атомарной проверки и получения значения используйте метод
-    /// [`get_valid_score()`](Self::get_valid_score) вместо раздельных
-    /// вызовов `is_valid()` и `score()`.
-    ///
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;

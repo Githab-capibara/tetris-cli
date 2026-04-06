@@ -24,20 +24,20 @@
 //! - ✅ `GameState` использует композицию вместо наследования
 //! - ✅ `FigureManager` выделен в отдельный компонент `game/components/figure_manager.rs`
 //! - ✅ `AnimationState` выделен в отдельный компонент `game/components/animation_state.rs`
-//! - ✅ `BoardState`/`FieldState` выделен в отдельный компонент `game/components/board_state.rs`
+//! - ✅ `GameBoard` выделен в отдельный компонент `game/components/board_state.rs`
 //!
 //! ## Архитектурное улучшение 2026-04-01 (CRITICAL #1)
 //! `GameState` разделён на специализированные компоненты:
 //! - [`FigureManager`] - управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
 //! - [`AnimationState`] - управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
-//! - [`BoardState`] - управление полем (board, `filled_lines_mask`)
+//! - [`GameBoard`] - управление полем (board, `filled_lines_mask`)
 //! - `ScoreBoard` - управление очками (score, level, `lines_cleared`)
 //! - `GameStats` - статистика игры
 //! - `RenderCache` - кэш для отрисовки
 //!
 //! [`FigureManager`]: crate::game::components::FigureManager
 //! [`AnimationState`]: crate::game::components::AnimationState
-//! [`BoardState`]: crate::game::components::board_state::BoardState
+//! [`GameBoard`]: crate::game::board::GameBoard
 
 // std
 // (нет импортов std)
@@ -559,15 +559,6 @@ impl GameState {
     pub fn animation_state_mut(&mut self) -> &mut AnimationState {
         &mut self.animation_state
     }
-
-    /// Получить режим игры (enum для обратной совместимости).
-    ///
-    /// # Возвращает
-    /// Значение enum `GameMode`
-    ///
-    /// # Архитектурные заметки
-    /// Метод сохранён для обратной совместимости с тестами.
-    /// Использует `get_mode_trait()` для получения режима.
 
     /// Получить игровое поле.
     ///
