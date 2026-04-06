@@ -143,15 +143,15 @@ impl SaveData {
     #[must_use = "Загруженные данные должны быть использованы"]
     pub fn load_config() -> Self {
         Self::load_config_result().unwrap_or_else(|e| {
-            eprintln!("Предупреждение: {e}. Попытка загрузки из backup...");
+            crate::log_warn!("{e}. Попытка загрузки из backup...");
             // Попытка загрузить из backup файла
             match Self::load_backup_config() {
                 Ok(backup_data) => {
-                    eprintln!("Информация: успешно загружено из backup файла.");
+                    crate::log_info!("Успешно загружено из backup файла.");
                     backup_data
                 }
                 Err(backup_e) => {
-                    eprintln!("Предупреждение: не удалось загрузить backup: {backup_e}. Используется значение по умолчанию.");
+                    crate::log_warn!("Не удалось загрузить backup: {backup_e}. Используется значение по умолчанию.");
                     Self::default()
                 }
             }
@@ -216,7 +216,7 @@ impl SaveData {
         match data.verify_and_get_score_result() {
             Ok(score) => {
                 if score > 0 {
-                    eprintln!("Информация: загружен рекорд со значением {score}");
+                    crate::log_info!("Загружен рекорд со значением {score}");
                 }
                 Ok(data)
             }
@@ -276,12 +276,12 @@ impl SaveData {
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
         if let Err(e) = store(APP_NAME, Some("config"), save.clone()) {
-            eprintln!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
+            crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
             if let Err(backup_e) = store(APP_NAME, Some("config_backup"), save) {
-                eprintln!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+                crate::log_error!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
             } else {
-                eprintln!("Информация: успешно сохранено в backup файл.");
+                crate::log_info!("Успешно сохранено в backup файл.");
             }
         }
     }
@@ -304,7 +304,7 @@ impl SaveData {
     /// use tetris_cli::highscore::SaveData;
     /// match SaveData::save_value_result(1000) {
     ///     Ok(()) => println!("Рекорд успешно сохранён"),
-    ///     Err(e) => eprintln!("Ошибка сохранения: {}", e),
+    ///     Err(e) => log_error!("Ошибка сохранения: {}", e),
     /// }
     /// ```
     /// Использует u128 для предотвращения переполнения.
@@ -375,7 +375,7 @@ impl SaveData {
             Ok(self.score)
         } else {
             // Логирование попытки подделки
-            eprintln!("Предупреждение: обнаружена подделка рекорда! Хэш не совпадает.");
+            crate::log_warn!("Обнаружена подделка рекорда! Хэш не совпадает.");
             Err("HMAC подпись не совпадает - возможна подделка рекорда".to_string())
         }
     }

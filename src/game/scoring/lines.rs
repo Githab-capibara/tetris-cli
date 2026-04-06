@@ -92,8 +92,8 @@ pub fn remove_rows(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT
     // Проверка валидности rows_mask
     if rows_mask >= (1u32 << GRID_HEIGHT) {
         #[cfg(debug_assertions)]
-        eprintln!(
-            "Предупреждение: rows_mask ({}) выходит за пределы поля (максимум {})",
+        crate::log_warn!(
+            "rows_mask ({}) выходит за пределы поля (максимум {})",
             rows_mask,
             (1u32 << GRID_HEIGHT) - 1
         );
@@ -188,7 +188,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
         // NOTE: On overflow, score is already updated before error is logged
         // Очки уже были добавлены через saturating_add и ограничены MAX_SCORE до логирования
         // Логгируем ошибку переполнения
-        eprintln!("[WARN] check_rows(): {e}");
+        crate::log_warn!("check_rows(): {e}");
         // Продолжаем работу - очки уже были добавлены через saturating_add
     }
 
@@ -208,7 +208,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     let new_fall_speed = SPD_INC.mul_add(remove_count as f32, fall_speed);
     if let Err(e) = state.set_fall_speed(new_fall_speed) {
         // Логгируем ошибку но продолжаем работу (не критично)
-        eprintln!("[WARN] check_rows(): не удалось установить скорость падения: {e}");
+        crate::log_warn!("check_rows(): не удалось установить скорость падения: {e}");
         // Продолжаем работу с текущей скоростью - игра не должна останавливаться
     }
 
