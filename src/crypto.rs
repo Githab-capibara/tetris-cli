@@ -185,70 +185,8 @@ mod crypto_tests {
     // =========================================================================
     // ТЕСТЫ ДЛЯ HMAC-SHA256 (ИСПРАВЛЕНИЕ #4)
     // =========================================================================
-
-    #[test]
-    fn test_hmac_sha256_deterministic() {
-        let sig1 = hmac_sha256("ключ", "данные");
-        let sig2 = hmac_sha256("ключ", "данные");
-        assert_eq!(sig1, sig2, "HMAC-SHA256 должен быть детерминированным");
-    }
-
-    #[test]
-    fn test_hmac_sha256_different_keys() {
-        let sig1 = hmac_sha256("ключ1", "данные");
-        let sig2 = hmac_sha256("ключ2", "данные");
-        assert_ne!(sig1, sig2, "Разные ключи должны давать разные HMAC");
-    }
-
-    #[test]
-    fn test_hmac_sha256_different_data() {
-        let sig1 = hmac_sha256("ключ", "данные1");
-        let sig2 = hmac_sha256("ключ", "данные2");
-        assert_ne!(sig1, sig2, "Разные данные должны давать разные HMAC");
-    }
-
-    #[test]
-    fn test_hmac_sha256_length() {
-        let signature = hmac_sha256("ключ", "данные");
-        assert_eq!(
-            signature.len(),
-            64,
-            "Длина HMAC-SHA256 должна быть 64 символа (256 бит)"
-        );
-    }
-
-    #[test]
-    fn test_verify_hmac_sha256_valid() {
-        let key = "тестовый ключ";
-        let data = "тестовые данные";
-        let signature = hmac_sha256(key, data);
-        assert!(
-            verify_hmac_sha256(key, data, &signature),
-            "Правильная HMAC подпись должна проходить проверку"
-        );
-    }
-
-    #[test]
-    fn test_verify_hmac_sha256_invalid_key() {
-        let key = "ключ1";
-        let data = "данные";
-        let signature = hmac_sha256(key, data);
-        assert!(
-            !verify_hmac_sha256("ключ2", data, &signature),
-            "Неправильный ключ не должен проходить проверку HMAC"
-        );
-    }
-
-    #[test]
-    fn test_verify_hmac_sha256_invalid_data() {
-        let key = "ключ";
-        let data = "данные1";
-        let signature = hmac_sha256(key, data);
-        assert!(
-            !verify_hmac_sha256(key, "данные2", &signature),
-            "Неправильные данные не должны проходить проверку HMAC"
-        );
-    }
+    // Примечание: базовые HMAC-тесты находятся в crypto/hmac.rs.
+    // Здесь — только дополнительные тесты специфичные для публичного API crypto.rs
 
     #[test]
     fn test_verify_hmac_sha256_invalid_signature() {
@@ -263,28 +201,6 @@ mod crypto_tests {
     // =========================================================================
     // ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ ДЛЯ HMAC-SHA256 (ИСПРАВЛЕНИЕ #4)
     // =========================================================================
-
-    /// Тест на HMAC-SHA256 с пустыми данными
-    #[test]
-    fn test_hmac_sha256_empty_data() {
-        let signature = hmac_sha256("ключ", "");
-        assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
-
-        // Проверяем детерминированность
-        let signature2 = hmac_sha256("ключ", "");
-        assert_eq!(signature, signature2);
-    }
-
-    /// Тест на HMAC-SHA256 с пустым ключом
-    #[test]
-    fn test_hmac_sha256_empty_key() {
-        let signature = hmac_sha256("", "данные");
-        assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
-
-        // Проверяем детерминированность
-        let signature2 = hmac_sha256("", "данные");
-        assert_eq!(signature, signature2);
-    }
 
     /// Тест на HMAC-SHA256 с Unicode символами
     #[test]
