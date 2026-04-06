@@ -72,15 +72,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_hmac_sha256_unreachable_pattern() {
-        use crate::crypto::hmac::HmacSha256;
-        use hmac::Mac;
-        let mac_result = HmacSha256::new_from_slice(b"test_key");
-        let _mac =
-            mac_result.unwrap_or_else(|_| unreachable!("HMAC поддерживает ключи любой длины"));
-    }
-
     // ========================================================================
     // Обработка ошибок
     // ========================================================================

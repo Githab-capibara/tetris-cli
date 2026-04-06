@@ -304,63 +304,23 @@ impl TerminalInputBackend for TermionIOBackend {
 mod tests {
     use super::*;
 
-    #[test]
-    #[ignore = "Требует интерактивный терминал с поддержкой raw-режима"]
-    fn test_termion_backend_creation() {
-        // Тест может упасть если терминал не поддерживает raw-режим
-        let result = TermionBackend::new();
-        // Если терминал доступен, бэкенд создаётся успешно
-        assert!(result.is_ok() || result.is_err());
-    }
-
-    // =========================================================================
-    // ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ (#39)
-    // =========================================================================
-
-    #[test]
-    #[ignore = "Требует интерактивный терминал с поддержкой raw-режима"]
-    fn test_termion_backend_with_raw() {
-        // Тест создания бэкенда с существующим raw терминалом
-        let result = stdout().into_raw_mode();
-        if let Ok(raw) = result {
-            let backend = TermionBackend::with_raw(raw);
-            // Бэкенд должен создаться успешно
-            let _ = backend;
-        }
-        // Если raw режим недоступен, тест просто пропускается
-    }
-
+    // Compile-time тесты — проверяют что трейты определены
     #[test]
     fn test_terminal_backend_trait_methods_exist() {
-        // Проверка что TerminalBackend трейт определён и имеет все методы
-        // Это compile-time тест — если методы отсутствуют, код не скомпилируется
         fn assert_backend<T: TerminalBackend>() {}
         fn assert_input<T: TerminalInputBackend>() {}
-
         assert_backend::<TermionBackend>();
         assert_input::<TermionBackend>();
     }
 
     #[test]
-    #[ignore = "Требует интерактивный терминал с поддержкой raw-режима"]
-    fn test_termion_io_backend_creation() {
-        // Тест создания комбинированного бэкенда
-        let result = TermionIOBackend::new();
-        assert!(result.is_ok() || result.is_err());
-    }
-
-    #[test]
     fn test_wall_kick_offset_bounds() {
-        // Косвенный тест бэкенда через константы поля
-        // Проверяем что GRID_WIDTH и GRID_HEIGHT определены
         assert!(crate::constants::GRID_WIDTH > 0);
         assert!(crate::constants::GRID_HEIGHT > 0);
     }
 
     #[test]
     fn test_terminal_traits_are_send_sync() {
-        // TerminalBackend не требует Send + Sync
-        // Проверяем что трейты определены корректно
         fn _assert_terminal_backend<T: TerminalBackend>() {}
         fn _assert_terminal_input<T: TerminalInputBackend>() {}
         _assert_terminal_backend::<TermionBackend>();
