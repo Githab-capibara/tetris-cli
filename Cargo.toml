@@ -101,4 +101,4 @@ unnecessary_to_owned = "allow"
 unused_variables = "allow"
 unused_mut = "allow"
 unused_comparisons = "allow"
-dead_code = "allow"
+# dead_code убран из глобальных подавлений — используем #[allow(dead_code)] точечно

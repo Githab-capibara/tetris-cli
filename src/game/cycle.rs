@@ -77,7 +77,7 @@ pub fn handle_input<T: InputReader>(
                     Ok(Some(b'p')) => break,
                     Ok(Some(KEY_BACKSPACE)) => return InputResult::Quit, // Backspace
                     Ok(Some(_) | None) => {
-                        consecutive_errors = 0;
+                        // Клавиша не нажата или не распознана — не считаем ошибкой
                     }
                     Err(e) => {
                         // Счётчик ошибок — после 5 подряд игнорируем чтобы не затоплять stderr

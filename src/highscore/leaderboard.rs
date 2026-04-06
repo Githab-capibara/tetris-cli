@@ -196,44 +196,6 @@ impl LeaderboardEntry {
         Some(score_value)
     }
 
-    /// Возвращает Some(score) если запись валидна, None иначе.
-    ///
-    /// # Возвращает
-    /// - `Some(u128)` — значение рекорда если валидация прошла успешно
-    /// - `None` — если запись не прошла валидацию хэша
-    ///
-    /// # Безопасность
-    /// Атомарная проверка и получение значения.
-    /// Метод предотвращает TOCTOU уязвимость (Time-Of-Check-Time-Of-Use)
-    /// за счёт того что проверка хэша и возврат значения выполняются
-    /// для одной и той же локальной копии `score_value`.
-    ///
-    /// # Пример
-    /// ```
-    /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player", 1000);
-    /// assert_eq!(entry.get_valid_score(), Some(1000));
-    /// ```
-    ///
-    /// # Исправление C2 (TOCTOU)
-    /// Добавлен атомарный метод для безопасной проверки и получения значения.
-    ///
-    /// # Устарело
-    /// Используйте [`Self::score()`] — оба метода выполняют одинаковую операцию.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.19",
-        note = "Используйте score() — оба метода выполняют одинаковую операцию"
-    )]
-    pub fn get_valid_score(&self) -> Option<u128> {
-        let score_value = self.score_value;
-        if self.verify_hash_for_value(score_value) {
-            Some(score_value)
-        } else {
-            None
-        }
-    }
-
     /// Проверить хэш для конкретного значения счёта.
     ///
     /// # Аргументы

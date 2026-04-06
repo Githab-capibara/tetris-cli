@@ -222,7 +222,8 @@ impl LeaderboardValidator {
     /// что предотвращает TOCTOU уязвимость.
     #[must_use]
     pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
-        let salt_name_score = format!("{salt}{name}{score_value}");
+        // Используем разделители ':' для предотвращения коллизий конкатенации
+        let salt_name_score = format!("{salt}:{name}:{score_value}");
         hmac_verify_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score, hash)
     }
 
@@ -240,7 +241,8 @@ impl LeaderboardValidator {
     /// Использует keyed hash с уникальной солью для защиты от подделки.
     #[must_use]
     pub fn compute_signature(salt: &str, name: &str, score: u128) -> String {
-        let salt_name_score = format!("{salt}{name}{score}");
+        // Используем разделители ':' для предотвращения коллизий конкатенации
+        let salt_name_score = format!("{salt}:{name}:{score}");
         hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score)
     }
 

@@ -25,7 +25,7 @@
 
 use std::io::{self, Read, Write};
 #[cfg(unix)]
-use termion::{async_stdin, cursor::Show, screen::ToMainScreen, AsyncReader};
+use termion::{async_stdin, cursor::Show, AsyncReader};
 
 #[cfg(unix)]
 use crate::io_traits::InputReader;
@@ -242,35 +242,6 @@ impl KeyReader {
                     })
             }
             Err(_) => None,
-        }
-    }
-
-    /// Очистить ресурсы и сбросить терминал.
-    ///
-    /// # Примечания
-    /// Метод может быть вызван явно для досрочного освобождения ресурсов.
-    /// Автоматическая очистка также происходит в `Drop`.
-    #[deprecated(since = "0.96.15", note = "Use Drop instead")]
-    #[allow(dead_code)]
-    pub fn cleanup() {
-        use std::io::stdout;
-
-        let mut out = stdout();
-
-        if let Err(e) = write!(out, "{Show}") {
-            log_error!("Не удалось показать курсор: {e}");
-        }
-
-        if let Err(e) = write!(out, "{ToMainScreen}") {
-            log_error!("Не удалось вернуть экран: {e}");
-        }
-
-        if let Err(e) = write!(out, "\x1b[H") {
-            log_error!("Не удалось переместить курсор: {e}");
-        }
-
-        if let Err(e) = out.flush() {
-            log_error!("Не удалось выполнить flush: {e}");
         }
     }
 }

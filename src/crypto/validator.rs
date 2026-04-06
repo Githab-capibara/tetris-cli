@@ -25,32 +25,6 @@
 #[allow(unused_imports)]
 pub use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 
-// Алиасы для обратной совместимости (deprecated)
-/// Алиас для `hmac_sign_with_salt` (обратная совместимость).
-///
-/// # Устарело
-/// Используйте [`hmac_sign_with_salt`] напрямую.
-#[deprecated(since = "0.96.15", note = "Используйте hmac_sign_with_salt из hmac.rs")]
-#[must_use = "Результат HMAC подписи должен быть использован"]
-#[allow(dead_code)]
-pub fn sign_salt_and_data(key: &str, salt: &str, data: &str) -> String {
-    hmac_sign_with_salt(key, salt, data)
-}
-
-/// Алиас для `hmac_verify_with_salt` (обратная совместимость).
-///
-/// # Устарело
-/// Используйте [`hmac_verify_with_salt`] напрямую.
-#[deprecated(
-    since = "0.96.15",
-    note = "Используйте hmac_verify_with_salt из hmac.rs"
-)]
-#[must_use = "Результат проверки HMAC должен быть использован"]
-#[allow(dead_code)]
-pub fn verify_salt_and_data(key: &str, salt: &str, data: &str, expected_signature: &str) -> bool {
-    hmac_verify_with_salt(key, salt, data, expected_signature)
-}
-
 // ============================================================================
 // ТЕСТЫ
 // ============================================================================
@@ -89,16 +63,5 @@ mod validator_tests {
         let sig2 = hmac_sign_with_salt(key, salt, data);
 
         assert_eq!(sig1, sig2);
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_deprecated_aliases_still_work() {
-        let key = "test_key";
-        let salt = "test_salt";
-        let data = "test_data";
-        let signature = sign_salt_and_data(key, salt, data);
-
-        assert!(verify_salt_and_data(key, salt, data, &signature));
     }
 }

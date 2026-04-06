@@ -46,14 +46,8 @@ pub const HARD_DROP_POINTS: u128 = crate::constants::HARD_DROP_POINTS;
 /// Переэкспорт из constants.rs для устранения дублирования (#23).
 pub const PIECE_SCORE_INC: u128 = crate::constants::PIECE_SCORE_INC;
 
-/// Множитель очков за скорость падения.
-///
-/// Примечание: значение отличается от `constants::PIECE_SCORE_FALL_MULT` (50.0).
-/// Это осознанное различие: `constants::PIECE_SCORE_FALL_MULT` — фактор для
-/// расчёта очков за падение в системе scoring, а `rules::PIECE_SCORE_FALL_MULT` —
-/// целочисленный множитель в бизнес-правилах. Разные типы (f32 vs u128) и
-/// разные контексты использования.
-pub const PIECE_SCORE_FALL_MULT: u128 = 10;
+/// Множитель очков за скорость падения — переэкспорт из constants.rs.
+pub const PIECE_SCORE_FALL_MULT: f32 = crate::constants::PIECE_SCORE_FALL_MULT;
 
 // ============================================================================
 // ПРАВИЛА УРОВНЕЙ
