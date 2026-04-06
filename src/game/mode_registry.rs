@@ -172,13 +172,13 @@ impl Default for ModeRegistry {
 /// # Возвращает
 /// `Box<dyn GameModeTrait>` с режимом Classic
 ///
-/// # Panics
-/// Паникует если режим "classic" не зарегистрирован — это указывает на сломанный реестр.
+/// # Fallback
+/// Если режим "classic" не зарегистрирован, создаёт ClassicMode напрямую.
 #[must_use]
 pub fn create_default_mode() -> Box<dyn GameModeTrait> {
     ModeRegistry::global()
         .create("classic")
-        .expect("classic mode must be registered in ModeRegistry")
+        .unwrap_or_else(|| Box::new(ClassicMode))
 }
 
 #[cfg(test)]

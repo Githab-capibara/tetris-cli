@@ -34,13 +34,6 @@
 //! }
 //! ```
 
-// Локальный макрос логирования (дублирует crate::log_error для обхода ограничений #[macro_export] в edition 2021)
-macro_rules! log_error {
-    ($($arg:tt)*) => {{
-        eprintln!("[ERROR] $($arg)*");
-    }};
-}
-
 // std
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -95,7 +88,7 @@ impl Application {
         // Исправление ISSUE-196: eprintln!() используется для логирования предупреждений
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
         if let Err(e) = validate_all_keys() {
-            eprintln!("[WARN] {e}: используется пустой HMAC ключ (ожидаемо для разработки)");
+            crate::log_warn!("{e}: используется пустой HMAC ключ (ожидаемо для разработки)");
         }
 
         // Загрузка сохранённых данных с обработкой ошибок
@@ -135,7 +128,7 @@ impl Application {
         leaderboard.validate();
         let removed_count = initial_count.saturating_sub(leaderboard.len());
         if removed_count > 0 {
-            eprintln!("[WARN] Удалено {removed_count} невалидных записей из таблицы лидеров.");
+            crate::log_warn!("Удалено {removed_count} невалидных записей из таблицы лидеров.");
         }
         (save, leaderboard)
     }
@@ -166,7 +159,7 @@ impl Application {
                  Минимальный размер: {DISP_WIDTH}x{DISP_HEIGHT} символов.\n\
                  Текущий размер: {width}x{height} символов."
             );
-            eprintln!("{msg}");
+            crate::log_error!("{msg}");
             return Err(GameError::ValidationError(msg));
         }
 

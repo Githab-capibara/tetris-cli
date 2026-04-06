@@ -3,39 +3,9 @@
 //! ## 📖 Описание модуля
 
 //! Этот файл содержит точку входа в приложение (`main()`).
-//! Вся логика приложения выделена в модуль [`crate::app`].
+//! Вся логика приложения вынесена в библиотеку `tetris_cli`.
 //!
-//! ## 🏗️ Архитектура
-//!
-//! ```text
-//! ┌─────────────────┐
-//! │     main()      │
-//! │   Точка входа   │
-//! └────────┬────────┘
-//!          │
-//!          ▼
-//! ┌─────────────────┐
-//! │   app::run()    │
-//! │  Application    │
-//! └─────────────────┘
-//! ```
-//!
-// Модули игры
-mod app;
-mod config;
-mod constants;
-mod controls;
-mod core;
-mod crypto;
-mod errors;
-mod game;
-mod highscore;
-mod io;
-mod io_traits;
-mod menu;
-mod tetromino;
-mod types;
-mod validation;
+use tetris_cli::app;
 
 // ============================================================================
 // ТОЧКА ВХОДА
@@ -49,7 +19,7 @@ mod validation;
 /// Ничего не возвращает. Паникует при ошибке инициализации.
 fn main() {
     if let Err(e) = app::run() {
-        eprintln!("[FATAL] Критическая ошибка: {e}");
+        tetris_cli::log_error!("[FATAL] Критическая ошибка: {e}");
         std::process::exit(1);
     }
 }

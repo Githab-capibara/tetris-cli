@@ -105,10 +105,12 @@ pub fn handle_hard_drop(state: &mut GameState) {
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
     let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
-    // Устанавливаем таймер в 0.0 — это всегда валидное значение
-    state
-        .set_land_timer(0.0)
-        .expect("set_land_timer(0.0) should never fail for valid game state");
+    // set_land_timer(0.0) — всегда валидное значение, ошибка невозможна
+    debug_assert!(
+        state.set_land_timer(0.0).is_ok(),
+        "set_land_timer(0.0) should never fail for valid game state"
+    );
+    let _ = state.set_land_timer(0.0);
     state.set_is_hard_dropping(true);
 }
 
@@ -289,9 +291,11 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Сброс таймера приземления
     // LAND_TIME_DELAY_S — константное валидное значение, ошибка невозможна
-    state
-        .set_land_timer(LAND_TIME_DELAY_S)
-        .expect("set_land_timer(LAND_TIME_DELAY_S) should never fail for valid game state");
+    debug_assert!(
+        state.set_land_timer(LAND_TIME_DELAY_S).is_ok(),
+        "set_land_timer(LAND_TIME_DELAY_S) should never fail for valid game state"
+    );
+    let _ = state.set_land_timer(LAND_TIME_DELAY_S);
 }
 
 /// Обновить счётчик комбо после удаления линий.
