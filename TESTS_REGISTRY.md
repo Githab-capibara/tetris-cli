@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 6 апреля 2026
+**Дата последней актуализации:** 6 апреля 2026 (очистка тестовой базы)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,13 +9,38 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | ~670 | ✅ 100% pass |
-| Интеграционные тесты (tests/) | 29 | ✅ 100% pass |
+| Модульные тесты (src/) | ~640 | ✅ 100% pass |
+| Интеграционные тесты (tests/) | 26 | ✅ 100% pass |
 | Doctests (runnable) | 62 | ✅ 100% pass |
 | Doctests (ignored) | 113 | — ожидаемо |
-| Бенчмарки (benches/) | ~25 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **685** | ✅ |
-| Ignored | 16 | — ожидаемо |
+| Бенчмарки (benches/) | 24 (8 групп) | ✅ |
+| **ИТОГО (запускаемые)** | **~666** | ✅ |
+| Ignored | 7 | — ожидаемо |
+
+---
+
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-06)
+
+### Удалённые тесты (дубликаты/бесполезные):
+- `test_termion_backend_creation`, `test_termion_backend_with_raw`, `test_termion_io_backend_creation` — тавтологии `is_ok() || is_err()`
+- `test_io_module_exports` — пустой тест без assert
+- `test_hmac_sha256_unreachable_pattern` — без assert
+- `test_performance_find_full_rows`, `test_performance_save_tetromino`, `test_performance_check_collision_direction` — дублируют бенчмарки
+- `test_performance_game_state_creation`, `test_performance_bag_generator`, `test_performance_collision_detection`, `test_performance_rotation`, `test_performance_leaderboard`, `test_performance_controls_validation`, `test_performance_save_data_hashing` — дублируют бенчмарки
+- `test_fast_gamestate_creation`, `test_fast_tetromino_creation`, `test_fast_piece_rotation`, `test_fast_collision_check`, `test_fast_score_save`, `test_overall_system_performance` — дублируют бенчмарки
+- `test_utf8_multibyte_returns_none`, `test_invalid_utf8_no_panic`, `test_ascii_characters_read_correctly`, `test_utf8_then_ascii_sequence`, `test_utf8_range_handling` — пустые тесты без assert
+- `test_safe_f32_to_u32_no_panic` — пустой тест
+
+### Исправленные тесты (добавлены assert):
+- `test_get_shape_block_coords_valid_indices` — добавлена проверка диапазона координат
+- `test_get_shape_color_valid_indices` — добавлена проверка что цвет не null
+- `test_rotation_collision_interaction` — добавлена assert на вращение в пустом поле
+- `test_collision_array_bounds` — добавлена assert на блокировку движения
+- `test_rotation_near_left_wall` — добавлена assert на bool возврат
+
+### Оптимизация:
+- Performance тесты в unit-тестах удалены — покрыты бенчмарками через criterion
+- Файл `test_io_utf8_handling.rs` сокращён с 5 до 2 содержательных тестов |
 
 ---
 

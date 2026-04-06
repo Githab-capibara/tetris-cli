@@ -22,19 +22,3 @@ pub mod key_reader;
 pub use canvas::Canvas;
 #[cfg(unix)]
 pub use key_reader::KeyReader;
-
-// ============================================================================
-// ТЕСТЫ
-// ============================================================================
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_io_module_exports() {
-        // Проверка что экспорты работают
-        let _canvas = Canvas::default();
-        let _reader = KeyReader::default();
-    }
-}

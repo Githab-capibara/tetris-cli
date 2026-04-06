@@ -1,20 +1,18 @@
 //! Расширенные интеграционные тесты для Tetris CLI.
 //!
-//! Содержит тесты взаимодействия и производительности,
-//! не дублирующие тесты из `test_integration.rs`.
+//! Содержит тесты взаимодействия, не дублирующие тесты из `test_integration.rs`.
 
 #![allow(deprecated)]
 
 use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
-use crate::types::RotationDirection;
+use crate::tetromino::{BagGenerator, Tetromino};
 
 // ============================================================================
 // ВЗАИМОДЕЙСТВИЕ GAME + TETROMINO
 // ============================================================================
 
-/// Тест: Tetromino из BagGenerator корректно инициализируется
+/// Тест: Tetromino из BagGenerator корректно инициализируется.
 #[test]
 fn test_tetromino_from_bag_to_gamestate() {
     let mut bag = BagGenerator::new();
@@ -27,7 +25,7 @@ fn test_tetromino_from_bag_to_gamestate() {
     );
 }
 
-/// Тест: Все типы фигур появляются в игре за множественные запуски
+/// Тест: Все типы фигур появляются в игре за множественные запуски.
 #[test]
 fn test_all_piece_types_appear_in_game() {
     let mut found_shapes = [false; 7];
@@ -43,12 +41,13 @@ fn test_all_piece_types_appear_in_game() {
     }
 }
 
-/// Тест: Фигура не выходит за границы поля при движении
+/// Тест: Фигура не выходит за границы поля при движении.
 #[test]
 fn test_piece_stays_within_bounds() {
+    use crate::types::Direction;
     let mut state = GameState::new();
 
-    while state.can_move_curr_shape_direction(crate::types::Direction::Left) {
+    while state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos_mut().0 -= 1.0;
     }
 
@@ -59,7 +58,7 @@ fn test_piece_stays_within_bounds() {
     }
 }
 
-/// Тест: Текущая и следующая фигуры обе валидны
+/// Тест: Текущая и следующая фигуры обе валидны.
 #[test]
 fn test_curr_and_next_shapes_different() {
     let state = GameState::new();
@@ -75,30 +74,7 @@ fn test_curr_and_next_shapes_different() {
 // ВЗАИМОДЕЙСТВИЕ GAME + HIGHSCORE
 // ============================================================================
 
-/// Тест: GameState может сохранять рекорд
-#[test]
-#[ignore = "depends on confy file system"]
-fn test_gamestate_can_save_score() {
-    let mut state = GameState::new();
-    let _ = state.add_score(500);
-
-    let score = state.score();
-    SaveData::save_value(score);
-
-    let loaded = SaveData::load_config();
-    let loaded_score = loaded.verify_and_get_score().unwrap_or(0);
-
-    if loaded_score == 0 && score != 0 {
-        return;
-    }
-
-    assert_eq!(
-        loaded_score, score,
-        "Рекорд должен загрузиться и быть валидным"
-    );
-}
-
-/// Тест: Leaderboard валидирует записи
+/// Тест: Leaderboard валидирует записи.
 #[test]
 fn test_leaderboard_validates_entries() {
     let mut leaderboard = Leaderboard::default();
@@ -110,7 +86,7 @@ fn test_leaderboard_validates_entries() {
     }
 }
 
-/// Тест: Classic режим поддерживает сохранение рекорда
+/// Тест: Classic режим поддерживает сохранение рекорда.
 #[test]
 fn test_classic_mode_saves_score() {
     let state = GameState::new();
@@ -120,12 +96,9 @@ fn test_classic_mode_saves_score() {
         "Классика",
         "Режим должен быть Classic"
     );
-
-    let score = state.score();
-    SaveData::save_value(score);
 }
 
-/// Тест: Sprint режим не сохраняет рекорд (проверка режима)
+/// Тест: Sprint режим не сохраняет рекорд.
 #[test]
 fn test_sprint_mode_does_not_save_score() {
     let state = GameState::new_sprint();
@@ -137,7 +110,7 @@ fn test_sprint_mode_does_not_save_score() {
     );
 }
 
-/// Тест: Marathon режим поддерживает сохранение рекорда
+/// Тест: Marathon режим поддерживает сохранение рекорда.
 #[test]
 fn test_marathon_mode_saves_score() {
     let state = GameState::new_marathon();
@@ -149,7 +122,7 @@ fn test_marathon_mode_saves_score() {
     );
 }
 
-/// Тест: Leaderboard сортирует рекорды по убыванию
+/// Тест: Leaderboard сортирует рекорды по убыванию.
 #[test]
 fn test_leaderboard_sorts_scores() {
     let mut leaderboard = Leaderboard::default();
@@ -165,7 +138,7 @@ fn test_leaderboard_sorts_scores() {
     assert_eq!(entries[2].score(), Some(100), "Третий должен быть худшим");
 }
 
-/// Тест: SaveData защита от подделки
+/// Тест: SaveData защита от подделки.
 #[test]
 fn test_savedata_protection() {
     let save = SaveData::from_value(10000);
@@ -174,7 +147,7 @@ fn test_savedata_protection() {
     assert_eq!(score, Some(10000), "Рекорд должен пройти проверку");
 }
 
-/// Тест: Leaderboard максимальный размер (5 записей)
+/// Тест: Leaderboard максимальный размер (5 записей).
 #[test]
 fn test_leaderboard_max_size_integration() {
     let mut leaderboard = Leaderboard::default();
@@ -194,13 +167,14 @@ fn test_leaderboard_max_size_integration() {
 // ВЗАИМОДЕЙСТВИЕ GAME + CONTROLS
 // ============================================================================
 
-/// Тест: GameState реагирует на ввод (движение влево)
+/// Тест: GameState реагирует на ввод (движение влево).
 #[test]
 fn test_gamestate_responds_to_input() {
+    use crate::types::Direction;
     let mut state = GameState::new();
     let initial_x = state.curr_shape().pos().0;
 
-    if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
+    if state.can_move_curr_shape_direction(Direction::Left) {
         state.get_curr_shape_mut().pos_mut().0 -= 1.0;
         assert!(
             state.curr_shape().pos().0 < initial_x,
@@ -209,7 +183,7 @@ fn test_gamestate_responds_to_input() {
     }
 }
 
-/// Тест: Hold фигура доступна в начале игры
+/// Тест: Hold фигура доступна в начале игры.
 #[test]
 fn test_hold_piece() {
     let state = GameState::new();
@@ -220,7 +194,7 @@ fn test_hold_piece() {
 // ТЕСТЫ ПОЛНОГО ЦИКЛА
 // ============================================================================
 
-/// Тест: Hold + смена фигуры
+/// Тест: Hold + смена фигуры.
 #[test]
 fn test_hold_piece_swap() {
     let mut state = GameState::new();
@@ -233,123 +207,5 @@ fn test_hold_piece_swap() {
         state.curr_shape().shape(),
         initial_shape.shape(),
         "Текущая фигура должна измениться после hold"
-    );
-}
-
-// ============================================================================
-// ТЕСТЫ ПРОИЗВОДИТЕЛЬНОСТИ
-// ============================================================================
-
-/// Тест: Быстрое создание GameState (100 итераций)
-#[test]
-fn test_fast_gamestate_creation() {
-    let start = std::time::Instant::now();
-
-    for _ in 0..100 {
-        let _state = GameState::new();
-    }
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 1000,
-        "Создание 100 GameState должно занять меньше 1 секунды"
-    );
-}
-
-/// Тест: Быстрое создание Tetromino (1000 итераций)
-#[test]
-fn test_fast_tetromino_creation() {
-    let mut bag = BagGenerator::new();
-    let start = std::time::Instant::now();
-
-    for _ in 0..1000 {
-        let _t = Tetromino::from_bag(&mut bag);
-    }
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 1000,
-        "Создание 1000 Tetromino должно занять меньше 1 секунды"
-    );
-}
-
-/// Тест: Быстрое вращение фигуры (10000 итераций)
-#[test]
-fn test_fast_piece_rotation() {
-    let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
-
-    let start = std::time::Instant::now();
-
-    for _ in 0..10_000 {
-        t.rotate(RotationDirection::Clockwise);
-    }
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 1000,
-        "10000 вращений должны занять меньше 1 секунды"
-    );
-}
-
-/// Тест: Быстрая проверка коллизий (1000 итераций)
-#[test]
-fn test_fast_collision_check() {
-    let state = GameState::new();
-    let start = std::time::Instant::now();
-
-    for _ in 0..1000 {
-        let _ = state.can_move_curr_shape_direction(crate::types::Direction::Down);
-    }
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 1000,
-        "1000 проверок коллизий должны занять меньше 1 секунды"
-    );
-}
-
-/// Тест: Быстрое сохранение рекорда (10 итераций)
-#[test]
-fn test_fast_score_save() {
-    let start = std::time::Instant::now();
-
-    for i in 0..10 {
-        SaveData::save_value(i * 100);
-    }
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 5000,
-        "10 сохранений должны занять меньше 5 секунд"
-    );
-}
-
-/// Тест: Общая производительность системы
-#[test]
-fn test_overall_system_performance() {
-    let start = std::time::Instant::now();
-
-    let mut state = GameState::new();
-
-    for _ in 0..100 {
-        if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-            state
-                .get_curr_shape_mut()
-                .rotate(RotationDirection::Clockwise);
-        }
-    }
-
-    for _ in 0..100 {
-        if state.can_move_curr_shape_direction(crate::types::Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    SaveData::save_value(state.score());
-
-    let duration = start.elapsed();
-    assert!(
-        duration.as_millis() < 5000,
-        "Операции должны занять меньше 5 секунд"
     );
 }

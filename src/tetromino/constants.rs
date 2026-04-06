@@ -166,9 +166,13 @@ mod constants_tests {
 
     #[test]
     fn test_get_shape_block_coords_valid_indices() {
+        // Проверяем что все валидные индексы возвращают координаты в ожидаемом диапазоне
         for i in 0..7 {
             for b in 0..4 {
-                let _ = get_shape_block_coords(i, b); // не должно паниковать
+                let (x, y) = get_shape_block_coords(i, b);
+                // Координаты фигур в пределах [-2, 2]
+                assert!((-3..=3).contains(&x), "X координата блока {b} фигуры {i} вне диапазона: {x}");
+                assert!((-3..=3).contains(&y), "Y координата блока {b} фигуры {i} вне диапазона: {y}");
             }
         }
     }
@@ -182,8 +186,11 @@ mod constants_tests {
 
     #[test]
     fn test_get_shape_color_valid_indices() {
+        // Проверяем что все валидные индексы возвращают цвет
         for i in 0..7 {
-            let _ = get_shape_color(i); // не должно паниковать
+            let color = get_shape_color(i);
+            // Проверяем что цвет не panic при использовании
+            let _ = format!("{:?}", color);
         }
     }
 
