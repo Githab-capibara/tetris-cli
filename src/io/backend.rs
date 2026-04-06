@@ -243,15 +243,14 @@ impl TerminalBackend for TermionBackend {
 
 impl TerminalInputBackend for TermionBackend {
     fn read_key(&mut self) -> io::Result<Option<u8>> {
-        // TODO: Реализовать чтение клавиш через KeyReader.
-        // Сейчас ввод обрабатывается отдельно через KeyReader в TermionIOBackend.
-        // Эта заглушка возвращает None для соответствия трейту.
+        // TermionBackend отвечает только за вывод.
+        // Для ввода используйте TermionIOBackend.input (KeyReader).
         Ok(None)
     }
 
     fn read_key_unicode(&mut self) -> Option<char> {
-        // TODO: Реализовать чтение Unicode символов через KeyReader.
-        // Сейчас ввод обрабатывается отдельно через KeyReader в TermionIOBackend.
+        // TermionBackend отвечает только за вывод.
+        // Для ввода используйте TermionIOBackend.input (KeyReader).
         None
     }
 }
@@ -288,6 +287,16 @@ impl TermionIOBackend {
             output: TermionBackend::new()?,
             input: crate::io::key_reader::KeyReader::new(),
         })
+    }
+}
+
+impl TerminalInputBackend for TermionIOBackend {
+    fn read_key(&mut self) -> io::Result<Option<u8>> {
+        self.input.get_key()
+    }
+
+    fn read_key_unicode(&mut self) -> Option<char> {
+        self.input.get_key_unicode()
     }
 }
 
