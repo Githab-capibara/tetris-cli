@@ -31,6 +31,13 @@ use crate::crypto::hmac::hmac_sign_with_salt;
 /// # Исправление ISSUE-193 (2026-04-02)
 /// Вынесен в константу для предотвращения хардкода в коде.
 /// При загрузке этот placeholder игнорируется - проверяется только подпись.
+///
+/// # Намеренный хардкод (C4)
+/// Этот placeholder — осознанное решение для обратной совместимости.
+/// Старые файлы конфигурации содержат это значение в поле `hmac_key`,
+/// поэтому при загрузке мы подставляем тот же placeholder чтобы десериализация
+/// прошла успешно. Реальная HMAC подпись проверяется через глобальный ключ
+/// из переменной окружения, а не через это поле.
 const HMAC_KEY_PLACEHOLDER: &str = "global_key_v1";
 
 /// Конфигурация управления с keyed hash подписью.
@@ -358,12 +365,14 @@ impl ControlsConfig {
 
         // Защита от symlink атак: O_NOFOLLOW обеспечивает атомарную защиту на уровне ядра.
         // Если файл — symlink, open() вернёт ELOOP, поэтому дополнительных проверок не требуется.
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(&joined_path)?;
+        // D5: #[cfg(unix)] на использование libc::O_NOFOLLOW
+        let mut file = {
+            let mut opts = OpenOptions::new();
+            opts.write(true).create(true).truncate(true);
+            #[cfg(unix)]
+            opts.custom_flags(libc::O_NOFOLLOW);
+            opts.open(&joined_path)?
+        };
 
         file.write_all(json.as_bytes())?;
         Ok(())
@@ -458,10 +467,14 @@ impl ControlsConfig {
         // Если файл — symlink, open() вернёт ELOOP, поэтому отдельная проверка не нужна.
 
         // Шаг 1: Открываем файл с O_NOFOLLOW для атомарной защиты от symlink
-        let mut file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(&joined_path)?;
+        // D5: #[cfg(unix)] на использование libc::O_NOFOLLOW
+        let mut file = {
+            let mut opts = OpenOptions::new();
+            opts.read(true);
+            #[cfg(unix)]
+            opts.custom_flags(libc::O_NOFOLLOW);
+            opts.open(&joined_path)?
+        };
 
         // Шаг 2: Получаем метаданные уже открытого файла (fd не может быть изменён)
         let metadata = file.metadata()?;

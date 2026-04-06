@@ -180,7 +180,7 @@ fn handle_input_result<R: Renderer>(
 ) -> Option<u128> {
     match input_result {
         InputResult::Continue | InputResult::Pause => None,
-        InputResult::Quit => Some(0),
+        InputResult::Quit => Some(state.score()), // Исправление E12: используем текущий счёт вместо 0
         InputResult::GameOver => {
             handle_game_over(cnv);
             Some(state.score())
@@ -198,17 +198,13 @@ fn handle_input_result<R: Renderer>(
 /// * `high_score_display` - строка для отображения рекорда
 ///
 /// # Возвращает
-/// - `Ok(u128)` - финальный счёт игрока
-/// - `Err(GameError)` - ошибка во время игрового цикла
+/// - `u128` - финальный счёт игрока
 ///
-/// # Errors
-/// Возвращает ошибку `GameError` в следующих случаях:
-/// - `GameError::IoError` - ошибка ввода/вывода при чтении клавиш или отрисовке
-/// - `GameError::ValidationError` - ошибка валидации данных игры
-/// - Критические ошибки терминала или состояния игры
+/// # Архитектурные заметки (Исправление E11)
+/// Функция возвращает `u128` напрямую — обёртка `Result` была удалена,
+/// так как функция всегда возвращает `Ok(final_score)`.
 ///
 /// # Архитектурные заметки (A8: Обработка ошибок, H1: DIP)
-/// Функция возвращает `Result<u128, GameError>` для явной обработки ошибок.
 /// Использует трейты `InputReader` и `Renderer` для зависимости от абстракций.
 ///
 /// # Архитектурные заметки (Исправление аудита 2026-03-31)
@@ -230,14 +226,13 @@ fn handle_input_result<R: Renderer>(
 ///
 /// let result = run_game_loop(&mut state, &mut canvas, &mut input, high_score);
 /// ```
-#[allow(clippy::unnecessary_wraps)]
 #[track_caller]
 pub fn run_game_loop<T: InputReader, R: Renderer>(
     state: &mut GameState,
     cnv: &mut R,
     inp: &mut T,
     high_score_display: &str,
-) -> Result<u128, crate::errors::GameError> {
+) -> u128 {
     let mut last_time = std::time::Instant::now();
     let interval_ms = FRAME_DELAY_MS;
 
@@ -249,7 +244,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
 
             // Обработка результата ввода (вынесено в отдельную функцию)
             if let Some(final_score) = handle_input_result(&input_result, state, cnv) {
-                return Ok(final_score);
+                return final_score;
             }
 
             // Отрисовка кадра
@@ -459,9 +454,9 @@ mod tests {
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
-        // InputResult::Quit должен вернуть Some(0)
+        // InputResult::Quit должен вернуть Some(state.score())
         let result = handle_input_result(&InputResult::Quit, &state, &mut renderer);
-        assert_eq!(result, Some(0), "Quit должен вернуть Some(0)");
+        assert_eq!(result, Some(state.score()), "Quit должен вернуть Some(state.score())");
     }
 
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::GameOver`
@@ -571,7 +566,7 @@ mod tests {
         assert!(handle_input_result(&InputResult::Pause, &state, &mut renderer).is_none());
         assert_eq!(
             handle_input_result(&InputResult::Quit, &state, &mut renderer),
-            Some(0)
+            Some(state.score()) // Исправление E12: используем state.score() вместо 0
         );
         assert_eq!(
             handle_input_result(&InputResult::GameOver, &state, &mut renderer),
