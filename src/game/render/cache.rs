@@ -106,12 +106,15 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
         if is_sprint_mode {
             let elapsed = sprint_elapsed.unwrap_or(0.0);
             // Сравниваем до форматирования — избегаем аллокации если значение не изменилось
-            let timer_matches = render_cache.last_cached_timer == (elapsed * 100.0).round() as i64;
+            // cast: f64 -> i64, потеря точности допустима: таймер в разумных пределах
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let timer_value = (elapsed * 100.0).round() as i64;
+            let timer_matches = render_cache.last_cached_timer == timer_value;
             if !timer_matches {
                 // Исправление проблемы 25: write! напрямую в буфер вместо format!
                 render_cache.cached_timer_str.clear();
                 let _ = write!(render_cache.cached_timer_str, "Время: {elapsed:.2}с");
-                render_cache.last_cached_timer = (elapsed * 100.0).round() as i64;
+                render_cache.last_cached_timer = timer_value;
             }
         }
     }

@@ -88,6 +88,7 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
             entry.score().unwrap_or(0)
         );
         // cast: usize -> u16, потеря точности допустима: количество записей <= 5
+        #[allow(clippy::cast_possible_truncation)]
         cnv.draw_string(
             &line_buf,
             (3, (3 + i) as u16),

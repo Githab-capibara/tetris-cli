@@ -42,7 +42,7 @@ impl AnimationState {
     /// # Возвращает
     /// Новый экземпляр `AnimationState` с выключенными анимациями.
     #[must_use = "Состояние анимации должно быть использовано"]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             animating_rows_mask: 0,
             is_hard_dropping: false,
@@ -54,7 +54,7 @@ impl AnimationState {
     /// # Возвращает
     /// Битовая маска анимируемых строк
     #[must_use = "Маска анимации должна быть использована"]
-    pub fn animating_rows_mask(&self) -> u32 {
+    pub const fn animating_rows_mask(&self) -> u32 {
         self.animating_rows_mask
     }
 
@@ -72,7 +72,7 @@ impl AnimationState {
     /// `true` если активен Hard Drop
     #[must_use = "Флаг Hard Drop должен быть использован"]
     #[allow(dead_code)]
-    pub fn is_hard_dropping(&self) -> bool {
+    pub const fn is_hard_dropping(&self) -> bool {
         self.is_hard_dropping
     }
 

@@ -66,10 +66,10 @@ pub fn update<T: InputReader>(
 pub fn save_tetromino(state: &mut GameState) {
     let (shape_x, shape_y) = state.curr_shape().pos();
     // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_WIDTH)
-    #[allow(clippy::cast_possible_wrap)]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     let shape_block_x = shape_x as i16;
     // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
-    #[allow(clippy::cast_possible_wrap)]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     let shape_block_y = shape_y as i16;
 
     // Оптимизация: используем as вместо try_from() для const значений

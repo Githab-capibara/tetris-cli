@@ -235,7 +235,7 @@ impl Application {
     ///
     /// # Возвращает
     /// `true` если нужно выйти из приложения
-    fn check_exit_condition(key: u8) -> bool {
+    const fn check_exit_condition(key: u8) -> bool {
         key == crate::constants::KEY_BACKSPACE
     }
 

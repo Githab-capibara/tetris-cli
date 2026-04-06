@@ -180,12 +180,11 @@ fn handle_input_result<R: Renderer>(
 ) -> Option<u128> {
     match input_result {
         InputResult::Continue | InputResult::Pause => None,
-        InputResult::Quit => Some(state.score()), // Исправление E12: используем текущий счёт вместо 0
+        InputResult::Quit | InputResult::Won => Some(state.score()),
         InputResult::GameOver => {
             handle_game_over(cnv);
             Some(state.score())
         }
-        InputResult::Won => Some(state.score()),
     }
 }
 
