@@ -2,8 +2,8 @@
 //!
 //! Содержит фабричные функции и константы для уменьшения дублирования.
 
-use tetris_cli::highscore::Leaderboard;
 use tetris_cli::highscore::leaderboard::{LeaderboardEntry, ThreadSafeLeaderboardEntry};
+use tetris_cli::highscore::Leaderboard;
 
 /// Создать Leaderboard с заданным количеством записей.
 #[allow(dead_code)]
