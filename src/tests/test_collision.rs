@@ -7,8 +7,8 @@
 //! - Тесты вращений и столкновений (10 тестов)
 //! - Тесты граничных случаев (5 тестов)
 
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::GameState;
-use crate::io::{GRID_HEIGHT, GRID_WIDTH};
 use crate::tetromino::{ShapeType, SHAPE_COORDS};
 use crate::types::{Direction, RotationDirection};
 
@@ -124,7 +124,9 @@ fn test_collision_left_at_right_wall() {
     );
 }
 
-/// Тест 7: Проверка столкновения для всех фигур с левой стеной (параметризованный тест)
+/// Тест 7: Проверка столкновения для всех фигур с левой стеной (параметризованный тест).
+///
+/// Проверяет, что все 7 типов фигур сталкиваются с левой стеной.
 #[test]
 fn test_collision_all_shapes_left_wall() {
     let shapes = [
@@ -157,7 +159,9 @@ fn test_collision_all_shapes_left_wall() {
     }
 }
 
-/// Тест 14: Проверка что фигура не выходит за левую границу
+/// Тест 14: Проверка что фигура не выходит за левую границу.
+///
+/// Проверяет, что координата X фигуры не становится отрицательной.
 #[test]
 fn test_collision_not_beyond_left_boundary() {
     let mut state = GameState::new();
@@ -172,7 +176,9 @@ fn test_collision_not_beyond_left_boundary() {
     assert!(x >= 0.0, "Фигура не должна выходить за левую границу");
 }
 
-/// Тест 15: Проверка что фигура не выходит за правую границу
+/// Тест 15: Проверка что фигура не выходит за правую границу.
+///
+/// Проверяет, что координата X фигуры не превышает GRID_WIDTH.
 #[test]
 fn test_collision_not_beyond_right_boundary() {
     let mut state = GameState::new();
@@ -232,7 +238,9 @@ fn test_collision_all_shapes_floor() {
 // ГРУППА ТЕСТОВ 26-35: Столкновения с фигурами
 // ============================================================================
 
-/// Тест 26: Проверка что новая фигура появляется над зафиксированной
+/// Тест 26: Проверка что новая фигура появляется над зафиксированной.
+///
+/// Проверяет, что поле пустое в начале игры (нет зафиксированных блоков).
 #[test]
 fn test_collision_new_above_fixed() {
     // Этот тест проверяет базовую механику
@@ -247,7 +255,9 @@ fn test_collision_new_above_fixed() {
     }
 }
 
-/// Тест 27: Проверка что движение вниз блокируется фигурой
+/// Тест 27: Проверка что движение вниз блокируется фигурой.
+///
+/// Проверяет, что после приземления на пол движение вниз блокируется.
 #[test]
 fn test_collision_down_blocked_by_piece() {
     let mut state = GameState::new();
@@ -261,7 +271,9 @@ fn test_collision_down_blocked_by_piece() {
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
-/// Тест 30: Проверка столкновения при приземлении на фигуру
+/// Тест 30: Проверка столкновения при приземлении на фигуру.
+///
+/// Проверяет, что фигура останавливается при достижении препятствия.
 #[test]
 fn test_collision_landing_on_piece() {
     let mut state = GameState::new();
@@ -275,7 +287,9 @@ fn test_collision_landing_on_piece() {
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
-/// Тест 33: Проверка что столкновение срабатывает корректно
+/// Тест 33: Проверка что столкновение срабатывает корректно.
+///
+/// Проверяет, что движение влево блокируется у стены.
 #[test]
 fn test_collision_triggers_correctly() {
     let mut state = GameState::new();
@@ -291,7 +305,9 @@ fn test_collision_triggers_correctly() {
     assert!(!state.can_move_curr_shape_direction(Direction::Left));
 }
 
-/// Тест 34: Проверка что столкновение не срабатывает рано
+/// Тест 34: Проверка что столкновение не срабатывает рано.
+///
+/// Проверяет, что в центре поля движение вниз доступно.
 #[test]
 fn test_collision_not_early() {
     let state = GameState::new();
@@ -301,7 +317,9 @@ fn test_collision_not_early() {
     assert!(can_down, "В центре поля движение вниз должно быть возможно");
 }
 
-/// Тест 35: Проверка что столкновение срабатывает точно на границе
+/// Тест 35: Проверка что столкновение срабатывает точно на границе.
+///
+/// Проверяет, что фигура может двигаться до последней возможной позиции.
 #[test]
 fn test_collision_exact_boundary() {
     let mut state = GameState::new();
@@ -321,7 +339,9 @@ fn test_collision_exact_boundary() {
 // ГРУППА ТЕСТОВ 43-50: Вращения и столкновения
 // ============================================================================
 
-/// Тест 44: Проверка что вращение работает в центре поля
+/// Тест 44: Проверка что вращение работает в центре поля.
+///
+/// Проверяет, что в центре поля доступно хотя бы одно направление вращения.
 #[test]
 fn test_collision_rotation_in_center() {
     let mut state = GameState::new();
@@ -336,7 +356,9 @@ fn test_collision_rotation_in_center() {
     assert!(can_rotate, "В центре поля вращение должно быть возможно");
 }
 
-/// Тест 45: Проверка что вращение O-фигуры не вызывает проблем
+/// Тест 45: Проверка что вращение O-фигуры не вызывает проблем.
+///
+/// O-фигура не вращается, но метод не должен паниковать.
 #[test]
 fn test_collision_rotation_o_piece() {
     let mut state = GameState::new();
@@ -353,7 +375,9 @@ fn test_collision_rotation_o_piece() {
 // ГРУППА ТЕСТОВ 46-50: Граничные случаи
 // ============================================================================
 
-/// Тест 46: Проверка столкновения в углу (левый нижний)
+/// Тест 46: Проверка столкновения в углу (левый нижний).
+///
+/// Проверяет, что движение влево и вниз блокируется в левом нижнем углу.
 #[test]
 fn test_collision_bottom_left_corner() {
     let mut state = GameState::new();
@@ -374,7 +398,9 @@ fn test_collision_bottom_left_corner() {
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
-/// Тест 47: Проверка столкновения в углу (правый нижний)
+/// Тест 47: Проверка столкновения в углу (правый нижний).
+///
+/// Проверяет, что движение вправо и вниз блокируется в правом нижнем углу.
 #[test]
 fn test_collision_bottom_right_corner() {
     let mut state = GameState::new();
@@ -395,7 +421,9 @@ fn test_collision_bottom_right_corner() {
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
 }
 
-/// Тест 49: Проверка что столкновение не выходит за границы массива
+/// Тест 49: Проверка что столкновение не выходит за границы массива.
+///
+/// Проверяет, что после движения к границе хотя бы одно направление заблокировано.
 #[test]
 fn test_collision_array_bounds() {
     let mut state = GameState::new();
@@ -419,7 +447,9 @@ fn test_collision_array_bounds() {
     assert!(!can_left || !can_down, "После движения к границе хотя бы одно направление должно быть заблокировано");
 }
 
-/// Тест 50: Проверка что столкновение работает после множественных движений
+/// Тест 50: Проверка что столкновение работает после множественных движений.
+///
+/// Проверяет, что столкновение корректно работает после серии движений.
 #[test]
 fn test_collision_after_multiple_moves() {
     let mut state = GameState::new();

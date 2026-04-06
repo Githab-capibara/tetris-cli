@@ -277,6 +277,9 @@ mod game_tests {
     use crate::types::Direction;
 
     // Тесты Hard Drop
+
+    /// Проверяет корректность расчёта высоты падения фигуры (Hard Drop).
+    /// Фигура должна опуститься до пола, движение вниз блокируется.
     #[test]
     fn test_hard_drop_height_calculation() {
         let mut state = GameState::new();
@@ -294,6 +297,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет расчёт бонусных очков за Hard Drop (2 очка за ячейку падения).
+    /// Расстояние падения должно быть положительным.
     #[test]
     fn test_hard_drop_bonus_points() {
         let mut state = GameState::new();
@@ -312,6 +317,8 @@ mod game_tests {
         assert!(drop_distance > 0, "Дистанция должна быть положительной");
     }
 
+    /// Проверяет установку и сброс флага анимации Hard Drop.
+    /// Флаг `is_hard_dropping` должен переключаться корректно.
     #[test]
     fn test_hard_drop_animation_frames() {
         let mut state = GameState::new();
@@ -338,6 +345,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет граничные условия Hard Drop: фигура не выходит за пределы поля.
+    /// После приземления движение вниз должно быть заблокировано.
     #[test]
     fn test_hard_drop_boundary() {
         let mut state = GameState::new();
@@ -362,6 +371,9 @@ mod game_tests {
     }
 
     // Тесты Soft Drop
+
+    /// Проверяет начальную скорость падения фигуры (Soft Drop).
+    /// Скорость должна равняться `INITIAL_FALL_SPD` и быть положительной.
     #[test]
     fn test_soft_drop_speed_increase() {
         let state = GameState::new();
@@ -377,6 +389,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет расчёт очков за Soft Drop: 1 очко за каждую ячейку падения.
+    /// Тестирует множественные дистанции падения.
     #[test]
     fn test_soft_drop_points_per_cell() {
         assert_eq!(
@@ -394,6 +408,8 @@ mod game_tests {
         }
     }
 
+    /// Проверяет обнаружение пола при Soft Drop: фигура останавливается на дне.
+    /// Движение вниз блокируется после достижения пола.
     #[test]
     fn test_soft_drop_floor_detection() {
         let mut state = GameState::new();
@@ -414,6 +430,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет отслеживание дистанции Soft Drop через `soft_drop_distance()`.
+    /// Дистанция должна увеличиваться при каждом шаге и сбрасываться.
     #[test]
     fn test_soft_drop_distance_tracking() {
         let mut state = GameState::new();
@@ -447,6 +465,9 @@ mod game_tests {
     }
 
     // Тесты Combo системы
+
+    /// Проверяет инкремент комбо-счётчика и обновление максимального комбо.
+    /// Начальное значение комбо = 0, после удалений увеличивается.
     #[test]
     fn test_combo_counter_increment() {
         let mut stats = GameStats::new();
@@ -482,6 +503,8 @@ mod game_tests {
         assert_eq!(stats.max_combo(), 3, "Максимальное комбо должно быть 3");
     }
 
+    /// Проверяет расчёт бонусных очков за комбо: `COMBO_BONUS × (combo - 1)`.
+    /// Первое комбо = 0 бонус, второе = 50, третье = 100 и т.д.
     #[test]
     fn test_combo_bonus_calculation() {
         assert_eq!(COMBO_BONUS, 50, "Базовый бонус за комбо должен быть 50");
@@ -517,6 +540,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет сброс комбо-счётчика при ходе без удаления линий.
+    /// После сброса новое комбо начинается с 1.
     #[test]
     fn test_combo_reset_on_no_clear() {
         let mut stats = GameStats::new();
@@ -539,6 +564,8 @@ mod game_tests {
         );
     }
 
+    /// Проверяет бонус за Tetris (4 линии): базовые 800 + бонус 1000 = 1800.
+    /// Tetris должен давать больше очков, чем 3 линии.
     #[test]
     fn test_tetris_bonus_1000() {
         const TETRIS_BONUS: u128 = 1000;

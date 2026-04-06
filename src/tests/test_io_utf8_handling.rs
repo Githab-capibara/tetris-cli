@@ -1,6 +1,6 @@
 //! Тесты обработки UTF-8 (io.rs).
 //!
-//! Проверяют что KeyReader корректно возвращает Option<u8>
+//! Проверяют что KeyReader корректно возвращает `io::Result<Option<u8>>`
 //! и не паникует при различных сценариях ввода.
 
 use crate::io::KeyReader;
@@ -12,12 +12,15 @@ fn test_key_reader_returns_ascii_or_none() {
     let result = reader.get_key();
 
     match result {
-        Some(key) => {
+        Ok(Some(key)) => {
             // Если клавиша была нажата, проверяем что это ASCII
             assert!(key <= 0x7F, "ASCII символ должен быть <= 0x7F, получен: {key}");
         }
-        None => {
+        Ok(None) => {
             // Нет ввода — нормально в тестовой среде
+        }
+        Err(_) => {
+            // Ошибка чтения (например, нет терминала) — тоже допустимо
         }
     }
 }
@@ -30,7 +33,7 @@ fn test_key_reader_stability() {
         let mut reader = KeyReader::new();
         let result = reader.get_key();
 
-        if let Some(key) = result {
+        if let Ok(Some(key)) = result {
             assert!(key <= 0x7F, "Итерация {i}: key {key} должен быть ASCII");
         }
     }
