@@ -106,25 +106,25 @@ macro_rules! log_info {
 #[allow(unused_must_use)]
 mod tests {
     // Основные юнит-тесты
-    pub mod test_game_logic;
-    pub mod test_integration;
-    pub mod test_io;
-    pub mod test_io_errors;
-    pub mod test_physics;
+    mod test_game_logic;
+    mod test_integration;
+    mod test_io;
+    mod test_io_errors;
+    mod test_physics;
 
     // Игровая механика
-    pub mod test_bag_system;
-    pub mod test_boundary_values;
-    pub mod test_game_bounds_check;
-    pub mod test_game_box_array;
-    pub mod test_game_movement;
-    pub mod test_game_rotation;
-    pub mod test_integration_extended;
+    mod test_bag_system;
+    mod test_boundary_values;
+    mod test_game_bounds_check;
+    mod test_game_box_array;
+    mod test_game_movement;
+    mod test_game_rotation;
+    mod test_integration_extended;
 
     // Безопасность и переполнение
-    pub mod test_game_score_overflow;
-    pub mod test_hmac_safety;
-    pub mod test_safe_cast;
-    pub mod test_score_overflow_protection;
-    pub mod test_state_validation;
+    mod test_game_score_overflow;
+    mod test_hmac_safety;
+    mod test_safe_cast;
+    mod test_score_overflow_protection;
+    mod test_state_validation;
 }

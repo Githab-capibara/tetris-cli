@@ -14,10 +14,13 @@
 // Подмодули
 pub mod backend;
 pub mod canvas;
+// termion поддерживает только Unix — на Windows модуль недоступен
+#[cfg(unix)]
 pub mod key_reader;
 
 // Re-export основных типов для обратной совместимости
 pub use canvas::Canvas;
+#[cfg(unix)]
 pub use key_reader::KeyReader;
 
 // ============================================================================

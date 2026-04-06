@@ -24,8 +24,10 @@
 //! Архитектурное улучшение 2026-04-01 (S3): Выделение `KeyReader` в отдельный модуль.
 
 use std::io::{self, Read, Write};
+#[cfg(unix)]
 use termion::{async_stdin, cursor::Show, screen::ToMainScreen, AsyncReader};
 
+#[cfg(unix)]
 use crate::io_traits::InputReader;
 
 // ============================================================================
@@ -51,10 +53,12 @@ use crate::io_traits::InputReader;
 /// - **UTF-8**: `get_key()` возвращает только ASCII (0x00-0x7F)
 /// - **Специальные клавиши**: ESC-последовательности могут обрабатываться некорректно
 /// - **Мышь**: Не поддерживается, только клавиатура
+#[cfg(unix)]
 pub struct KeyReader {
     inp: AsyncReader,
 }
 
+#[cfg(unix)]
 impl Drop for KeyReader {
     /// Освобождение ресурсов при уничтожении `KeyReader`.
     ///
@@ -79,12 +83,14 @@ impl Drop for KeyReader {
     }
 }
 
+#[cfg(unix)]
 impl Default for KeyReader {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(unix)]
 impl KeyReader {
     /// Создать новый читатель клавиш.
     ///
@@ -269,6 +275,7 @@ impl KeyReader {
     }
 }
 
+#[cfg(unix)]
 impl InputReader for KeyReader {
     fn get_key(&mut self) -> io::Result<Option<u8>> {
         Self::get_key(self)
@@ -276,6 +283,7 @@ impl InputReader for KeyReader {
 }
 
 #[cfg(test)]
+#[cfg(unix)]
 mod tests {
     use super::*;
 

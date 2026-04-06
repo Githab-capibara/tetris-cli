@@ -710,22 +710,15 @@ impl ControlsConfig {
     pub fn map_key_to_action(&self, key_code: u8) -> Option<crate::game::types::GameAction> {
         use crate::game::types::GameAction;
 
-        if key_code == self.move_left {
-            Some(GameAction::MoveLeft)
-        } else if key_code == self.move_right {
-            Some(GameAction::MoveRight)
-        } else if key_code == self.soft_drop {
-            Some(GameAction::SoftDrop)
-        } else if key_code == self.hard_drop {
-            Some(GameAction::HardDrop)
-        } else if key_code == self.rotate_left {
-            Some(GameAction::RotateLeft)
-        } else if key_code == self.rotate_right {
-            Some(GameAction::RotateRight)
-        } else if key_code == self.hold {
-            Some(GameAction::Hold)
-        } else {
-            None
+        match key_code {
+            k if k == self.move_left => Some(GameAction::MoveLeft),
+            k if k == self.move_right => Some(GameAction::MoveRight),
+            k if k == self.soft_drop => Some(GameAction::SoftDrop),
+            k if k == self.hard_drop => Some(GameAction::HardDrop),
+            k if k == self.rotate_left => Some(GameAction::RotateLeft),
+            k if k == self.rotate_right => Some(GameAction::RotateRight),
+            k if k == self.hold => Some(GameAction::Hold),
+            _ => None,
         }
     }
 }
