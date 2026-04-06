@@ -632,21 +632,6 @@ mod points_tests {
         );
     }
 
-    /// Тест M6: проверка явного возврата результата в `handle_landing`
-    #[test]
-    fn test_fix_m6_handle_landing_explicit_return() {
-        use crate::types::UpdateEndState;
-
-        let mut state = GameState::new();
-
-        // Проверяем что функция возвращает конкретный тип
-        let result: Option<UpdateEndState> = handle_landing(&mut state);
-
-        // Тип результата должен быть Option<UpdateEndState>
-        // Это проверяется на этапе компиляции
-        let _ = result;
-    }
-
     /// Тест M6: проверка что `check_game_over_condition` используется для раннего выхода
     #[test]
     fn test_fix_m6_check_game_over_condition_for_early_exit() {

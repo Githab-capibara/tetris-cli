@@ -675,24 +675,6 @@ mod tests {
         assert_eq!(lines.value(), u32::MAX); // Saturating
     }
 
-    // ==================== Тесты для GameAction ====================
-
-    #[test]
-    fn test_game_action_variants() {
-        use super::GameAction;
-
-        // Проверка всех вариантов
-        let _ = GameAction::MoveLeft;
-        let _ = GameAction::MoveRight;
-        let _ = GameAction::SoftDrop;
-        let _ = GameAction::HardDrop;
-        let _ = GameAction::RotateLeft;
-        let _ = GameAction::RotateRight;
-        let _ = GameAction::Hold;
-        let _ = GameAction::Pause;
-        let _ = GameAction::Quit;
-    }
-
     #[test]
     fn test_game_action_is_movement() {
         use super::GameAction;

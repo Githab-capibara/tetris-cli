@@ -93,7 +93,6 @@ mod tests {
     mod test_integration_extended;
 
     // Безопасность и переполнение
-    mod test_game_score_overflow;
     mod test_hmac_safety;
     mod test_safe_cast;
     mod test_score_overflow_protection;

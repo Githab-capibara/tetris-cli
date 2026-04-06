@@ -176,23 +176,6 @@ mod tests {
     }
 
     #[test]
-    fn test_repository_exists() {
-        // exists() может вернуть true или false в зависимости от наличия файла
-        // Главное что метод не паникует
-        let _ = LeaderboardRepository::exists();
-    }
-
-    #[test]
-    fn test_repository_save_result_returns_ok() {
-        // save_result должен вернуть Ok или Err (не паниковать)
-        let leaderboard = Leaderboard::default();
-        let result = LeaderboardRepository::save_result(&leaderboard);
-        // В тестовой среде confy может не иметь доступа к файловой системе,
-        // поэтому проверяем только что метод не паникует и возвращает Result
-        let _ = result.is_ok() || result.is_err();
-    }
-
-    #[test]
     fn test_repository_save_does_not_panic() {
         // save() не должен паниковать даже при ошибках
         let leaderboard = Leaderboard::default();
