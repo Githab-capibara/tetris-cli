@@ -38,7 +38,9 @@ impl LeaderboardRepository {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
-                crate::log_warn!("Не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup...");
+                crate::log_warn!(
+                    "Не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup..."
+                );
                 // Попытка загрузить из backup файла
                 match load(APP_NAME, Some("leaderboard_backup")) {
                     Ok(backup_leaderboard) => {
@@ -46,7 +48,9 @@ impl LeaderboardRepository {
                         backup_leaderboard
                     }
                     Err(backup_e) => {
-                        crate::log_warn!("Не удалось загрузить backup: {backup_e}. Используется пустая таблица.");
+                        crate::log_warn!(
+                            "Не удалось загрузить backup: {backup_e}. Используется пустая таблица."
+                        );
                         Leaderboard::default()
                     }
                 }
@@ -63,10 +67,14 @@ impl LeaderboardRepository {
     /// При ошибке сохранения пытается сохранить в backup файл.
     pub fn save(leaderboard: &Leaderboard) {
         if let Err(e) = store(APP_NAME, Some("leaderboard"), leaderboard) {
-            crate::log_error!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
+            crate::log_error!(
+                "Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup..."
+            );
             // Попытка сохранить в backup файл
             if let Err(backup_e) = store(APP_NAME, Some("leaderboard_backup"), leaderboard) {
-                crate::log_error!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+                crate::log_error!(
+                    "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
+                );
             } else {
                 crate::log_info!("Успешно сохранено в backup файл.");
             }
