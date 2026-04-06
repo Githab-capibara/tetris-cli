@@ -4,7 +4,8 @@
 tarpaulin-report.html
 cobertura.xml
 lcov.info
-target/
+/target/
+coverage/
 
 # Python ruff
 .ruff_cache/
@@ -35,3 +36,9 @@ htmlcov/
 
 # Python virtual environment
 .venv/
+
+# Editor/IDE
+.vscode/
+*.swp
+*.swo
+*~
