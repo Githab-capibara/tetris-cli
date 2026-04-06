@@ -255,12 +255,9 @@ impl LeaderboardEntry {
     fn verify_hash_for_value(&self, value: u128) -> bool {
         // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
         // P3: write! в Vec вместо format! для снижения аллокаций
-        let mut buf =
-            Vec::with_capacity(self.salt.len() + 1 + self.name.len() + 1 + 20);
-        write!(buf, "{}:{}:{value}", self.salt, self.name)
-            .expect("write to Vec never fails");
-        let salt_name_score =
-            std::str::from_utf8(&buf).expect("salt and name are valid UTF-8");
+        let mut buf = Vec::with_capacity(self.salt.len() + 1 + self.name.len() + 1 + 20);
+        write!(buf, "{}:{}:{value}", self.salt, self.name).expect("write to Vec never fails");
+        let salt_name_score = std::str::from_utf8(&buf).expect("salt and name are valid UTF-8");
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
             &self.salt,
@@ -540,25 +537,19 @@ impl ThreadSafeLeaderboardEntry {
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
         // P5: Копируем данные под блокировкой, отпускаем lock, потом проверяем
-        let (salt, name, score_value, hash) = match self.inner.read() {
-            Ok(guard) => (
+        let (salt, name, score_value, hash) = if let Ok(guard) = self.inner.read() {
+            (
                 guard.salt.clone(),
                 guard.name.clone(),
                 guard.score_value,
                 guard.hash.clone(),
-            ),
-            Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
-                return 0;
-            }
+            )
+        } else {
+            eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
+            return 0;
         };
         let salt_name_score = format!("{salt}:{name}:{score_value}");
-        if !hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            &salt,
-            &salt_name_score,
-            &hash,
-        ) {
+        if !hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash) {
             eprintln!("[ERROR] Запись не прошла валидацию HMAC — возможная подделка!");
             return 0;
         }
@@ -594,12 +585,7 @@ impl ThreadSafeLeaderboardEntry {
             )
         };
         let salt_name_score = format!("{salt}:{name}:{score_value}");
-        if !hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            &salt,
-            &salt_name_score,
-            &hash,
-        ) {
+        if !hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash) {
             // Запись не прошла валидацию — возможно подделана
             return None;
         }

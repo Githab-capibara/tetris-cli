@@ -61,8 +61,7 @@ fn test_thread_safe_leaderboard_entry_is_atomic() {
         let player_name = format!("Player_{i}");
         let score = 1000 + i as u128;
 
-        let entry =
-            tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
+        let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
 
         // Проверяем атомарность
         assert_eq!(entry.score(), Some(score));
@@ -87,8 +86,7 @@ fn test_leaderboard_entry_thread_safety() {
         let player_name = format!("Player_{i}");
         let score = i as u128 * 100;
 
-        let entry =
-            tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
+        let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
 
         // Проверяем что запись валидна
         assert!(entry.is_valid(), "Запись должна быть валидной");

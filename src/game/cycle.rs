@@ -456,7 +456,11 @@ mod tests {
 
         // InputResult::Quit должен вернуть Some(state.score())
         let result = handle_input_result(&InputResult::Quit, &state, &mut renderer);
-        assert_eq!(result, Some(state.score()), "Quit должен вернуть Some(state.score())");
+        assert_eq!(
+            result,
+            Some(state.score()),
+            "Quit должен вернуть Some(state.score())"
+        );
     }
 
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::GameOver`
