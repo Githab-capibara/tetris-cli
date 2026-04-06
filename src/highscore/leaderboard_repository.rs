@@ -33,26 +33,20 @@ impl LeaderboardRepository {
     ///
     /// # Примечания
     /// При ошибке загрузки пытается загрузить из backup файла.
-    ///
-    /// # Осознанное использование `eprintln!`
-    /// Этот метод использует `eprintln!` для логирования ошибок вместо crates like `log`,
-    /// так как это graceful degradation — при отсутствии логгера ошибки всё равно
-    /// должны быть видны пользователю. Это не баг, а осознанное архитектурное решение.
     #[must_use]
-    #[allow(clippy::print_stderr)]
     pub fn load() -> Leaderboard {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(e) => {
-                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup...");
+                crate::log_warn!("Не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup...");
                 // Попытка загрузить из backup файла
                 match load(APP_NAME, Some("leaderboard_backup")) {
                     Ok(backup_leaderboard) => {
-                        eprintln!("Информация: успешно загружено из backup файла.");
+                        crate::log_info!("Успешно загружено из backup файла.");
                         backup_leaderboard
                     }
                     Err(backup_e) => {
-                        eprintln!("Предупреждение: не удалось загрузить backup: {backup_e}. Используется пустая таблица.");
+                        crate::log_warn!("Не удалось загрузить backup: {backup_e}. Используется пустая таблица.");
                         Leaderboard::default()
                     }
                 }
@@ -67,20 +61,14 @@ impl LeaderboardRepository {
     ///
     /// # Примечания
     /// При ошибке сохранения пытается сохранить в backup файл.
-    ///
-    /// # Осознанное использование `eprintln!`
-    /// Этот метод использует `eprintln!` для логирования ошибок вместо crates like `log`,
-    /// так как это graceful degradation — при отсутствии логгера ошибки всё равно
-    /// должны быть видны пользователю. Это не баг, а осознанное архитектурное решение.
-    #[allow(clippy::print_stderr)]
     pub fn save(leaderboard: &Leaderboard) {
         if let Err(e) = store(APP_NAME, Some("leaderboard"), leaderboard) {
-            eprintln!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
+            crate::log_error!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
             if let Err(backup_e) = store(APP_NAME, Some("leaderboard_backup"), leaderboard) {
-                eprintln!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+                crate::log_error!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
             } else {
-                eprintln!("Информация: успешно сохранено в backup файл.");
+                crate::log_info!("Успешно сохранено в backup файл.");
             }
         }
     }

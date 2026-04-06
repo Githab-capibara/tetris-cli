@@ -73,7 +73,6 @@ pub struct ControlsConfig {
 // ============================================================================
 // ControlsConfig теперь определён в начале файла с поддержкой keyed hash
 
-#[allow(dead_code)]
 impl ControlsConfig {
     /// Создать конфигурацию со значениями по умолчанию.
     ///
@@ -202,38 +201,47 @@ impl ControlsConfig {
 
     /// Сеттеры для всех полей конфигурации (для тестов и обратной совместимости).
     /// Возвращает self для возможности цепочки вызовов.
+    #[allow(dead_code)]
     pub fn set_move_left(&mut self, value: u8) -> &mut Self {
         self.move_left = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_move_right(&mut self, value: u8) -> &mut Self {
         self.move_right = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_soft_drop(&mut self, value: u8) -> &mut Self {
         self.soft_drop = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_hard_drop(&mut self, value: u8) -> &mut Self {
         self.hard_drop = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_rotate_left(&mut self, value: u8) -> &mut Self {
         self.rotate_left = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_rotate_right(&mut self, value: u8) -> &mut Self {
         self.rotate_right = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_hold(&mut self, value: u8) -> &mut Self {
         self.hold = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_pause(&mut self, value: u8) -> &mut Self {
         self.pause = value;
         self
     }
+    #[allow(dead_code)]
     pub fn set_quit(&mut self, value: u8) -> &mut Self {
         self.quit = value;
         self
@@ -351,6 +359,7 @@ impl ControlsConfig {
         // Вычисляем HMAC-SHA256 подпись через hmac модуль
         // Исправление E10: Используем глобальный ключ напрямую без соли
         // Исправление H9: Вынесено в отдельный метод compute_signature()
+        // P1: Оптимизация — сериализуем в строку только для HMAC, без промежуточного сохранения
         let config_json = serde_json::to_string(&config_value)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
         let signature = Self::compute_signature(global_hmac_key, &config_json);
@@ -389,7 +398,6 @@ impl ControlsConfig {
     ///
     /// # Исправление H9 (HIGH)
     /// Логика HMAC вынесена в отдельный метод для улучшения читаемости.
-    #[allow(dead_code)] // Внутренняя функция для HMAC подписи
     fn compute_signature(global_hmac_key: &str, config_json: &str) -> String {
         hmac_sign_with_salt(global_hmac_key, "", config_json)
     }
@@ -556,6 +564,7 @@ impl ControlsConfig {
     /// Возвращает `Err(String)` если:
     /// - HMAC ключ пустой или содержит только пробелы
     /// - HMAC ключ короче `MIN_HMAC_KEY_LENGTH` (16 байт)
+    #[allow(dead_code)]
     pub fn validate_hmac_key() -> Result<(), String> {
         crate::config::keys::validate_hmac_key(
             crate::config::keys::get_controls_hmac_key(),

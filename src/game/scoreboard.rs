@@ -145,7 +145,7 @@ impl ScoreBoard {
 
         // Логирование при переполнении (C8)
         if self.score == u128::MAX && points > 0 && old_score < u128::MAX {
-            eprintln!("[WARN] Переполнение счёта: достигнут максимум u128::MAX");
+            crate::log_warn!("Переполнение счёта: достигнут максимум u128::MAX");
         }
 
         self.score
