@@ -355,38 +355,50 @@ fn bench_string_caching(c: &mut Criterion) {
 
     // Кэширование счёта
     group.bench_function("cache_score", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.set_score(12345);
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.set_score(12345);
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
     // Кэширование уровня
     group.bench_function("cache_level", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.set_level(15);
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.set_level(15);
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
     // Кэширование линий
     group.bench_function("cache_lines", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.set_lines_cleared(150);
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.set_lines_cleared(150);
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
     // Кэширование комбо
     group.bench_function("cache_combo", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.stats_mut().set_combo_counter(10);
-            black_box(state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.stats_mut().set_combo_counter(10);
+                state
+            },
+            |state| black_box(state),
+        );
     });
 
     group.finish();

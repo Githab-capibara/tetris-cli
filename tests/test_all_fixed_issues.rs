@@ -10,6 +10,8 @@
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 
+mod common;
+
 use std::sync::Arc;
 use std::thread;
 
