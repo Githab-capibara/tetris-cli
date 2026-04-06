@@ -366,7 +366,7 @@ fn spawn_next_tetromino(state: &mut GameState) {
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
 /// # Исправление 2.1
-/// Использует state.lines_cleared() вместо переданного параметра lines_cleared
+/// Использует [`state.lines_cleared()`](GameState::lines_cleared) вместо переданного параметра lines_cleared
 /// для получения общего количества очищенных линий.
 fn check_mode_completion(state: &mut GameState) -> Option<UpdateEndState> {
     let mode_trait = state.get_mode_trait();
