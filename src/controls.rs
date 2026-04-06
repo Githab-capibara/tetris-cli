@@ -508,8 +508,7 @@ impl ControlsConfig {
                 format!("Ошибка сериализации: {e}"),
             )
         })?;
-        config_value["hmac_key"] =
-            serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
+        config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
         config_value["signature"] = serde_json::Value::String(String::new());
 
         let config_json = serde_json::to_string(&config_value).map_err(|e| {

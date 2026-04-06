@@ -281,4 +281,3 @@ impl InputReader for KeyReader {
         Self::get_key(self)
     }
 }
-

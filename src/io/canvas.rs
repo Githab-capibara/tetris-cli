@@ -391,4 +391,3 @@ impl Renderer for Canvas {
         self.reset();
     }
 }
-
