@@ -49,7 +49,7 @@ impl GameBoard {
     /// # Возвращает
     /// Новый экземпляр `GameBoard` с пустым полем и нулевой маской.
     #[must_use = "Игровое поле должно быть использовано"]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             blocks: [[-1; GRID_WIDTH]; GRID_HEIGHT],
             filled_lines: 0,

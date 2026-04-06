@@ -54,7 +54,7 @@ impl ScoreBoard {
     /// # Возвращает
     /// Новый экземпляр `ScoreBoard` с нулевыми очками, уровнем 1 и 0 линий.
     #[must_use = "Счётчик очков должен быть использован"]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             score: 0,
             level: 1,
@@ -75,7 +75,7 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.get_score(), 0);
     /// ```
     #[must_use = "Счёт должен быть использован"]
-    pub fn get_score(&self) -> u128 {
+    pub const fn get_score(&self) -> u128 {
         self.score
     }
 
@@ -92,7 +92,7 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.get_level(), 1);
     /// ```
     #[must_use = "Уровень должен быть использован"]
-    pub fn get_level(&self) -> u32 {
+    pub const fn get_level(&self) -> u32 {
         self.level
     }
 
@@ -109,7 +109,7 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.get_lines_cleared(), 0);
     /// ```
     #[must_use = "Количество линий должно быть использовано"]
-    pub fn get_lines_cleared(&self) -> u32 {
+    pub const fn get_lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 

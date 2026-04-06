@@ -75,10 +75,10 @@ impl Drop for KeyReader {
         let mut out = stdout();
 
         if let Err(e) = write!(out, "{Show}") {
-            eprintln!("[PANIC SAFE] Не удалось показать курсор в KeyReader::Drop: {e}");
+            log_error!("Не удалось показать курсор в KeyReader::Drop: {e}");
         }
         if let Err(e) = out.flush() {
-            eprintln!("[PANIC SAFE] Не удалось сбросить буфер в KeyReader::Drop: {e}");
+            log_error!("Не удалось сбросить буфер в KeyReader::Drop: {e}");
         }
     }
 }
@@ -258,19 +258,19 @@ impl KeyReader {
         let mut out = stdout();
 
         if let Err(e) = write!(out, "{Show}") {
-            eprintln!("Критическая ошибка: не удалось показать курсор: {e}");
+            log_error!("Не удалось показать курсор: {e}");
         }
 
         if let Err(e) = write!(out, "{ToMainScreen}") {
-            eprintln!("Критическая ошибка: не удалось вернуть экран: {e}");
+            log_error!("Не удалось вернуть экран: {e}");
         }
 
         if let Err(e) = write!(out, "\x1b[H") {
-            eprintln!("Критическая ошибка: не удалось переместить курсор: {e}");
+            log_error!("Не удалось переместить курсор: {e}");
         }
 
         if let Err(e) = out.flush() {
-            eprintln!("Критическая ошибка: не удалось выполнить flush: {e}");
+            log_error!("Не удалось выполнить flush: {e}");
         }
     }
 }

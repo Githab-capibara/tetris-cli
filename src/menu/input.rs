@@ -89,6 +89,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                 }
             }
             Ok(Some(key)) if name.len() < MAX_NAME_LEN => {
+                #[allow(clippy::cast_lossless)]
                 let c = key as char;
                 if is_valid_name_char(c) {
                     name.push(c);
