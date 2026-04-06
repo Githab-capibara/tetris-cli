@@ -20,18 +20,15 @@ fn test_get_key_no_panic_on_read_error() {
     );
 }
 
-/// Тест: проверка Drop реализации KeyReader
+/// Тест: проверка Drop реализации и трейта InputReader для KeyReader
 #[test]
-fn test_key_reader_drop() {
+fn test_key_reader_basic_properties() {
+    // Drop не должен паниковать
     {
         let _reader = KeyReader::new();
     }
-    // Если тест дошёл сюда без паники — Drop сработал корректно
-}
 
-/// Тест: проверка что KeyReader реализует InputReader трейт
-#[test]
-fn test_key_reader_implements_input_reader() {
+    // KeyReader должен реализовывать InputReader (проверка на этапе компиляции)
     fn assert_input_reader<T: crate::io_traits::InputReader>() {}
     assert_input_reader::<KeyReader>();
 }

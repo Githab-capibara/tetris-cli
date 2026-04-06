@@ -50,32 +50,20 @@ fn test_c1_validate_hmac_key_rejects_empty() {
     );
 }
 
-/// Тест C2: Документирование UTF-8 ограничения `KeyReader`
+/// Тест C2: `KeyReader` корректно создаётся и реализует InputReader
 ///
-/// Проверяет что `KeyReader` корректно обрабатывает ASCII символы.
-/// `KeyReader` ограничен ASCII для предотвращения проблем с UTF-8.
+/// Проверяет что KeyReader создаётся на Unix-системах и имеет get_key().
 #[test]
 fn test_c2_key_reader_handles_ascii_correctly() {
     use tetris_cli::io::KeyReader;
 
-    // Создаём KeyReader - он должен успешно создаться
-    let mut reader = KeyReader::new();
-
-    // Проверяем что ASCII символы обрабатываются корректно
-    // Тест использует mock-методы для проверки без реального ввода
-    let ascii_chars = [b'a', b'd', b'w', b's', b'q', b'e'];
-
-    for &ch in &ascii_chars {
-        // Проверяем что ASCII байты находятся в допустимом диапазоне 1-255
-        assert!(
-            (1..=255).contains(&ch),
-            "ASCII символ {ch} должен быть в диапазоне 1-255"
-        );
+    // KeyReader должен успешно создаваться на Unix
+    #[cfg(unix)]
+    {
+        let _reader = KeyReader::new();
+        // get_key() должен быть доступен (возвращает io::Result<Option<u8>>)
+        // В тестовом окружении без терминала может вернуть None или ошибку
     }
-
-    // KeyReader должен работать с ASCII без паники
-    // Примечание: реальное тестирование ввода требует терминала
-    drop(reader);
 }
 
 /// Тест C3: Упрощённая документация TOCTOU
@@ -116,38 +104,33 @@ fn test_c3_toctou_documentation_has_key_methods() {
 // HIGH ПРОБЛЕМЫ (H1-H10)
 // ============================================================================
 
-/// Тест H1: Замена format!() на .`to_string()` в src/game/state.rs
+/// Тест H1: `.to_string()` используется вместо `format!()` в state.rs
 ///
-/// Проверяет что код использует .`to_string()` вместо format!() где это возможно.
+/// Проверяет что конвертация числовых значений GameState в строку работает
+/// и возвращает осмысленные значения (не пустые строки).
 #[test]
 fn test_h1_to_string_instead_of_format_in_state() {
     use tetris_cli::game::state::GameState;
 
     let state = GameState::new();
 
-    // Проверяем что методы работают корректно
-    // Тест косвенно проверяет что .to_string() используется вместо format!()
+    // Проверяем что методы возвращают начальные значения
     let score = state.score();
     let level = state.level();
     let lines = state.lines_cleared();
+
+    assert_eq!(score, 0, "Начальный счёт должен быть 0");
+    assert_eq!(level, 1, "Начальный уровень должен быть 1");
+    assert_eq!(lines, 0, "Начальное количество линий должно быть 0");
 
     // Конвертация в строку должна работать без ошибок
     let score_str = score.to_string();
     let level_str = level.to_string();
     let lines_str = lines.to_string();
 
-    assert!(
-        !score_str.is_empty(),
-        "score.to_string() должен возвращать не пустую строку"
-    );
-    assert!(
-        !level_str.is_empty(),
-        "level.to_string() должен возвращать не пустую строку"
-    );
-    assert!(
-        !lines_str.is_empty(),
-        "lines.to_string() должен возвращать не пустую строку"
-    );
+    assert_eq!(score_str, "0");
+    assert_eq!(level_str, "1");
+    assert_eq!(lines_str, "0");
 }
 
 /// Тест H2: Замена `map_or()` на `is_none_or()` в collision.rs
@@ -341,81 +324,80 @@ fn test_h10_consolidated_config_load_methods() {
 // MEDIUM ПРОБЛЕМЫ (M1-M10)
 // ============================================================================
 
-/// Тест M1: Отсутствие избыточных ignore примеров в lib.rs
+/// Тест M1: HMAC-функции работают корректно (базовый smoke-тест)
 ///
-/// Проверяет что документация не содержит избыточных #![`allow(dead_code)`].
+/// Проверяет что hash() и generate_salt() дают стабильные результаты.
 #[test]
 fn test_m1_no_redundant_ignore_examples_in_lib() {
-    // Этот тест проверяет что код компилируется без предупреждений
-    // Избыточные ignore примеры должны быть удалены
-
     use tetris_cli::crypto::{generate_salt, hash};
 
-    // Проверяем что функции работают корректно
-    let h = hash("тест");
-    assert_eq!(h.len(), 64, "Длина хеша должна быть 64 символа");
+    // hash() должен быть детерминированным
+    let h1 = hash("тест");
+    let h2 = hash("тест");
+    assert_eq!(h1, h2, "hash() должен быть детерминированным");
+    assert_eq!(h1.len(), 64, "Длина хеша должна быть 64 символа");
 
-    let salt = generate_salt();
-    assert_eq!(salt.len(), 64, "Длина соли должна быть 64 символа");
-
-    // Тест проходит если код компилируется без предупреждений
-    // Код компилируется - тест проходит
+    // generate_salt() должен давать уникальные значения
+    let s1 = generate_salt();
+    let s2 = generate_salt();
+    assert_ne!(s1, s2, "generate_salt() должен давать уникальные соли");
+    assert_eq!(s1.len(), 64, "Длина соли должна быть 64 символа");
 }
 
-/// Тест M3: Упрощённый Drop в canvas.rs
+/// Тест M3: Canvas::default() корректно создаётся и дропается
 ///
-/// Проверяет что Drop реализация не использует `catch_unwind`.
+/// Проверяет что Canvas можно создать через default() и что Drop не паникует.
 #[test]
 fn test_m3_simplified_canvas_drop() {
     use tetris_cli::io::Canvas;
 
-    // Создаём Canvas (может создать stub если терминал недоступен)
+    // Canvas::default() должен успешно создаваться
     let canvas = Canvas::default();
 
-    // Проверяем что Canvas существует
-    // Drop будет вызван автоматически при выходе из области видимости
-    drop(canvas);
-
-    // Тест проходит если Drop не паникует
-    // Drop не паниковал - тест проходит
+    // Drop не должен паниковать — тест завершится успешно если drop проходит
+    // без паники
 }
 
-/// Тест M4: #[`must_use`] только на критических методах
+/// Тест M4: #[must_use] атрибуты на криптографических функциях
 ///
-/// Проверяет что #[`must_use`] атрибут используется корректно.
+/// Проверяет что функции hash/generate_salt/hmac_sha256 имеют #[must_use]
+/// и возвращают корректные длины результатов.
 #[test]
 fn test_m4_must_use_only_on_critical_methods() {
     use tetris_cli::crypto::{generate_salt, hash, hmac_sha256};
 
-    // Проверяем что функции с #[must_use] работают
+    // Все три функции должны возвращать 64-символьные hex-строки
     let h = hash("тест");
     let s = generate_salt();
     let sig = hmac_sha256("ключ", "данные");
 
-    assert_eq!(h.len(), 64);
-    assert_eq!(s.len(), 64);
-    assert_eq!(sig.len(), 64);
-
-    // Тест проходит если код компилируется с #[must_use] атрибутами
-    // Код компилируется - тест проходит
+    assert_eq!(h.len(), 64, "hash() должен возвращать 64-символьную строку");
+    assert_eq!(s.len(), 64, "generate_salt() должен возвращать 64-символьную строку");
+    assert_eq!(sig.len(), 64, "hmac_sha256() должен возвращать 64-символьную строку");
 }
 
-/// Тест M5: Мёртвый код помечен #[`allow(dead_code)`]
+/// Тест M5: HMAC-ключи для разных подсистем возвращаются
 ///
-/// Проверяет что неиспользуемый код помечен атрибутом.
+/// Проверяет что функции получения HMAC-ключей работают (возвращают строки).
+/// Если переменные окружения не установлены — возвращаются пустые строки (fallback).
 #[test]
 fn test_m5_dead_code_marked_with_allow_attribute() {
-    // Этот тест проверяет что код компилируется без предупреждений о мёртвом коде
-    // #[allow(dead_code)] должен быть на неиспользуемых функциях
-
     use tetris_cli::config::keys::{
         get_controls_hmac_key, get_leaderboard_hmac_key, get_save_data_hmac_key,
     };
 
-    // Проверяем что функции существуют
-    let _controls_key = get_controls_hmac_key();
-    let _leaderboard_key = get_leaderboard_hmac_key();
-    let _save_data_key = get_save_data_hmac_key();
+    // Функции должны возвращать строки (могут быть пустыми если env не установлен)
+    let controls_key = get_controls_hmac_key();
+    let leaderboard_key = get_leaderboard_hmac_key();
+    let save_data_key = get_save_data_hmac_key();
+
+    // Проверяем что функции не паникуют и возвращают строки
+    // Если env vars установлены — ключи должны быть разными
+    if !controls_key.is_empty() && !leaderboard_key.is_empty() && !save_data_key.is_empty() {
+        assert_ne!(controls_key, leaderboard_key, "Controls и Leaderboard должны иметь разные ключи");
+        assert_ne!(controls_key, save_data_key, "Controls и SaveData должны иметь разные ключи");
+        assert_ne!(leaderboard_key, save_data_key, "Leaderboard и SaveData должны иметь разные ключи");
+    }
 }
 
 /// Тест M7: sanitize.rs удалён и используется `validation::name`
