@@ -374,8 +374,16 @@ fn test_m4_must_use_only_on_critical_methods() {
     let sig = hmac_sha256("ключ", "данные");
 
     assert_eq!(h.len(), 64, "hash() должен возвращать 64-символьную строку");
-    assert_eq!(s.len(), 64, "generate_salt() должен возвращать 64-символьную строку");
-    assert_eq!(sig.len(), 64, "hmac_sha256() должен возвращать 64-символьную строку");
+    assert_eq!(
+        s.len(),
+        64,
+        "generate_salt() должен возвращать 64-символьную строку"
+    );
+    assert_eq!(
+        sig.len(),
+        64,
+        "hmac_sha256() должен возвращать 64-символьную строку"
+    );
 }
 
 /// Тест M5: HMAC-ключи для разных подсистем возвращаются
@@ -396,9 +404,18 @@ fn test_m5_dead_code_marked_with_allow_attribute() {
     // Проверяем что функции не паникуют и возвращают строки
     // Если env vars установлены — ключи должны быть разными
     if !controls_key.is_empty() && !leaderboard_key.is_empty() && !save_data_key.is_empty() {
-        assert_ne!(controls_key, leaderboard_key, "Controls и Leaderboard должны иметь разные ключи");
-        assert_ne!(controls_key, save_data_key, "Controls и SaveData должны иметь разные ключи");
-        assert_ne!(leaderboard_key, save_data_key, "Leaderboard и SaveData должны иметь разные ключи");
+        assert_ne!(
+            controls_key, leaderboard_key,
+            "Controls и Leaderboard должны иметь разные ключи"
+        );
+        assert_ne!(
+            controls_key, save_data_key,
+            "Controls и SaveData должны иметь разные ключи"
+        );
+        assert_ne!(
+            leaderboard_key, save_data_key,
+            "Leaderboard и SaveData должны иметь разные ключи"
+        );
     }
 }
 

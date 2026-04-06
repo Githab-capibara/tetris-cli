@@ -444,7 +444,10 @@ fn test_collision_array_bounds() {
     let can_left = state.can_move_curr_shape_direction(Direction::Left);
     let can_down = state.can_move_curr_shape_direction(Direction::Down);
     // Хотя бы одно направление должно быть заблокировано
-    assert!(!can_left || !can_down, "После движения к границе хотя бы одно направление должно быть заблокировано");
+    assert!(
+        !can_left || !can_down,
+        "После движения к границе хотя бы одно направление должно быть заблокировано"
+    );
 }
 
 /// Тест 50: Проверка что столкновение работает после множественных движений.
