@@ -70,25 +70,25 @@ impl FigureManager {
 
     /// Получить текущую фигуру.
     #[must_use]
-    pub fn curr_shape(&self) -> &Tetromino {
+    pub const fn curr_shape(&self) -> &Tetromino {
         &self.curr_shape
     }
 
     /// Получить следующую фигуру.
     #[must_use]
-    pub fn next_shape(&self) -> &Tetromino {
+    pub const fn next_shape(&self) -> &Tetromino {
         &self.next_shape
     }
 
     /// Получить удержанную фигуру.
     #[must_use]
-    pub fn held_shape(&self) -> Option<&Tetromino> {
+    pub const fn held_shape(&self) -> Option<&Tetromino> {
         self.held_shape.as_ref()
     }
 
     /// Получить флаг возможности удержания.
     #[must_use]
-    pub fn can_hold(&self) -> bool {
+    pub const fn can_hold(&self) -> bool {
         self.can_hold
     }
 
@@ -97,7 +97,7 @@ impl FigureManager {
     /// # Возвращает
     /// Ссылка на `BagGenerator`
     #[must_use = "Генератор фигур должен быть использован"]
-    pub fn bag(&self) -> &BagGenerator {
+    pub const fn bag(&self) -> &BagGenerator {
         &self.bag
     }
 

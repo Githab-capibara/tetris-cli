@@ -205,7 +205,7 @@ pub fn check_rows(state: &mut impl ScoringState) -> u32 {
     // Вместо игнорирования ошибки через let _ = ..., явно обрабатываем результат
     // Потеря точности допустима: remove_count <= GRID_HEIGHT (20)
     #[allow(clippy::cast_precision_loss)]
-    let new_fall_speed = fall_speed + SPD_INC * remove_count as f32;
+    let new_fall_speed = SPD_INC.mul_add(remove_count as f32, fall_speed);
     if let Err(e) = state.set_fall_speed(new_fall_speed) {
         // Логгируем ошибку но продолжаем работу (не критично)
         eprintln!("[WARN] check_rows(): не удалось установить скорость падения: {e}");

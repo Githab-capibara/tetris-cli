@@ -151,14 +151,14 @@ impl Score {
     /// # Аргументы
     /// * `value` - начальное значение очков
     #[must_use]
-    pub fn with_value(value: u128) -> Self {
+    pub const fn with_value(value: u128) -> Self {
         Self(value)
     }
 
     /// Получить текущее значение очков.
     #[must_use]
     #[inline]
-    pub fn value(&self) -> u128 {
+    pub const fn value(&self) -> u128 {
         self.0
     }
 
@@ -221,7 +221,7 @@ impl Score {
     /// ```
     #[must_use]
     #[inline]
-    pub fn is_zero(&self) -> bool {
+    pub const fn is_zero(&self) -> bool {
         self.0 == 0
     }
 }
@@ -296,7 +296,7 @@ impl Level {
     /// Получить текущее значение уровня.
     #[must_use]
     #[inline]
-    pub fn value(self) -> u32 {
+    pub const fn value(self) -> u32 {
         self.0
     }
 
@@ -388,14 +388,14 @@ impl LinesCount {
     /// # Аргументы
     /// * `value` - количество линий
     #[must_use]
-    pub fn with_value(value: u32) -> Self {
+    pub const fn with_value(value: u32) -> Self {
         Self(value)
     }
 
     /// Получить текущее количество линий.
     #[must_use]
     #[inline]
-    pub fn value(self) -> u32 {
+    pub const fn value(self) -> u32 {
         self.0
     }
 
@@ -446,7 +446,7 @@ impl LinesCount {
     /// # Возвращает
     /// `true` если количество линий >= threshold
     #[must_use]
-    pub fn reached(self, threshold: u32) -> bool {
+    pub const fn reached(self, threshold: u32) -> bool {
         self.0 >= threshold
     }
 }

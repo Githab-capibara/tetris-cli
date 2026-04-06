@@ -167,7 +167,7 @@ impl<'a> GameView<'a> {
     /// Значение блока (-1 = пусто) или -1 если координаты вне границ
     #[must_use]
     #[allow(dead_code)]
-    pub fn get_block(&self, x: usize, y: usize) -> i8 {
+    pub const fn get_block(&self, x: usize, y: usize) -> i8 {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             self.blocks[y][x]
         } else {
@@ -185,7 +185,7 @@ impl<'a> GameView<'a> {
     /// `true` если ячейка пуста
     #[must_use]
     #[allow(dead_code)]
-    pub fn is_block_empty(&self, x: usize, y: usize) -> bool {
+    pub const fn is_block_empty(&self, x: usize, y: usize) -> bool {
         self.get_block(x, y) == -1
     }
 
@@ -199,7 +199,7 @@ impl<'a> GameView<'a> {
     /// `true` если ячейка занята
     #[must_use]
     #[allow(dead_code)]
-    pub fn is_block_occupied(&self, x: usize, y: usize) -> bool {
+    pub const fn is_block_occupied(&self, x: usize, y: usize) -> bool {
         self.get_block(x, y) >= 0
     }
 
@@ -212,7 +212,7 @@ impl<'a> GameView<'a> {
     /// `true` если строка анимируется
     #[must_use]
     #[allow(dead_code)]
-    pub fn is_row_animating(&self, y: usize) -> bool {
+    pub const fn is_row_animating(&self, y: usize) -> bool {
         (self.animating_rows & (1 << y)) != 0
     }
 
@@ -226,7 +226,7 @@ impl<'a> GameView<'a> {
     /// Индекс цвета блока или None если блок пуст
     #[must_use]
     #[allow(dead_code)]
-    pub fn get_block_color(&self, x: usize, y: usize) -> Option<usize> {
+    pub const fn get_block_color(&self, x: usize, y: usize) -> Option<usize> {
         let block = self.get_block(x, y);
         // cast: i8 -> usize, потеря знака допустима: цвет блока неотрицательный (0-6)
         if block >= 0 {
@@ -248,7 +248,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[must_use]
     #[allow(dead_code, clippy::unused_self)]
-    pub fn get_shape_display_char(&self) -> &str {
+    pub const fn get_shape_display_char(&self) -> &str {
         use crate::constants::SHAPE_STR;
         SHAPE_STR
     }
@@ -270,7 +270,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
-    pub fn score_str(&self) -> &str {
+    pub const fn score_str(&self) -> &str {
         self.score
     }
 
@@ -286,7 +286,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
-    pub fn level_str(&self) -> &str {
+    pub const fn level_str(&self) -> &str {
         self.level
     }
 
@@ -302,7 +302,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
-    pub fn lines_str(&self) -> &str {
+    pub const fn lines_str(&self) -> &str {
         self.lines
     }
 
@@ -320,7 +320,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
-    pub fn combo_str(&self) -> Option<&str> {
+    pub const fn combo_str(&self) -> Option<&str> {
         self.combo
     }
 
@@ -336,7 +336,7 @@ impl<'a> GameView<'a> {
     /// ```
     #[allow(dead_code)] // Будет использоваться в будущей рефакторизации
     #[must_use]
-    pub fn high_score_str(&self) -> &str {
+    pub const fn high_score_str(&self) -> &str {
         self.high_score
     }
 
@@ -372,28 +372,28 @@ impl<'a> GameView<'a> {
     /// Получить ссылку на игровое поле.
     #[must_use]
     #[allow(dead_code)]
-    pub fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub const fn blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         self.blocks
     }
 
     /// Получить ссылку на текущую фигуру.
     #[must_use]
     #[allow(dead_code)]
-    pub fn curr_shape(&self) -> &Tetromino {
+    pub const fn curr_shape(&self) -> &Tetromino {
         self.curr_shape
     }
 
     /// Получить ссылку на следующую фигуру.
     #[must_use]
     #[allow(dead_code)]
-    pub fn next_shape(&self) -> &Tetromino {
+    pub const fn next_shape(&self) -> &Tetromino {
         self.next_shape
     }
 
     /// Получить ссылку на удержанную фигуру.
     #[must_use]
     #[allow(dead_code)]
-    pub fn held_shape(&self) -> Option<&Tetromino> {
+    pub const fn held_shape(&self) -> Option<&Tetromino> {
         self.held_shape
     }
 
@@ -407,28 +407,28 @@ impl<'a> GameView<'a> {
     /// Получить количество очищенных линий.
     #[must_use]
     #[allow(dead_code)]
-    pub fn lines_cleared(&self) -> u32 {
+    pub const fn lines_cleared(&self) -> u32 {
         self.lines_cleared
     }
 
     /// Получить прошедшее время игры.
     #[must_use]
     #[allow(dead_code)]
-    pub fn elapsed_time(&self) -> f64 {
+    pub const fn elapsed_time(&self) -> f64 {
         self.elapsed_time
     }
 
     /// Получить битовую маску анимирующихся строк.
     #[must_use]
     #[allow(dead_code)]
-    pub fn animating_rows(&self) -> u32 {
+    pub const fn animating_rows(&self) -> u32 {
         self.animating_rows
     }
 
     /// Получить флаг анимации Hard Drop.
     #[must_use]
     #[allow(dead_code)]
-    pub fn is_hard_dropping(&self) -> bool {
+    pub const fn is_hard_dropping(&self) -> bool {
         self.is_hard_dropping
     }
 

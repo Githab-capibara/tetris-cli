@@ -177,7 +177,7 @@ impl TermionBackend {
 
     /// Создать бэкенд с существующим raw терминалом.
     #[must_use]
-    pub fn with_raw(out: RawTerminal<Stdout>) -> Self {
+    pub const fn with_raw(out: RawTerminal<Stdout>) -> Self {
         Self { out }
     }
 }

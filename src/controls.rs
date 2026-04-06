@@ -242,7 +242,7 @@ impl ControlsConfig {
     /// Сравнить только клавиши управления (игнорируя `hmac_key`).
     /// Используется в тестах для сравнения конфигураций.
     #[must_use]
-    pub fn keys_match(&self, other: &Self) -> bool {
+    pub const fn keys_match(&self, other: &Self) -> bool {
         self.move_left == other.move_left
             && self.move_right == other.move_right
             && self.soft_drop == other.soft_drop
@@ -719,7 +719,7 @@ impl ControlsConfig {
     /// Эта функция использует конфигурацию `ControlsConfig` для маппинга клавиш.
     /// Позволяет изменять управление через конфигурационный файл.
     #[must_use]
-    pub fn map_key_to_action(&self, key_code: u8) -> Option<crate::game::types::GameAction> {
+    pub const fn map_key_to_action(&self, key_code: u8) -> Option<crate::game::types::GameAction> {
         use crate::game::types::GameAction;
 
         match key_code {

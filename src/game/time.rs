@@ -85,7 +85,7 @@ impl Time {
     /// assert_eq!(time.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
-    pub fn from_millis(millis: u64) -> Self {
+    pub const fn from_millis(millis: u64) -> Self {
         Self {
             inner: Duration::from_millis(millis),
         }
@@ -104,7 +104,7 @@ impl Time {
     /// ```
     #[must_use]
     #[allow(clippy::cast_possible_truncation)]
-    pub fn as_millis(&self) -> u64 {
+    pub const fn as_millis(&self) -> u64 {
         // Потеря точности допустима: Duration хранит время точно в мс
         self.inner.as_millis() as u64
     }
@@ -137,7 +137,7 @@ impl Time {
     /// assert_eq!(time.as_secs(), 1);
     /// ```
     #[must_use]
-    pub fn as_secs(&self) -> u64 {
+    pub const fn as_secs(&self) -> u64 {
         self.inner.as_secs()
     }
 
@@ -146,7 +146,7 @@ impl Time {
     /// # Возвращает
     /// Наносекунды (0-999_999_999)
     #[must_use]
-    pub fn subsec_nanos(&self) -> u32 {
+    pub const fn subsec_nanos(&self) -> u32 {
         self.inner.subsec_nanos()
     }
 
@@ -155,7 +155,7 @@ impl Time {
     /// # Возвращает
     /// `true` если время равно нулю
     #[must_use]
-    pub fn is_zero(&self) -> bool {
+    pub const fn is_zero(&self) -> bool {
         self.inner.is_zero()
     }
 
@@ -176,7 +176,7 @@ impl Time {
     /// assert_eq!(sum.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
-    pub fn add(&self, other: Self) -> Self {
+    pub const fn add(&self, other: Self) -> Self {
         Self {
             inner: self.inner.saturating_add(other.inner),
         }
@@ -199,7 +199,7 @@ impl Time {
     /// assert_eq!(diff.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
-    pub fn sub(&self, other: Self) -> Self {
+    pub const fn sub(&self, other: Self) -> Self {
         Self {
             inner: self.inner.saturating_sub(other.inner),
         }
@@ -221,7 +221,7 @@ impl Time {
     /// assert_eq!(doubled.as_secs_f64(), 2.0);
     /// ```
     #[must_use]
-    pub fn mul(&self, factor: u32) -> Self {
+    pub const fn mul(&self, factor: u32) -> Self {
         Self {
             inner: self.inner.saturating_mul(factor),
         }

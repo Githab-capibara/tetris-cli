@@ -97,7 +97,7 @@ pub type GameResult<T> = Result<T, crate::errors::GameError>;
 /// - [`Classic`](GameMode::Classic) — классическая игра до проигрыша
 /// - [`Sprint`](GameMode::Sprint) — скоростной режим до 40 линий
 /// - [`Marathon`](GameMode::Marathon) — марафон до 150 линий
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum GameMode {
     /// Классический режим — игра до проигрыша.
     ///
@@ -163,7 +163,7 @@ impl GameMode {
     /// Исправление проблемы 39: используем match напрямую на enum вместо [`as_trait()`](GameMode::as_trait)
     /// для предотвращения создания `Box<dyn GameModeTrait>` при каждом вызове.
     #[must_use]
-    pub fn check_win_condition(self, lines_cleared: u32) -> bool {
+    pub const fn check_win_condition(self, lines_cleared: u32) -> bool {
         match self {
             Self::Classic => false,
             Self::Sprint => lines_cleared >= 40,
@@ -176,7 +176,7 @@ impl GameMode {
     /// # Возвращает
     /// Количество линий для победы (для Sprint/Marathon) или None для Classic
     #[must_use]
-    pub fn get_target_lines(self) -> Option<u32> {
+    pub const fn get_target_lines(self) -> Option<u32> {
         match self {
             Self::Classic => None,
             Self::Sprint => Some(40),
@@ -402,7 +402,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
-    pub fn score(&self) -> u128 {
+    pub const fn score(&self) -> u128 {
         self.scoreboard.get_score()
     }
 
@@ -411,7 +411,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
-    pub fn level(&self) -> u32 {
+    pub const fn level(&self) -> u32 {
         self.scoreboard.get_level()
     }
 
@@ -420,13 +420,13 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
     #[must_use]
-    pub fn lines_cleared(&self) -> u32 {
+    pub const fn lines_cleared(&self) -> u32 {
         self.scoreboard.get_lines_cleared()
     }
 
     /// Получить статистику игры.
     #[must_use]
-    pub fn stats(&self) -> &GameStats {
+    pub const fn stats(&self) -> &GameStats {
         &self.stats
     }
 
@@ -467,7 +467,7 @@ impl GameState {
     /// let block = state.board().get_block(5, 10);
     /// ```
     #[must_use]
-    pub fn board(&self) -> &GameBoard {
+    pub const fn board(&self) -> &GameBoard {
         &self.board
     }
 
@@ -491,7 +491,7 @@ impl GameState {
     /// let score = state.scoreboard().get_score();
     /// ```
     #[must_use]
-    pub fn scoreboard(&self) -> &ScoreBoard {
+    pub const fn scoreboard(&self) -> &ScoreBoard {
         &self.scoreboard
     }
 
@@ -518,7 +518,7 @@ impl GameState {
     /// Для простых операций используйте специализированные методы:
     /// - `curr_shape()`, `next_shape()`, `held_shape()`, `can_hold()`, `get_bag()`
     #[must_use]
-    pub fn figure_manager(&self) -> &FigureManager {
+    pub const fn figure_manager(&self) -> &FigureManager {
         &self.figure_manager
     }
 
@@ -544,7 +544,7 @@ impl GameState {
     /// Для простых операций используйте специализированные методы:
     /// - `is_hard_dropping()`, `animating_rows_mask()`
     #[must_use]
-    pub fn animation_state(&self) -> &AnimationState {
+    pub const fn animation_state(&self) -> &AnimationState {
         &self.animation_state
     }
 
@@ -565,7 +565,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
     #[must_use]
-    pub fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub const fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT] {
         self.board.get_blocks()
     }
 
@@ -583,7 +583,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
-    pub fn curr_shape(&self) -> &Tetromino {
+    pub const fn curr_shape(&self) -> &Tetromino {
         self.figure_manager.curr_shape()
     }
 
@@ -592,7 +592,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
-    pub fn next_shape(&self) -> &Tetromino {
+    pub const fn next_shape(&self) -> &Tetromino {
         self.figure_manager.next_shape()
     }
 
@@ -601,28 +601,28 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
-    pub fn held_shape(&self) -> Option<&Tetromino> {
+    pub const fn held_shape(&self) -> Option<&Tetromino> {
         self.figure_manager.held_shape()
     }
 
     /// Получить скорость падения.
     #[must_use]
     #[inline]
-    pub fn fall_speed(&self) -> f32 {
+    pub const fn fall_speed(&self) -> f32 {
         self.fall_speed
     }
 
     /// Получить таймер приземления.
     #[must_use]
     #[inline]
-    pub fn land_timer(&self) -> f64 {
+    pub const fn land_timer(&self) -> f64 {
         self.land_timer
     }
 
     /// Получить расстояние Soft Drop.
     #[must_use]
     #[inline]
-    pub fn soft_drop_distance(&self) -> u32 {
+    pub const fn soft_drop_distance(&self) -> u32 {
         self.soft_drop_distance
     }
 
@@ -631,7 +631,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
-    pub fn is_hard_dropping(&self) -> bool {
+    pub const fn is_hard_dropping(&self) -> bool {
         self.animation_state.is_hard_dropping()
     }
 
@@ -640,13 +640,13 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
-    pub fn can_hold(&self) -> bool {
+    pub const fn can_hold(&self) -> bool {
         self.figure_manager.can_hold()
     }
 
     /// Получить кэш для отрисовки.
     #[must_use]
-    pub fn get_render_cache(&self) -> &RenderCache {
+    pub const fn get_render_cache(&self) -> &RenderCache {
         &self.render_cache
     }
 
@@ -658,7 +658,7 @@ impl GameState {
 
     /// Получить кэш для отрисовки (для обратной совместимости).
     #[must_use]
-    pub fn render_cache(&self) -> &RenderCache {
+    pub const fn render_cache(&self) -> &RenderCache {
         &self.render_cache
     }
 
@@ -874,7 +874,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
     #[must_use]
-    pub fn get_bag(&self) -> &BagGenerator {
+    pub const fn get_bag(&self) -> &BagGenerator {
         self.figure_manager.bag()
     }
 
@@ -892,7 +892,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
-    pub fn animating_rows_mask(&self) -> u32 {
+    pub const fn animating_rows_mask(&self) -> u32 {
         self.animation_state.animating_rows_mask()
     }
 
@@ -909,7 +909,7 @@ impl GameState {
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
     #[must_use]
-    pub fn filled_lines(&self) -> u32 {
+    pub const fn filled_lines(&self) -> u32 {
         self.board.get_filled_lines_mask()
     }
 
@@ -997,7 +997,7 @@ impl GameState {
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `AnimationState`.
     #[must_use]
-    pub fn get_animating_rows_mask(&self) -> u32 {
+    pub const fn get_animating_rows_mask(&self) -> u32 {
         self.animation_state.animating_rows_mask()
     }
 
@@ -1068,7 +1068,7 @@ impl GameState {
         let level = self.level();
         // Потеря точности допустима: level <= 15 (максимум для тетриса)
         #[allow(clippy::cast_precision_loss)]
-        let calculated_speed = INITIAL_FALL_SPD + ((level - 1) as f32 * SPD_INC);
+        let calculated_speed = ((level - 1) as f32).mul_add(SPD_INC, INITIAL_FALL_SPD);
 
         // Валидация: скорость должна быть в допустимых пределах
         self.fall_speed = calculated_speed.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);

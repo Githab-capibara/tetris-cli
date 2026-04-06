@@ -59,7 +59,7 @@ pub const SHAPE_COLORS: [&dyn Color; 7] = [
 // HELPER ФУНКЦИИ ДЛЯ ДОСТУПА (ISSUE-081, ISSUE-082)
 // ============================================================================
 
-/// Количество фигур в массивах SHAPE_COORDS и SHAPE_COLORS (для документации).
+/// Количество фигур в массивах `SHAPE_COORDS` и `SHAPE_COLORS` (для документации).
 #[allow(dead_code)]
 const SHAPE_COUNT: usize = 7;
 
@@ -171,8 +171,14 @@ mod constants_tests {
             for b in 0..4 {
                 let (x, y) = get_shape_block_coords(i, b);
                 // Координаты фигур в пределах [-2, 2]
-                assert!((-3..=3).contains(&x), "X координата блока {b} фигуры {i} вне диапазона: {x}");
-                assert!((-3..=3).contains(&y), "Y координата блока {b} фигуры {i} вне диапазона: {y}");
+                assert!(
+                    (-3..=3).contains(&x),
+                    "X координата блока {b} фигуры {i} вне диапазона: {x}"
+                );
+                assert!(
+                    (-3..=3).contains(&y),
+                    "Y координата блока {b} фигуры {i} вне диапазона: {y}"
+                );
             }
         }
     }

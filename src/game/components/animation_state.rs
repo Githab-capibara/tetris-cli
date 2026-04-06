@@ -147,7 +147,7 @@ impl AnimationState {
     /// # Возвращает
     /// `true` если есть активные анимации
     #[must_use = "Результат проверки анимаций должен быть использован"]
-    pub fn has_active_animations(&self) -> bool {
+    pub const fn has_active_animations(&self) -> bool {
         self.animating_rows_mask != 0 || self.is_hard_dropping
     }
 }
