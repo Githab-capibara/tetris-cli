@@ -24,7 +24,7 @@ use crate::highscore::leaderboard::{Leaderboard, LeaderboardEntry};
 /// Тест T1: Score с нулевым значением
 #[test]
 fn test_score_zero_value() {
-    let score = Score::new();
+    let score = Score::default();
     assert_eq!(score.value(), 0, "Новый Score должен быть 0");
     assert!(score.is_zero(), "Score должен быть нулевым");
 }
@@ -104,7 +104,7 @@ fn test_score_from_u128_boundary() {
 /// Тест T7: Level с минимальным значением (1)
 #[test]
 fn test_level_minimum_value() {
-    let level = Level::new();
+    let level = Level::default();
     assert_eq!(level.value(), 1, "Новый Level должен быть 1");
 }
 
@@ -172,7 +172,7 @@ fn test_level_increment_by_overflow() {
 /// Тест T13: `LinesCount` с нулевым значением
 #[test]
 fn test_lines_count_zero() {
-    let lines = LinesCount::new();
+    let lines = LinesCount::default();
     assert_eq!(lines.value(), 0, "Новый LinesCount должен быть 0");
 }
 
@@ -476,14 +476,14 @@ fn test_all_boundary_values_integration() {
     );
 
     // Level
-    let mut level = Level::new();
+    let mut level = Level::default();
     for _ in 0..10 {
         let _ = level.increment();
     }
     assert_eq!(level.value(), 11, "Level должен увеличиться до 11");
 
     // LinesCount
-    let mut lines = LinesCount::new();
+    let mut lines = LinesCount::default();
     lines.add(40);
     assert_eq!(lines.value(), 40, "LinesCount должен быть 40");
 
