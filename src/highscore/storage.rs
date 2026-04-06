@@ -73,15 +73,15 @@ impl LeaderboardStorage {
     /// 2. Сортирует по убыванию счёта
     /// 3. Обрезает до `MAX_LEADERBOARD_SIZE`
     pub fn add_entry(&mut self, entry: LeaderboardEntry) -> bool {
-        // Исправление проблемы 33: сохраняем результат score() один раз
-        // Каждый вызов score() выполняет HMAC верификацию — избегаем повторных вычислений
+        // Каждый вызов score() выполняет HMAC верификацию — вызываем ровно один раз на запись
         let score = entry.score().unwrap_or(0);
 
         // Проверяем, войдёт ли запись в топ-5
         if self.entries.len() >= MAX_LEADERBOARD_SIZE {
             // Если таблица полная, проверяем минимальный счёт
             if let Some(min_entry) = self.entries.last() {
-                if min_entry.score().unwrap_or(0) >= score {
+                let min_score = min_entry.score().unwrap_or(0);
+                if min_score >= score {
                     return false; // Не входит в топ-5
                 }
             }
@@ -89,9 +89,15 @@ impl LeaderboardStorage {
 
         self.entries.push(entry);
 
-        // Сортируем по убыванию счёта
-        self.entries
-            .sort_by_key(|b| std::cmp::Reverse(b.score().unwrap_or(0)));
+        // Сортируем по убыванию счёта — вызываем score() ровно один раз для каждой записи
+        // Используем Schwartzian transform: (score, index) → sort → unwrap
+        let mut scored_entries: Vec<_> = self
+            .entries
+            .drain(..)
+            .map(|e| (e.score().unwrap_or(0), e))
+            .collect();
+        scored_entries.sort_by_key(|(s, _)| std::cmp::Reverse(*s));
+        self.entries = scored_entries.into_iter().map(|(_, e)| e).collect();
 
         // Обрезаем до максимального размера
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
