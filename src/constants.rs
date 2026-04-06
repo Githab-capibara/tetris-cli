@@ -67,7 +67,6 @@ use termion::color::White;
 /// отрисовки (`draw_strs`, `draw_string`) принимают `&dyn Color`. Замена на
 /// статический `White` потребовала бы изменения всех вызовов с `BORDER_COLOR`
 /// на `&BORDER_COLOR`, что не даёт практической выгоды для CLI-приложения.
-// Проблема 50: намеренно используется dyn Color для совместимости с API отрисовки.
 pub const BORDER_COLOR: &dyn termion::color::Color = &White;
 
 /// Задержка между кадрами в миллисекундах.

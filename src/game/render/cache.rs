@@ -31,25 +31,19 @@ fn update_cached_strings(state: &mut GameState) {
 
     if score != render_cache.last_cached_score {
         render_cache.cached_score_str.clear();
-        if let Err(e) = write!(render_cache.cached_score_str, "{score:10}") {
-            eprintln!("Ошибка записи кэша счёта: {e}");
-        }
+        let _ = write!(render_cache.cached_score_str, "{score:10}");
         render_cache.last_cached_score = score;
     }
 
     if level != render_cache.last_cached_level {
         render_cache.cached_level_str.clear();
-        if let Err(e) = write!(render_cache.cached_level_str, "{level:10}") {
-            eprintln!("Ошибка записи кэша уровня: {e}");
-        }
+        let _ = write!(render_cache.cached_level_str, "{level:10}");
         render_cache.last_cached_level = level;
     }
 
     if lines_cleared != render_cache.last_cached_lines {
         render_cache.cached_lines_str.clear();
-        if let Err(e) = write!(render_cache.cached_lines_str, "{lines_cleared:10}") {
-            eprintln!("Ошибка записи кэша линий: {e}");
-        }
+        let _ = write!(render_cache.cached_lines_str, "{lines_cleared:10}");
         render_cache.last_cached_lines = lines_cleared;
     }
 }
