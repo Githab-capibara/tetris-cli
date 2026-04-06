@@ -151,13 +151,13 @@ impl ModeRegistry {
     /// Использует `std::sync::OnceLock` для ленивой инициализации.
     ///
     /// # Исправление проблемы 40
-    /// При первом вызове происходит 6 вставок в HashMap (регистрация режимов).
+    /// При первом вызове происходит 6 вставок в [`HashMap`](std::collections::HashMap) (регистрация режимов).
     /// Это делается ОДИН РАЗ за всё время работы приложения — не оптимизировать.
     pub fn global() -> &'static Self {
         use std::sync::OnceLock;
 
         static REGISTRY: OnceLock<ModeRegistry> = OnceLock::new();
-        REGISTRY.get_or_init(ModeRegistry::new)
+        REGISTRY.get_or_init(Self::new)
     }
 }
 

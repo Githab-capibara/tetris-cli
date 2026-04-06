@@ -41,11 +41,11 @@ pub enum UpdateEndState {
 impl std::fmt::Display for UpdateEndState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            UpdateEndState::Quit => write!(f, "Quit"),
-            UpdateEndState::Lost => write!(f, "Lost"),
-            UpdateEndState::Continue => write!(f, "Continue"),
-            UpdateEndState::Pause => write!(f, "Pause"),
-            UpdateEndState::Won => write!(f, "Won"),
+            Self::Quit => write!(f, "Quit"),
+            Self::Lost => write!(f, "Lost"),
+            Self::Continue => write!(f, "Continue"),
+            Self::Pause => write!(f, "Pause"),
+            Self::Won => write!(f, "Won"),
         }
     }
 }

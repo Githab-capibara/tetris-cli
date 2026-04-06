@@ -142,9 +142,9 @@ impl GameMode {
     #[must_use]
     pub fn as_trait(self) -> Box<dyn GameModeTrait> {
         match self {
-            GameMode::Classic => Box::new(super::mode_trait::ClassicMode),
-            GameMode::Sprint => Box::new(super::mode_trait::SprintMode::new()),
-            GameMode::Marathon => Box::new(super::mode_trait::MarathonMode::new()),
+            Self::Classic => Box::new(super::mode_trait::ClassicMode),
+            Self::Sprint => Box::new(super::mode_trait::SprintMode::new()),
+            Self::Marathon => Box::new(super::mode_trait::MarathonMode::new()),
         }
     }
 }
@@ -160,14 +160,14 @@ impl GameMode {
     /// `false` для классического режима (победы нет, только проигрыш)
     ///
     /// # Архитектурные заметки
-    /// Исправление проблемы 39: используем match напрямую на enum вместо as_trait()
+    /// Исправление проблемы 39: используем match напрямую на enum вместо [`as_trait()`](GameMode::as_trait)
     /// для предотвращения создания `Box<dyn GameModeTrait>` при каждом вызове.
     #[must_use]
     pub fn check_win_condition(self, lines_cleared: u32) -> bool {
         match self {
-            GameMode::Classic => false,
-            GameMode::Sprint => lines_cleared >= 40,
-            GameMode::Marathon => lines_cleared >= 150,
+            Self::Classic => false,
+            Self::Sprint => lines_cleared >= 40,
+            Self::Marathon => lines_cleared >= 150,
         }
     }
 
@@ -178,9 +178,9 @@ impl GameMode {
     #[must_use]
     pub fn get_target_lines(self) -> Option<u32> {
         match self {
-            GameMode::Classic => None,
-            GameMode::Sprint => Some(40),
-            GameMode::Marathon => Some(150),
+            Self::Classic => None,
+            Self::Sprint => Some(40),
+            Self::Marathon => Some(150),
         }
     }
 }

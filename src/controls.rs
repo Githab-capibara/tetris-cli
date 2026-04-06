@@ -332,8 +332,8 @@ impl ControlsConfig {
 
         // Сериализуем конфигурацию без signature для вычисления хеша
         // P1: Оптимизация — сериализуем один раз в Value, модифицируем, затем pretty-сериализуем
-        // вместо создания двух полных копий ControlsConfig (config_for_hash и config_with_sig)
-        let mut config_value = serde_json::to_value(&ControlsConfig {
+        // вместо создания двух полных копий Self (config_for_hash и config_with_sig)
+        let mut config_value = serde_json::to_value(&Self {
             move_left: self.move_left,
             move_right: self.move_right,
             soft_drop: self.soft_drop,
@@ -496,7 +496,7 @@ impl ControlsConfig {
         file.read_to_string(&mut json)?;
 
         // Десериализуем конфигурацию
-        let config: ControlsConfig = serde_json::from_str(&json)
+        let config: Self = serde_json::from_str(&json)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
         // Проверяем keyed hash подпись

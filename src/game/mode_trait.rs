@@ -238,7 +238,7 @@ pub type GameModeResult = Box<dyn GameModeTrait>;
 /// assert_eq!(mode.name(), "Спринт");
 /// ```
 ///
-/// Архитектурное улучшение 2026-04-01 (O1): Делегирует ModeRegistry::global().
+/// Архитектурное улучшение 2026-04-01 (O1): Делегирует [`ModeRegistry::global()`](super::mode_registry::ModeRegistry::global).
 #[must_use]
 pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
     super::mode_registry::ModeRegistry::global().create(name)
@@ -249,7 +249,7 @@ pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
 /// # Возвращает
 /// `Box<dyn GameModeTrait>` с режимом Classic
 ///
-/// Архитектурное улучшение 2026-04-01 (O1): Делегирует ModeRegistry::global().
+/// Архитектурное улучшение 2026-04-01 (O1): Делегирует [`ModeRegistry::global()`](super::mode_registry::ModeRegistry::global).
 #[must_use]
 pub fn create_default_game_mode() -> GameModeResult {
     super::mode_registry::ModeRegistry::global()
