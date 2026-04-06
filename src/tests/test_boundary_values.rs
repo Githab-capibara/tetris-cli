@@ -338,35 +338,11 @@ fn test_game_state_value_correctness() {
 // ТЕСТЫ ОБРАБОТКИ ОШИБОК (Result, Option)
 // ============================================================================
 
-/// Тест T23: `LeaderboardEntry::score()` возвращает Option
+/// Тест T23: `LeaderboardEntry::score()` возвращает Option для валидной записи
 #[test]
 fn test_leaderboard_entry_score_option() {
     let entry = LeaderboardEntry::new("Player", 1000);
 
-    let score = entry.score();
-    assert!(
-        score.is_some(),
-        "score() должен возвращать Some для валидной записи"
-    );
-    assert_eq!(score, Some(1000), "Счёт должен быть 1000");
-}
-
-/// Тест T24: `LeaderboardEntry::score()` возвращает Option
-#[test]
-fn test_leaderboard_entry_score_option_handling() {
-    let entry = LeaderboardEntry::new("Player", 2000);
-
-    let score = entry.score();
-    assert!(score.is_some(), "score() должен возвращать Some");
-    assert_eq!(score, Some(2000), "Счёт должен быть 2000");
-}
-
-/// Тест T25: `LeaderboardEntry` с невалидным хэшем
-#[test]
-fn test_leaderboard_entry_invalid_hash() {
-    let entry = LeaderboardEntry::new("Player", 1000);
-
-    // score() должен вернуть Some для валидной записи
     let score = entry.score();
     assert!(
         score.is_some(),
