@@ -241,20 +241,6 @@ impl TerminalBackend for TermionBackend {
     }
 }
 
-impl TerminalInputBackend for TermionBackend {
-    fn read_key(&mut self) -> io::Result<Option<u8>> {
-        // TermionBackend отвечает только за вывод.
-        // Для ввода используйте TermionIOBackend.input (KeyReader).
-        Ok(None)
-    }
-
-    fn read_key_unicode(&mut self) -> Option<char> {
-        // TermionBackend отвечает только за вывод.
-        // Для ввода используйте TermionIOBackend.input (KeyReader).
-        None
-    }
-}
-
 impl Drop for TermionBackend {
     fn drop(&mut self) {
         // Показываем курсор при выходе
@@ -308,9 +294,7 @@ mod tests {
     #[test]
     fn test_terminal_backend_trait_methods_exist() {
         fn assert_backend<T: TerminalBackend>() {}
-        fn assert_input<T: TerminalInputBackend>() {}
         assert_backend::<TermionBackend>();
-        assert_input::<TermionBackend>();
     }
 
     #[test]
@@ -322,8 +306,6 @@ mod tests {
     #[test]
     fn test_terminal_traits_are_send_sync() {
         fn _assert_terminal_backend<T: TerminalBackend>() {}
-        fn _assert_terminal_input<T: TerminalInputBackend>() {}
         _assert_terminal_backend::<TermionBackend>();
-        _assert_terminal_input::<TermionBackend>();
     }
 }

@@ -142,6 +142,7 @@ impl Score {
     /// # Примечания
     /// Эквивалентно `Score::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
+    #[deprecated(note = "Используйте Default::default()")]
     pub fn new() -> Self {
         Self::default()
     }
@@ -277,6 +278,7 @@ impl Level {
     /// # Примечания
     /// Эквивалентно `Level::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
+    #[deprecated(note = "Используйте Default::default()")]
     pub fn new() -> Self {
         Self::default()
     }
@@ -379,6 +381,7 @@ impl LinesCount {
     /// # Примечания
     /// Эквивалентно `LinesCount::default()`. Метод сохранён для обратной совместимости.
     #[must_use]
+    #[deprecated(note = "Используйте Default::default()")]
     pub fn new() -> Self {
         Self::default()
     }

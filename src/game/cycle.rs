@@ -80,10 +80,11 @@ pub fn handle_input<T: InputReader>(
                         // Клавиша не нажата или не распознана — не считаем ошибкой
                     }
                     Err(e) => {
-                        // Счётчик ошибок — после 5 подряд игнорируем чтобы не затоплять stderr
+                        // Счётчик ошибок — первые 5 логируем всегда, затем каждую 10-ю
+                        // чтобы не затоплять stderr но сохранять диагностику
                         consecutive_errors += 1;
-                        if consecutive_errors <= 5 {
-                            eprintln!("[ERROR] Ошибка чтения ввода во время паузы: {e}");
+                        if consecutive_errors <= 5 || consecutive_errors % 10 == 0 {
+                            eprintln!("[ERROR] Ошибка чтения ввода во время паузы (#{consecutive_errors}): {e}");
                         }
                     }
                 }
