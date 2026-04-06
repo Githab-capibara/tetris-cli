@@ -39,6 +39,7 @@
 //! - check_block_collision с inline
 
 use criterion::{black_box, BenchmarkGroup, Criterion};
+use tetris_cli::game::scoring::lines::find_full_rows;
 use tetris_cli::game::GameState;
 use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
 use tetris_cli::types::Direction;
@@ -68,38 +69,32 @@ fn main() {
 fn bench_find_full_rows(c: &mut Criterion) {
     let mut group: BenchmarkGroup<'_, _> = c.benchmark_group("find_full_rows");
 
-    // Пустое поле — инициализация ВЫНЕСЕНА из b.iter()
+    // Пустое поле — измеряем реальную функцию find_full_rows
     group.bench_function("empty_field", |b| {
         b.iter(|| {
             let state = GameState::new();
-            black_box(state);
+            black_box(find_full_rows(state.get_blocks()));
         });
     });
 
-    // Поле с одной заполненной линией — инициализация ВЫНЕСЕНА
+    // Поле с одной заполненной линией
     group.bench_function("one_full_line", |b| {
-        b.iter_with_setup(
-            || {
-                let mut state = GameState::new();
-                state.fill_line_for_bench(10);
-                state
-            },
-            |state| black_box(state),
-        );
+        b.iter(|| {
+            let mut state = GameState::new();
+            state.fill_line_for_bench(10);
+            black_box(find_full_rows(state.get_blocks()));
+        });
     });
 
-    // Поле с несколькими заполненными линиями — инициализация ВЫНЕСЕНА
+    // Поле с несколькими заполненными линиями
     group.bench_function("multiple_full_lines", |b| {
-        b.iter_with_setup(
-            || {
-                let mut state = GameState::new();
-                for line in [5, 10, 15, 18] {
-                    state.fill_line_for_bench(line);
-                }
-                state
-            },
-            |state| black_box(state),
-        );
+        b.iter(|| {
+            let mut state = GameState::new();
+            for line in [5, 10, 15, 18] {
+                state.fill_line_for_bench(line);
+            }
+            black_box(find_full_rows(state.get_blocks()));
+        });
     });
 
     group.finish();

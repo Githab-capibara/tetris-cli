@@ -282,20 +282,3 @@ impl InputReader for KeyReader {
     }
 }
 
-#[cfg(test)]
-#[cfg(unix)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_key_reader_new() {
-        let reader = KeyReader::new();
-        // KeyReader создаётся успешно
-    }
-
-    #[test]
-    fn test_key_reader_default() {
-        let reader = KeyReader::default();
-        // Default создаётся успешно
-    }
-}

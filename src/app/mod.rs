@@ -34,6 +34,13 @@
 //! }
 //! ```
 
+// Локальный макрос логирования (дублирует crate::log_error для обхода ограничений #[macro_export] в edition 2021)
+macro_rules! log_error {
+    ($($arg:tt)*) => {{
+        eprintln!("[ERROR] $($arg)*");
+    }};
+}
+
 // std
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -99,7 +106,7 @@ impl Application {
         let high_score = match save.verify_and_get_score_result() {
             Ok(score) => score,
             Err(e) => {
-                eprintln!("[ERROR] Рекорд не прошёл валидацию: {e}. Используется 0.");
+                log_error!("Рекорд не прошёл валидацию: {e}. Используется 0.");
                 0u128
             }
         };

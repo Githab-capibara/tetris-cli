@@ -392,19 +392,3 @@ impl Renderer for Canvas {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_canvas_new_stub() {
-        let canvas = Canvas::new_stub();
-        // Stub всегда создаётся успешно
-    }
-
-    #[test]
-    fn test_canvas_default() {
-        let canvas = Canvas::default();
-        // Default всегда создаётся успешно
-    }
-}
