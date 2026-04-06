@@ -126,7 +126,7 @@ impl GameAction {
 /// ```
 /// use tetris_cli::game::types::Score;
 ///
-/// let mut score = Score::new();
+/// let mut score = Score::default();
 /// score.add(100);
 /// assert_eq!(score.value(), 100);
 ///
@@ -257,7 +257,7 @@ impl From<Score> for u128 {
 /// ```
 /// use tetris_cli::game::types::Level;
 ///
-/// let mut level = Level::new();
+/// let mut level = Level::default();
 /// assert_eq!(level.value(), 1);
 ///
 /// level.increment();
@@ -368,7 +368,7 @@ impl fmt::Display for Level {
 /// ```
 /// use tetris_cli::game::types::LinesCount;
 ///
-/// let mut lines = LinesCount::new();
+/// let mut lines = LinesCount::default();
 /// lines.add(4);
 /// assert_eq!(lines.value(), 4);
 /// ```
@@ -491,8 +491,8 @@ mod tests {
     // ==================== Тесты для Score ====================
 
     #[test]
-    fn test_score_new() {
-        let score = Score::new();
+    fn test_score_default() {
+        let score = Score::default();
         assert_eq!(score.value(), 0);
     }
 
@@ -504,7 +504,7 @@ mod tests {
 
     #[test]
     fn test_score_add() {
-        let mut score = Score::new();
+        let mut score = Score::default();
         score.add(100);
         assert_eq!(score.value(), 100);
         score.add(200);
@@ -527,7 +527,7 @@ mod tests {
 
     #[test]
     fn test_score_is_zero() {
-        let score = Score::new();
+        let score = Score::default();
         assert!(score.is_zero());
 
         let score = Score::with_value(100);
@@ -563,8 +563,8 @@ mod tests {
     // ==================== Тесты для Level ====================
 
     #[test]
-    fn test_level_new() {
-        let level = Level::new();
+    fn test_level_default() {
+        let level = Level::default();
         assert_eq!(level.value(), 1);
     }
 
@@ -582,14 +582,14 @@ mod tests {
 
     #[test]
     fn test_level_increment() {
-        let mut level = Level::new();
+        let mut level = Level::default();
         assert!(level.increment());
         assert_eq!(level.value(), 2);
     }
 
     #[test]
     fn test_level_increment_by() {
-        let mut level = Level::new();
+        let mut level = Level::default();
         assert!(level.increment_by(5));
         assert_eq!(level.value(), 6);
     }
@@ -610,8 +610,8 @@ mod tests {
     // ==================== Тесты для LinesCount ====================
 
     #[test]
-    fn test_lines_count_new() {
-        let lines = LinesCount::new();
+    fn test_lines_count_default() {
+        let lines = LinesCount::default();
         assert_eq!(lines.value(), 0);
     }
 
@@ -623,7 +623,7 @@ mod tests {
 
     #[test]
     fn test_lines_count_add() {
-        let mut lines = LinesCount::new();
+        let mut lines = LinesCount::default();
         lines.add(4);
         assert_eq!(lines.value(), 4);
         lines.add(6);
@@ -632,7 +632,7 @@ mod tests {
 
     #[test]
     fn test_lines_count_increment() {
-        let mut lines = LinesCount::new();
+        let mut lines = LinesCount::default();
         assert!(lines.increment());
         assert_eq!(lines.value(), 1);
     }
