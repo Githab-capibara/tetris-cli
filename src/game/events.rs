@@ -51,6 +51,8 @@
 /// - **События счёта**: `ScoreChanged`, `LevelUp`, `LinesCleared`
 /// - **События состояния**: `GamePaused`, `GameResumed`, `GameOver`, `GameWon`
 /// - **События ввода**: `InputProcessed`
+// Все варианты enum пока используются только в тестах — event система ещё не интегрирована в production.
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameEvent {
     /// Фигура перемещена.
@@ -267,6 +269,10 @@ pub trait EventHandler {
 ///
 /// Управляет подписчиками событий и их доставкой.
 ///
+/// # Примечание
+/// Этот тип пока используется только в тестах. `#[allow(dead_code)]` подавляет
+/// предупреждения до тех пор, пока EventDispatcher не будет интегрирован в production.
+///
 /// ## Архитектурные заметки
 /// ## Исправление C1 (CRITICAL): Событийная модель
 /// Этот struct предоставляет централизованное управление событиями.
@@ -284,6 +290,7 @@ pub trait EventHandler {
 /// // Отправка события
 /// dispatcher.dispatch(&GameEvent::GamePaused);
 /// ```
+#[allow(dead_code)]
 pub struct EventDispatcher {
     /// Подписчики событий.
     subscribers: Vec<Box<dyn EventHandler>>,
@@ -348,6 +355,11 @@ impl EventDispatcher {
     ///
     /// # Аргументы
     /// * `events` - события для отправки
+    ///
+    /// # Примечание
+    /// Метод просто итерирует по подписчикам и вызывает `handle_batch` для каждого.
+    /// Это осознанное решение: для CLI-приложения количество подписчиков минимально (0-2),
+    /// поэтому сложная оптимизация (batch-очереди, векторизация) не даст заметного выигрыша.
     pub fn dispatch_batch(&mut self, events: &[GameEvent]) {
         for subscriber in &mut self.subscribers {
             subscriber.handle_batch(events);
