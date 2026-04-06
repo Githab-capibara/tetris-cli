@@ -279,7 +279,9 @@ impl SaveData {
             crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
             if let Err(backup_e) = store(APP_NAME, Some("config_backup"), save) {
-                crate::log_error!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+                crate::log_error!(
+                    "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
+                );
             } else {
                 crate::log_info!("Успешно сохранено в backup файл.");
             }
