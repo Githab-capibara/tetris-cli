@@ -260,7 +260,10 @@ impl BoardMutable for GameBoard {
     }
 
     fn set_block(&mut self, x: usize, y: usize, value: i8) {
-        self.blocks[y][x] = value;
+        // Исправление S5: проверка границ перед записью для безопасности
+        if x < GRID_WIDTH && y < GRID_HEIGHT {
+            self.blocks[y][x] = value;
+        }
     }
 
     fn set_filled_lines_mask(&mut self, mask: u32) {

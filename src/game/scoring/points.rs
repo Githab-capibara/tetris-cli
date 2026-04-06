@@ -273,6 +273,7 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_add для защиты от переполнения
+    // side-effect: add_score updates scoreboard internally
     let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
 
     // Начисление очков за Soft Drop

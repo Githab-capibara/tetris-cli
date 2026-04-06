@@ -21,6 +21,7 @@
 //! ```
 
 // std
+use std::io::Write;
 use std::sync::{Arc, Mutex, RwLock};
 
 // external
@@ -245,18 +246,24 @@ impl LeaderboardEntry {
     /// что предотвращает TOCTOU уязвимость при использовании в методе `score()`.
     ///
     /// # Исправление 2.2
-    /// Оптимизация: используется format! напрямую для избежания промежуточных аллокаций.
+    /// Оптимизация: используется write! в Vec для избежания промежуточных аллокаций.
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
         // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
-        let salt_name_score = format!("{}:{}:{value}", self.salt, self.name);
+        // P3: write! в Vec вместо format! для снижения аллокаций
+        let mut buf =
+            Vec::with_capacity(self.salt.len() + 1 + self.name.len() + 1 + 20);
+        write!(buf, "{}:{}:{value}", self.salt, self.name)
+            .expect("write to Vec never fails");
+        let salt_name_score =
+            std::str::from_utf8(&buf).expect("salt and name are valid UTF-8");
         hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
             &self.salt,
-            &salt_name_score,
+            salt_name_score,
             &self.hash,
         )
     }
@@ -531,24 +538,30 @@ impl ThreadSafeLeaderboardEntry {
     )]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
-        // Исправление C9: используем read() вместо lock() для RwLock
-        if let Ok(guard) = self.inner.read() {
-            let score_value = guard.score_value;
-            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, score_value);
-            if !hmac_verify_with_salt(
-                get_leaderboard_hmac_key(),
-                &guard.salt,
-                &salt_name_score,
-                &guard.hash,
-            ) {
-                eprintln!("Предупреждение: запись не прошла валидацию!");
+        // P5: Копируем данные под блокировкой, отпускаем lock, потом проверяем
+        let (salt, name, score_value, hash) = match self.inner.read() {
+            Ok(guard) => (
+                guard.salt.clone(),
+                guard.name.clone(),
+                guard.score_value,
+                guard.hash.clone(),
+            ),
+            Err(_) => {
+                eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
                 return 0;
             }
-            return score_value;
+        };
+        let salt_name_score = format!("{salt}:{name}:{score_value}");
+        if !hmac_verify_with_salt(
+            get_leaderboard_hmac_key(),
+            &salt,
+            &salt_name_score,
+            &hash,
+        ) {
+            eprintln!("Предупреждение: запись не прошла валидацию!");
+            return 0;
         }
-        // Graceful degradation: логируем ошибку вместо паники
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
-        0
+        score_value
     }
 
     /// Получить значение рекорда с безопасной обработкой ошибок.
@@ -569,15 +582,22 @@ impl ThreadSafeLeaderboardEntry {
     /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
     #[must_use]
     pub fn score_safe(&self) -> Option<u128> {
-        // Исправление C9: используем read() вместо lock() для RwLock
-        let guard = self.inner.read().ok()?;
-        let score_value = guard.score_value;
-        let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, score_value);
+        // P6: Копируем данные под блокировкой, отпускаем lock, потом проверяем
+        let (salt, name, score_value, hash) = {
+            let guard = self.inner.read().ok()?;
+            (
+                guard.salt.clone(),
+                guard.name.clone(),
+                guard.score_value,
+                guard.hash.clone(),
+            )
+        };
+        let salt_name_score = format!("{salt}:{name}:{score_value}");
         if !hmac_verify_with_salt(
             get_leaderboard_hmac_key(),
-            &guard.salt,
+            &salt,
             &salt_name_score,
-            &guard.hash,
+            &hash,
         ) {
             // Запись не прошла валидацию — возможно подделана
             return None;
