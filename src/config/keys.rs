@@ -159,7 +159,7 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
 ///
 /// # Возвращает
 /// - `Ok(())` если все ключи прошли валидацию
-/// - `Err(String)` с описанием первой обнаруженной проблемы
+/// - `Err(Vec<String>)` с описанием всех обнаруженных проблем
 ///
 /// # Исправление аудита 2026-04-01 (C1)
 /// Добавлена функция для валидации всех ключей при запуске.
@@ -173,7 +173,7 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
 /// # Errors
 /// Возвращает ошибку если хотя бы один ключ пустой или слишком короткий.
 #[allow(dead_code)]
-pub fn validate_all_keys() -> Result<(), String> {
+pub fn validate_all_keys() -> Result<(), Vec<String>> {
     let mut errors = Vec::new();
 
     if let Err(e) = validate_hmac_key(get_controls_hmac_key(), "CONTROLS_HMAC_KEY") {
@@ -189,10 +189,7 @@ pub fn validate_all_keys() -> Result<(), String> {
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(format!(
-            "Обнаружены проблемы с HMAC ключами: {}",
-            errors.join("; ")
-        ))
+        Err(errors)
     }
 }
 
