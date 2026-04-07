@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы — раунд 2)
+**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы — раунд 3)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,45 +9,46 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | 689 | ✅ 100% pass |
+| Модульные тесты (src/) | 671 | ✅ 100% pass |
 | Интеграционные тесты (tests/) | 22 | ✅ 100% pass |
 | Doctests (runnable) | 64 | ✅ 100% pass |
 | Doctests (ignored) | 105 | — ожидаемо |
-| Бенчмарки (benches/) | 28 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **711** | ✅ |
+| Бенчмарки (benches/) | 26 (8 групп) | ✅ |
+| **ИТОГО (запускаемые)** | **693** | ✅ |
 | Ignored | 9 | — ожидаемо |
 
 ---
 
-## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07, раунд 2)
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07, раунд 3)
 
-### Исправления:
-- **`test_all_shapes_in_game`** (test_integration.rs): Исправлен баг — тест создавал T-фигуру 7 раз вместо всех 7 типов фигур. Теперь корректно итерирует по `ShapeType` и проверяет каждый тип.
-- **`test_bag_distribution_statistics`** (test_bag_system.rs): Объединены 3 дублирующихся статистических теста (`test_all_pieces_distribution_statistics`, `test_distribution_variance`, `test_chi_square_simplified`) в один комплексный тест. Все они генерировали 700 фигур и проверяли одно распределение.
-- **Unused import** (tests/test_audit_2026_04_fixes.rs): Удалён `use tetris_cli::*;` — все импорты сделаны конкретно через `tetris_cli::...`.
+### Удалённые дубликаты (18 тестов):
+- `test_classic_mode_saves_score`, `test_sprint_mode_does_not_save_score`, `test_gamestate_responds_to_input` (test_integration_extended.rs) — дублируют test_integration.rs
+- `test_collision_floor`, `test_collision_with_fixed_blocks`, `test_movement_in_empty_field`, `test_speed_calculation_from_level` (test_game_logic.rs) — дублируют test_physics.rs
+- `test_collision_down_blocked_by_piece`, `test_collision_not_early` (test_collision.rs) — дублируют test_physics.rs
+- `test_leaderboard_concurrent_access`, `test_leaderboard_race_condition_protection` (test_edge_cases.rs) — дублируют встроенные тесты leaderboard.rs
+- `test_game_state_set_score_max_no_panic` (test_edge_cases.rs) — дублирует test_boundary_values.rs
+- 6x `test_set_fall_speed_*` (src/game/state.rs) — дублируют test_state_validation.rs
 
-### Удалённые тесты (дубликаты):
-- `test_sequence_of_seven_is_unique` (test_bag_system.rs) — дублирует `test_uniform_distribution_first_bag`
-- `test_sequence_contains_all_types` (test_bag_system.rs) — дублирует `test_all_piece_types_available`
-- `test_distribution_in_sequence` (test_bag_system.rs) — дублирует `test_uniform_distribution_multiple_bags`
-- `test_bag_generator_produces_all_7_shapes` (test_edge_cases.rs) — дублирует `test_first_bag_contains_all_seven_pieces`
-- `test_bag_generator_uniform_distribution` (test_edge_cases.rs) — дублирует `test_uniform_distribution_multiple_bags`
-
-### Удалённые тесты (бесполезные):
-- `test_movement_after_hold` (test_game_movement.rs) — не выполнял операцию hold, только проверял начальное состояние
-- `test_new_piece_movement_after_hold` (test_game_movement.rs) — не проверял hold, только начальное состояние GameState
+### Исправленные тесты:
+- `test_leaderboard_not_send_sync` (src/highscore/leaderboard.rs) — был пустым, добавлены реальные проверки
+- `test_rotation_near_left_wall` (src/tests/test_physics.rs) — была тавтология `assert!(x || !x)`, заменена на реальную проверку вращения у стены
 
 ### Удалённый мёртвый код:
-- Комментарии об удалённых тестах T6, T12, T18 в `test_boundary_values.rs`
+- `tests/common/mod.rs` — подключался в 3 файлах но ни разу не использовался
+- `mod common;` удалён из test_architecture_integrity.rs, test_all_fixed_issues.rs, test_audit_2026_04_fixes.rs
 
-### Итого изменено: удалено ~12 тестов, объединено 3 в 1, исправлен 1 баг
+### Безопасность тестов:
+- 5x `.unwrap()` заменены на `.expect()` с описательными сообщениями:
+  - test_state_validation.rs: 2 случая в catch_unwind
+  - test_boundary_values.rs: 1 случай в saturating_add тесте
+  - test_crypto_security.rs: 1 случай в HMAC tampered тесте
+  - test_hmac_safety.rs: 1 случай в timing safe тесте
 
-### Удалённые тесты (дубликаты/устаревшие/пустые):
-- `test_game_box_array.rs` (весь файл, 3 теста) — устаревшая документация (описывает Box<[]> но используется статический массив)
-- `test_direction_from_core` (src/types.rs) — пустой тест, только `let _ = ...` без assert
-- `test_c2_key_reader_handles_ascii_correctly` (tests/test_audit_2026_04_fixes.rs) — пустой тест на non-Unix
-- `test_piece_position_at_left_boundary`, `test_piece_position_at_right_boundary` — дублируют test_collision_left/right_wall
-- `test_i_piece_at_left_boundary`, `test_i_piece_at_right_boundary` — дублируют test_collision_left/right_wall
+### Удалённые unused imports:
+- `Direction` из test_game_logic.rs (стал неиспользуемым после удаления дубликатов)
+- `Arc` из test_edge_cases.rs (стал неиспользуемым после удаления дубликатов)
+
+### Итого изменено: удалено 19 тестов + мёртвый common модуль, исправлено 2 пустых/тавтологических теста, улучшено 5 unwrap → expect
 - `test_movement_in_corner` — дублирует test_collision_bottom_left_corner
 - `test_move_above_fixed_piece`, `test_movement_blocked_by_obstacle_left`, `test_movement_blocked_by_obstacle_right` — бесполезные тесты без реальной проверки
 - `test_collision_not_beyond_left_boundary`, `test_collision_not_beyond_right_boundary` — дублируют test_collision_left/right_wall
