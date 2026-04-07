@@ -52,8 +52,7 @@ pub type HmacSha256 = Hmac<Sha256>;
 pub fn hmac_sha256(key: &str, data: &str) -> String {
     // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok
     // unwrap безопасен: ошибка криптографически невозможна для HMAC-SHA256
-    let mut mac =
-        HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // HMAC-SHA256 принимает ключи любой длины, ошибка невозможна
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // HMAC-SHA256 принимает ключи любой длины, ошибка невозможна
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -173,8 +172,7 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
     // P11: write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     write!(buf, "{salt}:{data}").unwrap(); // write! в Vec<u8> никогда не падает
-    let salted_data =
-        std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
+    let salted_data = std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
     hmac_sha256(key, salted_data)
 }
 
@@ -230,8 +228,7 @@ pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str)
     // P12: write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     write!(buf, "{salt}:{data}").unwrap(); // write! в Vec<u8> никогда не падает
-    let salted_data =
-        std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
+    let salted_data = std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
     verify_hmac_sha256(key, salted_data, signature)
 }
 

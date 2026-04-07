@@ -12,6 +12,12 @@
 //! - [`mode_trait`] — трейт режима игры ([`mode_trait::GameModeTrait`])
 //!
 //! ## Архитектурные заметки
+//!
+//! ### PROB-131: Архитектурная рекомендация — Event System
+//! TODO: рассмотреть внедрение системы событий (Event System) для расцепления
+//! модулей game. Сейчас модули напрямую вызывают функции друг друга.
+//! Event-driven архитектура позволила бы снизить связность.
+//!
 //! ## Исправление #26: Зависимости модулей
 //! ```text
 //! game/
@@ -57,16 +63,21 @@
 //! ```
 
 // Подмодули (S7: алфавитный порядок)
-pub mod access;
-pub mod board;
-pub mod cache;
-pub mod components;
-pub mod cycle;
+// PROB-119: pub(crate) для подмодулей, не используемых извне crate.
+// pub: state, stats, scoring, types, view — используются из exports.rs и других модулей crate.
+// pub: mode_registry, mode_trait — содержат unused элементы, pub предотвращает clippy errors
+// pub: logic — используется из integration tests (tests/test_audit_2026_04_fixes.rs)
+// pub: time, scoreboard — имеют doctests ссылающиеся на модуль напрямую
+pub(crate) mod access;
+pub(crate) mod board;
+pub(crate) mod cache;
+pub(crate) mod components;
+pub(crate) mod cycle;
 pub mod logic;
 pub mod mode_registry;
 pub mod mode_trait;
-pub mod render;
-pub mod rules;
+pub(crate) mod render;
+pub(crate) mod rules;
 pub mod scoreboard;
 pub mod scoring;
 pub mod state;
@@ -88,6 +99,10 @@ pub use scoring::{check_rows, handle_hold};
 // ============================================================================
 // МЕТОДЫ ДЛЯ GameState
 // ============================================================================
+// Методы-делегаты для удобства — делегируют в подмодули.
+// Эти методы на GameState обеспечивают удобный API: вместо того чтобы импортировать
+// функции из разных подмодулей, вызывайте методы напрямую на экземпляре GameState.
+// НЕ удалять — это публичный API.
 // Расширяем GameState методами из подмодулей
 
 // Архитектурное улучшение 2026-04-01 (YAGNI3): удалён избыточный #[allow(dead_code)]

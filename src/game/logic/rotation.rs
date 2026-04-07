@@ -33,6 +33,8 @@ use crate::game::GameState;
 /// Эта функция выполняет только вращение координат фигуры.
 /// Для проверки возможности вращения используйте
 /// `crate::game::logic::collision::can_rotate_curr_shape`.
+// PROB-119: функция используется как базовый примитив, может быть использована в будущем
+#[allow(dead_code)]
 pub fn rotate_shape(state: &mut GameState, dir: crate::types::RotationDirection) {
     state.get_curr_shape_mut().rotate(dir);
 }
