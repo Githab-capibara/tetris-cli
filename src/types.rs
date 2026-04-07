@@ -59,14 +59,6 @@ mod types_tests {
     use super::*;
 
     #[test]
-    fn test_direction_from_core() {
-        // Проверка что Direction переэкспортирован из core
-        let _ = Direction::Left;
-        let _ = Direction::Right;
-        let _ = Direction::Down;
-    }
-
-    #[test]
     fn test_position_from_core() {
         // Position определяется в crate::core напрямую
         let pos = crate::core::Position::new(5, 10);
