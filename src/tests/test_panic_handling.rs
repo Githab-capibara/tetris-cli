@@ -47,10 +47,7 @@ fn test_bag_generator_new_no_panic() {
 #[test]
 fn test_path_validator_new_no_panic() {
     let result = panic::catch_unwind(|| PathValidator::new(255, "abc"));
-    assert!(
-        result.is_ok(),
-        "PathValidator::new() не должен паниковать"
-    );
+    assert!(result.is_ok(), "PathValidator::new() не должен паниковать");
 }
 
 /// Тест: GameState методы доступа не паникуют на новом состоянии

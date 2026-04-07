@@ -76,10 +76,7 @@ fn test_score_no_overflow() {
     );
 
     // Должна вернуться ошибка переполнения
-    assert!(
-        result.is_err(),
-        "При переполнении должна вернуться ошибка"
-    );
+    assert!(result.is_err(), "При переполнении должна вернуться ошибка");
 }
 
 /// Тест: saturating_add предотвращает u128 переполнение
@@ -131,7 +128,11 @@ fn test_hmac_long_key() {
     // Ключ 128 байт (> 64 байт, размер блока SHA-256)
     let long_key = "a".repeat(128);
     let sig = hmac_sha256(&long_key, "data");
-    assert_eq!(sig.len(), 64, "HMAC с длинным ключом должен быть 64 символа");
+    assert_eq!(
+        sig.len(),
+        64,
+        "HMAC с длинным ключом должен быть 64 символа"
+    );
     assert!(
         verify_hmac_sha256(&long_key, "data", &sig),
         "Подпись с длинным ключом должна верифицироваться"
@@ -174,7 +175,9 @@ fn test_path_validator_rejects_traversal() {
 
     // Вложенный ../../
     assert!(
-        validator.validate_no_traversal("foo/../../etc/passwd").is_err(),
+        validator
+            .validate_no_traversal("foo/../../etc/passwd")
+            .is_err(),
         "Вложенный ../../ должен быть отклонён"
     );
 }
@@ -186,7 +189,9 @@ fn test_path_validator_rejects_url_encoded_traversal() {
 
     let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyz._-/");
 
-    assert!(validator.validate_no_traversal("..%2F..%2Fetc%2Fpasswd").is_err());
+    assert!(validator
+        .validate_no_traversal("..%2F..%2Fetc%2Fpasswd")
+        .is_err());
     assert!(validator.validate_no_traversal("%2e%2e%2f").is_err());
     assert!(validator.validate_no_traversal("%2E%2E%2F").is_err());
 }
@@ -246,7 +251,10 @@ fn test_leaderboard_race_condition_protection() {
     }
 
     for handle in handles {
-        assert!(handle.join().unwrap(), "Все потоки должны завершиться успешно");
+        assert!(
+            handle.join().unwrap(),
+            "Все потоки должны завершиться успешно"
+        );
     }
 }
 
@@ -329,7 +337,11 @@ fn test_bag_generator_produces_all_7_shapes() {
     }
 
     // Все 7 фигур должны присутствовать
-    assert_eq!(shapes.len(), 7, "Мешок должен содержать все 7 уникальных фигур");
+    assert_eq!(
+        shapes.len(),
+        7,
+        "Мешок должен содержать все 7 уникальных фигур"
+    );
     assert!(shapes.contains(&ShapeType::T), "Мешок должен содержать T");
     assert!(shapes.contains(&ShapeType::L), "Мешок должен содержать L");
     assert!(shapes.contains(&ShapeType::J), "Мешок должен содержать J");

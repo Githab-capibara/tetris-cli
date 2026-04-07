@@ -49,6 +49,28 @@ cargo run
 - **Arch Linux (AUR)**: [tetris-cli-git](https://aur.archlinux.org/packages/tetris-cli-git)
 - **NetBSD**: [tetris-cli](https://pkgsrc.se/games/tetris-cli)
 
+## 🚀 Использование
+
+```bash
+# Запуск игры из исходников
+cargo run --release
+
+# Запуск с кастомной конфигурацией
+cargo run --release -- --config my_controls.json
+
+# Запуск установленного бинарника
+tetris-cli
+
+# Запуск с классическим режимом через меню
+# (нажмите Enter в главном меню)
+
+# Запуск спринта (40 линий)
+# (нажмите 'r' в главном меню)
+
+# Запуск марафона (150 линий)
+# (нажмите 'm' в главном меню)
+```
+
 ## 🎮 Управление
 
 ### Клавиши по умолчанию

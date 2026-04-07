@@ -792,6 +792,122 @@ git push origin feature/your-feature-name
 
 ---
 
+## 🏗️ Структура проекта
+
+```
+tetris-cli/
+├── src/
+│   ├── main.rs              # Точка входа (делегирование в app::run())
+│   ├── lib.rs               # Библиотека — все модули
+│   ├── app/                 # Жизненный цикл приложения
+│   ├── config/              # Конфигурация клавиш (keys.rs, mod.rs)
+│   ├── constants.rs         # Централизованные константы игры
+│   ├── controls.rs          # Конфигурация управления (ControlsConfig)
+│   ├── core/                # Базовые типы (Direction, Position)
+│   ├── crypto/              # Криптография (HMAC, хеширование)
+│   ├── errors.rs            # Типизированные ошибки (GameError)
+│   ├── exports.rs           # Публичный API (re-export)
+│   ├── game/                # Игровая логика
+│   │   ├── board.rs         # Игровое поле (GameBoard)
+│   │   ├── components/      # Компоненты (FigureManager, AnimationState)
+│   │   ├── cycle.rs         # Игровой цикл
+│   │   ├── logic/           # Логика (ввод, коллизии, вращение)
+│   │   ├── render/          # Отрисовка (кэширование, GameView)
+│   │   ├── scoring/         # Система очков
+│   │   ├── state.rs         # GameState — основное состояние
+│   │   ├── stats.rs         # Статистика игры
+│   │   ├── time.rs          # Абстракция времени
+│   │   ├── types.rs         # Типы (Score, Level, LinesCount, GameAction)
+│   │   └── view.rs          # GameView для отрисовки
+│   ├── highscore/           # Таблица лидеров
+│   ├── io/                  # Ввод/вывод (Canvas, KeyReader, backend)
+│   ├── io_traits.rs         # Трейты InputReader, Renderer
+│   ├── macros.rs            # Макросы логирования
+│   ├── menu/                # Главное меню
+│   ├── tetromino/           # Фигуры (ShapeType, BagGenerator, координаты)
+│   ├── types.rs             # Переэкспорт типов из core/
+│   └── validation/          # Валидация (пути, имена)
+├── benches/                 # Бенчмарки (criterion)
+├── docs/                    # Документация
+└── tests/                   # Интеграционные тесты (внешние)
+```
+
+### Зависимости модулей
+
+- **game/** зависит от **tetromino/**, **core/**, **constants/**
+- **io/** зависит от **constants/**, **io_traits/**
+- **menu/** зависит от **io/**, **highscore/**, **constants/**
+- **app/** зависит от всех основных модулей
+- **validation/** — независимый модуль
+
+## 🎮 Как добавить новый режим игры
+
+### 1. Определите логику режима
+
+Создайте файл в `src/game/modes/` (или добавьте в существующий `state.rs`):
+
+```rust
+/// Новый режим игры.
+pub struct MyGameMode {
+    // Поля режима
+    target_score: u128,
+}
+
+impl MyGameMode {
+    pub fn new(target_score: u128) -> Self {
+        Self { target_score }
+    }
+
+    /// Проверка условия победы.
+    pub fn is_won(&self, state: &GameState) -> bool {
+        state.score() >= self.target_score
+    }
+}
+```
+
+### 2. Добавьте в GameMode enum
+
+В `src/game/state.rs` добавьте вариант в `GameMode`:
+
+```rust
+pub enum GameMode {
+    Classic,
+    Sprint,
+    Marathon,
+    MyMode, // Новый режим
+}
+```
+
+### 3. Обработайте в игровом цикле
+
+В `src/game/cycle.rs` добавьте обработку нового режима:
+
+```rust
+match state.get_mode() {
+    GameMode::MyMode => {
+        if my_mode.is_won(&state) {
+            return InputResult::Won;
+        }
+    }
+    // ...
+}
+```
+
+### 4. Добавьте в меню
+
+В `src/menu/constants.rs` добавьте пункт меню, а в `src/menu/input.rs` — обработку клавиши.
+
+### 5. Напишите тесты
+
+Создайте тесты для нового режима в `src/tests/test_my_mode.rs`.
+
+### 6. Обновите документацию
+
+- README.md — описание режима
+- CHANGELOG.md — запись об изменениях
+
+---
+
 ## 📞 Контакты
 
 ### Вопросы
