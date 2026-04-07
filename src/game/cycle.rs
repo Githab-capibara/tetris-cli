@@ -220,7 +220,7 @@ fn handle_input_result<R: Renderer>(
 /// use tetris_cli::io::{Canvas, KeyReader};
 ///
 /// let mut state = GameState::new();
-/// let mut canvas = Canvas::new().unwrap();
+/// let mut canvas = Canvas::new().expect("canvas creation");
 /// let mut input = KeyReader::new();
 /// let high_score = "1000";
 ///

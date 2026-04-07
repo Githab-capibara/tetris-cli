@@ -234,7 +234,7 @@ pub type GameModeResult = Box<dyn GameModeTrait>;
 /// ```ignore
 /// use crate::game::mode_trait::create_game_mode;
 ///
-/// let mode = create_game_mode("sprint").unwrap();
+/// let mode = create_game_mode("sprint").expect("sprint mode");
 /// assert_eq!(mode.name(), "Спринт");
 /// ```
 ///
