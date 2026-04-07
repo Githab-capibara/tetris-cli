@@ -236,16 +236,15 @@ mod crypto_tests {
     fn test_verify_hmac_sha256_tampered_signature() {
         let key = "секретный ключ";
         let data = "важные данные";
-        let signature = hmac_sha256(key, data);
+        let mut signature = hmac_sha256(key, data);
 
-        // Изменяем один символ в подписи
-        let mut tampered = signature.clone();
-        let mut chars: Vec<char> = tampered.chars().collect();
+        // Изменяем один символ в подписи напрямую (без clone)
+        let mut chars: Vec<char> = signature.chars().collect();
         chars[0] = if chars[0] == 'a' { 'b' } else { 'a' };
-        tampered = chars.iter().collect();
+        signature = chars.iter().collect();
 
         assert!(
-            !verify_hmac_sha256(key, data, &tampered),
+            !verify_hmac_sha256(key, data, &signature),
             "Изменённая подпись не должна проходить проверку"
         );
     }

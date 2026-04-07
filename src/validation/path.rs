@@ -71,12 +71,12 @@ impl PathError {
     /// Получить тип ошибки.
     #[must_use]
     pub fn kind(&self) -> PathErrorKind {
-        self.kind.clone()
+        self.kind
     }
 }
 
 /// Типы ошибки валидации пути.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PathErrorKind {
     /// Путь слишком длинный.
     TooLong,
