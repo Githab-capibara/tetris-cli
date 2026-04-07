@@ -14,6 +14,7 @@
 //! ## Архитектурные заметки (A7: DIP)
 //! Функция `update()` использует трейт `InputReader` вместо конкретного типа `KeyReader`.
 
+use crate::constants::SHAPE_COUNT;
 use crate::game::state::GameState;
 use crate::io_traits::InputReader;
 use crate::types::UpdateEndState;
@@ -61,7 +62,7 @@ pub fn update<T: InputReader>(
 ///
 /// # Исправление #83
 /// Добавлен `#[allow(clippy::cast_possible_wrap)]` для приведения `fg as i8`.
-/// Значения `ShapeType` 0..=6 гарантированно помещаются в i8.
+/// Значения `ShapeType` 0..SHAPE_COUNT гарантированно помещаются в i8.
 #[allow(clippy::cast_possible_wrap)]
 pub fn save_tetromino(state: &mut GameState) {
     let (shape_x, shape_y) = state.curr_shape().pos();
@@ -92,10 +93,10 @@ pub fn save_tetromino(state: &mut GameState) {
         // Потеря точности допустима: y и x проверены на границы поля
         #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
         if y >= 0 && y < grid_height_i16 && x >= 0 && x < grid_width_i16 {
-            // SAFETY: ShapeType 0..6, fits in i8
+            // SAFETY: ShapeType 0..SHAPE_COUNT, fits in i8
             debug_assert!(
-                (0..=6).contains(&fg),
-                "fg должен быть в диапазоне 0..=6, получено {fg}"
+                (0..SHAPE_COUNT as u8).contains(&fg),
+                "fg должен быть в диапазоне 0..SHAPE_COUNT, получено {fg}"
             );
             state.get_blocks_mut()[y as usize][x as usize] = fg as i8;
         }
@@ -164,13 +165,13 @@ mod update_tests {
         // Вызов не должен паниковать
         save_tetromino(&mut state);
 
-        // Проверяем что все ячейки в пределах допустимых значений (-1 или 0-6)
+        // Проверяем что все ячейки в пределах допустимых значений (-1 или 0..SHAPE_COUNT)
         for y in 0..crate::constants::GRID_HEIGHT {
             for x in 0..crate::constants::GRID_WIDTH {
                 let cell = state.get_blocks()[y][x];
                 assert!(
-                    cell == -1 || (0..=6).contains(&cell),
-                    "Ячейка [{y}][{x}] = {cell} должна быть в диапазоне -1..=6"
+                    cell == -1 || (0..SHAPE_COUNT as i8).contains(&cell),
+                    "Ячейка [{y}][{x}] = {cell} должна быть в диапазоне -1..SHAPE_COUNT"
                 );
             }
         }

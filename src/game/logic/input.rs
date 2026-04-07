@@ -36,6 +36,14 @@ use crate::types::{Direction, RotationDirection, UpdateEndState};
 // ============================================================================
 // H5: ЧИСТЫЙ ПАРСЕР (БЕЗ ЗАВИСИМОСТИ ОТ СОСТОЯНИЯ)
 // ============================================================================
+//
+// PROB-151: TODO — Rate limiting на ввод.
+// Для CLI-версии не критично: терминальный ввод не подвержен flood-атакам.
+// При портировании на GUI/сетевой режим — добавить throttle на частоту нажатий.
+//
+// PROB-152: TODO — Валидация входных данных.
+// Текущая валидация ограничена диапазоном u8 (0-255). Для CLI этого достаточно.
+// При расширении (сетевой ввод) — добавить строгую валидацию кодов клавиш.
 
 /// Распознать игровое действие из кода клавиши.
 ///
@@ -130,8 +138,10 @@ pub fn execute_action(state: &mut GameState, action: GameAction) -> Option<Updat
 /// для соблюдения Dependency Inversion Principle.
 ///
 /// # Исправление #14 (MEDIUM SEVERITY)
-/// Добавлено логирование ошибок через `eprintln!()` для критических ошибок ввода.
-/// Это позволяет отслеживать проблемы с вводом во время отладки.
+/// Критические ошибки ввода логируются через макрос `log_error!`.
+///
+/// # Исправление PROB-141..146
+/// INFO и DEBUG логи удалены из production кода.
 ///
 /// # Исправление 7: `GameAction` enum
 /// Использует `GameAction` для абстракции ввода. Конкретные клавиши маппятся в
@@ -149,13 +159,11 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
     // Обработка клавиши
     match key {
         Ok(Some(KEY_BACKSPACE)) => {
-            #[cfg(debug_assertions)]
-            eprintln!("[INFO] Получена клавиша выхода (Backspace)");
+            // PROB-141: INFO лог удалён — не нужен в production
             Some(UpdateEndState::Quit)
         }
         Ok(Some(b'p')) => {
-            #[cfg(debug_assertions)]
-            eprintln!("[INFO] Получена клавиша паузы (P)");
+            // PROB-142: INFO лог удалён — не нужен в production
             Some(UpdateEndState::Pause)
         }
         Ok(Some(key_code)) => {
@@ -164,13 +172,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
                 return execute_action(state, action);
             }
             // Неизвестная клавиша
-            // Потеря точности допустима: key_code < 256 (u8)
-            #[cfg(debug_assertions)]
-            eprintln!(
-                "[DEBUG] Получена неизвестная клавиша: {:?} (0x{:02X})",
-                char::from_u32(u32::from(key_code)).unwrap_or('?'),
-                key_code
-            );
+            // PROB-143: DEBUG лог удалён — не нужен в production
             None
         }
         Ok(None) => {
@@ -179,8 +181,8 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
         }
         Err(e) => {
             // Ошибка чтения ввода
-            #[cfg(debug_assertions)]
-            eprintln!("[ERROR] Ошибка чтения ввода: {e}");
+            // PROB-146: ERROR лог через макрос log_error! вместо eprintln!
+            log_error!("Ошибка чтения ввода: {e}");
             None
         }
     }

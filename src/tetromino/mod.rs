@@ -28,6 +28,6 @@ pub mod tetromino_struct;
 
 // Ре-экспорт основных типов для удобства импорта
 pub use bag_generator::BagGenerator;
-pub use constants::{SHAPE_COLORS, SHAPE_COORDS};
+pub use constants::{SHAPE_COLORS, SHAPE_COORDS, SHAPE_COUNT};
 pub use shape_type::ShapeType;
 pub use tetromino_struct::Tetromino;
