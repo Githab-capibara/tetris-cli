@@ -732,7 +732,7 @@ mod validation_path_tests {
     /// Проверяет, что валидатор отклоняет символические ссылки.
     #[cfg(unix)]
     #[test]
-    fn test_validate_symlink_attack() {
+    fn test_validate_symlink_attack() -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
         use std::os::unix::fs::symlink;
 
@@ -741,10 +741,10 @@ mod validation_path_tests {
         let symlink_path = temp_dir.join("symlink_file.txt");
 
         // Создаём целевой файл
-        fs::write(&target_path, "test content").expect("Не удалось создать тестовый файл");
+        fs::write(&target_path, "test content")?;
 
         // Создаём symlink
-        symlink(&target_path, &symlink_path).expect("Не удалось создать symlink");
+        symlink(&target_path, &symlink_path)?;
 
         let validator = PathValidator::new(
             255,
@@ -763,6 +763,8 @@ mod validation_path_tests {
         // Очищаем тестовые файлы
         let _ = fs::remove_file(&symlink_path);
         let _ = fs::remove_file(&target_path);
+
+        Ok(())
     }
 
     /// Тест: Проверка защиты от path traversal с различными вариациями
@@ -940,14 +942,14 @@ mod validation_path_tests {
 
     /// Тест H7: проверка кэширования canonicalize в `validate_all()`
     #[test]
-    fn test_fix_h7_validate_all_caches_canonicalize() {
+    fn test_fix_h7_validate_all_caches_canonicalize() -> Result<(), Box<dyn std::error::Error>> {
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
         // Получаем текущую директорию
-        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+        let current_dir = std::env::current_dir()?;
 
         // Проверяем что validate_all() успешно выполняется для существующего файла
         let relative_path = "Cargo.toml";
@@ -968,6 +970,8 @@ mod validation_path_tests {
             );
             assert!(canonical_path.exists(), "Путь должен существовать");
         }
+
+        Ok(())
     }
 
     /// Тест H7: проверка обработки несуществующих файлов в `validate_all()`
@@ -978,7 +982,7 @@ mod validation_path_tests {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
-        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+        let current_dir = std::env::current_dir().unwrap();
 
         // Проверяем обработку несуществующего файла
         let nonexistent_file = "nonexistent_file_12345.txt";
@@ -993,13 +997,13 @@ mod validation_path_tests {
 
     /// Тест H7: проверка что `validate_all()` выполняет все проверки
     #[test]
-    fn test_fix_h7_validate_all_performs_all_checks() {
+    fn test_fix_h7_validate_all_performs_all_checks() -> Result<(), Box<dyn std::error::Error>> {
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
-        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+        let current_dir = std::env::current_dir()?;
 
         // Проверка 1: абсолютный путь должен отклоняться
         let absolute_path = "/etc/passwd";
@@ -1016,17 +1020,19 @@ mod validation_path_tests {
         let invalid_chars_path = "file@name.txt";
         let result = validator.validate_all(invalid_chars_path, &current_dir);
         assert!(result.is_err(), "Запрещённые символы должны быть отклонены");
+
+        Ok(())
     }
 
     /// Тест H7: проверка обработки существующих файлов
     #[test]
-    fn test_fix_h7_validate_all_existing_file() {
+    fn test_fix_h7_validate_all_existing_file() -> Result<(), Box<dyn std::error::Error>> {
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
-        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+        let current_dir = std::env::current_dir()?;
 
         // Проверяем валидацию существующего файла (Cargo.toml)
         let result = validator.validate_all("Cargo.toml", &current_dir);
@@ -1041,17 +1047,19 @@ mod validation_path_tests {
             assert!(canonical_path.exists(), "Путь должен существовать");
             assert!(canonical_path.file_name().unwrap() == "Cargo.toml");
         }
+
+        Ok(())
     }
 
     /// Тест H7: проверка обработки путей с поддиректориями
     #[test]
-    fn test_fix_h7_validate_all_with_subdirectories() {
+    fn test_fix_h7_validate_all_with_subdirectories() -> Result<(), Box<dyn std::error::Error>> {
         let validator = PathValidator::new(
             255,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
-        let current_dir = std::env::current_dir().expect("Не удалось получить текущую директорию");
+        let current_dir = std::env::current_dir()?;
 
         // Проверяем путь с поддиректорией (должна существовать)
         let src_dir_path = "src/lib.rs";
@@ -1061,6 +1069,8 @@ mod validation_path_tests {
         if current_dir.join("src/lib.rs").exists() {
             assert!(result.is_ok(), "Путь к src/lib.rs должен быть валидным");
         }
+
+        Ok(())
     }
 
     // =========================================================================
@@ -1186,22 +1196,23 @@ mod validation_path_tests {
 
     /// Тест: Проверка родительских директорий на symlink
     #[test]
-    fn test_validate_no_symlinks_checks_parent_directories() {
+    fn test_validate_no_symlinks_checks_parent_directories() -> Result<(), Box<dyn std::error::Error>>
+    {
         use std::fs;
         use std::os::unix::fs::symlink;
 
-        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let temp_dir = tempfile::tempdir()?;
         let parent_dir = temp_dir.path().join("parent");
         let child_dir = parent_dir.join("child");
         let target_file = temp_dir.path().join("target_file.txt");
         let symlink_parent = temp_dir.path().join("symlink_parent");
 
         // Создаём структуру директорий (используем create_dir_all для надёжности)
-        fs::create_dir_all(&child_dir).expect("Не удалось создать директорию");
-        fs::write(&target_file, "test content").expect("Не удалось создать файл");
+        fs::create_dir_all(&child_dir)?;
+        fs::write(&target_file, "test content")?;
 
         // Создаём symlink на родительскую директорию
-        symlink(&parent_dir, &symlink_parent).expect("Не удалось создать symlink");
+        symlink(&parent_dir, &symlink_parent)?;
 
         let validator = PathValidator::new(
             255,
@@ -1221,15 +1232,17 @@ mod validation_path_tests {
 
         // Очищаем тестовые файлы
         let _ = fs::remove_file(&symlink_parent);
+
+        Ok(())
     }
 
     /// Тест: Проверка нескольких уровней родительских директорий
     #[test]
-    fn test_validate_no_symlinks_multiple_parent_levels() {
+    fn test_validate_no_symlinks_multiple_parent_levels() -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
         use std::os::unix::fs::symlink;
 
-        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let temp_dir = tempfile::tempdir()?;
         let level1 = temp_dir.path().join("level1");
         let level2 = level1.join("level2");
         let level3 = level2.join("level3");
@@ -1237,11 +1250,11 @@ mod validation_path_tests {
         let symlink_level1 = temp_dir.path().join("symlink_l1");
 
         // Создаём структуру директорий
-        fs::create_dir_all(&level3).expect("Не удалось создать директорию");
-        fs::write(&target, "test").expect("Не удалось создать файл");
+        fs::create_dir_all(&level3)?;
+        fs::write(&target, "test")?;
 
         // Создаём symlink на level1
-        symlink(&level1, &symlink_level1).expect("Не удалось создать symlink");
+        symlink(&level1, &symlink_level1)?;
 
         let validator = PathValidator::new(
             255,
@@ -1264,16 +1277,18 @@ mod validation_path_tests {
 
         // Очищаем
         let _ = fs::remove_file(&symlink_level1);
+
+        Ok(())
     }
 
     /// Тест: Валидные пути без symlink принимаются
     #[test]
-    fn test_validate_no_symlinks_accepts_normal_paths() {
+    fn test_validate_no_symlinks_accepts_normal_paths() -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
 
-        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let temp_dir = tempfile::tempdir()?;
         let file_path = temp_dir.path().join("normal_file.txt");
-        fs::write(&file_path, "test").expect("Не удалось создать файл");
+        fs::write(&file_path, "test")?;
 
         let validator = PathValidator::new(
             255,
@@ -1287,12 +1302,14 @@ mod validation_path_tests {
         // Нормальная директория должна приниматься
         let result = validator.validate_no_symlinks(temp_dir.path());
         assert!(result.is_ok(), "Нормальные директории должны приниматься");
+
+        Ok(())
     }
 
     /// Тест: Несуществующие файлы принимаются (проверка не применима)
     #[test]
     fn test_validate_no_symlinks_nonexistent_file() {
-        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let temp_dir = tempfile::tempdir().unwrap();
         let nonexistent = temp_dir.path().join("nonexistent_file.txt");
 
         let validator = PathValidator::new(
@@ -1307,21 +1324,21 @@ mod validation_path_tests {
 
     /// Тест: Глубокая проверка родительских директорий
     #[test]
-    fn test_validate_no_symlinks_deep_hierarchy() {
+    fn test_validate_no_symlinks_deep_hierarchy() -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
         use std::os::unix::fs::symlink;
 
-        let temp_dir = tempfile::tempdir().expect("Не удалось создать временную директорию");
+        let temp_dir = tempfile::tempdir()?;
         let deep_dir = temp_dir.path().join("a").join("b").join("c").join("d");
         let target = temp_dir.path().join("target");
         let symlink_deep = temp_dir.path().join("symlink_deep");
 
         // Создаём глубокую структуру
-        fs::create_dir_all(&deep_dir).expect("Не удалось создать директорию");
-        fs::write(&target, "test").expect("Не удалось создать файл");
+        fs::create_dir_all(&deep_dir)?;
+        fs::write(&target, "test")?;
 
         // Создаём symlink на глубокую директорию
-        symlink(&deep_dir, &symlink_deep).expect("Не удалось создать symlink");
+        symlink(&deep_dir, &symlink_deep)?;
 
         let validator = PathValidator::new(
             255,
@@ -1340,5 +1357,7 @@ mod validation_path_tests {
 
         // Очищаем
         let _ = fs::remove_file(&symlink_deep);
+
+        Ok(())
     }
 }
