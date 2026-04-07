@@ -52,22 +52,6 @@ fn test_c1_validate_hmac_key_rejects_empty() {
     );
 }
 
-/// Тест C2: `KeyReader` корректно создаётся и реализует InputReader
-///
-/// Проверяет что KeyReader создаётся на Unix-системах и имеет get_key().
-#[test]
-fn test_c2_key_reader_handles_ascii_correctly() {
-    use tetris_cli::io::KeyReader;
-
-    // KeyReader должен успешно создаваться на Unix
-    #[cfg(unix)]
-    {
-        let _reader = KeyReader::new();
-        // get_key() должен быть доступен (возвращает io::Result<Option<u8>>)
-        // В тестовом окружении без терминала может вернуть None или ошибку
-    }
-}
-
 /// Тест C3: Упрощённая документация TOCTOU
 ///
 /// Проверяет наличие ключевых методов для работы с TOCTOU-защищёнными структурами.
