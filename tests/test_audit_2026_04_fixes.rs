@@ -212,6 +212,7 @@ fn test_h4_sort_by_key_in_leaderboard() {
 /// Проверяет что константа `FRAME_DELAY_MS` определена в модуле constants.
 /// Примечание: константа FPS была удалена как неиспользуемая (Пакет 3, аудит).
 #[test]
+#[allow(clippy::assertions_on_constants)]
 fn test_h7_frame_delay_ms_defined() {
     use tetris_cli::constants::FRAME_DELAY_MS;
 
@@ -543,6 +544,7 @@ fn test_l4_simplified_exports() {
 
 /// Интеграционный тест: Проверка всех HIGH исправлений
 #[test]
+#[allow(clippy::assertions_on_constants)]
 fn test_all_high_fixes_integration() {
     // H1: to_string() вместо format!()
     let score = 1000u128;
@@ -616,6 +618,7 @@ fn test_all_low_fixes_integration() {
 
 /// Интеграционный тест: Полная проверка всех 26 исправлений
 #[test]
+#[allow(clippy::assertions_on_constants)]
 fn test_all_26_audit_fixes_complete_integration() {
     // CRITICAL (3)
     use tetris_cli::config::keys::validate_hmac_key;

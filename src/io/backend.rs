@@ -298,12 +298,14 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_wall_kick_offset_bounds() {
         assert!(crate::constants::GRID_WIDTH > 0);
         assert!(crate::constants::GRID_HEIGHT > 0);
     }
 
     #[test]
+    #[allow(clippy::used_underscore_items)]
     fn test_terminal_traits_are_send_sync() {
         fn _assert_terminal_backend<T: TerminalBackend>() {}
         _assert_terminal_backend::<TermionBackend>();

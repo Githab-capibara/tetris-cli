@@ -70,7 +70,7 @@ impl PathError {
 
     /// Получить тип ошибки.
     #[must_use]
-    pub fn kind(&self) -> PathErrorKind {
+    pub const fn kind(&self) -> PathErrorKind {
         self.kind
     }
 }

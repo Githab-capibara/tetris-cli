@@ -270,8 +270,8 @@ impl Tetromino {
         // неконсистентное состояние фигуры при раннем возврате.
         let mut new_coords: [(i16, i16); 4] = [(0, 0); 4];
 
-        for i in 0..4 {
-            let (x, y) = self.coords[i];
+        for (i, &coord) in self.coords.iter().enumerate() {
+            let (x, y) = coord;
             let (new_x, new_y) = match dir {
                 // Против часовой: (x, y) -> (y, -x)
                 RotationDirection::CounterClockwise => {

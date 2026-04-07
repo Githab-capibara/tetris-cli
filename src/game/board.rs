@@ -323,16 +323,14 @@ mod tests {
         let mut board = GameBoard::new();
 
         // Заполнение линии
-        for x in 0..GRID_WIDTH {
-            board
-                .set_block(x, 10, 1)
-                .expect("set_block should succeed for valid coordinates");
+        for row in board.get_blocks_mut() {
+            for cell in row.iter_mut() {
+                *cell = 1;
+            }
         }
 
         // Проверка через get_blocks
         let blocks = board.get_blocks();
-        for x in 0..GRID_WIDTH {
-            assert_eq!(blocks[10][x], 1);
-        }
+        assert!(blocks[10].iter().all(|&cell| cell == 1));
     }
 }

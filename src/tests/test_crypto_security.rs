@@ -40,7 +40,7 @@ fn test_hmac_different_data() {
 fn test_hmac_rejects_tampered_signature() {
     let sig = hmac_sha256("key", "data");
     // Изменяем первый символ
-    let mut tampered = sig.clone();
+    let mut tampered = sig;
     let first_char = tampered.chars().next().unwrap();
     let new_char = if first_char == '0' { '1' } else { '0' };
     tampered.replace_range(..1, &new_char.to_string());

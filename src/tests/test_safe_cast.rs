@@ -233,6 +233,8 @@ fn test_safe_f32_to_u32_negative_values() {
 /// Проверяет что `u32::MAX` конвертируется корректно.
 #[test]
 fn test_safe_f32_to_u32_u32_max() {
+    const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
+
     // Тест точного значения u32::MAX
     assert_eq!(
         safe_f32_to_u32(u32::MAX as f32),
@@ -241,7 +243,6 @@ fn test_safe_f32_to_u32_u32_max() {
     );
 
     // Тест значения u32::MAX с использованием точной границы
-    const MAX_SAFE_F32_FOR_U32: f32 = 4_294_967_295.0;
     assert_eq!(
         safe_f32_to_u32(MAX_SAFE_F32_FOR_U32),
         u32::MAX,
@@ -375,28 +376,25 @@ fn test_safe_f32_to_u32_stress_test() {
         f32::MAX,
     ];
 
-    for &val in test_values.iter() {
+    for &val in &test_values {
         let result = safe_f32_to_u32(val);
         // Проверка что результат не вызвал паники
         // u32 не может быть больше u32::MAX - проверка на уровне типа
         assert!(
             result <= u32::MAX,
-            "Результат должен быть <= u32::MAX (val={}, result={})",
-            val,
-            result
+            "Результат должен быть <= u32::MAX (val={val}, result={result})"
         );
     }
 
     // Тест специальных значений
     let special_values: [f32; 5] = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0, -100.0];
 
-    for &val in special_values.iter() {
+    for &val in &special_values {
         let result = safe_f32_to_u32(val);
         // Для NaN, infinity и отрицательных значений результат должен быть 0
         assert_eq!(
             result, 0,
-            "Специальные значения должны конвертироваться в 0 (val={})",
-            val
+            "Специальные значения должны конвертироваться в 0 (val={val})"
         );
     }
 
@@ -433,7 +431,7 @@ fn test_safe_f32_to_u32_no_panic() {
     ];
 
     // Проверяем что ни одно значение не вызывает панику
-    for &val in test_values.iter() {
+    for &val in &test_values {
         let _result = safe_f32_to_u32(val);
         // Если тест дошёл до этой точки, значит паники не было
     }
@@ -455,7 +453,7 @@ fn test_safe_f32_to_u32_hard_drop_context() {
     let start_y = 0.0;
     let end_y_values: [f32; 5] = [5.0, 10.0, 15.0, 20.0, 25.0];
 
-    for &end_y in end_y_values.iter() {
+    for &end_y in &end_y_values {
         let drop_distance_f32 = (end_y - start_y).abs();
         let drop_distance = safe_f32_to_u32(drop_distance_f32);
 

@@ -433,8 +433,7 @@ fn test_validation_no_panic_on_invalid_values() {
 
         assert!(
             result.is_ok(),
-            "set_fall_speed({}) не должен вызывать панику",
-            value
+            "set_fall_speed({value}) не должен вызывать панику"
         );
         assert!(result.unwrap().is_err(), "Должна вернуться ошибка");
     }
@@ -450,8 +449,7 @@ fn test_validation_no_panic_on_invalid_values() {
 
         assert!(
             result.is_ok(),
-            "set_land_timer({}) не должен вызывать панику",
-            value
+            "set_land_timer({value}) не должен вызывать панику"
         );
         assert!(result.unwrap().is_err(), "Должна вернуться ошибка");
     }
@@ -478,7 +476,7 @@ fn test_validation_stress_test() {
         } else {
             // Валидное значение
             let valid_fall = (i as f32) % MAX_FALL_SPEED;
-            let valid_timer = (i as f64 * 0.001) % LAND_TIME_DELAY_S;
+            let valid_timer = (f64::from(i) * 0.001) % LAND_TIME_DELAY_S;
             assert!(state
                 .set_fall_speed(valid_fall.max(INITIAL_FALL_SPD))
                 .is_ok());

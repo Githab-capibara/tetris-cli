@@ -37,9 +37,7 @@ fn test_score_does_not_exceed_max() {
     // Счёт не должен превышать MAX_SCORE
     assert!(
         score <= MAX_SCORE,
-        "Счёт ({}) не должен превышать MAX_SCORE ({})",
-        score,
-        MAX_SCORE
+        "Счёт ({score}) не должен превышать MAX_SCORE ({MAX_SCORE})"
     );
 
     // Проверяем что MAX_SCORE действительно u128::MAX / 2
@@ -152,17 +150,15 @@ fn test_extreme_level_10000_plus() {
     // Проверяем что счёт корректен и не переполнен
     assert!(
         score <= MAX_SCORE,
-        "Счёт при уровне {} не должен превышать MAX_SCORE",
-        extreme_level
+        "Счёт при уровне {extreme_level} не должен превышать MAX_SCORE"
     );
 
     // Проверяем что бонус за уровень рассчитан корректно
     // Бонус за уровень = LEVEL_BONUS_MULT × (level - 1)
-    let expected_level_bonus = LEVEL_BONUS_MULT.saturating_mul((extreme_level - 1) as u128);
+    let expected_level_bonus = LEVEL_BONUS_MULT.saturating_mul(u128::from(extreme_level - 1));
     assert!(
         expected_level_bonus <= MAX_SCORE,
-        "Бонус за уровень {} не должен превышать MAX_SCORE",
-        expected_level_bonus
+        "Бонус за уровень {expected_level_bonus} не должен превышать MAX_SCORE"
     );
 }
 
