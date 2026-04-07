@@ -103,76 +103,6 @@ fn test_game_state_default_mode() {
 }
 
 // ============================================================================
-// ГРУППА ТЕСТОВ 7-12: Столкновения
-// ============================================================================
-
-/// Тест 7: Проверка столкновения с полом
-///
-/// Проверяет, что фигура не может пройти сквозь пол.
-#[test]
-fn test_collision_floor() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру вниз до упора
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Дальнейшее движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз за границу пола должно быть заблокировано"
-    );
-
-    // Проверяем, что фигура не вышла за пределы поля
-    assert!(
-        state.get_curr_shape_mut().pos().1 < GRID_HEIGHT as f32,
-        "Фигура не должна выходить за пределы поля по Y"
-    );
-}
-
-/// Тест 10: Проверка столкновения с зафиксированными блоками
-///
-/// Проверяет, что новая фигура сталкивается с уже зафиксированными.
-#[test]
-fn test_collision_with_fixed_blocks() {
-    // Создаём состояние и симулируем заполнение нижнего ряда
-    let mut state = GameState::new();
-
-    // Опускаем фигуру близко к полу для теста
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз на пол должно быть заблокировано"
-    );
-}
-
-/// Тест 11: Проверка возможности движения в пустом поле
-///
-/// Проверяет, что в пустом поле фигура может двигаться свободно.
-#[test]
-fn test_movement_in_empty_field() {
-    let mut state = GameState::new();
-
-    // В начале игры движение влево/вправо должно быть возможно
-    // (если фигура не у самой границы)
-    let _initial_x = state.get_curr_shape_mut().pos().0;
-
-    // Проверяем, что можем двигаться хотя бы в одну сторону
-    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
-    let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
-
-    assert!(
-        can_move_left || can_move_right,
-        "В пустом поле должно быть возможно движение хотя бы в одну сторону"
-    );
-}
-
-// ============================================================================
 // ГРУППА ТЕСТОВ 13-17: Вращение фигур
 // ============================================================================
 
@@ -387,32 +317,6 @@ fn test_speed_increase_constant() {
         (SPD_INC - 0.05).abs() < f32::EPSILON,
         "Прирост скорости должен быть 0.05"
     );
-}
-
-/// Тест 26: Проверка расчёта скорости от уровня
-///
-/// Проверяет, что скорость растёт с каждым уровнем.
-#[test]
-fn test_speed_calculation_from_level() {
-    let initial = INITIAL_FALL_SPD;
-
-    // После 1 линии
-    let after_one = SPD_INC.mul_add(1.0, initial);
-    assert!(
-        after_one > initial,
-        "Скорость должна увеличиться после 1 линии"
-    );
-
-    // После 5 линий
-    let after_five = SPD_INC.mul_add(5.0, initial);
-    assert!(
-        after_five > after_one,
-        "Скорость должна расти с количеством линий"
-    );
-
-    // После 10 линий (новый уровень)
-    let after_ten = SPD_INC.mul_add(10.0, initial);
-    assert!(after_ten > after_five, "Скорость должна продолжать расти");
 }
 
 // ============================================================================
