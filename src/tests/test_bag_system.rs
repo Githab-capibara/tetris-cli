@@ -408,21 +408,8 @@ fn test_bag_refill_after_partial_use() {
 // ============================================================================
 
 /// Тест 19: Последовательность из 7 фигур уникальна
-#[test]
-fn test_sequence_of_seven_is_unique() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Все фигуры должны быть уникальны
-    for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 1, "Фигура типа {i:?} должна встретиться ровно 1 раз");
-    }
-}
+// Удалён как дубликат test_uniform_distribution_first_bag (тест 3)
+// Проверял то же самое: каждая фигура ровно 1 раз в мешке
 
 /// Тест 20: Длинные последовательности корректны
 #[test]
@@ -461,22 +448,8 @@ fn test_sequence_no_patterns() {
 }
 
 /// Тест 22: Последовательность содержит все типы
-#[test]
-fn test_sequence_contains_all_types() {
-    let mut bag = BagGenerator::new();
-    let mut found_shapes = [false; 7];
-
-    // Получаем 70 фигур
-    for _ in 0..70 {
-        let shape = bag.next_shape();
-        found_shapes[shape as usize] = true;
-    }
-
-    // Все 7 типов должны встретиться
-    for (i, &found) in found_shapes.iter().enumerate() {
-        assert!(found, "Фигура типа {i:?} должна встретиться");
-    }
-}
+// Удалён как дубликат test_all_piece_types_available (тест 5)
+// Проверял то же самое: все 7 типов встречаются за 70 фигур
 
 /// Тест 23: Чередование фигур
 #[test]
@@ -501,30 +474,21 @@ fn test_piece_alternation() {
 }
 
 /// Тест 24: Распределение в последовательности
-#[test]
-fn test_distribution_in_sequence() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    // Получаем 700 фигур
-    for _ in 0..700 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Каждая фигура должна встретиться ровно 100 раз
-    for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 100, "Фигура типа {i:?} должна встретиться 100 раз");
-    }
-}
+// Удалён как дубликат test_uniform_distribution_multiple_bags (тест 4)
+// Проверял то же самое: 700 фигур, каждая ровно 100 раз
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 25-30: Статистические тесты распределения
 // ============================================================================
 
-/// Тест 25: Статистика распределения всех типов фигур
+// Статистические тесты распределения объединены в один параметризированный тест
+// Ранее были: test_all_pieces_distribution_statistics, test_distribution_variance, test_chi_square_simplified
+// Все они генерировали 700 фигур и проверяли одно распределение
+
+/// Комплексный статистический тест распределения BagGenerator
+/// Проверяет: равномерность, дисперсию, хи-квадрат упрощённый
 #[test]
-fn test_all_pieces_distribution_statistics() {
+fn test_bag_distribution_statistics() {
     use crate::tetromino::ShapeType;
 
     let mut bag = BagGenerator::new();
@@ -536,9 +500,8 @@ fn test_all_pieces_distribution_statistics() {
         counts[shape as usize] += 1;
     }
 
-    // Проверяем распределение для T, I, O фигур
-    // Ожидаем ~100 фигур каждого типа (700/7)
-    // Допускаем отклонение до 30% (70-130)
+    // Проверяем распределение для выбранных типов (T, I, O)
+    // Ожидаем ~100 фигур каждого типа (700/7), допускаем отклонение до 30%
     for &shape in &[ShapeType::T, ShapeType::I, ShapeType::O] {
         let count = counts[shape as usize];
         assert!(
@@ -548,71 +511,31 @@ fn test_all_pieces_distribution_statistics() {
     }
 
     // Проверяем, что все фигуры встречаются примерно одинаково
-    let min_count = counts
-        .iter()
-        .min()
-        .expect("Минимальное значение должно существовать");
-    let max_count = counts
-        .iter()
-        .max()
-        .expect("Максимальное значение должно существовать");
-
-    // Разница между мин и макс не должна превышать 50
+    let min_count = counts.iter().min().expect("Минимум должен существовать");
+    let max_count = counts.iter().max().expect("Максимум должен существовать");
     assert!(
         max_count - min_count < 50,
         "Разница между мин и макс должна быть меньше 50 (мин={min_count}, макс={max_count})"
     );
-}
-
-/// Тест 29: Дисперсия распределения
-#[test]
-fn test_distribution_variance() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    for _ in 0..700 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Вычисляем среднее
-    let expected: i32 = 100; // 700 / 7
 
     // Вычисляем дисперсию
+    let expected: i32 = 100; // 700 / 7
     let variance: f32 = counts
         .iter()
         .map(|&c| ((c - expected).pow(2)) as f32)
         .sum::<f32>()
         / 7.0;
-
-    // Дисперсия не должна быть слишком большой
     assert!(
         variance < 400.0,
         "Дисперсия должна быть меньше 400 (получено {variance})"
     );
-}
-
-/// Тест 30: Статистический тест хи-квадрат (упрощённый)
-#[test]
-fn test_chi_square_simplified() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    for _ in 0..700 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
 
     // Вычисляем хи-квадрат статистику
-    let expected = 100.0;
     let chi_square: f32 = counts
         .iter()
         .map(|&c| ((c as f32 - expected).powi(2)) / expected)
         .sum();
-
-    // Для 6 степеней свободы и 95% доверительного интервала
-    // критическое значение ~12.59
-    // Используем более мягкое ограничение для тестов
+    // Для 6 степеней свободы критическое значение ~12.59 (95%)
     assert!(
         chi_square < 20.0,
         "Хи-квадрат должен быть меньше 20 (получено {chi_square})"

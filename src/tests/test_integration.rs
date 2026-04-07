@@ -323,12 +323,22 @@ fn test_all_shapes_in_game() {
     ];
 
     for &shape_type in &shapes {
-        // Создаём фигуру вручную
-        let tetromino = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
+        // Создаём фигуру текущего типа из цикла
+        let tetromino = Tetromino::new(
+            (4.0, 0.0),
+            shape_type,
+            SHAPE_COORDS[shape_type as usize],
+            shape_type as u8,
+        );
 
         // Проверяем, что фигура валидна
         assert!(tetromino.fg() < 7, "Индекс цвета должен быть валидным");
         assert_eq!(tetromino.coords().len(), 4, "У фигуры должно быть 4 блока");
+        assert_eq!(
+            tetromino.shape(),
+            shape_type,
+            "Тип фигуры должен совпадать с ожидаемым"
+        );
     }
 }
 

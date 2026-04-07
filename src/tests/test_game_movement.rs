@@ -499,37 +499,6 @@ fn test_rotation_at_wall_and_movement() {
 // ГРУППА ТЕСТОВ 49-50: Движение с удержанием фигуры
 // ============================================================================
 
-/// Тест 49: Движение после удержания фигуры
-///
-/// Проверяет, что новая фигура после hold может двигаться.
-#[test]
-fn test_movement_after_hold() {
-    let state = GameState::new();
-
-    // Проверяем, что фигура может двигаться до hold
-    let can_move_before = state.can_move_curr_shape_direction(Direction::Left)
-        || state.can_move_curr_shape_direction(Direction::Right);
-    assert!(
-        can_move_before,
-        "Фигура должна иметь возможность движения до удержания"
-    );
-
-    // После hold (если реализовано) новая фигура также должна двигаться
-    // В текущей реализации просто проверяем базовую возможность
-}
-
-/// Тест 50: Движение новой фигуры после hold
-#[test]
-fn test_new_piece_movement_after_hold() {
-    let state = GameState::new();
-
-    // В начале игры новая фигура должна иметь возможность движения
-    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
-    let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
-    let can_move_down = state.can_move_curr_shape_direction(Direction::Down);
-
-    assert!(
-        can_move_left || can_move_right || can_move_down,
-        "Новая фигура должна иметь возможность хотя бы одного движения"
-    );
-}
+// Тесты test_movement_after_hold и test_new_piece_movement_after_hold удалены.
+// Они не выполняли операцию hold и проверяли только начальное состояние GameState,
+// что уже покрыто другими тестами. Если hold будет реализован, тесты нужно написать заново.
