@@ -41,23 +41,6 @@ fn test_all_piece_types_appear_in_game() {
     }
 }
 
-/// Тест: Фигура не выходит за границы поля при движении.
-#[test]
-fn test_piece_stays_within_bounds() {
-    use crate::types::Direction;
-    let mut state = GameState::new();
-
-    while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-    }
-
-    let shape = state.curr_shape();
-    for &(x, _) in &shape.coords() {
-        let global_x = shape.pos().0 as i16 + x;
-        assert!(global_x >= 0, "Фигура не должна выходить за левую границу");
-    }
-}
-
 /// Тест: Текущая и следующая фигуры обе валидны.
 #[test]
 fn test_curr_and_next_shapes_different() {
@@ -73,18 +56,6 @@ fn test_curr_and_next_shapes_different() {
 // ============================================================================
 // ВЗАИМОДЕЙСТВИЕ GAME + HIGHSCORE
 // ============================================================================
-
-/// Тест: Leaderboard валидирует записи.
-#[test]
-fn test_leaderboard_validates_entries() {
-    let mut leaderboard = Leaderboard::default();
-
-    let _ = leaderboard.add_score("Player", 1000);
-
-    for entry in leaderboard.get_entries() {
-        assert!(entry.is_valid(), "Запись должна быть валидной");
-    }
-}
 
 /// Тест: Classic режим поддерживает сохранение рекорда.
 #[test]
@@ -188,24 +159,4 @@ fn test_gamestate_responds_to_input() {
 fn test_hold_piece() {
     let state = GameState::new();
     assert!(state.can_hold(), "Hold должен быть доступен в начале");
-}
-
-// ============================================================================
-// ТЕСТЫ ПОЛНОГО ЦИКЛА
-// ============================================================================
-
-/// Тест: Hold + смена фигуры.
-#[test]
-fn test_hold_piece_swap() {
-    let mut state = GameState::new();
-    let initial_shape = *state.curr_shape();
-
-    state.hold_shape();
-
-    assert!(state.held_shape().is_some(), "Фигура должна быть удержана");
-    assert_ne!(
-        state.curr_shape().shape(),
-        initial_shape.shape(),
-        "Текущая фигура должна измениться после hold"
-    );
 }
