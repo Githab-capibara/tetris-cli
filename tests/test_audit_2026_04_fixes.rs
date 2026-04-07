@@ -518,7 +518,7 @@ fn test_l3_simplified_error_constructors() {
 /// Проверяет что exports.rs содержит только необходимые экспорты.
 #[test]
 fn test_l4_simplified_exports() {
-    // Импорты должны быть в начале функции (Clippy: items_after_statements)
+    // Импорты через exports модуль
     use tetris_cli::exports::{
         BagGenerator, ControlsConfig, Direction, GameState, Leaderboard, RotationDirection,
         ShapeType,
@@ -611,8 +611,8 @@ fn test_all_low_fixes_integration() {
     use tetris_cli::errors::GameError;
     let _err = GameError::ValidationError("test".to_string());
 
-    // L4: Упрощённый exports
-    use tetris_cli::exports::GameState;
+    // L4: Упрощённый exports — используем прямой путь
+    use tetris_cli::game::state::GameState;
     let _state = GameState::new();
 }
 
@@ -622,6 +622,7 @@ fn test_all_26_audit_fixes_complete_integration() {
     // CRITICAL (3)
     use tetris_cli::config::keys::validate_hmac_key;
     use tetris_cli::highscore::leaderboard::LeaderboardEntry;
+    use tetris_cli::io::canvas::Canvas;
     use tetris_cli::io::KeyReader;
 
     assert!(validate_hmac_key("valid_key_at_least_16", "TEST").is_ok());
@@ -665,7 +666,7 @@ fn test_all_26_audit_fixes_complete_integration() {
     // LOW (3)
     use tetris_cli::constants::KEY_BACKSPACE;
     use tetris_cli::errors::GameError;
-    use tetris_cli::exports::GameState as ExportedState;
+    use tetris_cli::game::state::GameState as ExportedState;
 
     assert_eq!(KEY_BACKSPACE, 127);
     let _ = KEY_BACKSPACE; // suppress unused

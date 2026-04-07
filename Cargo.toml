@@ -4,7 +4,7 @@ version = "0.96.14"
 edition = "2021"
 rust-version = "1.75"
 description = "Классическая игра Тетрис для терминала Linux/Unix"
-license = "GPL-3.0"
+license = "GPL-3.0-or-later"
 repository = "https://github.com/Githab-capibara/tetris-cli"
 documentation = "https://github.com/Githab-capibara/tetris-cli/tree/master/docs"
 readme = "README.md"
@@ -26,7 +26,7 @@ rand = "0.9"
 confy = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-blake3 = "1.5"
+blake3 = "1.5"  # Совместимое обновление до 1.8 доступно (semver minor)
 hex = "0.4"
 libc = "0.2"
 thiserror = "2.0"
@@ -34,7 +34,7 @@ hmac = "0.12"
 sha2 = "0.10"
 
 [dev-dependencies]
-tempfile = "3.10"
+tempfile = "3.23"
 criterion = "0.5"
 serial_test = "3.0"
 
@@ -48,6 +48,8 @@ required-features = ["bench"]
 lto = true
 codegen-units = 1
 opt-level = 3
+strip = "symbols"
+panic = "abort"
 
 [profile.test]
 opt-level = 1
