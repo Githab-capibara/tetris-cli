@@ -98,4 +98,10 @@ mod tests {
     mod test_safe_cast;
     mod test_score_overflow_protection;
     mod test_state_validation;
+
+    // Пакет 9: новые тесты (PROB-156..175)
+    mod test_panic_handling;
+    mod test_module_isolation;
+    mod test_crypto_security;
+    mod test_edge_cases;
 }
