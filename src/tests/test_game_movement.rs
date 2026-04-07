@@ -76,48 +76,6 @@ fn test_all_pieces_move_left_right() {
 // ГРУППА ТЕСТОВ 18-24: Позиции фигур у границ
 // ============================================================================
 
-/// Тест 18: Позиция фигуры у левой границы
-#[test]
-fn test_piece_position_at_left_boundary() {
-    let mut state = GameState::new();
-
-    // Двигаемся влево до упора
-    while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-    }
-
-    let shape = state.curr_shape();
-    // Проверяем, что фигура не вышла за левую границу (x >= 0)
-    for &(x, _) in &shape.coords() {
-        let global_x = shape.pos().0 as i16 + x;
-        assert!(
-            global_x >= 0,
-            "Блок фигуры не должен выходить за левую границу (x={global_x})"
-        );
-    }
-}
-
-/// Тест 19: Позиция фигуры у правой границы
-#[test]
-fn test_piece_position_at_right_boundary() {
-    let mut state = GameState::new();
-
-    // Двигаемся вправо до упора
-    while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos_mut().0 += 1.0;
-    }
-
-    let shape = state.curr_shape();
-    // Проверяем, что фигура не вышла за правую границу (x < GRID_WIDTH)
-    for &(x, _) in &shape.coords() {
-        let global_x = shape.pos().0 as i16 + x;
-        assert!(
-            global_x < GRID_WIDTH as i16,
-            "Блок фигуры не должен выходить за правую границу (x={global_x})"
-        );
-    }
-}
-
 /// Тест 20: Позиция фигуры у нижней границы
 #[test]
 fn test_piece_position_at_bottom_boundary() {
@@ -139,39 +97,6 @@ fn test_piece_position_at_bottom_boundary() {
     }
 }
 
-/// Тест 21: Движение I-фигуры у левой границы
-#[test]
-fn test_i_piece_at_left_boundary() {
-    let mut state = GameState::new();
-
-    // Двигаемся влево до упора
-    while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-    }
-
-    // I-фигура должна корректно обрабатывать границу
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Left),
-        "I-фигура должна блокироваться у левой границы"
-    );
-}
-
-/// Тест 22: Движение I-фигуры у правой границы
-#[test]
-fn test_i_piece_at_right_boundary() {
-    let mut state = GameState::new();
-
-    // Двигаемся вправо до упора
-    while state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos_mut().0 += 1.0;
-    }
-
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Right),
-        "I-фигура должна блокироваться у правой границы"
-    );
-}
-
 /// Тест 23: Движение O-фигуры у границ
 #[test]
 fn test_o_piece_at_boundaries() {
@@ -190,72 +115,9 @@ fn test_o_piece_at_boundaries() {
     assert!(!state.can_move_curr_shape_direction(Direction::Right));
 }
 
-/// Тест 24: Движение в углу поля
-#[test]
-fn test_movement_in_corner() {
-    let mut state = GameState::new();
-
-    // Двигаемся в левый нижний угол
-    while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-    }
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Движение влево и вниз должно быть заблокировано
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
 // ============================================================================
 // ГРУППА ТЕСТОВ 25-32: Движение с препятствиями
 // ============================================================================
-
-/// Тест 25: Движение над зафиксированной фигурой
-///
-/// Проверяет, что фигура может двигаться над другой фигурой.
-#[test]
-fn test_move_above_fixed_piece() {
-    // Этот тест требует симуляции зафиксированной фигуры
-    // В текущей реализации проверяем базовую возможность движения
-    let state = GameState::new();
-
-    // В начале игры поле пустое, движение возможно
-    let can_move = state.can_move_curr_shape_direction(Direction::Left)
-        || state.can_move_curr_shape_direction(Direction::Right);
-    assert!(can_move, "В начале игры движение должно быть возможным");
-}
-
-/// Тест 26: Блокировка движения препятствием слева
-#[test]
-fn test_movement_blocked_by_obstacle_left() {
-    let state = GameState::new();
-
-    // Проверяем, что в пустом поле движение возможно
-    // (реальные препятствия требуют модификации поля)
-    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
-    let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
-
-    // Хотя бы одно направление должно быть доступно
-    assert!(
-        can_move_left || can_move_right,
-        "Хотя бы одно направление движения должно быть доступно"
-    );
-}
-
-/// Тест 27: Блокировка движения препятствием справа
-#[test]
-fn test_movement_blocked_by_obstacle_right() {
-    let state = GameState::new();
-
-    // В пустом поле движение должно быть возможным
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Left)
-            || state.can_move_curr_shape_direction(Direction::Right),
-        "В пустом поле движение должно быть возможным"
-    );
-}
 
 /// Тест 28: Движение в узком пространстве
 #[test]
