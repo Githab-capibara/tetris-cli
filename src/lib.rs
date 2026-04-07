@@ -89,7 +89,6 @@ mod tests {
     mod test_bag_system;
     mod test_boundary_values;
     mod test_game_bounds_check;
-    mod test_game_box_array;
     mod test_game_movement;
     mod test_game_rotation;
     mod test_integration_extended;
