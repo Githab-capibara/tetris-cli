@@ -50,7 +50,10 @@ use super::mode_trait::GameModeTrait;
 use super::stats::GameStats;
 use std::fmt::Write;
 
+// StringCache предназначен для будущего использования в тестах
+// и для бенчмарков кэширования строк
 #[cfg(test)]
+#[allow(dead_code)]
 #[derive(Clone, Default)]
 pub struct StringCache {
     /// Кэшированная строка счёта.
@@ -78,6 +81,7 @@ pub struct StringCache {
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 impl StringCache {
     /// Создать новый кэш строк.
     ///
