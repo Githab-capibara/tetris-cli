@@ -207,9 +207,9 @@ fn test_h4_sort_by_key_in_leaderboard() {
     );
 }
 
-/// Тест H7: Константа FRAME_DELAY_MS определена
+/// Тест H7: Константа `FRAME_DELAY_MS` определена
 ///
-/// Проверяет что константа FRAME_DELAY_MS определена в модуле constants.
+/// Проверяет что константа `FRAME_DELAY_MS` определена в модуле constants.
 /// Примечание: константа FPS была удалена как неиспользуемая (Пакет 3, аудит).
 #[test]
 fn test_h7_frame_delay_ms_defined() {
@@ -310,7 +310,7 @@ fn test_h10_consolidated_config_load_methods() {
 
 /// Тест M1: HMAC-функции работают корректно (базовый smoke-тест)
 ///
-/// Проверяет что hash() и generate_salt() дают стабильные результаты.
+/// Проверяет что `hash()` и `generate_salt()` дают стабильные результаты.
 #[test]
 fn test_m1_no_redundant_ignore_examples_in_lib() {
     use tetris_cli::crypto::{generate_salt, hash};
@@ -328,9 +328,9 @@ fn test_m1_no_redundant_ignore_examples_in_lib() {
     assert_eq!(s1.len(), 64, "Длина соли должна быть 64 символа");
 }
 
-/// Тест M3: Canvas::default() корректно создаётся и дропается
+/// Тест M3: `Canvas::default()` корректно создаётся и дропается
 ///
-/// Проверяет что Canvas можно создать через default() и что Drop не паникует.
+/// Проверяет что Canvas можно создать через `default()` и что Drop не паникует.
 #[test]
 fn test_m3_simplified_canvas_drop() {
     use tetris_cli::io::Canvas;
@@ -342,9 +342,9 @@ fn test_m3_simplified_canvas_drop() {
     // без паники
 }
 
-/// Тест M4: #[must_use] атрибуты на криптографических функциях
+/// Тест M4: #[`must_use`] атрибуты на криптографических функциях
 ///
-/// Проверяет что функции hash/generate_salt/hmac_sha256 имеют #[must_use]
+/// Проверяет что функции `hash/generate_salt/hmac_sha256` имеют #[`must_use`]
 /// и возвращают корректные длины результатов.
 #[test]
 fn test_m4_must_use_only_on_critical_methods() {

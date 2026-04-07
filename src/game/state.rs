@@ -11,7 +11,7 @@
 //! `GameState` намеренно содержит множество полей — это центральная структура игры,
 //! которая координирует все игровые компоненты. Рефакторинг на отдельные сервисы
 //! стал бы breaking change. Вместо этого используется композиция: GameState делегирует
-//! специализированным компонентам (GameBoard, ScoreBoard, FigureManager, AnimationState).
+//! специализированным компонентам (`GameBoard`, `ScoreBoard`, `FigureManager`, `AnimationState`).
 //! Все методы-делегаты предоставляют удобный доступ к вложенным компонентам.
 //!
 //! ## Исправление #1 (Разделение `GameState`)
@@ -210,8 +210,8 @@ impl GameMode {
 ///
 /// ## PROB-134: SRP ответственность
 /// GameState отвечает за координацию игровых компонентов, но не за их реализацию.
-/// Делегирование: GameBoard — состояние поля, ScoreBoard — очки/уровни,
-/// FigureManager — фигуры, AnimationState — анимации, GameStats — статистика.
+/// Делегирование: `GameBoard` — состояние поля, `ScoreBoard` — очки/уровни,
+/// `FigureManager` — фигуры, `AnimationState` — анимации, `GameStats` — статистика.
 /// Это обеспечивает разделение ответственности через композицию.
 ///
 /// # Архитектурные заметки
@@ -721,7 +721,7 @@ impl GameState {
     /// Возвращает [`crate::errors::GameError::ValidationError`] если значение является NaN/Infinity или вне диапазона.
     ///
     /// # Валидация (H3)
-    /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
+    /// Проверяет значение на `NaN` и Infinity. Возвращает ошибку при невалидных значениях.
     ///
     /// # DRY-2: Централизация валидации
     /// Использует `validate_f32_finite()` и `validate_f32_range()` для валидации.
@@ -735,7 +735,7 @@ impl GameState {
     ///
     /// # Errors
     /// Возвращает [`crate::errors::GameError::ValidationError`] если:
-    /// - `value` не является конечным числом (NaN или Infinity)
+    /// - `value` не является конечным числом (`NaN` или Infinity)
     /// - `value` выходит за пределы диапазона [`INITIAL_FALL_SPD`, `crate::constants::MAX_FALL_SPEED`]
     #[must_use = "Ошибка установки скорости должна быть обработана"]
     pub fn set_fall_speed(&mut self, value: f32) -> Result<(), crate::errors::GameError> {
@@ -772,11 +772,11 @@ impl GameState {
     ///
     /// # Errors
     /// Возвращает [`crate::errors::GameError::ValidationError`] в следующих случаях:
-    /// - Значение является NaN или Infinity
+    /// - Значение является `NaN` или Infinity
     /// - Значение отрицательное
     ///
     /// # Валидация (H3)
-    /// Проверяет значение на NaN и Infinity. Возвращает ошибку при невалидных значениях.
+    /// Проверяет значение на `NaN` и Infinity. Возвращает ошибку при невалидных значениях.
     /// Отрицательные значения не допускаются.
     ///
     /// # DRY-2: Централизация валидации
@@ -1126,7 +1126,7 @@ mod state_tests {
         );
     }
 
-    /// Тест: spawn_new_piece создаёт новую фигуру без коллизий
+    /// Тест: `spawn_new_piece` создаёт новую фигуру без коллизий
     #[test]
     fn test_spawn_new_piece() {
         let mut state = GameState::new();
@@ -1189,7 +1189,7 @@ mod state_tests {
         );
     }
 
-    /// Тест: обработка NaN в `set_fall_speed()`
+    /// Тест: обработка `NaN` в `set_fall_speed()`
     #[test]
     #[allow(clippy::float_cmp)] // Допустимо для тестов с константными значениями
     fn test_set_fall_speed_nan_rejected() {

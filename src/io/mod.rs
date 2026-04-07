@@ -12,8 +12,8 @@
 //! (crossterm на Windows, pancurses для универсальной поддержки).
 //!
 //! ### PROB-135: Нет абстракции над терминалом
-//! TODO: Canvas и KeyReader привязаны к termion напрямую. В идеале создать
-//! trait TerminalBackend и реализовать для termion/crossterm/pancurses.
+//! TODO: Canvas и `KeyReader` привязаны к termion напрямую. В идеале создать
+//! trait `TerminalBackend` и реализовать для termion/crossterm/pancurses.
 //! Сейчас это breaking change — оставить до следующего крупного релиза.
 //!
 //! Архитектурное улучшение 2026-04-01 (S3): Разделение io.rs на отдельные модули:

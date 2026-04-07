@@ -35,7 +35,7 @@ fn test_hmac_different_data() {
     assert_ne!(sig1, sig2, "Разные данные должны давать разные подписи");
 }
 
-/// Тест: verify_hmac_sha256 отклоняет подделанную подпись
+/// Тест: `verify_hmac_sha256` отклоняет подделанную подпись
 #[test]
 fn test_hmac_rejects_tampered_signature() {
     let sig = hmac_sha256("key", "data");

@@ -14,7 +14,7 @@ use crate::tetromino::{BagGenerator, Tetromino};
 // ВЗАИМОДЕЙСТВИЕ GAME + TETROMINO
 // ============================================================================
 
-/// Тест: Tetromino из BagGenerator корректно инициализируется.
+/// Тест: Tetromino из `BagGenerator` корректно инициализируется.
 #[test]
 fn test_tetromino_from_bag_to_gamestate() {
     let mut bag = BagGenerator::new();
@@ -111,7 +111,7 @@ fn test_leaderboard_sorts_scores() {
     assert_eq!(entries[2].score(), Some(100), "Третий должен быть худшим");
 }
 
-/// Тест: SaveData защита от подделки.
+/// Тест: `SaveData` защита от подделки.
 #[test]
 fn test_savedata_protection() {
     let save = SaveData::from_value(10000);

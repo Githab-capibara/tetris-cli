@@ -2,7 +2,7 @@
 //!
 //! TODO: рассмотреть перенос в tests/ (PROB-120)
 //!
-//! Проверяют что KeyReader корректно возвращает `io::Result<Option<u8>>`
+//! Проверяют что `KeyReader` корректно возвращает `io::Result<Option<u8>>`
 //! и не паникует при различных сценариях ввода.
 
 use crate::io::KeyReader;
@@ -30,7 +30,7 @@ fn test_key_reader_returns_ascii_or_none() {
     }
 }
 
-/// Проверка стабильности KeyReader при многократном использовании.
+/// Проверка стабильности `KeyReader` при многократном использовании.
 #[test]
 fn test_key_reader_stability() {
     // Многократное создание KeyReader без паники

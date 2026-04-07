@@ -13,9 +13,9 @@
 //! - Dependency inversion: код зависит от абстракции, а не от конкретной реализации
 //!
 //! ## PROB-127: Interface Segregation Principle (fat трейты)
-//! Трейт `Renderer` содержит 4 метода (draw_strs, draw_string, flush, reset).
+//! Трейт `Renderer` содержит 4 метода (`draw_strs`, `draw_string`, flush, reset).
 //! Это «жирный» интерфейс — реализация обязана определить все методы.
-//! В идеале разбить на отдельные трейты (TextRenderer, ScreenFlusher), но это
+//! В идеале разбить на отдельные трейты (`TextRenderer`, `ScreenFlusher`), но это
 //! breaking change. TODO: рассмотреть разделение при следующем крупном релизе.
 //!
 //! ## Пример использования

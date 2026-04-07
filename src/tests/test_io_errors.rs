@@ -2,7 +2,7 @@
 //!
 //! TODO: рассмотреть перенос в tests/ (PROB-120)
 //!
-//! Содержит только тесты, проверяющие реальное поведение KeyReader,
+//! Содержит только тесты, проверяющие реальное поведение `KeyReader`,
 //! а не диапазоны байт вручную.
 
 use crate::io::KeyReader;
@@ -22,7 +22,7 @@ fn test_get_key_no_panic_on_read_error() {
     );
 }
 
-/// Тест: проверка Drop реализации и трейта InputReader для KeyReader
+/// Тест: проверка Drop реализации и трейта `InputReader` для `KeyReader`
 #[test]
 fn test_key_reader_basic_properties() {
     // Drop не должен паниковать

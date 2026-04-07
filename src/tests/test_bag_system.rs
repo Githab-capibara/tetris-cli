@@ -485,7 +485,7 @@ fn test_piece_alternation() {
 // Ранее были: test_all_pieces_distribution_statistics, test_distribution_variance, test_chi_square_simplified
 // Все они генерировали 700 фигур и проверяли одно распределение
 
-/// Комплексный статистический тест распределения BagGenerator
+/// Комплексный статистический тест распределения `BagGenerator`
 /// Проверяет: равномерность, дисперсию, хи-квадрат упрощённый
 #[test]
 fn test_bag_distribution_statistics() {

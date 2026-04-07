@@ -147,7 +147,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT
 /// - Улучшения тестируемости логики удаления линий
 ///
 /// # Прямой доступ к GameState
-/// Функция принимает `&mut GameState` напрямую, так как трейт ScoringState
+/// Функция принимает `&mut GameState` напрямую, так как трейт `ScoringState`
 /// был удалён как избыточная абстракция (единственная реализация — GameState).
 pub fn check_rows(state: &mut GameState) -> u32 {
     // Поиск заполненных линий - используем битовую маску для оптимизации

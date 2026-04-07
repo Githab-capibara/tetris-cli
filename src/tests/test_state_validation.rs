@@ -1,16 +1,16 @@
-//! Тесты валидации fall_speed и land_timer.
+//! Тесты валидации `fall_speed` и `land_timer`.
 //!
 //! TODO: рассмотреть перенос в tests/ (PROB-120)
 //!
 //! Этот модуль содержит тесты для проверки валидации значений:
-//! - Проверка возврата ошибки при NaN значении
+//! - Проверка возврата ошибки при `NaN` значении
 //! - Проверка возврата ошибки при Infinity значении
 //! - Проверка корректной работы с валидными значениями
 //! - Проверка clamp значений в допустимых пределах
 //!
 //! ## Исправление H3
 //! Функции `set_fall_speed()` и `set_land_timer()` проверяют значения
-//! на NaN и Infinity, возвращая `GameError::ValidationError` при невалидных значениях.
+//! на `NaN` и Infinity, возвращая `GameError::ValidationError` при невалидных значениях.
 
 use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
 use crate::errors::GameError;
@@ -20,9 +20,9 @@ use crate::game::GameState;
 // ГРУППА ТЕСТОВ 1-5: Валидация fall_speed (NaN и Infinity)
 // ============================================================================
 
-/// Тест 1: Проверка возврата ошибки при NaN значении fall_speed
+/// Тест 1: Проверка возврата ошибки при `NaN` значении `fall_speed`
 ///
-/// Проверяет, что set_fall_speed возвращает ошибку при NaN.
+/// Проверяет, что `set_fall_speed` возвращает ошибку при `NaN`.
 #[test]
 fn test_set_fall_speed_nan_returns_error() {
     let mut state = GameState::new();
@@ -53,9 +53,9 @@ fn test_set_fall_speed_nan_returns_error() {
     );
 }
 
-/// Тест 2: Проверка возврата ошибки при Infinity значении fall_speed
+/// Тест 2: Проверка возврата ошибки при Infinity значении `fall_speed`
 ///
-/// Проверяет, что set_fall_speed возвращает ошибку при +Infinity.
+/// Проверяет, что `set_fall_speed` возвращает ошибку при +Infinity.
 #[test]
 fn test_set_fall_speed_positive_infinity_returns_error() {
     let mut state = GameState::new();
@@ -86,9 +86,9 @@ fn test_set_fall_speed_positive_infinity_returns_error() {
     );
 }
 
-/// Тест 3: Проверка возврата ошибки при -Infinity значении fall_speed
+/// Тест 3: Проверка возврата ошибки при -Infinity значении `fall_speed`
 ///
-/// Проверяет, что set_fall_speed возвращает ошибку при -Infinity.
+/// Проверяет, что `set_fall_speed` возвращает ошибку при -Infinity.
 #[test]
 fn test_set_fall_speed_negative_infinity_returns_error() {
     let mut state = GameState::new();
@@ -112,7 +112,7 @@ fn test_set_fall_speed_negative_infinity_returns_error() {
     }
 }
 
-/// Тест 4: Проверка корректной работы с валидным fall_speed
+/// Тест 4: Проверка корректной работы с валидным `fall_speed`
 ///
 /// Проверяет, что валидные значения устанавливаются корректно.
 #[test]
@@ -141,7 +141,7 @@ fn test_set_fall_speed_valid_values() {
     assert_eq!(state.fall_speed(), another_valid);
 }
 
-/// Тест 5: Проверка валидации fall_speed в допустимых пределах
+/// Тест 5: Проверка валидации `fall_speed` в допустимых пределах
 ///
 /// Проверяет, что значения за пределами диапазона возвращают ошибку.
 #[test]
@@ -186,9 +186,9 @@ fn test_set_fall_speed_clamps_to_valid_range() {
 // ГРУППА ТЕСТОВ 6-10: Валидация land_timer (NaN и Infinity)
 // ============================================================================
 
-/// Тест 6: Проверка возврата ошибки при NaN значении land_timer
+/// Тест 6: Проверка возврата ошибки при `NaN` значении `land_timer`
 ///
-/// Проверяет, что set_land_timer возвращает ошибку при NaN.
+/// Проверяет, что `set_land_timer` возвращает ошибку при `NaN`.
 #[test]
 fn test_set_land_timer_nan_returns_error() {
     let mut state = GameState::new();
@@ -220,9 +220,9 @@ fn test_set_land_timer_nan_returns_error() {
     );
 }
 
-/// Тест 7: Проверка возврата ошибки при Infinity значении land_timer
+/// Тест 7: Проверка возврата ошибки при Infinity значении `land_timer`
 ///
-/// Проверяет, что set_land_timer возвращает ошибку при +Infinity.
+/// Проверяет, что `set_land_timer` возвращает ошибку при +Infinity.
 #[test]
 fn test_set_land_timer_positive_infinity_returns_error() {
     let mut state = GameState::new();
@@ -246,9 +246,9 @@ fn test_set_land_timer_positive_infinity_returns_error() {
     }
 }
 
-/// Тест 8: Проверка возврата ошибки при -Infinity значении land_timer
+/// Тест 8: Проверка возврата ошибки при -Infinity значении `land_timer`
 ///
-/// Проверяет, что set_land_timer возвращает ошибку при -Infinity.
+/// Проверяет, что `set_land_timer` возвращает ошибку при -Infinity.
 #[test]
 fn test_set_land_timer_negative_infinity_returns_error() {
     let mut state = GameState::new();
@@ -272,7 +272,7 @@ fn test_set_land_timer_negative_infinity_returns_error() {
     }
 }
 
-/// Тест 9: Проверка корректной работы с валидным land_timer
+/// Тест 9: Проверка корректной работы с валидным `land_timer`
 ///
 /// Проверяет, что валидные значения устанавливаются корректно.
 #[test]
@@ -301,7 +301,7 @@ fn test_set_land_timer_valid_values() {
     assert_eq!(state.land_timer(), another_valid);
 }
 
-/// Тест 10: Проверка обработки отрицательных значений land_timer
+/// Тест 10: Проверка обработки отрицательных значений `land_timer`
 ///
 /// Проверяет, что отрицательные значения возвращают ошибку.
 #[test]
@@ -332,7 +332,7 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
 // ГРУППА ТЕСТОВ 11-15: Краевые случаи и интеграция
 // ============================================================================
 
-/// Тест 11: Проверка граничных значений fall_speed
+/// Тест 11: Проверка граничных значений `fall_speed`
 ///
 /// Проверяет установку точно на границах диапазона.
 #[test]
@@ -358,7 +358,7 @@ fn test_set_fall_speed_boundary_values() {
     );
 }
 
-/// Тест 12: Проверка граничных значений land_timer
+/// Тест 12: Проверка граничных значений `land_timer`
 ///
 /// Проверяет установку точно на границе (0.0).
 #[test]

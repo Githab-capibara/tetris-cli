@@ -546,7 +546,7 @@ mod hmac_tests {
     // ТЕСТЫ ДЛЯ HMAC SIGN/VERIFY С СОЛЬЮ (исправление #59-60)
     // ========================================================================
 
-    /// Тест: hmac_sign_with_salt и hmac_verify_with_salt работают корректно
+    /// Тест: `hmac_sign_with_salt` и `hmac_verify_with_salt` работают корректно
     #[test]
     fn test_hmac_sign_verify_with_salt_roundtrip() {
         let key = "тестовый_ключ";

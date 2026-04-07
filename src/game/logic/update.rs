@@ -62,7 +62,7 @@ pub fn update<T: InputReader>(
 ///
 /// # Исправление #83
 /// Добавлен `#[allow(clippy::cast_possible_wrap)]` для приведения `fg as i8`.
-/// Значения `ShapeType` 0..SHAPE_COUNT гарантированно помещаются в i8.
+/// Значения `ShapeType` `0..SHAPE_COUNT` гарантированно помещаются в i8.
 #[allow(clippy::cast_possible_wrap)]
 pub fn save_tetromino(state: &mut GameState) {
     let (shape_x, shape_y) = state.curr_shape().pos();
@@ -128,7 +128,7 @@ mod update_tests {
     // ТЕСТЫ ДЛЯ save_tetromino (исправление #56-57)
     // ========================================================================
 
-    /// Тест: save_tetromino корректно сохраняет фигуру в сетке
+    /// Тест: `save_tetromino` корректно сохраняет фигуру в сетке
     #[test]
     fn test_save_tetromino_basic() {
         let mut state = GameState::new();
@@ -154,7 +154,7 @@ mod update_tests {
         );
     }
 
-    /// Тест: save_tetromino не выходит за границы поля
+    /// Тест: `save_tetromino` не выходит за границы поля
     #[test]
     fn test_save_tetromino_respects_bounds() {
         let mut state = GameState::new();
@@ -181,7 +181,7 @@ mod update_tests {
     // ТЕСТЫ ДЛЯ handle_hold swap-сценарий (исправление #58)
     // ========================================================================
 
-    /// Тест: handle_hold swap-сценарий — обмен текущей и удержанной фигуры
+    /// Тест: `handle_hold` swap-сценарий — обмен текущей и удержанной фигуры
     #[test]
     fn test_handle_hold_swap_scenario() {
         let mut state = GameState::new();
@@ -218,7 +218,7 @@ mod update_tests {
         );
     }
 
-    /// Тест: handle_hold когда held_shape = None — берём следующую фигуру
+    /// Тест: `handle_hold` когда `held_shape` = None — берём следующую фигуру
     #[test]
     fn test_handle_hold_first_time() {
         let mut state = GameState::new();

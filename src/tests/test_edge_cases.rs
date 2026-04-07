@@ -79,7 +79,7 @@ fn test_score_no_overflow() {
     assert!(result.is_err(), "При переполнении должна вернуться ошибка");
 }
 
-/// Тест: saturating_add предотвращает u128 переполнение
+/// Тест: `saturating_add` предотвращает u128 переполнение
 #[test]
 fn test_score_saturating_add_prevents_overflow() {
     let mut score: u128 = u128::MAX;
@@ -89,7 +89,7 @@ fn test_score_saturating_add_prevents_overflow() {
     assert_eq!(score, u128::MAX, "saturating_add должен вернуть MAX");
 }
 
-/// Тест: GameState set_score с u128::MAX не паникует
+/// Тест: GameState `set_score` с `u128::MAX` не паникует
 #[test]
 fn test_game_state_set_score_max_no_panic() {
     use crate::game::GameState;
@@ -154,7 +154,7 @@ fn test_hmac_very_long_key() {
 // PROB-167: Валидация ../../
 // ============================================================================
 
-/// Тест: PathValidator отклоняет path traversal с ../../
+/// Тест: `PathValidator` отклоняет path traversal с ../../
 #[test]
 fn test_path_validator_rejects_traversal() {
     use crate::validation::PathValidator;
@@ -182,7 +182,7 @@ fn test_path_validator_rejects_traversal() {
     );
 }
 
-/// Тест: PathValidator отклоняет URL-encoded path traversal
+/// Тест: `PathValidator` отклоняет URL-encoded path traversal
 #[test]
 fn test_path_validator_rejects_url_encoded_traversal() {
     use crate::validation::PathValidator;
@@ -200,9 +200,9 @@ fn test_path_validator_rejects_url_encoded_traversal() {
 // PROB-168: Symlink attack
 // ============================================================================
 
-/// Тест: PathValidator проверяет symlink_metadata
+/// Тест: `PathValidator` проверяет `symlink_metadata`
 /// Примечание: полная проверка symlink требует существующей файловой системы.
-/// Этот тест документирует что validate_no_symlinks вызывает symlink_metadata.
+/// Этот тест документирует что `validate_no_symlinks` вызывает `symlink_metadata`.
 #[test]
 fn test_path_validator_symlink_check_exists() {
     use crate::validation::PathValidator;
@@ -223,7 +223,7 @@ fn test_path_validator_symlink_check_exists() {
 // PROB-169: Race condition в leaderboard
 // ============================================================================
 
-/// Тест: ThreadSafeLeaderboardEntry защищает от race condition
+/// Тест: `ThreadSafeLeaderboardEntry` защищает от race condition
 #[test]
 fn test_leaderboard_race_condition_protection() {
     use crate::highscore::leaderboard::ThreadSafeLeaderboardEntry;
@@ -291,7 +291,7 @@ fn test_config_load_from_empty_path() {
 // PROB-171: Некорректный JSON в save
 // ============================================================================
 
-/// Тест: Leaderboard::load() возвращает пустую таблицу при повреждённых данных
+/// Тест: `Leaderboard::load()` возвращает пустую таблицу при повреждённых данных
 /// confy хранит данные в формате TOML/JSON — при некорректных данных возвращает default
 #[test]
 fn test_leaderboard_load_handles_corrupted_data() {
@@ -321,15 +321,15 @@ fn test_leaderboard_default_is_empty() {
 // PROB-173: Тест bag randomizer
 // ============================================================================
 
-/// Тест: BagGenerator выдаёт все 7 фигур за один мешок
+/// Тест: `BagGenerator` выдаёт все 7 фигур за один мешок
 // Удалён как дубликат test_first_bag_contains_all_seven_pieces из test_bag_system.rs
 // Проверял то же самое: все 7 уникальных фигур в одном мешке
 
-/// Тест: BagGenerator равномерно распределяет фигуры за много итераций
+/// Тест: `BagGenerator` равномерно распределяет фигуры за много итераций
 // Удалён как дубликат test_uniform_distribution_multiple_bags из test_bag_system.rs
 // Проверял то же самое: 70 фигур, каждая ровно 10 раз
 
-/// Тест: BagGenerator детерминирован по структуре (не по порядку)
+/// Тест: `BagGenerator` детерминирован по структуре (не по порядку)
 #[test]
 fn test_bag_generator_structure_guarantees() {
     use crate::tetromino::bag_generator::BagGenerator;
