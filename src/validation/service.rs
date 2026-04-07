@@ -12,17 +12,17 @@
 
 use super::ValidationError;
 
-/// Валидировать f32 значение на конечность (не NaN и не Infinity).
+/// Валидировать f32 значение на конечность (не `NaN` и не Infinity).
 ///
 /// # Аргументы
 /// * `value` - значение для валидации
 ///
 /// # Возвращает
 /// - `Ok(())` если значение конечное
-/// - `Err(ValidationError)` если значение NaN или Infinity
+/// - `Err(ValidationError)` если значение `NaN` или Infinity
 ///
 /// # Errors
-/// Возвращает `ValidationError::NotFinite` если значение является NaN или Infinity.
+/// Возвращает `ValidationError::NotFinite` если значение является `NaN` или Infinity.
 ///
 /// # Пример
 /// ```ignore

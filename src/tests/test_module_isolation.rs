@@ -18,7 +18,7 @@ fn test_crypto_module_independent_of_game() {
 }
 
 /// Тест: validation модуль самодостаточен
-/// PathValidator работает без зависимостей от game/crypto
+/// `PathValidator` работает без зависимостей от game/crypto
 #[test]
 fn test_validation_module_self_contained() {
     use crate::validation::PathValidator;

@@ -9,14 +9,14 @@ use crate::game::GameState;
 use crate::tetromino::bag_generator::BagGenerator;
 use crate::validation::PathValidator;
 
-/// Тест: GameState::new() не должен паниковать
+/// Тест: `GameState::new()` не должен паниковать
 #[test]
 fn test_game_state_new_no_panic() {
     let result = panic::catch_unwind(|| GameState::new());
     assert!(result.is_ok(), "GameState::new() не должен паниковать");
 }
 
-/// Тест: GameState::new_sprint() не должен паниковать
+/// Тест: `GameState::new_sprint()` не должен паниковать
 #[test]
 fn test_game_state_new_sprint_no_panic() {
     let result = panic::catch_unwind(|| GameState::new_sprint());
@@ -26,7 +26,7 @@ fn test_game_state_new_sprint_no_panic() {
     );
 }
 
-/// Тест: GameState::new_marathon() не должен паниковать
+/// Тест: `GameState::new_marathon()` не должен паниковать
 #[test]
 fn test_game_state_new_marathon_no_panic() {
     let result = panic::catch_unwind(|| GameState::new_marathon());
@@ -36,14 +36,14 @@ fn test_game_state_new_marathon_no_panic() {
     );
 }
 
-/// Тест: BagGenerator::new() не должен паниковать
+/// Тест: `BagGenerator::new()` не должен паниковать
 #[test]
 fn test_bag_generator_new_no_panic() {
     let result = panic::catch_unwind(|| BagGenerator::new());
     assert!(result.is_ok(), "BagGenerator::new() не должен паниковать");
 }
 
-/// Тест: PathValidator::new() не должен паниковать
+/// Тест: `PathValidator::new()` не должен паниковать
 #[test]
 fn test_path_validator_new_no_panic() {
     let result = panic::catch_unwind(|| PathValidator::new(255, "abc"));
@@ -103,7 +103,7 @@ fn test_game_state_setters_no_panic() {
     );
 }
 
-/// Тест: BagGenerator::next_shape() не паникает при множественных вызовах
+/// Тест: `BagGenerator::next_shape()` не паникает при множественных вызовах
 #[test]
 fn test_bag_generator_next_shape_no_panic() {
     let mut bag = BagGenerator::new();

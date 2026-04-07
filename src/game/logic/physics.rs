@@ -67,7 +67,7 @@ mod physics_tests {
         );
     }
 
-    /// Тест: land_timer не становится отрицательным
+    /// Тест: `land_timer` не становится отрицательным
     #[test]
     fn test_handle_falling_land_timer_non_negative() {
         let mut state = GameState::new();
@@ -182,7 +182,7 @@ mod physics_tests {
         }
     }
 
-    /// Тест: фигура не проваливается сквозь пол при большом delta_time
+    /// Тест: фигура не проваливается сквозь пол при большом `delta_time`
     #[test]
     fn test_handle_falling_no_phantom_pass_through_floor() {
         use crate::constants::GRID_HEIGHT;
@@ -220,8 +220,8 @@ mod physics_tests {
         );
     }
 
-    /// Тест: handle_falling возвращает true для уже приземлённой фигуры.
-    /// Проверяет что фигура которая уже не может двигаться вниз и имеет land_timer = 0
+    /// Тест: `handle_falling` возвращает true для уже приземлённой фигуры.
+    /// Проверяет что фигура которая уже не может двигаться вниз и имеет `land_timer` = 0
     /// корректно определяется как приземлённая.
     #[test]
     fn test_handle_falling_already_landed() {

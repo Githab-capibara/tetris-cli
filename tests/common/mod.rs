@@ -27,7 +27,7 @@ pub fn create_standard_leaderboard() -> Leaderboard {
     ])
 }
 
-/// Создать валидную запись LeaderboardEntry.
+/// Создать валидную запись `LeaderboardEntry`.
 #[allow(dead_code)]
 pub fn create_valid_entry(name: &str, score: u128) -> LeaderboardEntry {
     LeaderboardEntry::new(name, score)

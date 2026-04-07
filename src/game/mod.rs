@@ -220,7 +220,7 @@ impl GameState {
     /// Заполнить указанную линию для бенчмарков.
     ///
     /// # Аргументы
-    /// * `line` - индекс линии (0..GRID_HEIGHT)
+    /// * `line` - индекс линии (`0..GRID_HEIGHT`)
     ///
     /// # Паника
     /// Паникует если индекс линии выходит за пределы поля
@@ -239,6 +239,18 @@ impl GameState {
             "Индекс линии должен быть меньше {GRID_HEIGHT}"
         );
         self.get_blocks_mut()[line] = [1i8; crate::constants::GRID_WIDTH];
+    }
+
+    /// Бенчмарк-обёртка для `check_rows` (удаление заполненных линий).
+    #[cfg(feature = "bench")]
+    pub fn clear_lines_for_bench(&mut self) {
+        self.check_rows();
+    }
+
+    /// Бенчмарк-обёртка для `save_tetromino` (сохранение фигуры в поле).
+    #[cfg(feature = "bench")]
+    pub fn save_tetromino_for_bench(&mut self) {
+        self.save_tetromino();
     }
 }
 

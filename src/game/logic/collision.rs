@@ -422,7 +422,7 @@ mod collision_tests {
         );
     }
 
-    /// Вспомогательная функция для тестирования is_position_valid
+    /// Вспомогательная функция для тестирования `is_position_valid`
     fn is_position_valid_for_test<T: BoardReadonly>(board: &T, x: i16, y: i16) -> bool {
         is_position_valid(board, x, y, false)
     }

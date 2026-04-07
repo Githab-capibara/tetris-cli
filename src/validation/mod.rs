@@ -26,7 +26,7 @@ pub use path::{PathError, PathErrorKind, PathValidator, DEFAULT_PATH_VALIDATOR};
 /// Ошибка валидации числовых значений.
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum ValidationError {
-    /// Значение не является конечным (NaN или Infinity).
+    /// Значение не является конечным (`NaN` или Infinity).
     #[error("Значение {value} не является конечным (NaN/Infinity)")]
     NotFinite { value: f32 },
     /// Значение вне допустимого диапазона.

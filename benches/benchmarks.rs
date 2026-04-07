@@ -2,13 +2,13 @@
 //!
 //! Этот модуль содержит бенчмарки для проверки производительности
 //! ключевых функций игры:
-//! - check_rows() - проверка и удаление заполненных линий
-//! - find_full_rows() - поиск заполненных линий
-//! - rotate() - вращение фигур
-//! - save_tetromino() - сохранение фигуры в поле
+//! - `check_rows()` - проверка и удаление заполненных линий
+//! - `find_full_rows()` - поиск заполненных линий
+//! - `rotate()` - вращение фигур
+//! - `save_tetromino()` - сохранение фигуры в поле
 //! - collision detection - проверка столкновений
 //! - wall kick - вращение со смещением
-//! - sanitize_player_name - валидация имён
+//! - `sanitize_player_name` - валидация имён
 //! - string caching - кэширование строк отрисовки
 //!
 //! ## Примечание
@@ -34,15 +34,15 @@
 //!
 //! ## Исправление #21 (LOW)
 //! Расширенные бенчмарки для проверки оптимизаций:
-//! - find_filled_lines с битовой маской
-//! - sanitize_player_name с whitelist
-//! - check_block_collision с inline
+//! - `find_filled_lines` с битовой маской
+//! - `sanitize_player_name` с whitelist
+//! - `check_block_collision` с inline
 
 use criterion::{black_box, BenchmarkGroup, Criterion};
 use tetris_cli::game::scoring::lines::find_full_rows;
 use tetris_cli::game::GameState;
-use tetris_cli::tetromino::{RotationDirection, ShapeType, Tetromino};
-use tetris_cli::types::Direction;
+use tetris_cli::tetromino::{ShapeType, Tetromino};
+use tetris_cli::types::{Direction, RotationDirection};
 use tetris_cli::validation::name::sanitize_player_name;
 
 /// Главная функция для запуска бенчмарков.
@@ -62,7 +62,7 @@ fn main() {
     bench_string_caching(&mut c);
 }
 
-/// Бенчмарк для find_full_rows().
+/// Бенчмарк для `find_full_rows()`.
 ///
 /// Проверяет производительность поиска заполненных линий
 /// на различных состояниях поля.
@@ -100,7 +100,7 @@ fn bench_find_full_rows(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для check_rows().
+/// Бенчмарк для `check_rows()`.
 ///
 /// Проверяет производительность удаления заполненных линий
 /// с обновлением счёта и уровня.
@@ -154,7 +154,7 @@ fn bench_check_rows(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для rotate().
+/// Бенчмарк для `rotate()`.
 ///
 /// Проверяет производительность вращения фигур
 /// для разных типов фигур и направлений.
@@ -209,7 +209,7 @@ fn bench_rotate(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для save_tetromino().
+/// Бенчмарк для `save_tetromino()`.
 ///
 /// Проверяет производительность сохранения фигуры в поле.
 fn bench_save_tetromino(c: &mut Criterion) {
@@ -243,7 +243,7 @@ fn bench_save_tetromino(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для check_collision_direction().
+/// Бенчмарк для `check_collision_direction()`.
 ///
 /// Проверяет производительность проверки столкновений
 /// для различных направлений движения.
@@ -277,7 +277,7 @@ fn bench_collision_detection(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для rotate_with_wall_kick().
+/// Бенчмарк для `rotate_with_wall_kick()`.
 ///
 /// Проверяет производительность вращения фигуры с проверкой wall kick.
 fn bench_wall_kick(c: &mut Criterion) {
@@ -302,7 +302,7 @@ fn bench_wall_kick(c: &mut Criterion) {
     group.finish();
 }
 
-/// Бенчмарк для sanitize_player_name().
+/// Бенчмарк для `sanitize_player_name()`.
 ///
 /// Проверяет производительность санитаризации имён игроков.
 ///
@@ -349,7 +349,7 @@ fn bench_sanitize_player_name(c: &mut Criterion) {
 /// Проверяет производительность кэширования строк отрисовки.
 ///
 /// # Исправление #21 (LOW)
-/// Новый бенчмарк для проверки оптимизации с String::with_capacity(32).
+/// Новый бенчмарк для проверки оптимизации с `String::with_capacity(32)`.
 fn bench_string_caching(c: &mut Criterion) {
     let mut group = c.benchmark_group("string_caching");
 
