@@ -39,7 +39,7 @@ pub type ModeFactory = Box<dyn Fn() -> Box<dyn GameModeTrait> + Send + Sync>;
 /// let registry = ModeRegistry::global();
 ///
 /// // Создаём режим по имени
-/// let mode = registry.create("classic").unwrap();
+/// let mode = registry.create("classic").expect("classic mode registered");
 /// ```
 pub struct ModeRegistry {
     /// Карта зарегистрированных режимов.
@@ -109,7 +109,7 @@ impl ModeRegistry {
     /// use tetris_cli::game::mode_registry::ModeRegistry;
     ///
     /// let registry = ModeRegistry::new();
-    /// let mode = registry.create("sprint").unwrap();
+    /// let mode = registry.create("sprint").expect("sprint mode");
     /// assert_eq!(mode.name(), "Спринт");
     /// ```
     #[must_use = "Режим игры должен быть использован"]
