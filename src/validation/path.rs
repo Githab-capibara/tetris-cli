@@ -1186,8 +1186,8 @@ mod validation_path_tests {
 
     /// Тест: Проверка родительских директорий на symlink
     #[test]
-    fn test_validate_no_symlinks_checks_parent_directories() -> Result<(), Box<dyn std::error::Error>>
-    {
+    fn test_validate_no_symlinks_checks_parent_directories(
+    ) -> Result<(), Box<dyn std::error::Error>> {
         use std::fs;
         use std::os::unix::fs::symlink;
 
@@ -1228,7 +1228,8 @@ mod validation_path_tests {
 
     /// Тест: Проверка нескольких уровней родительских директорий
     #[test]
-    fn test_validate_no_symlinks_multiple_parent_levels() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_validate_no_symlinks_multiple_parent_levels() -> Result<(), Box<dyn std::error::Error>>
+    {
         use std::fs;
         use std::os::unix::fs::symlink;
 

@@ -9,4 +9,6 @@
 //! Теперь модуль содержит только реэкспорт `GameBoard`.
 
 // Переэкспорт GameBoard из board.rs
+// PROB-119: re-export для обратной совместимости, может быть не использован напрямую
+#[allow(unused_imports)]
 pub use crate::game::board::GameBoard;

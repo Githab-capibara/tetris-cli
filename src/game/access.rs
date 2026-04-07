@@ -54,6 +54,9 @@ use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 ///     }
 /// }
 /// ```
+// PROB-119: трейты используются внутри crate (collision.rs, board.rs),
+// но clippy считает их unused при pub(crate) видимости модуля.
+#[allow(dead_code)]
 pub trait BoardReadonly {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -106,6 +109,8 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
+// PROB-119: трейт используется внутри crate (board.rs, GameState impl)
+#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
