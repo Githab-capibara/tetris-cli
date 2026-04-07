@@ -16,7 +16,7 @@ use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::constants::{INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::game::GameState;
 use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::{Direction, RotationDirection};
+use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур

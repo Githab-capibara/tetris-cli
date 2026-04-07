@@ -435,7 +435,10 @@ fn test_validation_no_panic_on_invalid_values() {
             result.is_ok(),
             "set_fall_speed({value}) не должен вызывать панику"
         );
-        assert!(result.expect("Паника не должна возникнуть").is_err(), "Должна вернуться ошибка");
+        assert!(
+            result.expect("Паника не должна возникнуть").is_err(),
+            "Должна вернуться ошибка"
+        );
     }
 
     // Массив невалидных значений для land_timer
@@ -451,7 +454,10 @@ fn test_validation_no_panic_on_invalid_values() {
             result.is_ok(),
             "set_land_timer({value}) не должен вызывать панику"
         );
-        assert!(result.expect("Паника не должна возникнуть").is_err(), "Должна вернуться ошибка");
+        assert!(
+            result.expect("Паника не должна возникнуть").is_err(),
+            "Должна вернуться ошибка"
+        );
     }
 }
 

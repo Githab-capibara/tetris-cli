@@ -41,7 +41,10 @@ fn test_hmac_rejects_tampered_signature() {
     let sig = hmac_sha256("key", "data");
     // Изменяем первый символ
     let mut tampered = sig;
-    let first_char = tampered.chars().next().expect("HMAC сигнатура не должна быть пустой");
+    let first_char = tampered
+        .chars()
+        .next()
+        .expect("HMAC сигнатура не должна быть пустой");
     let new_char = if first_char == '0' { '1' } else { '0' };
     tampered.replace_range(..1, &new_char.to_string());
 

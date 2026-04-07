@@ -95,7 +95,10 @@ mod tests {
         let key = "secret_key";
         let data = "test_data";
         let valid = hmac_sha256(key, data);
-        let first = valid.chars().next().expect("HMAC сигнатура не должна быть пустой");
+        let first = valid
+            .chars()
+            .next()
+            .expect("HMAC сигнатура не должна быть пустой");
         let diff = if first == 'a' { 'b' } else { 'a' };
         let one_diff = format!("{diff}{}", &valid[1..]);
         assert!(!verify_hmac_sha256(key, data, &one_diff));
