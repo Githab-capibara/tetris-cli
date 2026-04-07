@@ -26,7 +26,6 @@ pub struct AnimationState {
     /// Каждый бит соответствует линии поля (бит 0 = линия 0).
     animating_rows_mask: u32,
     /// Флаг для анимации Hard Drop.
-    #[allow(dead_code)]
     is_hard_dropping: bool,
 }
 
@@ -71,7 +70,6 @@ impl AnimationState {
     /// # Возвращает
     /// `true` если активен Hard Drop
     #[must_use = "Флаг Hard Drop должен быть использован"]
-    #[allow(dead_code)]
     pub const fn is_hard_dropping(&self) -> bool {
         self.is_hard_dropping
     }

@@ -106,7 +106,6 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -246,7 +245,6 @@ pub trait ScoreAccess {
 ///     score.add_score(bonus);
 /// }
 /// ```
-#[allow(dead_code)]
 pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
     fn add_score(&mut self, points: u128);

@@ -121,7 +121,6 @@ pub fn get_save_data_hmac_key() -> &'static str {
 /// # Errors
 /// Возвращает ошибку если ключ пустой, содержит только пробельные символы
 /// или короче минимальной длины.
-#[allow(dead_code)]
 pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
     if key.trim().is_empty() {
         return Err(format!(
@@ -172,7 +171,6 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
 ///
 /// # Errors
 /// Возвращает ошибку если хотя бы один ключ пустой или слишком короткий.
-#[allow(dead_code)]
 pub fn validate_all_keys() -> Result<(), Vec<String>> {
     let mut errors = Vec::new();
 
