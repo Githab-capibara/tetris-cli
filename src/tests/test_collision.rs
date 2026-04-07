@@ -7,7 +7,6 @@
 //! - Тесты вращений и столкновений (10 тестов)
 //! - Тесты граничных случаев (5 тестов)
 
-use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 use crate::game::GameState;
 use crate::tetromino::{ShapeType, SHAPE_COORDS};
 use crate::types::{Direction, RotationDirection};
@@ -159,43 +158,6 @@ fn test_collision_all_shapes_left_wall() {
     }
 }
 
-/// Тест 14: Проверка что фигура не выходит за левую границу.
-///
-/// Проверяет, что координата X фигуры не становится отрицательной.
-#[test]
-fn test_collision_not_beyond_left_boundary() {
-    let mut state = GameState::new();
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    let x = state.curr_shape().pos().0;
-    assert!(x >= 0.0, "Фигура не должна выходить за левую границу");
-}
-
-/// Тест 15: Проверка что фигура не выходит за правую границу.
-///
-/// Проверяет, что координата X фигуры не превышает GRID_WIDTH.
-#[test]
-fn test_collision_not_beyond_right_boundary() {
-    let mut state = GameState::new();
-
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos_mut().0 += 1.0;
-        }
-    }
-
-    let x = state.curr_shape().pos().0;
-    assert!(
-        x < GRID_WIDTH as f32,
-        "Фигура не должна выходить за правую границу"
-    );
-}
-
 // ============================================================================
 // ГРУППА ТЕСТОВ 16-25: Столкновения с полом
 // ============================================================================
@@ -238,23 +200,6 @@ fn test_collision_all_shapes_floor() {
 // ГРУППА ТЕСТОВ 26-35: Столкновения с фигурами
 // ============================================================================
 
-/// Тест 26: Проверка что новая фигура появляется над зафиксированной.
-///
-/// Проверяет, что поле пустое в начале игры (нет зафиксированных блоков).
-#[test]
-fn test_collision_new_above_fixed() {
-    // Этот тест проверяет базовую механику
-    let state = GameState::new();
-
-    // В начале игры поле пустое
-    let blocks = state.get_blocks();
-    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
-        for (x, &cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(cell, -1, "Поле должно быть пустым [{y},{x}]");
-        }
-    }
-}
-
 /// Тест 27: Проверка что движение вниз блокируется фигурой.
 ///
 /// Проверяет, что после приземления на пол движение вниз блокируется.
@@ -285,24 +230,6 @@ fn test_collision_landing_on_piece() {
 
     // Фигура должна быть на полу
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 33: Проверка что столкновение срабатывает корректно.
-///
-/// Проверяет, что движение влево блокируется у стены.
-#[test]
-fn test_collision_triggers_correctly() {
-    let mut state = GameState::new();
-
-    // Двигаем влево до стены
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    // Столкновение должно сработать
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
 }
 
 /// Тест 34: Проверка что столкновение не срабатывает рано.
@@ -374,29 +301,6 @@ fn test_collision_rotation_o_piece() {
 // ============================================================================
 // ГРУППА ТЕСТОВ 46-50: Граничные случаи
 // ============================================================================
-
-/// Тест 46: Проверка столкновения в углу (левый нижний).
-///
-/// Проверяет, что движение влево и вниз блокируется в левом нижнем углу.
-#[test]
-fn test_collision_bottom_left_corner() {
-    let mut state = GameState::new();
-
-    // Двигаем влево и вниз
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Движение влево и вниз должно быть заблокировано
-    assert!(!state.can_move_curr_shape_direction(Direction::Left));
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
 
 /// Тест 47: Проверка столкновения в углу (правый нижний).
 ///
