@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 6 апреля 2026 (очистка тестовой базы)
+**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,13 +9,36 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | ~676 | ✅ 100% pass |
-| Интеграционные тесты (tests/) | 27 | ✅ 100% pass |
+| Модульные тесты (src/) | ~656 | ✅ 100% pass |
+| Интеграционные тесты (tests/) | 26 | ✅ 100% pass |
 | Doctests (runnable) | 62 | ✅ 100% pass |
-| Doctests (ignored) | 113 | — ожидаемо |
+| Doctests (ignored) | 104 | — ожидаемо |
 | Бенчмарки (benches/) | 24 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **~703** | ✅ |
-| Ignored | 7 | — ожидаемо |
+| **ИТОГО (запускаемые)** | **~682** | ✅ |
+| Ignored | 9 | — ожидаемо |
+
+---
+
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07)
+
+### Удалённые тесты (дубликаты/устаревшие/пустые):
+- `test_game_box_array.rs` (весь файл, 3 теста) — устаревшая документация (описывает Box<[]> но используется статический массив)
+- `test_direction_from_core` (src/types.rs) — пустой тест, только `let _ = ...` без assert
+- `test_c2_key_reader_handles_ascii_correctly` (tests/test_audit_2026_04_fixes.rs) — пустой тест на non-Unix
+- `test_piece_position_at_left_boundary`, `test_piece_position_at_right_boundary` — дублируют test_collision_left/right_wall
+- `test_i_piece_at_left_boundary`, `test_i_piece_at_right_boundary` — дублируют test_collision_left/right_wall
+- `test_movement_in_corner` — дублирует test_collision_bottom_left_corner
+- `test_move_above_fixed_piece`, `test_movement_blocked_by_obstacle_left`, `test_movement_blocked_by_obstacle_right` — бесполезные тесты без реальной проверки
+- `test_collision_not_beyond_left_boundary`, `test_collision_not_beyond_right_boundary` — дублируют test_collision_left/right_wall
+- `test_collision_new_above_fixed`, `test_collision_triggers_correctly` — дублируют другие тесты столкновений
+- `test_piece_stays_within_bounds` — дублирует test_movement_in_empty_field
+- `test_leaderboard_validates_entries` — дублирует test_game_state_leaderboard_interaction
+- `test_hold_piece_swap` — дублирует hold тесты из test_physics.rs
+
+### Исправления:
+- Удалена ссылка на `mod test_game_box_array` из `src/lib.rs`
+
+### Итого удалено: ~20 тестов (676 → 656)
 
 ---
 
@@ -60,11 +83,11 @@
 | `test_architecture_integrity.rs` | 2 | Поточочная безопасность LeaderboardEntry |
 | `test_audit_2026_04_fixes.rs` | 25 | Все 26 исправлений аудита |
 
-### Модульные тесты (`src/tests/`) — 15 файлов (было 13, добавлены test_collision.rs и test_io_utf8_handling.rs)
+### Модульные тесты (`src/tests/`) — 17 файлов
 
 | Файл | Тестов | Описание |
 |------|--------|----------|
-| `test_collision.rs` | 22 | Коллизии со стенами, блоками, границы |
+| `test_collision.rs` | ~17 | Коллизии со стенами, блоками, границы |
 | `test_game_rotation.rs` | 50 | Вращение всех фигур, стены, wall kick |
 | `test_bag_system.rs` | 27 | 7-bag рандомизация, Fisher-Yates, chi-square |
 | `test_physics.rs` | 16 | Гравитация, hold, ghost piece, коллизии |
@@ -75,11 +98,10 @@
 | `test_io_errors.rs` | 3 | KeyReader panic, Drop, InputReader trait |
 | `test_io_utf8_handling.rs` | 2 | UTF-8 multibyte, валидные последовательности |
 | `test_integration.rs` | 20 | Полная инициализация, движение, вращение, производительность |
-| `test_integration_extended.rs` | 22 | Взаимодействие компонентов, производительность |
+| `test_integration_extended.rs` | 19 | Взаимодействие компонентов, производительность |
 | `test_game_bounds_check.rs` | 3 | f32→u64 конвертация, negative values |
-| `test_game_box_array.rs` | — | Box/Array tests |
 | `test_game_logic.rs` | — | Game logic tests |
-| `test_game_movement.rs` | — | Movement tests |
+| `test_game_movement.rs` | ~42 | Movement tests (сокращено с 50 до ~42) |
 | `test_io.rs` | — | IO tests |
 | `test_state_validation.rs` | — | State validation tests |
 
@@ -151,6 +173,33 @@
 | `test_rotation_at_wall_and_movement` | Known wall kick edge case |
 | `test_gamestate_can_save_score` | Depends on confy filesystem |
 | `test_savedata_loads_score` | Depends on confy filesystem |
+
+---
+
+## 🗑️ УДАЛЁННЫЕ ТЕСТЫ (очистка 7 апреля 2026)
+
+| Файл/Тест | Причина |
+|-----------|---------|
+| `test_game_box_array.rs` (весь файл, 3 теста) | Устаревшая документация (описывает Box но используется статический массив) |
+| `test_direction_from_core` (src/types.rs) | Пустой тест, только `let _ = ...` без assert |
+| `test_c2_key_reader_handles_ascii_correctly` (test_audit) | Пустой тест на non-Unix |
+| `test_piece_position_at_left_boundary` | Дублирует `test_collision_left_wall` |
+| `test_piece_position_at_right_boundary` | Дублирует `test_collision_right_wall` |
+| `test_i_piece_at_left_boundary` | Дублирует `test_collision_left_wall` |
+| `test_i_piece_at_right_boundary` | Дублирует `test_collision_right_wall` |
+| `test_movement_in_corner` | Дублирует `test_collision_bottom_left_corner` |
+| `test_move_above_fixed_piece` | Бесполезный тест без реальной проверки |
+| `test_movement_blocked_by_obstacle_left` | Бесполезный тест без реальной проверки |
+| `test_movement_blocked_by_obstacle_right` | Бесполезный тест без реальной проверки |
+| `test_collision_not_beyond_left_boundary` | Дублирует `test_collision_left_wall` |
+| `test_collision_not_beyond_right_boundary` | Дублирует `test_collision_right_wall` |
+| `test_collision_new_above_fixed` | Дублирует другие тесты столкновений |
+| `test_collision_triggers_correctly` | Дублирует `test_collision_left_wall` |
+| `test_piece_stays_within_bounds` | Дублирует `test_movement_in_empty_field` |
+| `test_leaderboard_validates_entries` | Дублирует `test_game_state_leaderboard_interaction` |
+| `test_hold_piece_swap` | Дублирует hold тесты из `test_physics.rs` |
+
+**Итого удалено: ~20 тестов** (676 → 656)
 
 ---
 
