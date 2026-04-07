@@ -165,14 +165,12 @@ fn test_rotation_near_left_wall() {
     // Проверяем что методы вращения работают и возвращают bool
     let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
     let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
-    // Результат должен быть bool (не паника)
+
+    // У левой стены хотя бы одно направление вращения должно быть доступно
+    // (wall kick может позволить вращение)
     assert!(
-        can_rotate_right || !can_rotate_right,
-        "can_rotate_right должен вернуть bool"
-    );
-    assert!(
-        can_rotate_left || !can_rotate_left,
-        "can_rotate_left должен вернуть bool"
+        can_rotate_right || can_rotate_left,
+        "У стены хотя бы одно направление вращения должно быть доступно"
     );
 }
 
