@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы)
+**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы — раунд 2)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,17 +9,38 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | ~656 | ✅ 100% pass |
-| Интеграционные тесты (tests/) | 26 | ✅ 100% pass |
-| Doctests (runnable) | 62 | ✅ 100% pass |
-| Doctests (ignored) | 104 | — ожидаемо |
-| Бенчмарки (benches/) | 24 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **~682** | ✅ |
+| Модульные тесты (src/) | 689 | ✅ 100% pass |
+| Интеграционные тесты (tests/) | 22 | ✅ 100% pass |
+| Doctests (runnable) | 64 | ✅ 100% pass |
+| Doctests (ignored) | 105 | — ожидаемо |
+| Бенчмарки (benches/) | 28 (8 групп) | ✅ |
+| **ИТОГО (запускаемые)** | **711** | ✅ |
 | Ignored | 9 | — ожидаемо |
 
 ---
 
-## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07)
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07, раунд 2)
+
+### Исправления:
+- **`test_all_shapes_in_game`** (test_integration.rs): Исправлен баг — тест создавал T-фигуру 7 раз вместо всех 7 типов фигур. Теперь корректно итерирует по `ShapeType` и проверяет каждый тип.
+- **`test_bag_distribution_statistics`** (test_bag_system.rs): Объединены 3 дублирующихся статистических теста (`test_all_pieces_distribution_statistics`, `test_distribution_variance`, `test_chi_square_simplified`) в один комплексный тест. Все они генерировали 700 фигур и проверяли одно распределение.
+- **Unused import** (tests/test_audit_2026_04_fixes.rs): Удалён `use tetris_cli::*;` — все импорты сделаны конкретно через `tetris_cli::...`.
+
+### Удалённые тесты (дубликаты):
+- `test_sequence_of_seven_is_unique` (test_bag_system.rs) — дублирует `test_uniform_distribution_first_bag`
+- `test_sequence_contains_all_types` (test_bag_system.rs) — дублирует `test_all_piece_types_available`
+- `test_distribution_in_sequence` (test_bag_system.rs) — дублирует `test_uniform_distribution_multiple_bags`
+- `test_bag_generator_produces_all_7_shapes` (test_edge_cases.rs) — дублирует `test_first_bag_contains_all_seven_pieces`
+- `test_bag_generator_uniform_distribution` (test_edge_cases.rs) — дублирует `test_uniform_distribution_multiple_bags`
+
+### Удалённые тесты (бесполезные):
+- `test_movement_after_hold` (test_game_movement.rs) — не выполнял операцию hold, только проверял начальное состояние
+- `test_new_piece_movement_after_hold` (test_game_movement.rs) — не проверял hold, только начальное состояние GameState
+
+### Удалённый мёртвый код:
+- Комментарии об удалённых тестах T6, T12, T18 в `test_boundary_values.rs`
+
+### Итого изменено: удалено ~12 тестов, объединено 3 в 1, исправлен 1 баг
 
 ### Удалённые тесты (дубликаты/устаревшие/пустые):
 - `test_game_box_array.rs` (весь файл, 3 теста) — устаревшая документация (описывает Box<[]> но используется статический массив)
@@ -83,27 +104,30 @@
 | `test_architecture_integrity.rs` | 2 | Поточочная безопасность LeaderboardEntry |
 | `test_audit_2026_04_fixes.rs` | 25 | Все 26 исправлений аудита |
 
-### Модульные тесты (`src/tests/`) — 17 файлов
+### Модульные тесты (`src/tests/`) — 22 файла
 
 | Файл | Тестов | Описание |
 |------|--------|----------|
-| `test_collision.rs` | ~17 | Коллизии со стенами, блоками, границы |
+| `test_bag_system.rs` | 24 | 7-bag рандомизация, Fisher-Yates, распределение |
+| `test_boundary_values.rs` | 32 | Границы Score, Level, LinesCount, Combo |
+| `test_collision.rs` | 16 | Коллизии со стенами, блоками, границы |
+| `test_edge_cases.rs` | 15 | Concurrent access, overflow, HMAC, path traversal |
+| `test_game_bounds_check.rs` | 3 | f32→u64 конвертация, negative values |
+| `test_game_logic.rs` | 16 | Game logic, столкновения, вращение, очки |
+| `test_game_movement.rs` | 18 | Movement, soft/hard drop, rotation |
 | `test_game_rotation.rs` | 50 | Вращение всех фигур, стены, wall kick |
-| `test_bag_system.rs` | 27 | 7-bag рандомизация, Fisher-Yates, chi-square |
-| `test_physics.rs` | 16 | Гравитация, hold, ghost piece, коллизии |
+| `test_hmac_safety.rs` | 11 | HMAC ключи, Unicode, binary data, stress |
+| `test_integration.rs` | 13 | Полная инициализация, движение, вращение |
+| `test_integration_extended.rs` | 10 | Tetromino из bag, game modes, leaderboard, hold |
+| `test_io.rs` | 4 | Константы дисплея, SHAPE_STR, DISP_WIDTH |
+| `test_io_errors.rs` | 2 | KeyReader no panic, InputReader trait |
+| `test_io_utf8_handling.rs` | 2 | UTF-8 multibyte, валидные последовательности |
+| `test_module_isolation.rs` | 8 | Модульная изоляция компонентов |
+| `test_panic_handling.rs` | 8 | No-panic тесты |
+| `test_physics.rs` | 11 | Гравитация, hold, ghost piece, коллизии |
 | `test_safe_cast.rs` | 14 | f32→u32 конвертация, NaN, Infinity, overflow |
 | `test_score_overflow_protection.rs` | 12 | Saturating arithmetic, экстремальные значения |
-| `test_boundary_values.rs` | 35 | Границы Score, Level, LinesCount, Combo |
-| `test_hmac_safety.rs` | 12 | HMAC ключи, Unicode, binary data, stress |
-| `test_io_errors.rs` | 3 | KeyReader panic, Drop, InputReader trait |
-| `test_io_utf8_handling.rs` | 2 | UTF-8 multibyte, валидные последовательности |
-| `test_integration.rs` | 20 | Полная инициализация, движение, вращение, производительность |
-| `test_integration_extended.rs` | 19 | Взаимодействие компонентов, производительность |
-| `test_game_bounds_check.rs` | 3 | f32→u64 конвертация, negative values |
-| `test_game_logic.rs` | — | Game logic tests |
-| `test_game_movement.rs` | ~42 | Movement tests (сокращено с 50 до ~42) |
-| `test_io.rs` | — | IO tests |
-| `test_state_validation.rs` | — | State validation tests |
+| `test_state_validation.rs` | 15 | Валидация fall_speed и land_timer |
 
 ### Встроенные тесты (`#[cfg(test)]` в модулях)
 

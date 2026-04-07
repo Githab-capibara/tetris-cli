@@ -519,10 +519,10 @@ fn test_bag_distribution_statistics() {
     );
 
     // Вычисляем дисперсию
-    let expected: i32 = 100; // 700 / 7
+    let expected: f32 = 100.0; // 700 / 7
     let variance: f32 = counts
         .iter()
-        .map(|&c| ((c - expected).pow(2)) as f32)
+        .map(|&c| ((c as f32 - expected).powi(2)) as f32)
         .sum::<f32>()
         / 7.0;
     assert!(
