@@ -198,7 +198,7 @@ mod constants_tests {
         for i in 0..7 {
             let color = get_shape_color(i);
             // Проверяем что цвет не panic при использовании
-            let _ = format!("{:?}", color);
+            let _ = format!("{color:?}");
         }
     }
 

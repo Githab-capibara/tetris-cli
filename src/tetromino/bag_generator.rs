@@ -135,14 +135,14 @@ impl BagGenerator {
     /// Получить текущий мешок фигур (для тестов).
     #[cfg(test)]
     #[must_use]
-    pub fn get_bag(&self) -> &[ShapeType; 7] {
+    pub const fn get_bag(&self) -> &[ShapeType; 7] {
         &self.bag
     }
 
     /// Получить текущую позицию в мешке (для тестов).
     #[cfg(test)]
     #[must_use]
-    pub fn get_index(&self) -> usize {
+    pub const fn get_index(&self) -> usize {
         self.position
     }
 }

@@ -70,9 +70,7 @@ fn test_score_no_overflow() {
     // Счёт должен быть ограничен MAX_SCORE
     assert!(
         score <= MAX_SCORE,
-        "Счёт ({}) не должен превышать MAX_SCORE ({})",
-        score,
-        MAX_SCORE
+        "Счёт ({score}) не должен превышать MAX_SCORE ({MAX_SCORE})"
     );
 
     // Должна вернуться ошибка переполнения

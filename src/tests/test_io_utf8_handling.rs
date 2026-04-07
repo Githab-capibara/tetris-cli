@@ -13,21 +13,14 @@ fn test_key_reader_returns_ascii_or_none() {
     let mut reader = KeyReader::new();
     let result = reader.get_key();
 
-    match result {
-        Ok(Some(key)) => {
-            // Если клавиша была нажата, проверяем что это ASCII
-            assert!(
-                key <= 0x7F,
-                "ASCII символ должен быть <= 0x7F, получен: {key}"
-            );
-        }
-        Ok(None) => {
-            // Нет ввода — нормально в тестовой среде
-        }
-        Err(_) => {
-            // Ошибка чтения (например, нет терминала) — тоже допустимо
-        }
+    if let Ok(Some(key)) = result {
+        // Если клавиша была нажата, проверяем что это ASCII
+        assert!(
+            key <= 0x7F,
+            "ASCII символ должен быть <= 0x7F, получен: {key}"
+        );
     }
+    // Ok(None) или Err — нормально в тестовой среде
 }
 
 /// Проверка стабильности `KeyReader` при многократном использовании.

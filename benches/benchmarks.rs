@@ -361,7 +361,7 @@ fn bench_string_caching(c: &mut Criterion) {
                 state.set_score(12345);
                 state
             },
-            |state| black_box(state),
+            black_box,
         );
     });
 
@@ -373,7 +373,7 @@ fn bench_string_caching(c: &mut Criterion) {
                 state.set_level(15);
                 state
             },
-            |state| black_box(state),
+            black_box,
         );
     });
 
@@ -385,7 +385,7 @@ fn bench_string_caching(c: &mut Criterion) {
                 state.set_lines_cleared(150);
                 state
             },
-            |state| black_box(state),
+            black_box,
         );
     });
 
@@ -397,7 +397,7 @@ fn bench_string_caching(c: &mut Criterion) {
                 state.stats_mut().set_combo_counter(10);
                 state
             },
-            |state| black_box(state),
+            black_box,
         );
     });
 

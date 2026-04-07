@@ -397,21 +397,21 @@ fn test_speed_calculation_from_level() {
     let initial = INITIAL_FALL_SPD;
 
     // После 1 линии
-    let after_one = initial + SPD_INC * 1.0;
+    let after_one = SPD_INC.mul_add(1.0, initial);
     assert!(
         after_one > initial,
         "Скорость должна увеличиться после 1 линии"
     );
 
     // После 5 линий
-    let after_five = initial + SPD_INC * 5.0;
+    let after_five = SPD_INC.mul_add(5.0, initial);
     assert!(
         after_five > after_one,
         "Скорость должна расти с количеством линий"
     );
 
     // После 10 линий (новый уровень)
-    let after_ten = initial + SPD_INC * 10.0;
+    let after_ten = SPD_INC.mul_add(10.0, initial);
     assert!(after_ten > after_five, "Скорость должна продолжать расти");
 }
 

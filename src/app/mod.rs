@@ -430,6 +430,7 @@ mod tests {
 
         // Тип метода run_menu_loop должен быть fn(&mut self) -> ()
         // Проверяем через присваивание типа
+        #[allow(clippy::no_effect_underscore_binding)]
         let _type_check: fn(&mut Application) = |app| {
             app.run_menu_loop();
         };

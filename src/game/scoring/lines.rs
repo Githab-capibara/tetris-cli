@@ -257,7 +257,7 @@ fn remove_lines(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT], 
 ///
 /// # Примечания
 /// Формула расчёта очков:
-/// - Базовые очки за линии из `LINE_SCORES`[`rows_cleared` - 1]
+/// - Базовые очки за линии из <code>LINE_SCORES[rows_cleared - 1]</code>
 /// - Бонус за комбо: `COMBO_BONUS` × (`combo_counter` - 1)
 /// - Бонус за уровень: `LEVEL_BONUS_MULT` × (level - 1)
 ///

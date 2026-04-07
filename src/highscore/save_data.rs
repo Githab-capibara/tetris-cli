@@ -190,15 +190,15 @@ impl SaveData {
     /// # Исправление H10 (HIGH)
     /// Общая логика валидации вынесена в отдельный метод для устранения дублирования.
     fn load_with_validation(data: Self) -> Result<Self, String> {
-        match data.verify_and_get_score_result() {
-            Ok(score) => {
+        data.verify_and_get_score_result().map_or_else(
+            |_| Err("Рекорд не прошёл проверку целостности".to_string()),
+            |score| {
                 if score > 0 {
                     crate::log_info!("Загружен рекорд со значением {score}");
                 }
                 Ok(data)
-            }
-            Err(_) => Err("Рекорд не прошёл проверку целостности".to_string()),
-        }
+            },
+        )
     }
 
     /// Создать `SaveData` из значения рекорда.

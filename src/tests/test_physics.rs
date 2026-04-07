@@ -63,9 +63,9 @@ fn test_falling_speed_increase() {
     use crate::constants::{INITIAL_FALL_SPD, SPD_INC};
 
     let initial = INITIAL_FALL_SPD;
-    let after_one_line = initial + SPD_INC * 1.0;
-    let after_five_lines = initial + SPD_INC * 5.0;
-    let after_ten_lines = initial + SPD_INC * 10.0;
+    let after_one_line = SPD_INC.mul_add(1.0, initial);
+    let after_five_lines = SPD_INC.mul_add(5.0, initial);
+    let after_ten_lines = SPD_INC.mul_add(10.0, initial);
 
     // Проверяем увеличение скорости
     assert!(

@@ -794,12 +794,13 @@ impl ThreadSafeLeaderboard {
     /// Метод атомарен и защищён от race condition через Mutex.
     #[must_use]
     pub fn add_score(&self, name: &str, score: u128) -> bool {
-        if let Ok(mut leaderboard) = self.inner.lock() {
-            leaderboard.add_score(name, score)
-        } else {
-            eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
-            false
-        }
+        self.inner.lock().map_or_else(
+            |_| {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
+                false
+            },
+            |mut leaderboard| leaderboard.add_score(name, score),
+        )
     }
 
     /// Сохранить таблицу лидеров в файл конфигурации.
@@ -824,12 +825,13 @@ impl ThreadSafeLeaderboard {
     /// Метод возвращает копию данных для сохранения потокобезопасности.
     #[must_use]
     pub fn get_entries(&self) -> Vec<LeaderboardEntry> {
-        if let Ok(leaderboard) = self.inner.lock() {
-            leaderboard.get_entries().to_vec()
-        } else {
-            eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
-            Vec::new()
-        }
+        self.inner.lock().map_or_else(
+            |_| {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
+                Vec::new()
+            },
+            |leaderboard| leaderboard.get_entries().to_vec(),
+        )
     }
 
     /// Получить лучший рекорд.
@@ -841,12 +843,13 @@ impl ThreadSafeLeaderboard {
     /// Метод атомарен и защищён от race condition.
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
-        if let Ok(leaderboard) = self.inner.lock() {
-            leaderboard.get_best_score()
-        } else {
-            eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
-            0
-        }
+        self.inner.lock().map_or_else(
+            |_| {
+                eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
+                0
+            },
+            |leaderboard| leaderboard.get_best_score(),
+        )
     }
 
     /// Очистить таблицу лидеров.
@@ -1395,12 +1398,12 @@ mod thread_safe_tests {
         );
 
         // Проверяем что в таблице только 3 записи от Player1
-        let player_entries: Vec<_> = leaderboard
+        let player_entries_count = leaderboard
             .entries
             .iter()
             .filter(|e| e.name() == "Player1")
-            .collect();
-        assert_eq!(player_entries.len(), 3);
+            .count();
+        assert_eq!(player_entries_count, 3);
     }
 
     /// Тест SEC2: проверка что разные игроки могут добавлять записи
