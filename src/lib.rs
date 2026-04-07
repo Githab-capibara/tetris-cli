@@ -14,6 +14,52 @@
 //! }
 //! ```
 //!
+//! ## Примеры использования
+//!
+//! ### Создание состояния игры
+//!
+//! ```
+//! use tetris_cli::game::state::GameState;
+//!
+//! let mut state = GameState::new();
+//! assert_eq!(state.score(), 0);
+//! assert_eq!(state.level(), 1);
+//! ```
+//!
+//! ### Работа с очками и уровнями
+//!
+//! ```
+//! use tetris_cli::game::types::{Score, Level, LinesCount};
+//!
+//! let mut score = Score::with_value(100);
+//! score.add(200);
+//! assert_eq!(score.value(), 300);
+//!
+//! let mut level = Level::default();
+//! level.increment();
+//! assert_eq!(level.value(), 2);
+//! ```
+//!
+//! ### Конфигурация управления
+//!
+//! ```ignore
+//! use tetris_cli::controls::ControlsConfig;
+//!
+//! let config = ControlsConfig::default_config();
+//! // Проверка что клавиша 'a' сопоставлена с MoveLeft
+//! assert!(config.left() == b'a');
+//! ```
+//!
+//! ### Генерация фигур (Bag System)
+//!
+//! ```ignore
+//! use tetris_cli::tetromino::BagGenerator;
+//!
+//! let mut bag = BagGenerator::new();
+//! // fill_bag() и get_bag() — приватные методы,
+//! // используются внутренне при создании Tetromino
+//! ```
+//!
 //! ## Основные модули
 //!
 //! - [`game`] — игровая логика, состояние, цикл, система очков
@@ -100,8 +146,8 @@ mod tests {
     mod test_state_validation;
 
     // Пакет 9: новые тесты (PROB-156..175)
-    mod test_panic_handling;
-    mod test_module_isolation;
     mod test_crypto_security;
     mod test_edge_cases;
+    mod test_module_isolation;
+    mod test_panic_handling;
 }
