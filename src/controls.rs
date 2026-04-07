@@ -199,54 +199,6 @@ impl ControlsConfig {
         &self.signature
     }
 
-    /// Сеттеры для всех полей конфигурации (для тестов и обратной совместимости).
-    /// Возвращает self для возможности цепочки вызовов.
-    #[allow(dead_code)]
-    pub fn set_move_left(&mut self, value: u8) -> &mut Self {
-        self.move_left = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_move_right(&mut self, value: u8) -> &mut Self {
-        self.move_right = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_soft_drop(&mut self, value: u8) -> &mut Self {
-        self.soft_drop = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_hard_drop(&mut self, value: u8) -> &mut Self {
-        self.hard_drop = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_rotate_left(&mut self, value: u8) -> &mut Self {
-        self.rotate_left = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_rotate_right(&mut self, value: u8) -> &mut Self {
-        self.rotate_right = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_hold(&mut self, value: u8) -> &mut Self {
-        self.hold = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_pause(&mut self, value: u8) -> &mut Self {
-        self.pause = value;
-        self
-    }
-    #[allow(dead_code)]
-    pub fn set_quit(&mut self, value: u8) -> &mut Self {
-        self.quit = value;
-        self
-    }
-
     /// Сравнить только клавиши управления (игнорируя `hmac_key`).
     /// Используется в тестах для сравнения конфигураций.
     #[must_use]
@@ -537,39 +489,6 @@ impl ControlsConfig {
         }
 
         Ok(config)
-    }
-
-    /// Валидировать HMAC ключ конфигурации.
-    ///
-    /// Проверяет:
-    /// 1. HMAC ключ не пустой
-    /// 2. HMAC ключ имеет минимальную длину (16 байт)
-    ///
-    /// # Возвращает
-    /// - `Ok(())` если ключ валиден
-    /// - `Err(String)` если ключ невалиден
-    ///
-    /// # Пример использования
-    /// ```ignore
-    /// use tetris_cli::controls::ControlsConfig;
-    ///
-    /// // validate_hmac_key — associated function, требует переменную окружения
-    /// // ControlsConfig::validate_hmac_key().is_ok()
-    /// ```
-    ///
-    /// # Исправление ISSUE-041
-    /// Метод интегрирован в `ControlsConfig` для лучшей когезии.
-    ///
-    /// # Errors
-    /// Возвращает `Err(String)` если:
-    /// - HMAC ключ пустой или содержит только пробелы
-    /// - HMAC ключ короче `MIN_HMAC_KEY_LENGTH` (16 байт)
-    #[allow(dead_code)]
-    pub fn validate_hmac_key() -> Result<(), String> {
-        crate::config::keys::validate_hmac_key(
-            crate::config::keys::get_controls_hmac_key(),
-            "CONTROLS_HMAC_KEY",
-        )
     }
 
     /// Валидировать конфигурацию управления.

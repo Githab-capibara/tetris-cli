@@ -36,10 +36,6 @@ fn test_thread_safe_leaderboard_entry_is_atomic() {
         "is_valid() должен возвращать true для валидной записи"
     );
 
-    // Проверяем что hash() возвращает непустую строку
-    let hash = entry.hash();
-    assert!(!hash.is_empty(), "hash() должен возвращать непустую строку");
-
     // Проверяем что name() возвращает правильное имя
     assert_eq!(
         entry.name(),

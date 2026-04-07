@@ -80,7 +80,6 @@ use rand::SeedableRng;
 /// let h = hash("данные");
 /// assert_eq!(h.len(), 64);
 /// ```
-#[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
 #[must_use = "Хеш должен быть использован"]
 pub fn hash(data: &str) -> String {
     blake3::hash(data.as_bytes()).to_hex().to_string()
