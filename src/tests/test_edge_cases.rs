@@ -322,73 +322,12 @@ fn test_leaderboard_default_is_empty() {
 // ============================================================================
 
 /// Тест: BagGenerator выдаёт все 7 фигур за один мешок
-#[test]
-fn test_bag_generator_produces_all_7_shapes() {
-    use crate::tetromino::bag_generator::BagGenerator;
-    use crate::tetromino::shape_type::ShapeType;
-    use std::collections::HashSet;
-
-    let mut bag = BagGenerator::new();
-
-    // Получаем все 7 фигур из первого мешка
-    let mut shapes = HashSet::new();
-    for _ in 0..7 {
-        shapes.insert(bag.next_shape());
-    }
-
-    // Все 7 фигур должны присутствовать
-    assert_eq!(
-        shapes.len(),
-        7,
-        "Мешок должен содержать все 7 уникальных фигур"
-    );
-    assert!(shapes.contains(&ShapeType::T), "Мешок должен содержать T");
-    assert!(shapes.contains(&ShapeType::L), "Мешок должен содержать L");
-    assert!(shapes.contains(&ShapeType::J), "Мешок должен содержать J");
-    assert!(shapes.contains(&ShapeType::S), "Мешок должен содержать S");
-    assert!(shapes.contains(&ShapeType::Z), "Мешок должен содержать Z");
-    assert!(shapes.contains(&ShapeType::O), "Мешок должен содержать O");
-    assert!(shapes.contains(&ShapeType::I), "Мешок должен содержать I");
-}
+// Удалён как дубликат test_first_bag_contains_all_seven_pieces из test_bag_system.rs
+// Проверял то же самое: все 7 уникальных фигур в одном мешке
 
 /// Тест: BagGenerator равномерно распределяет фигуры за много итераций
-#[test]
-fn test_bag_generator_uniform_distribution() {
-    use crate::tetromino::bag_generator::BagGenerator;
-    use crate::tetromino::shape_type::ShapeType;
-    use std::collections::HashMap;
-
-    let mut bag = BagGenerator::new();
-    let mut counts: HashMap<ShapeType, u32> = HashMap::new();
-
-    // Инициализируем счётчики
-    for shape in &[
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ] {
-        counts.insert(*shape, 0);
-    }
-
-    // Получаем 70 фигур (10 мешков)
-    for _ in 0..70 {
-        let shape = bag.next_shape();
-        *counts.entry(shape).or_insert(0) += 1;
-    }
-
-    // Каждая фигура должна появиться ровно 10 раз
-    for (shape, count) in &counts {
-        assert_eq!(
-            *count, 10,
-            "Фигура {:?} должна появиться 10 раз, появилось {}",
-            shape, count
-        );
-    }
-}
+// Удалён как дубликат test_uniform_distribution_multiple_bags из test_bag_system.rs
+// Проверял то же самое: 70 фигур, каждая ровно 10 раз
 
 /// Тест: BagGenerator детерминирован по структуре (не по порядку)
 #[test]
