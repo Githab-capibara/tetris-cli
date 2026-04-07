@@ -1374,7 +1374,22 @@ mod thread_safe_tests {
     fn test_leaderboard_not_send_sync() {
         // Leaderboard намеренно не реализует Send+Sync без внешней синхронизации.
         // ThreadSafeLeaderboardEntry — thread-safe обёртка.
-        let _leaderboard = Leaderboard::default();
+        let mut leaderboard = Leaderboard::default();
+
+        // Проверяем что Leaderboard пустой при инициализации
+        assert!(
+            leaderboard.get_entries().is_empty(),
+            "Новый Leaderboard должен быть пустым"
+        );
+
+        // Проверяем что можно добавить запись
+        let result = leaderboard.add_score("TestPlayer", 100);
+        assert!(result, "Должна быть возможность добавить запись");
+        assert_eq!(
+            leaderboard.len(),
+            1,
+            "После добавления должна быть 1 запись"
+        );
     }
 
     // =========================================================================
