@@ -228,16 +228,6 @@ impl LeaderboardEntry {
         )
     }
 
-    /// Получить хэш записи.
-    ///
-    /// # Примечания
-    /// Метод используется в тестах для проверки уникальности хэшей.
-    #[must_use]
-    #[allow(dead_code)]
-    pub fn hash(&self) -> &str {
-        &self.hash
-    }
-
     /// Создать новую запись в таблице лидеров.
     ///
     /// # Аргументы
@@ -1097,7 +1087,6 @@ impl Leaderboard {
     /// let best = leaderboard.get_best_score();
     /// assert_eq!(best, 2000);
     /// ```
-    #[allow(dead_code)]
     #[must_use]
     pub fn get_best_score(&self) -> u128 {
         self.entries.first().map_or(0, |e| e.score_value)

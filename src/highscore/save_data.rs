@@ -84,29 +84,6 @@ fn check_config_file_size(path: &PathBuf) -> Result<(), String> {
     }
 }
 
-/// Ошибка операции с конфигурацией.
-#[derive(Debug)]
-#[allow(dead_code)]
-pub enum ConfigError {
-    /// Директория конфигурации недоступна для записи.
-    DirectoryNotWritable(String),
-    /// Ошибка при сохранении/загрузке через confy.
-    IoError(String),
-}
-
-impl std::fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::DirectoryNotWritable(dir) => {
-                write!(f, "Директория конфигурации недоступна для записи: {dir}")
-            }
-            Self::IoError(msg) => write!(f, "Ошибка ввода/вывода: {msg}"),
-        }
-    }
-}
-
-impl std::error::Error for ConfigError {}
-
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
 /// Использует u128 для предотвращения переполнения счёта.
@@ -288,39 +265,6 @@ impl SaveData {
         }
     }
 
-    /// Сохранить значение рекорда в файл с возвратом Result.
-    ///
-    /// # Аргументы
-    /// * `high_score` - значение рекорда для сохранения
-    ///
-    /// # Возвращает
-    /// - `Ok(())` - рекорд успешно сохранён
-    /// - `Err(ConfigError)` - ошибка при сохранении
-    ///
-    /// # Errors
-    /// Возвращает [`ConfigError::IoError`] если произошла ошибка при сохранении
-    /// конфигурации через `confy::store()`.
-    ///
-    /// # Пример
-    /// ```no_run
-    /// use tetris_cli::highscore::SaveData;
-    /// match SaveData::save_value_result(1000) {
-    ///     Ok(()) => println!("Рекорд успешно сохранён"),
-    ///     Err(e) => log_error!("Ошибка сохранения: {}", e),
-    /// }
-    /// ```
-    /// Использует u128 для предотвращения переполнения.
-    ///
-    /// # Note
-    /// Этот метод используется только в тестах
-    #[cfg(test)]
-    #[allow(dead_code)]
-    pub fn save_value_result(high_score: u128) -> Result<(), ConfigError> {
-        let save = Self::from_value(high_score);
-        store(APP_NAME, Some("config"), save)
-            .map_err(|e| ConfigError::IoError(format!("Ошибка сохранения рекорда: {e}")))
-    }
-
     /// Проверить целостность рекорда и вернуть значение.
     ///
     /// Возвращает Some(score) если хэш совпадает, None при подделке.
@@ -343,7 +287,6 @@ impl SaveData {
     /// # Примечание
     /// Для явной обработки ошибок используйте [`Self::verify_and_get_score_result()`].
     #[must_use]
-    #[allow(dead_code)] // Используется в тестах
     pub fn verify_and_get_score(&self) -> Option<u128> {
         self.verify_and_get_score_result().ok()
     }

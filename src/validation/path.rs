@@ -557,8 +557,6 @@ impl PathValidator {
     ///
     /// # Errors
     /// Возвращает `PathError` если путь является абсолютным.
-    #[allow(clippy::unused_self)]
-    // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации абсолютного пути должен быть обработан"]
     pub fn validate_not_absolute(&self, path: &Path) -> Result<(), PathError> {
         if path.is_absolute() {
@@ -588,8 +586,6 @@ impl PathValidator {
     /// - `%2f` и `%2F` (/)
     /// - `%5c` и `%5C` (\)
     /// - Комбинации: `%2e%2e%2f`, `%2e%2e/`, `..%2f` и т.д.
-    #[allow(clippy::unused_self)]
-    // Будет использоваться с конфигурируемыми параметрами
     #[must_use = "Результат валидации path traversal должен быть обработан"]
     pub fn validate_no_traversal(&self, path: &str) -> Result<(), PathError> {
         // Исправление H8: массив запрещённых паттернов для URL-encoding

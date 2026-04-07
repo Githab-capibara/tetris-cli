@@ -22,7 +22,6 @@
 //! Теперь они заменены на re-export для устранения дублирования.
 
 // Re-export из hmac.rs для устранения дублирования (#21)
-#[allow(unused_imports)]
 pub use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
 
 // ============================================================================
