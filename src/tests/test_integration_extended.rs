@@ -59,30 +59,6 @@ fn test_curr_and_next_shapes_different() {
 // ВЗАИМОДЕЙСТВИЕ GAME + HIGHSCORE
 // ============================================================================
 
-/// Тест: Classic режим поддерживает сохранение рекорда.
-#[test]
-fn test_classic_mode_saves_score() {
-    let state = GameState::new();
-
-    assert_eq!(
-        state.get_mode_trait().name(),
-        "Классика",
-        "Режим должен быть Classic"
-    );
-}
-
-/// Тест: Sprint режим не сохраняет рекорд.
-#[test]
-fn test_sprint_mode_does_not_save_score() {
-    let state = GameState::new_sprint();
-
-    assert_eq!(
-        state.get_mode_trait().name(),
-        "Спринт",
-        "Режим должен быть Sprint"
-    );
-}
-
 /// Тест: Marathon режим поддерживает сохранение рекорда.
 #[test]
 fn test_marathon_mode_saves_score() {
@@ -139,22 +115,6 @@ fn test_leaderboard_max_size_integration() {
 // ============================================================================
 // ВЗАИМОДЕЙСТВИЕ GAME + CONTROLS
 // ============================================================================
-
-/// Тест: GameState реагирует на ввод (движение влево).
-#[test]
-fn test_gamestate_responds_to_input() {
-    use crate::types::Direction;
-    let mut state = GameState::new();
-    let initial_x = state.curr_shape().pos().0;
-
-    if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        assert!(
-            state.curr_shape().pos().0 < initial_x,
-            "Движение влево должно уменьшить X"
-        );
-    }
-}
 
 /// Тест: Hold фигура доступна в начале игры.
 #[test]

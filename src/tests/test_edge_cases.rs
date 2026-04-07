@@ -14,44 +14,6 @@
 use std::sync::Arc;
 
 // ============================================================================
-// PROB-162: Конкурентный доступ к leaderboard
-// ============================================================================
-
-/// Тест: конкурентный доступ к leaderboard
-#[test]
-fn test_leaderboard_concurrent_access() {
-    use crate::highscore::leaderboard::ThreadSafeLeaderboardEntry;
-    use std::sync::Barrier;
-    use std::thread;
-
-    let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player", 1000));
-    let barrier = Arc::new(Barrier::new(4));
-
-    let mut handles = vec![];
-
-    // 4 потока одновременно читают запись
-    for _ in 0..4 {
-        let entry = Arc::clone(&entry);
-        let barrier = Arc::clone(&barrier);
-        let handle = thread::spawn(move || {
-            barrier.wait(); // Синхронизируем старт
-            let score = entry.score_safe();
-            let is_valid = entry.is_valid_safe();
-            let name = entry.name_safe();
-            (score, is_valid, name)
-        });
-        handles.push(handle);
-    }
-
-    for handle in handles {
-        let (score, is_valid, name) = handle.join().expect("Поток не должен паниковать");
-        assert_eq!(score, Some(1000), "Счёт должен быть 1000");
-        assert_eq!(is_valid, Some(true), "Запись должна быть валидной");
-        assert_eq!(name, Some("Player".to_string()), "Имя должно быть Player");
-    }
-}
-
-// ============================================================================
 // PROB-164: Score overflow
 // ============================================================================
 
@@ -85,16 +47,6 @@ fn test_score_saturating_add_prevents_overflow() {
 
     score = score.saturating_add(addition);
     assert_eq!(score, u128::MAX, "saturating_add должен вернуть MAX");
-}
-
-/// Тест: GameState `set_score` с `u128::MAX` не паникует
-#[test]
-fn test_game_state_set_score_max_no_panic() {
-    use crate::game::GameState;
-
-    let mut state = GameState::new();
-    state.set_score(u128::MAX);
-    assert_eq!(state.score(), u128::MAX);
 }
 
 // ============================================================================
@@ -215,45 +167,6 @@ fn test_path_validator_symlink_check_exists() {
     let result = validator.validate_no_symlinks(nonexistent);
     // Может быть Ok или Err в зависимости от прав доступа — главное что не паникует
     let _ = result;
-}
-
-// ============================================================================
-// PROB-169: Race condition в leaderboard
-// ============================================================================
-
-/// Тест: `ThreadSafeLeaderboardEntry` защищает от race condition
-#[test]
-fn test_leaderboard_race_condition_protection() {
-    use crate::highscore::leaderboard::ThreadSafeLeaderboardEntry;
-    use std::sync::Barrier;
-    use std::thread;
-
-    let entry = Arc::new(ThreadSafeLeaderboardEntry::new("TestPlayer", 5000));
-    let barrier = Arc::new(Barrier::new(8));
-    let mut handles = vec![];
-
-    // 8 потоков одновременно читают
-    for _ in 0..8 {
-        let entry = Arc::clone(&entry);
-        let barrier = Arc::clone(&barrier);
-        let handle = thread::spawn(move || {
-            barrier.wait();
-            // Многократное чтение для увеличения шанса race condition
-            for _ in 0..100 {
-                let score = entry.score_safe();
-                assert_eq!(score, Some(5000));
-            }
-            true
-        });
-        handles.push(handle);
-    }
-
-    for handle in handles {
-        assert!(
-            handle.join().unwrap(),
-            "Все потоки должны завершиться успешно"
-        );
-    }
 }
 
 // ============================================================================

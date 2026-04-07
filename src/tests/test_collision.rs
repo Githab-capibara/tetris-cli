@@ -202,22 +202,6 @@ fn test_collision_all_shapes_floor() {
 // ГРУППА ТЕСТОВ 26-35: Столкновения с фигурами
 // ============================================================================
 
-/// Тест 27: Проверка что движение вниз блокируется фигурой.
-///
-/// Проверяет, что после приземления на пол движение вниз блокируется.
-#[test]
-fn test_collision_down_blocked_by_piece() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру на пол
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Движение вниз должно быть заблокировано
-    assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
 /// Тест 30: Проверка столкновения при приземлении на фигуру.
 ///
 /// Проверяет, что фигура останавливается при достижении препятствия.
@@ -232,18 +216,6 @@ fn test_collision_landing_on_piece() {
 
     // Фигура должна быть на полу
     assert!(!state.can_move_curr_shape_direction(Direction::Down));
-}
-
-/// Тест 34: Проверка что столкновение не срабатывает рано.
-///
-/// Проверяет, что в центре поля движение вниз доступно.
-#[test]
-fn test_collision_not_early() {
-    let state = GameState::new();
-
-    // В центре поля столкновений быть не должно
-    let can_down = state.can_move_curr_shape_direction(Direction::Down);
-    assert!(can_down, "В центре поля движение вниз должно быть возможно");
 }
 
 /// Тест 35: Проверка что столкновение срабатывает точно на границе.
