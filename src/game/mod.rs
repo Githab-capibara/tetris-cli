@@ -159,7 +159,6 @@ impl GameState {
     ///
     /// # Возвращает
     /// `true` если вращение возможно
-    #[allow(dead_code)] // Внутренний API для игровых механик
     #[must_use = "Результат проверки вращения должен быть использован"]
     pub fn can_rotate_curr_shape(&self, dir: crate::types::RotationDirection) -> bool {
         can_rotate_curr_shape(self, dir)
@@ -172,25 +171,21 @@ impl GameState {
     ///
     /// # Возвращает
     /// `true` если вращение успешно
-    #[allow(dead_code)] // Внутренний API для игровых механик
     pub fn rotate_with_wall_kick(&mut self, dir: crate::types::RotationDirection) -> bool {
         rotate_with_wall_kick(self, dir)
     }
 
     /// Удержать текущую фигуру и получить следующую.
-    #[allow(dead_code)] // Внутренний API для игровых механик
     pub fn hold_shape(&mut self) {
         handle_hold(self);
     }
 
     /// Запустить таймер.
-    #[allow(dead_code)] // Внутренний API для игровых механик
     pub fn start_timer(&mut self) {
         self.stats_mut().start_timer();
     }
 
     /// Остановить таймер.
-    #[allow(dead_code)] // Внутренний API для игровых механик
     pub fn stop_timer(&mut self) {
         self.stats_mut().stop_timer();
     }
@@ -198,19 +193,9 @@ impl GameState {
     /// Проверить, может ли призрак двигаться в указанном направлении.
     ///
     /// Используется для отрисовки призрачной фигуры (предпросмотр приземления).
-    #[allow(dead_code)] // Внутренний API для игровых механик
     #[must_use = "Результат проверки движения призрака должен быть использован"]
     pub fn can_move_ghost_shape_direction(&self, dir: crate::types::Direction) -> bool {
         can_move_curr_shape_direction(self, dir)
-    }
-
-    /// Увеличить счетчик очищенных линий.
-    ///
-    /// Используется в тестах для проверки обновления счетчика.
-    #[allow(dead_code)] // Внутренний API для игровых механик
-    pub fn increment_lines_cleared(&mut self) {
-        let lines = self.lines_cleared().saturating_add(1);
-        self.set_lines_cleared(lines);
     }
 
     // ========================================================================
@@ -231,7 +216,7 @@ impl GameState {
     /// state.fill_line_for_bench(10); // Заполнить линию 10
     /// ```
     #[cfg(feature = "bench")]
-    #[allow(clippy::missing_panics_doc, dead_code)]
+    #[allow(clippy::missing_panics_doc)]
     pub fn fill_line_for_bench(&mut self, line: usize) {
         use crate::constants::GRID_HEIGHT;
         assert!(
@@ -239,24 +224,6 @@ impl GameState {
             "Индекс линии должен быть меньше {GRID_HEIGHT}"
         );
         self.get_blocks_mut()[line] = [1i8; crate::constants::GRID_WIDTH];
-    }
-
-    /// Очистить заполненные линии для бенчмарков.
-    ///
-    /// Использует `check_rows()` для удаления заполненных линий.
-    #[cfg(feature = "bench")]
-    #[allow(dead_code)]
-    pub fn clear_lines_for_bench(&mut self) {
-        self.check_rows();
-    }
-
-    /// Сохранить текущую фигуру для бенчмарков.
-    ///
-    /// Использует `save_tetromino()` для сохранения фигуры в поле.
-    #[cfg(feature = "bench")]
-    #[allow(dead_code)]
-    pub fn save_tetromino_for_bench(&mut self) {
-        self.save_tetromino();
     }
 }
 

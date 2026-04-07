@@ -37,7 +37,6 @@ pub enum InputResult {
     /// Выход в меню.
     Quit,
     /// Пауза (ожидание снятия).
-    #[allow(dead_code)]
     Pause,
     /// Игра окончена.
     GameOver,
