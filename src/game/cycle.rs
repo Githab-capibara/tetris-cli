@@ -179,9 +179,7 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
 /// # Возвращает
 /// - `Some(final_score)` - игра завершена, вернуть счёт
 /// - `None` - продолжить игру
-///
-/// # Исправление аудита 2026-03-31 (MEDIUM)
-/// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
+#[inline]
 fn handle_input_result<R: Renderer>(
     input_result: &InputResult,
     state: &GameState,

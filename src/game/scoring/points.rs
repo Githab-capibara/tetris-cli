@@ -112,9 +112,14 @@ pub fn handle_hard_drop(state: &mut GameState) {
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
     // Исправление C1: saturating_mul для защиты от переполнения
-    let _ = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
+    let new_score = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
+    debug_assert!(
+        new_score >= u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS),
+        "add_score должен вернуть корректный счёт"
+    );
     // set_land_timer(0.0) — всегда валидное значение, ошибка невозможна
-    let _ = state.set_land_timer(0.0);
+    let result = state.set_land_timer(0.0);
+    debug_assert!(result.is_ok(), "set_land_timer(0.0) не может вернуть ошибку");
     state.set_is_hard_dropping(true);
 }
 
@@ -146,6 +151,10 @@ pub fn handle_soft_drop(state: &mut GameState) {
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // side-effect: обновляет счётчик очков внутри
         let _ = state.add_score(SOFT_DROP_POINTS);
+        debug_assert!(
+            state.score() >= SOFT_DROP_POINTS,
+            "add_score(SOFT_DROP_POINTS) должен увеличить счёт"
+        );
     }
 }
 
@@ -291,6 +300,10 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     // Исправление C1: saturating_add для защиты от переполнения
     // side-effect: add_score updates scoreboard internally
     let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
+    debug_assert!(
+        state.score() >= PIECE_SCORE_INC.saturating_add(fall_bonus_u128),
+        "add_score должен увеличить счёт на бонус приземления"
+    );
 
     // Начисление очков за Soft Drop
     // Исправление C1: saturating_mul для защиты от переполнения
@@ -305,7 +318,11 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Сброс таймера приземления
     // LAND_TIME_DELAY_S — константное валидное значение, ошибка невозможна
-    let _ = state.set_land_timer(LAND_TIME_DELAY_S);
+    let result = state.set_land_timer(LAND_TIME_DELAY_S);
+    debug_assert!(
+        result.is_ok(),
+        "set_land_timer(LAND_TIME_DELAY_S) не может вернуть ошибку"
+    );
 }
 
 /// Обновить счётчик комбо после удаления линий.

@@ -115,7 +115,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT
 
     // Заполняем верхние строки пустыми значениями (-1)
     for row in blocks.iter_mut().take(rows_removed_below) {
-        *row = [-1; crate::constants::GRID_WIDTH];
+        row.fill(-1);
     }
 }
 
