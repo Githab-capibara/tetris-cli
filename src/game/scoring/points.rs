@@ -119,7 +119,10 @@ pub fn handle_hard_drop(state: &mut GameState) {
     );
     // set_land_timer(0.0) — всегда валидное значение, ошибка невозможна
     let result = state.set_land_timer(0.0);
-    debug_assert!(result.is_ok(), "set_land_timer(0.0) не может вернуть ошибку");
+    debug_assert!(
+        result.is_ok(),
+        "set_land_timer(0.0) не может вернуть ошибку"
+    );
     state.set_is_hard_dropping(true);
 }
 
