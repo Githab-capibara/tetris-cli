@@ -48,11 +48,3 @@ pub use lines::check_rows;
 
 // Публичные экспорты из points
 pub use points::{handle_hard_drop, handle_hold, handle_landing, handle_soft_drop};
-
-// ============================================================================
-// DRY2: RE-EXPORT ТРЕЙТОВ ИЗ access.rs (УСТРАНЕНИЕ ДУБЛИРОВАНИЯ)
-// ============================================================================
-
-// Re-export трейтов из access.rs для устранения дублирования (Архитектурное улучшение 2026-04-01)
-// ScoreAccess, ScoreMutable определены в access.rs и переэкспортируются здесь для обратной совместимости
-pub use super::access::{ScoreAccess, ScoreMutable};

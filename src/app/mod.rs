@@ -97,8 +97,8 @@ impl Application {
         // Исправление ISSUE-196: eprintln!() используется для логирования предупреждений
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
         if let Err(errors) = validate_all_keys() {
-            for _e in &errors {
-                crate::log_warn!("{e}: используется пустой HMAC ключ (ожидаемо для разработки)");
+            for _err in &errors {
+                crate::log_warn!("Обнаружена проблема с HMAC ключом: используется пустой ключ (ожидаемо для разработки)");
             }
         }
 
@@ -262,27 +262,19 @@ impl Application {
             // ЗАПУСК КЛАССИЧЕСКОЙ ИГРЫ (Enter)
             b'\n' | b'\r' => {
                 let state = GameState::new();
-                let new_score = self.run_game_classic(high_score_display, state);
-                if new_score > self.high_score {
-                    self.high_score = new_score;
-                    SaveData::save_value(self.high_score);
-                }
+                self.run_game_mode_with_state(high_score_display, state, true);
             }
 
             // ЗАПУСК РЕЖИМА СПРИНТ (R)
             b'r' => {
                 let state = GameState::new_sprint();
-                self.run_game_sprint(high_score_display, state);
+                self.run_game_mode_with_state(high_score_display, state, false);
             }
 
             // ЗАПУСК РЕЖИМА МАРАФОН (M)
             b'm' => {
                 let state = GameState::new_marathon();
-                let new_score = self.run_game_marathon(high_score_display, state);
-                if new_score > self.high_score {
-                    self.high_score = new_score;
-                    SaveData::save_value(self.high_score);
-                }
+                self.run_game_mode_with_state(high_score_display, state, true);
             }
 
             // ОТОБРАЖЕНИЕ ТАБЛИЦЫ ЛИДЕРОВ (L)
@@ -295,40 +287,34 @@ impl Application {
         }
     }
 
-    /// Запустить классический режим игры.
-    fn run_game_classic(&mut self, high_score_display: &str, state: GameState) -> u128 {
-        run_game_mode(
+    /// Запустить игровой режим с указанным состоянием.
+    ///
+    /// # Аргументы
+    /// * `high_score_display` — строка для отображения рекорда
+    /// * `state` — начальное состояние игры
+    /// * `save_score` — сохранять ли рекорд после игры
+    ///
+    /// # Возвращает
+    /// Набранные очки (если `save_score` — `true`) или `0`
+    fn run_game_mode_with_state(
+        &mut self,
+        high_score_display: &str,
+        state: GameState,
+        save_score: bool,
+    ) -> u128 {
+        let score = run_game_mode(
             &mut self.canvas,
             &mut self.input,
             high_score_display,
             state,
-            true,
-            &mut self.leaderboard,
-        )
-    }
-
-    /// Запустить режим спринт.
-    fn run_game_sprint(&mut self, high_score_display: &str, state: GameState) {
-        run_game_mode(
-            &mut self.canvas,
-            &mut self.input,
-            high_score_display,
-            state,
-            false,
+            save_score,
             &mut self.leaderboard,
         );
-    }
-
-    /// Запустить режим марафон.
-    fn run_game_marathon(&mut self, high_score_display: &str, state: GameState) -> u128 {
-        run_game_mode(
-            &mut self.canvas,
-            &mut self.input,
-            high_score_display,
-            state,
-            true,
-            &mut self.leaderboard,
-        )
+        if save_score && score > self.high_score {
+            self.high_score = score;
+            SaveData::save_value(self.high_score);
+        }
+        score
     }
 
     /// Подождать следующего кадра для поддержания FPS.

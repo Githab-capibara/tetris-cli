@@ -45,16 +45,11 @@ fn log_once_empty_key(_key_name: &str) {
 }
 
 /// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
-///
-/// # Исправление #6 (M6)
-/// Заменён `option_env!` (compile-time) на `std::env::var()` (runtime) с `OnceLock`
-/// для чтения переменных окружения во время выполнения.
 fn get_controls_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|e| {
+        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|_| {
             log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
-            let _ = e; // подавляем предупреждение unused
             String::new()
         })
     })
@@ -64,9 +59,8 @@ fn get_controls_hmac_key_runtime() -> &'static String {
 fn get_leaderboard_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|e| {
+        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|_| {
             log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
-            let _ = e;
             String::new()
         })
     })
@@ -76,9 +70,8 @@ fn get_leaderboard_hmac_key_runtime() -> &'static String {
 fn get_save_data_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|e| {
+        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|_| {
             log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
-            let _ = e;
             String::new()
         })
     })
@@ -138,7 +131,7 @@ pub fn get_save_data_hmac_key() -> &'static str {
 pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
     if key.trim().is_empty() {
         return Err(format!(
-            "HMAC ключ '{key_name}' не установлен. Пожалуйста, установите переменную окружения TETRIS_HMAC_KEY"
+            "HMAC ключ '{key_name}' не установлен. Пожалуйста, установите соответствующую переменную окружения (TETRIS_CONTROLS_HMAC_KEY, TETRIS_LEADERBOARD_HMAC_KEY или TETRIS_SAVEDATA_HMAC_KEY)"
         ));
     }
 

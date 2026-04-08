@@ -96,6 +96,8 @@ pub const MENU_COLOR: &dyn termion::color::Color = &White;
 // ============================================================================
 
 /// Максимальная длина имени игрока.
-pub const MAX_NAME_LEN: usize = 10;
+///
+/// Согласовано с `validation/name.rs::MAX_NAME_LENGTH` (32 символа).
+pub const MAX_NAME_LEN: usize = 32;
 
 // Примечание: MAX_LEADERBOARD_ENTRIES переэкспортирован из crate::constants.rs

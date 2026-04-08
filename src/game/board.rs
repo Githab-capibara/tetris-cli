@@ -86,7 +86,6 @@ impl GameBoard {
     ///
     /// # Panics
     /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
-    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use = "Значение ячейки должно быть использовано"]
     pub const fn get_block(&self, x: usize, y: usize) -> Option<i8> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
@@ -118,7 +117,6 @@ impl GameBoard {
     ///
     /// # Panics
     /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
-    #[allow(dead_code)] // Публичный API для внешних пользователей библиотеки
     #[must_use = "Результат установки ячейки должен быть использован"]
     pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
