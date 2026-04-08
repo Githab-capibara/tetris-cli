@@ -37,7 +37,7 @@ impl LeaderboardRepository {
     pub fn load() -> Leaderboard {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
-            Err(e) => {
+            Err(_e) => {
                 crate::log_warn!(
                     "Не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup..."
                 );
@@ -47,7 +47,7 @@ impl LeaderboardRepository {
                         crate::log_info!("Успешно загружено из backup файла.");
                         backup_leaderboard
                     }
-                    Err(backup_e) => {
+                    Err(_backup_e) => {
                         crate::log_warn!(
                             "Не удалось загрузить backup: {backup_e}. Используется пустая таблица."
                         );
@@ -66,12 +66,12 @@ impl LeaderboardRepository {
     /// # Примечания
     /// При ошибке сохранения пытается сохранить в backup файл.
     pub fn save(leaderboard: &Leaderboard) {
-        if let Err(e) = store(APP_NAME, Some("leaderboard"), leaderboard) {
+        if let Err(_e) = store(APP_NAME, Some("leaderboard"), leaderboard) {
             crate::log_error!(
                 "Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup..."
             );
             // Попытка сохранить в backup файл
-            if let Err(backup_e) = store(APP_NAME, Some("leaderboard_backup"), leaderboard) {
+            if let Err(_backup_e) = store(APP_NAME, Some("leaderboard_backup"), leaderboard) {
                 crate::log_error!(
                     "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
                 );

@@ -244,7 +244,7 @@ impl<'a> GameView<'a> {
         use termion::color::Reset;
 
         for y in 0..GRID_HEIGHT {
-            let is_animating = (self.animating_rows & (1 << y)) != 0;
+            let _is_animating = (self.animating_rows & (1 << y)) != 0;
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
                     // cast: i8 -> usize, потеря знака допустима: цвет блока неотрицательный (0-6)

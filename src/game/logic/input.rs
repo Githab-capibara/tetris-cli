@@ -179,7 +179,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
             // Клавиша не была нажата
             None
         }
-        Err(e) => {
+        Err(_e) => {
             // Ошибка чтения ввода
             // PROB-146: ERROR лог через макрос log_error! вместо eprintln!
             log_error!("Ошибка чтения ввода: {e}");
