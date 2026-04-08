@@ -496,7 +496,6 @@ impl GameState {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `GameBoard`
-    #[must_use]
     pub fn board_mut(&mut self) -> &mut GameBoard {
         &mut self.board
     }
@@ -520,7 +519,6 @@ impl GameState {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `ScoreBoard`
-    #[must_use]
     pub fn scoreboard_mut(&mut self) -> &mut ScoreBoard {
         &mut self.scoreboard
     }
@@ -550,7 +548,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Прямой доступ к компоненту `FigureManager` для сложной логики.
-    #[must_use]
+    #[allow(clippy::unused_self)]
     pub fn figure_manager_mut(&mut self) -> &mut FigureManager {
         &mut self.figure_manager
     }
@@ -576,7 +574,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Прямой доступ к компоненту `AnimationState` для сложной логики.
-    #[must_use]
     pub fn animation_state_mut(&mut self) -> &mut AnimationState {
         &mut self.animation_state
     }
@@ -594,7 +591,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
-    #[must_use]
     pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         self.board.get_blocks_mut()
     }
@@ -672,7 +668,6 @@ impl GameState {
     }
 
     /// Получить кэш для отрисовки (мутуабельная ссылка).
-    #[must_use]
     pub fn get_render_cache_mut(&mut self) -> &mut RenderCache {
         &mut self.render_cache
     }
@@ -867,7 +862,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    #[must_use]
     pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
         self.figure_manager.curr_shape_mut()
     }
@@ -876,7 +870,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    #[must_use]
     pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
         self.figure_manager.next_shape_mut()
     }
@@ -885,7 +878,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    #[must_use]
     pub fn get_held_shape_mut(&mut self) -> &mut Option<Tetromino> {
         self.figure_manager.held_shape_mut()
     }
@@ -903,7 +895,6 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    #[must_use]
     pub fn get_bag_mut(&mut self) -> &mut BagGenerator {
         self.figure_manager.bag_mut()
     }

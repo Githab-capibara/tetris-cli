@@ -91,10 +91,6 @@ impl LeaderboardStorage {
 
         // P3-ID56: Schwartzian transform — score() (HMAC-верификация) вызывается
         // ровно один раз для каждой записи, затем сортировка по предвычисленным значениям.
-        // HMAC необходим для целостности: без проверки нельзя доверять значениям счёта.
-        // Для N<=5 накладные расходы минимальны.
-        // Сортируем по убыванию счёта — вызываем score() ровно один раз для каждой записи
-        // Используем Schwartzian transform: (score, index) -> sort -> unwrap
         let mut scored_entries: Vec<_> = self
             .entries
             .drain(..)
