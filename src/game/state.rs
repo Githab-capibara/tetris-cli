@@ -51,7 +51,7 @@
 
 // crate
 use crate::constants::GRID_HEIGHT;
-use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S};
+use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MARATHON_LINES, SPRINT_LINES};
 use crate::tetromino::{BagGenerator, Tetromino};
 
 // self (super)
@@ -170,8 +170,8 @@ impl GameMode {
     pub const fn check_win_condition(self, lines_cleared: u32) -> bool {
         match self {
             Self::Classic => false,
-            Self::Sprint => lines_cleared >= 40,
-            Self::Marathon => lines_cleared >= 150,
+            Self::Sprint => lines_cleared >= SPRINT_LINES,
+            Self::Marathon => lines_cleared >= MARATHON_LINES,
         }
     }
 
@@ -183,8 +183,8 @@ impl GameMode {
     pub const fn get_target_lines(self) -> Option<u32> {
         match self {
             Self::Classic => None,
-            Self::Sprint => Some(40),
-            Self::Marathon => Some(150),
+            Self::Sprint => Some(SPRINT_LINES),
+            Self::Marathon => Some(MARATHON_LINES),
         }
     }
 }

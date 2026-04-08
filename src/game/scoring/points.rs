@@ -69,8 +69,6 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
         return u32::MAX;
     }
     // Конвертация безопасна - значение в диапазоне [0, u32::MAX)
-    // Исправление #25: явная конвертация после проверки диапазона
-    // cast: f32 -> u32, потеря точности/знака допустима: значение проверено на диапазон [0, u32::MAX)
     value as u32
 }
 
@@ -146,7 +144,6 @@ pub fn handle_soft_drop(state: &mut GameState) {
         let soft_drop_distance = state.soft_drop_distance();
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
-        // Исправление C1: saturating_mul для защиты от переполнения
         // side-effect: обновляет счётчик очков внутри
         let _ = state.add_score(SOFT_DROP_POINTS);
     }

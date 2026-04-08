@@ -133,6 +133,7 @@ impl ControlsConfig {
     /// Ранее `default_config()` вызывался каждый кадр, создавая новую структуру.
     /// Теперь используется ленивая инициализация через `OnceLock`.
     #[must_use]
+    #[cold]
     pub fn default_config_ref() -> &'static Self {
         static DEFAULT: OnceLock<ControlsConfig> = OnceLock::new();
         DEFAULT.get_or_init(Self::default_config)
@@ -141,38 +142,47 @@ impl ControlsConfig {
     /// Геттеры для всех полей конфигурации (для обратной совместимости).
     /// Предназначены для публичного API и обратной совместимости.
     /// Переименованы с префиксом `get_` для устранения дублирования с публичными полями.
+    #[inline]
     #[must_use]
     pub const fn get_move_left(&self) -> u8 {
         self.move_left
     }
+    #[inline]
     #[must_use]
     pub const fn get_move_right(&self) -> u8 {
         self.move_right
     }
+    #[inline]
     #[must_use]
     pub const fn get_soft_drop(&self) -> u8 {
         self.soft_drop
     }
+    #[inline]
     #[must_use]
     pub const fn get_hard_drop(&self) -> u8 {
         self.hard_drop
     }
+    #[inline]
     #[must_use]
     pub const fn get_rotate_left(&self) -> u8 {
         self.rotate_left
     }
+    #[inline]
     #[must_use]
     pub const fn get_rotate_right(&self) -> u8 {
         self.rotate_right
     }
+    #[inline]
     #[must_use]
     pub const fn get_hold(&self) -> u8 {
         self.hold
     }
+    #[inline]
     #[must_use]
     pub const fn get_pause(&self) -> u8 {
         self.pause
     }
+    #[inline]
     #[must_use]
     pub const fn get_quit(&self) -> u8 {
         self.quit
