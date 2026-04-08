@@ -114,6 +114,9 @@ fn draw_sprint_timer<R: Renderer>(view: &GameView, cnv: &mut R) {
     cnv.draw_string(&buf, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
 
     buf.clear();
-    let _ = std::fmt::write(&mut buf, format_args!("Цель: {}/{}", view.lines_cleared(), SPRINT_LINES));
+    let _ = std::fmt::write(
+        &mut buf,
+        format_args!("Цель: {}/{}", view.lines_cleared(), SPRINT_LINES),
+    );
     cnv.draw_string(&buf, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
 }

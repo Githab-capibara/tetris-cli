@@ -84,7 +84,9 @@ pub fn handle_input<T: InputReader>(
                         // чтобы не затоплять stderr но сохранять диагностику
                         consecutive_errors += 1;
                         if consecutive_errors <= 5 || consecutive_errors % 10 == 0 {
-                            crate::log_error!("Ошибка чтения ввода во время паузы (#{consecutive_errors}): {e}");
+                            crate::log_error!(
+                                "Ошибка чтения ввода во время паузы (#{consecutive_errors}): {e}"
+                            );
                         }
                     }
                 }

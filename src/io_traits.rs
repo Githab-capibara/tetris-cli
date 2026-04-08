@@ -194,7 +194,13 @@ pub trait Renderer {
     ///
     /// Реализация по умолчанию делегирует `draw_strs`. Переопределяется в `Canvas`
     /// для использования буферизации.
-    fn draw_strs_buffered(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
+    fn draw_strs_buffered(
+        &mut self,
+        lines: &[&str],
+        pos: (u16, u16),
+        fg: &dyn Color,
+        bg: &dyn Color,
+    ) {
         self.draw_strs(lines, pos, fg, bg);
     }
 }

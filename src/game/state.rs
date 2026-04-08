@@ -16,7 +16,7 @@
 //!
 //! ## Исправление #1 (Разделение `GameState`)
 //! - `GameStats` перемещён в отдельный модуль [`super::stats`]
-//! - `RenderCache` перемещён в отдельный модуль [`super::cache`]
+//! - `RenderCache` перемещён в отдельный модуль `super::cache`
 //! - `GameState` использует композицию: содержит `stats: GameStats`, `cache: RenderCache`
 //!
 //! ## Исправление #12 (MEDIUM SEVERITY) - SOLID принципы
@@ -36,16 +36,12 @@
 //!
 //! ## Архитектурное улучшение 2026-04-01 (CRITICAL #1)
 //! `GameState` разделён на специализированные компоненты:
-//! - [`FigureManager`] - управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
-//! - [`AnimationState`] - управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
-//! - [`GameBoard`] - управление полем (board, `filled_lines_mask`)
-//! - `ScoreBoard` - управление очками (score, level, `lines_cleared`)
-//! - `GameStats` - статистика игры
-//! - `RenderCache` - кэш для отрисовки
-//!
-//! [`FigureManager`]: crate::game::components::FigureManager
-//! [`AnimationState`]: crate::game::components::AnimationState
-//! [`GameBoard`]: crate::game::board::GameBoard
+//! - `FigureManager` — управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
+//! - `AnimationState` — управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
+//! - `GameBoard` — управление полем (board, `filled_lines_mask`)
+//! - `ScoreBoard` — управление очками (score, level, `lines_cleared`)
+//! - `GameStats` — статистика игры
+//! - `RenderCache` — кэш для отрисовки
 
 // std
 // (нет импортов std)

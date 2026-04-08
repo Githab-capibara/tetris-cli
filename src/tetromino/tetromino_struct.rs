@@ -264,9 +264,7 @@ impl Tetromino {
         // 4.1: Защита от некорректных координат позиции (NaN/Infinity)
         let (px, py) = self.pos;
         if !px.is_finite() || !py.is_finite() {
-            crate::log_warn!(
-                "Вращение фигуры пропущено: некорректная позиция ({px}, {py})"
-            );
+            crate::log_warn!("Вращение фигуры пропущено: некорректная позиция ({px}, {py})");
             return;
         }
 
