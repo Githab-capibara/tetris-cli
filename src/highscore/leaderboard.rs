@@ -191,6 +191,11 @@ impl LeaderboardEntry {
     pub fn score(&self) -> Option<u128> {
         let score_value = self.score_value;
         if !self.verify_hash_for_value(score_value) {
+            debug_assert!(
+                false,
+                "LeaderboardEntry::score() верификация HMAC провалена для score={}",
+                score_value
+            );
             return None;
         }
         Some(score_value)
@@ -564,7 +569,7 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.hash,
             );
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid(): RwLock poisoned");
+        crate::log_error!("ThreadSafeLeaderboardEntry::is_valid(): RwLock poisoned");
         false
     }
 
@@ -595,7 +600,7 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.hash,
             ));
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
+        crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
         None
     }
 
@@ -620,7 +625,7 @@ impl ThreadSafeLeaderboardEntry {
         if let Ok(guard) = self.inner.read() {
             return guard.name.clone();
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name(): RwLock poisoned");
+        crate::log_error!("ThreadSafeLeaderboardEntry::name(): RwLock poisoned");
         String::from("[ошибка доступа]")
     }
 
@@ -641,7 +646,7 @@ impl ThreadSafeLeaderboardEntry {
         if let Ok(guard) = self.inner.read() {
             return Some(guard.name.clone());
         }
-        eprintln!("[ERROR] ThreadSafeLeaderboardEntry::name_safe(): RwLock poisoned");
+        crate::log_error!("ThreadSafeLeaderboardEntry::name_safe(): RwLock poisoned");
         None
     }
 }

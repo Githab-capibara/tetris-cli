@@ -96,9 +96,15 @@ impl Application {
         // Валидация HMAC ключей (SEC1)
         // Исправление ISSUE-196: eprintln!() используется для логирования предупреждений
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
-        if let Err(errors) = validate_all_keys() {
-            for _err in &errors {
-                crate::log_warn!("Обнаружена проблема с HMAC ключом: используется пустой ключ (ожидаемо для разработки)");
+        if let Err(ref errors) = validate_all_keys() {
+            let count = errors.len();
+            // idx используется в format! внутри log_warn! макроса
+            #[allow(unused_variables)]
+            for idx in 0..count {
+                crate::log_warn!(
+                    "HMAC ключ #{} не прошёл валидацию: используется пустой ключ",
+                    idx + 1
+                );
             }
         }
 
@@ -107,12 +113,11 @@ impl Application {
 
         // Проверка целостности рекорда (Исправление C3, C10: Result вместо Option)
         // Используем verify_and_get_score_result() для явной обработки ошибок
-        let high_score = match save.verify_and_get_score_result() {
-            Ok(score) => score,
-            Err(_e) => {
-                log_error!("Рекорд не прошёл валидацию: {e}. Используется 0.");
-                0u128
-            }
+        let high_score = if let Ok(score) = save.verify_and_get_score_result() {
+            score
+        } else {
+            log_error!("Рекорд не прошёл валидацию. Используется 0.");
+            0u128
         };
 
         // Проверка терминала и инициализация ввода/вывода
