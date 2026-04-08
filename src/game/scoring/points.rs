@@ -737,7 +737,7 @@ mod points_tests {
         );
     }
 
-    /// Тест #17: проверка handle_hold с NaN позицией — должна выйти без паники
+    /// Тест #17: проверка `handle_hold` с `NaN` позицией — должна выйти без паники
     #[test]
     fn test_handle_hold_overflow() {
         let mut state = GameState::new();
@@ -752,7 +752,7 @@ mod points_tests {
         assert!(state.curr_shape().pos().0.is_nan());
     }
 
-    /// Тест: проверка check_game_over_condition отдельно
+    /// Тест: проверка `check_game_over_condition` отдельно
     /// Проверяет что функция корректно определяет проигрыш когда фигура выше поля
     #[test]
     fn test_check_game_over_condition() {
@@ -783,7 +783,7 @@ mod points_tests {
         assert!(!game_over_ok, "Фигура на поле не должна вызывать game_over");
     }
 
-    /// Тест: проверка update_combo_on_clear с 0 линий — комбо должен сброситься
+    /// Тест: проверка `update_combo_on_clear` с 0 линий — комбо должен сброситься
     #[test]
     fn test_update_combo_on_clear_zero_lines() {
         let mut state = GameState::new();
