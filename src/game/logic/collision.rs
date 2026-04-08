@@ -90,7 +90,7 @@ fn is_position_valid<T: BoardReadonly>(
 
     // Проверка: если блок ниже поля — это коллизия (фигура не может упасть ниже)
     // Потеря точности допустима: GRID_HEIGHT константа (20)
-    #[allow(clippy::cast_possible_wrap)]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     if check_y >= GRID_HEIGHT as i16 {
         return false; // Коллизия — блок ниже поля
     }
