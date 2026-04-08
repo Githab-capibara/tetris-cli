@@ -17,8 +17,9 @@ use tetris_cli::app;
 /// ## Возвращает
 /// Ничего не возвращает. Паникует при ошибке инициализации.
 fn main() {
-    if let Err(_e) = app::run() {
-        tetris_cli::log_error!("[FATAL] Критическая ошибка: {e}");
+    #[allow(unused_variables)]
+    if let Err(err) = app::run() {
+        tetris_cli::log_error!("[FATAL] Критическая ошибка: {err:?}");
         std::process::exit(1);
     }
 }
