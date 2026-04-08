@@ -10,8 +10,8 @@
 //! `ScoreBoard` инкапсулирует состояние очков и предоставляет контролируемый доступ.
 //!
 //! ## Трейты
-//! - [`ScoreAccess`] (импортирован из [`crate::game::access`]) - доступ только на чтение
-//! - [`ScoreMutable`] (импортирован из [`crate::game::access`]) - доступ на чтение и запись
+//! - `ScoreAccess` (импортирован из `crate::game::access`) - доступ только на чтение
+//! - `ScoreMutable` (импортирован из `crate::game::access`) - доступ на чтение и запись
 
 // Импортируем трейты из access.rs для избежания дублирования
 use crate::game::access::{ScoreAccess, ScoreMutable};
