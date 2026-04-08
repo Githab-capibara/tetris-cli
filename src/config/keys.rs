@@ -282,8 +282,15 @@ mod keys_tests {
     fn test_validate_all_keys_without_env() {
         let result = validate_all_keys();
         // Без переменных окружения все три ключа пустые, значит будут ошибки
-        assert!(result.is_err(), "validate_all_keys должен вернуть ошибку без env");
+        assert!(
+            result.is_err(),
+            "validate_all_keys должен вернуть ошибку без env"
+        );
         let errors = result.unwrap_err();
-        assert_eq!(errors.len(), 3, "Должно быть 3 ошибки (по одной для каждого ключа)");
+        assert_eq!(
+            errors.len(),
+            3,
+            "Должно быть 3 ошибки (по одной для каждого ключа)"
+        );
     }
 }

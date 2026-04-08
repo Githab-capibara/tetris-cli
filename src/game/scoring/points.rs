@@ -740,10 +740,14 @@ mod points_tests {
         let mut state_lost = GameState::new();
         state_lost.get_curr_shape_mut().pos_mut().1 = -5.0;
         let shape_block_y = state_lost.curr_shape().pos().1 as i16;
-        let game_over = state_lost.curr_shape().coords().iter().any(|&(_, coord_y)| {
-            let block_y = coord_y + shape_block_y;
-            block_y < MIN_Y
-        });
+        let game_over = state_lost
+            .curr_shape()
+            .coords()
+            .iter()
+            .any(|&(_, coord_y)| {
+                let block_y = coord_y + shape_block_y;
+                block_y < MIN_Y
+            });
         assert!(game_over, "Фигура выше поля должна вызывать game_over");
 
         // Не проигрыш: фигура на поле

@@ -51,7 +51,9 @@
 
 // crate
 use crate::constants::GRID_HEIGHT;
-use crate::constants::{GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MARATHON_LINES, SPRINT_LINES};
+use crate::constants::{
+    GRID_WIDTH, INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MARATHON_LINES, SPRINT_LINES,
+};
 use crate::tetromino::{BagGenerator, Tetromino};
 
 // self (super)
