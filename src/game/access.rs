@@ -22,6 +22,10 @@
 
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 
+/// Значение пустой ячейки игрового поля.
+/// Используется как возвращаемое значение при выходе за границы.
+const BLOCK_UNOCCUPIED: i8 = -1;
+
 // ============================================================================
 // ТРЕЙТ BOARDREADONLY (только чтение)
 // ============================================================================
@@ -265,13 +269,13 @@ impl BoardReadonly for crate::game::state::GameState {
         self.get_blocks()
     }
 
-    /// Безопасный доступ: возвращает -1 при выходе за границы.
+    /// Безопасный доступ: возвращает `BLOCK_UNOCCUPIED` при выходе за границы.
     fn get_block(&self, x: usize, y: usize) -> i8 {
         self.get_blocks()
             .get(y)
             .and_then(|row| row.get(x))
             .copied()
-            .unwrap_or(-1)
+            .unwrap_or(BLOCK_UNOCCUPIED)
     }
 
     /// Безопасная проверка: возвращает true при выходе за границы.
@@ -280,8 +284,8 @@ impl BoardReadonly for crate::game::state::GameState {
             .get(y)
             .and_then(|row| row.get(x))
             .copied()
-            .unwrap_or(-1)
-            == -1
+            .unwrap_or(BLOCK_UNOCCUPIED)
+            == BLOCK_UNOCCUPIED
     }
 
     /// Безопасная проверка: возвращает false при выходе за границы.
@@ -290,8 +294,8 @@ impl BoardReadonly for crate::game::state::GameState {
             .get(y)
             .and_then(|row| row.get(x))
             .copied()
-            .unwrap_or(-1)
-            != -1
+            .unwrap_or(BLOCK_UNOCCUPIED)
+            != BLOCK_UNOCCUPIED
     }
 
     fn get_filled_lines_mask(&self) -> u32 {
