@@ -363,3 +363,32 @@ impl ScoreMutable for crate::game::state::GameState {
         self.scoreboard_mut().set_score(score);
     }
 }
+
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
+#[cfg(test)]
+mod access_tests {
+    use super::*;
+    use crate::game::state::GameState;
+
+    /// Тест: проверка default-методов BoardMutable (set_fall_speed/set_land_timer)
+    /// Для GameState эти методы переопределены и возвращают Ok(())
+    #[test]
+    fn test_board_mutable_defaults() {
+        let mut state = GameState::new();
+        // set_fall_speed и set_land_timer для GameState вызывают реальные реализации
+        assert!(state.set_fall_speed(1.5).is_ok(), "set_fall_speed должен вернуть Ok");
+        assert!(state.set_land_timer(2.0).is_ok(), "set_land_timer должен вернуть Ok");
+    }
+
+    /// Тест: проверка default-метода ScoreAccess::get_score
+    /// Для GameState get_score переопределён и возвращает реальный счёт
+    #[test]
+    fn test_score_access_default() {
+        let state = GameState::new();
+        // GameState переопределяет get_score, поэтому возвращает 0 (начальный счёт)
+        assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+    }
+}
