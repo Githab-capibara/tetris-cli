@@ -315,14 +315,8 @@ impl LeaderboardEntry {
     /// HMAC логика перемещена в `crypto::hmac`.
     #[must_use]
     pub fn is_valid(&self) -> bool {
-        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
-        let salt_name_score = format!("{}:{}:{}", self.salt, self.name, self.score_value);
-        hmac_verify_with_salt(
-            get_leaderboard_hmac_key(),
-            &self.salt,
-            &salt_name_score,
-            &self.hash,
-        )
+        // Исправление 2.3: делегируем verify_hash_for_value для устранения дублирования HMAC логики
+        self.verify_hash_for_value(self.score_value)
     }
 }
 
@@ -483,24 +477,22 @@ impl ThreadSafeLeaderboardEntry {
     )]
     #[allow(clippy::missing_panics_doc)]
     pub fn score(&self) -> u128 {
-        // P5: Копируем данные под блокировкой, отпускаем lock, потом проверяем
-        let (salt, name, score_value, hash) = if let Ok(guard) = self.inner.read() {
-            (
-                guard.salt.clone(),
-                guard.name.clone(),
-                guard.score_value,
-                guard.hash.clone(),
-            )
-        } else {
-            eprintln!("[ERROR] ThreadSafeLeaderboardEntry::score(): RwLock poisoned - поток паниковал удерживая блокировку");
-            return 0;
-        };
-        let salt_name_score = format!("{salt}:{name}:{score_value}");
-        if !hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash) {
-            eprintln!("[ERROR] Запись не прошла валидацию HMAC — возможная подделка!");
-            return 0;
+        // P5: Выполняем HMAC валидацию под read() блокировкой без клонирования
+        if let Ok(guard) = self.inner.read() {
+            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
+            if !hmac_verify_with_salt(
+                get_leaderboard_hmac_key(),
+                &guard.salt,
+                &salt_name_score,
+                &guard.hash,
+            ) {
+                crate::log_error!("ThreadSafeLeaderboardEntry::score(): запись не прошла валидацию HMAC — возможная подделка!");
+                return 0;
+            }
+            return guard.score_value;
         }
-        score_value
+        crate::log_error!("ThreadSafeLeaderboardEntry::score(): RwLock poisoned — поток паниковал удерживая блокировку");
+        0
     }
 
     /// Получить значение рекорда с безопасной обработкой ошибок.

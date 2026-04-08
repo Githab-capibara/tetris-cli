@@ -57,7 +57,8 @@ use termion::color::Reset;
 /// ## Dependency Inversion (H1)
 /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
-    cnv.draw_strs(&BORDER, (1, 1), BORDER_COLOR, &Reset);
+    // 2.5: Используем draw_strs_buffered для BORDER — буферизация снижает число системных вызовов
+    cnv.draw_strs_buffered(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
     // Отрисовка UI (счёт, уровень, линии, комбо, рекорд)
     cnv.draw_string(view.score_str(), (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);
@@ -107,10 +108,12 @@ pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
 /// ## Dependency Inversion (H1)
 /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 fn draw_sprint_timer<R: Renderer>(view: &GameView, cnv: &mut R) {
-    // Форматируем таймер на лету из elapsed_time (ИСПРАВЛЕНИЕ #9: именованные константы)
-    let timer_str = format!("Время: {:.2}с", view.elapsed_time());
-    cnv.draw_string(&timer_str, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
+    // Кэширование: используем write! в буфер с предварительным выделением памяти
+    let mut buf = String::with_capacity(32);
+    let _ = std::fmt::write(&mut buf, format_args!("Время: {:.2}с", view.elapsed_time()));
+    cnv.draw_string(&buf, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
 
-    let progress = format!("Цель: {}/{}", view.lines_cleared(), SPRINT_LINES);
-    cnv.draw_string(&progress, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
+    buf.clear();
+    let _ = std::fmt::write(&mut buf, format_args!("Цель: {}/{}", view.lines_cleared(), SPRINT_LINES));
+    cnv.draw_string(&buf, (PREVIEW_X, PROGRESS_Y), BORDER_COLOR, &Reset);
 }

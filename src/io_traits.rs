@@ -189,4 +189,12 @@ pub trait Renderer {
     /// renderer.reset();
     /// ```
     fn reset(&mut self);
+
+    /// Отрисовать строки с оптимизированным буферизированным выводом.
+    ///
+    /// Реализация по умолчанию делегирует `draw_strs`. Переопределяется в `Canvas`
+    /// для использования буферизации.
+    fn draw_strs_buffered(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
+        self.draw_strs(lines, pos, fg, bg);
+    }
 }

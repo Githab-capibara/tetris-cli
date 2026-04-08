@@ -93,6 +93,11 @@ pub fn handle_hard_drop(state: &mut GameState) {
     use crate::types::Direction;
 
     let start_y = state.curr_shape().pos().1;
+    // Защита от бесконечного цикла: проверяем что start_y — конечное значение
+    if !start_y.is_finite() {
+        crate::log_error!("handle_hard_drop: некорректная начальная координата Y={start_y} (NaN/Infinity)");
+        return;
+    }
     while state.can_move_curr_shape_direction(Direction::Down) {
         let curr_shape = state.get_curr_shape_mut();
         curr_shape.pos_mut().1 += 1.0;

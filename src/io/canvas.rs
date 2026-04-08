@@ -386,4 +386,9 @@ impl Renderer for Canvas {
     fn reset(&mut self) {
         self.reset();
     }
+
+    fn draw_strs_buffered(&mut self, lines: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color) {
+        // Игнорируем ошибку — draw_strs_buffered уже логирует ошибки внутри
+        let _ = self.draw_strs_buffered(lines, pos, fg, bg);
+    }
 }
