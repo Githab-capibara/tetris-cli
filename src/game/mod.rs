@@ -1,4 +1,5 @@
 //! Основной игровой модуль Tetris CLI.
+//! # Игровая логика Tetris CLI
 //!
 //! Этот модуль содержит всю игровую логику Tetris и разделён на подмодули:
 //! - [`state`] — структуры состояния игры ([`GameState`], `GameStats`, `GameMode`)
@@ -14,6 +15,15 @@
 //! ## Архитектурные заметки
 //!
 //! ### PROB-131: Архитектурная рекомендация — Event System
+
+// Cast-ы безопасны в контексте игры (поле 10x20)
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss,
+    clippy::no_effect_underscore_binding
+)]
 //! TODO: рассмотреть внедрение системы событий (Event System) для расцепления
 //! модулей game. Сейчас модули напрямую вызывают функции друг друга.
 //! Event-driven архитектура позволила бы снизить связность.

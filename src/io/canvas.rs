@@ -341,6 +341,7 @@ impl Canvas {
 
         for (i, line) in lines.iter().enumerate() {
             // cast: usize -> u16, потеря точности допустима: количество строк небольшое
+            #[allow(clippy::cast_possible_truncation)]
             let y = y_start + i as u16;
             // Форматируем в буфер
             write!(

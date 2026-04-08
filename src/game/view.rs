@@ -4,19 +4,6 @@
 //! неизменяемого представления состояния игры.
 //! Уменьшает связанность между render.rs и `GameState`.
 
-// Cast-ы безопасны в контексте игры (поле 10x20, координаты фигур < 100)
-// usize -> i16/u16: GRID_WIDTH=10, GRID_HEIGHT=20 — константы
-// f32 -> i16: координаты фигур всегда в пределах поля
-// i16 -> u16: координаты всегда >= 0 после проверок границ
-// i8 -> usize: значения 0..=7 (SHAPE_COUNT) после проверок != -1
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
-    clippy::cast_precision_loss,
-    clippy::no_effect_underscore_binding
-)]
-
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};

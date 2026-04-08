@@ -199,7 +199,7 @@ impl KeyReader {
     /// Для неблокирующего ASCII-ввода используйте `get_key()`.
     ///
     /// # Примечание о паниках
-    /// Метод может паниковать если `read_exact` вернёт ошибку UnexpectedEof
+    /// Метод может паниковать если `read_exact` вернёт ошибку `UnexpectedEof`
     /// в неожиданных условиях, хотя на практике это обрабатывается через `match`.
     #[allow(clippy::missing_panics_doc)]
     pub fn get_key_unicode(&mut self) -> Option<char> {
