@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 7 апреля 2026 (очистка тестовой базы — раунд 3)
+**Дата последней актуализации:** 8 апреля 2026 (очистка тестовой базы — раунд 4)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,25 +9,36 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | 671 | ✅ 100% pass |
-| Интеграционные тесты (tests/) | 22 | ✅ 100% pass |
-| Doctests (runnable) | 64 | ✅ 100% pass |
-| Doctests (ignored) | 105 | — ожидаемо |
+| Модульные тесты (src/) | 644 | ✅ 100% pass |
+| Интеграционные тесты (tests/) | 17 | ✅ 100% pass |
+| Doctests (runnable) | 63 | ✅ 100% pass |
+| Doctests (ignored) | 99 | — ожидаемо |
 | Бенчмарки (benches/) | 26 (8 групп) | ✅ |
-| **ИТОГО (запускаемые)** | **693** | ✅ |
+| **ИТОГО (запускаемые)** | **669** | ✅ |
 | Ignored | 9 | — ожидаемо |
 
 ---
 
-## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-07, раунд 3)
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-08, раунд 4)
 
-### Удалённые дубликаты (18 тестов):
-- `test_classic_mode_saves_score`, `test_sprint_mode_does_not_save_score`, `test_gamestate_responds_to_input` (test_integration_extended.rs) — дублируют test_integration.rs
-- `test_collision_floor`, `test_collision_with_fixed_blocks`, `test_movement_in_empty_field`, `test_speed_calculation_from_level` (test_game_logic.rs) — дублируют test_physics.rs
-- `test_collision_down_blocked_by_piece`, `test_collision_not_early` (test_collision.rs) — дублируют test_physics.rs
-- `test_leaderboard_concurrent_access`, `test_leaderboard_race_condition_protection` (test_edge_cases.rs) — дублируют встроенные тесты leaderboard.rs
-- `test_game_state_set_score_max_no_panic` (test_edge_cases.rs) — дублирует test_boundary_values.rs
-- 6x `test_set_fall_speed_*` (src/game/state.rs) — дублируют test_state_validation.rs
+### Удалённые бесполезные тесты (24 теста):
+- `test_io.rs` (4 теста) — проверка констант SHAPE_STR, SHAPE_WIDTH, DISP_WIDTH, terminal size
+- `test_audit_2026_04_fixes.rs` (5 тестов): H1 (проверка stdlib to_string), H7 (проверка константы), M3 (Canvas drop без assert), L1 (ASCII константы), L4 (импорты)
+- `test_module_isolation.rs` (2 теста): constants, scoring — проверка констант
+- `test_boundary_values.rs` (2 теста): initial_values, value_correctness — тривиальные getter/setter
+- `test_edge_cases.rs` (2 теста): saturating_add (проверка stdlib), leaderboard_default_is_empty (дубликат)
+- `test_game_logic.rs` (1 тест): tetromino_full_rotation_cycle — дублирует test_game_rotation.rs
+- `test_panic_handling.rs` (1 тест исправлен): bag_generator_next_shape_no_panic — добавлен assert
+- `test_io_errors.rs` (2 теста удалены) — compile-time проверки
+- `test_io_utf8_handling.rs` (2 теста удалены) — всегда проходят
+
+### Исправленные warnings:
+- Unused variables/mut в figure_manager.rs, update.rs, wall_kick.rs, path.rs
+- Float cmp warnings в test_state_validation.rs (assert_eq -> assert_f32_eq/assert_f64_eq)
+- Float cmp в input.rs (assert_eq -> assert с epsilon)
+
+### Удалены объявления модулей из lib.rs:
+- mod test_io, mod test_io_errors, mod test_io_utf8_handling
 
 ### Исправленные тесты:
 - `test_leaderboard_not_send_sync` (src/highscore/leaderboard.rs) — был пустым, добавлены реальные проверки
