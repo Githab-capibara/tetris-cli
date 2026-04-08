@@ -139,9 +139,24 @@ pub fn draw_game_stats(
     let mut buf = String::with_capacity(256);
 
     // Статические строки
-    cnv.draw_string("╔════════════════════╗", (1, 1), MENU_COLOR, &termion::color::Reset);
-    cnv.draw_string("║   СТАТИСТИКА ИГРЫ  ║", (1, 2), MENU_COLOR, &termion::color::Reset);
-    cnv.draw_string("║                    ║", (1, 3), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string(
+        "╔════════════════════╗",
+        (1, 1),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
+    cnv.draw_string(
+        "║   СТАТИСТИКА ИГРЫ  ║",
+        (1, 2),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
+    cnv.draw_string(
+        "║                    ║",
+        (1, 3),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
 
     // Форматируемые строки — используем buf.clear() + write! для переиспользования буфера
     buf.clear();
@@ -160,7 +175,12 @@ pub fn draw_game_stats(
     let _ = write!(buf, "║ Линии: {lines_cleared:16} ║");
     cnv.draw_string(&buf, (1, 7), MENU_COLOR, &termion::color::Reset);
 
-    cnv.draw_string("║                    ║", (1, 8), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string(
+        "║                    ║",
+        (1, 8),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
 
     buf.clear();
     let _ = write!(buf, "║ Фигур: {total_pieces:16} ║");
@@ -175,10 +195,30 @@ pub fn draw_game_stats(
     cnv.draw_string(&buf, (1, 11), MENU_COLOR, &termion::color::Reset);
 
     // Статические строки
-    cnv.draw_string("║                    ║", (1, 12), MENU_COLOR, &termion::color::Reset);
-    cnv.draw_string("║  Любая клавиша...  ║", (1, 13), MENU_COLOR, &termion::color::Reset);
-    cnv.draw_string("║                    ║", (1, 14), MENU_COLOR, &termion::color::Reset);
-    cnv.draw_string("╚════════════════════╝", (1, 15), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string(
+        "║                    ║",
+        (1, 12),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
+    cnv.draw_string(
+        "║  Любая клавиша...  ║",
+        (1, 13),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
+    cnv.draw_string(
+        "║                    ║",
+        (1, 14),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
+    cnv.draw_string(
+        "╚════════════════════╝",
+        (1, 15),
+        MENU_COLOR,
+        &termion::color::Reset,
+    );
 
     cnv.flush();
 }

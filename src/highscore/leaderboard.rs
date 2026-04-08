@@ -31,7 +31,9 @@ use serde::{Deserialize, Serialize};
 
 // crate
 use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt, hmac_verify_with_salt_bytes};
+use crate::crypto::hmac::{
+    hmac_sign_with_salt, hmac_verify_with_salt, hmac_verify_with_salt_bytes,
+};
 use crate::highscore::APP_NAME;
 use crate::validation::name::sanitize_player_name;
 
@@ -154,12 +156,7 @@ impl LeaderboardEntry {
         // P3-ID41: write! в Vec<u8>, передача байтов напрямую — без from_utf8 roundtrip
         let mut buf = Vec::with_capacity(self.salt.len() + 1 + self.name.len() + 1 + 20);
         let _ = write!(buf, "{}:{}:{value}", self.salt, self.name);
-        hmac_verify_with_salt_bytes(
-            get_leaderboard_hmac_key(),
-            &self.salt,
-            &buf,
-            &self.hash,
-        )
+        hmac_verify_with_salt_bytes(get_leaderboard_hmac_key(), &self.salt, &buf, &self.hash)
     }
 
     /// Создать новую запись в таблице лидеров.
