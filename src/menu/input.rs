@@ -10,6 +10,9 @@ use std::{thread::sleep, time::Duration};
 
 use super::constants::{FRAME_DELAY_MS, MAX_NAME_LEN};
 
+/// Максимальное количество попыток чтения ввода перед возвратом ошибки.
+const MAX_INPUT_ATTEMPTS: u64 = 10_000;
+
 /// Запрос имени игрока после завершения игры.
 ///
 /// # Аргументы
@@ -18,6 +21,9 @@ use super::constants::{FRAME_DELAY_MS, MAX_NAME_LEN};
 ///
 /// # Возвращает
 /// Введённое имя игрока (может быть пустым при отмене)
+///
+/// # Errors
+/// Возвращает ошибку после `MAX_INPUT_ATTEMPTS` неудачных попыток чтения ввода.
 ///
 /// # Валидация
 /// ## Правила ввода
@@ -69,6 +75,9 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
     );
     cnv.flush();
 
+    // M7: Счётчик попыток для защиты от бесконечного цикла
+    let mut failed_attempts: u64 = 0;
+
     // Цикл ввода
     loop {
         let key = inp.get_key();
@@ -76,6 +85,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
         match key {
             Ok(Some(b'\n' | b'\r')) => break,
             Ok(Some(KEY_BACKSPACE)) => {
+                failed_attempts = 0;
                 if !name.is_empty() {
                     name.pop();
                     cnv.draw_string(
@@ -89,6 +99,7 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                 }
             }
             Ok(Some(key)) if name.len() < MAX_NAME_LEN => {
+                failed_attempts = 0;
                 #[allow(clippy::cast_lossless)]
                 let c = key as char;
                 if is_valid_name_char(c) {
@@ -103,7 +114,16 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                     cnv.flush();
                 }
             }
-            Ok(Some(_) | None) | Err(_) => {}
+            Ok(Some(_) | None) | Err(_) => {
+                // M7: Считаем только ошибки чтения (Err) и долгие простои (None)
+                failed_attempts = failed_attempts.saturating_add(1);
+                if failed_attempts >= MAX_INPUT_ATTEMPTS {
+                    crate::log_error!(
+                        "get_player_name: превышено максимальное количество попыток ввода ({MAX_INPUT_ATTEMPTS})"
+                    );
+                    break;
+                }
+            }
         }
 
         sleep(Duration::from_millis(FRAME_DELAY_MS));
@@ -117,19 +137,23 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
 /// # Аргументы
 /// * `inp` - читатель нажатий клавиш
 ///
-/// # Пример
-/// ```no_run
-/// use tetris_cli::io::KeyReader;
-/// use tetris_cli::menu::input::wait_for_key;
-///
-/// let mut reader = KeyReader::new();
-/// wait_for_key(&mut reader);
-/// ```
-pub fn wait_for_key(inp: &mut KeyReader) {
+/// # Возвращает
+/// `true` если клавиша была нажата, `false` при превышении лимита попыток.
+pub fn wait_for_key(inp: &mut KeyReader) -> bool {
+    // M7: Счётчик попыток для защиты от бесконечного цикла
+    let mut failed_attempts: u64 = 0;
+
     loop {
         let key = inp.get_key();
         if let Ok(Some(_)) = key {
-            break;
+            return true;
+        }
+        failed_attempts = failed_attempts.saturating_add(1);
+        if failed_attempts >= MAX_INPUT_ATTEMPTS {
+            crate::log_error!(
+                "wait_for_key: превышено максимальное количество попыток ввода ({MAX_INPUT_ATTEMPTS})"
+            );
+            return false;
         }
         sleep(Duration::from_millis(FRAME_DELAY_MS));
     }

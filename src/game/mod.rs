@@ -77,7 +77,6 @@ pub mod logic;
 pub mod mode_registry;
 pub mod mode_trait;
 pub(crate) mod render;
-pub(crate) mod rules;
 pub mod scoreboard;
 pub mod scoring;
 pub mod state;

@@ -161,6 +161,16 @@ pub fn handle_soft_drop(state: &mut GameState) {
 /// Может паниковать если `BagGenerator` исчерпан и `Tetromino::from_bag()` паникует.
 /// В нормальном игровом процессе bag всегда перегенерируется, поэтому паника невозможна.
 pub fn handle_hold(state: &mut GameState) {
+    // Проверка позиции на NaN/Infinity (как в handle_hard_drop)
+    let pos = state.curr_shape().pos();
+    if !pos.0.is_finite() || !pos.1.is_finite() {
+        crate::log_error!(
+            "handle_hold: некорректная позиция фигуры ({}, {}) (NaN/Infinity)",
+            pos.0,
+            pos.1
+        );
+        return;
+    }
     if state.can_hold() {
         let current_shape = *state.curr_shape();
 
@@ -706,5 +716,20 @@ mod points_tests {
             matches!(result2, Some(UpdateEndState::Won)),
             "При 40 линиях в Sprint handle_landing должен вернуть Won"
         );
+    }
+
+    /// Тест #17: проверка handle_hold с NaN позицией — должна выйти без паники
+    #[test]
+    fn test_handle_hold_overflow() {
+        let mut state = GameState::new();
+        // Устанавливаем позицию в NaN — должно сработать как защита от бесконечного цикла
+        state.get_curr_shape_mut().pos_mut().0 = f32::NAN;
+        state.get_curr_shape_mut().pos_mut().1 = f32::NAN;
+
+        // handle_hold должен выйти без паники благодаря проверке NaN
+        handle_hold(&mut state);
+
+        // Фигура не должна измениться — hold не выполнился
+        assert!(state.curr_shape().pos().0.is_nan());
     }
 }
