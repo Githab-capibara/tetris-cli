@@ -171,8 +171,8 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
     // Исправление Проблема 8: Разделитель ':' предотвращает коллизии конкатенации
     // P11: write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
-    write!(buf, "{salt}:{data}").unwrap(); // write! в Vec<u8> никогда не падает
-    let salted_data = std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
+    write!(buf, "{salt}:{data}").expect("write to Vec never fails"); // write! в Vec<u8> никогда не падает
+    let salted_data = std::str::from_utf8(&buf).expect("salt and data are valid UTF-8"); // salt и data — валидные UTF-8 строки, ошибка невозможна
     hmac_sha256(key, salted_data)
 }
 
@@ -227,8 +227,8 @@ pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str)
     // Исправление Проблема 8: Разделитель ':' для согласованности с hmac_sign_with_salt
     // P12: write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
-    write!(buf, "{salt}:{data}").unwrap(); // write! в Vec<u8> никогда не падает
-    let salted_data = std::str::from_utf8(&buf).unwrap(); // salt и data — валидные UTF-8 строки, ошибка невозможна
+    write!(buf, "{salt}:{data}").expect("write to Vec never fails"); // write! в Vec<u8> никогда не падает
+    let salted_data = std::str::from_utf8(&buf).expect("salt and data are valid UTF-8"); // salt и data — валидные UTF-8 строки, ошибка невозможна
     verify_hmac_sha256(key, salted_data, signature)
 }
 

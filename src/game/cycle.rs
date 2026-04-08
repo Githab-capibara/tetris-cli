@@ -140,15 +140,21 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
 ///
 /// # Исправление аудита 2026-03-31 (MEDIUM)
 /// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
+///
+/// # Примечание (ISSUE-061)
+/// Функция дублирует логику `wait_for_next_frame` из `src/app/mod.rs`.
+/// Объединение не выполнено: `maintain_fps` используется в игровом цикле,
+/// а `wait_for_next_frame` — в цикле меню. Рефакторинг отложен до следующей
+/// крупной версии во избежание breaking changes.
 fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<u64> {
     let now = std::time::Instant::now();
     // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
-    // Используем try_into() с unwrap_or(u64::MAX) для предотвращения переполнения
+    // Используем try_into() с unwrap_or(0) для предотвращения переполнения
     let delta_time_ms: u64 = now
         .duration_since(*last_time)
         .as_millis()
         .try_into()
-        .unwrap_or(u64::MAX);
+        .unwrap_or(0);
 
     if delta_time_ms < interval_ms {
         sleep(Duration::from_millis(

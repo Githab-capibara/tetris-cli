@@ -113,3 +113,132 @@ pub fn update_cached_strings_extended(state: &mut GameState, high_score_display:
         }
     }
 }
+
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Тест: `update_cached_strings` обновляет кэш счёта при изменении
+    #[test]
+    fn test_update_cached_strings_score_changed() {
+        let mut state = GameState::new();
+        state.set_score(12345);
+
+        update_cached_strings(&mut state);
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_score_str, "     12345");
+        assert_eq!(cache.last_cached_score, 12345);
+    }
+
+    /// Тест: `update_cached_strings` не обновляет кэш при том же счёте
+    #[test]
+    fn test_update_cached_strings_score_unchanged() {
+        let mut state = GameState::new();
+        state.set_score(100);
+        // Первый вызов — кэшируем
+        update_cached_strings(&mut state);
+        let cache_before = state.get_render_cache();
+        let score_str_before = cache_before.cached_score_str.clone();
+
+        // Второй вызов — значение не изменилось
+        update_cached_strings(&mut state);
+
+        let cache_after = state.get_render_cache();
+        assert_eq!(cache_after.cached_score_str, score_str_before);
+    }
+
+    /// Тест: `update_cached_strings` обновляет кэш уровня
+    #[test]
+    fn test_update_cached_strings_level() {
+        let mut state = GameState::new();
+        state.set_level(15);
+
+        update_cached_strings(&mut state);
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_level_str, "        15");
+        assert_eq!(cache.last_cached_level, 15);
+    }
+
+    /// Тест: `update_cached_strings` обновляет кэш линий
+    #[test]
+    fn test_update_cached_strings_lines() {
+        let mut state = GameState::new();
+        state.set_lines_cleared(42);
+
+        update_cached_strings(&mut state);
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_lines_str, "        42");
+        assert_eq!(cache.last_cached_lines, 42);
+    }
+
+    /// Тест: `update_cached_strings_extended` обновляет кэш рекорда
+    #[test]
+    fn test_update_cached_strings_extended_high_score() {
+        let mut state = GameState::new();
+        let high_score = "      5000";
+
+        update_cached_strings_extended(&mut state, high_score);
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_high_score_str, high_score);
+    }
+
+    /// Тест: `update_cached_strings_extended` обновляет кэш комбо
+    #[test]
+    fn test_update_cached_strings_extended_combo() {
+        let mut state = GameState::new();
+        state.stats_mut().set_combo_counter(5);
+
+        update_cached_strings_extended(&mut state, "         0");
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_combo_str, "Комбо: x5");
+        assert_eq!(cache.last_cached_combo, 5);
+    }
+
+    /// Тест: `update_cached_strings_extended` не кэширует комбо при значении <= 1
+    #[test]
+    fn test_update_cached_strings_extended_no_combo_when_one() {
+        let mut state = GameState::new();
+        state.stats_mut().set_combo_counter(1);
+
+        update_cached_strings_extended(&mut state, "         0");
+
+        let cache = state.get_render_cache();
+        assert_eq!(cache.cached_combo_str, "");
+    }
+
+    /// Тест: `update_cached_strings_extended` кэширует таймер в режиме спринт
+    #[test]
+    fn test_update_cached_strings_extended_sprint_timer() {
+        let mut state = GameState::new_sprint();
+
+        // Сбрасываем last_cached_timer чтобы гарантировать обновление
+        state.get_render_cache_mut().last_cached_timer = -1;
+
+        update_cached_strings_extended(&mut state, "         0");
+
+        let cache = state.get_render_cache();
+        // Таймер должен быть закэширован с начальным временем ~0
+        assert!(cache.cached_timer_str.starts_with("Время: "));
+    }
+
+    /// Тест: `update_cached_strings_extended` не кэширует таймер в классическом режиме
+    #[test]
+    fn test_update_cached_strings_extended_no_timer_classic() {
+        let mut state = GameState::new();
+
+        update_cached_strings_extended(&mut state, "         0");
+
+        let cache = state.get_render_cache();
+        // В классическом режиме таймер не кэшируется
+        assert_eq!(cache.cached_timer_str, "");
+    }
+}

@@ -592,3 +592,71 @@ pub use crate::tetromino::SHAPE_COUNT;
 // PROB-140: Отсутствие конфигурируемой системы ввода.
 // TODO: Рассмотреть поддержку альтернативных систем ввода (gamepad, mouse).
 // Для CLI-версии достаточно текущей конфигурации через ControlsConfig.
+
+// ============================================================================
+// ТЕСТЫ
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Тест: `get_border_line` возвращает корректную строку для валидного индекса
+    #[test]
+    fn test_get_border_line_valid_index() {
+        assert_eq!(get_border_line(0), "                      ");
+        assert_eq!(get_border_line(1), "Счёт:                 ");
+        assert_eq!(get_border_line(5), "╔════════════════════╗");
+        assert_eq!(get_border_line(24), "╚════════════════════╝");
+    }
+
+    /// Тест: `get_border_line` возвращает пустую строку для невалидного индекса
+    #[test]
+    fn test_get_border_line_invalid_index() {
+        assert_eq!(get_border_line(DISP_HEIGHT), "");
+        assert_eq!(get_border_line(1000), "");
+    }
+
+    /// Тест: `get_border_top` возвращает верхнюю границу поля
+    #[test]
+    fn test_get_border_top() {
+        assert_eq!(get_border_top(), "╔════════════════════╗");
+    }
+
+    /// Тест: `get_border_bottom` возвращает нижнюю границу поля
+    #[test]
+    fn test_get_border_bottom() {
+        assert_eq!(get_border_bottom(), "╚════════════════════╝");
+    }
+
+    /// Тест: `get_border_score_header` возвращает заголовок счёта
+    #[test]
+    fn test_get_border_score_header() {
+        assert_eq!(get_border_score_header(), "Счёт:                 ");
+    }
+
+    /// Тест: `get_border_high_score_header` возвращает заголовок рекорда
+    #[test]
+    fn test_get_border_high_score_header() {
+        assert_eq!(get_border_high_score_header(), "Рекорд:               ");
+    }
+
+    /// Тест: `get_border_level_header` возвращает заголовок уровня
+    #[test]
+    fn test_get_border_level_header() {
+        assert_eq!(get_border_level_header(), "Уровень:              ");
+    }
+
+    /// Тест: `get_border_lines_header` возвращает заголовок линий
+    #[test]
+    fn test_get_border_lines_header() {
+        assert_eq!(get_border_lines_header(), "Линии:                ");
+    }
+
+    /// Тест: `border_line_count` возвращает корректное количество линий
+    #[test]
+    fn test_border_line_count() {
+        assert_eq!(border_line_count(), DISP_HEIGHT);
+        assert_eq!(border_line_count(), 25);
+    }
+}
