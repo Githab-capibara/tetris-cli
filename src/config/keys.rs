@@ -34,7 +34,7 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 /// Вывести предупреждение о пустом HMAC ключе ТОЛЬКО ОДИН РАЗ при первом вызове.
 /// Использует `OnceLock` для гарантии однократного вывода независимо от
 /// количества вызовов функции.
-fn log_once_empty_key(key_name: &str) {
+fn log_once_empty_key(_key_name: &str) {
     static ONCE: OnceLock<()> = OnceLock::new();
     ONCE.get_or_init(|| {
         crate::log_warn!(

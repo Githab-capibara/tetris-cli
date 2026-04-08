@@ -176,7 +176,7 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     // Исправление C3 (CRITICAL): Обработка ошибки переполнения счёта
     // Потеря точности допустима: remove_count <= GRID_HEIGHT (20)
     #[allow(clippy::cast_possible_truncation)]
-    if let Err(e) =
+    if let Err(_e) =
         update_score_for_lines(&mut score, level, remove_count as usize, &mut combo_counter)
     {
         // NOTE: On overflow, score is already updated before error is logged
@@ -200,7 +200,7 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     // Потеря точности допустима: remove_count <= GRID_HEIGHT (20)
     #[allow(clippy::cast_precision_loss)]
     let new_fall_speed = SPD_INC.mul_add(remove_count as f32, fall_speed);
-    if let Err(e) = state.set_fall_speed(new_fall_speed) {
+    if let Err(_e) = state.set_fall_speed(new_fall_speed) {
         // Логгируем ошибку но продолжаем работу (не критично)
         crate::log_warn!("check_rows(): не удалось установить скорость падения: {e}");
         // Продолжаем работу с текущей скоростью - игра не должна останавливаться

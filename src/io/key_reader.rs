@@ -74,10 +74,10 @@ impl Drop for KeyReader {
 
         let mut out = stdout();
 
-        if let Err(e) = write!(out, "{Show}") {
+        if let Err(_e) = write!(out, "{Show}") {
             log_error!("Не удалось показать курсор в KeyReader::Drop: {e}");
         }
-        if let Err(e) = out.flush() {
+        if let Err(_e) = out.flush() {
             log_error!("Не удалось сбросить буфер в KeyReader::Drop: {e}");
         }
     }
