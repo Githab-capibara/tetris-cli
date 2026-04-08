@@ -1148,7 +1148,7 @@ mod state_tests {
         assert!(!shape.coords().is_empty(), "Фигура должна иметь координаты");
     }
 
-    /// Тест: GameMode::get_target_lines возвращает корректные значения для каждого режима
+    /// Тест: `GameMode::get_target_lines` возвращает корректные значения для каждого режима
     #[test]
     fn test_game_mode_target_lines() {
         assert_eq!(

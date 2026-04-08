@@ -269,7 +269,7 @@ mod keys_tests {
         assert_eq!(MIN_HMAC_KEY_LENGTH, 16);
     }
 
-    /// Тест: проверка validate_all_keys() без установленных переменных окружения
+    /// Тест: проверка `validate_all_keys()` без установленных переменных окружения
     /// Без env var все HMAC ключи пустые, поэтому валидация должна вернуть ошибки
     #[test]
     fn test_validate_all_keys_without_env() {

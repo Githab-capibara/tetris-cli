@@ -395,7 +395,7 @@ mod access_tests {
     use super::*;
     use crate::game::state::GameState;
 
-    /// Тест: проверка default-методов BoardMutable (set_fall_speed/set_land_timer)
+    /// Тест: проверка default-методов `BoardMutable` (`set_fall_speed/set_land_timer`)
     /// Для GameState эти методы переопределены и возвращают Ok(())
     #[test]
     fn test_board_mutable_defaults() {
@@ -411,8 +411,8 @@ mod access_tests {
         );
     }
 
-    /// Тест: проверка default-метода ScoreAccess::get_score
-    /// Для GameState get_score переопределён и возвращает реальный счёт
+    /// Тест: проверка default-метода `ScoreAccess::get_score`
+    /// Для GameState `get_score` переопределён и возвращает реальный счёт
     #[test]
     fn test_score_access_default() {
         let state = GameState::new();
