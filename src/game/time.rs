@@ -60,7 +60,7 @@ impl Time {
     /// assert_eq!(time.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
-    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn from_secs(secs: f64) -> Self {
         // Конвертируем секунды в миллисекунды для большей точности
         // cast: f64 -> u64, потеря знака допустима: время неотрицательное, округление до 1 мс достаточно для игры

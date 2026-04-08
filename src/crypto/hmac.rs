@@ -270,7 +270,7 @@ pub fn hmac_verify_with_salt_bytes(key: &str, salt: &str, data: &[u8], signature
 /// Внутренне эквивалентна `verify_hmac_sha256` но без `.as_bytes()` преобразования.
 ///
 /// # Исправление P3-ID41
-/// Добавлена для устранения UTF-8 roundtrip в цепочке verify_hash_for_value.
+/// Добавлена для устранения UTF-8 roundtrip в цепочке `verify_hash_for_value`.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> bool {
