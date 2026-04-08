@@ -500,7 +500,7 @@ impl<'a> GameView<'a> {
     /// * `pos_y` - позиция по Y
     /// * `title` - заголовок
     /// * `is_faded` - если true, рисовать тусклым цветом
-    #[allow(clippy::ignored_unit_patterns, clippy::unused_self, dead_code)]
+    #[allow(clippy::ignored_unit_patterns, clippy::unused_self)]
     fn draw_shape_preview<R>(
         &self,
         canvas: &mut R,

@@ -215,34 +215,11 @@ impl GameModeTrait for MarathonMode {
 }
 
 // ============================================================================
-// FACTORY ФУНКЦИЯ ДЛЯ СОЗДАНИЯ РЕЖИМОВ (Архитектурное улучшение 2026-04-01)
+// FACTORY ФУНКЦИЯ ДЛЯ СОЗДАНИЯ РЕЖИМОВ ПО УМОЛЧАНИЮ (Архитектурное улучшение 2026-04-01)
 // ============================================================================
 
 /// Тип результата для factory функции.
 pub type GameModeResult = Box<dyn GameModeTrait>;
-
-/// Factory функция для создания режима игры.
-///
-/// # Аргументы
-/// * `name` - название режима ("classic", "sprint", "marathon")
-///
-/// # Возвращает
-/// - `Some(Box<dyn GameModeTrait>)` - объект режима
-/// - `None` - если название режима не распознано
-///
-/// # Пример использования
-/// ```ignore
-/// use crate::game::mode_trait::create_game_mode;
-///
-/// let mode = create_game_mode("sprint").expect("sprint mode");
-/// assert_eq!(mode.name(), "Спринт");
-/// ```
-///
-/// Архитектурное улучшение 2026-04-01 (O1): Делегирует [`ModeRegistry::global()`](super::mode_registry::ModeRegistry::global).
-#[must_use]
-pub fn create_game_mode(name: &str) -> Option<GameModeResult> {
-    super::mode_registry::ModeRegistry::global().create(name)
-}
 
 /// Factory функция для создания режима игры по умолчанию (Classic).
 ///
@@ -377,44 +354,7 @@ mod tests {
         assert!(mode.check_win_condition(500));
     }
 
-    /// Тест: factory функция для создания режимов
-    #[test]
-    fn test_create_game_mode_classic() {
-        let mode = create_game_mode("classic").unwrap();
-        assert_eq!(mode.name(), "Классика");
-        assert_eq!(mode.get_target_lines(), None);
-        assert!(!mode.check_win_condition(1000));
-    }
-
-    #[test]
-    fn test_create_game_mode_sprint() {
-        let mode = create_game_mode("sprint").unwrap();
-        assert_eq!(mode.name(), "Спринт");
-        assert_eq!(mode.get_target_lines(), Some(40));
-        assert!(mode.check_win_condition(40));
-    }
-
-    #[test]
-    fn test_create_game_mode_marathon() {
-        let mode = create_game_mode("marathon").unwrap();
-        assert_eq!(mode.name(), "Марафон");
-        assert_eq!(mode.get_target_lines(), Some(150));
-        assert!(mode.check_win_condition(150));
-    }
-
-    #[test]
-    fn test_create_game_mode_russian_names() {
-        assert_eq!(create_game_mode("классика").unwrap().name(), "Классика");
-        assert_eq!(create_game_mode("спринт").unwrap().name(), "Спринт");
-        assert_eq!(create_game_mode("марафон").unwrap().name(), "Марафон");
-    }
-
-    #[test]
-    fn test_create_game_mode_invalid() {
-        assert!(create_game_mode("invalid").is_none());
-        assert!(create_game_mode("").is_none());
-    }
-
+    /// Тест: factory функция для создания режима по умолчанию
     #[test]
     fn test_create_default_game_mode() {
         let mode = create_default_game_mode();

@@ -69,32 +69,38 @@ fn main() {
 fn bench_find_full_rows(c: &mut Criterion) {
     let mut group: BenchmarkGroup<'_, _> = c.benchmark_group("find_full_rows");
 
-    // Пустое поле — измеряем реальную функцию find_full_rows
+    // Пустое поле — инициализация ВЫНЕСЕНА в iter_with_setup
     group.bench_function("empty_field", |b| {
-        b.iter(|| {
-            let state = GameState::new();
-            black_box(find_full_rows(state.get_blocks()));
-        });
+        b.iter_with_setup(
+            || GameState::new(),
+            |state| black_box(find_full_rows(state.get_blocks())),
+        );
     });
 
-    // Поле с одной заполненной линией
+    // Поле с одной заполненной линией — инициализация ВЫНЕСЕНА
     group.bench_function("one_full_line", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            state.fill_line_for_bench(10);
-            black_box(find_full_rows(state.get_blocks()));
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                state.fill_line_for_bench(10);
+                state
+            },
+            |state| black_box(find_full_rows(state.get_blocks())),
+        );
     });
 
-    // Поле с несколькими заполненными линиями
+    // Поле с несколькими заполненными линиями — инициализация ВЫНЕСЕНА
     group.bench_function("multiple_full_lines", |b| {
-        b.iter(|| {
-            let mut state = GameState::new();
-            for line in [5, 10, 15, 18] {
-                state.fill_line_for_bench(line);
-            }
-            black_box(find_full_rows(state.get_blocks()));
-        });
+        b.iter_with_setup(
+            || {
+                let mut state = GameState::new();
+                for line in [5, 10, 15, 18] {
+                    state.fill_line_for_bench(line);
+                }
+                state
+            },
+            |state| black_box(find_full_rows(state.get_blocks())),
+        );
     });
 
     group.finish();
