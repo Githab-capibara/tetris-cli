@@ -101,10 +101,10 @@ impl Drop for Canvas {
     /// Убран `catch_unwind` из Drop реализации. Операции write и flush не паникуют.
     fn drop(&mut self) {
         if let Err(_e) = write!(self.out, "{Show}") {
-            log_error!("Не удалось показать курсор в Drop: {e}");
+            log_error!("Не удалось показать курсор в Drop");
         }
         if let Err(_e) = self.out.flush() {
-            log_error!("Не удалось сбросить буфер в Drop: {e}");
+            log_error!("Не удалось сбросить буфер в Drop");
         }
     }
 }
@@ -117,7 +117,7 @@ impl Default for Canvas {
     /// Для безопасной обработки ошибок используйте [`Canvas::try_default()`].
     fn default() -> Self {
         Self::try_default().unwrap_or_else(|_e| {
-            log_warn!("Canvas::default(): не удалось инициализировать терминал: {e}");
+            log_warn!("Canvas::default(): не удалось инициализировать терминал");
             log_warn!("Canvas::default(): создаётся minimal stub для совместимости");
             Self::new_stub()
         })
@@ -188,20 +188,20 @@ impl Canvas {
         match stdout().into_raw_mode() {
             Ok(mut out) => {
                 if let Err(_e) = write!(out, "{}{}", All, Goto(1, 1)) {
-                    log_warn!("Не удалось очистить терминал: {e}");
+                    log_warn!("Не удалось очистить терминал");
                 }
                 if let Err(_e) = out.flush() {
-                    log_warn!("Не удалось выполнить flush: {e}");
+                    log_warn!("Не удалось выполнить flush");
                 }
                 if let Err(_e) = write!(out, "{Hide}") {
-                    log_warn!("Не удалось скрыть курсор: {e}");
+                    log_warn!("Не удалось скрыть курсор");
                 }
                 Self {
                     out: CanvasOut::Raw(out),
                 }
             }
             Err(_e) => {
-                log_warn!("Canvas::new_stub(): raw-режим недоступен: {e}");
+                log_warn!("Canvas::new_stub(): raw-режим недоступен");
                 Self {
                     out: CanvasOut::Stub(stdout()),
                 }
@@ -238,11 +238,11 @@ impl Canvas {
     /// Обязательно вызывайте этот метод перед завершением программы.
     pub fn reset(&mut self) {
         if let Err(_e) = write!(self.out, "{Show}\r\n") {
-            log_error!("Не удалось показать курсор: {e}");
+            log_error!("Не удалось показать курсор");
             return;
         }
         if let Err(_e) = self.out.flush() {
-            log_error!("Не удалось выполнить flush буфера: {e}");
+            log_error!("Не удалось выполнить flush буфера");
         }
     }
 
@@ -271,13 +271,13 @@ impl Canvas {
                 Fg(Reset),
                 Bg(Reset)
             ) {
-                log_warn!("Не удалось отрисовать строку: {e}");
+                log_warn!("Не удалось отрисовать строку");
             }
             y += 1;
         }
         // Flush вызывается один раз после всех строк (исправление #11)
         if let Err(_e) = self.out.flush() {
-            log_warn!("Не удалось выполнить flush: {e}");
+            log_warn!("Не удалось выполнить flush");
         }
     }
 
@@ -304,7 +304,7 @@ impl Canvas {
             Fg(Reset),
             Bg(Reset)
         ) {
-            log_error!("Ошибка отрисовки строки: {e}");
+            log_error!("Ошибка отрисовки строки");
         }
     }
 
@@ -365,7 +365,7 @@ impl Canvas {
     /// Обновить вывод (flush).
     pub fn flush(&mut self) {
         if let Err(_e) = self.out.flush() {
-            log_error!("Не удалось выполнить flush буфера: {e}");
+            log_error!("Не удалось выполнить flush буфера");
         }
     }
 }

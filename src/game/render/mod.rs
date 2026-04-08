@@ -109,7 +109,8 @@ pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
 /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 fn draw_sprint_timer<R: Renderer>(view: &GameView, cnv: &mut R) {
     // Кэширование: используем write! в буфер с предварительным выделением памяти
-    let mut buf = String::with_capacity(32);
+    // 64 байта достаточно для "Время: XXXXXXX.XXс" даже после дней игры
+    let mut buf = String::with_capacity(64);
     let _ = std::fmt::write(&mut buf, format_args!("Время: {:.2}с", view.elapsed_time()));
     cnv.draw_string(&buf, (PREVIEW_X, TIMER_Y), BORDER_COLOR, &Reset);
 

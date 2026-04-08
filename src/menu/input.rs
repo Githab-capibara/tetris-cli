@@ -115,8 +115,11 @@ pub fn get_player_name(cnv: &mut Canvas, inp: &mut KeyReader) -> String {
                 }
             }
             Ok(Some(_) | None) | Err(_) => {
-                // M7: Считаем только ошибки чтения (Err) и долгие простои (None)
-                failed_attempts = failed_attempts.saturating_add(1);
+                // M7: Считаем только ошибки чтения (Err), а не отсутствие нажатия (None)
+                // None — ожидаемое состояние пока пользователь не нажал клавишу
+                if key.is_err() {
+                    failed_attempts = failed_attempts.saturating_add(1);
+                }
                 if failed_attempts >= MAX_INPUT_ATTEMPTS {
                     crate::log_error!(
                         "get_player_name: превышено максимальное количество попыток ввода ({MAX_INPUT_ATTEMPTS})"
@@ -148,7 +151,10 @@ pub fn wait_for_key(inp: &mut KeyReader) -> bool {
         if let Ok(Some(_)) = key {
             return true;
         }
-        failed_attempts = failed_attempts.saturating_add(1);
+        // Считаем только ошибки (Err), а не отсутствие нажатия (None)
+        if key.is_err() {
+            failed_attempts = failed_attempts.saturating_add(1);
+        }
         if failed_attempts >= MAX_INPUT_ATTEMPTS {
             crate::log_error!(
                 "wait_for_key: превышено максимальное количество попыток ввода ({MAX_INPUT_ATTEMPTS})"

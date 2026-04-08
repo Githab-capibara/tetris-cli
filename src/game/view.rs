@@ -297,7 +297,7 @@ impl<'a> GameView<'a> {
         // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
         #[allow(clippy::cast_possible_wrap)]
         let shape_block_y = shape_y as i16;
-        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
+        let shape_width_i16 = SHAPE_WIDTH as i16;
 
         for coord in self.curr_shape.coords() {
             let (coord_x, coord_y) = coord;
@@ -356,8 +356,8 @@ impl<'a> GameView<'a> {
         // тип фигуры и позицию), поэтому копирование дешевле, чем borrowing + mutация.
         let mut ghost_shape = *self.curr_shape;
 
-        let grid_height_i16 = i16::try_from(GRID_HEIGHT).unwrap_or(i16::MAX);
-        let grid_width_i16 = i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX);
+        let grid_height_i16 = GRID_HEIGHT as i16;
+        let grid_width_i16 = GRID_WIDTH as i16;
 
         // Вычисляем расстояние до препятствия напрямую
         // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
@@ -396,7 +396,7 @@ impl<'a> GameView<'a> {
         // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
         #[allow(clippy::cast_possible_wrap)]
         let shape_block_y = shape_y as i16;
-        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
+        let shape_width_i16 = SHAPE_WIDTH as i16;
 
         for coord in ghost_shape.coords() {
             let (coord_x, coord_y) = coord;
@@ -519,7 +519,7 @@ impl<'a> GameView<'a> {
 
         canvas.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
 
-        let shape_width_i16 = i16::try_from(SHAPE_WIDTH).unwrap_or(i16::MAX);
+        let shape_width_i16 = SHAPE_WIDTH as i16;
 
         for coord in shape.coords() {
             let (coord_x, coord_y) = coord;
