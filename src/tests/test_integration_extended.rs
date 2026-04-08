@@ -51,8 +51,14 @@ fn test_curr_and_next_shapes_different() {
     let curr = state.curr_shape();
     let next = state.next_shape();
 
-    assert!((curr.shape() as usize) < 7, "Текущая фигура должна быть валидной");
-    assert!((next.shape() as usize) < 7, "Следующая фигура должна быть валидной");
+    assert!(
+        (curr.shape() as usize) < 7,
+        "Текущая фигура должна быть валидной"
+    );
+    assert!(
+        (next.shape() as usize) < 7,
+        "Следующая фигура должна быть валидной"
+    );
     assert_ne!(
         curr.shape(),
         next.shape(),
