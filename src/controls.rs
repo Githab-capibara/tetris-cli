@@ -474,10 +474,7 @@ impl ControlsConfig {
         })?;
 
         // Извлекаем подпись до модификации
-        let signature = config_value["signature"]
-            .as_str()
-            .unwrap_or("")
-            .to_string();
+        let signature = config_value["signature"].as_str().unwrap_or("").to_string();
 
         // Подготавливаем данные для проверки HMAC
         config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());

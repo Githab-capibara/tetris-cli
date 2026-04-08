@@ -255,12 +255,7 @@ pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str)
 /// внутренне всё равно вызывает `.as_bytes()`. Это устраняет UTF-8 roundtrip.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
-pub fn hmac_verify_with_salt_bytes(
-    key: &str,
-    salt: &str,
-    data: &[u8],
-    signature: &str,
-) -> bool {
+pub fn hmac_verify_with_salt_bytes(key: &str, salt: &str, data: &[u8], signature: &str) -> bool {
     // Формируем salt:data прямо в байтовом буфере без UTF-8 конвертации
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     let _ = write!(buf, "{salt}:"); // ASCII соль и разделитель
