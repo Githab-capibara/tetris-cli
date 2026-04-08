@@ -463,18 +463,23 @@ impl ControlsConfig {
         let mut json = String::new();
         file.read_to_string(&mut json)?;
 
-        // Десериализуем конфигурацию
-        let config: Self = serde_json::from_str(&json)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
-
-        // Проверяем keyed hash подпись
-        // Исправление #3 (P2): Один раз to_value, один раз to_string
-        let mut config_value = serde_json::to_value(&config).map_err(|e| {
+        // P3-ID55: Однопроходная десериализация — сначала парсим в Value,
+        // затем проверяем HMAC, и только потом десериализуем в Self.
+        // Избегает двойной сериализации (struct -> Value -> string).
+        let mut config_value = serde_json::from_str::<serde_json::Value>(&json).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("Ошибка сериализации: {e}"),
+                format!("Ошибка десериализации: {e}"),
             )
         })?;
+
+        // Извлекаем подпись до модификации
+        let signature = config_value["signature"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
+
+        // Подготавливаем данные для проверки HMAC
         config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
         config_value["signature"] = serde_json::Value::String(String::new());
 
@@ -488,12 +493,20 @@ impl ControlsConfig {
         // Исправление E10: Используем глобальный ключ напрямую без соли
         let expected_signature = hmac_sign_with_salt(get_controls_hmac_key(), "", &config_json);
 
-        if config.signature != expected_signature {
+        if signature != expected_signature {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "HMAC-SHA256 подпись не совпадает - возможна подделка конфигурации",
             ));
         }
+
+        // Только после успешной проверки десериализуем в структуру
+        let config: Self = serde_json::from_value(config_value).map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Ошибка десериализации: {e}"),
+            )
+        })?;
 
         Ok(config)
     }

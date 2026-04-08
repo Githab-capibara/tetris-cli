@@ -75,6 +75,8 @@ pub struct Application {
     leaderboard: Leaderboard,
     /// Текущий рекорд.
     high_score: u128,
+    /// Кэшированная строка рекорда для отрисовки (P3-ID50).
+    high_score_display: String,
 }
 
 impl Application {
@@ -120,6 +122,9 @@ impl Application {
             0u128
         };
 
+        // P3-ID50: кэшируем строку рекорда — форматирование только при изменении
+        let high_score_display = format!("{high_score:10}");
+
         // Проверка терминала и инициализация ввода/вывода
         let (canvas, input) = Self::initialize_terminal()?;
 
@@ -128,6 +133,7 @@ impl Application {
             input,
             leaderboard,
             high_score,
+            high_score_display,
         })
     }
 
@@ -212,7 +218,8 @@ impl Application {
             }
 
             // Отрисовка меню
-            let high_score_display = self.format_high_score();
+            // P3-ID50: clone кэшированной строки вместо format!() каждый кадр
+            let high_score_display = self.high_score_display.clone();
             Self::render_menu_frame(&mut self.canvas, &high_score_display);
 
             // Обработка ввода
@@ -224,14 +231,6 @@ impl Application {
                 self.process_menu_input(key, &high_score_display);
             }
         }
-    }
-
-    /// Отформатировать рекорд для отображения.
-    ///
-    /// # Возвращает
-    /// Отформатированная строка рекорда
-    fn format_high_score(&self) -> String {
-        format!("{:10}", self.high_score)
     }
 
     /// Отрисовать кадр меню.
@@ -317,6 +316,8 @@ impl Application {
         );
         if save_score && score > self.high_score {
             self.high_score = score;
+            // P3-ID50: обновляем кэш строки рекорда при изменении
+            self.high_score_display = format!("{score:10}");
             SaveData::save_value(self.high_score);
         }
         score

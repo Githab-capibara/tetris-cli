@@ -31,7 +31,7 @@ use serde::{Deserialize, Serialize};
 
 // crate
 use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt, hmac_verify_with_salt_bytes};
 use crate::highscore::APP_NAME;
 use crate::validation::name::sanitize_player_name;
 
@@ -218,17 +218,19 @@ impl LeaderboardEntry {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    ///
+    /// # Исправление P3-ID41
+    /// Использует `hmac_verify_with_salt_bytes` для избежания UTF-8 roundtrip.
+    /// Буфер записывается как Vec<u8> и передаётся байтами напрямую.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
-        // Исправление Проблема 9: Разделители ':' для предотвращения коллизий
-        // P3: write! в Vec вместо format! для снижения аллокаций
+        // P3-ID41: write! в Vec<u8>, передача байтов напрямую — без from_utf8 roundtrip
         let mut buf = Vec::with_capacity(self.salt.len() + 1 + self.name.len() + 1 + 20);
-        write!(buf, "{}:{}:{value}", self.salt, self.name).expect("write to Vec never fails");
-        let salt_name_score = std::str::from_utf8(&buf).expect("salt and name are valid UTF-8");
-        hmac_verify_with_salt(
+        let _ = write!(buf, "{}:{}:{value}", self.salt, self.name);
+        hmac_verify_with_salt_bytes(
             get_leaderboard_hmac_key(),
             &self.salt,
-            salt_name_score,
+            &buf,
             &self.hash,
         )
     }
@@ -481,6 +483,8 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте score_safe() для безопасной обработки ошибок"
     )]
     #[allow(clippy::missing_panics_doc)]
+    // P3-ID42: Известная неэффективность — format!() выделяет строку каждый вызов.
+    // Низкий приоритет: метод устарел и должен быть заменён на score_safe().
     pub fn score(&self) -> u128 {
         // P5: Выполняем HMAC валидацию под read() блокировкой без клонирования
         if let Ok(guard) = self.inner.read() {
@@ -516,6 +520,8 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление C9 (CRITICAL)
     /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
+    // P3-ID43: Известная неэффективность — format!() выделяет строку каждый вызов.
+    // Принято: клонирование полей необходимо для освобождения RwLock перед HMAC проверкой.
     #[must_use]
     pub fn score_safe(&self) -> Option<u128> {
         // P6: Копируем данные под блокировкой, отпускаем lock, потом проверяем
@@ -553,6 +559,8 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Устарело
     /// Используйте [`Self::is_valid_safe()`] для явной обработки ошибок.
+    // P3-ID44: Известная неэффективность — format!() выделяет строку каждый вызов.
+    // Низкий приоритет: метод устарел и должен быть заменён на is_valid_safe().
     #[must_use]
     #[deprecated(
         since = "23.96.16",
@@ -588,6 +596,8 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление C9 (CRITICAL)
     /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
+    // P3-ID45: Известная неэффективность — format!() выделяет строку каждый вызов.
+    // Принято: чтение под RwLock блокировкой — строка формируется внутри guard области.
     #[must_use]
     pub fn is_valid_safe(&self) -> Option<bool> {
         // Исправление C9: используем read() вместо lock() для RwLock
@@ -1045,6 +1055,11 @@ impl Leaderboard {
         self.entries.push(new_entry);
 
         // Сортировка по убыванию очков (H4)
+        // P3-ID56: Каждый вызов score() выполняет HMAC-верификацию.
+        // При сортировке N записей HMAC вызывается O(N*logN) раз.
+        // Это осознанный дизайн: HMAC необходим для целостности данных,
+        // без проверки невозможно гарантировать корректность сортировки.
+        // Для N<=5 это практически незаметно (<=5*log2(5) ~ 12 вызовов).
         self.entries.sort_by_key(|b| std::cmp::Reverse(b.score()));
 
         // Оставляем только топ-5

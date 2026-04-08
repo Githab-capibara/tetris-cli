@@ -112,8 +112,16 @@ impl ModeRegistry {
     /// let mode = registry.create("sprint").expect("sprint mode");
     /// assert_eq!(mode.name(), "Спринт");
     /// ```
+    ///
+    /// # Производительность (P3-ID57)
+    /// `to_lowercase()` вызывается для каждого поиска.
+    /// Для коротких имён режимов (< 20 символов) это ~100ns — незаметно
+    /// на фоне создания `Box<dyn GameModeTrait>`.
     #[must_use = "Режим игры должен быть использован"]
     pub fn create(&self, name: &str) -> Option<Box<dyn GameModeTrait>> {
+        // P3-ID57: to_lowercase() — аллокация на каждый поиск.
+        // Принято: режимы создаются редко (по запросу пользователя),
+        // а lowercase необходим для регистронезависимого сравнения.
         let factory = self.factories.get(&name.to_lowercase())?;
         Some(factory())
     }
@@ -125,8 +133,14 @@ impl ModeRegistry {
     ///
     /// # Возвращает
     /// `true` если режим зарегистрирован
+    ///
+    /// # Производительность (P3-ID58)
+    /// `to_lowercase()` вызывается для каждой проверки.
+    /// Для коротких имён режимов это малозаметно.
     #[must_use = "Результат проверки регистрации режима должен быть использован"]
     pub fn is_registered(&self, name: &str) -> bool {
+        // P3-ID58: to_lowercase() — аллокация на каждую проверку.
+        // Принято: регистронезависимое сравнение требует нормализации ключа.
         self.factories.contains_key(&name.to_lowercase())
     }
 

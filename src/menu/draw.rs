@@ -123,6 +123,7 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 // S9: Обоснование too_many_arguments — функция отрисовки требует 8 параметров
 // для отображения статистики. Это чистая функция отрисовки без состояния,
 // передача всех параметров явно соответствует функциональному стилю.
+// P3-ID46/47: единый переиспользуемый буфер вместо 7x format!()
 #[allow(clippy::too_many_arguments)]
 pub fn draw_game_stats(
     cnv: &mut Canvas,
@@ -134,25 +135,51 @@ pub fn draw_game_stats(
     max_combo: u32,
     elapsed_time: f64,
 ) {
-    let stats_lines = [
-        "╔════════════════════╗",
-        "║   СТАТИСТИКА ИГРЫ  ║",
-        "║                    ║",
-        &format!("║ Режим: {mode_str:<12} ║"),
-        &format!("║ Счёт: {score:16} ║"),
-        &format!("║ Уровень: {level:14} ║"),
-        &format!("║ Линии: {lines_cleared:16} ║"),
-        "║                    ║",
-        &format!("║ Фигур: {total_pieces:16} ║"),
-        &format!("║ Комбо: {max_combo:16} ║"),
-        &format!("║ Время: {elapsed_time:15.2} ║"),
-        "║                    ║",
-        "║  Любая клавиша...  ║",
-        "║                    ║",
-        "╚════════════════════╝",
-    ];
+    // P3-ID46: единый переиспользуемый буфер — одна аллокация вместо 7x format!()
+    let mut buf = String::with_capacity(256);
 
-    cnv.draw_strs(&stats_lines, (1, 1), MENU_COLOR, &termion::color::Reset);
+    // Статические строки
+    cnv.draw_string("╔════════════════════╗", (1, 1), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string("║   СТАТИСТИКА ИГРЫ  ║", (1, 2), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string("║                    ║", (1, 3), MENU_COLOR, &termion::color::Reset);
+
+    // Форматируемые строки — используем buf.clear() + write! для переиспользования буфера
+    buf.clear();
+    let _ = write!(buf, "║ Режим: {mode_str:<12} ║");
+    cnv.draw_string(&buf, (1, 4), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Счёт: {score:16} ║");
+    cnv.draw_string(&buf, (1, 5), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Уровень: {level:14} ║");
+    cnv.draw_string(&buf, (1, 6), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Линии: {lines_cleared:16} ║");
+    cnv.draw_string(&buf, (1, 7), MENU_COLOR, &termion::color::Reset);
+
+    cnv.draw_string("║                    ║", (1, 8), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Фигур: {total_pieces:16} ║");
+    cnv.draw_string(&buf, (1, 9), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Комбо: {max_combo:16} ║");
+    cnv.draw_string(&buf, (1, 10), MENU_COLOR, &termion::color::Reset);
+
+    buf.clear();
+    let _ = write!(buf, "║ Время: {elapsed_time:15.2} ║");
+    cnv.draw_string(&buf, (1, 11), MENU_COLOR, &termion::color::Reset);
+
+    // Статические строки
+    cnv.draw_string("║                    ║", (1, 12), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string("║  Любая клавиша...  ║", (1, 13), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string("║                    ║", (1, 14), MENU_COLOR, &termion::color::Reset);
+    cnv.draw_string("╚════════════════════╝", (1, 15), MENU_COLOR, &termion::color::Reset);
+
     cnv.flush();
 }
 
