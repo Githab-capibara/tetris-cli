@@ -49,4 +49,7 @@ pub use leaderboard::Leaderboard;
 pub use leaderboard::LeaderboardEntry;
 pub use save_data::SaveData;
 
-// Re-export компонентов
+// Re-export компонентов (ID 76-77):
+// Эти реэкспорты предоставляют доступ к внутренним компонентам репозитория,
+// хранилища и валидации для кода, которому нужна прямая работа с персистентностью.
+// Для большинства случаев используйте фасад `Leaderboard`.

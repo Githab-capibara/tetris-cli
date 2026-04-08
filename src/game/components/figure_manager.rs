@@ -105,7 +105,6 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `BagGenerator`
-    #[must_use = "Мутуабельный генератор фигур должен быть использован"]
     pub fn bag_mut(&mut self) -> &mut BagGenerator {
         &mut self.bag
     }
@@ -146,7 +145,6 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на текущую фигуру
-    #[must_use = "Мутуабельная текущая фигура должна быть использована"]
     pub fn curr_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.curr_shape
     }
@@ -155,7 +153,6 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на следующую фигуру
-    #[must_use = "Мутуабельная следующая фигура должна быть использована"]
     pub fn next_shape_mut(&mut self) -> &mut Tetromino {
         &mut self.next_shape
     }
@@ -164,7 +161,6 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на удержанную фигуру
-    #[must_use = "Мутуабельная удержанная фигура должна быть использована"]
     pub fn held_shape_mut(&mut self) -> &mut Option<Tetromino> {
         &mut self.held_shape
     }
