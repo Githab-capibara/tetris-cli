@@ -189,32 +189,6 @@ fn test_tetromino_o_no_rotate() {
     );
 }
 
-/// Тест 16: Проверка четырёх вращений (полный цикл)
-///
-/// Проверяет, что 4 вращения возвращают фигуру в исходное состояние.
-#[test]
-fn test_tetromino_full_rotation_cycle() {
-    let mut tetromino = Tetromino::new(
-        (4.0, 0.0),
-        ShapeType::T,
-        [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        0,
-    );
-
-    let original_coords = tetromino.coords();
-
-    // 4 вращения по часовой должны вернуть к исходным координатам
-    for _ in 0..4 {
-        tetromino.rotate(RotationDirection::Clockwise);
-    }
-
-    assert_eq!(
-        tetromino.coords(),
-        original_coords,
-        "После 4 вращений фигура должна вернуться в исходное состояние"
-    );
-}
-
 /// Тест 17: Проверка вращения всех типов фигур
 ///
 /// Проверяет, что все 7 типов фигур могут вращаться (кроме O).

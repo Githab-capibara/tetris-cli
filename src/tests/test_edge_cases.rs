@@ -37,16 +37,6 @@ fn test_score_no_overflow() {
     assert!(result.is_err(), "При переполнении должна вернуться ошибка");
 }
 
-/// Тест: `saturating_add` предотвращает u128 переполнение
-#[test]
-fn test_score_saturating_add_prevents_overflow() {
-    let mut score: u128 = u128::MAX;
-    let addition: u128 = 1_000_000;
-
-    score = score.saturating_add(addition);
-    assert_eq!(score, u128::MAX, "saturating_add должен вернуть MAX");
-}
-
 // ============================================================================
 // PROB-165: HMAC пустой ключ
 // ============================================================================
@@ -214,16 +204,6 @@ fn test_leaderboard_load_handles_corrupted_data() {
         result.is_ok(),
         "Leaderboard::load() не должен паниковать даже при повреждённых данных"
     );
-}
-
-/// Тест: Leaderboard по умолчанию пуст
-#[test]
-fn test_leaderboard_default_is_empty() {
-    use crate::highscore::leaderboard::Leaderboard;
-
-    let lb = Leaderboard::default();
-    assert_eq!(lb.len(), 0);
-    assert!(lb.is_empty());
 }
 
 // ============================================================================

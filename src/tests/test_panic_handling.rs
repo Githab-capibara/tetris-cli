@@ -108,10 +108,12 @@ fn test_game_state_setters_no_panic() {
 fn test_bag_generator_next_shape_no_panic() {
     let mut bag = BagGenerator::new();
 
-    // Не используем catch_unwind с &mut — просто вызываем напрямую
-    // Если бы была паника, тест упал бы здесь
+    // Вызываем 100 раз и проверяем что все фигуры валидны
     for _ in 0..100 {
-        let _shape = bag.next_shape();
+        let shape = bag.next_shape();
+        assert!(
+            (shape as usize) < 7,
+            "next_shape() должен возвращать валидный ShapeType"
+        );
     }
-    // Если дошли сюда — паники не было
 }

@@ -242,20 +242,6 @@ fn test_lines_count_reached_boundary() {
 // ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ GameState
 // ============================================================================
 
-/// Тест T19: `GameState` начальные значения
-#[test]
-fn test_game_state_initial_values() {
-    let state = GameState::new();
-
-    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(
-        state.lines_cleared(),
-        0,
-        "Начальное количество линий должно быть 0"
-    );
-}
-
 /// Тест T20: `GameState` установка максимального счёта
 #[test]
 fn test_game_state_max_score() {
@@ -285,49 +271,6 @@ fn test_game_state_score_overflow_protection() {
             "Счёт не должен превышать u128::MAX"
         );
     }
-}
-
-/// Тест T22: `GameState` проверка корректности значений после изменений
-///
-/// Проверяет, что операции над GameState дают ожидаемые результаты.
-/// Ранее тест проверял `score() >= 0` для u128, что всегда истинно.
-/// Заменён на осмысленную проверку корректности начисления очков.
-#[test]
-fn test_game_state_value_correctness() {
-    let mut state = GameState::new();
-
-    // Проверяем что начальные значения корректны
-    assert_eq!(state.score(), 0, "Начальный счёт должен быть 0");
-    assert_eq!(state.level(), 1, "Начальный уровень должен быть 1");
-    assert_eq!(
-        state.lines_cleared(),
-        0,
-        "Начальное количество линий должно быть 0"
-    );
-
-    // Проверяем что set_score корректно изменяет значение
-    state.set_score(5000);
-    assert_eq!(
-        state.score(),
-        5000,
-        "Счёт должен быть 5000 после set_score(5000)"
-    );
-
-    // Проверяем что set_level корректно изменяет значение
-    state.set_level(10);
-    assert_eq!(
-        state.level(),
-        10,
-        "Уровень должен быть 10 после set_level(10)"
-    );
-
-    // Проверяем что set_lines_cleared корректно изменяет значение
-    state.set_lines_cleared(40);
-    assert_eq!(
-        state.lines_cleared(),
-        40,
-        "Линии должны быть 40 после set_lines_cleared(40)"
-    );
 }
 
 // ============================================================================

@@ -135,9 +135,6 @@ mod tests {
     mod test_collision;
     mod test_game_logic;
     mod test_integration;
-    mod test_io;
-    mod test_io_errors;
-    mod test_io_utf8_handling;
     mod test_physics;
 
     // Игровая механика

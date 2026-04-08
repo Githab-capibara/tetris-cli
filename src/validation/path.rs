@@ -911,7 +911,7 @@ mod validation_path_tests {
         let invalid_path = PathBuf::from("/home/user/other/config.txt");
 
         // Валидный путь внутри директории
-        let result = validator.validate_within_directory(&valid_path, &base_dir);
+        let _result = validator.validate_within_directory(&valid_path, &base_dir);
         // Примечание: этот тест может упасть если директории не существуют
         // В реальном использовании canonicalize() проверит существование
 

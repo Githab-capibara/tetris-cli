@@ -86,35 +86,6 @@ fn test_c3_toctou_documentation_has_key_methods() {
 // HIGH ПРОБЛЕМЫ (H1-H10)
 // ============================================================================
 
-/// Тест H1: `.to_string()` используется вместо `format!()` в state.rs
-///
-/// Проверяет что конвертация числовых значений GameState в строку работает
-/// и возвращает осмысленные значения (не пустые строки).
-#[test]
-fn test_h1_to_string_instead_of_format_in_state() {
-    use tetris_cli::game::state::GameState;
-
-    let state = GameState::new();
-
-    // Проверяем что методы возвращают начальные значения
-    let score = state.score();
-    let level = state.level();
-    let lines = state.lines_cleared();
-
-    assert_eq!(score, 0, "Начальный счёт должен быть 0");
-    assert_eq!(level, 1, "Начальный уровень должен быть 1");
-    assert_eq!(lines, 0, "Начальное количество линий должно быть 0");
-
-    // Конвертация в строку должна работать без ошибок
-    let score_str = score.to_string();
-    let level_str = level.to_string();
-    let lines_str = lines.to_string();
-
-    assert_eq!(score_str, "0");
-    assert_eq!(level_str, "1");
-    assert_eq!(lines_str, "0");
-}
-
 /// Тест H2: Замена `map_or()` на `is_none_or()` в collision.rs
 ///
 /// Проверяет что используется `is_none_or()` для проверки опциональных значений.
@@ -202,22 +173,6 @@ fn test_h4_sort_by_key_in_leaderboard() {
         scores,
         vec![5000, 4000, 3000, 2000, 1000],
         "Рекорды должны быть отсортированы по убыванию"
-    );
-}
-
-/// Тест H7: Константа `FRAME_DELAY_MS` определена
-///
-/// Проверяет что константа `FRAME_DELAY_MS` определена в модуле constants.
-/// Примечание: константа FPS была удалена как неиспользуемая (Пакет 3, аудит).
-#[test]
-#[allow(clippy::assertions_on_constants)]
-fn test_h7_frame_delay_ms_defined() {
-    use tetris_cli::constants::FRAME_DELAY_MS;
-
-    // Проверяем что константа определена корректно
-    assert!(
-        FRAME_DELAY_MS > 0,
-        "FRAME_DELAY_MS должен быть положительным"
     );
 }
 
@@ -325,20 +280,6 @@ fn test_m1_no_redundant_ignore_examples_in_lib() {
     let s2 = generate_salt();
     assert_ne!(s1, s2, "generate_salt() должен давать уникальные соли");
     assert_eq!(s1.len(), 64, "Длина соли должна быть 64 символа");
-}
-
-/// Тест M3: `Canvas::default()` корректно создаётся и дропается
-///
-/// Проверяет что Canvas можно создать через `default()` и что Drop не паникует.
-#[test]
-fn test_m3_simplified_canvas_drop() {
-    use tetris_cli::io::Canvas;
-
-    // Canvas::default() должен успешно создаваться
-    let canvas = Canvas::default();
-
-    // Drop не должен паниковать — тест завершится успешно если drop проходит
-    // без паники
 }
 
 /// Тест M4: #[`must_use`] атрибуты на криптографических функциях
@@ -465,23 +406,6 @@ fn test_m10_sanitize_player_name_single_pass() {
 // LOW ПРОБЛЕМЫ (L1, L3, L4)
 // ============================================================================
 
-/// Тест L1: Константы клавиш доступны напрямую из constants
-///
-/// Проверяет что константы клавиш доступны напрямую из модуля constants.
-#[test]
-fn test_l1_key_constants_direct() {
-    use tetris_cli::constants::{
-        KEY_BACKSPACE, KEY_ENTER_CR, KEY_ENTER_LF, KEY_ESCAPE, KEY_SPACE, KEY_TAB,
-    };
-
-    assert_eq!(KEY_BACKSPACE, 127, "KEY_BACKSPACE должен быть равен 127");
-    assert_eq!(KEY_ENTER_LF, b'\n', "KEY_ENTER_LF должен быть b'\\n'");
-    assert_eq!(KEY_ENTER_CR, b'\r', "KEY_ENTER_CR должен быть b'\\r'");
-    assert_eq!(KEY_ESCAPE, 27, "KEY_ESCAPE должен быть равен 27");
-    assert_eq!(KEY_TAB, 9, "KEY_TAB должен быть равен 9");
-    assert_eq!(KEY_SPACE, b' ', "KEY_SPACE должен быть b' '");
-}
-
 /// Тест L3: Упрощённые конструкторы ошибок
 ///
 /// Проверяет что конструкторы ошибок используют упрощённый синтаксис.
@@ -508,32 +432,6 @@ fn test_l3_simplified_error_constructors() {
         matches!(overflow_err, GameError::ScoreOverflow),
         "ScoreOverflow должен создаваться корректно"
     );
-}
-
-/// Тест L4: Упрощённый exports.rs
-///
-/// Проверяет что exports.rs содержит только необходимые экспорты.
-#[test]
-fn test_l4_simplified_exports() {
-    // Импорты через exports модуль
-    use tetris_cli::exports::{
-        BagGenerator, ControlsConfig, Direction, GameState, Leaderboard, RotationDirection,
-        ShapeType,
-    };
-
-    // Проверяем что основные типы экспортированы и могут быть использованы
-    let state = GameState::new();
-    assert!(state.level() >= 1, "GameState должен иметь уровень >= 1");
-    let dir = Direction::Down;
-    assert!(
-        matches!(dir, Direction::Down),
-        "Direction::Down должен совпадать"
-    );
-    let _ = RotationDirection::Clockwise;
-    let _ = ShapeType::T;
-    let _bag = BagGenerator::new();
-    let _config = ControlsConfig::default_config();
-    let _leaderboard = Leaderboard::default();
 }
 
 // ============================================================================

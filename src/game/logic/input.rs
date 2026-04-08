@@ -351,7 +351,7 @@ mod input_tests {
         handle_movement_input(&mut state, Direction::Down);
 
         // Позиция не должна измениться (Direction::Down игнорируется)
-        assert_eq!(state.curr_shape().pos().0, initial_x);
-        assert_eq!(state.curr_shape().pos().1, initial_y);
+        assert!((state.curr_shape().pos().0 - initial_x).abs() < f32::EPSILON);
+        assert!((state.curr_shape().pos().1 - initial_y).abs() < f32::EPSILON);
     }
 }
