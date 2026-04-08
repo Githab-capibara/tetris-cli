@@ -285,6 +285,7 @@ impl Level {
     /// Если value < 1, будет установлено значение 1.
     #[must_use]
     pub fn with_value(value: u32) -> Self {
+        debug_assert!(value >= 1, "Level::with_value(0) может маскировать баги");
         Self(value.max(1))
     }
 
@@ -556,9 +557,15 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "Level::with_value(0) может маскировать баги")]
     fn test_level_with_value_minimum() {
-        let level = Level::with_value(0);
-        assert_eq!(level.value(), 1); // Minimum is 1
+        let _level = Level::with_value(0);
+    }
+
+    #[test]
+    fn test_level_with_value_one() {
+        let level = Level::with_value(1);
+        assert_eq!(level.value(), 1);
     }
 
     #[test]

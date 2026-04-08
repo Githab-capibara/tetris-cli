@@ -108,11 +108,11 @@ fn test_level_minimum_value() {
     assert_eq!(level.value(), 1, "Новый Level должен быть 1");
 }
 
-/// Тест T8: Level с нулевым значением (должно стать 1)
+/// Тест T8: Level с нулевым значением — паника в debug (баг-превенция)
 #[test]
+#[should_panic(expected = "Level::with_value(0) может маскировать баги")]
 fn test_level_zero_becomes_minimum() {
-    let level = Level::with_value(0);
-    assert_eq!(level.value(), 1, "Level с 0 должен стать 1 (минимум)");
+    let _level = Level::with_value(0);
 }
 
 /// Тест T9: Level с `u32::MAX`
