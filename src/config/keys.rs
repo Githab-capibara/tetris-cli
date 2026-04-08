@@ -275,4 +275,15 @@ mod keys_tests {
         // Проверка что константа MIN_HMAC_KEY_LENGTH определена корректно
         assert_eq!(MIN_HMAC_KEY_LENGTH, 16);
     }
+
+    /// Тест: проверка validate_all_keys() без установленных переменных окружения
+    /// Без env var все HMAC ключи пустые, поэтому валидация должна вернуть ошибки
+    #[test]
+    fn test_validate_all_keys_without_env() {
+        let result = validate_all_keys();
+        // Без переменных окружения все три ключа пустые, значит будут ошибки
+        assert!(result.is_err(), "validate_all_keys должен вернуть ошибку без env");
+        let errors = result.unwrap_err();
+        assert_eq!(errors.len(), 3, "Должно быть 3 ошибки (по одной для каждого ключа)");
+    }
 }

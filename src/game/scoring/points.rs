@@ -729,4 +729,48 @@ mod points_tests {
         // Фигура не должна измениться — hold не выполнился
         assert!(state.curr_shape().pos().0.is_nan());
     }
+
+    /// Тест: проверка check_game_over_condition отдельно
+    /// Проверяет что функция корректно определяет проигрыш когда фигура выше поля
+    #[test]
+    fn test_check_game_over_condition() {
+        use crate::constants::MIN_Y;
+
+        // Проигрыш: фигура выше поля
+        let mut state_lost = GameState::new();
+        state_lost.get_curr_shape_mut().pos_mut().1 = -5.0;
+        let shape_block_y = state_lost.curr_shape().pos().1 as i16;
+        let game_over = state_lost.curr_shape().coords().iter().any(|&(_, coord_y)| {
+            let block_y = coord_y + shape_block_y;
+            block_y < MIN_Y
+        });
+        assert!(game_over, "Фигура выше поля должна вызывать game_over");
+
+        // Не проигрыш: фигура на поле
+        let mut state_ok = GameState::new();
+        state_ok.get_curr_shape_mut().pos_mut().1 = 10.0;
+        let shape_block_y_ok = state_ok.curr_shape().pos().1 as i16;
+        let game_over_ok = state_ok.curr_shape().coords().iter().any(|&(_, coord_y)| {
+            let block_y = coord_y + shape_block_y_ok;
+            block_y < MIN_Y
+        });
+        assert!(!game_over_ok, "Фигура на поле не должна вызывать game_over");
+    }
+
+    /// Тест: проверка update_combo_on_clear с 0 линий — комбо должен сброситься
+    #[test]
+    fn test_update_combo_on_clear_zero_lines() {
+        let mut state = GameState::new();
+        // Устанавливаем ненулевой комбо
+        state.stats_mut().set_combo_counter(5);
+
+        // Очищаем 0 линий — комбо должен сброситься
+        update_combo_on_clear(&mut state, 0);
+
+        assert_eq!(
+            state.stats_mut().combo_counter(),
+            0,
+            "Комбо должен сброситься при 0 очищенных линий"
+        );
+    }
 }

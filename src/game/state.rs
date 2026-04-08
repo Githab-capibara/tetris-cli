@@ -1153,4 +1153,24 @@ mod state_tests {
         let shape = state.curr_shape();
         assert!(!shape.coords().is_empty(), "Фигура должна иметь координаты");
     }
+
+    /// Тест: GameMode::get_target_lines возвращает корректные значения для каждого режима
+    #[test]
+    fn test_game_mode_target_lines() {
+        assert_eq!(
+            GameMode::Classic.get_target_lines(),
+            None,
+            "Classic не имеет цели по линиям"
+        );
+        assert_eq!(
+            GameMode::Sprint.get_target_lines(),
+            Some(SPRINT_LINES),
+            "Sprint имеет цель 40 линий"
+        );
+        assert_eq!(
+            GameMode::Marathon.get_target_lines(),
+            Some(MARATHON_LINES),
+            "Marathon имеет цель 150 линий"
+        );
+    }
 }
