@@ -55,6 +55,7 @@ const MAX_SAFE_F32_AS_U32: f32 = 4_294_967_295.0;
 /// # Видимость
 /// Функция публична для тестирования (pub(crate)).
 #[inline]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
     // Проверка на NaN и бесконечность
     if !value.is_finite() {
@@ -262,6 +263,7 @@ fn check_game_over_condition(state: &GameState) -> bool {
     use crate::constants::MIN_Y;
 
     // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
+    #[allow(clippy::cast_possible_truncation)]
     let shape_block_y = state.curr_shape().pos().1 as i16;
     state.curr_shape().coords().iter().any(|&(_, coord_y)| {
         let block_y = coord_y + shape_block_y;
