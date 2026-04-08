@@ -200,7 +200,7 @@ mod update_tests {
         state.set_can_hold(true);
 
         // Сохраняем фигуру которая стала текущей после первого hold
-        let after_first_hold_curr = *state.curr_shape();
+        let _after_first_hold_curr = *state.curr_shape();
 
         // Второй hold: swap текущей и удержанной фигур
         crate::game::scoring::handle_hold(&mut state);

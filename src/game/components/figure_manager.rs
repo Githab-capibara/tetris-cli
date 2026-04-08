@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_figure_manager_getters() {
-        let mut manager = FigureManager::new();
+        let manager = FigureManager::new();
         let curr = manager.curr_shape();
         let next = manager.next_shape();
         assert_ne!(curr.shape(), next.shape());

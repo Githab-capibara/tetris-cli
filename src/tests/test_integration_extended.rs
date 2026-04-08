@@ -43,7 +43,7 @@ fn test_all_piece_types_appear_in_game() {
     }
 }
 
-/// Тест: Текущая и следующая фигуры обе валидны.
+/// Тест: Текущая и следующая фигуры обе валидны и различны.
 #[test]
 fn test_curr_and_next_shapes_different() {
     let state = GameState::new();
@@ -51,8 +51,13 @@ fn test_curr_and_next_shapes_different() {
     let curr = state.curr_shape();
     let next = state.next_shape();
 
-    assert!((curr.shape() as usize) < 7);
-    assert!((next.shape() as usize) < 7);
+    assert!((curr.shape() as usize) < 7, "Текущая фигура должна быть валидной");
+    assert!((next.shape() as usize) < 7, "Следующая фигура должна быть валидной");
+    assert_ne!(
+        curr.shape(),
+        next.shape(),
+        "Текущая и следующая фигуры должны различаться"
+    );
 }
 
 // ============================================================================

@@ -16,6 +16,42 @@ use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
 use crate::errors::GameError;
 use crate::game::GameState;
 
+/// Макрос для сравнения f32 значений с эпсилоном
+macro_rules! assert_f32_eq {
+    ($a:expr, $b:expr) => {
+        assert!(
+            ($a - $b).abs() < f32::EPSILON,
+            "Ожидается {}, получено {} (разница: {})",
+            $b, $a, ($a - $b).abs()
+        )
+    };
+    ($a:expr, $b:expr, $msg:expr) => {
+        assert!(
+            ($a - $b).abs() < f32::EPSILON,
+            "{}: ожидается {}, получено {} (разница: {})",
+            $msg, $b, $a, ($a - $b).abs()
+        )
+    };
+}
+
+/// Макрос для сравнения f64 значений с эпсилоном
+macro_rules! assert_f64_eq {
+    ($a:expr, $b:expr) => {
+        assert!(
+            ($a - $b).abs() < f64::EPSILON,
+            "Ожидается {}, получено {} (разница: {})",
+            $b, $a, ($a - $b).abs()
+        )
+    };
+    ($a:expr, $b:expr, $msg:expr) => {
+        assert!(
+            ($a - $b).abs() < f64::EPSILON,
+            "{}: ожидается {}, получено {} (разница: {})",
+            $msg, $b, $a, ($a - $b).abs()
+        )
+    };
+}
+
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-5: Валидация fall_speed (NaN и Infinity)
 // ============================================================================
@@ -46,11 +82,7 @@ fn test_set_fall_speed_nan_returns_error() {
     }
 
     // Проверяем что значение не изменилось
-    assert_eq!(
-        state.fall_speed(),
-        INITIAL_FALL_SPD,
-        "Скорость падения не должна измениться при NaN"
-    );
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD, "Скорость падения не должна измениться при NaN");
 }
 
 /// Тест 2: Проверка возврата ошибки при Infinity значении `fall_speed`
@@ -79,11 +111,7 @@ fn test_set_fall_speed_positive_infinity_returns_error() {
     }
 
     // Проверяем что значение не изменилось
-    assert_eq!(
-        state.fall_speed(),
-        INITIAL_FALL_SPD,
-        "Скорость падения не должна измениться при Infinity"
-    );
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD, "Скорость падения не должна измениться при Infinity");
 }
 
 /// Тест 3: Проверка возврата ошибки при -Infinity значении `fall_speed`
@@ -127,18 +155,14 @@ fn test_set_fall_speed_valid_values() {
         result.is_ok(),
         "Установка валидного значения должна быть успешной"
     );
-    assert_eq!(
-        state.fall_speed(),
-        valid_value,
-        "Скорость падения должна быть установлена корректно"
-    );
+    assert_f32_eq!(state.fall_speed(), valid_value, "Скорость падения должна быть установлена корректно");
 
     // Устанавливаем другое валидное значение
     let another_valid = 5.5;
     let result = state.set_fall_speed(another_valid);
 
     assert!(result.is_ok());
-    assert_eq!(state.fall_speed(), another_valid);
+    assert_f32_eq!(state.fall_speed(), another_valid);
 }
 
 /// Тест 5: Проверка валидации `fall_speed` в допустимых пределах
@@ -157,7 +181,7 @@ fn test_set_fall_speed_clamps_to_valid_range() {
         "Установка значения ниже минимума должна вернуть ошибку"
     );
     // Значение не должно измениться
-    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Попытка установить значение выше максимума — должна вернуть ошибку
     let above_max = MAX_FALL_SPEED + 100.0;
@@ -168,18 +192,14 @@ fn test_set_fall_speed_clamps_to_valid_range() {
         "Установка значения выше максимума должна вернуть ошибку"
     );
     // Значение не должно измениться
-    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Устанавливаем значение в допустимых пределах
     let in_range = (INITIAL_FALL_SPD + MAX_FALL_SPEED) / 2.0;
     let result = state.set_fall_speed(in_range);
 
     assert!(result.is_ok());
-    assert_eq!(
-        state.fall_speed(),
-        in_range,
-        "Значение в пределах должно устанавливаться корректно"
-    );
+    assert_f32_eq!(state.fall_speed(), in_range, "Значение в пределах должно устанавливаться корректно");
 }
 
 // ============================================================================
@@ -213,11 +233,7 @@ fn test_set_land_timer_nan_returns_error() {
     }
 
     // Проверяем что значение не изменилось
-    assert_eq!(
-        state.land_timer(),
-        LAND_TIME_DELAY_S,
-        "Таймер приземления не должен измениться при NaN"
-    );
+    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S, "Таймер приземления не должен измениться при NaN");
 }
 
 /// Тест 7: Проверка возврата ошибки при Infinity значении `land_timer`
@@ -287,18 +303,14 @@ fn test_set_land_timer_valid_values() {
         result.is_ok(),
         "Установка валидного значения должна быть успешной"
     );
-    assert_eq!(
-        state.land_timer(),
-        valid_value,
-        "Таймер приземления должен быть установлен корректно"
-    );
+    assert_f64_eq!(state.land_timer(), valid_value, "Таймер приземления должен быть установлен корректно");
 
     // Устанавливаем другое валидное значение
     let another_valid = 1.0;
     let result = state.set_land_timer(another_valid);
 
     assert!(result.is_ok());
-    assert_eq!(state.land_timer(), another_valid);
+    assert_f64_eq!(state.land_timer(), another_valid);
 }
 
 /// Тест 10: Проверка обработки отрицательных значений `land_timer`
@@ -317,7 +329,7 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
         "Установка отрицательного значения должна вернуть ошибку"
     );
     // Значение не должно измениться
-    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
+    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 
     // Устанавливаем ещё более отрицательное значение — тоже ошибка
     let more_negative = -100.0;
@@ -325,7 +337,7 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
 
     assert!(result.is_err());
     // Значение не должно измениться
-    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
+    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 }
 
 // ============================================================================
@@ -342,20 +354,12 @@ fn test_set_fall_speed_boundary_values() {
     // Устанавливаем точно на минимуме
     let result = state.set_fall_speed(INITIAL_FALL_SPD);
     assert!(result.is_ok());
-    assert_eq!(
-        state.fall_speed(),
-        INITIAL_FALL_SPD,
-        "Значение на минимуме должно устанавливаться"
-    );
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD, "Значение на минимуме должно устанавливаться");
 
     // Устанавливаем точно на максимуме
     let result = state.set_fall_speed(MAX_FALL_SPEED);
     assert!(result.is_ok());
-    assert_eq!(
-        state.fall_speed(),
-        MAX_FALL_SPEED,
-        "Значение на максимуме должно устанавливаться"
-    );
+    assert_f32_eq!(state.fall_speed(), MAX_FALL_SPEED, "Значение на максимуме должно устанавливаться");
 }
 
 /// Тест 12: Проверка граничных значений `land_timer`
@@ -368,21 +372,13 @@ fn test_set_land_timer_boundary_values() {
     // Устанавливаем точно 0.0
     let result = state.set_land_timer(0.0);
     assert!(result.is_ok());
-    assert_eq!(
-        state.land_timer(),
-        0.0,
-        "Значение 0.0 должно устанавливаться"
-    );
+    assert_f64_eq!(state.land_timer(), 0.0);
 
     // Устанавливаем небольшое положительное значение
     let small_value = 0.001;
     let result = state.set_land_timer(small_value);
     assert!(result.is_ok());
-    assert_eq!(
-        state.land_timer(),
-        small_value,
-        "Небольшое положительное значение должно устанавливаться"
-    );
+    assert_f64_eq!(state.land_timer(), small_value);
 }
 
 /// Тест 13: Интеграционный тест валидации в GameState
@@ -393,8 +389,8 @@ fn test_validation_in_game_state_context() {
     let mut state = GameState::new();
 
     // Проверяем начальные значения
-    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
-    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 
     // Пытаемся установить невалидные значения
     assert!(state.set_fall_speed(f32::NAN).is_err());
@@ -403,16 +399,16 @@ fn test_validation_in_game_state_context() {
     assert!(state.set_land_timer(f64::INFINITY).is_err());
 
     // Проверяем что значения не изменились
-    assert_eq!(state.fall_speed(), INITIAL_FALL_SPD);
-    assert_eq!(state.land_timer(), LAND_TIME_DELAY_S);
+    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
+    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
 
     // Устанавливаем валидные значения
     assert!(state.set_fall_speed(5.0).is_ok());
     assert!(state.set_land_timer(0.2).is_ok());
 
     // Проверяем что значения изменились
-    assert_eq!(state.fall_speed(), 5.0);
-    assert_eq!(state.land_timer(), 0.2);
+    assert_f32_eq!(state.fall_speed(), 5.0);
+    assert_f64_eq!(state.land_timer(), 0.2);
 }
 
 /// Тест 14: Проверка что валидация не вызывает паник
@@ -420,8 +416,6 @@ fn test_validation_in_game_state_context() {
 /// Проверяет отсутствие паник при различных невалидных значениях.
 #[test]
 fn test_validation_no_panic_on_invalid_values() {
-    let mut state = GameState::new();
-
     // Массив невалидных значений для fall_speed
     let invalid_f32_values = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY];
 

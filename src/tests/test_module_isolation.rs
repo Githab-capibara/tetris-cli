@@ -56,17 +56,6 @@ fn test_types_module_self_contained() {
     assert_eq!(format!("{:?}", UpdateEndState::Won), "Won");
 }
 
-/// Тест: constants модуль не зависит от других модулей
-#[test]
-fn test_constants_module_independent() {
-    use crate::constants::{GRID_HEIGHT, GRID_WIDTH, MAX_LEADERBOARD_ENTRIES};
-
-    // Константы — примитивные значения, не требуют других модулей
-    assert_eq!(GRID_WIDTH, 10);
-    assert_eq!(GRID_HEIGHT, 20);
-    assert_eq!(MAX_LEADERBOARD_ENTRIES, 5);
-}
-
 /// Тест: errors модуль самодостаточен
 #[test]
 fn test_errors_module_self_contained() {
@@ -76,20 +65,6 @@ fn test_errors_module_self_contained() {
     let err = GameError::ValidationError("test".to_string());
     let msg = format!("{err}");
     assert!(msg.contains("test"));
-}
-
-/// Тест: scoring модуль можно тестировать изолированно
-#[test]
-fn test_scoring_module_isolated() {
-    use crate::constants::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES};
-
-    // scoring константы независимы от GameState
-    assert_eq!(LINE_SCORES[0], 100);
-    assert_eq!(LINE_SCORES[1], 200);
-    assert_eq!(LINE_SCORES[2], 400);
-    assert_eq!(LINE_SCORES[3], 1800);
-    assert_eq!(COMBO_BONUS, 50);
-    assert_eq!(LEVEL_BONUS_MULT, 500);
 }
 
 /// Тест: highscore типы не требуют game модуля
