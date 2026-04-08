@@ -261,9 +261,17 @@ impl From<Score> for u128 {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Level(u32);
 
+impl Level {
+    /// Создать уровень со значением по умолчанию (1).
+    #[must_use]
+    pub const fn new() -> Self {
+        Self(1)
+    }
+}
+
 impl Default for Level {
     fn default() -> Self {
-        Self(1)
+        Self::new()
     }
 }
 
