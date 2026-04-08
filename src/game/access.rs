@@ -113,6 +113,8 @@ pub trait BoardReadonly {
 /// }
 /// ```
 // PROB-119: трейт используется внутри crate (board.rs, GameState impl)
+// но clippy считает его unused при pub(crate) видимости модуля.
+#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -147,7 +149,10 @@ pub trait BoardMutable: BoardReadonly {
     #[must_use]
     #[inline]
     fn get_fall_speed(&self) -> f32 {
-        debug_assert!(false, "get_fall_speed() вызван для типа без реализации — это может скрыть баг");
+        debug_assert!(
+            false,
+            "get_fall_speed() вызван для типа без реализации — это может скрыть баг"
+        );
         0.0
     }
 
@@ -173,7 +178,10 @@ pub trait BoardMutable: BoardReadonly {
     #[must_use]
     #[inline]
     fn get_land_timer(&self) -> f64 {
-        debug_assert!(false, "get_land_timer() вызван для типа без реализации — это может скрыть баг");
+        debug_assert!(
+            false,
+            "get_land_timer() вызван для типа без реализации — это может скрыть баг"
+        );
         0.0
     }
 
@@ -223,7 +231,10 @@ pub trait ScoreAccess {
     #[must_use]
     #[inline]
     fn get_score(&self) -> u128 {
-        debug_assert!(false, "get_score() вызван для типа без реализации — это может скрыть баг");
+        debug_assert!(
+            false,
+            "get_score() вызван для типа без реализации — это может скрыть баг"
+        );
         0
     }
 }
@@ -379,8 +390,14 @@ mod access_tests {
     fn test_board_mutable_defaults() {
         let mut state = GameState::new();
         // set_fall_speed и set_land_timer для GameState вызывают реальные реализации
-        assert!(state.set_fall_speed(1.5).is_ok(), "set_fall_speed должен вернуть Ok");
-        assert!(state.set_land_timer(2.0).is_ok(), "set_land_timer должен вернуть Ok");
+        assert!(
+            state.set_fall_speed(1.5).is_ok(),
+            "set_fall_speed должен вернуть Ok"
+        );
+        assert!(
+            state.set_land_timer(2.0).is_ok(),
+            "set_land_timer должен вернуть Ok"
+        );
     }
 
     /// Тест: проверка default-метода ScoreAccess::get_score
