@@ -112,9 +112,6 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
-// PROB-119: трейт используется внутри crate (board.rs, GameState impl)
-// но clippy считает его unused при pub(crate) видимости модуля.
-#[allow(dead_code)]
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
