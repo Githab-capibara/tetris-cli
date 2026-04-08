@@ -235,6 +235,104 @@ pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str)
     verify_hmac_sha256(key, salted_data, signature)
 }
 
+/// Проверить HMAC подпись для данных с солью (байтовая версия).
+///
+/// Принимает `data` как `&[u8]` для избежания UTF-8 roundtrip.
+/// Используется когда данные уже находятся в байтовом буфере (например, записаны через `write!`).
+///
+/// # Аргументы
+/// * `key` - секретный ключ для проверки
+/// * `salt` - соль для уникальности (должна совпадать с использованной при подписи)
+/// * `data` - данные для проверки (байтовый буфер)
+/// * `signature` - ожидаемая подпись (hex-строка 64 символа)
+///
+/// # Возвращает
+/// - `true` если подпись верна
+/// - `false` если подпись не совпадает
+///
+/// # Производительность (P3-ID41)
+/// Избегает ненужного преобразования Vec -> &str -> bytes, поскольку `verify_hmac_sha256`
+/// внутренне всё равно вызывает `.as_bytes()`. Это устраняет UTF-8 roundtrip.
+#[must_use = "Результат проверки должен быть использован"]
+#[inline]
+pub fn hmac_verify_with_salt_bytes(
+    key: &str,
+    salt: &str,
+    data: &[u8],
+    signature: &str,
+) -> bool {
+    // Формируем salt:data прямо в байтовом буфере без UTF-8 конвертации
+    let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
+    let _ = write!(buf, "{salt}:"); // ASCII соль и разделитель
+    buf.extend_from_slice(data);
+    // Передаём bytes напрямую — избегаем UTF-8 roundtrip
+    verify_hmac_sha256_bytes(key, &buf, signature)
+}
+
+/// Проверить HMAC-SHA256 подпись (байтовая версия).
+///
+/// Принимает `data` как `&[u8]` для избежания UTF-8 конверсии.
+/// Внутренне эквивалентна `verify_hmac_sha256` но без `.as_bytes()` преобразования.
+///
+/// # Исправление P3-ID41
+/// Добавлена для устранения UTF-8 roundtrip в цепочке verify_hash_for_value.
+#[must_use = "Результат проверки должен быть использован"]
+#[inline]
+pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> bool {
+    let actual_hash = hmac_sha256_bytes(key, data);
+
+    let actual_bytes = actual_hash.as_bytes();
+    let expected_bytes = expected_hash.as_bytes();
+
+    let len_diff = actual_bytes.len() ^ expected_bytes.len();
+    let min_len = core::cmp::min(actual_bytes.len(), expected_bytes.len());
+
+    #[allow(clippy::cast_possible_truncation)]
+    let mut result: u8 = (len_diff & 0xFF) as u8;
+    for i in 0..min_len {
+        result |= actual_bytes[i] ^ expected_bytes[i];
+    }
+
+    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
+
+    result == 0
+}
+
+/// Вычислить HMAC-SHA256 подпись (байтовая версия).
+///
+/// Принимает `data` как `&[u8]` для избежания UTF-8 конверсии.
+///
+/// # Исправление P3-ID41
+/// Добавлена для устранения UTF-8 roundtrip.
+#[must_use = "HMAC подпись должна быть использована для проверки"]
+#[inline]
+pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .unwrap_or_else(|_| unreachable!("HMAC-SHA256 принимает ключи любой длины"));
+    mac.update(data);
+    let result = mac.finalize();
+    hex::encode(result.into_bytes())
+}
+
+/// Проверить HMAC подпись от уже отформатированных данных (без добавления соли).
+///
+/// Используется когда данные уже содержат соль (например, `{salt}:{name}:{value}`).
+/// Избегает двойного форматирования и UTF-8 roundtrip.
+///
+/// # Аргументы
+/// * `key` - секретный ключ
+/// * `preformatted_data` - байтовый буфер с уже отформатированными данными (включая соль)
+/// * `signature` - ожидаемая подпись
+///
+/// # Производительность (P3-ID41)
+/// Полностью избегает создание нового буфера и UTF-8 конвертацию.
+/// Передаёт байты напрямую в `hmac_sha256_bytes`.
+#[must_use = "Результат проверки должен быть использован"]
+#[inline]
+pub fn hmac_verify_preformatted(key: &str, preformatted_data: &[u8], signature: &str) -> bool {
+    verify_hmac_sha256_bytes(key, preformatted_data, signature)
+}
+
 // ============================================================================
 // ТЕСТЫ
 // ============================================================================
