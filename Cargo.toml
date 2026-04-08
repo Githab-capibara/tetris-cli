@@ -108,7 +108,5 @@ unnecessary_to_owned = "allow"
 # no_effect_underscore_binding, useless_conversion
 
 [lints.rust]
-unused_variables = "allow"
-unused_mut = "allow"
 unused_comparisons = "allow"
 # dead_code убран из глобальных подавлений — используем #[allow(dead_code)] точечно

@@ -174,8 +174,23 @@ impl ScoreBoard {
     /// Проверяет значение на разумные пределы (максимум 1000).
     pub fn set_level(&mut self, value: u32) {
         // Валидация (H3): ограничиваем уровень разумным максимумом
-        use super::rules::MAX_LEVEL;
-        self.level = value.clamp(1, MAX_LEVEL);
+        let max_level: u32 = 1000;
+        let old_level = self.level;
+        self.level = value.clamp(1, max_level);
+        // M5: Логирование при срабатывании saturating/clamp
+        if self.level != value && value > 0 {
+            crate::log_warn!(
+                "Уровень ограничен диапазоном [1, {max_level}]: запрошен {value}, установлен {}",
+                self.level
+            );
+        }
+        // M5: Логирование при понижении уровня (подозрительное поведение)
+        if self.level < old_level && value >= old_level {
+            crate::log_warn!(
+                "Уровень понижен с {old_level} до {} (возможный баг)",
+                self.level
+            );
+        }
     }
 
     /// Увеличить уровень на 1.

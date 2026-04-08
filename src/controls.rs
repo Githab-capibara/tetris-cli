@@ -292,18 +292,11 @@ impl ControlsConfig {
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message()))?;
 
         // Исправление E10 (HIGH): Используем глобальный HMAC ключ вместо генерации нового
-        // Старое поведение: let hmac_key = crate::crypto::generate_salt();
-        // Новое поведение: используем один ключ для всех записей
         let global_hmac_key = get_controls_hmac_key();
 
-        // Для обратной совместимости сохраняем placeholder в hmac_key поле
-        // но при загрузке он не используется - проверяется только подпись
-        // Исправление ISSUE-193: используем константу вместо хардкода
-        let hmac_key_placeholder = HMAC_KEY_PLACEHOLDER;
-
-        // Сериализуем конфигурацию без signature для вычисления хеша
-        // P1: Оптимизация — сериализуем один раз в Value, модифицируем, затем pretty-сериализуем
-        // вместо создания двух полных копий Self (config_for_hash и config_with_sig)
+        // Исправление M1-M2: Сериализуем в Value один раз, модифицируем, затем вычисляем HMAC
+        // и сериализуем в pretty-формат для записи. HMAC вычисляется на compact JSON
+        // чтобы save и load использовали одинаковый формат.
         let mut config_value = serde_json::to_value(&Self {
             move_left: self.move_left,
             move_right: self.move_right,
@@ -314,30 +307,24 @@ impl ControlsConfig {
             hold: self.hold,
             pause: self.pause,
             quit: self.quit,
-            hmac_key: hmac_key_placeholder.to_string(),
+            hmac_key: HMAC_KEY_PLACEHOLDER.to_string(),
             signature: String::new(),
         })
         .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
 
-        // Вычисляем HMAC-SHA256 подпись через hmac модуль
-        // Исправление E10: Используем глобальный ключ напрямую без соли
-        // Исправление H9: Вынесено в отдельный метод compute_signature()
-        // P1: Оптимизация — сериализуем в строку только для HMAC, без промежуточного сохранения
-        let config_json = serde_json::to_string(&config_value)
+        // Вычисляем HMAC-SHA256 подпись на canonical (compact) JSON
+        let canonical_json = serde_json::to_string(&config_value)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
-        let signature = Self::compute_signature(global_hmac_key, &config_json);
+        let signature = Self::compute_signature(global_hmac_key, &canonical_json);
 
-        // Модифицируем Value с подписью (вместо создания config_with_sig)
-        config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());
+        // Модифицируем Value с подписью
         config_value["signature"] = serde_json::Value::String(signature);
 
-        // Сериализуем в JSON
+        // Сериализуем в pretty JSON для записи в файл
         let json = serde_json::to_string_pretty(&config_value)
             .map_err(|e| io::Error::other(e.to_string()))?;
 
         // Защита от symlink атак: O_NOFOLLOW обеспечивает атомарную защиту на уровне ядра.
-        // Если файл — symlink, open() вернёт ELOOP, поэтому дополнительных проверок не требуется.
-        // D5: #[cfg(unix)] на использование libc::O_NOFOLLOW
         let mut file = {
             let mut opts = OpenOptions::new();
             opts.write(true).create(true).truncate(true);
@@ -471,8 +458,7 @@ impl ControlsConfig {
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
 
         // Проверяем keyed hash подпись
-        // Исправление E10 (HIGH): Используем глобальный HMAC ключ для проверки
-        // P2: Оптимизация — используем serde_json::to_value вместо создания config_for_hash
+        // Исправление #3 (P2): Один раз to_value, один раз to_string
         let mut config_value = serde_json::to_value(&config).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidData,

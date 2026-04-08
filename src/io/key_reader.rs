@@ -197,6 +197,11 @@ impl KeyReader {
     /// всех байтов. termion не предоставляет `read_ready()` для неблокирующей
     /// проверки готовности — поэтому блокирующее поведение неизбено.
     /// Для неблокирующего ASCII-ввода используйте `get_key()`.
+    ///
+    /// # Примечание о паниках
+    /// Метод может паниковать если `read_exact` вернёт ошибку UnexpectedEof
+    /// в неожиданных условиях, хотя на практике это обрабатывается через `match`.
+    #[allow(clippy::missing_panics_doc)]
     pub fn get_key_unicode(&mut self) -> Option<char> {
         let mut first_byte: [u8; 1] = [0];
 

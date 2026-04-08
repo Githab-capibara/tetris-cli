@@ -20,7 +20,7 @@
 //! let key = CONTROLS_HMAC_KEY;
 //! ```
 
-use std::sync::Once;
+use std::sync::OnceLock;
 
 /// Минимальная длина HMAC ключа в байтах.
 ///
@@ -32,11 +32,11 @@ pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 // ============================================================================
 
 /// Вывести предупреждение о пустом HMAC ключе ТОЛЬКО ОДИН РАЗ при первом вызове.
-/// Использует `std::sync::Once` для гарантии однократного вывода независимо от
+/// Использует `OnceLock` для гарантии однократного вывода независимо от
 /// количества вызовов функции.
 fn log_once_empty_key(key_name: &str) {
-    static ONCE: Once = Once::new();
-    ONCE.call_once(|| {
+    static ONCE: OnceLock<()> = OnceLock::new();
+    ONCE.get_or_init(|| {
         crate::log_warn!(
             "HMAC ключ '{key_name}' не установлен — используется пустая строка. \
              Это ослабляет HMAC защиту. Установите соответствующую переменную окружения."
@@ -44,66 +44,80 @@ fn log_once_empty_key(key_name: &str) {
     });
 }
 
+/// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
+///
+/// # Исправление #6 (M6)
+/// Заменён `option_env!` (compile-time) на `std::env::var()` (runtime) с `OnceLock`
+/// для чтения переменных окружения во время выполнения.
+fn get_controls_hmac_key_runtime() -> &'static String {
+    static KEY: OnceLock<String> = OnceLock::new();
+    KEY.get_or_init(|| {
+        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|e| {
+            log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
+            let _ = e; // подавляем предупреждение unused
+            String::new()
+        })
+    })
+}
+
+/// Получить ключ для HMAC подписи таблицы лидеров из переменной окружения.
+fn get_leaderboard_hmac_key_runtime() -> &'static String {
+    static KEY: OnceLock<String> = OnceLock::new();
+    KEY.get_or_init(|| {
+        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|e| {
+            log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
+            let _ = e;
+            String::new()
+        })
+    })
+}
+
+/// Получить ключ для HMAC подписи данных рекордов из переменной окружения.
+fn get_save_data_hmac_key_runtime() -> &'static String {
+    static KEY: OnceLock<String> = OnceLock::new();
+    KEY.get_or_init(|| {
+        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|e| {
+            log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
+            let _ = e;
+            String::new()
+        })
+    })
+}
+
 /// Получить ключ для HMAC подписи конфигурации управления.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_CONTROLS_HMAC_KEY` или тестовое значение по умолчанию
+/// Ключ из переменной окружения `TETRIS_CONTROLS_HMAC_KEY` или пустую строку если не установлен
 ///
-/// # Безопасность
-/// ## ⚠️ Критическое замечание
-/// - **Тестовый ключ по умолчанию**: Используется только для разработки
-/// - **Продакшен**: Обязательно установите `TETRIS_CONTROLS_HMAC_KEY` переменную окружения
-/// - **Минимальная длина**: 16 байт (рекомендуется 32+ байта)
-///
-/// ## Установка ключа
-/// ```bash
-/// # Для разработки
-/// export TETRIS_CONTROLS_HMAC_KEY="my-development-key-32bytes!!"
-///
-/// # Для продакшена (используйте генератор случайных ключей)
-/// export TETRIS_CONTROLS_HMAC_KEY=$(openssl rand -hex 32)
-/// ```
-///
-/// # Критическое замечание
-/// ⚠️ **ВАЖНО**: Если переменная окружения не установлена, возвращается тестовое значение.
-/// Это означает что HMAC защита ослаблена. Вызывающий код ДОЛЖЕН проверить ключ
-/// через `validate_hmac_key()` перед использованием.
+/// # Исправление #6
+/// Использует runtime `env::var()` вместо compile-time `option_env!`.
 #[must_use]
 pub fn get_controls_hmac_key() -> &'static str {
-    option_env!("TETRIS_CONTROLS_HMAC_KEY")
-        .filter(|k| !k.trim().is_empty())
-        .unwrap_or_else(|| {
-            log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
-            ""
-        })
+    get_controls_hmac_key_runtime().as_str()
 }
 
 /// Получить ключ для HMAC подписи таблицы лидеров.
 ///
 /// # Возвращает
 /// Ключ из переменной окружения `TETRIS_LEADERBOARD_HMAC_KEY` или пустую строку если не установлен
+///
+/// # Исправление #6
+/// Использует runtime `env::var()` вместо compile-time `option_env!`.
 #[must_use]
 pub fn get_leaderboard_hmac_key() -> &'static str {
-    option_env!("TETRIS_LEADERBOARD_HMAC_KEY")
-        .filter(|k| !k.trim().is_empty())
-        .unwrap_or_else(|| {
-            log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
-            ""
-        })
+    get_leaderboard_hmac_key_runtime().as_str()
 }
 
 /// Получить ключ для HMAC подписи данных рекордов.
 ///
 /// # Возвращает
 /// Ключ из переменной окружения `TETRIS_SAVEDATA_HMAC_KEY` или пустую строку если не установлен
+///
+/// # Исправление #6
+/// Использует runtime `env::var()` вместо compile-time `option_env!`.
 #[must_use]
 pub fn get_save_data_hmac_key() -> &'static str {
-    option_env!("TETRIS_SAVEDATA_HMAC_KEY")
-        .filter(|k| !k.trim().is_empty())
-        .unwrap_or_else(|| {
-            log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
-            ""
-        })
+    get_save_data_hmac_key_runtime().as_str()
 }
 
 /// Проверить валидность HMAC ключа.
