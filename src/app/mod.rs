@@ -218,7 +218,8 @@ impl Application {
             }
 
             // Отрисовка меню
-            // P3-ID50: clone кэшированной строки вместо format!() каждый кадр
+            // P3-ID50: clone кэшированной строки — необходимо из-за borrow checker
+            // (&mut self.canvas + &self.high_score_display конфликтуют)
             let high_score_display = self.high_score_display.clone();
             Self::render_menu_frame(&mut self.canvas, &high_score_display);
 

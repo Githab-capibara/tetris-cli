@@ -541,18 +541,6 @@ impl GameState {
         &self.figure_manager
     }
 
-    /// Получить мутуабельный доступ к менеджеру фигур.
-    ///
-    /// # Возвращает
-    /// Мутуабельная ссылка на `FigureManager`
-    ///
-    /// # Архитектурные заметки (CRITICAL #1)
-    /// Прямой доступ к компоненту `FigureManager` для сложной логики.
-    #[allow(clippy::unused_self)]
-    pub fn figure_manager_mut(&mut self) -> &mut FigureManager {
-        &mut self.figure_manager
-    }
-
     /// Получить доступ к состоянию анимаций.
     ///
     /// # Возвращает

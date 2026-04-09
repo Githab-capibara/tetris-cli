@@ -73,13 +73,9 @@ pub fn save_tetromino(state: &mut GameState) {
     #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     let shape_block_y = shape_y as i16;
 
-    // Оптимизация: используем as вместо try_from() для const значений
-    // cast: usize -> i16, потеря точности допустима: GRID_HEIGHT константа (20)
-    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
-    let grid_height_i16 = crate::constants::GRID_HEIGHT as i16;
-    // cast: usize -> i16, потеря точности допустима: GRID_WIDTH константа (10)
-    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
-    let grid_width_i16 = crate::constants::GRID_WIDTH as i16;
+    // Используем предопределённые i16-константы для избежания повторных приведений
+    let grid_height_i16 = crate::constants::GRID_HEIGHT_I16;
+    let grid_width_i16 = crate::constants::GRID_WIDTH_I16;
 
     let curr_shape = state.curr_shape();
     let fg = curr_shape.fg();

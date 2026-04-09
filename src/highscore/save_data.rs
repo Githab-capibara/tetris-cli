@@ -252,10 +252,10 @@ impl SaveData {
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
-        if let Err(_e) = store(APP_NAME, Some("config"), save.clone()) {
+        if let Err(_e) = store(APP_NAME, Some("config"), &save) {
             crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
-            if let Err(_backup_e) = store(APP_NAME, Some("config_backup"), save) {
+            if let Err(_backup_e) = store(APP_NAME, Some("config_backup"), &save) {
                 crate::log_error!(
                     "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
                 );

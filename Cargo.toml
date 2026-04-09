@@ -2,7 +2,7 @@
 name = "tetris-cli"
 version = "0.96.14"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.85"
 description = "Классическая игра Тетрис для терминала Linux/Unix"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/Githab-capibara/tetris-cli"
