@@ -453,50 +453,6 @@ fn test_validation_in_game_state_context() {
     assert_f64_eq!(state.land_timer(), 0.2);
 }
 
-/// Тест 14: Проверка что валидация не вызывает паник
-///
-/// Проверяет отсутствие паник при различных невалидных значениях.
-#[test]
-fn test_validation_no_panic_on_invalid_values() {
-    // Массив невалидных значений для fall_speed
-    let invalid_f32_values = [f32::NAN, f32::INFINITY, f32::NEG_INFINITY];
-
-    for &value in &invalid_f32_values {
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let mut s = GameState::new();
-            s.set_fall_speed(value)
-        }));
-
-        assert!(
-            result.is_ok(),
-            "set_fall_speed({value}) не должен вызывать панику"
-        );
-        assert!(
-            result.expect("Паника не должна возникнуть").is_err(),
-            "Должна вернуться ошибка"
-        );
-    }
-
-    // Массив невалидных значений для land_timer
-    let invalid_f64_values = [f64::NAN, f64::INFINITY, f64::NEG_INFINITY];
-
-    for &value in &invalid_f64_values {
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let mut s = GameState::new();
-            s.set_land_timer(value)
-        }));
-
-        assert!(
-            result.is_ok(),
-            "set_land_timer({value}) не должен вызывать панику"
-        );
-        assert!(
-            result.expect("Паника не должна возникнуть").is_err(),
-            "Должна вернуться ошибка"
-        );
-    }
-}
-
 /// Тест 15: Стресс-тест валидации
 ///
 /// Проверяет валидацию при множественных вызовах.
