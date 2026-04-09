@@ -27,9 +27,23 @@ pub use path::{PathError, PathErrorKind, PathValidator, DEFAULT_PATH_VALIDATOR};
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum ValidationError {
     /// Значение не является конечным (`NaN` или Infinity).
+    ///
+    /// Поле `value` содержит проблемное значение типа `f32`.
     #[error("Значение {value} не является конечным (NaN/Infinity)")]
-    NotFinite { value: f32 },
+    NotFinite {
+        /// Значение, которое не является конечным.
+        value: f32,
+    },
     /// Значение вне допустимого диапазона.
+    ///
+    /// Поля `value`, `min`, `max` описывают проблемное значение и допустимые границы.
     #[error("Значение {value} вне допустимого диапазона [{min}, {max}]")]
-    OutOfRange { value: f64, min: f64, max: f64 },
+    OutOfRange {
+        /// Значение, вышедшее за пределы диапазона.
+        value: f64,
+        /// Минимальная допустимая граница (включительно).
+        min: f64,
+        /// Максимальная допустимая граница (включительно).
+        max: f64,
+    },
 }
