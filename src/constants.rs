@@ -132,9 +132,19 @@ pub const GRID_WIDTH: usize = 10;
 pub const GRID_HEIGHT: usize = 20;
 
 /// Ширина игрового поля в блоках (i16 для коллизий).
+///
+/// # Примечание
+/// Значение `GRID_WIDTH` (10) гарантированно помещается в i16.
+/// Приведение безопасно — truncation и wrap невозможны для константы 10.
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 pub const GRID_WIDTH_I16: i16 = GRID_WIDTH as i16;
 
 /// Высота игрового поля в блоках (i16 для коллизий).
+///
+/// # Примечание
+/// Значение `GRID_HEIGHT` (20) гарантированно помещается в i16.
+/// Приведение безопасно — truncation и wrap невозможны для константы 20.
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 pub const GRID_HEIGHT_I16: i16 = GRID_HEIGHT as i16;
 
 /// Ширина блока в символах.
