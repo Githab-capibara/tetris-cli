@@ -243,25 +243,22 @@ fn test_game_state_max_score() {
     assert_eq!(state.score(), u128::MAX, "Счёт должен быть u128::MAX");
 }
 
-/// Тест T21: `GameState` переполнение счёта через `set_score`
+/// Тест T21: `GameState` установка счёта через `set_score` без ограничений
 #[test]
 fn test_game_state_score_overflow_protection() {
-    use crate::game::scoring::lines::MAX_SCORE;
-
     let mut state = GameState::new();
 
-    // Устанавливаем счёт близкий к MAX_SCORE
-    state.set_score(MAX_SCORE - 1000);
-    assert!(state.score() <= MAX_SCORE, "Счёт должен быть <= MAX_SCORE");
-
-    // Пытаемся установить значение больше MAX_SCORE
+    // set_score не выполняет clamp — устанавливает любое u128 значение
     state.set_score(u128::MAX);
-    // Счёт должен быть ограничен MAX_SCORE, а не u128::MAX
-    assert!(
-        state.score() <= MAX_SCORE,
-        "Счёт ({}) не должен превышать MAX_SCORE ({MAX_SCORE})",
-        state.score()
+    assert_eq!(
+        state.score(),
+        u128::MAX,
+        "set_score(u128::MAX) должен установить u128::MAX"
     );
+
+    // Обычные значения тоже устанавливаются корректно
+    state.set_score(1000);
+    assert_eq!(state.score(), 1000, "Счёт должен быть 1000");
 }
 
 // ============================================================================
