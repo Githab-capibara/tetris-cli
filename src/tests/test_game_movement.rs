@@ -208,61 +208,38 @@ fn test_collision_check_on_down_movement() {
 // ГРУППА ТЕСТОВ 33-38: Мягкое падение (Soft Drop)
 // ============================================================================
 
-/// Тест 33: Мягкое падение - базовая проверка
-///
-/// Проверяет, что фигура может падать вниз.
+/// Мягкое падение: фигура может падать вниз в начале игры.
 #[test]
-fn test_soft_drop_basic() {
+fn test_soft_drop_initial() {
     let state = GameState::new();
-
-    // В начале игры падение возможно
     assert!(
         state.can_move_curr_shape_direction(Direction::Down),
         "В начале игры падение должно быть возможным"
     );
 }
 
-/// Тест 34: Мягкое падение - ускорение фигуры
+/// Мягкое падение: при падении до пола движение вниз блокируется.
 #[test]
-fn test_soft_drop_acceleration() {
-    let mut state = GameState::new();
-    let initial_y = state.curr_shape().pos().1;
-
-    // Симулируем мягкое падение
-    if state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-        assert!(
-            state.curr_shape().pos().1 > initial_y,
-            "Мягкое падение должно увеличить Y координату"
-        );
-    }
-}
-
-/// Тест 35: Мягкое падение - остановка на полу
-#[test]
-fn test_soft_drop_stop_at_floor() {
+fn test_soft_drop_to_floor() {
     let mut state = GameState::new();
 
-    // Опускаем фигуру до пола
     while state.can_move_curr_shape_direction(Direction::Down) {
         state.get_curr_shape_mut().pos_mut().1 += 1.0;
     }
 
-    // Падение должно остановиться
     assert!(
         !state.can_move_curr_shape_direction(Direction::Down),
         "Мягкое падение должно остановиться на полу"
     );
 }
 
-/// Тест 36: Мягкое падение - непрерывное движение
+/// Мягкое падение: увеличение координаты Y при падении и положительная скорость.
 #[test]
-fn test_soft_drop_continuous_movement() {
+fn test_soft_drop_increases_y() {
     let mut state = GameState::new();
     let initial_y = state.curr_shape().pos().1;
     let mut drops = 0;
 
-    // Выполняем несколько мягких падений
     while state.can_move_curr_shape_direction(Direction::Down) && drops < 10 {
         state.get_curr_shape_mut().pos_mut().1 += 1.0;
         drops += 1;
@@ -273,14 +250,9 @@ fn test_soft_drop_continuous_movement() {
         state.curr_shape().pos().1 > initial_y,
         "Фигура должна опуститься после мягкого падения"
     );
-}
 
-/// Тест 38: Мягкое падение - скорость падения
-#[test]
-fn test_soft_drop_speed() {
+    // Скорость падения должна быть положительной
     let state = GameState::new();
-
-    // Проверяем, что скорость падения положительная
     let fall_spd = state.fall_speed();
     assert!(
         fall_spd > 0.0,
@@ -370,47 +342,30 @@ fn test_hard_drop_comprehensive() {
 // ГРУППА ТЕСТОВ 45-48: Движение после вращения
 // ============================================================================
 
-/// Тест 45: Движение после вращения по часовой
+/// Движение после вращения: фигура может двигаться после вращения в любом направлении.
 ///
-/// Проверяет, что фигура может двигаться после вращения.
+/// Параметризированный тест, проверяющий движение после вращения
+/// по часовой и против часовой стрелки.
 #[test]
-fn test_movement_after_clockwise_rotation() {
-    let mut state = GameState::new();
+fn test_movement_after_rotation() {
+    let rotation_directions = [
+        RotationDirection::Clockwise,
+        RotationDirection::CounterClockwise,
+    ];
 
-    // Вращаем по часовой
-    if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
-        state
-            .get_curr_shape_mut()
-            .rotate(RotationDirection::Clockwise);
+    for &rotation in &rotation_directions {
+        let mut state = GameState::new();
 
-        // Проверяем возможность движения после вращения
-        let can_move = state.can_move_curr_shape_direction(Direction::Left)
-            || state.can_move_curr_shape_direction(Direction::Right);
-        assert!(
-            can_move,
-            "Фигура должна иметь возможность движения после вращения по часовой"
-        );
-    }
-}
+        if state.can_rotate_curr_shape(rotation) {
+            state.get_curr_shape_mut().rotate(rotation);
 
-/// Тест 46: Движение после вращения против часовой
-#[test]
-fn test_movement_after_counter_clockwise_rotation() {
-    let mut state = GameState::new();
-
-    // Вращаем против часовой
-    if state.can_rotate_curr_shape(RotationDirection::CounterClockwise) {
-        state
-            .get_curr_shape_mut()
-            .rotate(RotationDirection::CounterClockwise);
-
-        // Проверяем возможность движения
-        let can_move = state.can_move_curr_shape_direction(Direction::Left)
-            || state.can_move_curr_shape_direction(Direction::Right);
-        assert!(
-            can_move,
-            "Фигура должна иметь возможность движения после вращения против часовой"
-        );
+            let can_move = state.can_move_curr_shape_direction(Direction::Left)
+                || state.can_move_curr_shape_direction(Direction::Right);
+            assert!(
+                can_move,
+                "Фигура должна иметь возможность движения после вращения {rotation:?}"
+            );
+        }
     }
 }
 
