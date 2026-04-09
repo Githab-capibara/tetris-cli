@@ -469,17 +469,11 @@ impl ThreadSafeLeaderboardEntry {
         // Копируем hash — минимальный clone (фиксированный, 64 байта hex)
         let hash = guard.hash.clone();
         // Формируем буфер под guard-ом, избегая format!() аллокации
-        let mut buf =
-            Vec::with_capacity(salt.len() + 1 + guard.name.len() + 1 + 20);
+        let mut buf = Vec::with_capacity(salt.len() + 1 + guard.name.len() + 1 + 20);
         let _ = write!(buf, "{}:{}:{}", salt, guard.name, score_value);
         // Отпускаем guard явно (drop) перед HMAC-проверкой
         drop(guard);
-        let valid = hmac_verify_with_salt_bytes(
-            get_leaderboard_hmac_key(),
-            &salt,
-            &buf,
-            &hash,
-        );
+        let valid = hmac_verify_with_salt_bytes(get_leaderboard_hmac_key(), &salt, &buf, &hash);
         if !valid {
             return None;
         }
