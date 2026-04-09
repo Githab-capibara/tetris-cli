@@ -221,10 +221,15 @@ impl LeaderboardValidator {
     /// Этот метод позволяет выполнить валидацию для конкретного значения,
     /// что предотвращает TOCTOU уязвимость.
     #[must_use]
+    #[allow(unused_variables)]
     pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
         // Используем разделители ':' для предотвращения коллизий конкатенации
         let salt_name_score = format!("{salt}:{name}:{score_value}");
         hmac_verify_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score, hash)
+            .unwrap_or_else(|e| {
+                crate::log_error!("Ошибка HMAC проверки в storage: {e}");
+                false
+            })
     }
 
     /// Вычислить HMAC подпись для записи.
@@ -244,6 +249,7 @@ impl LeaderboardValidator {
         // Используем разделители ':' для предотвращения коллизий конкатенации
         let salt_name_score = format!("{salt}:{name}:{score}");
         hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score)
+            .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов")
     }
 
     /// Проверить целостность записи.

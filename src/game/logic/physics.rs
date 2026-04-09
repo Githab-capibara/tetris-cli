@@ -48,9 +48,12 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
         // Потеря точности допустима: MILLIS_PER_SECOND точно представляется в f64
         let new_timer = land_timer - delta_time_ms as f64 / f64::from(MILLIS_PER_SECOND);
         // H6: защита от отрицательного таймера
-        // Ошибка игнорируется: LAND_TIME_DELAY_S — константное валидное значение,
+        // Ошибка логируется: LAND_TIME_DELAY_S — константное валидное значение,
         // а new_timer.max(0.0) всегда >= 0, поэтому set_land_timer не может вернуть ошибку
-        state.set_land_timer(new_timer.max(0.0)).ok();
+        #[allow(unused_variables)]
+        if let Err(e) = state.set_land_timer(new_timer.max(0.0)) {
+            crate::log_error!("Не удалось установить land_timer: {e}");
+        }
         false
     } else {
         true

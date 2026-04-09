@@ -227,7 +227,9 @@ impl SaveData {
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
-        let hash = hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str);
+        // unwrap: все входы — &str, from_utf8 гарантированно succeeds
+        let hash = hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str)
+            .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов");
 
         Self { score, salt, hash }
     }
@@ -316,9 +318,15 @@ impl SaveData {
     ///
     /// # Исправление C10 (CRITICAL)
     /// Метод возвращает Result вместо Option для явной обработки ошибок.
+    #[allow(unused_variables)]
     pub fn verify_and_get_score_result(&self) -> Result<u128, String> {
         let score_str = self.score.to_string();
-        if hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash) {
+        let valid = hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash)
+            .unwrap_or_else(|e| {
+                crate::log_error!("Ошибка HMAC проверки рекорда: {e}");
+                false
+            });
+        if valid {
             Ok(self.score)
         } else {
             // Логирование попытки подделки

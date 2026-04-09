@@ -48,8 +48,10 @@ fn log_once_empty_key(_key_name: &str) {
 fn get_controls_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|_| {
+        #[allow(unused_variables)]
+        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|e| {
             log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
+            crate::log_warn!("Ошибка чтения TETRIS_CONTROLS_HMAC_KEY: {e}");
             String::new()
         })
     })
@@ -59,8 +61,10 @@ fn get_controls_hmac_key_runtime() -> &'static String {
 fn get_leaderboard_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|_| {
+        #[allow(unused_variables)]
+        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|e| {
             log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
+            crate::log_warn!("Ошибка чтения TETRIS_LEADERBOARD_HMAC_KEY: {e}");
             String::new()
         })
     })
@@ -70,8 +74,10 @@ fn get_leaderboard_hmac_key_runtime() -> &'static String {
 fn get_save_data_hmac_key_runtime() -> &'static String {
     static KEY: OnceLock<String> = OnceLock::new();
     KEY.get_or_init(|| {
-        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|_| {
+        #[allow(unused_variables)]
+        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|e| {
             log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
+            crate::log_warn!("Ошибка чтения TETRIS_SAVEDATA_HMAC_KEY: {e}");
             String::new()
         })
     })

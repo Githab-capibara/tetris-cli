@@ -37,9 +37,9 @@ mod validator_tests {
         let key = "test_key";
         let salt = "test_salt";
         let data = "test_data";
-        let signature = hmac_sign_with_salt(key, salt, data);
+        let signature = hmac_sign_with_salt(key, salt, data).unwrap();
 
-        assert!(hmac_verify_with_salt(key, salt, data, &signature));
+        assert!(hmac_verify_with_salt(key, salt, data, &signature).unwrap());
     }
 
     #[test]
@@ -49,7 +49,7 @@ mod validator_tests {
         let data = "test_data";
         let wrong_signature = "invalid";
 
-        assert!(!hmac_verify_with_salt(key, salt, data, wrong_signature));
+        assert!(!hmac_verify_with_salt(key, salt, data, wrong_signature).unwrap());
     }
 
     #[test]
@@ -58,8 +58,8 @@ mod validator_tests {
         let salt = "test_salt";
         let data = "test_data";
 
-        let sig1 = hmac_sign_with_salt(key, salt, data);
-        let sig2 = hmac_sign_with_salt(key, salt, data);
+        let sig1 = hmac_sign_with_salt(key, salt, data).unwrap();
+        let sig2 = hmac_sign_with_salt(key, salt, data).unwrap();
 
         assert_eq!(sig1, sig2);
     }

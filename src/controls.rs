@@ -325,7 +325,7 @@ impl ControlsConfig {
         // Вычисляем HMAC-SHA256 подпись на canonical (compact) JSON
         let canonical_json = serde_json::to_string(&config_value)
             .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
-        let signature = Self::compute_signature(global_hmac_key, &canonical_json);
+        let signature = Self::compute_signature(global_hmac_key, &canonical_json)?;
 
         // Модифицируем Value с подписью
         config_value["signature"] = serde_json::Value::String(signature);
@@ -358,8 +358,9 @@ impl ControlsConfig {
     ///
     /// # Исправление H9 (HIGH)
     /// Логика HMAC вынесена в отдельный метод для улучшения читаемости.
-    fn compute_signature(global_hmac_key: &str, config_json: &str) -> String {
+    fn compute_signature(global_hmac_key: &str, config_json: &str) -> io::Result<String> {
         hmac_sign_with_salt(global_hmac_key, "", config_json)
+            .map_err(|e| io::Error::other(format!("Ошибка вычисления HMAC: {e}")))
     }
 
     /// Загрузить конфигурацию из JSON файла.
@@ -488,7 +489,8 @@ impl ControlsConfig {
         })?;
 
         // Исправление E10: Используем глобальный ключ напрямую без соли
-        let expected_signature = hmac_sign_with_salt(get_controls_hmac_key(), "", &config_json);
+        let expected_signature = hmac_sign_with_salt(get_controls_hmac_key(), "", &config_json)
+            .map_err(|e| io::Error::other(format!("Ошибка вычисления HMAC: {e}")))?;
 
         if signature != expected_signature {
             return Err(io::Error::new(

@@ -100,7 +100,6 @@ impl Application {
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
         if let Err(ref errors) = validate_all_keys() {
             let count = errors.len();
-            // idx используется в format! внутри log_warn! макроса
             #[allow(unused_variables)]
             for idx in 0..count {
                 crate::log_warn!(
@@ -219,7 +218,7 @@ impl Application {
 
             // Отрисовка меню
             // P3-ID50: clone кэшированной строки — необходимо из-за borrow checker
-            // (&mut self.canvas + &self.high_score_display конфликтуют)
+            // (&mut self.canvas и &self.high_score_display конфликтуют через self.process_menu_input)
             let high_score_display = self.high_score_display.clone();
             Self::render_menu_frame(&mut self.canvas, &high_score_display);
 
