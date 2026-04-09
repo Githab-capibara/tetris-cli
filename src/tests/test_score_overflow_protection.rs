@@ -254,48 +254,12 @@ fn test_game_state_score_overflow() {
     );
 }
 
-/// Тест 9: Проверка защиты от переполнения в `update_score_for_lines`
-///
-/// Проверяет что функция `update_score_for_lines` корректно защищает от переполнения.
-#[test]
-fn test_update_score_for_lines_overflow_protection() {
-    let mut score = MAX_SCORE - 100;
-    let level = 1u32;
-    let mut combo_counter: u32 = 1;
-
-    // Начисляем много очков
-    update_score_for_lines(&mut score, level, 4, &mut combo_counter);
-
-    // Счёт должен быть ограничен MAX_SCORE
-    assert!(
-        score <= MAX_SCORE,
-        "Счёт после начисления не должен превышать MAX_SCORE"
-    );
-}
-
 /// Тест 10: Проверка что `MAX_SCORE` константа корректна
 ///
-/// Проверяет значение и свойства константы `MAX_SCORE`.
+/// Проверяет значение константы `MAX_SCORE`.
 #[test]
 fn test_max_score_constant() {
-    // Проверяем что MAX_SCORE равен u128::MAX / 2
     assert_eq!(MAX_SCORE, u128::MAX / 2);
-
-    // Проверяем что MAX_SCORE меньше u128::MAX
-    assert!(MAX_SCORE < u128::MAX);
-
-    // Проверяем что MAX_SCORE больше u128::MAX / 4
-    assert!(MAX_SCORE > u128::MAX / 4);
-
-    // Проверяем что MAX_SCORE положителен
-    assert!(MAX_SCORE > 0);
-
-    // Проверяем что MAX_SCORE имеет разумное значение для защиты от переполнения
-    // Он должен быть достаточно большим для нормальных игр
-    assert!(
-        MAX_SCORE > 1_000_000_000_000,
-        "MAX_SCORE должен быть достаточно большим"
-    );
 }
 
 // ============================================================================

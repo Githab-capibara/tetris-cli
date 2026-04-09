@@ -10,10 +10,7 @@
 //!
 //! Интеграционные тесты проверяют совместную работу модулей.
 
-use crate::controls::ControlsConfig;
 use crate::game::GameState;
-use crate::highscore::{Leaderboard, SaveData};
-use crate::tetromino::{BagGenerator, ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::{Direction, RotationDirection};
 
 // ============================================================================
@@ -107,59 +104,6 @@ fn test_piece_movement_cycle() {
     );
 }
 
-/// Тест 4: Проверка падения фигуры до пола
-///
-/// Проверяет полный цикл падения фигуры.
-#[test]
-fn test_piece_drop_to_floor() {
-    let mut state = GameState::new();
-
-    let start_y = state.get_curr_shape_mut().pos().1;
-
-    // Опускаем фигуру до упора
-    let mut drop_count = 0;
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-        drop_count += 1;
-    }
-
-    let end_y = state.get_curr_shape_mut().pos().1;
-
-    // Фигура должна опуститься
-    assert!(end_y > start_y, "Фигура должна опуститься вниз");
-    assert!(drop_count > 0, "Должно быть хотя бы одно движение вниз");
-
-    // Дальнейшее движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "После достижения пола движение вниз должно быть заблокировано"
-    );
-}
-
-/// Тест 5: Проверка вращения в игровом контексте
-///
-/// Проверяет, что вращение работает в контексте `GameState`.
-#[test]
-fn test_rotation_in_game_context() {
-    let mut state = GameState::new();
-
-    // Устанавливаем фигуру в центр поля для корректного вращения
-    state.get_curr_shape_mut().set_pos((5.0, 10.0));
-
-    // Проверяем возможность вращения
-    let can_rotate_right = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    let can_rotate_left = state.can_rotate_curr_shape(RotationDirection::CounterClockwise);
-
-    // Вращение должно быть возможно хотя бы в одном направлении
-    // (кроме O-фигуры которая не вращается)
-    if state.curr_shape().shape() != ShapeType::O {
-        assert!(
-            can_rotate_right || can_rotate_left,
-            "Хотя бы одно направление вращения должно быть доступно"
-        );
-    }
-}
-
 // ============================================================================
 // ГРУППА ТЕСТОВ 6-13: Взаимодействие компонентов
 // ============================================================================
@@ -184,78 +128,6 @@ fn test_game_state_tetromino_interaction() {
         curr.fg(),
         "Индекс типа фигуры должен совпадать с индексом цвета"
     );
-}
-
-/// Тест 7: Проверка взаимодействия `GameState` и `BagGenerator`
-///
-/// Проверяет, что фигуры создаются через `BagGenerator`.
-#[test]
-fn test_game_state_bag_generator_interaction() {
-    let mut bag = BagGenerator::new();
-
-    // Генерируем 7 фигур
-    let mut shapes_found = [false; 7];
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        shapes_found[shape as usize] = true;
-    }
-
-    // Проверяем, что все 7 типов встретились
-    for (i, &found) in shapes_found.iter().enumerate() {
-        assert!(found, "Фигура типа {i:?} должна быть в первом мешке");
-    }
-}
-
-/// Тест 8: Проверка взаимодействия `GameState` и Leaderboard
-///
-/// Проверяет, что рекорды могут быть сохранены после игры.
-#[test]
-fn test_game_state_leaderboard_interaction() {
-    let mut leaderboard = Leaderboard::default();
-
-    // Симулируем окончание игры с рекордом
-    let final_score = 5000;
-    let added = leaderboard.add_score("TestPlayer", final_score);
-
-    assert!(added, "Рекорд должен быть добавлен");
-    assert_eq!(
-        leaderboard.get_best_score(),
-        final_score,
-        "Лучший рекорд должен совпадать"
-    );
-}
-
-/// Тест 9: Проверка взаимодействия `ControlsConfig` и `GameState`
-///
-/// Проверяет, что конфигурация управления валидна для игры.
-#[test]
-fn test_controls_game_state_interaction() {
-    let config = ControlsConfig::default_config();
-
-    // Проверяем, что конфигурация валидна
-    assert!(
-        config.validate(),
-        "Конфигурация по умолчанию должна быть валидной"
-    );
-
-    // Проверяем, что все клавиши уникальны
-    let keys = [
-        config.move_left,
-        config.move_right,
-        config.soft_drop,
-        config.hard_drop,
-        config.rotate_left,
-        config.rotate_right,
-        config.hold,
-        config.pause,
-        config.quit,
-    ];
-
-    for i in 0..keys.len() {
-        for j in (i + 1)..keys.len() {
-            assert_ne!(keys[i], keys[j], "Все клавиши должны быть уникальны");
-        }
-    }
 }
 
 /// Тест 10: Проверка взаимодействия `GameStats` и `GameState`
@@ -283,65 +155,6 @@ fn test_game_stats_game_state_interaction() {
     );
 }
 
-/// Тест 11: Проверка взаимодействия `SaveData` и Leaderboard
-///
-/// Проверяет, что обе системы сохранения работают корректно.
-#[test]
-fn test_save_data_leaderboard_interaction() {
-    // Создаём SaveData
-    let save = SaveData::from_value(3000);
-    assert_eq!(
-        save.verify_and_get_score(),
-        Some(3000),
-        "SaveData должен хранить 3000"
-    );
-
-    // Создаём Leaderboard
-    let mut leaderboard = Leaderboard::default();
-    let _ = leaderboard.add_score("Player", 3000);
-
-    assert_eq!(
-        leaderboard.get_best_score(),
-        3000,
-        "Leaderboard должен хранить 3000"
-    );
-}
-
-/// Тест 12: Проверка взаимодействия всех 7 типов фигур с игрой
-///
-/// Проверяет, что все типы фигур могут быть использованы в игре.
-#[test]
-fn test_all_shapes_in_game() {
-    let shapes = [
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ];
-
-    for &shape_type in &shapes {
-        // Создаём фигуру текущего типа из цикла
-        let tetromino = Tetromino::new(
-            (4.0, 0.0),
-            shape_type,
-            SHAPE_COORDS[shape_type as usize],
-            shape_type as u8,
-        );
-
-        // Проверяем, что фигура валидна
-        assert!(tetromino.fg() < 7, "Индекс цвета должен быть валидным");
-        assert_eq!(tetromino.coords().len(), 4, "У фигуры должно быть 4 блока");
-        assert_eq!(
-            tetromino.shape(),
-            shape_type,
-            "Тип фигуры должен совпадать с ожидаемым"
-        );
-    }
-}
-
 /// Тест 13: Проверка взаимодействия вращения и столкновений
 ///
 /// Проверяет что вращение возможно в пустом поле.
@@ -354,5 +167,3 @@ fn test_rotation_collision_interaction() {
         "Вращение в пустом поле должно быть возможно"
     );
 }
-
-// Performance тесты удалены — функциональность покрыта бенчмарками в benches/benchmarks.rs

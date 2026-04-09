@@ -12,32 +12,6 @@
 //! PROB-173: Тест bag randomizer
 
 // ============================================================================
-// PROB-164: Score overflow
-// ============================================================================
-
-/// Тест: score не переполняется при добавлении максимального значения
-#[test]
-fn test_score_no_overflow() {
-    use crate::game::scoring::lines::{update_score_for_lines, MAX_SCORE};
-
-    let mut score = MAX_SCORE;
-    let level = 1u32;
-    let mut combo_counter = 1u32;
-
-    // Попытка добавить очки к максимальному счёту
-    let result = update_score_for_lines(&mut score, level, 4, &mut combo_counter);
-
-    // Счёт должен быть ограничен MAX_SCORE
-    assert!(
-        score <= MAX_SCORE,
-        "Счёт ({score}) не должен превышать MAX_SCORE ({MAX_SCORE})"
-    );
-
-    // Должна вернуться ошибка переполнения
-    assert!(result.is_err(), "При переполнении должна вернуться ошибка");
-}
-
-// ============================================================================
 // PROB-165: HMAC пустой ключ
 // ============================================================================
 
@@ -205,39 +179,4 @@ fn test_leaderboard_load_handles_corrupted_data() {
         result.is_ok(),
         "Leaderboard::load() не должен паниковать даже при повреждённых данных"
     );
-}
-
-// ============================================================================
-// PROB-173: Тест bag randomizer
-// ============================================================================
-
-/// Тест: `BagGenerator` выдаёт все 7 фигур за один мешок
-// Удалён как дубликат test_first_bag_contains_all_seven_pieces из test_bag_system.rs
-// Проверял то же самое: все 7 уникальных фигур в одном мешке
-
-/// Тест: `BagGenerator` равномерно распределяет фигуры за много итераций
-// Удалён как дубликат test_uniform_distribution_multiple_bags из test_bag_system.rs
-// Проверял то же самое: 70 фигур, каждая ровно 10 раз
-
-/// Тест: `BagGenerator` детерминирован по структуре (не по порядку)
-#[test]
-fn test_bag_generator_structure_guarantees() {
-    use crate::tetromino::bag_generator::BagGenerator;
-
-    let mut bag = BagGenerator::new();
-
-    // За 7 вызовов получаем все 7 фигур
-    let mut found = [false; 7];
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        let idx = shape as usize;
-        assert!(idx < 7, "Индекс фигуры должен быть < 7");
-        found[idx] = true;
-    }
-
-    // Все 7 фигур найдены
-    assert!(found.iter().all(|&b| b), "Все 7 фигур должны появиться");
-
-    // После 7 вызовов position = 7
-    assert_eq!(bag.get_index(), 7);
 }

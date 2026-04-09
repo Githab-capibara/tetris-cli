@@ -57,24 +57,6 @@ fn test_first_bag_contains_all_seven_pieces() {
     }
 }
 
-/// Тест 3: Равномерное распределение в первом мешке
-#[test]
-fn test_uniform_distribution_first_bag() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    // Получаем 7 фигур
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Каждая фигура должна встретиться ровно 1 раз
-    for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 1, "Фигура типа {i:?} должна встретиться ровно 1 раз");
-    }
-}
-
 /// Тест 4: Равномерное распределение в нескольких мешках
 #[test]
 fn test_uniform_distribution_multiple_bags() {
@@ -219,51 +201,6 @@ fn test_shuffle_does_not_lose_pieces() {
     assert_eq!(total_pieces, 100, "Должно быть получено ровно 100 фигур");
 }
 
-/// Тест 10: Перемешивание не дублирует фигуры в мешке
-#[test]
-fn test_shuffle_does_not_duplicate_pieces_in_bag() {
-    let mut bag = BagGenerator::new();
-    let mut counts = [0; 7];
-
-    // Один мешок (7 фигур)
-    for _ in 0..7 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Каждая фигура должна быть ровно 1 раз
-    for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(
-            count, 1,
-            "Фигура типа {i:?} должна быть ровно 1 раз в мешке"
-        );
-    }
-}
-
-/// Тест 11: Алгоритм Fisher-Yates работает корректно
-#[test]
-fn test_fisher_yates_algorithm_works_correctly() {
-    let mut bag = BagGenerator::new();
-
-    // Получаем несколько мешков
-    for bag_num in 0..10 {
-        let mut counts = [0; 7];
-
-        for _ in 0..7 {
-            let shape = bag.next_shape();
-            counts[shape as usize] += 1;
-        }
-
-        // Проверяем, что в каждом мешке все фигуры по 1 разу
-        for (i, &count) in counts.iter().enumerate() {
-            assert_eq!(
-                count, 1,
-                "Мешок {bag_num} должен содержать фигуру {i:?} ровно 1 раз"
-            );
-        }
-    }
-}
-
 /// Тест 12: Случайность перемешивания
 #[test]
 fn test_shuffle_randomness() {
@@ -299,131 +236,11 @@ fn test_shuffle_randomness() {
 // ГРУППА ТЕСТОВ 13-18: Тесты повторного заполнения мешка
 // ============================================================================
 
-/// Тест 13: Мешок заполняется после опустошения
-#[test]
-fn test_bag_refills_after_emptying() {
-    let mut bag = BagGenerator::new();
-
-    // Опустошаем первый мешок
-    for _ in 0..7 {
-        let _ = bag.next_shape();
-    }
-
-    // Получаем ещё одну фигуру - должен быть новый мешок
-    let shape = bag.next_shape();
-    assert!(
-        (shape as usize) < 7,
-        "Новый мешок должен содержать валидную фигуру"
-    );
-}
-
-/// Тест 14: Непрерывная генерация фигур
-#[test]
-fn test_continuous_piece_generation() {
-    let mut bag = BagGenerator::new();
-
-    // Получаем 1000 фигур
-    for i in 0..1000 {
-        let shape = bag.next_shape();
-        assert!(
-            (shape as usize) < 7,
-            "Фигура {i} должна быть валидной (0-6)"
-        );
-    }
-}
-
-/// Тест 15: Заполнение мешка происходит автоматически
-#[test]
-fn test_bag_fills_automatically() {
-    let mut bag = BagGenerator::new();
-
-    // Получаем 14 фигур (2 полных мешка)
-    let mut counts = [0; 7];
-    for _ in 0..14 {
-        let shape = bag.next_shape();
-        counts[shape as usize] += 1;
-    }
-
-    // Каждая фигура должна встретиться ровно 2 раза
-    for (i, &count) in counts.iter().enumerate() {
-        assert_eq!(count, 2, "Фигура типа {i:?} должна встретиться 2 раза");
-    }
-}
-
-/// Тест 16: Multiple bag refills
-#[test]
-fn test_multiple_bag_refills() {
-    let mut bag = BagGenerator::new();
-
-    // Получаем 70 фигур (10 мешков)
-    for _ in 0..70 {
-        let _ = bag.next_shape();
-    }
-
-    // Генератор должен продолжать работать
-    let shape = bag.next_shape();
-    assert!(
-        (shape as usize) < 7,
-        "Генератор должен работать после 10 мешков"
-    );
-}
-
-/// Тест 17: Переход между мешками без потерь
-#[test]
-fn test_bag_transition_without_loss() {
-    let mut bag = BagGenerator::new();
-    let mut total_pieces = 0;
-
-    // Получаем 21 фигуру (3 мешка)
-    for _ in 0..21 {
-        let _ = bag.next_shape();
-        total_pieces += 1;
-    }
-
-    assert_eq!(total_pieces, 21, "Должно быть получено ровно 21 фигура");
-}
-
-/// Тест 18: Заполнение мешка после частичного использования
-#[test]
-fn test_bag_refill_after_partial_use() {
-    let mut bag = BagGenerator::new();
-
-    // Используем 3 фигуры из первого мешка
-    for _ in 0..3 {
-        let _ = bag.next_shape();
-    }
-
-    // Используем 7 фигур из второго мешка
-    for _ in 0..7 {
-        let _ = bag.next_shape();
-    }
-
-    // Третий мешок должен заполниться автоматически
-    let shape = bag.next_shape();
-    assert!((shape as usize) < 7, "Третий мешок должен заполниться");
-}
-
 // ============================================================================
 // ГРУППА ТЕСТОВ 19-24: Тесты последовательностей фигур
 // ============================================================================
 
-/// Тест 19: Последовательность из 7 фигур уникальна
-// Удалён как дубликат test_uniform_distribution_first_bag (тест 3)
-// Проверял то же самое: каждая фигура ровно 1 раз в мешке
-
-/// Тест 20: Длинные последовательности корректны
-#[test]
-fn test_long_sequences_correct() {
-    let mut bag = BagGenerator::new();
-
-    // Получаем 140 фигур
-    for i in 0..140 {
-        let shape = bag.next_shape();
-        assert!((shape as usize) < 7, "Фигура {i} должна быть валидной");
-    }
-}
-
-/// Тест 21: Последовательность не содержит паттернов
+/// Тест: Последовательность не содержит паттернов
 #[test]
 fn test_sequence_no_patterns() {
     let mut bag = BagGenerator::new();
@@ -447,11 +264,7 @@ fn test_sequence_no_patterns() {
     );
 }
 
-/// Тест 22: Последовательность содержит все типы
-// Удалён как дубликат test_all_piece_types_available (тест 5)
-// Проверял то же самое: все 7 типов встречаются за 70 фигур
-
-/// Тест 23: Чередование фигур
+/// Тест: Чередование фигур
 #[test]
 fn test_piece_alternation() {
     let mut bag = BagGenerator::new();
@@ -472,10 +285,6 @@ fn test_piece_alternation() {
         "Фигуры должны чередоваться (чередований: {alternations})"
     );
 }
-
-/// Тест 24: Распределение в последовательности
-// Удалён как дубликат test_uniform_distribution_multiple_bags (тест 4)
-// Проверял то же самое: 700 фигур, каждая ровно 100 раз
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 25-30: Статистические тесты распределения

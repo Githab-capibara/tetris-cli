@@ -108,15 +108,6 @@ fn test_level_minimum_value() {
     assert_eq!(level.value(), 1, "Новый Level должен быть 1");
 }
 
-/// Тест T8: Level с нулевым значением — debug_assert предотвращает баги
-/// Примечание: этот тест работает только в debug mode
-#[test]
-#[cfg(debug_assertions)]
-fn test_level_zero_triggers_debug_assert() {
-    // debug_assert! паникует в debug mode при value=0
-    // Это защита от багов - ноль никогда не должен передаваться
-}
-
 /// Тест T9: Level с `u32::MAX`
 #[test]
 fn test_level_max_value() {
@@ -259,38 +250,23 @@ fn test_game_state_score_overflow_protection() {
 
     let mut state = GameState::new();
 
-    // MAX_SCORE = u128::MAX / 2
-    state.set_score(MAX_SCORE);
-    assert_eq!(state.score(), MAX_SCORE, "Счёт должен быть MAX_SCORE");
+    // Устанавливаем счёт близкий к MAX_SCORE
+    state.set_score(MAX_SCORE - 1000);
+    assert!(state.score() <= MAX_SCORE, "Счёт должен быть <= MAX_SCORE");
 
-    // Попытка установить больше MAX_SCORE должна ограничиваться
+    // Пытаемся установить значение больше MAX_SCORE
     state.set_score(u128::MAX);
-    // Тест проверяет что u128::MAX не вызывает переполнения
-    #[allow(clippy::absurd_extreme_comparisons)]
-    {
-        assert!(
-            state.score() <= u128::MAX,
-            "Счёт не должен превышать u128::MAX"
-        );
-    }
+    // Счёт должен быть ограничен MAX_SCORE, а не u128::MAX
+    assert!(
+        state.score() <= MAX_SCORE,
+        "Счёт ({}) не должен превышать MAX_SCORE ({MAX_SCORE})",
+        state.score()
+    );
 }
 
 // ============================================================================
 // ТЕСТЫ ОБРАБОТКИ ОШИБОК (Result, Option)
 // ============================================================================
-
-/// Тест T23: `LeaderboardEntry::score()` возвращает Option для валидной записи
-#[test]
-fn test_leaderboard_entry_score_option() {
-    let entry = LeaderboardEntry::new("Player", 1000);
-
-    let score = entry.score();
-    assert!(
-        score.is_some(),
-        "score() должен возвращать Some для валидной записи"
-    );
-    assert_eq!(score, Some(1000), "Счёт должен быть 1000");
-}
 
 /// Тест T26: `Leaderboard::add_score()` возвращает bool
 #[test]

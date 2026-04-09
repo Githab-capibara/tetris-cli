@@ -438,75 +438,6 @@ fn test_l3_simplified_error_constructors() {
 // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 // ============================================================================
 
-/// Интеграционный тест: Проверка всех HIGH исправлений
-#[test]
-#[allow(clippy::assertions_on_constants)]
-fn test_all_high_fixes_integration() {
-    // H1: to_string() вместо format!()
-    let score = 1000u128;
-    let _score_str = score.to_string();
-
-    // H2: is_none_or() в collision
-    use tetris_cli::game::logic::collision::can_move_curr_shape_direction;
-    use tetris_cli::game::GameState;
-    use tetris_cli::types::Direction;
-    let state = GameState::new();
-    assert!(can_move_curr_shape_direction(&state, Direction::Down));
-
-    // H3-H4: leaderboard сортировка
-    use tetris_cli::highscore::Leaderboard;
-    let mut lb = Leaderboard::default();
-    let _ = lb.add_score("P1", 1000);
-    let _ = lb.add_score("P2", 2000);
-    assert_eq!(lb.get_entries().len(), 2);
-
-    // FRAME_DELAY_MS константа (FPS удалён как неиспользуемый)
-    use tetris_cli::constants::FRAME_DELAY_MS;
-    assert!(FRAME_DELAY_MS > 0);
-
-    // H8: URL-encoding паттерны
-    use tetris_cli::validation::name::sanitize_player_name;
-    assert_eq!(sanitize_player_name("Player%20"), "Player20");
-
-    // H10: Консолидированные методы загрузки
-    use tetris_cli::controls::ControlsConfig;
-    let config = ControlsConfig::default_config();
-    assert!(config.validate());
-}
-
-/// Интеграционный тест: Проверка всех MEDIUM исправлений
-#[test]
-fn test_all_medium_fixes_integration() {
-    // M5: Dead code marked
-    use tetris_cli::config::keys::get_controls_hmac_key;
-    let _key = get_controls_hmac_key();
-
-    // M7: validation::name вместо sanitize.rs
-    use tetris_cli::validation::name::sanitize_player_name;
-    assert_eq!(sanitize_player_name("Test@User"), "TestUser");
-
-    // M10: Оптимизация sanitize
-    let result = sanitize_player_name("Player123");
-    assert_eq!(result, "Player123");
-}
-
-/// Интеграционный тест: Проверка всех LOW исправлений
-#[test]
-fn test_all_low_fixes_integration() {
-    // L1: Константы клавиш напрямую из constants
-    use tetris_cli::constants::{KEY_BACKSPACE, KEY_ENTER_LF};
-    assert_eq!(KEY_BACKSPACE, 127);
-    let _ = KEY_ENTER_LF; // используем чтобы не было unused warning
-
-    // L3: Конструкторы ошибок
-    use tetris_cli::errors::GameError;
-    let _err = GameError::ValidationError("test".to_string());
-
-    // L4: Упрощённый exports — используем прямой путь
-    use tetris_cli::game::state::GameState;
-    let _state = GameState::new();
-}
-
 /// Интеграционный тест: Полная проверка всех 26 исправлений
 #[test]
 #[allow(clippy::assertions_on_constants)]
@@ -514,7 +445,6 @@ fn test_all_26_audit_fixes_complete_integration() {
     // CRITICAL (3)
     use tetris_cli::config::keys::validate_hmac_key;
     use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    use tetris_cli::io::canvas::Canvas;
     use tetris_cli::io::KeyReader;
 
     assert!(validate_hmac_key("valid_key_at_least_16", "TEST").is_ok());
@@ -541,14 +471,18 @@ fn test_all_26_audit_fixes_complete_integration() {
     assert_eq!(sanitize_player_name("P%"), "P");
     let config = ControlsConfig::default_config();
     assert!(config.validate());
-    let _key = get_controls_hmac_key();
+    let key = get_controls_hmac_key();
+    assert!(!key.is_empty(), "HMAC-ключ для controls не должен быть пустым");
 
     // MEDIUM (10)
     use tetris_cli::crypto::{generate_salt, hash};
     use tetris_cli::validation::name::is_valid_name_char;
 
-    let canvas = Canvas::default();
+    // Canvas: проверяем что canvas создан по умолчанию
+    let canvas = tetris_cli::io::canvas::Canvas::default();
+    // Canvas::default() создаёт stub для совместимости — проверяем что он существует
     drop(canvas);
+
     let _h = hash("test");
     let _s = generate_salt();
     assert!(is_valid_name_char('a'));
@@ -562,8 +496,15 @@ fn test_all_26_audit_fixes_complete_integration() {
 
     assert_eq!(KEY_BACKSPACE, 127);
     let _ = KEY_BACKSPACE; // suppress unused
-    let _err = GameError::ValidationError("test".to_string());
-    let _state = ExportedState::new();
+    let err = GameError::ValidationError("test".to_string());
+    assert!(
+        err.to_string().contains("test"),
+        "GameError::ValidationError должен содержать сообщение"
+    );
+    let state = ExportedState::new();
+    // Проверяем что GameState создан корректно (уровень >= 1, счёт >= 0)
+    assert!(state.level() >= 1, "Уровень должен быть >= 1");
+    assert!(state.score() >= 0, "Счёт должен быть >= 0");
 
     // Все 26 исправлений работают корректно
     // Исправления работают - тест проходит
