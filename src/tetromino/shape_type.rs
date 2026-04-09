@@ -53,3 +53,51 @@ pub enum ShapeType {
     /// Форма: четыре блока в вертикальный ряд
     I,
 }
+
+#[cfg(test)]
+mod shape_type_tests {
+    use super::*;
+
+    #[test]
+    fn test_shape_type_as_usize_indices() {
+        // Проверяем что индексы соответствуют документации: T=0, L=1, J=2, S=3, Z=4, O=5, I=6
+        assert_eq!(ShapeType::T as usize, 0);
+        assert_eq!(ShapeType::L as usize, 1);
+        assert_eq!(ShapeType::J as usize, 2);
+        assert_eq!(ShapeType::S as usize, 3);
+        assert_eq!(ShapeType::Z as usize, 4);
+        assert_eq!(ShapeType::O as usize, 5);
+        assert_eq!(ShapeType::I as usize, 6);
+    }
+
+    #[test]
+    fn test_shape_type_clone_and_copy() {
+        let original = ShapeType::T;
+        let cloned = original; // Copy
+        let _also = cloned; // Clone через Copy
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn test_shape_type_equality() {
+        assert_eq!(ShapeType::T, ShapeType::T);
+        assert_ne!(ShapeType::T, ShapeType::L);
+    }
+
+    #[test]
+    fn test_shape_type_hash() {
+        use std::collections::HashSet;
+        let mut set = HashSet::new();
+        set.insert(ShapeType::T);
+        set.insert(ShapeType::L);
+        assert_eq!(set.len(), 2);
+        assert!(set.contains(&ShapeType::T));
+        assert!(!set.contains(&ShapeType::I));
+    }
+
+    #[test]
+    fn test_shape_type_debug() {
+        assert_eq!(format!("{:?}", ShapeType::T), "T");
+        assert_eq!(format!("{:?}", ShapeType::O), "O");
+    }
+}
