@@ -175,13 +175,12 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> Result<String, 
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
                                           // buf содержит только ASCII (salt и data — &str, разделитель ':'), поэтому from_utf8 безопасен
-    let salted_data =
-        std::str::from_utf8(&buf).map_err(|e| {
-            std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Невалидный UTF-8 в salt/data: {e}"),
-            )
-        })?;
+    let salted_data = std::str::from_utf8(&buf).map_err(|e| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Невалидный UTF-8 в salt/data: {e}"),
+        )
+    })?;
     Ok(hmac_sha256(key, salted_data))
 }
 
@@ -231,18 +230,22 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> Result<String, 
 /// Никогда не паникует — при невалидном UTF-8 возвращает `Err(io::Error)`.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
-pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> Result<bool, std::io::Error> {
+pub fn hmac_verify_with_salt(
+    key: &str,
+    salt: &str,
+    data: &str,
+    signature: &str,
+) -> Result<bool, std::io::Error> {
     // Разделитель ':' для согласованности с hmac_sign_with_salt
     // write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
-    let salted_data =
-        std::str::from_utf8(&buf).map_err(|e| {
-            std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Невалидный UTF-8 в salt/data: {e}"),
-            )
-        })?;
+    let salted_data = std::str::from_utf8(&buf).map_err(|e| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Невалидный UTF-8 в salt/data: {e}"),
+        )
+    })?;
     Ok(verify_hmac_sha256(key, salted_data, signature))
 }
 

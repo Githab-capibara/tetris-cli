@@ -321,11 +321,12 @@ impl SaveData {
     #[allow(unused_variables)]
     pub fn verify_and_get_score_result(&self) -> Result<u128, String> {
         let score_str = self.score.to_string();
-        let valid = hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash)
-            .unwrap_or_else(|e| {
-                crate::log_error!("Ошибка HMAC проверки рекорда: {e}");
-                false
-            });
+        let valid =
+            hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash)
+                .unwrap_or_else(|e| {
+                    crate::log_error!("Ошибка HMAC проверки рекорда: {e}");
+                    false
+                });
         if valid {
             Ok(self.score)
         } else {
