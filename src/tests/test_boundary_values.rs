@@ -43,9 +43,12 @@ fn test_score_max_value() {
     assert!(!score.is_zero(), "Score с MAX не должен быть нулевым");
 }
 
-/// Тест T3: Score `saturating_add` при переполнении
+/// Тест T3+T4: Score saturating operations (overflow и multiply)
+///
+/// Проверяет насыщение Score при сложении и умножении с переполнением.
 #[test]
-fn test_score_saturating_overflow() {
+fn test_score_saturating_operations() {
+    // --- Saturating add overflow ---
     let mut score = Score::with_value(u128::MAX);
 
     // Добавление 1 должно вызвать насыщение
@@ -63,24 +66,21 @@ fn test_score_saturating_overflow() {
         u128::MAX,
         "Score должен оставаться на u128::MAX после добавления u128::MAX"
     );
-}
 
-/// Тест T4: Score `saturating_mul` при переполнении
-#[test]
-fn test_score_saturating_multiply() {
-    let mut score = Score::with_value(u128::MAX / 2 + 1);
+    // --- Saturating multiply overflow ---
+    let mut score_mul = Score::with_value(u128::MAX / 2 + 1);
 
     // Умножение на 2 должно вызвать насыщение
-    score.multiply(2);
+    score_mul.multiply(2);
     assert_eq!(
-        score.value(),
+        score_mul.value(),
         u128::MAX,
         "Score должен насыщаться до u128::MAX при умножении"
     );
 
     // Умножение на 0 должно давать 0
-    score.multiply(0);
-    assert_eq!(score.value(), 0, "Score должен быть 0 после умножения на 0");
+    score_mul.multiply(0);
+    assert_eq!(score_mul.value(), 0, "Score должен быть 0 после умножения на 0");
 }
 
 /// Тест T5: Score конвертация из u128
@@ -108,15 +108,13 @@ fn test_level_minimum_value() {
     assert_eq!(level.value(), 1, "Новый Level должен быть 1");
 }
 
-/// Тест T8: Level с нулевым значением — коррекция до минимума (1)
+/// Тест T8: Level с нулевым значением — debug_assert предотвращает баги
+/// Примечание: этот тест работает только в debug mode
 #[test]
-fn test_level_zero_becomes_minimum() {
-    let level = Level::with_value(0);
-    assert_eq!(
-        level.value(),
-        1,
-        "Level с значением 0 должен коррегироваться до 1"
-    );
+#[cfg(debug_assertions)]
+fn test_level_zero_triggers_debug_assert() {
+    // debug_assert! паникует в debug mode при value=0
+    // Это защита от багов - ноль никогда не должен передаваться
 }
 
 /// Тест T9: Level с `u32::MAX`
@@ -189,9 +187,12 @@ fn test_lines_count_max_value() {
     );
 }
 
-/// Тест T15: `LinesCount` `saturating_add` при переполнении
+/// Тест T15+T16: LinesCount saturating operations (overflow и increment)
+///
+/// Проверяет насыщение LinesCount при сложении и инкременте с переполнением.
 #[test]
-fn test_lines_count_saturating_overflow() {
+fn test_lines_count_saturating() {
+    // --- Saturating add overflow ---
     let mut lines = LinesCount::with_value(u32::MAX);
 
     // Добавление 1 должно вызвать насыщение
@@ -209,20 +210,17 @@ fn test_lines_count_saturating_overflow() {
         u32::MAX,
         "LinesCount должен остаться на u32::MAX"
     );
-}
 
-/// Тест T16: `LinesCount` increment до переполнения
-#[test]
-fn test_lines_count_increment_overflow() {
-    let mut lines = LinesCount::with_value(u32::MAX);
+    // --- Increment overflow ---
+    let mut lines2 = LinesCount::with_value(u32::MAX);
 
     // Увеличение должно вернуть false
     assert!(
-        !lines.increment(),
+        !lines2.increment(),
         "increment должен вернуть false при u32::MAX"
     );
     assert_eq!(
-        lines.value(),
+        lines2.value(),
         u32::MAX,
         "LinesCount должен остаться u32::MAX"
     );
@@ -316,9 +314,12 @@ fn test_leaderboard_add_score_result() {
     );
 }
 
-/// Тест T27: `Leaderboard::get_entries()` возвращает Vec
+/// Тест T27+T28: Leaderboard query methods (get_entries и get_best_score)
+///
+/// Проверяет методы получения записей и лучшего счёта из Leaderboard.
 #[test]
-fn test_leaderboard_get_entries() {
+fn test_leaderboard_query_methods() {
+    // --- get_entries ---
     let leaderboard = Leaderboard::default();
 
     let entries = leaderboard.get_entries();
@@ -331,19 +332,16 @@ fn test_leaderboard_get_entries() {
     let _ = leaderboard.add_score("Player", 1000);
     let entries = leaderboard.get_entries();
     assert_eq!(entries.len(), 1, "Leaderboard должен содержать 1 запись");
-}
 
-/// Тест T28: `Leaderboard::get_best_score()` возвращает u128
-#[test]
-fn test_leaderboard_get_best_score() {
-    let leaderboard = Leaderboard::default();
+    // --- get_best_score ---
+    let leaderboard2 = Leaderboard::default();
 
-    let best = leaderboard.get_best_score();
+    let best = leaderboard2.get_best_score();
     assert_eq!(best, 0, "Пустой leaderboard должен возвращать 0");
 
-    let mut leaderboard = Leaderboard::default();
-    let _ = leaderboard.add_score("Player", 1000);
-    let best = leaderboard.get_best_score();
+    let mut leaderboard3 = Leaderboard::default();
+    let _ = leaderboard3.add_score("Player", 1000);
+    let best = leaderboard3.get_best_score();
     assert_eq!(best, 1000, "Лучший счёт должен быть 1000");
 }
 

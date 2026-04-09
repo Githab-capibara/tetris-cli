@@ -378,13 +378,14 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
 // ГРУППА ТЕСТОВ 11-15: Краевые случаи и интеграция
 // ============================================================================
 
-/// Тест 11: Проверка граничных значений `fall_speed`
+/// Тест 11+12: Boundary values for fall_speed и land_timer
 ///
-/// Проверяет установку точно на границах диапазона.
+/// Проверяет установку граничных значений для скорости падения и таймера приземления.
 #[test]
-fn test_set_fall_speed_boundary_values() {
+fn test_boundary_values_fall_speed_and_land_timer() {
     let mut state = GameState::new();
 
+    // --- fall_speed boundary values ---
     // Устанавливаем точно на минимуме
     let result = state.set_fall_speed(INITIAL_FALL_SPD);
     assert!(result.is_ok());
@@ -402,15 +403,8 @@ fn test_set_fall_speed_boundary_values() {
         MAX_FALL_SPEED,
         "Значение на максимуме должно устанавливаться"
     );
-}
 
-/// Тест 12: Проверка граничных значений `land_timer`
-///
-/// Проверяет установку точно на границе (0.0).
-#[test]
-fn test_set_land_timer_boundary_values() {
-    let mut state = GameState::new();
-
+    // --- land_timer boundary values ---
     // Устанавливаем точно 0.0
     let result = state.set_land_timer(0.0);
     assert!(result.is_ok());
