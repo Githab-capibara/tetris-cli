@@ -147,41 +147,49 @@ impl ControlsConfig {
     pub const fn get_move_left(&self) -> u8 {
         self.move_left
     }
+    /// Возвращает код клавиши для движения вправо.
     #[inline]
     #[must_use]
     pub const fn get_move_right(&self) -> u8 {
         self.move_right
     }
+    /// Возвращает код клавиши для мягкого падения.
     #[inline]
     #[must_use]
     pub const fn get_soft_drop(&self) -> u8 {
         self.soft_drop
     }
+    /// Возвращает код клавиши для жёсткого падения.
     #[inline]
     #[must_use]
     pub const fn get_hard_drop(&self) -> u8 {
         self.hard_drop
     }
+    /// Возвращает код клавиши для вращения против часовой стрелки.
     #[inline]
     #[must_use]
     pub const fn get_rotate_left(&self) -> u8 {
         self.rotate_left
     }
+    /// Возвращает код клавиши для вращения по часовой стрелке.
     #[inline]
     #[must_use]
     pub const fn get_rotate_right(&self) -> u8 {
         self.rotate_right
     }
+    /// Возвращает код клавиши для удержания фигуры.
     #[inline]
     #[must_use]
     pub const fn get_hold(&self) -> u8 {
         self.hold
     }
+    /// Возвращает код клавиши для паузы.
     #[inline]
     #[must_use]
     pub const fn get_pause(&self) -> u8 {
         self.pause
     }
+    /// Возвращает код клавиши для выхода из игры.
     #[inline]
     #[must_use]
     pub const fn get_quit(&self) -> u8 {

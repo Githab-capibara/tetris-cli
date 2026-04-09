@@ -105,4 +105,5 @@ unnecessary_to_owned = "allow"
 
 [lints.rust]
 unused_comparisons = "allow"
+missing_docs = "warn"
 # dead_code убран из глобальных подавлений — используем #[allow(dead_code)] точечно
