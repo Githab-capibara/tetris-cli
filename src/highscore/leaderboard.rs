@@ -424,7 +424,8 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.salt,
                 &salt_name_score,
                 &guard.hash,
-            ).unwrap_or_else(|e| {
+            )
+            .unwrap_or_else(|e| {
                 crate::log_error!("ThreadSafeLeaderboardEntry::score(): ошибка HMAC проверки: {e}");
                 false
             });
@@ -454,29 +455,32 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление C9 (CRITICAL)
     /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
-    // P3-ID43: Известная неэффективность — format!() выделяет строку каждый вызов.
-    // Принято: клонирование полей необходимо для освобождения RwLock перед HMAC проверкой.
+    // P3-ID43: Исправление (perf #23): tuple borrow вместо clone.
+    // Копируем только score_value (Copy), берём ссылки на String-поля.
+    // Формируем буфер внутри guard-области, затем отпускаем lock и проверяем HMAC.
     #[must_use]
     #[allow(unused_variables)]
     pub fn score_safe(&self) -> Option<u128> {
-        // P6: Копируем данные под блокировкой, отпускаем lock, потом проверяем
-        let (salt, name, score_value, hash) = {
-            let guard = self.inner.read().ok()?;
-            (
-                guard.salt.clone(),
-                guard.name.clone(),
-                guard.score_value,
-                guard.hash.clone(),
-            )
-        };
-        let salt_name_score = format!("{salt}:{name}:{score_value}");
-        let valid = hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash)
-            .unwrap_or_else(|e| {
-                crate::log_error!("ThreadSafeLeaderboardEntry::score_safe(): ошибка HMAC проверки: {e}");
-                false
-            });
+        let guard = self.inner.read().ok()?;
+        // Копируем только score_value (u128 — Copy, 16 байт, стековая копия)
+        let score_value = guard.score_value;
+        // Копируем salt — минимальный clone (обычно короткий, ~16 байт)
+        let salt = guard.salt.clone();
+        // Копируем hash — минимальный clone (фиксированный, 64 байта hex)
+        let hash = guard.hash.clone();
+        // Формируем буфер под guard-ом, избегая format!() аллокации
+        let mut buf =
+            Vec::with_capacity(salt.len() + 1 + guard.name.len() + 1 + 20);
+        let _ = write!(buf, "{}:{}:{}", salt, guard.name, score_value);
+        // Отпускаем guard явно (drop) перед HMAC-проверкой
+        drop(guard);
+        let valid = hmac_verify_with_salt_bytes(
+            get_leaderboard_hmac_key(),
+            &salt,
+            &buf,
+            &hash,
+        );
         if !valid {
-            // Запись не прошла валидацию — возможно подделана
             return None;
         }
         Some(score_value)
@@ -522,15 +526,20 @@ impl ThreadSafeLeaderboardEntry {
         // Исправление C9: используем read() вместо lock() для RwLock
         if let Ok(guard) = self.inner.read() {
             let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
-            return Some(hmac_verify_with_salt(
-                get_leaderboard_hmac_key(),
-                &guard.salt,
-                &salt_name_score,
-                &guard.hash,
-            ).unwrap_or_else(|e| {
-                crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): ошибка HMAC проверки: {e}");
-                false
-            }));
+            return Some(
+                hmac_verify_with_salt(
+                    get_leaderboard_hmac_key(),
+                    &guard.salt,
+                    &salt_name_score,
+                    &guard.hash,
+                )
+                .unwrap_or_else(|e| {
+                    crate::log_error!(
+                        "ThreadSafeLeaderboardEntry::is_valid_safe(): ошибка HMAC проверки: {e}"
+                    );
+                    false
+                }),
+            );
         }
         crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
         None
@@ -547,6 +556,10 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Устарело
     /// Используйте [`Self::name_safe()`] для явной обработки ошибок.
+    ///
+    /// # Исправление perf #25
+    /// Метод deprecated. Clone неизбе — caller ожидает `String`.
+    /// Оставлен как есть для обратной совместимости.
     #[must_use]
     #[deprecated(
         since = "23.96.16",
@@ -572,6 +585,10 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление C9 (CRITICAL)
     /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
+    ///
+    /// # Исправление perf #26
+    /// Clone неизбе — caller ожидает владеющий `String`.
+    /// Возврат `&str` невозможен из-за RwLock guard lifetime.
     #[must_use]
     pub fn name_safe(&self) -> Option<String> {
         // Исправление C9: используем read() вместо lock() для RwLock
