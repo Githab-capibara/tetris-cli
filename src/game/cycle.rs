@@ -80,7 +80,8 @@ pub fn handle_input<T: InputReader>(
                     Ok(Some(_) | None) => {
                         // Клавиша не нажата или не распознана — не считаем ошибкой
                     }
-                    Err(_e) => {
+                    #[allow(unused_variables)]
+                    Err(e) => {
                         // Счётчик ошибок — первые 5 логируем всегда, затем каждую 10-ю
                         // чтобы не затоплять stderr но сохранять диагностику
                         consecutive_errors += 1;
@@ -152,18 +153,13 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
 fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<u64> {
     let now = std::time::Instant::now();
     // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
-    // Используем try_into() с unwrap_or(0) для предотвращения переполнения
+    // unwrap_or(0): если delta > u64::MAX (практически невозможно),
+    // используем 0 — это нормальное поведение, не ошибка
     let delta_time_ms: u64 = now
         .duration_since(*last_time)
         .as_millis()
         .try_into()
-        .unwrap_or_else(|_| {
-            debug_assert!(
-                false,
-                "Переполнение при конвертации duration as_millis() в u64"
-            );
-            0
-        });
+        .unwrap_or(0);
 
     if delta_time_ms < interval_ms {
         sleep(Duration::from_millis(

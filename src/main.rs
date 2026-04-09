@@ -19,7 +19,7 @@ use tetris_cli::app;
 fn main() {
     #[allow(unused_variables)]
     if let Err(err) = app::run() {
-        tetris_cli::log_error!("[FATAL] Критическая ошибка: {err:?}");
+        tetris_cli::log_error!("[FATAL] Критическая ошибка: {err}");
         std::process::exit(1);
     }
 }

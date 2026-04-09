@@ -50,7 +50,10 @@ pub type HmacSha256 = Hmac<Sha256>;
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
+    // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
+    // поэтому unreachable!() теоретически недостижим.
+    #[allow(clippy::unwrap_used)]
     let mut mac = HmacSha256::new_from_slice(key.as_bytes())
         .unwrap_or_else(|_| unreachable!("HMAC-SHA256 принимает ключи любой длины"));
     mac.update(data.as_bytes());
@@ -156,26 +159,30 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 /// ```ignore
 /// use tetris_cli::crypto::hmac::hmac_sign_with_salt;
 ///
-/// let signature = hmac_sign_with_salt("key", "salt", "data");
+/// let signature = hmac_sign_with_salt("key", "salt", "data").unwrap();
 /// ```
 ///
 /// # Исправление аудита 2026-04-02 (H1)
 /// Оптимизировано: используется `write!` в `Vec<u8>` вместо `format!()` для снижения аллокаций.
 ///
 /// # Panics
-/// Паникует только при невалидном UTF-8 входных данных (соль + данные),
-/// что невозможно для корректных строковых входных данных.
+/// Никогда не паникует — при невалидном UTF-8 возвращает `Err(io::Error)`.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
-pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
+pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> Result<String, std::io::Error> {
     // Разделитель ':' предотвращает коллизии конкатенации
     // write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
                                           // buf содержит только ASCII (salt и data — &str, разделитель ':'), поэтому from_utf8 безопасен
     let salted_data =
-        std::str::from_utf8(&buf).expect("salt и data — валидные UTF-8 строки, ошибка невозможна");
-    hmac_sha256(key, salted_data)
+        std::str::from_utf8(&buf).map_err(|e| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Невалидный UTF-8 в salt/data: {e}"),
+            )
+        })?;
+    Ok(hmac_sha256(key, salted_data))
 }
 
 /// Проверить HMAC подпись для данных с солью.
@@ -213,26 +220,30 @@ pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> String {
 /// let key = "secret";
 /// let salt = "random_salt";
 /// let data = "data";
-/// let signature = hmac_sign_with_salt(key, salt, data);
-/// assert!(hmac_verify_with_salt(key, salt, data, &signature));
+/// let signature = hmac_sign_with_salt(key, salt, data).unwrap();
+/// assert!(hmac_verify_with_salt(key, salt, data, &signature).unwrap());
 /// ```
 ///
 /// # Исправление аудита 2026-04-02 (H1)
 /// Оптимизировано: используется `write!` в `Vec<u8>` вместо `format!()` для снижения аллокаций.
 ///
 /// # Panics
-/// Паникует только при невалидном UTF-8 входных данных,
-/// что невозможно для корректных строковых входных данных.
+/// Никогда не паникует — при невалидном UTF-8 возвращает `Err(io::Error)`.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
-pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> bool {
+pub fn hmac_verify_with_salt(key: &str, salt: &str, data: &str, signature: &str) -> Result<bool, std::io::Error> {
     // Разделитель ':' для согласованности с hmac_sign_with_salt
     // write! в Vec вместо format! для снижения аллокаций
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
     let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
     let salted_data =
-        std::str::from_utf8(&buf).expect("salt и data — валидные UTF-8 строки, ошибка невозможна");
-    verify_hmac_sha256(key, salted_data, signature)
+        std::str::from_utf8(&buf).map_err(|e| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Невалидный UTF-8 в salt/data: {e}"),
+            )
+        })?;
+    Ok(verify_hmac_sha256(key, salted_data, signature))
 }
 
 /// Проверить HMAC подпись для данных с солью (байтовая версия).
@@ -302,6 +313,10 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
+    // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
+    // поэтому unreachable!() теоретически недостижим.
+    #[allow(clippy::unwrap_used)]
     let mut mac = HmacSha256::new_from_slice(key.as_bytes())
         .unwrap_or_else(|_| unreachable!("HMAC-SHA256 принимает ключи любой длины"));
     mac.update(data);
@@ -398,14 +413,14 @@ mod hmac_tests {
 
     #[test]
     fn test_hmac_sign_with_salt_basic() {
-        let signature = hmac_sign_with_salt("key", "salt", "data");
+        let signature = hmac_sign_with_salt("key", "salt", "data").unwrap();
         assert_eq!(signature.len(), 64, "Длина HMAC должна быть 64 символа");
     }
 
     #[test]
     fn test_hmac_sign_with_salt_deterministic() {
-        let sig1 = hmac_sign_with_salt("key", "salt", "data");
-        let sig2 = hmac_sign_with_salt("key", "salt", "data");
+        let sig1 = hmac_sign_with_salt("key", "salt", "data").unwrap();
+        let sig2 = hmac_sign_with_salt("key", "salt", "data").unwrap();
         assert_eq!(
             sig1, sig2,
             "HMAC подписи с солью должны быть детерминированными"
@@ -417,10 +432,10 @@ mod hmac_tests {
         let key = "test_key";
         let salt = "test_salt";
         let data = "test_data";
-        let signature = hmac_sign_with_salt(key, salt, data);
+        let signature = hmac_sign_with_salt(key, salt, data).unwrap();
 
         assert!(
-            hmac_verify_with_salt(key, salt, data, &signature),
+            hmac_verify_with_salt(key, salt, data, &signature).unwrap(),
             "Подпись с солью должна быть валидной"
         );
     }
@@ -430,10 +445,10 @@ mod hmac_tests {
         let key = "key";
         let salt = "salt";
         let data = "data";
-        let signature = hmac_sign_with_salt(key, salt, data);
+        let signature = hmac_sign_with_salt(key, salt, data).unwrap();
 
         assert!(
-            !hmac_verify_with_salt(key, "wrong_salt", data, &signature),
+            !hmac_verify_with_salt(key, "wrong_salt", data, &signature).unwrap(),
             "Невалидная соль должна возвращать false"
         );
     }
@@ -449,7 +464,7 @@ mod hmac_tests {
         assert_eq!(sig.len(), 64);
 
         // Пустая соль
-        let sig = hmac_sign_with_salt("key", "", "data");
+        let sig = hmac_sign_with_salt("key", "", "data").unwrap();
         assert_eq!(sig.len(), 64);
     }
 
@@ -458,7 +473,7 @@ mod hmac_tests {
         let signature = hmac_sha256("ключ", "данные с Unicode: 你好🎮");
         assert_eq!(signature.len(), 64);
 
-        let signature = hmac_sign_with_salt("ключ", "соль", "данные: 你好🎮");
+        let signature = hmac_sign_with_salt("ключ", "соль", "данные: 你好🎮").unwrap();
         assert_eq!(signature.len(), 64);
     }
 
@@ -649,9 +664,9 @@ mod hmac_tests {
         let salt = "уникальная_соль";
         let data = "тестовые_данные";
 
-        let signature = hmac_sign_with_salt(key, salt, data);
+        let signature = hmac_sign_with_salt(key, salt, data).unwrap();
         assert!(
-            hmac_verify_with_salt(key, salt, data, &signature),
+            hmac_verify_with_salt(key, salt, data, &signature).unwrap(),
             "Подпись с солью должна проходить проверку"
         );
     }
@@ -662,9 +677,9 @@ mod hmac_tests {
         let key = "ключ";
         let data = "данные";
 
-        let signature = hmac_sign_with_salt(key, "", data);
+        let signature = hmac_sign_with_salt(key, "", data).unwrap();
         assert!(
-            hmac_verify_with_salt(key, "", data, &signature),
+            hmac_verify_with_salt(key, "", data, &signature).unwrap(),
             "Пустая соль должна быть допустима"
         );
     }
@@ -675,8 +690,8 @@ mod hmac_tests {
         let key = "ключ";
         let data = "данные";
 
-        let sig1 = hmac_sign_with_salt(key, "соль1", data);
-        let sig2 = hmac_sign_with_salt(key, "соль2", data);
+        let sig1 = hmac_sign_with_salt(key, "соль1", data).unwrap();
+        let sig2 = hmac_sign_with_salt(key, "соль2", data).unwrap();
         assert_ne!(sig1, sig2, "Разные соли должны давать разные подписи");
     }
 }

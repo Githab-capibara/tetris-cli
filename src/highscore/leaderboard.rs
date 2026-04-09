@@ -58,7 +58,9 @@ fn create_entry_data(name: &str, score: u128) -> (String, String, String) {
     let salt = crate::crypto::generate_salt();
     // Исправление Проблема 9: Разделители ':' предотвращают коллизии конкатенации
     let salt_name_score = format!("{salt}:{valid_name}:{score}");
-    let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score);
+    // unwrap: все входы — &str, from_utf8 гарантированно succeeds
+    let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score)
+        .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов");
     (valid_name, salt, hash)
 }
 
@@ -407,18 +409,26 @@ impl ThreadSafeLeaderboardEntry {
         note = "Используйте score_safe() для безопасной обработки ошибок"
     )]
     #[allow(clippy::missing_panics_doc)]
+    #[allow(unused_variables)]
     // P3-ID42: Известная неэффективность — format!() выделяет строку каждый вызов.
     // Низкий приоритет: метод устарел и должен быть заменён на score_safe().
+    // SECURITY: format!() на каждой итерации создаёт аллокацию, что теоретически
+    // может быть использовано для DoS-атаки при массовых вызовах. Метод deprecated
+    // и будет удалён в будущей версии. Используйте score_safe() вместо этого.
     pub fn score(&self) -> u128 {
         // P5: Выполняем HMAC валидацию под read() блокировкой без клонирования
         if let Ok(guard) = self.inner.read() {
             let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
-            if !hmac_verify_with_salt(
+            let valid = hmac_verify_with_salt(
                 get_leaderboard_hmac_key(),
                 &guard.salt,
                 &salt_name_score,
                 &guard.hash,
-            ) {
+            ).unwrap_or_else(|e| {
+                crate::log_error!("ThreadSafeLeaderboardEntry::score(): ошибка HMAC проверки: {e}");
+                false
+            });
+            if !valid {
                 crate::log_error!("ThreadSafeLeaderboardEntry::score(): запись не прошла валидацию HMAC — возможная подделка!");
                 return 0;
             }
@@ -447,6 +457,7 @@ impl ThreadSafeLeaderboardEntry {
     // P3-ID43: Известная неэффективность — format!() выделяет строку каждый вызов.
     // Принято: клонирование полей необходимо для освобождения RwLock перед HMAC проверкой.
     #[must_use]
+    #[allow(unused_variables)]
     pub fn score_safe(&self) -> Option<u128> {
         // P6: Копируем данные под блокировкой, отпускаем lock, потом проверяем
         let (salt, name, score_value, hash) = {
@@ -459,7 +470,12 @@ impl ThreadSafeLeaderboardEntry {
             )
         };
         let salt_name_score = format!("{salt}:{name}:{score_value}");
-        if !hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash) {
+        let valid = hmac_verify_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score, &hash)
+            .unwrap_or_else(|e| {
+                crate::log_error!("ThreadSafeLeaderboardEntry::score_safe(): ошибка HMAC проверки: {e}");
+                false
+            });
+        if !valid {
             // Запись не прошла валидацию — возможно подделана
             return None;
         }
@@ -501,6 +517,7 @@ impl ThreadSafeLeaderboardEntry {
     // P3-ID45: Известная неэффективность — format!() выделяет строку каждый вызов.
     // Принято: чтение под RwLock блокировкой — строка формируется внутри guard области.
     #[must_use]
+    #[allow(unused_variables)]
     pub fn is_valid_safe(&self) -> Option<bool> {
         // Исправление C9: используем read() вместо lock() для RwLock
         if let Ok(guard) = self.inner.read() {
@@ -510,7 +527,10 @@ impl ThreadSafeLeaderboardEntry {
                 &guard.salt,
                 &salt_name_score,
                 &guard.hash,
-            ));
+            ).unwrap_or_else(|e| {
+                crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): ошибка HMAC проверки: {e}");
+                false
+            }));
         }
         crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
         None
