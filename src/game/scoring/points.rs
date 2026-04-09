@@ -348,7 +348,8 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
-        // Сохраняем ссылку на stats_mut для избежания двойного вызова (исправление #14)
+        // perf #38 / исправление #14: Сохраняем ссылку на stats_mut() для избежания
+        // двойного вызова — stats_mut() возвращает &mut GameStats, не копию.
         let stats_mut = state.stats_mut();
         let new_combo = stats_mut.combo_counter().saturating_add(1);
         stats_mut.set_combo_counter(new_combo);

@@ -304,9 +304,10 @@ impl ControlsConfig {
         // Исправление E10 (HIGH): Используем глобальный HMAC ключ вместо генерации нового
         let global_hmac_key = get_controls_hmac_key();
 
-        // Исправление M1-M2: Сериализуем в Value один раз, модифицируем, затем вычисляем HMAC
-        // и сериализуем в pretty-формат для записи. HMAC вычисляется на compact JSON
-        // чтобы save и load использовали одинаковый формат.
+        // Исправление M1-M2 / perf #28: Сериализуем в Value один раз, модифицируем,
+        // затем вычисляем HMAC и сериализуем в pretty-формат для записи.
+        // Избегаем тройной сериализации — всего 1x to_value, 1x to_string (compact для HMAC),
+        // 1x to_string_pretty (для файла).
         let mut config_value = serde_json::to_value(&Self {
             move_left: self.move_left,
             move_right: self.move_right,
@@ -464,9 +465,9 @@ impl ControlsConfig {
         let mut json = String::new();
         file.read_to_string(&mut json)?;
 
-        // P3-ID55: Однопроходная десериализация — сначала парсим в Value,
-        // затем проверяем HMAC, и только потом десериализуем в Self.
-        // Избегает двойной сериализации (struct -> Value -> string).
+        // P3-ID55 / perf #29: Однопроходная десериализация — парсим один раз в Value,
+        // проверяем HMAC на Value, затем один раз from_value в Self.
+        // Избегает двойной сериализации (string -> struct -> string).
         let mut config_value = serde_json::from_str::<serde_json::Value>(&json).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
