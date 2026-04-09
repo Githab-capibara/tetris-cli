@@ -156,7 +156,13 @@ fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<
         .duration_since(*last_time)
         .as_millis()
         .try_into()
-        .unwrap_or(0);
+        .unwrap_or_else(|_| {
+            debug_assert!(
+                false,
+                "Переполнение при конвертации duration as_millis() в u64"
+            );
+            0
+        });
 
     if delta_time_ms < interval_ms {
         sleep(Duration::from_millis(

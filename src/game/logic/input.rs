@@ -159,20 +159,14 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
     // Обработка клавиши
     match key {
         Ok(Some(KEY_BACKSPACE)) => {
-            // PROB-141: INFO лог удалён — не нужен в production
             Some(UpdateEndState::Quit)
         }
-        Ok(Some(b'p')) => {
-            // PROB-142: INFO лог удалён — не нужен в production
-            Some(UpdateEndState::Pause)
-        }
         Ok(Some(key_code)) => {
-            // Парсинг клавиши в действие
+            // Парсинг клавиши в действие через конфигурацию
             if let Some(action) = parse_input(key_code, config) {
                 return execute_action(state, action);
             }
             // Неизвестная клавиша
-            // PROB-143: DEBUG лог удалён — не нужен в production
             None
         }
         Ok(None) => {
@@ -201,10 +195,13 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
         Direction::Left | Direction::Right => {
             if state.can_move_curr_shape_direction(dir) {
                 let curr_shape = state.get_curr_shape_mut();
-                match dir {
-                    Direction::Left => curr_shape.pos_mut().0 -= 1.0,
-                    Direction::Right => curr_shape.pos_mut().0 += 1.0,
-                    Direction::Down => unreachable!(),
+                // Direction::Down невозможен благодаря внешнему match —
+                // эта ветка вызывается только для Left/Right.
+                if dir == Direction::Left {
+                    curr_shape.pos_mut().0 -= 1.0;
+                } else {
+                    // Direction::Right
+                    curr_shape.pos_mut().0 += 1.0;
                 }
             }
         }

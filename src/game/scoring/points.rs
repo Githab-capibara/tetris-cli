@@ -606,6 +606,16 @@ mod points_tests {
         assert_eq!(safe_f32_to_u32(f32::MAX), u32::MAX);
     }
 
+    /// Тест: safe_f32_to_u32 возвращает u32::MAX для f32::MAX
+    /// Проверяет что экстремальное значение корректно обрабатывается
+    #[test]
+    fn test_safe_f32_to_u32_max_value() {
+        // f32::MAX значительно больше u32::MAX, должен вернуть u32::MAX
+        assert_eq!(safe_f32_to_u32(f32::MAX), u32::MAX);
+        // Проверка что u32::MAX корректно propagates через конвертацию
+        assert!(safe_f32_to_u32(f32::MAX) >= u32::MAX / 2);
+    }
+
     /// Тест C1: проверка граничных значений
     #[test]
     fn test_fix_c1_safe_f32_to_u32_boundary_values() {
