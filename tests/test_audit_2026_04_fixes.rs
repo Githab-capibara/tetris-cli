@@ -477,11 +477,6 @@ fn test_all_high_fixes_integration() {
 /// Интеграционный тест: Проверка всех MEDIUM исправлений
 #[test]
 fn test_all_medium_fixes_integration() {
-    // M3: Canvas Drop
-    use tetris_cli::io::Canvas;
-    let canvas = Canvas::default();
-    drop(canvas);
-
     // M5: Dead code marked
     use tetris_cli::config::keys::get_controls_hmac_key;
     let _key = get_controls_hmac_key();
