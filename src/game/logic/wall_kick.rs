@@ -101,6 +101,13 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
         return true;
     }
 
+    // Оптимизация: если фигура далеко от стен, wall kick не нужен
+    // (x > 2 && x < GRID_WIDTH - 3) — достаточно места для вращения
+    let x = state.curr_shape().pos().0 as i16;
+    if x > 2 && x < crate::constants::GRID_WIDTH_I16 - 3 {
+        return false; // Фигура в центре, но прямое вращение заблокировано — значит коллизия сверху/снизу
+    }
+
     // Пытаемся вращать с wall kick смещениями
     if let Some((offset_x, offset_y)) = try_wall_kick_offsets(state, dir) {
         // Объединённое мутабельное заимствование: применяем смещение и вращение за один доступ

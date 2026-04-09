@@ -37,6 +37,7 @@ pub enum InputResult {
     /// Выход в меню.
     Quit,
     /// Пауза (ожидание снятия).
+    /// Используется в `handle_input_result()` match arm.
     #[allow(dead_code)]
     Pause,
     /// Игра окончена.
