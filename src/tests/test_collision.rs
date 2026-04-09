@@ -17,119 +17,106 @@ use crate::types::{Direction, RotationDirection};
 // ГРУППА ТЕСТОВ 1-15: Столкновения со стенами
 // ============================================================================
 
-/// Тест 1: Проверка столкновения с левой стеной
-#[test]
-fn test_collision_left_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем влево до упора
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево должно быть заблокировано у стены"
-    );
-}
-
-/// Тест 2: Проверка столкновения с правой стеной
-#[test]
-fn test_collision_right_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем вправо до упора
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos_mut().0 += 1.0;
-        }
-    }
-
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо должно быть заблокировано у стены"
-    );
-}
-
-/// Тест 3: Проверка что движение вниз возможно у левой стены
-#[test]
-fn test_collision_down_at_left_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем к левой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз должно быть возможно у левой стены"
-    );
-}
-
-/// Тест 4: Проверка что движение вниз возможно у правой стены
-#[test]
-fn test_collision_down_at_right_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем к правой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos_mut().0 += 1.0;
-        }
-    }
-
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз должно быть возможно у правой стены"
-    );
-}
-
-/// Тест 5: Проверка что движение вправо возможно у левой стены
-#[test]
-fn test_collision_right_at_left_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем к левой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-        }
-    }
-
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Right),
-        "Движение вправо должно быть возможно у левой стены"
-    );
-}
-
-/// Тест 6: Проверка что движение влево возможно у правой стены
-#[test]
-fn test_collision_left_at_right_wall() {
-    let mut state = GameState::new();
-
-    // Двигаем к правой стене
-    for _ in 0..10 {
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.get_curr_shape_mut().pos_mut().0 += 1.0;
-        }
-    }
-
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Left),
-        "Движение влево должно быть возможно у правой стены"
-    );
-}
-
-/// Тест 7: Проверка столкновения для всех фигур с левой стеной (параметризованный тест).
+/// Тест 1-2: Столкновение с левой и правой стеной (параметризированный тест).
 ///
-/// Проверяет, что все 7 типов фигур сталкиваются с левой стеной.
+/// Проверяет, что фигура не может двигаться за пределы поля по горизонтали.
 #[test]
-fn test_collision_all_shapes_left_wall() {
+fn test_collision_side_walls() {
+    let wall_cases = [
+        (Direction::Left, Direction::Right, "влево", "у левой стены"),
+        (Direction::Right, Direction::Left, "вправо", "у правой стены"),
+    ];
+
+    for (move_dir, _push_dir, move_desc, wall_desc) in wall_cases {
+        let mut state = GameState::new();
+
+        // Двигаем к стене до упора
+        for _ in 0..10 {
+            if state.can_move_curr_shape_direction(move_dir) {
+                if move_dir == Direction::Left {
+                    state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+                } else {
+                    state.get_curr_shape_mut().pos_mut().0 += 1.0;
+                }
+            }
+        }
+
+        assert!(
+            !state.can_move_curr_shape_direction(move_dir),
+            "Движение {move_desc} должно быть заблокировано {wall_desc}"
+        );
+    }
+}
+
+/// Тест 3-4: Движение вниз возможно у обеих стен (параметризированный тест).
+///
+/// Проверяет, что у любой боковой стены движение вниз остаётся доступным.
+#[test]
+fn test_collision_down_at_side_walls() {
+    let wall_cases = [
+        (Direction::Left, "у левой стены"),
+        (Direction::Right, "у правой стены"),
+    ];
+
+    for (push_dir, wall_desc) in wall_cases {
+        let mut state = GameState::new();
+
+        // Двигаем к стене
+        for _ in 0..10 {
+            if state.can_move_curr_shape_direction(push_dir) {
+                if push_dir == Direction::Left {
+                    state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+                } else {
+                    state.get_curr_shape_mut().pos_mut().0 += 1.0;
+                }
+            }
+        }
+
+        assert!(
+            state.can_move_curr_shape_direction(Direction::Down),
+            "Движение вниз должно быть возможно {wall_desc}"
+        );
+    }
+}
+
+/// Тест 5-6: Движение от стены в противоположном направлении (параметризированный тест).
+///
+/// Проверяет, что после упора в стену можно двигаться в обратном направлении.
+#[test]
+fn test_collision_away_from_wall() {
+    let wall_cases = [
+        (Direction::Left, Direction::Right, "к левой", "вправо", "у левой стены"),
+        (Direction::Right, Direction::Left, "к правой", "влево", "у правой стены"),
+    ];
+
+    for (push_dir, check_dir, _push_desc, move_desc, wall_desc) in wall_cases {
+        let mut state = GameState::new();
+
+        // Двигаем к стене
+        for _ in 0..10 {
+            if state.can_move_curr_shape_direction(push_dir) {
+                if push_dir == Direction::Left {
+                    state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+                } else {
+                    state.get_curr_shape_mut().pos_mut().0 += 1.0;
+                }
+            }
+        }
+
+        assert!(
+            state.can_move_curr_shape_direction(check_dir),
+            "Движение {move_desc} должно быть возможно {wall_desc}"
+        );
+    }
+}
+
+/// Тест 7: Столкновение всех фигур со стенами и полом (параметризированный тест).
+///
+/// Проверяет, что все 7 типов фигур сталкиваются с левой стеной и с полом.
+#[test]
+fn test_collision_all_shapes_walls_and_floor() {
+    use crate::tetromino::{ShapeType, SHAPE_COORDS};
+
     let shapes = [
         ShapeType::T,
         ShapeType::L,
@@ -141,60 +128,43 @@ fn test_collision_all_shapes_left_wall() {
     ];
 
     for shape_type in shapes {
-        let mut state = GameState::new();
-        state.get_curr_shape_mut().set_shape(shape_type);
-        state
-            .get_curr_shape_mut()
-            .set_coords(SHAPE_COORDS[shape_type as usize]);
+        // Проверка столкновения с левой стеной
+        {
+            let mut state = GameState::new();
+            state.get_curr_shape_mut().set_shape(shape_type);
+            state
+                .get_curr_shape_mut()
+                .set_coords(SHAPE_COORDS[shape_type as usize]);
 
-        for _ in 0..10 {
-            if state.can_move_curr_shape_direction(Direction::Left) {
-                state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+            for _ in 0..10 {
+                if state.can_move_curr_shape_direction(Direction::Left) {
+                    state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+                }
             }
+
+            assert!(
+                !state.can_move_curr_shape_direction(Direction::Left),
+                "Фигура {shape_type:?} должна столкнуться с левой стеной"
+            );
         }
 
-        assert!(
-            !state.can_move_curr_shape_direction(Direction::Left),
-            "Фигура {shape_type:?} должна столкнуться с левой стеной"
-        );
-    }
-}
+        // Проверка столкновения с полом
+        {
+            let mut state = GameState::new();
+            state.get_curr_shape_mut().set_shape(shape_type);
+            state
+                .get_curr_shape_mut()
+                .set_coords(SHAPE_COORDS[shape_type as usize]);
 
-// ============================================================================
-// ГРУППА ТЕСТОВ 16-25: Столкновения с полом
-// ============================================================================
+            while state.can_move_curr_shape_direction(Direction::Down) {
+                state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            }
 
-/// Тест 19: Проверка столкновения с полом для всех типов фигур
-#[test]
-fn test_collision_all_shapes_floor() {
-    use crate::tetromino::{ShapeType, SHAPE_COORDS};
-
-    let shapes = [
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ];
-
-    for &shape in &shapes {
-        let mut state = GameState::new();
-        state.get_curr_shape_mut().set_shape(shape);
-        state
-            .get_curr_shape_mut()
-            .set_coords(SHAPE_COORDS[shape as usize]);
-
-        // Опускаем до упора
-        while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            assert!(
+                !state.can_move_curr_shape_direction(Direction::Down),
+                "Фигура {shape_type:?} должна столкнуться с полом"
+            );
         }
-
-        assert!(
-            !state.can_move_curr_shape_direction(Direction::Down),
-            "Движение вниз должно быть заблокировано на полу для фигуры {shape:?}"
-        );
     }
 }
 
