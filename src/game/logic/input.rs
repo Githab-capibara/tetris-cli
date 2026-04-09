@@ -158,9 +158,7 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
 
     // Обработка клавиши
     match key {
-        Ok(Some(KEY_BACKSPACE)) => {
-            Some(UpdateEndState::Quit)
-        }
+        Ok(Some(KEY_BACKSPACE)) => Some(UpdateEndState::Quit),
         Ok(Some(key_code)) => {
             // Парсинг клавиши в действие через конфигурацию
             if let Some(action) = parse_input(key_code, config) {
