@@ -588,7 +588,7 @@ impl ThreadSafeLeaderboardEntry {
     ///
     /// # Исправление perf #26
     /// Clone неизбе — caller ожидает владеющий `String`.
-    /// Возврат `&str` невозможен из-за RwLock guard lifetime.
+    /// Возврат `&str` невозможен из-за `RwLock` guard lifetime.
     #[must_use]
     pub fn name_safe(&self) -> Option<String> {
         // Исправление C9: используем read() вместо lock() для RwLock

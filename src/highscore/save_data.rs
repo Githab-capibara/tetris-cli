@@ -223,6 +223,11 @@ impl SaveData {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    ///
+    /// # Panics
+    /// Паникует, если `hmac_sign_with_salt` возвращает ошибку.
+    /// Теоретически недостижимо для корректных UTF-8 входов (`score`, `salt`, `key`),
+    /// поэтому используется `expect` вместо обработки ошибки.
     #[must_use = "SaveData должен быть использован"]
     pub fn from_value(score: u128) -> Self {
         let score_str = score.to_string();
