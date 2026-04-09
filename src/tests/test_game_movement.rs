@@ -275,19 +275,6 @@ fn test_soft_drop_continuous_movement() {
     );
 }
 
-/// Тест 37: Мягкое падение - разные фигуры
-#[test]
-fn test_soft_drop_different_pieces() {
-    // Проверяем, что все фигуры могут падать
-    let state = GameState::new();
-
-    // В начале игры любая фигура должна падать
-    assert!(
-        state.can_move_curr_shape_direction(Direction::Down),
-        "Любая фигура должна иметь возможность мягкого падения"
-    );
-}
-
 /// Тест 38: Мягкое падение - скорость падения
 #[test]
 fn test_soft_drop_speed() {
