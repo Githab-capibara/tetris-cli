@@ -118,8 +118,9 @@ impl SaveData {
     /// # Исправление H10 (HIGH)
     /// Методы загрузки консолидированы - общая логика вынесена в `load_with_validation()`
     #[must_use = "Загруженные данные должны быть использованы"]
+    #[allow(unused_variables)]
     pub fn load_config() -> Self {
-        Self::load_config_result().unwrap_or_else(|_e| {
+        Self::load_config_result().unwrap_or_else(|e| {
             crate::log_warn!("{e}. Попытка загрузки из backup...");
             // Попытка загрузить из backup файла
             match Self::load_backup_config() {
@@ -127,7 +128,7 @@ impl SaveData {
                     crate::log_info!("Успешно загружено из backup файла.");
                     backup_data
                 }
-                Err(_backup_e) => {
+                Err(backup_e) => {
                     crate::log_warn!("Не удалось загрузить backup: {backup_e}. Используется значение по умолчанию.");
                     Self::default()
                 }
@@ -250,12 +251,13 @@ impl SaveData {
     ///
     /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
+    #[allow(unused_variables)]
     pub fn save_value(high_score: u128) {
         let save = Self::from_value(high_score);
-        if let Err(_e) = store(APP_NAME, Some("config"), &save) {
+        if let Err(e) = store(APP_NAME, Some("config"), &save) {
             crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
-            if let Err(_backup_e) = store(APP_NAME, Some("config_backup"), &save) {
+            if let Err(backup_e) = store(APP_NAME, Some("config_backup"), &save) {
                 crate::log_error!(
                     "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
                 );

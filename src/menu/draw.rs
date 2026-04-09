@@ -34,11 +34,14 @@ use super::constants::{LEADERBOARD_MENU, MENU, MENU_COLOR};
 ///
 /// # Пример
 /// ```no_run
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// use tetris_cli::io::Canvas;
 /// use tetris_cli::menu::draw::draw_menu;
 ///
-/// let mut canvas = Canvas::new().unwrap();
+/// let mut canvas = Canvas::new()?;
 /// draw_menu(&mut canvas, "1000");
+/// # Ok(())
+/// # }
 /// ```
 pub fn draw_menu(cnv: &mut Canvas, high_score_display: &str) {
     cnv.draw_strs(&MENU, (1, 1), MENU_COLOR, &termion::color::Reset);

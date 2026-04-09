@@ -24,8 +24,9 @@
 //! use tetris_cli::io::{KeyReader, Canvas};
 //! use termion::color::{White, Reset};
 //!
+//! # fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! let mut reader: &mut dyn InputReader = &mut KeyReader::new();
-//! let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
+//! let mut renderer: &mut dyn Renderer = &mut Canvas::new()?;
 //!
 //! // Чтение клавиши
 //! if let Ok(Some(key)) = reader.get_key() {
@@ -35,6 +36,8 @@
 //! // Отрисовка
 //! renderer.draw_string("Привет!", (1, 1), &White, &Reset);
 //! renderer.flush();
+//! # Ok(())
+//! # }
 //! ```
 
 use std::io;
@@ -142,8 +145,11 @@ pub trait Renderer {
     ///
     /// # Пример
     /// ```ignore
-    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new()?;
     /// renderer.draw_strs(&["Строка 1", "Строка 2"], (1, 1), &White, &Reset);
+    /// # Ok(())
+    /// # }
     /// ```
     fn draw_strs(&mut self, strings: &[&str], pos: (u16, u16), fg: &dyn Color, bg: &dyn Color);
 
@@ -157,8 +163,11 @@ pub trait Renderer {
     ///
     /// # Пример
     /// ```ignore
-    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new()?;
     /// renderer.draw_string("Привет, Мир!", (5, 2), &White, &Reset);
+    /// # Ok(())
+    /// # }
     /// ```
     fn draw_string(&mut self, string: &str, pos: (u16, u16), fg: &dyn Color, bg: &dyn Color);
 
@@ -170,9 +179,12 @@ pub trait Renderer {
     ///
     /// # Пример
     /// ```ignore
-    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new()?;
     /// renderer.draw_string("Текст", (1, 1), &White, &Reset);
     /// renderer.flush();
+    /// # Ok(())
+    /// # }
     /// ```
     fn flush(&mut self);
 
@@ -184,9 +196,12 @@ pub trait Renderer {
     ///
     /// # Пример
     /// ```ignore
-    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new().unwrap();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut renderer: &mut dyn Renderer = &mut Canvas::new()?;
     /// // ... игра ...
     /// renderer.reset();
+    /// # Ok(())
+    /// # }
     /// ```
     fn reset(&mut self);
 
