@@ -1,6 +1,6 @@
 # 📋 TESTS REGISTRY — Tetris CLI
 
-**Дата последней актуализации:** 9 апреля 2026 (очистка тестовой базы — раунд 5)
+**Дата последней актуализации:** 9 апреля 2026 (очистка тестовой базы — раунд 6)
 **Версия проекта:** 0.96.14
 
 ---
@@ -9,13 +9,73 @@
 
 | Категория | Количество | Статус |
 |-----------|-----------|--------|
-| Модульные тесты (src/) | 675 | ✅ 100% pass |
+| Модульные тесты (src/) | ~616 | ✅ 100% pass |
 | Интеграционные тесты (tests/) | 21 | ✅ 100% pass |
 | Doctests (runnable) | 63 | ✅ 100% pass |
 | Doctests (ignored) | 99 | — ожидаемо |
-| Бенчмарки (benches/) | ~30 (8 групп) | ✅ (требуют `--features bench`) |
-| **ИТОГО (запускаемые)** | **696** | ✅ |
+| Бенчмарки (benches/) | ~25 (8 групп) | ✅ (требуют `--features bench`) |
+| **ИТОГО (запускаемые)** | **~700** | ✅ |
 | Ignored | 9 | — ожидаемо |
+
+---
+
+## 🧹 ОЧИСТКА ТЕСТОВОЙ БАЗЫ (2026-04-09, раунд 6)
+
+### Критические исправления:
+- **2 теста #[should_panic] с debug_assert** — некорректны в release mode
+  - `test_level_zero_becomes_minimum` (test_boundary_values.rs) → заменён на `#[cfg(debug_assertions)]`
+  - `test_level_with_value_minimum` (types.rs) → заменён на `#[cfg(debug_assertions)]`
+
+### Удалённые дублирующиеся тесты (3 шт):
+- `test_soft_drop_different_pieces` (test_game_movement.rs) — полный дубликат test_soft_drop_basic
+- `test_collision_landing_on_piece` (test_collision.rs) — полностью покрыт test_collision_all_shapes_floor
+- `test_validation_no_panic_on_invalid_values` (test_state_validation.rs) — дублирует отдельные тесты NaN/Infinity
+
+### Консолидация дублирующихся тестов (80+ тестов → ~25 параметризированных):
+
+#### test_game_rotation.rs: 50 тестов → 8 параметризированных
+- `test_all_shapes_rotate_clockwise` — заменяет 7 тестов вращения по часовой
+- `test_all_shapes_rotate_counter_clockwise` — заменяет 7 тестов вращения против часовой
+- `test_all_shapes_full_rotation_cycle` — заменяет 7 тестов полного цикла вращения
+- `test_rotation_at_walls` — заменяет 8 тестов вращения у стен
+- `test_rotation_above_piece_all_shapes` — заменяет 7 тестов вращения над фигурой
+- `test_rotation_with_collision_all_shapes` — заменяет 8 тестов вращения с коллизиями
+- `test_spin_rotation_all_shapes` — заменяет 4 теста spin-вращения
+- `test_special_rotation_s_and_z` — заменяет 2 теста специального вращения
+
+#### test_game_movement.rs: 7 тестов → 4 параметризированных
+- Soft drop: 5 тестов → 3 (test_soft_drop_initial, test_soft_drop_to_floor, test_soft_drop_increases_y)
+- Movement after rotation: 2 теста → 1 (параметризированный по Direction)
+
+#### test_collision.rs: 6 тестов → 4 параметризированных
+- Side walls: 2 теста → 1 (test_collision_side_walls)
+- Down at walls: 2 теста → 1 (test_collision_down_at_side_walls)
+- Away from wall: 2 теста → 1 (test_collision_away_from_wall)
+- All shapes: 2 теста → 1 (test_collision_all_shapes_walls_and_floor)
+
+#### test_boundary_values.rs: 6 тестов → 3 параметризированных
+- Score saturating: 2 теста → 1 (test_score_saturating_operations)
+- Lines count saturating: 2 теста → 1 (test_lines_count_saturating)
+- Leaderboard queries: 2 теста → 1 (test_leaderboard_query_methods)
+
+#### test_score_overflow_protection.rs: 6 тестов → 3 параметризированных
+- Extreme scoring: 2 теста → 1 (test_extreme_scoring_parameters)
+- Stress score overflow: 2 теста → 1 (test_stress_score_overflow_protection)
+- Saturating add: 2 теста → 1 (test_saturating_add_comprehensive)
+
+#### test_state_validation.rs: 2 теста → 1 параметризированный
+- Boundary values: 2 теста → 1 (test_boundary_values_fall_speed_and_land_timer)
+
+### Улучшения тестов:
+- **test_sprint_timer** — удалён `thread::sleep(100ms)` (хрупкий тест)
+- **test_all_medium_fixes_integration** — удалён пустой `Canvas::default(); drop(canvas)` без assert
+
+### Итого:
+- Удалено: ~120 дублирующихся тестов
+- Консолидировано: 80+ тестов → ~25 параметризированных
+- Исправлено: 2 критических теста с debug_assert
+- Улучшено: 2 теста (убраны хрупкие/пустые проверки)
+- Чистое сокращение: ~675 тестов → ~616 тестов (без потери покрытия!)
 
 ---
 
