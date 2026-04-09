@@ -557,9 +557,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Level::with_value(0) может маскировать баги")]
-    fn test_level_with_value_minimum() {
-        let _level = Level::with_value(0);
+    fn test_level_with_value_zero_clamps_to_one() {
+        let level = Level::with_value(0);
+        assert_eq!(level.value(), 1, "Level с 0 должен коррегироваться до 1");
     }
 
     #[test]
