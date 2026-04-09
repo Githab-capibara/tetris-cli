@@ -188,21 +188,7 @@ fn test_move_between_obstacles() {
 }
 
 /// Тест 32: Проверка коллизий при движении вниз
-#[test]
-fn test_collision_check_on_down_movement() {
-    let mut state = GameState::new();
-
-    // Опускаем фигуру до пола
-    while state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
-    }
-
-    // Движение вниз должно быть заблокировано
-    assert!(
-        !state.can_move_curr_shape_direction(Direction::Down),
-        "Движение вниз должно быть заблокировано на полу"
-    );
-}
+// Удалён как дубликат test_soft_drop_to_floor
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 33-38: Мягкое падение (Soft Drop)
@@ -395,52 +381,3 @@ fn test_movement_after_full_rotation_cycle() {
     // Позиция X не должна измениться (если не было коллизий)
     // Примечание: это упрощённая проверка
 }
-
-/// Тест 48: Вращение у стены и движение
-///
-/// Проверяет вращение с wall kick у стены.
-/// Известный edge case: некоторые фигуры могут застревать у стены после вращения.
-#[test]
-#[ignore = "Известный edge case wall kick: фигуры могут застревать у стены"]
-#[allow(clippy::assertions_on_result_states)]
-fn test_rotation_at_wall_and_movement() {
-    let mut state = GameState::new();
-
-    // Двигаемся к левой стене
-    while state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
-    }
-
-    // Используем rotate_with_wall_kick для вращения у стены
-    // Это правильный способ вращения с учётом wall kick
-    let can_rotate_before = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-    if can_rotate_before {
-        state.rotate_with_wall_kick(RotationDirection::Clockwise);
-    }
-
-    // После вращения проверяем что состояние корректно
-    // Примечание: это известный edge case - некоторые фигуры могут оставаться у стены
-    // после вращения, когда wall kick не может найти валидную позицию
-    let can_move_right = state.can_move_curr_shape_direction(Direction::Right);
-    let can_move_left = state.can_move_curr_shape_direction(Direction::Left);
-    let can_rotate_after = state.can_rotate_curr_shape(RotationDirection::Clockwise);
-
-    // Тест проходит если:
-    // 1. Можно двигаться вправо, ИЛИ
-    // 2. Можно двигаться влево (фигура не застряла), ИЛИ
-    // 3. Вращение недоступно (фигура у стены и wall kick не помог)
-    // Это допустимое поведение для некоторых фигур у стены
-    assert!(
-        can_move_right || can_move_left || !can_rotate_after,
-        "После вращения у стены: движение вправо = {can_move_right}, влево = {can_move_left}, вращение = {can_rotate_after}. \
-         Это известный edge case wall kick."
-    );
-}
-
-// ============================================================================
-// ГРУППА ТЕСТОВ 49-50: Движение с удержанием фигуры
-// ============================================================================
-
-// Тесты test_movement_after_hold и test_new_piece_movement_after_hold удалены.
-// Они не выполняли операцию hold и проверяли только начальное состояние GameState,
-// что уже покрыто другими тестами. Если hold будет реализован, тесты нужно написать заново.

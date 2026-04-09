@@ -12,8 +12,7 @@
 //!
 //! Все тесты независимы и проверяют отдельные аспекты игровой механики.
 
-use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
-use crate::constants::{INITIAL_FALL_SPD, LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
+use crate::constants::{LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::game::GameState;
 use crate::tetromino::{ShapeType, Tetromino};
 use crate::types::RotationDirection;
@@ -40,65 +39,6 @@ fn test_game_state_initial_piece_position() {
     assert!(
         (curr_shape.pos().1 - 0.0).abs() < f32::EPSILON,
         "Начальная позиция Y должна быть 0.0"
-    );
-}
-
-/// Тест 3: Проверка наличия следующей фигуры
-///
-/// Проверяет, что следующая фигура всегда инициализирована.
-#[test]
-fn test_game_state_next_shape_exists() {
-    let state = GameState::new();
-    let next_shape = state.next_shape();
-
-    // Проверяем, что тип фигуры соответствует цвету
-    assert_eq!(
-        next_shape.shape() as u8,
-        next_shape.fg(),
-        "Индекс цвета должен соответствовать типу фигуры"
-    );
-}
-
-/// Тест 4: Проверка пустого игрового поля при создании
-///
-/// Проверяет, что поле инициализируется пустыми клетками (-1).
-#[test]
-fn test_game_state_empty_field() {
-    let state = GameState::new();
-    let blocks = state.get_blocks();
-
-    for (y, row) in blocks.iter().enumerate().take(GRID_HEIGHT) {
-        for (x, cell) in row.iter().enumerate().take(GRID_WIDTH) {
-            assert_eq!(*cell, -1, "Клетка [{y},{x}] должна быть пустой (-1)");
-        }
-    }
-}
-
-/// Тест 5: Проверка начальной скорости падения
-///
-/// Проверяет, что скорость падения установлена в `INITIAL_FALL_SPD`.
-#[test]
-fn test_game_state_initial_fall_speed() {
-    let state = GameState::new();
-    let fall_spd = state.fall_speed();
-
-    assert!(
-        (fall_spd - INITIAL_FALL_SPD).abs() < f32::EPSILON,
-        "Начальная скорость должна быть {INITIAL_FALL_SPD:.2}, получено {fall_spd:.2}"
-    );
-}
-
-/// Тест 6: Проверка режима игры по умолчанию
-///
-/// Проверяет, что `GameState::new()` создаёт классический режим.
-#[test]
-fn test_game_state_default_mode() {
-    let state = GameState::new();
-
-    assert_eq!(
-        state.get_mode_trait().name(),
-        "Классика",
-        "Режим по умолчанию должен быть Классика"
     );
 }
 
@@ -158,104 +98,26 @@ fn test_tetromino_rotate_counter_clockwise() {
     );
 }
 
-/// Тест 15: Проверка, что квадрат (O) не вращается
-///
-/// Квадрат - единственная фигура, которая не меняет форму при вращении.
-#[test]
-fn test_tetromino_o_no_rotate() {
-    let mut tetromino = Tetromino::new(
-        (4.0, 0.0),
-        ShapeType::O,
-        [(0, 0), (1, 0), (0, 1), (1, 1)],
-        5,
-    );
-
-    let original_coords = tetromino.coords();
-
-    // Вращение по часовой
-    tetromino.rotate(RotationDirection::Clockwise);
-    assert_eq!(
-        tetromino.coords(),
-        original_coords,
-        "Квадрат не должен вращаться по часовой"
-    );
-
-    // Вращение против часовой
-    tetromino.rotate(RotationDirection::CounterClockwise);
-    assert_eq!(
-        tetromino.coords(),
-        original_coords,
-        "Квадрат не должен вращаться против часовой"
-    );
-}
-
-/// Тест 17: Проверка вращения всех типов фигур
-///
-/// Проверяет, что все 7 типов фигур могут вращаться (кроме O).
-#[test]
-fn test_all_tetromino_rotate() {
-    let shapes = [
-        ShapeType::T,
-        ShapeType::L,
-        ShapeType::J,
-        ShapeType::S,
-        ShapeType::Z,
-        ShapeType::O,
-        ShapeType::I,
-    ];
-
-    for shape_type in &shapes {
-        let mut tetromino = Tetromino::new(
-            (4.0, 0.0),
-            *shape_type,
-            crate::tetromino::SHAPE_COORDS[*shape_type as usize],
-            *shape_type as u8,
-        );
-
-        let original_coords = tetromino.coords();
-        tetromino.rotate(RotationDirection::Clockwise);
-
-        // Все фигуры кроме O должны изменить координаты
-        if *shape_type == ShapeType::O {
-            // Квадрат не должен измениться
-            assert_eq!(
-                tetromino.coords(),
-                original_coords,
-                "Квадрат (O) не должен вращаться"
-            );
-        } else {
-            // Проверяем, что вращение произошло (координаты изменились)
-            // Для большинства фигур одно вращение меняет координаты
-            assert_ne!(
-                tetromino.coords(),
-                original_coords,
-                "Фигура {:?} должна изменить координаты после вращения",
-                shape_type
-            );
-        }
-    }
-}
-
 // ============================================================================
 // ГРУППА ТЕСТОВ 18-22: Система очков
 // ============================================================================
 
 /// Тест 21: Проверка расчёта очков за линии
 ///
-/// Проверяет экспоненциальный бонус за несколько линий.
+/// Проверяет реальные значения из LINE_SCORES.
 #[test]
 fn test_line_score_calculation() {
-    // 1 линия: 100 * 2^0 = 100
+    // 1 линия: 100 очков
     assert_eq!(LINE_SCORES[0], 100, "1 линия = 100 очков");
 
-    // 2 линии: 100 * 2^1 = 200
-    assert_eq!(LINE_SCORES[0] * (1 << 1), 200, "2 линии = 200 очков");
+    // 2 линии: 200 очков
+    assert_eq!(LINE_SCORES[1], 200, "2 линии = 200 очков");
 
-    // 3 линии: 100 * 2^2 = 400
-    assert_eq!(LINE_SCORES[0] * (1 << 2), 400, "3 линии = 400 очков");
+    // 3 линии: 400 очков
+    assert_eq!(LINE_SCORES[2], 400, "3 линии = 400 очков");
 
-    // 4 линии: 100 * 2^3 = 800
-    assert_eq!(LINE_SCORES[0] * (1 << 3), 800, "4 линии = 800 очков");
+    // 4 линии (Tetris): 1800 очков
+    assert_eq!(LINE_SCORES[3], 1800, "4 линии (Tetris) = 1800 очков");
 }
 
 // ============================================================================

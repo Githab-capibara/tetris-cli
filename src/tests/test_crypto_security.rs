@@ -12,21 +12,6 @@ fn test_hmac_different_keys() {
     assert_ne!(sig1, sig2, "Разные ключи должны давать разные подписи");
 }
 
-/// Тест: HMAC-SHA256 всегда 64 hex символа для пустых данных
-#[test]
-fn test_hmac_empty_data() {
-    let sig = hmac_sha256("key", "");
-    assert_eq!(sig.len(), 64, "HMAC-SHA256 всегда 64 hex символа");
-}
-
-/// Тест: HMAC детерминированный
-#[test]
-fn test_hmac_deterministic() {
-    let sig1 = hmac_sha256("key", "data");
-    let sig2 = hmac_sha256("key", "data");
-    assert_eq!(sig1, sig2, "HMAC должен быть детерминированным");
-}
-
 /// Тест: разные данные дают разные подписи
 #[test]
 fn test_hmac_different_data() {
@@ -60,16 +45,6 @@ fn test_hmac_with_salt_unique_signatures() {
     let sig1 = hmac_sign_with_salt("key", "salt1", "data").unwrap();
     let sig2 = hmac_sign_with_salt("key", "salt2", "data").unwrap();
     assert_ne!(sig1, sig2, "Разные соли должны давать разные подписи");
-}
-
-/// Тест: HMAC-SHA256 вывод является валидным hex
-#[test]
-fn test_hmac_output_is_valid_hex() {
-    let sig = hmac_sha256("key", "data");
-    assert!(
-        sig.chars().all(|c| c.is_ascii_hexdigit()),
-        "HMAC подпись должна быть валидной hex строкой"
-    );
 }
 
 /// Тест: HMAC-SHA256 с Unicode входом

@@ -10,9 +10,6 @@
 //! - Тест spin-вращения (T-spin, I-spin) (1 тест)
 //! - Тест специального вращения S и Z (1 тест)
 
-// Разрешаем использование deprecated метода rotate_old() для тестирования обратной совместимости
-#![allow(deprecated)]
-
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};
 use crate::types::RotationDirection;
 
