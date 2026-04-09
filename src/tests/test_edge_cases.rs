@@ -140,7 +140,7 @@ fn test_path_validator_rejects_url_encoded_traversal() {
 
 /// Тест: `PathValidator` проверяет `symlink_metadata`
 /// Примечание: полная проверка symlink требует существующей файловой системы.
-/// Этот тест документирует что `validate_no_symlinks` вызывает `symlink_metadata`.
+/// Этот тест проверяет что для несуществующего пути проверка не паникует.
 #[test]
 fn test_path_validator_symlink_check_exists() {
     use crate::validation::PathValidator;
@@ -150,11 +150,12 @@ fn test_path_validator_symlink_check_exists() {
 
     // Для несуществующего файла проверка symlink должна проходить (файла нет = нет symlink)
     let nonexistent = Path::new("/nonexistent/path/file.txt");
-    // validate_no_symlinks возвращает Ok для несуществующих файлов
-    // (проверка будет при создании файла через O_NOFOLLOW)
     let result = validator.validate_no_symlinks(nonexistent);
-    // Может быть Ok или Err в зависимости от прав доступа — главное что не паникует
-    let _ = result;
+    // Проверяем что результат Ok (несуществующий файл не может быть symlink)
+    assert!(
+        result.is_ok(),
+        "validate_no_symlinks должен вернуть Ok для несуществующего пути"
+    );
 }
 
 // ============================================================================

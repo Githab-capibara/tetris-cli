@@ -259,7 +259,7 @@ fn test_collision_rotation_in_center() {
 
 /// Тест 45: Проверка что вращение O-фигуры не вызывает проблем.
 ///
-/// O-фигура не вращается, но метод не должен паниковать.
+/// O-фигура не вращается, но метод не должен паниковать и должен вернуть false.
 #[test]
 fn test_collision_rotation_o_piece() {
     let mut state = GameState::new();
@@ -268,8 +268,12 @@ fn test_collision_rotation_o_piece() {
         .get_curr_shape_mut()
         .set_coords(SHAPE_COORDS[ShapeType::O as usize]);
 
-    // O-фигура не вращается, но метод не должен паниковать
-    let _ = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    // O-фигура не вращается, метод должен вернуть false
+    let result = state.can_rotate_curr_shape(RotationDirection::Clockwise);
+    assert!(
+        !result,
+        "O-фигура не должна вращаться (can_rotate должен вернуть false)"
+    );
 }
 
 // ============================================================================
