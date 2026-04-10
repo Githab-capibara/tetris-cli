@@ -489,7 +489,6 @@ mod points_tests {
         handle_hard_drop(&mut state);
 
         // Счёт не должен переполниться
-        assert!(state.score() <= u128::MAX, "Переполнение при Hard Drop");
     }
 
     /// Тест на защиту от переполнения при Soft Drop.
@@ -503,9 +502,6 @@ mod points_tests {
         for _ in 0..100 {
             handle_soft_drop(&mut state);
         }
-
-        // Счёт не должен переполниться
-        assert!(state.score() <= u128::MAX, "Переполнение при Soft Drop");
     }
 
     /// Тест на защиту от переполнения при обновлении счёта и уровня.
@@ -519,12 +515,6 @@ mod points_tests {
 
         // Обновляем счёт за удаление 4 линий
         // update_score_and_level удалена
-
-        // Счёт не должен переполниться
-        assert!(
-            state.score() <= u128::MAX,
-            "Переполнение при обновлении счёта"
-        );
     }
 
     /// Тест на защиту от переполнения при приземлении.
@@ -540,9 +530,6 @@ mod points_tests {
 
         // Тестируем calculate_landing_bonus напрямую (без save_tetromino)
         calculate_landing_bonus(&mut state);
-
-        // Счёт не должен переполниться
-        assert!(state.score() <= u128::MAX, "Переполнение при приземлении");
     }
 
     /// Тест на защиту от переполнения комбо-бонуса.
@@ -556,9 +543,6 @@ mod points_tests {
 
         // Тестируем update_combo_on_clear напрямую (без save_tetromino)
         update_combo_on_clear(&mut state, 1);
-
-        // Счёт не должен переполниться
-        assert!(state.score() <= u128::MAX, "Переполнение комбо-бонуса");
     }
 
     // ========================================================================

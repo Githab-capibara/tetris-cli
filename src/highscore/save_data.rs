@@ -208,12 +208,13 @@ impl SaveData {
     /// * `score` - значение рекорда для сохранения
     ///
     /// # Возвращает
-    /// Новый экземпляр `SaveData` с вычисленным хешом
+    /// - `Some(SaveData)` — новый экземпляр с вычисленным хешом
+    /// - `None` — если `hmac_sign_with_salt` вернул ошибку
     ///
     /// # Пример
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
-    /// let save = SaveData::from_value(1000);
+    /// let save = SaveData::from_value(1000).unwrap();
     /// // [`score`] содержит значение 1000
     /// ```
     /// Использует u128 для предотвращения переполнения.
@@ -224,19 +225,21 @@ impl SaveData {
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
     ///
-    /// # Panics
-    /// Паникует, если `hmac_sign_with_salt` возвращает ошибку.
-    /// Теоретически недостижимо для корректных UTF-8 входов (`score`, `salt`, `key`),
-    /// поэтому используется `expect` вместо обработки ошибки.
-    #[must_use = "SaveData должен быть использован"]
-    pub fn from_value(score: u128) -> Self {
+    /// # Исправление аудита
+    /// Заменён `.expect()` на `match` — при ошибке HMAC возвращается `None`.
+    pub fn from_value(score: u128) -> Option<Self> {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
-        // unwrap: все входы — &str, from_utf8 гарантированно succeeds
-        let hash = hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str)
-            .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов");
+        // При ошибке HMAC (теоретически невозможной для валидных &str) возвращаем None
+        let hash = match hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str) {
+            Ok(h) => h,
+            Err(_e) => {
+                crate::log_error!("Не удалось создать HMAC подпись для рекорда");
+                return None;
+            }
+        };
 
-        Self { score, salt, hash }
+        Some(Self { score, salt, hash })
     }
 
     /// Сохранить значение рекорда в файл.
@@ -260,7 +263,10 @@ impl SaveData {
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
     #[allow(unused_variables)]
     pub fn save_value(high_score: u128) {
-        let save = Self::from_value(high_score);
+        let Some(save) = Self::from_value(high_score) else {
+            crate::log_error!("Не удалось создать SaveData — HMAC подпись вернула ошибку");
+            return;
+        };
         if let Err(e) = store(APP_NAME, Some("config"), &save) {
             crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
@@ -286,7 +292,7 @@ impl SaveData {
     /// # Пример
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
-    /// let save = SaveData::from_value(1000);
+    /// let save = SaveData::from_value(1000).unwrap();
     /// assert_eq!(save.verify_and_get_score(), Some(1000));
     /// ```
     ///
@@ -314,7 +320,7 @@ impl SaveData {
     /// # Пример
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
-    /// let save = SaveData::from_value(1000);
+    /// let save = SaveData::from_value(1000).unwrap();
     /// match save.verify_and_get_score_result() {
     ///     Ok(score) => println!("Рекорд: {}", score),
     ///     Err(e) => eprintln!("Ошибка проверки: {}", e),
@@ -344,7 +350,12 @@ impl SaveData {
 
 impl Default for SaveData {
     fn default() -> Self {
-        Self::from_value(0)
+        // from_value(0) теоретически всегда возвращает Some для валидного HMAC ключа
+        Self::from_value(0).unwrap_or_else(|| Self {
+            score: 0,
+            salt: String::new(),
+            hash: String::new(),
+        })
     }
 }
 

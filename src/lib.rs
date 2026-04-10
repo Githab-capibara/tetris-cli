@@ -82,36 +82,28 @@
 // Каждый модуль отвечает за определённую часть функциональности игры.
 // Модули организованы иерархически и могут импортировать друг друга.
 
-// #[macro_use] необходим для видимости макросов log_error!, log_warn!, log_info!
-// внутри модулей крейта. Хотя они имеют #[macro_export], в edition 2021
-// они видны на уровне крейта только после точки определения.
+// Макросы log_error!, log_warn!, log_info! определены с #[macro_export].
+// #[macro_use] необходим для использования макросов без crate:: префикса в подмодулях.
 #[macro_use]
 mod macros;
 
-// Базовые модули (без зависимостей от других модулей проекта)
+// Все публичные модули (алфавитный порядок)
+pub mod app;
 pub mod config;
 pub mod constants;
-pub mod core;
-pub mod io_traits;
-pub mod types;
-
-// Остальные модули
-// #[macro_use] pub mod app — app модуль содержит pub fn run() и другие
-// публичные элементы. #[macro_use] здесь НЕ для макросов из app, а для того
-// чтобы макросы из `mod macros` были доступны внутри app при компиляции.
-pub mod app;
 pub mod controls;
+pub mod core;
 pub mod crypto;
 pub mod errors;
+pub mod exports;
 pub mod game;
 pub mod highscore;
 pub mod io;
+pub mod io_traits;
 pub mod menu;
 pub mod tetromino;
+pub mod types;
 pub mod validation;
-
-// Модуль публичного API для удобного импорта
-pub mod exports;
 
 // Экспорт публичного API
 pub use exports::*;

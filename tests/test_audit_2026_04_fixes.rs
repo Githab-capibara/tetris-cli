@@ -56,7 +56,8 @@ fn test_c3_toctou_documentation_has_key_methods() {
     use tetris_cli::highscore::leaderboard::{LeaderboardEntry, ThreadSafeLeaderboardEntry};
 
     // Проверяем наличие методов для LeaderboardEntry
-    let entry = LeaderboardEntry::new("TestPlayer", 1000);
+    let entry = LeaderboardEntry::new("TestPlayer", 1000)
+        .expect("LeaderboardEntry::new не должен возвращать None");
 
     // Метод score() должен существовать и возвращать Some для валидной записи
     let score = entry.score();
@@ -73,7 +74,8 @@ fn test_c3_toctou_documentation_has_key_methods() {
     );
 
     // ThreadSafeLeaderboardEntry должен иметь score_safe() метод
-    let ts_entry = ThreadSafeLeaderboardEntry::new("TestPlayer", 2000);
+    let ts_entry = ThreadSafeLeaderboardEntry::new("TestPlayer", 2000)
+        .expect("ThreadSafeLeaderboardEntry::new не должен возвращать None");
     let ts_score = ts_entry.score_safe();
     assert_eq!(
         ts_score,
@@ -449,7 +451,8 @@ fn test_all_26_audit_fixes_complete_integration() {
 
     assert!(validate_hmac_key("valid_key_at_least_16", "TEST").is_ok());
     let _reader = KeyReader::new();
-    let entry = LeaderboardEntry::new("Player", 1000);
+    let entry = LeaderboardEntry::new("Player", 1000)
+        .expect("LeaderboardEntry::new не должен возвращать None");
     assert_eq!(entry.score(), Some(1000));
 
     // HIGH (10)
@@ -508,7 +511,6 @@ fn test_all_26_audit_fixes_complete_integration() {
     let state = ExportedState::new();
     // Проверяем что GameState создан корректно (уровень >= 1, счёт >= 0)
     assert!(state.level() >= 1, "Уровень должен быть >= 1");
-    assert!(state.score() >= 0, "Счёт должен быть >= 0");
 
     // Все 26 исправлений работают корректно
     // Исправления работают - тест проходит

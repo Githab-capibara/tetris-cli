@@ -278,13 +278,5 @@ fn test_no_panic_at_extreme_values() {
     // Многократные начисления не должны вызывать панику
     for _ in 0..1000 {
         update_score_for_lines(&mut score, level, 4, &mut combo_counter);
-        // Проверяем что счёт валиден на каждой итерации
-        assert!(score <= u128::MAX, "Счёт не должен превышать u128::MAX");
     }
-
-    // Финальная проверка
-    assert!(
-        score <= u128::MAX,
-        "Финальный счёт не должен превышать u128::MAX"
-    );
 }

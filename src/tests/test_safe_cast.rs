@@ -377,13 +377,7 @@ fn test_safe_f32_to_u32_stress_test() {
     ];
 
     for &val in &test_values {
-        let result = safe_f32_to_u32(val);
-        // Проверка что результат не вызвал паники
-        // u32 не может быть больше u32::MAX - проверка на уровне типа
-        assert!(
-            result <= u32::MAX,
-            "Результат должен быть <= u32::MAX (val={val}, result={result})"
-        );
+        let _result = safe_f32_to_u32(val);
     }
 
     // Тест специальных значений
@@ -433,14 +427,7 @@ fn test_safe_f32_to_u32_no_panic() {
 
     // Проверяем что ни одно значение не вызывает панику и возвращает u32
     for &val in &test_values {
-        let result = safe_f32_to_u32(val);
-        // Результат всегда должен быть валидным u32
-        assert!(
-            result <= u32::MAX,
-            "Результат {} для {} превышает u32::MAX",
-            result,
-            val
-        );
+        let _result = safe_f32_to_u32(val);
     }
 
     println!("✓ Конвертация не вызывает паники ни для каких значений");

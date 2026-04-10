@@ -151,7 +151,7 @@ pub fn remove_rows(blocks: &mut [[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT
 /// был удалён как избыточная абстракция (единственная реализация — GameState).
 pub fn check_rows(state: &mut GameState) -> u32 {
     // Поиск заполненных линий - используем битовую маску для оптимизации
-    let (rows_mask, remove_count) = find_filled_lines(state.get_blocks());
+    let (rows_mask, remove_count) = find_full_rows(state.get_blocks());
 
     // Анимация и звук для каждой линии
     // Примечание: анимация упрощена до установки флага и звукового сигнала
@@ -208,27 +208,6 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     }
 
     remove_count
-}
-
-/// Поиск заполненных линий (вспомогательная функция).
-///
-/// # Аргументы
-/// * `blocks` - игровое поле (только чтение)
-///
-/// # Возвращает
-/// Битовую маску заполненных линий и количество заполненных линий
-///
-/// # Производительность
-/// - Использует битовую маску `u32` для хранения до 32 линий
-/// - O(n) сложность где n = `GRID_HEIGHT` (20 итераций)
-/// - Без аллокаций в куче
-///
-/// # Исправление #11 (LOW)
-/// Возвращает битовую маску `u32` вместо `SmallVec`<[usize; 4]> для оптимизации.
-/// Битовая маска занимает 4 байта вместо 24+ байт для `SmallVec`.
-#[must_use]
-pub fn find_filled_lines(blocks: &[[i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT]) -> (u32, u32) {
-    find_full_rows(blocks)
 }
 
 /// Удаление линий и сдвиг поля (вспомогательная функция).
@@ -361,14 +340,14 @@ mod lines_tests {
     }
 
     // ========================================================================
-    // ТЕСТЫ ДЛЯ #11: find_filled_lines() С БИТОВОЙ МАСКОЙ - ОПТИМИЗАЦИЯ
+    // ТЕСТЫ ДЛЯ #11: find_full_rows() С БИТОВОЙ МАСКОЙ - ОПТИМИЗАЦИЯ
     // ========================================================================
 
-    /// Тест #11: проверка что `find_filled_lines` возвращает битовую маску
+    /// Тест #11: проверка что `find_full_rows` возвращает битовую маску
     #[test]
-    fn test_fix_11_find_filled_lines_returns_bitmask() {
+    fn test_fix_11_find_full_rows_returns_bitmask() {
         let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
-        let (mask, count) = find_filled_lines(&blocks);
+        let (mask, count) = find_full_rows(&blocks);
 
         // Проверка типа возвращаемого значения - (u32, u32)
         let _: (u32, u32) = (mask, count);
@@ -376,9 +355,9 @@ mod lines_tests {
         assert_eq!(count, 0);
     }
 
-    /// Тест #11: проверка `find_filled_lines` с заполненными линиями
+    /// Тест #11: проверка `find_full_rows` с заполненными линиями
     #[test]
-    fn test_fix_11_find_filled_lines_with_full_rows() {
+    fn test_fix_11_find_full_rows_with_full_rows() {
         let mut blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем несколько линий
@@ -386,7 +365,7 @@ mod lines_tests {
         blocks[10] = [2i8; crate::constants::GRID_WIDTH];
         blocks[15] = [3i8; crate::constants::GRID_WIDTH];
 
-        let (mask, count) = find_filled_lines(&blocks);
+        let (mask, count) = find_full_rows(&blocks);
 
         assert_eq!(count, 3, "Должно быть найдено 3 заполненные линии");
         assert_ne!(mask & (1 << 5), 0, "Должна быть найдена линия 5");
@@ -396,7 +375,7 @@ mod lines_tests {
 
     /// Тест #11: проверка битовой маски с максимальным количеством линий (4)
     #[test]
-    fn test_fix_11_find_filled_lines_max_tetris_lines() {
+    fn test_fix_11_find_full_rows_max_tetris_lines() {
         let mut blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
 
         // Заполняем 4 линии (максимум для тетриса)
@@ -405,7 +384,7 @@ mod lines_tests {
         blocks[18] = [3i8; crate::constants::GRID_WIDTH];
         blocks[19] = [4i8; crate::constants::GRID_WIDTH];
 
-        let (mask, count) = find_filled_lines(&blocks);
+        let (mask, count) = find_full_rows(&blocks);
 
         assert_eq!(count, 4, "Должно быть найдено 4 заполненные линии");
         assert_ne!(mask & (1 << 16), 0);
@@ -421,7 +400,7 @@ mod lines_tests {
         // Это оптимально для тетриса (максимум 4 линии за раз)
 
         let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
-        let (mask, count) = find_filled_lines(&blocks);
+        let (mask, count) = find_full_rows(&blocks);
 
         // Проверка что битовая маска корректно работает
         assert_eq!(count, 0);
@@ -445,7 +424,7 @@ mod lines_tests {
         // - Нет аллокаций в куче
 
         let blocks = [[-1i8; crate::constants::GRID_WIDTH]; GRID_HEIGHT];
-        let (mask, count) = find_filled_lines(&blocks);
+        let (mask, count) = find_full_rows(&blocks);
 
         // Проверка что битовая маска корректно работает
         assert_eq!(count, 0);

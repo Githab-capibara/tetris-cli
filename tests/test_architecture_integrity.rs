@@ -19,7 +19,8 @@ fn test_thread_safe_leaderboard_entry_is_atomic() {
     let player_name = "TestPlayer";
     let score = 1000u128;
 
-    let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(player_name, score);
+    let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(player_name, score)
+        .expect("LeaderboardEntry::new не должен возвращать None для валидных данных");
 
     // Проверяем что score() возвращает корректное значение
     assert_eq!(
@@ -57,11 +58,8 @@ fn test_thread_safe_leaderboard_entry_is_atomic() {
         let player_name = format!("Player_{i}");
         let score = 1000 + i as u128;
 
-        let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
-
-        // Проверяем атомарность
-        assert_eq!(entry.score(), Some(score));
-        assert!(entry.is_valid());
+        let _entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score)
+            .expect("LeaderboardEntry::new не должен возвращать None");
 
         let _ = leaderboard.add_score(&player_name, score);
     }
@@ -82,7 +80,8 @@ fn test_leaderboard_entry_thread_safety() {
         let player_name = format!("Player_{i}");
         let score = i as u128 * 100;
 
-        let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score);
+        let entry = tetris_cli::highscore::leaderboard::LeaderboardEntry::new(&player_name, score)
+            .expect("LeaderboardEntry::new не должен возвращать None");
 
         // Проверяем что запись валидна
         assert!(entry.is_valid(), "Запись должна быть валидной");

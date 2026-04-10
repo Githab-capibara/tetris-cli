@@ -12,14 +12,14 @@ use crate::validation::PathValidator;
 /// Тест: `GameState::new()` не должен паниковать
 #[test]
 fn test_game_state_new_no_panic() {
-    let result = panic::catch_unwind(|| GameState::new());
+    let result = panic::catch_unwind(GameState::new);
     assert!(result.is_ok(), "GameState::new() не должен паниковать");
 }
 
 /// Тест: `GameState::new_sprint()` не должен паниковать
 #[test]
 fn test_game_state_new_sprint_no_panic() {
-    let result = panic::catch_unwind(|| GameState::new_sprint());
+    let result = panic::catch_unwind(GameState::new_sprint);
     assert!(
         result.is_ok(),
         "GameState::new_sprint() не должен паниковать"
@@ -29,7 +29,7 @@ fn test_game_state_new_sprint_no_panic() {
 /// Тест: `GameState::new_marathon()` не должен паниковать
 #[test]
 fn test_game_state_new_marathon_no_panic() {
-    let result = panic::catch_unwind(|| GameState::new_marathon());
+    let result = panic::catch_unwind(GameState::new_marathon);
     assert!(
         result.is_ok(),
         "GameState::new_marathon() не должен паниковать"
@@ -39,7 +39,7 @@ fn test_game_state_new_marathon_no_panic() {
 /// Тест: `BagGenerator::new()` не должен паниковать
 #[test]
 fn test_bag_generator_new_no_panic() {
-    let result = panic::catch_unwind(|| BagGenerator::new());
+    let result = panic::catch_unwind(BagGenerator::new);
     assert!(result.is_ok(), "BagGenerator::new() не должен паниковать");
 }
 

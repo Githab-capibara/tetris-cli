@@ -71,10 +71,9 @@ fn bench_find_full_rows(c: &mut Criterion) {
 
     // Пустое поле — инициализация ВЫНЕСЕНА в iter_with_setup
     group.bench_function("empty_field", |b| {
-        b.iter_with_setup(
-            || GameState::new(),
-            |state| black_box(find_full_rows(state.get_blocks())),
-        );
+        b.iter_with_setup(GameState::new, |state| {
+            black_box(find_full_rows(state.get_blocks()))
+        });
     });
 
     // Поле с одной заполненной линией — инициализация ВЫНЕСЕНА

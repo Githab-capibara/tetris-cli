@@ -31,9 +31,7 @@ use serde::{Deserialize, Serialize};
 
 // crate
 use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{
-    hmac_sign_with_salt, hmac_verify_with_salt, hmac_verify_with_salt_bytes,
-};
+use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt_bytes};
 use crate::highscore::APP_NAME;
 use crate::validation::name::sanitize_player_name;
 
@@ -48,20 +46,26 @@ use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
 /// * `score` - значение рекорда
 ///
 /// # Возвращает
-/// Кортеж `(sanitized_name, salt, hash)` для использования в конструкторах
+/// - `Some((sanitized_name, salt, hash))` — данные для использования в конструкторах
+/// - `None` — если `hmac_sign_with_salt` вернул ошибку
 ///
 /// # Исправление проблемы 32
 /// Вынесена общая логика из `LeaderboardEntry::new()` и `ThreadSafeLeaderboardEntry::new()`
 /// для устранения дублирования кода (генерация соли, хеша, санитаризация имени).
-fn create_entry_data(name: &str, score: u128) -> (String, String, String) {
+fn create_entry_data(name: &str, score: u128) -> Option<(String, String, String)> {
     let valid_name = sanitize_player_name(name);
     let salt = crate::crypto::generate_salt();
     // Исправление Проблема 9: Разделители ':' предотвращают коллизии конкатенации
     let salt_name_score = format!("{salt}:{valid_name}:{score}");
-    // unwrap: все входы — &str, from_utf8 гарантированно succeeds
-    let hash = hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score)
-        .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов");
-    (valid_name, salt, hash)
+    // При ошибке HMAC возвращаем None вместо паники
+    let hash = match hmac_sign_with_salt(get_leaderboard_hmac_key(), &salt, &salt_name_score) {
+        Ok(h) => h,
+        Err(_e) => {
+            crate::log_error!("Не удалось создать HMAC подпись для записи таблицы лидеров");
+            return None;
+        }
+    };
+    Some((valid_name, salt, hash))
 }
 
 /// Запись в таблице лидеров.
@@ -182,23 +186,23 @@ impl LeaderboardEntry {
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     ///
     /// // Короткое имя
-    /// let entry = LeaderboardEntry::new("Al", 1000);
+    /// let entry = LeaderboardEntry::new("Al", 1000).unwrap();
     /// assert_eq!(entry.name(), "Al");
     ///
     /// // Длинное имя (обрезается до 32 символов)
     /// let long_name = "a".repeat(50);
-    /// let entry = LeaderboardEntry::new(&long_name, 2000);
+    /// let entry = LeaderboardEntry::new(&long_name, 2000).unwrap();
     /// assert_eq!(entry.name().len(), 32);
     ///
     /// // Пустое имя (заменяется на "Anonymous")
-    /// let entry = LeaderboardEntry::new("", 3000);
+    /// let entry = LeaderboardEntry::new("", 3000).unwrap();
     /// assert_eq!(entry.name(), "Anonymous");
     /// ```
     ///
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player", 1000);
+    /// let entry = LeaderboardEntry::new("Player", 1000).unwrap();
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), Some(1000));
     /// ```
@@ -209,17 +213,20 @@ impl LeaderboardEntry {
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
+    ///
+    /// # Исправление аудита
+    /// Возвращает `Option<Self>` — `None` при ошибке HMAC подписи.
     #[must_use]
-    pub fn new(name: &str, score: u128) -> Self {
+    pub fn new(name: &str, score: u128) -> Option<Self> {
         // Исправление проблемы 32: используем общую функцию create_entry_data
-        let (valid_name, salt, hash) = create_entry_data(name, score);
+        let (valid_name, salt, hash) = create_entry_data(name, score)?;
 
-        Self {
+        Some(Self {
             name: valid_name,
             score_value: score,
             salt,
             hash,
-        }
+        })
     }
 
     /// Проверить целостность записи.
@@ -240,7 +247,7 @@ impl LeaderboardEntry {
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player", 1000);
+    /// let entry = LeaderboardEntry::new("Player", 1000).unwrap();
     /// assert!(entry.is_valid());
     /// ```
     ///
@@ -291,7 +298,7 @@ impl LeaderboardEntry {
 /// use std::sync::Arc;
 /// use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
 ///
-/// let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player", 1000));
+/// let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player", 1000).unwrap());
 ///
 /// // Поток 1: атомарная валидация и возврат
 /// let score = entry.score();
@@ -322,7 +329,7 @@ impl LeaderboardEntry {
 /// ```ignore
 /// use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
 ///
-/// let entry = ThreadSafeLeaderboardEntry::new("Player", 1000);
+/// let entry = ThreadSafeLeaderboardEntry::new("Player", 1000).unwrap();
 ///
 /// // Поток 1
 /// let score = entry.score(); // Атомарная валидация и возврат
@@ -356,87 +363,30 @@ impl ThreadSafeLeaderboardEntry {
     /// * `score` - значение рекорда
     ///
     /// # Возвращает
-    /// Новый экземпляр `ThreadSafeLeaderboardEntry`
+    /// - `Some(ThreadSafeLeaderboardEntry)` — новый экземпляр
+    /// - `None` — при ошибке HMAC подписи
     ///
     /// # Исправление #3 (CRITICAL)
     /// HMAC логика перемещена в `crypto::hmac`.
     ///
     /// # Исправление C9 (CRITICAL)
     /// Использует `RwLock` вместо Mutex для лучшей производительности чтения.
+    ///
+    /// # Исправление аудита
+    /// Возвращает `Option<Self>` — `None` при ошибке HMAC подписи.
     #[must_use]
-    pub fn new(name: &str, score: u128) -> Self {
+    pub fn new(name: &str, score: u128) -> Option<Self> {
         // Исправление проблемы 32: используем общую функцию create_entry_data
-        let (valid_name, salt, hash) = create_entry_data(name, score);
+        let (valid_name, salt, hash) = create_entry_data(name, score)?;
 
-        Self {
+        Some(Self {
             inner: RwLock::new(LeaderboardEntryData {
                 name: valid_name,
                 score_value: score,
                 salt,
                 hash,
             }),
-        }
-    }
-
-    /// Получить значение рекорда с атомарной валидацией.
-    ///
-    /// # Возвращает
-    /// Значение рекорда (u128) или 0 если валидация не прошла
-    ///
-    /// # Ошибки
-    /// Возвращает `None` если `RwLock` отравлен (другой поток паниковал удерживая блокировку)
-    ///
-    /// # Безопасность
-    /// Метод использует `RwLock` для защиты от TOCTOU уязвимости.
-    /// Валидация и возврат значения выполняются атомарно под блокировкой чтения.
-    ///
-    /// # Исправление E2 (CRITICAL)
-    /// Изменён тип возврата на `Option<u128>` для обработки отравления `RwLock`.
-    /// Возвращает `None` вместо паники при `PoisonError`.
-    ///
-    /// # Исправление C9 (CRITICAL)
-    /// Использует `read()` вместо `lock()` для лучшей производительности чтения.
-    ///
-    /// # Returns
-    /// - Значение рекорда (u128) если валидация прошла успешно
-    /// - 0 если `RwLock` отравлен или запись не прошла валидацию
-    ///
-    /// # Устарело
-    /// Используйте [`Self::score_safe()`] для явной обработки ошибок.
-    #[must_use]
-    #[deprecated(
-        since = "23.96.16",
-        note = "Используйте score_safe() для безопасной обработки ошибок"
-    )]
-    #[allow(clippy::missing_panics_doc)]
-    #[allow(unused_variables)]
-    // P3-ID42: Известная неэффективность — format!() выделяет строку каждый вызов.
-    // Низкий приоритет: метод устарел и должен быть заменён на score_safe().
-    // SECURITY: format!() на каждой итерации создаёт аллокацию, что теоретически
-    // может быть использовано для DoS-атаки при массовых вызовах. Метод deprecated
-    // и будет удалён в будущей версии. Используйте score_safe() вместо этого.
-    pub fn score(&self) -> u128 {
-        // P5: Выполняем HMAC валидацию под read() блокировкой без клонирования
-        if let Ok(guard) = self.inner.read() {
-            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
-            let valid = hmac_verify_with_salt(
-                get_leaderboard_hmac_key(),
-                &guard.salt,
-                &salt_name_score,
-                &guard.hash,
-            )
-            .unwrap_or_else(|e| {
-                crate::log_error!("ThreadSafeLeaderboardEntry::score(): ошибка HMAC проверки: {e}");
-                false
-            });
-            if !valid {
-                crate::log_error!("ThreadSafeLeaderboardEntry::score(): запись не прошла валидацию HMAC — возможная подделка!");
-                return 0;
-            }
-            return guard.score_value;
-        }
-        crate::log_error!("ThreadSafeLeaderboardEntry::score(): RwLock poisoned — поток паниковал удерживая блокировку");
-        0
+        })
     }
 
     /// Получить значение рекорда с безопасной обработкой ошибок.
@@ -979,7 +929,10 @@ impl Leaderboard {
         // Исправление #9: передаём &str вместо String
         // P2: Добавлено reserve() для предотвращения реаллокаций
         self.entries.reserve(1);
-        let new_entry = LeaderboardEntry::new(&valid_name, score);
+        let Some(new_entry) = LeaderboardEntry::new(&valid_name, score) else {
+            crate::log_error!("Не удалось создать запись — HMAC подпись вернула ошибку");
+            return false;
+        };
         self.entries.push(new_entry);
 
         // Сортировка по убыванию очков (H4)
@@ -1074,7 +1027,6 @@ impl Leaderboard {
 // ============================================================================
 
 #[cfg(test)]
-#[allow(deprecated)]
 mod thread_safe_tests {
     use super::*;
     use std::sync::Arc;
@@ -1084,56 +1036,31 @@ mod thread_safe_tests {
     ///
     /// Проверяет создание и базовые методы потокобезопасной записи.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_basic() {
-        let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000);
+        let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000).unwrap();
 
-        assert_eq!(entry.name(), "Player1");
-        assert_eq!(entry.score(), 1000);
-        assert!(entry.is_valid());
+        assert_eq!(entry.name_safe().as_deref(), Some("Player1"));
+        assert_eq!(entry.score_safe(), Some(1000));
+        assert!(entry.is_valid_safe().unwrap_or(false));
     }
 
-    /// Тест 2: Многопоточный доступ к `score()`
+    /// Тест 2: Многопоточный доступ к `score_safe()`
     ///
-    /// Проверяет атомарность метода `score()` при доступе из нескольких потоков.
+    /// Проверяет атомарность метода `score_safe()` при доступе из нескольких потоков.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_concurrent_score() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player2", 2000));
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player2", 2000).unwrap());
         let mut handles = vec![];
 
         // Создаём 10 потоков, каждый читает score
         for _ in 0..10 {
             let entry_clone = Arc::clone(&entry);
             let handle = thread::spawn(move || {
-                let score = entry_clone.score();
-                assert_eq!(score, 2000, "score() должен возвращать корректное значение");
-            });
-            handles.push(handle);
-        }
-
-        // Ждём завершения всех потоков
-        for handle in handles {
-            handle.join().expect("Поток не должен паниковать");
-        }
-    }
-
-    /// Тест 3: Многопоточный доступ к `is_valid()`
-    ///
-    /// Проверяет атомарность метода `is_valid()` при доступе из нескольких потоков.
-    #[test]
-    fn test_thread_safe_entry_concurrent_is_valid() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player3", 3000));
-        let mut handles = vec![];
-
-        // Создаём 10 потоков, каждый проверяет валидность
-        for _ in 0..10 {
-            let entry_clone = Arc::clone(&entry);
-            let handle = thread::spawn(move || {
-                let valid = entry_clone.is_valid();
-                assert!(
-                    valid,
-                    "is_valid() должен возвращать true для валидной записи"
+                let score = entry_clone.score_safe();
+                assert_eq!(
+                    score,
+                    Some(2000),
+                    "score_safe() должен возвращать корректное значение"
                 );
             });
             handles.push(handle);
@@ -1145,24 +1072,51 @@ mod thread_safe_tests {
         }
     }
 
-    /// Тест 4: Смешанный многопоточный доступ (score и `is_valid`)
+    /// Тест 3: Многопоточный доступ к `is_valid_safe()`
+    ///
+    /// Проверяет атомарность метода `is_valid_safe()` при доступе из нескольких потоков.
+    #[test]
+    fn test_thread_safe_entry_concurrent_is_valid() {
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player3", 3000).unwrap());
+        let mut handles = vec![];
+
+        // Создаём 10 потоков, каждый проверяет валидность
+        for _ in 0..10 {
+            let entry_clone = Arc::clone(&entry);
+            let handle = thread::spawn(move || {
+                let valid = entry_clone.is_valid_safe();
+                assert!(
+                    valid.unwrap_or(false),
+                    "is_valid_safe() должен возвращать true для валидной записи"
+                );
+            });
+            handles.push(handle);
+        }
+
+        // Ждём завершения всех потоков
+        for handle in handles {
+            handle.join().expect("Поток не должен паниковать");
+        }
+    }
+
+    /// Тест 4: Смешанный многопоточный доступ (score_safe и `is_valid_safe`)
     ///
     /// Проверяет корректную работу при одновременном вызове разных методов.
     #[test]
     fn test_thread_safe_entry_mixed_concurrent_access() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player4", 4000));
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player4", 4000).unwrap());
         let mut handles = vec![];
 
-        // Половина потоков вызывает score(), половина - is_valid()
+        // Половина потоков вызывает score_safe(), половина - is_valid_safe()
         for i in 0..10 {
             let entry_clone = Arc::clone(&entry);
             let handle = thread::spawn(move || {
                 if i % 2 == 0 {
-                    let score = entry_clone.score();
-                    assert_eq!(score, 4000);
+                    let score = entry_clone.score_safe();
+                    assert_eq!(score, Some(4000));
                 } else {
-                    let valid = entry_clone.is_valid();
-                    assert!(valid);
+                    let valid = entry_clone.is_valid_safe();
+                    assert!(valid.unwrap_or(false));
                 }
             });
             handles.push(handle);
@@ -1178,7 +1132,7 @@ mod thread_safe_tests {
     /// Проверяет что между проверкой хэша и возвратом значения нет гонки данных.
     #[test]
     fn test_thread_safe_entry_atomic_validation() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player5", 5000));
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player5", 5000).unwrap());
         let mut handles = vec![];
 
         // Многократные проверки должны всегда возвращать корректное значение
@@ -1187,11 +1141,14 @@ mod thread_safe_tests {
             let handle = thread::spawn(move || {
                 // Многократные вызовы для проверки стабильности
                 for _ in 0..10 {
-                    let score = entry_clone.score();
-                    assert_eq!(score, 5000, "score() должен быть атомарным");
+                    let score = entry_clone.score_safe();
+                    assert_eq!(score, Some(5000), "score_safe() должен быть атомарным");
 
-                    let valid = entry_clone.is_valid();
-                    assert!(valid, "is_valid() должен быть атомарным");
+                    let valid = entry_clone.is_valid_safe();
+                    assert!(
+                        valid.unwrap_or(false),
+                        "is_valid_safe() должен быть атомарным"
+                    );
                 }
             });
             handles.push(handle);
@@ -1206,14 +1163,13 @@ mod thread_safe_tests {
     ///
     /// Проверяет корректную работу с различными именами игроков.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_different_names() {
         let names = ["Alice", "Bob", "Charlie", "Игрок", "Player_123"];
 
         for name in names {
-            let entry = ThreadSafeLeaderboardEntry::new(name, 1000);
-            assert_eq!(entry.name(), name);
-            assert!(entry.is_valid());
+            let entry = ThreadSafeLeaderboardEntry::new(name, 1000).unwrap();
+            assert_eq!(entry.name_safe().as_deref(), Some(name));
+            assert!(entry.is_valid_safe().unwrap_or(false));
         }
     }
 
@@ -1221,39 +1177,36 @@ mod thread_safe_tests {
     ///
     /// Проверяет корректную работу с нулевым значением рекорда.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_zero_score() {
-        let entry = ThreadSafeLeaderboardEntry::new("Player", 0);
-        assert_eq!(entry.score(), 0);
-        assert!(entry.is_valid());
+        let entry = ThreadSafeLeaderboardEntry::new("Player", 0).unwrap();
+        assert_eq!(entry.score_safe(), Some(0));
+        assert!(entry.is_valid_safe().unwrap_or(false));
     }
 
     /// Тест 8: `ThreadSafeLeaderboardEntry` с максимальным u128
     ///
     /// Проверяет работу с максимально возможным значением u128.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_max_score() {
         let max_score = u128::MAX;
-        let entry = ThreadSafeLeaderboardEntry::new("MaxPlayer", max_score);
-        assert_eq!(entry.score(), max_score);
-        assert!(entry.is_valid());
+        let entry = ThreadSafeLeaderboardEntry::new("MaxPlayer", max_score).unwrap();
+        assert_eq!(entry.score_safe(), Some(max_score));
+        assert!(entry.is_valid_safe().unwrap_or(false));
     }
 
-    /// Тест 9: `name()` метод потокобезопасность
+    /// Тест 9: `name_safe()` метод потокобезопасность
     ///
-    /// Проверяет атомарность метода `name()` при доступе из нескольких потоков.
+    /// Проверяет атомарность метода `name_safe()` при доступе из нескольких потоков.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_concurrent_name() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("TestPlayer", 1000));
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("TestPlayer", 1000).unwrap());
         let mut handles = vec![];
 
         for _ in 0..10 {
             let entry_clone = Arc::clone(&entry);
             let handle = thread::spawn(move || {
-                let name = entry_clone.name();
-                assert_eq!(name, "TestPlayer");
+                let name = entry_clone.name_safe();
+                assert_eq!(name.as_deref(), Some("TestPlayer"));
             });
             handles.push(handle);
         }
@@ -1267,9 +1220,8 @@ mod thread_safe_tests {
     ///
     /// Проверяет стабильность при высокой конкуренции за Mutex.
     #[test]
-    #[allow(deprecated)]
     fn test_thread_safe_entry_stress_test() {
-        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("StressPlayer", 9999));
+        let entry = Arc::new(ThreadSafeLeaderboardEntry::new("StressPlayer", 9999).unwrap());
         let mut handles = vec![];
 
         // Создаём 50 потоков для стресс-теста
@@ -1277,12 +1229,12 @@ mod thread_safe_tests {
             let entry_clone = Arc::clone(&entry);
             let handle = thread::spawn(move || {
                 for _ in 0..100 {
-                    let score = entry_clone.score();
-                    let valid = entry_clone.is_valid();
-                    let _name = entry_clone.name();
+                    let score = entry_clone.score_safe();
+                    let valid = entry_clone.is_valid_safe();
+                    let _name = entry_clone.name_safe();
 
-                    assert_eq!(score, 9999);
-                    assert!(valid);
+                    assert_eq!(score, Some(9999));
+                    assert!(valid.unwrap_or(false));
                 }
                 // Разные операции для разных потоков
                 if i % 5 == 0 {

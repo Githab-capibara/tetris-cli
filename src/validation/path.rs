@@ -526,16 +526,12 @@ impl PathValidator {
         // на кэшированный результат, так как validate_within_directory — публичный метод
         // который может вызываться независимо. Каждый вызов должен быть самодостаточным
         // для гарантии security in depth.
-        let canonical_path = if path.exists() {
-            path.canonicalize().map_err(|e| PathError {
-                message: format!("Неверный путь {}: {}", path.display(), e),
-                kind: PathErrorKind::InvalidPath,
-            })?
-        } else {
-            path.parent()
-                .and_then(|p: &Path| p.canonicalize().ok())
-                .unwrap_or_else(|| dir.to_path_buf())
-        };
+        // Исправление #13: убрана redundant exists() проверка — canonicalize().ok() достаточно
+        let canonical_path = path
+            .canonicalize()
+            .ok()
+            .or_else(|| path.parent().and_then(|p: &Path| p.canonicalize().ok()))
+            .unwrap_or_else(|| dir.to_path_buf());
 
         if canonical_path.strip_prefix(dir).is_err() {
             return Err(PathError {

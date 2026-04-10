@@ -85,26 +85,22 @@
 
 // Подмодули (S7: алфавитный порядок)
 // PROB-119: pub(crate) для подмодулей, не используемых извне crate.
-// pub: state, stats, scoring, types, view — используются из exports.rs и других модулей crate.
-// pub: mode_registry, mode_trait — содержат unused элементы, pub предотвращает clippy errors
-// pub: logic — используется из integration tests (tests/test_audit_2026_04_fixes.rs)
-// pub: time, scoreboard — имеют doctests ссылающиеся на модуль напрямую
-pub(crate) mod access;
-pub(crate) mod board;
-pub(crate) mod cache;
-pub(crate) mod components;
-pub(crate) mod cycle;
-pub mod logic;
-pub mod mode_registry;
-pub mod mode_trait;
-pub(crate) mod render;
-pub mod scoreboard;
-pub mod scoring;
-pub mod state;
-pub mod stats;
-pub mod time;
-pub mod types;
-pub mod view;
+pub(crate) mod access; // pub(crate): внутренний трейт доступа, не нужен за пределами crate
+pub(crate) mod board; // pub(crate): внутреннее представление доски
+pub(crate) mod cache; // pub(crate): кэширование строк, деталь реализации
+pub(crate) mod components; // pub(crate): внутренние компоненты
+pub(crate) mod cycle; // pub(crate): игровой цикл, вызывается только из GameState::play
+pub mod logic; // pub: используется из integration tests (tests/test_audit_2026_04_fixes.rs)
+pub mod mode_registry; // pub: содержит unused элементы, pub предотвращает clippy warnings
+pub mod mode_trait; // pub: содержит unused элементы, pub предотвращает clippy warnings
+pub(crate) mod render; // pub(crate): отрисовка, деталь реализации
+pub mod scoreboard; // pub: имеет doctests, ссылающиеся на модуль напрямую
+pub mod scoring; // pub: используется из exports.rs и для бенчмарков
+pub mod state; // pub: основной тип GameState, используется из exports.rs и integration tests
+pub mod stats; // pub: тип GameStats, используется из exports.rs и integration tests
+pub mod time; // pub: имеет doctests, ссылающиеся на модуль напрямую
+pub mod types; // pub: типы Score/Level/LinesCount, используются из exports.rs
+pub mod view; // pub: GameView используется из exports.rs и menu.rs
 
 // Re-export основных типов для обратной совместимости (ID 71-73)
 // Эти re-exports позволяют импортировать типы напрямую из `crate::game::`,

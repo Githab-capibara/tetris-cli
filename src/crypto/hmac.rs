@@ -16,6 +16,7 @@
 use ::hmac::{Hmac, Mac};
 use sha2::Sha256;
 use std::io::Write;
+use subtle::ConstantTimeEq;
 
 /// Тип HMAC-SHA256.
 pub type HmacSha256 = Hmac<Sha256>;
@@ -50,11 +51,8 @@ pub type HmacSha256 = Hmac<Sha256>;
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
-    // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
-    // поэтому expect() теоретически недостижим.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .expect("HMAC-SHA256 принимает ключи любой длины — new_from_slice не может вернуть ошибку");
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку с любым ключом.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // new_from_slice для HMAC не может вернуть ошибку с любым ключом
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -98,34 +96,17 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_hash = hmac_sha256(key, data);
 
-    // Исправление NEW-150 (CRITICAL): Улучшенное constant-time сравнение
-    // Предотвращает timing-атаки путём выполнения одинакового количества операций
-    // независимо от позиции первого несовпадающего байта или длины
-
+    // constant-time сравнение через crate subtle
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    // NEW-150: Включаем проверку длины в constant-time сравнение
-    // Вместо раннего возврата используем XOR для накопления разницы длин
-    let len_diff = actual_bytes.len() ^ expected_bytes.len();
-
-    // NEW-150: Используем минимальную длину для предотвращения выхода за границы
-    let min_len = core::cmp::min(actual_bytes.len(), expected_bytes.len());
-
-    // XOR накопление - выполняем сравнение за постоянное время
-    // SAFETY: len_diff — разница длин hex-строк HMAC-SHA256 (всегда 64 байта).
-    // Даже при невалидном входе разница < 256, поэтому truncation u8 безопасен.
-    #[allow(clippy::cast_possible_truncation)]
-    let mut result: u8 = (len_diff & 0xFF) as u8;
-    for i in 0..min_len {
-        result |= actual_bytes[i] ^ expected_bytes[i];
+    // Сравниваем с учётом длины: если длины разные — сразу false,
+    // иначе используем constant-time сравнение
+    if actual_bytes.len() != expected_bytes.len() {
+        return false;
     }
 
-    // NEW-150: compiler_fence предотвращает ТОЛЬКО переупорядочивание компилятором.
-    // Для полной защиты от timing-атак на уровне CPU используйте crate `subtle`.
-    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
-
-    result == 0
+    actual_bytes.ct_eq(expected_bytes).into()
 }
 
 /// Вычислить HMAC подпись для данных с солью.
@@ -302,18 +283,11 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    let len_diff = actual_bytes.len() ^ expected_bytes.len();
-    let min_len = core::cmp::min(actual_bytes.len(), expected_bytes.len());
-
-    #[allow(clippy::cast_possible_truncation)]
-    let mut result: u8 = (len_diff & 0xFF) as u8;
-    for i in 0..min_len {
-        result |= actual_bytes[i] ^ expected_bytes[i];
+    if actual_bytes.len() != expected_bytes.len() {
+        return false;
     }
 
-    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
-
-    result == 0
+    actual_bytes.ct_eq(expected_bytes).into()
 }
 
 /// Вычислить HMAC-SHA256 подпись (байтовая версия).
@@ -326,11 +300,8 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
-    // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
-    // поэтому expect() теоретически недостижим.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .expect("HMAC-SHA256 принимает ключи любой длины — new_from_slice не может вернуть ошибку");
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку с любым ключом.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // new_from_slice для HMAC не может вернуть ошибку с любым ключом
     mac.update(data);
     let result = mac.finalize();
     hex::encode(result.into_bytes())

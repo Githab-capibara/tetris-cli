@@ -447,7 +447,7 @@ fn test_option_result_handling() {
     assert!(!leaderboard.get_entries().is_empty());
 
     // Валидация записи
-    let entry = LeaderboardEntry::new("Player", 1000);
+    let entry = LeaderboardEntry::new("Player", 1000).unwrap();
     assert!(entry.score().is_some());
     assert!(entry.is_valid());
 }

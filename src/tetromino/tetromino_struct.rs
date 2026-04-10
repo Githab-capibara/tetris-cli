@@ -230,12 +230,12 @@ impl Tetromino {
     ///   - `RotationDirection::Clockwise` - по часовой стрелке (90° вправо)
     ///   - `RotationDirection::CounterClockwise` - против часовой стрелки (90° влево)
     ///
-    /// # Panics
-    /// Паникует, если координаты фигуры выходят за безопасные пределы
-    /// во время вращения (проверяется через assert в режиме debug)
+    /// # Возвращает
+    /// - `true` — вращение выполнено успешно
+    /// - `false` — вращение пропущено (фигура O, некорректная позиция или переполнение координат)
     ///
     /// # Примечания
-    /// - Квадрат (O) не вращается - метод возвращает управление сразу
+    /// - Квадрат (O) не вращается — метод возвращает `false`
     /// - Вращение на 90 градусов вокруг центра фигуры
     /// - Используется формула поворота:
     ///   - По часовой: (x, y) -> (-y, x)
@@ -247,23 +247,19 @@ impl Tetromino {
     /// use tetris_cli::types::RotationDirection;
     ///
     /// let mut t = Tetromino::new((4.0, 0.0), ShapeType::T, SHAPE_COORDS[0], 0);
-    /// t.rotate(RotationDirection::Clockwise); // Поворот по часовой
+    /// assert!(t.rotate(RotationDirection::Clockwise)); // Поворот по часовой
     /// ```
-    ///
-    /// # Panics
-    /// Никогда не паникует. При переполнении координат (`i16::MIN` при отрицании)
-    /// метод логирует предупреждение и пропускает вращение.
-    pub fn rotate(&mut self, dir: RotationDirection) {
+    pub fn rotate(&mut self, dir: RotationDirection) -> bool {
         // Квадрат не вращается
         if self.shape == ShapeType::O {
-            return;
+            return false;
         }
 
         // 4.1: Защита от некорректных координат позиции (NaN/Infinity)
         let (px, py) = self.pos;
         if !px.is_finite() || !py.is_finite() {
             crate::log_warn!("Вращение фигуры пропущено: некорректная позиция ({px}, {py})");
-            return;
+            return false;
         }
 
         // Исправление E3 (CRITICAL): замена saturating_neg на checked_neg с обработкой None
@@ -288,7 +284,7 @@ impl Tetromino {
                         crate::log_warn!(
                             "Вращение фигуры пропущено: переполнение при checked_neg({x})"
                         );
-                        return; // Возвращаем без изменений — ни одна координата не модифицирована
+                        return false;
                     }
                 }
                 // По часовой: (x, y) -> (-y, x)
@@ -301,7 +297,7 @@ impl Tetromino {
                         crate::log_warn!(
                             "Вращение фигуры пропущено: переполнение при checked_neg({y})"
                         );
-                        return; // Возвращаем без изменений — ни одна координата не модифицирована
+                        return false;
                     }
                 }
             };
@@ -316,7 +312,7 @@ impl Tetromino {
                 crate::log_warn!(
                     "Вращение фигуры пропущено: координаты [{new_x}, {new_y}] вышли за безопасные пределы"
                 );
-                return; // Возвращаем без изменений — ни одна координата не модифицирована
+                return false;
             }
 
             new_coords[i] = (new_x, new_y);
@@ -324,6 +320,7 @@ impl Tetromino {
 
         // Все 4 координаты прошли проверку — атомарно применяем
         self.coords = new_coords;
+        true
     }
 }
 
@@ -350,7 +347,8 @@ mod tetromino_tests {
         };
         let original_coords = tetromino.coords;
 
-        tetromino.rotate(RotationDirection::Clockwise);
+        // O-фигура не вращается — rotate возвращает false
+        assert!(!tetromino.rotate(RotationDirection::Clockwise));
         assert_eq!(
             tetromino.coords, original_coords,
             "O-фигура не должна вращаться"
@@ -366,7 +364,7 @@ mod tetromino_tests {
             fg: 0,
         };
 
-        tetromino.rotate(RotationDirection::Clockwise);
+        assert!(tetromino.rotate(RotationDirection::Clockwise));
         // После вращения по часовой: (x,y) -> (-y,x)
         // (-1,0) -> (0,-1), (0,0) -> (0,0), (1,0) -> (0,1), (0,1) -> (-1,0)
         assert_eq!(tetromino.coords[0], (0, -1));
