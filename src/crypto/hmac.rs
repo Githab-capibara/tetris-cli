@@ -52,10 +52,9 @@ pub type HmacSha256 = Hmac<Sha256>;
 pub fn hmac_sha256(key: &str, data: &str) -> String {
     // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
     // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
-    // поэтому unreachable!() теоретически недостижим.
-    #[allow(clippy::unwrap_used)]
+    // поэтому expect() теоретически недостижим.
     let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .unwrap_or_else(|_| unreachable!("HMAC-SHA256 принимает ключи любой длины"));
+        .expect("HMAC-SHA256 принимает ключи любой длины — new_from_slice не может вернуть ошибку");
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -323,15 +322,15 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 ///
 /// # Исправление P3-ID41
 /// Добавлена для устранения UTF-8 roundtrip.
+#[allow(clippy::missing_panics_doc)]
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
     // HMAC-SHA256 принимает ключи любой длины, new_from_slice всегда возвращает Ok.
     // Криптографическая гарантия: HMAC RFC 2104 не накладывает ограничений на длину ключа,
-    // поэтому unreachable!() теоретически недостижим.
-    #[allow(clippy::unwrap_used)]
+    // поэтому expect() теоретически недостижим.
     let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .unwrap_or_else(|_| unreachable!("HMAC-SHA256 принимает ключи любой длины"));
+        .expect("HMAC-SHA256 принимает ключи любой длины — new_from_slice не может вернуть ошибку");
     mac.update(data);
     let result = mac.finalize();
     hex::encode(result.into_bytes())
