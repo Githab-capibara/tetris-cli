@@ -50,8 +50,7 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
         // H6: защита от отрицательного таймера
         // Ошибка логируется: LAND_TIME_DELAY_S — константное валидное значение,
         // а new_timer.max(0.0) всегда >= 0, поэтому set_land_timer не может вернуть ошибку
-        #[allow(unused_variables)]
-        if let Err(e) = state.set_land_timer(new_timer.max(0.0)) {
+        if let Err(_e) = state.set_land_timer(new_timer.max(0.0)) {
             crate::log_error!("Не удалось установить land_timer: {e}");
         }
         false

@@ -35,7 +35,6 @@
 pub mod collision;
 pub mod input;
 pub mod physics;
-pub mod rotation;
 pub mod update;
 pub mod wall_kick;
 
