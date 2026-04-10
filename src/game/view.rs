@@ -359,21 +359,31 @@ impl<'a> GameView<'a> {
         let grid_height_i16 = GRID_HEIGHT as i16;
         let grid_width_i16 = GRID_WIDTH as i16;
 
-        // Вычисляем расстояние до препятствия напрямую
+        // Вычисляем расстояние до препятствия напрямую — оптимизация: вместо линейного
+        // поиска для каждого блока, сначала находим самый нижний блок фигуры,
+        // затем проверяем препятствия (Исправление аудита #8: производительность).
         // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_HEIGHT)
         #[allow(clippy::cast_possible_wrap)]
         let ghost_block_y = ghost_shape.pos().1 as i16;
-        let mut max_drop_distance = grid_height_i16;
+        // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_WIDTH)
+        #[allow(clippy::cast_possible_wrap)]
+        let ghost_block_x = ghost_shape.pos().0 as i16;
+        let mut max_drop_distance;
+
+        // Находим самый нижний блок фигуры для ограничения расстояния до пола
+        let mut max_shape_y = 0;
+        for &(_coord_x, coord_y) in &ghost_shape.coords() {
+            let block_y = coord_y + ghost_block_y;
+            max_shape_y = max_shape_y.max(block_y);
+        }
+        max_drop_distance = grid_height_i16 - 1 - max_shape_y;
 
         for &(coord_x, coord_y) in &ghost_shape.coords() {
             let block_y = coord_y + ghost_block_y;
-            let dist_to_floor = grid_height_i16 - 1 - block_y;
+            let x = coord_x + ghost_block_x;
 
-            let mut dist_to_block = dist_to_floor;
+            let mut dist_to_block = grid_height_i16 - 1 - block_y;
             for y in (block_y + 1)..grid_height_i16 {
-                // cast: f32 -> i16, потеря точности допустима: координаты фигуры в пределах поля (0..GRID_WIDTH)
-                #[allow(clippy::cast_possible_wrap)]
-                let x = coord_x + ghost_shape.pos().0 as i16;
                 // cast: i16 -> usize, потеря знака допустима: x >= 0 после проверки
                 // cast: i16 -> usize, потеря знака допустима: y >= 0 (индекс строки)
                 #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]

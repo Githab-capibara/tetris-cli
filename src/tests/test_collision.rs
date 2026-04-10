@@ -24,7 +24,12 @@ use crate::types::{Direction, RotationDirection};
 fn test_collision_side_walls() {
     let wall_cases = [
         (Direction::Left, Direction::Right, "влево", "у левой стены"),
-        (Direction::Right, Direction::Left, "вправо", "у правой стены"),
+        (
+            Direction::Right,
+            Direction::Left,
+            "вправо",
+            "у правой стены",
+        ),
     ];
 
     for (move_dir, _push_dir, move_desc, wall_desc) in wall_cases {
@@ -85,8 +90,20 @@ fn test_collision_down_at_side_walls() {
 #[test]
 fn test_collision_away_from_wall() {
     let wall_cases = [
-        (Direction::Left, Direction::Right, "к левой", "вправо", "у левой стены"),
-        (Direction::Right, Direction::Left, "к правой", "влево", "у правой стены"),
+        (
+            Direction::Left,
+            Direction::Right,
+            "к левой",
+            "вправо",
+            "у левой стены",
+        ),
+        (
+            Direction::Right,
+            Direction::Left,
+            "к правой",
+            "влево",
+            "у правой стены",
+        ),
     ];
 
     for (push_dir, check_dir, _push_desc, move_desc, wall_desc) in wall_cases {

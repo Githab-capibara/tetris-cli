@@ -22,7 +22,10 @@ mod tests {
         let test_cases = vec![
             ("medium_key_1234567890", "test_data"),
             ("long_key_1234567890_abcdefghijklmnop", "test_data"),
-            ("extreme_key_with_very_long_string_that_exceeds_normal_key_length_by_far", "test_data"),
+            (
+                "extreme_key_with_very_long_string_that_exceeds_normal_key_length_by_far",
+                "test_data",
+            ),
             ("ключ", "данные"),
             ("binary", "\x00\x01\x02\x03"),
         ];

@@ -208,11 +208,13 @@ mod constants_tests {
         let default_color = get_shape_color(0);
         // Сравниваем через адреса указателей, так как dyn Color не реализует PartialEq
         assert!(
-            std::ptr::eq(std::ptr::from_ref(get_shape_color(7)), std::ptr::from_ref(default_color))
-                || std::ptr::eq(
-                    std::ptr::from_ref(get_shape_color(100)),
-                    std::ptr::from_ref(default_color)
-                ),
+            std::ptr::eq(
+                std::ptr::from_ref(get_shape_color(7)),
+                std::ptr::from_ref(default_color)
+            ) || std::ptr::eq(
+                std::ptr::from_ref(get_shape_color(100)),
+                std::ptr::from_ref(default_color)
+            ),
             "Невалидный индекс должен вернуть цвет по умолчанию"
         );
     }
