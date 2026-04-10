@@ -51,8 +51,9 @@ pub type HmacSha256 = Hmac<Sha256>;
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку с любым ключом.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // new_from_slice для HMAC не может вернуть ошибку с любым ключом
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .expect("HMAC-SHA256 new_from_slice never fails for any key length");
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -300,8 +301,9 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку с любым ключом.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // new_from_slice для HMAC не может вернуть ошибку с любым ключом
+    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку.
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .expect("HMAC-SHA256 new_from_slice never fails for any key length");
     mac.update(data);
     let result = mac.finalize();
     hex::encode(result.into_bytes())

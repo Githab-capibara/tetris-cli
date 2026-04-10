@@ -109,11 +109,16 @@ pub mod view; // pub: GameView используется из exports.rs и menu.
 
 // #[doc(hidden)] — реэкспорт для обратной совместимости.
 // Предпочтительный путь импорта: `crate::game::state::GameState`
+#[deprecated(since = "0.97.0", note = "Используйте `crate::game::state::GameState`")]
 #[doc(hidden)]
 pub use state::GameState;
 
 // #[doc(hidden)] — реэкспорт для обратной совместимости.
 // Предпочтительный путь импорта: `crate::game::logic::*`
+#[deprecated(
+    since = "0.97.0",
+    note = "Используйте `crate::game::logic::*` напрямую"
+)]
 #[doc(hidden)]
 pub use logic::{
     can_move_curr_shape_direction, can_rotate_curr_shape, rotate_with_wall_kick, save_tetromino,
@@ -121,6 +126,10 @@ pub use logic::{
 
 // #[doc(hidden)] — реэкспорт для обратной совместимости.
 // Предпочтительный путь импорта: `crate::game::scoring::*`
+#[deprecated(
+    since = "0.97.0",
+    note = "Используйте `crate::game::scoring::*` напрямую"
+)]
 #[doc(hidden)]
 pub use scoring::{check_rows, handle_hold};
 

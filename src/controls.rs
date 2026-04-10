@@ -128,13 +128,11 @@ impl ControlsConfig {
     ///
     /// Использует `OnceLock` для ленивой инициализации — создаётся один раз
     /// при первом вызове и переиспользуется в последующих вызовах.
-    /// Рекомендуется для использования в горячем пути (игровом цикле).
     ///
     /// # Исправление #10
     /// Ранее `default_config()` вызывался каждый кадр, создавая новую структуру.
     /// Теперь используется ленивая инициализация через `OnceLock`.
     #[must_use]
-    #[cold]
     pub fn default_config_ref() -> &'static Self {
         static DEFAULT: OnceLock<ControlsConfig> = OnceLock::new();
         DEFAULT.get_or_init(Self::default_config)
