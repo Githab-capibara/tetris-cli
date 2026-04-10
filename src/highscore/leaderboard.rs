@@ -518,25 +518,20 @@ impl ThreadSafeLeaderboardEntry {
     #[allow(unused_variables)]
     pub fn is_valid_safe(&self) -> Option<bool> {
         // Исправление C9: используем read() вместо lock() для RwLock
-        if let Ok(guard) = self.inner.read() {
-            let salt_name_score = format!("{}:{}:{}", guard.salt, guard.name, guard.score_value);
-            return Some(
-                hmac_verify_with_salt(
-                    get_leaderboard_hmac_key(),
-                    &guard.salt,
-                    &salt_name_score,
-                    &guard.hash,
-                )
-                .unwrap_or_else(|e| {
-                    crate::log_error!(
-                        "ThreadSafeLeaderboardEntry::is_valid_safe(): ошибка HMAC проверки: {e}"
-                    );
-                    false
-                }),
-            );
-        }
-        crate::log_error!("ThreadSafeLeaderboardEntry::is_valid_safe(): RwLock poisoned");
-        None
+        let guard = self.inner.read().ok()?;
+        // Оптимизация аудита #26: write! в Vec вместо format!() для избежания аллокации
+        let score_value = guard.score_value;
+        let salt = guard.salt.clone();
+        let hash = guard.hash.clone();
+        let mut buf = Vec::with_capacity(salt.len() + 1 + guard.name.len() + 1 + 20);
+        let _ = write!(buf, "{}:{}:{}", salt, guard.name, score_value);
+        drop(guard);
+        Some(hmac_verify_with_salt_bytes(
+            get_leaderboard_hmac_key(),
+            &salt,
+            &buf,
+            &hash,
+        ))
     }
 
     /// Получить имя игрока.
