@@ -84,7 +84,8 @@ pub fn handle_input<T: InputReader>(
                     Err(e) => {
                         // Счётчик ошибок — первые 5 логируем всегда, затем каждую 10-ю
                         // чтобы не затоплять stderr но сохранять диагностику
-                        consecutive_errors += 1;
+                        // Исправление аудита #48: saturating_add для защиты от overflow
+                        consecutive_errors = consecutive_errors.saturating_add(1);
                         if consecutive_errors <= 5 || consecutive_errors % 10 == 0 {
                             crate::log_error!(
                                 "Ошибка чтения ввода во время паузы (#{consecutive_errors}): {e}"
