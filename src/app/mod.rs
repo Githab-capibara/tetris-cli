@@ -217,7 +217,7 @@ impl Application {
             // P3-ID50: clone кэшированной строки — необходимо из-за borrow checker
             // (&mut self.canvas и &self.high_score_display конфликтуют через self.process_menu_input)
             let high_score_display = self.high_score_display.clone();
-            Self::render_menu_frame(&mut self.canvas, &high_score_display);
+            crate::menu::draw_menu(&mut self.canvas, &high_score_display);
 
             // Обработка ввода
             if let Ok(Some(key)) = self.input.get_key() {
@@ -228,16 +228,6 @@ impl Application {
                 self.process_menu_input(key, &high_score_display);
             }
         }
-    }
-
-    /// Отрисовать кадр меню.
-    ///
-    /// # Аргументы
-    /// * `canvas` - канвас для отрисовки
-    /// * `high_score_display` - строка рекорда
-    fn render_menu_frame(canvas: &mut Canvas, high_score_display: &str) {
-        use crate::menu::draw_menu;
-        draw_menu(canvas, high_score_display);
     }
 
     /// Проверить условие выхода из приложения.
