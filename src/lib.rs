@@ -123,7 +123,9 @@ pub use exports::*;
 // Тесты разбиты по категориям для лучшей организации.
 
 #[cfg(test)]
-#[allow(clippy::all)]
+#[allow(clippy::unwrap_used)]
+#[allow(clippy::too_many_lines)]
+#[allow(clippy::cognitive_complexity)]
 #[allow(unused_must_use)]
 mod tests {
     // Основные юнит-тесты
