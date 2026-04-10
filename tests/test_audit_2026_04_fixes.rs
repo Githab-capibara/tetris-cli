@@ -473,7 +473,10 @@ fn test_all_26_audit_fixes_complete_integration() {
     assert!(config.validate());
     let key = get_controls_hmac_key();
     // Ключ может быть пустым если env переменная не установлена — это допустимо
-    assert!(key.len() <= 256, "HMAC-ключ не должен превышать 256 символов");
+    assert!(
+        key.len() <= 256,
+        "HMAC-ключ не должен превышать 256 символов"
+    );
 
     // MEDIUM (10)
     use tetris_cli::crypto::{generate_salt, hash};

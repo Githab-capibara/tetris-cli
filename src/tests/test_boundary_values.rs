@@ -80,7 +80,11 @@ fn test_score_saturating_operations() {
 
     // Умножение на 0 должно давать 0
     score_mul.multiply(0);
-    assert_eq!(score_mul.value(), 0, "Score должен быть 0 после умножения на 0");
+    assert_eq!(
+        score_mul.value(),
+        0,
+        "Score должен быть 0 после умножения на 0"
+    );
 }
 
 /// Тест T5: Score конвертация из u128
