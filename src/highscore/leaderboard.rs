@@ -439,7 +439,7 @@ impl ThreadSafeLeaderboardEntry {
     /// Используйте [`Self::is_valid_safe()`] для явной обработки ошибок.
     #[must_use]
     #[deprecated(
-        since = "23.96.16",
+        since = "0.97.0",
         note = "Используйте is_valid_safe() для безопасной обработки ошибок"
     )]
     pub fn is_valid(&self) -> bool {
@@ -501,7 +501,7 @@ impl ThreadSafeLeaderboardEntry {
     /// Оставлен как есть для обратной совместимости.
     #[must_use]
     #[deprecated(
-        since = "23.96.16",
+        since = "0.97.0",
         note = "Используйте name_safe() для безопасной обработки ошибок"
     )]
     pub fn name(&self) -> String {
