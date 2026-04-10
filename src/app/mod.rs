@@ -214,10 +214,7 @@ impl Application {
             }
 
             // Отрисовка меню
-            // P3-ID50: clone кэшированной строки — необходимо из-за borrow checker
-            // (&mut self.canvas и &self.high_score_display конфликтуют через self.process_menu_input)
-            let high_score_display = self.high_score_display.clone();
-            crate::menu::draw_menu(&mut self.canvas, &high_score_display);
+            crate::menu::draw_menu(&mut self.canvas, &self.high_score_display);
 
             // Обработка ввода
             if let Ok(Some(key)) = self.input.get_key() {
@@ -225,7 +222,9 @@ impl Application {
                 if Self::check_exit_condition(key) {
                     break;
                 }
-                self.process_menu_input(key, &high_score_display);
+                // Клонирование необходимо: process_menu_input требует &mut self, но нужна и ссылка на high_score_display
+                let score_clone = self.high_score_display.clone();
+                self.process_menu_input(key, &score_clone);
             }
         }
     }
@@ -451,7 +450,7 @@ mod tests {
         use crate::highscore::SaveData;
 
         // Создаём валидный SaveData для проверки unwrap_or_else
-        let save = SaveData::from_value(1000);
+        let save = SaveData::from_value(1000).expect("from_value должен вернуть Some");
         let result = save.verify_and_get_score();
 
         // Проверяем что валидный рекорд возвращается

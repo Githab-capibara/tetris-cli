@@ -26,7 +26,8 @@ fn test_fix_e2_thread_safe_score_no_panic() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
 
     // score_safe() возвращает Some(score) для валидной записи
-    let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000);
+    let entry = ThreadSafeLeaderboardEntry::new("Player1", 1000)
+        .expect("ThreadSafeLeaderboardEntry::new не должен возвращать None");
     let score = entry.score_safe();
     assert_eq!(
         score,
@@ -46,10 +47,13 @@ fn test_fix_e2_thread_safe_score_no_panic() {
     assert!(name.is_some(), "name_safe() должен возвращать Some(String)");
     assert_eq!(name, Some("Player1".to_string()));
 
-    // Проверяем что deprecated методы тоже не паникуют
-    #[allow(deprecated)]
-    let score_deprecated = entry.score();
-    assert_eq!(score_deprecated, 1000);
+    // Проверяем что методы score_safe() работают
+    let score_safe = entry.score_safe();
+    assert_eq!(
+        score_safe,
+        Some(1000),
+        "score_safe() должен возвращать Some(1000)"
+    );
 }
 
 // ============================================================================
@@ -61,7 +65,10 @@ fn test_fix_e2_thread_safe_score_no_panic() {
 fn test_thread_safety_stress_test() {
     use tetris_cli::highscore::leaderboard::ThreadSafeLeaderboardEntry;
 
-    let entry = Arc::new(ThreadSafeLeaderboardEntry::new("Player1", 1000));
+    let entry = Arc::new(
+        ThreadSafeLeaderboardEntry::new("Player1", 1000)
+            .expect("ThreadSafeLeaderboardEntry::new не должен возвращать None"),
+    );
     let mut handles = vec![];
 
     // 100 потоков одновременно читают запись

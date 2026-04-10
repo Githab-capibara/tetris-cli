@@ -125,7 +125,10 @@ impl LeaderboardStorage {
     /// — это осознанное решение для безопасности: подпись создаётся при генерации записи,
     /// а верификация выполняется при чтении в `add_entry()` для подтверждения целостности данных.
     pub fn add_score(&mut self, name: &str, score: u128) -> bool {
-        let entry = LeaderboardEntry::new(name, score);
+        let Some(entry) = LeaderboardEntry::new(name, score) else {
+            crate::log_error!("Не удалось создать запись — HMAC подпись вернула ошибку");
+            return false;
+        };
         self.add_entry(entry)
     }
 

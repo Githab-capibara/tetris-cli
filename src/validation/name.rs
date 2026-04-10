@@ -121,20 +121,22 @@ pub fn is_valid_name_char(c: char) -> bool {
 /// ```
 #[must_use = "Очищенное имя должно быть использовано"]
 pub fn sanitize_player_name(name: &str) -> String {
-    // Удаляем zero-width spaces перед trim (I090)
-    let trimmed = name
-        .replace(['\u{200B}', '\u{200C}', '\u{200D}', '\u{FEFF}'], "")
-        .trim()
-        .to_owned();
-    if trimmed.is_empty() {
-        return ANONYMOUS_NAME.to_owned();
-    }
-
     // M10: однопроходный алгоритм с предварительным выделением памяти и счётчиком символов
+    // zero-width spaces отфильтровываются в основном цикле (не отдельным .replace())
     let mut validated = String::with_capacity(MAX_NAME_LENGTH);
     let mut char_count = 0;
+    let mut started = false; // для trim start
 
-    for c in trimmed.chars() {
+    for c in name.chars() {
+        // Фильтрация zero-width spaces в основном цикле (Исправление #14)
+        if matches!(c, '\u{200B}' | '\u{200C}' | '\u{200D}' | '\u{FEFF}') {
+            continue;
+        }
+        // Trim start — пропускаем ведущие пробелы
+        if !started && c == ' ' {
+            continue;
+        }
+        started = true;
         if is_valid_name_char(c) {
             // S3: схлопывание последовательных пробелов
             if c == ' ' {

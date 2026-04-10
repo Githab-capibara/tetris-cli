@@ -33,8 +33,14 @@ use crate::types::Direction;
 /// - `false` - фигура ещё падает
 #[allow(clippy::cast_precision_loss)]
 pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
+    // Защита от NaN/Infinity в fall_speed — предотвращает NaN в fall_distance
+    let fall_speed = state.fall_speed();
+    if !fall_speed.is_finite() {
+        crate::log_warn!("handle_falling: fall_speed некорректен ({fall_speed}), пропускаем");
+        return false;
+    }
+
     if state.can_move_curr_shape_direction(Direction::Down) {
-        let fall_speed = state.fall_speed();
         let curr_shape = state.get_curr_shape_mut();
         // Потеря точности допустима: delta_time_ms небольшое значение (обычно 16-100 мс)
         let fall_distance = fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);

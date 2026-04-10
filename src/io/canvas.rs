@@ -306,6 +306,10 @@ impl Canvas {
         ) {
             log_error!("Ошибка отрисовки строки");
         }
+        // Flush для консистентности с draw_strs (Исправление #17)
+        if let Err(_e) = self.out.flush() {
+            log_warn!("Не удалось выполнить flush после draw_string");
+        }
     }
 
     /// Отрисовать строки с оптимизированным выводом (ISSUE-091, ISSUE-092).
