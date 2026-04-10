@@ -17,7 +17,7 @@
 //! # Исправление #3 (CRITICAL)
 //! HMAC логика перемещена в модуль `crypto::validator`.
 
-use crate::constants::MAX_CONFIG_FILE_SIZE;
+use crate::constants::{KEY_BACKSPACE, MAX_CONFIG_FILE_SIZE};
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
@@ -117,7 +117,7 @@ impl ControlsConfig {
             rotate_right: b'e',
             hold: b'c',
             pause: b'p',
-            quit: 127,               // Backspace
+            quit: KEY_BACKSPACE,     // Backspace
             hmac_key: String::new(), // Ключ генерируется при сохранении
             signature: String::new(),
         }
