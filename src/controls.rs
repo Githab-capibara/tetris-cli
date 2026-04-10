@@ -21,6 +21,7 @@ use crate::constants::{KEY_BACKSPACE, MAX_CONFIG_FILE_SIZE};
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
+#[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 use std::sync::OnceLock;
 
