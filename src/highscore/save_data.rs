@@ -329,15 +329,13 @@ impl SaveData {
     ///
     /// # Исправление C10 (CRITICAL)
     /// Метод возвращает Result вместо Option для явной обработки ошибок.
+    #[allow(clippy::missing_panics_doc)]
     #[allow(unused_variables)]
     pub fn verify_and_get_score_result(&self) -> Result<u128, String> {
         let score_str = self.score.to_string();
         let valid =
             hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash)
-                .unwrap_or_else(|e| {
-                    crate::log_error!("Ошибка HMAC проверки рекорда: {e}");
-                    false
-                });
+                .expect("HMAC verify with &str inputs should never fail UTF-8 conversion");
         if valid {
             Ok(self.score)
         } else {

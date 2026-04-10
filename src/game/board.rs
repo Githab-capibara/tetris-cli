@@ -282,6 +282,22 @@ impl BoardMutable for GameBoard {
         self.filled_lines = 0;
         count
     }
+
+    fn get_fall_speed(&self) -> f32 {
+        0.0
+    }
+
+    fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::errors::GameError> {
+        Ok(())
+    }
+
+    fn get_land_timer(&self) -> f64 {
+        0.0
+    }
+
+    fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::errors::GameError> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

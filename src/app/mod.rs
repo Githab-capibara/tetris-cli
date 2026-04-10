@@ -222,7 +222,8 @@ impl Application {
                 if Self::check_exit_condition(key) {
                     break;
                 }
-                // Клонирование необходимо: process_menu_input требует &mut self, но нужна и ссылка на high_score_display
+                // Клонирование необходимо: process_menu_input требует &mut self,
+                // но также нужна ссылка на high_score_display (NLL не может разделить borrows)
                 let score_clone = self.high_score_display.clone();
                 self.process_menu_input(key, &score_clone);
             }

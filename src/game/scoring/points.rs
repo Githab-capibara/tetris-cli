@@ -154,7 +154,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // side-effect: обновляет счётчик очков внутри
-        let _ = state.add_score(SOFT_DROP_POINTS);
+        let _new_score = state.add_score(SOFT_DROP_POINTS);
         debug_assert!(
             state.score() >= SOFT_DROP_POINTS,
             "add_score(SOFT_DROP_POINTS) должен увеличить счёт"
