@@ -558,9 +558,11 @@ mod tests {
 
     #[test]
     #[cfg(debug_assertions)]
+    #[should_panic(expected = "Level::with_value(0) может маскировать баги")]
     fn test_level_with_value_zero_debug_assert() {
-        // debug_assert! защищает от передачи 0 в debug mode
-        // Этот тест просто подтверждает что защита существует
+        // debug_assert! защищает от передачи 0 в debug mode.
+        // Тест подтверждает что защита существует и паникует при 0.
+        let _level = Level::with_value(0);
     }
 
     #[test]
