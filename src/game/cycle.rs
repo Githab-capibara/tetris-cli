@@ -225,6 +225,32 @@ mod tests {
     use super::*;
     use crate::util::frame_timing::maintain_fps;
 
+    // ========================================================================
+    // Исправление аудита 2026-04-11 (Пакет 6, #101-#105):
+    // MockRenderer вынесен в общий для всех тестов — устранено 5-кратное дублирование
+    // ========================================================================
+    struct MockRenderer;
+    impl crate::io_traits::Renderer for MockRenderer {
+        fn draw_strs(
+            &mut self,
+            _lines: &[&str],
+            _pos: (u16, u16),
+            _fg: &dyn termion::color::Color,
+            _bg: &dyn termion::color::Color,
+        ) {
+        }
+        fn draw_string(
+            &mut self,
+            _string: &str,
+            _pos: (u16, u16),
+            _fg: &dyn termion::color::Color,
+            _bg: &dyn termion::color::Color,
+        ) {
+        }
+        fn flush(&mut self) {}
+        fn reset(&mut self) {}
+    }
+
     #[test]
     #[allow(clippy::no_effect_underscore_binding)]
     fn test_input_result_variants() {
@@ -330,29 +356,6 @@ mod tests {
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Continue`
     #[test]
     fn test_handle_input_result_continue() {
-        // Создаём mock renderer
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
@@ -364,28 +367,6 @@ mod tests {
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Quit`
     #[test]
     fn test_handle_input_result_quit() {
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
@@ -401,28 +382,6 @@ mod tests {
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::GameOver`
     #[test]
     fn test_handle_input_result_game_over() {
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
@@ -438,28 +397,6 @@ mod tests {
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Won`
     #[test]
     fn test_handle_input_result_won() {
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
@@ -475,28 +412,6 @@ mod tests {
     /// Тест: все `InputResult` варианты обрабатываются корректно
     #[test]
     fn test_all_input_result_variants_handled() {
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
         let mut renderer = MockRenderer;
         let state = GameState::new();
 
