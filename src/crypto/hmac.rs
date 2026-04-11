@@ -54,20 +54,23 @@ fn build_salted_data(salt: &str, data: &str) -> Vec<u8> {
 /// Используется криптографически стойкий HMAC-SHA256 согласно RFC 2104.
 /// Это обеспечивает надёжную защиту от подделки данных.
 ///
+/// # Panics
+/// Паникует если `HmacSha256::new_from_slice` вернёт ошибку, что невозможно
+/// для HMAC-SHA256 согласно RFC 2104 (принимает ключи любой длины).
+///
 /// # Исправление аудита 2026-03-30
 /// Заменён .`expect()` на .`unwrap()` с комментарием о безопасности.
 /// HMAC-SHA256 поддерживает ключи любой длины, поэтому ошибка невозможна.
 ///
 /// # Исправление аудита 2026-04-11 (Пакет 1, #1-2)
-/// `expect` заменён на `unwrap` — `new_from_slice` для HMAC-SHA256 гарантированно
-/// не возвращает ошибку для любого размера ключа (RFC 2104).
-#[allow(clippy::missing_panics_doc)]
-#[allow(clippy::unwrap_used)] // HMAC-SHA256 new_from_slice никогда не возвращает ошибку
+/// Добавлена безопасная обработка через `expect` с понятным сообщением.
+/// Хотя HMAC-SHA256 поддерживает ключи любой длины, `expect` даёт
+/// диагностическую информацию при непредвиденных ошибках.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    // HMAC-SHA256 принимает ключи любой длины, new_from_slice не может вернуть ошибку.
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // RFC 2104: HMAC поддерживает ключи любой длины
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .expect("HMAC-SHA256 new_from_slice не должен падать — ключи любой длины по RFC 2104");
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -313,14 +316,17 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 /// # Исправление P3-ID41
 /// Добавлена для устранения UTF-8 roundtrip.
 ///
+/// # Panics
+/// Паникует если `HmacSha256::new_from_slice` вернёт ошибку, что невозможно
+/// для HMAC-SHA256 согласно RFC 2104 (принимает ключи любой длины).
+///
 /// # Исправление аудита 2026-04-11 (Пакет 1, #2)
-/// `expect` заменён на `unwrap` — `new_from_slice` гарантированно не возвращает ошибку.
-#[allow(clippy::missing_panics_doc)]
-#[allow(clippy::unwrap_used)] // HMAC-SHA256 new_from_slice никогда не возвращает ошибку
+/// Добавлена безопасная обработка через `expect` с диагностическим сообщением.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes()).unwrap(); // RFC 2104: HMAC поддерживает ключи любой длины
+    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
+        .expect("HMAC-SHA256 new_from_slice не должен падать — ключи любой длины по RFC 2104");
     mac.update(data);
     let result = mac.finalize();
     hex::encode(result.into_bytes())

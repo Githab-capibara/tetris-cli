@@ -422,7 +422,7 @@ mod tests {
         use crate::highscore::SaveData;
 
         // Создаём валидный SaveData для проверки unwrap_or_else
-        let save = SaveData::from_value(1000).expect("from_value должен вернуть Some");
+        let save = SaveData::from_value(1000).unwrap();
         let result = save.verify_and_get_score();
 
         // Проверяем что валидный рекорд возвращается
