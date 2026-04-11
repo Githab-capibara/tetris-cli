@@ -218,22 +218,6 @@ impl GameModeTrait for MarathonMode {
 // FACTORY ФУНКЦИЯ ДЛЯ СОЗДАНИЯ РЕЖИМОВ ПО УМОЛЧАНИЮ (Архитектурное улучшение 2026-04-01)
 // ============================================================================
 
-/// Тип результата для factory функции.
-pub type GameModeResult = Box<dyn GameModeTrait>;
-
-/// Factory функция для создания режима игры по умолчанию (Classic).
-///
-/// # Возвращает
-/// `Box<dyn GameModeTrait>` с режимом Classic
-///
-/// Архитектурное улучшение 2026-04-01 (O1): Делегирует [`ModeRegistry::global()`](super::mode_registry::ModeRegistry::global).
-#[must_use]
-pub fn create_default_game_mode() -> GameModeResult {
-    super::mode_registry::ModeRegistry::global()
-        .create("classic")
-        .unwrap_or_else(|| Box::new(ClassicMode))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -354,10 +338,12 @@ mod tests {
         assert!(mode.check_win_condition(500));
     }
 
-    /// Тест: factory функция для создания режима по умолчанию
+    /// Тест: factory функция для создания режима по умолчанию (через mode_registry)
     #[test]
-    fn test_create_default_game_mode() {
-        let mode = create_default_game_mode();
+    fn test_create_default_mode_via_registry() {
+        // create_default_game_mode удалён как дубликат create_default_mode из mode_registry.
+        // Этот тест проверяет что create_default_mode из mode_registry корректно работает.
+        let mode = super::super::mode_registry::create_default_mode();
         assert_eq!(mode.name(), "Классика");
         assert_eq!(mode.get_target_lines(), None);
     }
