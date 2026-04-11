@@ -8,7 +8,7 @@
 
 use std::{thread::sleep, time::Duration};
 
-use super::{logic::update, render::update_cached_strings_extended, view::GameView};
+use super::{logic::update_state, render::update_cached_strings_extended, view::GameView};
 use crate::constants::{
     BORDER_COLOR, FRAME_DELAY_MS, GAME_OVER, GAME_OVER_DELAY_MS, KEY_BACKSPACE,
 };
@@ -61,7 +61,7 @@ pub fn handle_input<T: InputReader>(
     inp: &mut T,
     delta_time_ms: u64,
 ) -> InputResult {
-    match update(state, inp, delta_time_ms) {
+    match update_state(state, inp, delta_time_ms) {
         UpdateEndState::Continue => InputResult::Continue,
         UpdateEndState::Quit => InputResult::Quit,
         UpdateEndState::Lost => InputResult::GameOver,

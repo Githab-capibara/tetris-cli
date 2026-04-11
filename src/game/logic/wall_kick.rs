@@ -153,7 +153,7 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 /// Функция сделана pub(crate) для использования из collision.rs.
 ///
 /// # Исправление #86-87
-/// Добавлен #[`allow(clippy::cast_precision_loss)`] для приведения i32 -> f32.
+/// Добавлен `allow(clippy::cast_precision_loss)` для приведения i32 -> f32.
 /// Значения -2..=2 точно представляются в f32 без потери точности.
 #[allow(clippy::cast_lossless, clippy::cast_precision_loss)]
 pub(crate) fn try_wall_kick_offsets(
