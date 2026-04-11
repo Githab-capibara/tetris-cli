@@ -14,6 +14,11 @@
 //! - Исправление #25 (HIGH): корректная проверка диапазона
 //! - Исправление аудита 2026-03-30: точная граница вместо `u32::MAX` as f32
 
+// Cast-атрибуты для всех тестов безопасной конвертации
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_precision_loss)]
+
 // Импортируем функцию safe_f32_to_u32 из points.rs
 use crate::game::scoring::points::safe_f32_to_u32;
 

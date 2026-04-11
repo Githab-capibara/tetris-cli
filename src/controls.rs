@@ -981,6 +981,8 @@ mod controls_tests {
         let test_path = "test_controls_config_large.json";
 
         // Создаём файл размером больше 1MB (1MB + 100KB)
+        // Cast truncation намеренно: тестируем проверку лимита размера
+        #[allow(clippy::cast_possible_truncation)]
         let large_size = (MAX_CONFIG_FILE_SIZE + 100_000) as usize;
         let mut file = File::create(test_path)?;
 

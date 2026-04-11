@@ -171,21 +171,9 @@ pub fn handle_input<T: crate::io_traits::InputReader>(
             // Клавиша не была нажата
             None
         }
-        Err(e) => {
-            // Ошибка чтения ввода — логируем с контекстом для диагностики
-            // ISSUE-079: классифицируем ошибки для лучшей диагностики
-            use std::io::ErrorKind;
-            match e.kind() {
-                ErrorKind::UnexpectedEof => {
-                    crate::log_error!("Ошибка чтения ввода: терминал закрыт (EOF)");
-                }
-                ErrorKind::PermissionDenied => {
-                    crate::log_error!("Ошибка чтения ввода: недостаточно прав");
-                }
-                _ => {
-                    crate::log_error!("Ошибка чтения ввода: {e}");
-                }
-            }
+        Err(_) => {
+            // Ошибка чтения ввода — логируем для диагностики
+            crate::log_error!("Ошибка чтения ввода");
             None
         }
     }

@@ -227,6 +227,7 @@ impl SaveData {
     ///
     /// # Исправление аудита
     /// Заменён `.expect()` на `match` — при ошибке HMAC возвращается `None`.
+    #[must_use]
     pub fn from_value(score: u128) -> Option<Self> {
         let score_str = score.to_string();
         let salt = crate::crypto::generate_salt();
@@ -378,6 +379,8 @@ mod tests {
         let test_path = temp_dir.path().join("test_config_large.toml");
 
         // Создаём файл размером больше 1MB (1MB + 1 байт)
+        // Cast truncation намеренно: тестируем проверку лимита размера
+        #[allow(clippy::cast_possible_truncation)]
         let large_size = (MAX_CONFIG_FILE_SIZE + 1) as usize;
         let mut file = File::create(&test_path).expect("Не удалось создать тестовый файл");
 

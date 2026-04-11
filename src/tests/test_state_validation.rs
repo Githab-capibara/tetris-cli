@@ -12,6 +12,9 @@
 //! Функции `set_fall_speed()` и `set_land_timer()` проверяют значения
 //! на `NaN` и Infinity, возвращая `GameError::ValidationError` при невалидных значениях.
 
+// Cast precision_loss намеренно: тесты конвертации u32→f32 для проверки валидации
+#![allow(clippy::cast_precision_loss)]
+
 use crate::constants::{INITIAL_FALL_SPD, LAND_TIME_DELAY_S, MAX_FALL_SPEED};
 use crate::errors::GameError;
 use crate::game::GameState;
@@ -217,7 +220,7 @@ fn test_set_fall_speed_clamps_to_valid_range() {
     assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
 
     // Устанавливаем значение в допустимых пределах
-    let in_range = (INITIAL_FALL_SPD + MAX_FALL_SPEED) / 2.0;
+    let in_range = f32::midpoint(INITIAL_FALL_SPD, MAX_FALL_SPEED);
     let result = state.set_fall_speed(in_range);
 
     assert!(result.is_ok());
@@ -378,7 +381,7 @@ fn test_set_land_timer_negative_values_clamped_to_zero() {
 // ГРУППА ТЕСТОВ 11-15: Краевые случаи и интеграция
 // ============================================================================
 
-/// Тест 11+12: Boundary values for fall_speed и land_timer
+/// Тест 11+12: Boundary values for `fall_speed` и `land_timer`
 ///
 /// Проверяет установку граничных значений для скорости падения и таймера приземления.
 #[test]

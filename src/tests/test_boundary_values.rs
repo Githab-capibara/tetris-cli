@@ -182,9 +182,9 @@ fn test_lines_count_max_value() {
     );
 }
 
-/// Тест T15+T16: LinesCount saturating operations (overflow и increment)
+/// Тест T15+T16: `LinesCount` saturating operations (overflow и increment)
 ///
-/// Проверяет насыщение LinesCount при сложении и инкременте с переполнением.
+/// Проверяет насыщение `LinesCount` при сложении и инкременте с переполнением.
 #[test]
 fn test_lines_count_saturating() {
     // --- Saturating add overflow ---
@@ -291,7 +291,7 @@ fn test_leaderboard_add_score_result() {
     );
 }
 
-/// Тест T27+T28: Leaderboard query methods (get_entries и get_best_score)
+/// Тест T27+T28: Leaderboard query methods (`get_entries` и `get_best_score`)
 ///
 /// Проверяет методы получения записей и лучшего счёта из Leaderboard.
 #[test]

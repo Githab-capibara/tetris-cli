@@ -56,6 +56,7 @@ fn get_hmac_key_runtime(env_var_name: &str, log_env_name: &str) -> &'static Stri
     static CONTROLS_KEY: OnceLock<String> = OnceLock::new();
     static LEADERBOARD_KEY: OnceLock<String> = OnceLock::new();
     static SAVEDATA_KEY: OnceLock<String> = OnceLock::new();
+    static FALLBACK: OnceLock<String> = OnceLock::new();
 
     // Выбираем нужный OnceLock через замыкание для избежания дублирования
     let get_or_init_fn = || {
@@ -77,7 +78,6 @@ fn get_hmac_key_runtime(env_var_name: &str, log_env_name: &str) -> &'static Stri
         "TETRIS_SAVEDATA_HMAC_KEY" => SAVEDATA_KEY.get_or_init(get_or_init_fn),
         _ => {
             crate::log_error!("Неизвестный HMAC ключ: {env_var_name}");
-            static FALLBACK: OnceLock<String> = OnceLock::new();
             FALLBACK.get_or_init(String::new)
         }
     }

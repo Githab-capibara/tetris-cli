@@ -6,6 +6,8 @@
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::assertions_on_constants)]
+// Cast sign_loss намеренно: i32 → u128 только с положительными i (0..5, 0..100)
+#![allow(clippy::cast_sign_loss)]
 
 // ========================================================================
 // ТЕСТЫ ПОВЕДЕНИЯ: TOCTOU ЗАЩИТА И ПОТОКОБЕЗОПАСНОСТЬ
