@@ -156,7 +156,7 @@ impl LeaderboardEntry {
     ///
     /// # Исправление P3-ID41
     /// Использует `hmac_verify_with_salt_bytes` для избежания UTF-8 roundtrip.
-    /// Буфер записывается как Vec<u8> и передаётся байтами напрямую.
+    /// Буфер записывается как `Vec<u8>` и передаётся байтами напрямую.
     #[must_use]
     fn verify_hash_for_value(&self, value: u128) -> bool {
         // P3-ID41: write! в Vec<u8>, передача байтов напрямую — без from_utf8 roundtrip

@@ -11,9 +11,10 @@
 //! - [`input`] - обработка ввода пользователя
 //! - [`physics`] - физика падения и гравитация
 //! - [`collision`] - проверка столкновений
-//! - [`rotation`] - вращение фигур
+//! - [`update`] - вращение фигур и координирование состояния
 //! - [`wall_kick`] - вращение с wall kick (централизованная логика)
-//! - [`update()`] - координирует обновление состояния
+//!
+//! Координирование обновления состояния осуществляется через функцию `update()` из модуля `update`.
 //!
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
@@ -46,4 +47,4 @@ pub use collision::{can_move_curr_shape_direction, can_rotate_curr_shape};
 pub use wall_kick::rotate_with_wall_kick;
 
 // Публичные экспорты из update
-pub use update::{save_tetromino, update};
+pub use update::{save_tetromino, update as update_state};

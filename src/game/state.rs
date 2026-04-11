@@ -356,7 +356,7 @@ impl GameState {
     /// * `mode` - enum режима игры
     ///
     /// # Возвращает
-    /// Box<dyn GameModeTrait> с соответствующим режимом
+    /// `Box<dyn GameModeTrait>` с соответствующим режимом
     fn create_mode_trait(mode: GameMode) -> Box<dyn GameModeTrait> {
         mode.as_trait()
     }
