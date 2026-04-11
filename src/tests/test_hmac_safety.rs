@@ -35,9 +35,7 @@ mod tests {
             assert_eq!(
                 signature.len(),
                 64,
-                "HMAC output for key='{}' and data='{}' should be 64 hex chars",
-                key,
-                data
+                "HMAC output for key='{key}' and data='{data}' should be 64 hex chars",
             );
         }
     }

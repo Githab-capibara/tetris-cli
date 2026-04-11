@@ -8,6 +8,11 @@
 //! - Тест вращения над фигурами (1 параметризованный тест)
 //! - Тест вращения с коллизиями (1 параметризованный тест)
 //! - Тест spin-вращения (T-spin, I-spin) (1 тест)
+
+// Cast sign_loss намеренно: usize→i16 только с координатами в пределах поля (0..10, 0..20)
+#![allow(clippy::cast_sign_loss)]
+// Cast truncation намеренно: координаты поля маленькие (0..10, 0..20)
+#![allow(clippy::cast_possible_truncation)]
 //! - Тест специального вращения S и Z (1 тест)
 
 use crate::tetromino::{ShapeType, Tetromino, SHAPE_COORDS};

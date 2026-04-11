@@ -11,6 +11,9 @@
 //! В модуле `game/scoring/lines.rs` используется константа `MAX_SCORE = u128::MAX / 2`
 //! и функция `saturating_add()` для защиты от переполнения.
 
+// Cast sign_loss намеренно: f32→u32 только с level/combo (гарантированно положительные)
+#![allow(clippy::cast_sign_loss)]
+
 use crate::constants::{COMBO_BONUS, LEVEL_BONUS_MULT, LINE_SCORES};
 use crate::game::scoring::lines::{update_score_for_lines, MAX_SCORE};
 use crate::game::GameState;

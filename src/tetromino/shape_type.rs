@@ -74,7 +74,7 @@ mod shape_type_tests {
     fn test_shape_type_clone_and_copy() {
         let original = ShapeType::T;
         let cloned = original; // Copy
-        let _also = cloned; // Clone через Copy
+        let _ = cloned; // Clone через Copy — подавляем unused variable warning
         assert_eq!(original, cloned);
     }
 

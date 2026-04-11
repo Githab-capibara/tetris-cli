@@ -5,6 +5,8 @@
 //! Содержит тесты взаимодействия, не дублирующие тесты из `test_integration.rs`.
 
 #![allow(deprecated)]
+// Cast sign_loss намеренно: i32→u32 только с положительными значениями
+#![allow(clippy::cast_sign_loss)]
 
 use crate::game::GameState;
 

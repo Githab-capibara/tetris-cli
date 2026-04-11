@@ -591,7 +591,7 @@ mod points_tests {
         assert_eq!(safe_f32_to_u32(f32::MAX), u32::MAX);
     }
 
-    /// Тест: safe_f32_to_u32 возвращает u32::MAX для f32::MAX
+    /// Тест: `safe_f32_to_u32` возвращает `u32::MAX` для `f32::MAX`
     /// Проверяет что экстремальное значение корректно обрабатывается
     #[test]
     fn test_safe_f32_to_u32_max_value() {

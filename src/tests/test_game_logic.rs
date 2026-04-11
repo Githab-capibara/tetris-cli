@@ -104,7 +104,7 @@ fn test_tetromino_rotate_counter_clockwise() {
 
 /// Тест 21: Проверка расчёта очков за линии
 ///
-/// Проверяет реальные значения из LINE_SCORES.
+/// Проверяет реальные значения из `LINE_SCORES`.
 #[test]
 fn test_line_score_calculation() {
     // 1 линия: 100 очков
