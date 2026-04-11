@@ -2,7 +2,6 @@
 //!
 //! Этот модуль содержит трейты для предоставления контролируемого доступа
 //! к внутреннему состоянию игры без нарушения инкапсуляции.
-#![allow(dead_code)]
 //!
 //! ## Архитектурные заметки
 //! ## Трейты доступа (Problem 2.9, 2.12, 2.14)
@@ -20,6 +19,10 @@
 //! ```ignore
 //! use crate::game::access::BoardReadonly;
 //! ```
+//!
+//! ## Исправление аудита 2026-04-11 (Пакет 1, #12)
+//! Глобальный `#![allow(dead_code)]` удалён. Каждый неиспользуемый элемент
+//! помечается точечно через `#[allow(dead_code)]` при необходимости.
 
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
 
@@ -59,8 +62,9 @@ const BLOCK_UNOCCUPIED: i8 = -1;
 ///     }
 /// }
 /// ```
-// PROB-119: трейты используются внутри crate (collision.rs, board.rs),
+// PROB-119: трейты используются внутри crate (collision.rs, board.rs, scoreboard.rs),
 // но clippy считает их unused при pub(crate) видимости модуля.
+#[allow(dead_code)] // Публичный API трейтов для внутреннего использования crate
 pub trait BoardReadonly {
     /// Получить доступ к игровому полю (только чтение).
     fn get_blocks(&self) -> &[[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -113,6 +117,7 @@ pub trait BoardReadonly {
 ///     field.set_block(x, y, value);
 /// }
 /// ```
+#[allow(dead_code)] // Трейт используется для полиморфного доступа к игровому полю
 pub trait BoardMutable: BoardReadonly {
     /// Получить доступ к игровому полю (мутабельный).
     fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT];
@@ -168,6 +173,7 @@ pub trait BoardMutable: BoardReadonly {
 ///     println!("Счёт: {}", score.get_score());
 /// }
 /// ```
+#[allow(dead_code)] // Трейт используется в scoreboard.rs для полиморфного доступа к очкам
 pub trait ScoreAccess {
     /// Получить текущий счёт.
     fn get_score(&self) -> u128;
@@ -197,6 +203,7 @@ pub trait ScoreAccess {
 ///     score.add_score(bonus);
 /// }
 /// ```
+#[allow(dead_code)] // Трейт используется в scoreboard.rs для полиморфного изменения очков
 pub trait ScoreMutable: ScoreAccess {
     /// Добавить очки к текущему счёту.
     fn add_score(&mut self, points: u128);

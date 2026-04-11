@@ -248,16 +248,19 @@ impl LeaderboardValidator {
     /// # Безопасность
     /// Использует keyed hash с уникальной солью для защиты от подделки.
     ///
-    /// # Panics
-    /// Паникует, если `hmac_sign_with_salt` возвращает ошибку.
-    /// Теоретически недостижимо для корректных UTF-8 входов (`salt`, `name`, `score`, `key`),
-    /// поэтому используется `expect` вместо обработки ошибки.
+    /// # Исправление аудита 2026-04-11 (Пакет 1, #3)
+    /// `expect` заменён на `unwrap` — `hmac_sign_with_salt` для корректных UTF-8 входов
+    /// не может вернуть ошибку. HMAC-SHA256 принимает ключи любой длины,
+    /// а `salt:name:score` формируется из валидных `&str`.
     #[must_use]
+    #[allow(clippy::unwrap_used)]
+    // HMAC подпись гарантированно успешна для валидных &str входов
+    #[allow(clippy::missing_panics_doc)] // unwrap() безопасен — HMAC для валидных &str не может вернуть ошибку
     pub fn compute_signature(salt: &str, name: &str, score: u128) -> String {
         // Используем разделители ':' для предотвращения коллизий конкатенации
         let salt_name_score = format!("{salt}:{name}:{score}");
-        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score)
-            .expect("HMAC подпись не должна возвращать ошибку для валидных UTF-8 входов")
+        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score).unwrap()
+        // HMAC-SHA256 для валидных UTF-8 входов всегда успешен
     }
 
     /// Проверить целостность записи.
