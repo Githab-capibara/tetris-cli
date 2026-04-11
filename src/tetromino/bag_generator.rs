@@ -18,7 +18,8 @@
 //! ```
 
 use crate::tetromino::shape_type::ShapeType;
-use rand::Rng;
+use rand::distr::Uniform;
+use rand::prelude::Distribution;
 
 /// Константный массив всех 7 типов фигур.
 /// Используется для инициализации мешка в `BagGenerator`.
@@ -105,7 +106,8 @@ impl BagGenerator {
         // Алгоритм Fisher-Yates для перемешивания
         for i in (1..self.bag.len()).rev() {
             // Генерируем случайный индекс от 0 до i
-            let j = rng.random_range(0..=i);
+            let dist = Uniform::new(0, i + 1).unwrap();
+            let j = dist.sample(&mut rng);
             self.bag.swap(i, j);
         }
 
