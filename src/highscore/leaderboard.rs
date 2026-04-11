@@ -681,7 +681,7 @@ impl ThreadSafeLeaderboard {
     pub fn add_score(&self, name: &str, score: u128) -> bool {
         self.inner.lock().map_or_else(
             |_| {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::add_score(): Mutex poisoned");
+                crate::log_error!("ThreadSafeLeaderboard::add_score(): Mutex poisoned");
                 false
             },
             |mut leaderboard| leaderboard.add_score(name, score),
@@ -696,7 +696,7 @@ impl ThreadSafeLeaderboard {
         match self.inner.lock() {
             Ok(leaderboard) => leaderboard.save(),
             Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::save(): Mutex poisoned");
+                crate::log_error!("ThreadSafeLeaderboard::save(): Mutex poisoned");
             }
         }
     }
@@ -712,7 +712,7 @@ impl ThreadSafeLeaderboard {
     pub fn get_entries(&self) -> Vec<LeaderboardEntry> {
         self.inner.lock().map_or_else(
             |_| {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
+                crate::log_error!("ThreadSafeLeaderboard::get_entries(): Mutex poisoned");
                 Vec::new()
             },
             |leaderboard| leaderboard.get_entries().to_vec(),
@@ -730,7 +730,7 @@ impl ThreadSafeLeaderboard {
     pub fn get_best_score(&self) -> u128 {
         self.inner.lock().map_or_else(
             |_| {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
+                crate::log_error!("ThreadSafeLeaderboard::get_best_score(): Mutex poisoned");
                 0
             },
             |leaderboard| leaderboard.get_best_score(),
@@ -745,7 +745,7 @@ impl ThreadSafeLeaderboard {
         match self.inner.lock() {
             Ok(mut leaderboard) => leaderboard.clear(),
             Err(_) => {
-                eprintln!("[ERROR] ThreadSafeLeaderboard::clear(): Mutex poisoned");
+                crate::log_error!("ThreadSafeLeaderboard::clear(): Mutex poisoned");
             }
         }
     }
@@ -769,16 +769,16 @@ impl Leaderboard {
     pub fn load() -> Self {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
-            Err(e) => {
-                eprintln!("Предупреждение: не удалось загрузить таблицу лидеров: {e}. Попытка загрузки из backup...");
+            Err(_e) => {
+                crate::log_warn!("Не удалось загрузить таблицу лидеров. Попытка загрузки из backup...");
                 // Попытка загрузить из backup файла
                 match load(APP_NAME, Some("leaderboard_backup")) {
                     Ok(backup_leaderboard) => {
-                        eprintln!("Информация: успешно загружено из backup файла.");
+                        crate::log_info!("Успешно загружено из backup файла.");
                         backup_leaderboard
                     }
-                    Err(backup_e) => {
-                        eprintln!("Предупреждение: не удалось загрузить backup: {backup_e}. Используется пустая таблица.");
+                    Err(_backup_e) => {
+                        crate::log_warn!("Не удалось загрузить backup. Используется пустая таблица.");
                         Self::default()
                     }
                 }
@@ -789,7 +789,7 @@ impl Leaderboard {
     /// Сохранить таблицу лидеров в файл конфигурации.
     ///
     /// # Возвращает
-    /// Ничего не возвращает. Ошибки логируются через eprintln!().
+    /// Ничего не возвращает. Ошибки логируются через макросы `log_error!`/`log_warn!`.
     ///
     /// # Errors
     /// Метод обрабатывает ошибки внутри себя:
@@ -806,13 +806,13 @@ impl Leaderboard {
     /// leaderboard.save();  // Сохраняет в конфигурационный файл
     /// ```
     pub fn save(&self) {
-        if let Err(e) = store(APP_NAME, Some("leaderboard"), self) {
-            eprintln!("Ошибка сохранения таблицы лидеров: {e}. Попытка сохранения в backup...");
+        if let Err(_e) = store(APP_NAME, Some("leaderboard"), self) {
+            crate::log_warn!("Ошибка сохранения таблицы лидеров. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
-            if let Err(backup_e) = store(APP_NAME, Some("leaderboard_backup"), self) {
-                eprintln!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+            if let Err(_backup_e) = store(APP_NAME, Some("leaderboard_backup"), self) {
+                crate::log_error!("Критическая ошибка: не удалось сохранить даже в backup");
             } else {
-                eprintln!("Информация: успешно сохранено в backup файл.");
+                crate::log_info!("Успешно сохранено в backup файл.");
             }
         }
     }
@@ -893,9 +893,7 @@ impl Leaderboard {
         // Исправление #24: валидация имени игрока
         let valid_name = sanitize_player_name(name);
         if valid_name == "Anonymous" && name.trim() != "Anonymous" {
-            eprintln!(
-                "Предупреждение: имя игрока не прошло валидацию и было заменено на 'Anonymous'"
-            );
+            crate::log_warn!("Имя игрока не прошло валидацию и было заменено на 'Anonymous'");
         }
 
         // Исправление #23: Rate limiting - максимум 3 записи на одного игрока
@@ -906,7 +904,7 @@ impl Leaderboard {
             .count();
 
         if entries_from_player >= 3 {
-            eprintln!("Предупреждение: игрок '{valid_name}' достиг лимита записей (максимум 3)");
+            crate::log_warn!("Игрок '{valid_name}' достиг лимита записей (максимум 3)");
             return false;
         }
 
