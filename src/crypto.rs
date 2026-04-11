@@ -61,8 +61,7 @@ pub use hmac::{hmac_sha256, verify_hmac_sha256};
 // Ре-экспорт основных функций из validator для удобства
 
 use rand::rngs::StdRng;
-use rand::RngCore;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 
 /// Вычислить BLAKE3 хеш строки.
 ///
@@ -135,9 +134,10 @@ pub fn hash(data: &str) -> String {
 #[must_use = "Соль должна быть использована для хеширования"]
 pub fn generate_salt() -> String {
     // Используем StdRng с случайным seed от OS
-    let mut rng = StdRng::from_os_rng();
+    let seed = rand::random::<[u8; 32]>();
+    let mut rng = StdRng::from_seed(seed);
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-    RngCore::fill_bytes(&mut rng, &mut bytes);
+    rng.fill_bytes(&mut bytes);
     hex::encode(bytes)
 }
 
