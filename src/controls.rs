@@ -482,8 +482,18 @@ impl ControlsConfig {
             )
         })?;
 
-        // Извлекаем подпись до модификации
-        let signature = config_value["signature"].as_str().unwrap_or("").to_string();
+        // Извлекаем подпись до модификации.
+        // Если поле отсутствует или не является строкой — используем пустую строку,
+        // что приведёт к ожидаемому провалу HMAC-верификации.
+        let signature = config_value["signature"]
+            .as_str()
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Отсутствует или некорректно поле 'signature' в конфигурации управления",
+                )
+            })?
+            .to_string();
 
         // Подготавливаем данные для проверки HMAC
         config_value["hmac_key"] = serde_json::Value::String(HMAC_KEY_PLACEHOLDER.to_string());

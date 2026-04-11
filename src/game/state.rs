@@ -992,15 +992,6 @@ impl GameState {
         &self.render_cache.cached_timer_str
     }
 
-    /// Получить маску анимации строк (для view).
-    ///
-    /// # Архитектурные заметки (CRITICAL #1)
-    /// Делегирует вызов компоненту `AnimationState`.
-    #[must_use]
-    pub const fn get_animating_rows_mask(&self) -> u32 {
-        self.animation_state.animating_rows_mask()
-    }
-
     // ========================================================================
     // СЕМАНТИЧЕСКИЕ МЕТОДЫ (ИСПРАВЛЕНИЕ M3)
     // ========================================================================

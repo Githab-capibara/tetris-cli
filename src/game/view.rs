@@ -143,7 +143,7 @@ impl<'a> GameView<'a> {
             curr_shape: state.curr_shape(),
             next_shape: state.next_shape(),
             held_shape: state.held_shape(),
-            animating_rows: state.get_animating_rows_mask(),
+            animating_rows: state.animating_rows_mask(),
             mode: state.get_mode_trait(),
             lines_cleared: state.lines_cleared(),
             elapsed_time: state.stats().get_elapsed_time(),
