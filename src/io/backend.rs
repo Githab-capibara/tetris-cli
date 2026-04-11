@@ -256,11 +256,15 @@ impl Drop for TermionBackend {
 /// Комбинированный бэкенд для ввода и вывода.
 ///
 /// Объединяет `TermionBackend` для вывода и `KeyReader` для ввода.
+///
+/// # Исправление аудита 2026-04-11 (Пакет 2, #21-#22)
+/// Поля `output` и `input` сделаны приватными для соблюдения инкапсуляции.
+/// Доступ через геттеры: `output()` и `input()`.
 pub struct TermionIOBackend {
     /// Бэкенд для вывода
-    pub output: TermionBackend,
+    output: TermionBackend,
     /// Бэкенд для ввода
-    pub input: crate::io::key_reader::KeyReader,
+    input: crate::io::key_reader::KeyReader,
 }
 
 impl TermionIOBackend {
@@ -273,6 +277,28 @@ impl TermionIOBackend {
             output: TermionBackend::new()?,
             input: crate::io::key_reader::KeyReader::new(),
         })
+    }
+
+    /// Получить ссылку на бэкенд вывода.
+    #[must_use]
+    pub fn output(&self) -> &TermionBackend {
+        &self.output
+    }
+
+    /// Получить mutable ссылку на бэкенд вывода.
+    pub fn output_mut(&mut self) -> &mut TermionBackend {
+        &mut self.output
+    }
+
+    /// Получить ссылку на бэкенд ввода.
+    #[must_use]
+    pub fn input(&self) -> &crate::io::key_reader::KeyReader {
+        &self.input
+    }
+
+    /// Получить mutable ссылку на бэкенд ввода.
+    pub fn input_mut(&mut self) -> &mut crate::io::key_reader::KeyReader {
+        &mut self.input
     }
 }
 
