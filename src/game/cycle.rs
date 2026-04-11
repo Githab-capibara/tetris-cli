@@ -36,10 +36,6 @@ pub enum InputResult {
     Continue,
     /// Выход в меню.
     Quit,
-    /// Пауза (ожидание снятия).
-    /// Используется в `handle_input_result()` match arm.
-    #[allow(dead_code)]
-    Pause,
     /// Игра окончена.
     GameOver,
     /// Победа (режим спринт/марафон завершён).
@@ -190,7 +186,7 @@ fn handle_input_result<R: Renderer>(
     cnv: &mut R,
 ) -> Option<u128> {
     match input_result {
-        InputResult::Continue | InputResult::Pause => None,
+        InputResult::Continue => None,
         InputResult::Quit | InputResult::Won => Some(state.score()),
         InputResult::GameOver => {
             handle_game_over(cnv);
@@ -272,7 +268,6 @@ mod tests {
     fn test_input_result_variants() {
         let _continue = InputResult::Continue;
         let _quit = InputResult::Quit;
-        let _pause = InputResult::Pause;
         let _game_over = InputResult::GameOver;
         let _won = InputResult::Won;
     }
@@ -402,39 +397,6 @@ mod tests {
         // InputResult::Continue должен вернуть None
         let result = handle_input_result(&InputResult::Continue, &state, &mut renderer);
         assert!(result.is_none(), "Continue должен вернуть None");
-    }
-
-    /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Pause`
-    #[test]
-    fn test_handle_input_result_pause() {
-        struct MockRenderer;
-        impl crate::io_traits::Renderer for MockRenderer {
-            fn draw_strs(
-                &mut self,
-                _lines: &[&str],
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn draw_string(
-                &mut self,
-                _string: &str,
-                _pos: (u16, u16),
-                _fg: &dyn termion::color::Color,
-                _bg: &dyn termion::color::Color,
-            ) {
-            }
-            fn flush(&mut self) {}
-            fn reset(&mut self) {}
-        }
-
-        let mut renderer = MockRenderer;
-        let state = GameState::new();
-
-        // InputResult::Pause должен вернуть None
-        let result = handle_input_result(&InputResult::Pause, &state, &mut renderer);
-        assert!(result.is_none(), "Pause должен вернуть None");
     }
 
     /// Тест: `handle_input_result()` правильно обрабатывает `InputResult::Quit`
@@ -578,10 +540,9 @@ mod tests {
 
         // Проверяем все варианты
         assert!(handle_input_result(&InputResult::Continue, &state, &mut renderer).is_none());
-        assert!(handle_input_result(&InputResult::Pause, &state, &mut renderer).is_none());
         assert_eq!(
             handle_input_result(&InputResult::Quit, &state, &mut renderer),
-            Some(state.score()) // Исправление E12: используем state.score() вместо 0
+            Some(state.score())
         );
         assert_eq!(
             handle_input_result(&InputResult::GameOver, &state, &mut renderer),
