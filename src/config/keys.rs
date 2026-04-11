@@ -44,61 +44,58 @@ fn log_once_empty_key(_key_name: &str) {
     });
 }
 
-/// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
-fn get_controls_hmac_key_runtime() -> &'static String {
-    static KEY: OnceLock<String> = OnceLock::new();
-    KEY.get_or_init(|| {
+/// Получить HMAC ключ из переменной окружения (общая функция).
+///
+/// # Аргументы
+/// * `env_var_name` — имя переменной окружения
+/// * `log_env_name` — имя ключа для логирования
+///
+/// # Возвращает
+/// Статическую ссылку на строку ключа
+fn get_hmac_key_runtime(env_var_name: &str, log_env_name: &str) -> &'static String {
+    static CONTROLS_KEY: OnceLock<String> = OnceLock::new();
+    static LEADERBOARD_KEY: OnceLock<String> = OnceLock::new();
+    static SAVEDATA_KEY: OnceLock<String> = OnceLock::new();
+
+    // Выбираем нужный OnceLock через замыкание для избежания дублирования
+    let get_or_init_fn = || {
         #[allow(unused_variables)]
-        let key = std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|e| {
-            log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_CONTROLS_HMAC_KEY: {e}");
+        let key = std::env::var(env_var_name).unwrap_or_else(|e| {
+            log_once_empty_key(log_env_name);
+            crate::log_warn!("Ошибка чтения {env_var_name}: {e}");
             String::new()
         });
         if key.is_empty() {
-            crate::log_warn!(
-                "HMAC ключ TETRIS_CONTROLS_HMAC_KEY не установлен — данные не защищены"
-            );
+            crate::log_warn!("HMAC ключ {log_env_name} не установлен — данные не защищены");
         }
         key
-    })
+    };
+
+    match env_var_name {
+        "TETRIS_CONTROLS_HMAC_KEY" => CONTROLS_KEY.get_or_init(get_or_init_fn),
+        "TETRIS_LEADERBOARD_HMAC_KEY" => LEADERBOARD_KEY.get_or_init(get_or_init_fn),
+        "TETRIS_SAVEDATA_HMAC_KEY" => SAVEDATA_KEY.get_or_init(get_or_init_fn),
+        _ => {
+            crate::log_error!("Неизвестный HMAC ключ: {env_var_name}");
+            static FALLBACK: OnceLock<String> = OnceLock::new();
+            FALLBACK.get_or_init(String::new)
+        }
+    }
+}
+
+/// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
+fn get_controls_hmac_key_runtime() -> &'static String {
+    get_hmac_key_runtime("TETRIS_CONTROLS_HMAC_KEY", "TETRIS_CONTROLS_HMAC_KEY")
 }
 
 /// Получить ключ для HMAC подписи таблицы лидеров из переменной окружения.
 fn get_leaderboard_hmac_key_runtime() -> &'static String {
-    static KEY: OnceLock<String> = OnceLock::new();
-    KEY.get_or_init(|| {
-        #[allow(unused_variables)]
-        let key = std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|e| {
-            log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_LEADERBOARD_HMAC_KEY: {e}");
-            String::new()
-        });
-        if key.is_empty() {
-            crate::log_warn!(
-                "HMAC ключ TETRIS_LEADERBOARD_HMAC_KEY не установлен — данные не защищены"
-            );
-        }
-        key
-    })
+    get_hmac_key_runtime("TETRIS_LEADERBOARD_HMAC_KEY", "TETRIS_LEADERBOARD_HMAC_KEY")
 }
 
 /// Получить ключ для HMAC подписи данных рекордов из переменной окружения.
 fn get_save_data_hmac_key_runtime() -> &'static String {
-    static KEY: OnceLock<String> = OnceLock::new();
-    KEY.get_or_init(|| {
-        #[allow(unused_variables)]
-        let key = std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|e| {
-            log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_SAVEDATA_HMAC_KEY: {e}");
-            String::new()
-        });
-        if key.is_empty() {
-            crate::log_warn!(
-                "HMAC ключ TETRIS_SAVEDATA_HMAC_KEY не установлен — данные не защищены"
-            );
-        }
-        key
-    })
+    get_hmac_key_runtime("TETRIS_SAVEDATA_HMAC_KEY", "TETRIS_SAVEDATA_HMAC_KEY")
 }
 
 /// Получить ключ для HMAC подписи конфигурации управления.

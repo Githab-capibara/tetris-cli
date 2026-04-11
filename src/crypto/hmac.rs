@@ -21,6 +21,19 @@ use subtle::ConstantTimeEq;
 /// Тип HMAC-SHA256.
 pub type HmacSha256 = Hmac<Sha256>;
 
+/// Сформировать буфер `salt:data` для HMAC-подписи.
+///
+/// Использует `write!` в `Vec<u8>` для снижения аллокаций по сравнению с `format!()`.
+///
+/// # Исправление аудита 2026-04-11 (Пакет 2, #22)
+/// Выделено из `hmac_sign_with_salt` и `hmac_verify_with_salt` для устранения дублирования.
+#[inline]
+fn build_salted_data(salt: &str, data: &str) -> Vec<u8> {
+    let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
+    let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
+    buf
+}
+
 /// Вычислить HMAC-SHA256 подпись данных.
 ///
 /// # Аргументы
@@ -157,11 +170,7 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sign_with_salt(key: &str, salt: &str, data: &str) -> Result<String, std::io::Error> {
-    // Разделитель ':' предотвращает коллизии конкатенации
-    // write! в Vec вместо format! для снижения аллокаций
-    let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
-    let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
-                                          // buf содержит только ASCII (salt и data — &str, разделитель ':'), поэтому from_utf8 безопасен
+    let buf = build_salted_data(salt, data);
     let salted_data = std::str::from_utf8(&buf).map_err(|e| {
         std::io::Error::new(
             std::io::ErrorKind::InvalidData,
@@ -228,10 +237,7 @@ pub fn hmac_verify_with_salt(
     data: &str,
     signature: &str,
 ) -> Result<bool, std::io::Error> {
-    // Разделитель ':' для согласованности с hmac_sign_with_salt
-    // write! в Vec вместо format! для снижения аллокаций
-    let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
-    let _ = write!(buf, "{salt}:{data}"); // write! в Vec<u8> никогда не падает
+    let buf = build_salted_data(salt, data);
     let salted_data = std::str::from_utf8(&buf).map_err(|e| {
         std::io::Error::new(
             std::io::ErrorKind::InvalidData,

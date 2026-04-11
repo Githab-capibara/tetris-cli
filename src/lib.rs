@@ -103,6 +103,7 @@ pub mod io_traits;
 pub mod menu;
 pub mod tetromino;
 pub mod types;
+pub mod util;
 pub mod validation;
 
 // Экспорт публичного API

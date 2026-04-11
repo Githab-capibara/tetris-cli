@@ -15,6 +15,7 @@ use crate::constants::{
 use crate::game::state::GameState;
 use crate::io_traits::{InputReader, Renderer};
 use crate::types::UpdateEndState;
+use crate::util::frame_timing::maintain_fps;
 use termion::color::Reset;
 
 // ============================================================================
@@ -129,46 +130,6 @@ pub fn handle_game_over<R: Renderer>(cnv: &mut R) {
     sleep(Duration::from_millis(GAME_OVER_DELAY_MS));
 }
 
-/// Поддержать стабильный FPS.
-///
-/// # Аргументы
-/// * `last_time` - время последнего кадра (изменяемое)
-/// * `interval_ms` - интервал между кадрами (мс)
-///
-/// # Возвращает
-/// - `Some(delta_time_ms)` - время прошло между кадрами
-/// - `None` - нужно продолжить ожидание (`delta_time_ms` < `interval_ms`)
-///
-/// # Исправление аудита 2026-03-31 (MEDIUM)
-/// Выделено из `run_game_loop()` для улучшения читаемости и разделения ответственности.
-///
-/// # Примечание (ISSUE-061)
-/// Функция дублирует логику `wait_for_next_frame` из `src/app/mod.rs`.
-/// Объединение не выполнено: `maintain_fps` используется в игровом цикле,
-/// а `wait_for_next_frame` — в цикле меню. Рефакторинг отложен до следующей
-/// крупной версии во избежание breaking changes.
-fn maintain_fps(last_time: &mut std::time::Instant, interval_ms: u64) -> Option<u64> {
-    let now = std::time::Instant::now();
-    // Исправление C1 (CRITICAL): безопасная конвертация u128 -> u64
-    // unwrap_or(0): если delta > u64::MAX (практически невозможно),
-    // используем 0 — это нормальное поведение, не ошибка
-    let delta_time_ms: u64 = now
-        .duration_since(*last_time)
-        .as_millis()
-        .try_into()
-        .unwrap_or(0);
-
-    if delta_time_ms < interval_ms {
-        sleep(Duration::from_millis(
-            interval_ms.saturating_sub(delta_time_ms),
-        ));
-        return None;
-    }
-
-    *last_time = now;
-    Some(delta_time_ms)
-}
-
 /// Обработать результат ввода.
 ///
 /// # Аргументы
@@ -262,6 +223,7 @@ pub fn run_game_loop<T: InputReader, R: Renderer>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::util::frame_timing::maintain_fps;
 
     #[test]
     #[allow(clippy::no_effect_underscore_binding)]
