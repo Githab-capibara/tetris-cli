@@ -271,7 +271,8 @@ fn test_max_score_constant() {
 
 /// Тест 12: Проверка что игра не паникует при экстремальных значениях
 ///
-/// Проверяет отсутствие паник при экстремальных значениях счёта.
+/// Проверяет отсутствие паник при экстремальных значениях счёта
+/// и что результат остаётся в разумных границах (saturating arithmetic).
 #[test]
 fn test_no_panic_at_extreme_values() {
     let mut score: u128 = 0;
@@ -282,4 +283,14 @@ fn test_no_panic_at_extreme_values() {
     for _ in 0..1000 {
         update_score_for_lines(&mut score, level, 4, &mut combo_counter);
     }
+
+    // Счёт должен оставаться в пределах u128 (saturating arithmetic предотвращает переполнение)
+    assert!(
+        score <= u128::MAX / 2,
+        "Счёт не должен превышать MAX_SCORE после экстремальных начислений"
+    );
+    assert!(
+        combo_counter < u32::MAX,
+        "Combo счётчик должен оставаться в разумных границах"
+    );
 }
