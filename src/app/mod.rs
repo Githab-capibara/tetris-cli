@@ -99,7 +99,8 @@ impl Application {
         // Исправление ISSUE-196: eprintln!() используется для логирования предупреждений
         // а не для критических ошибок - приложение продолжает работу с пустым ключом
         // Исправление аудита #33: конкретное сообщение об ошибке с контекстом
-        if let Err(_errors) = validate_all_keys() {
+        #[allow(unused_variables)]
+        if let Err(errors) = validate_all_keys() {
             crate::log_warn!(
                 "HMAC ключи не прошли валидацию ({} ошибок): используется пустой ключ — записи таблицы лидеров не будут защищены от подделки",
                 errors.len()
@@ -223,6 +224,7 @@ impl Application {
                 }
                 // Клонирование необходимо: process_menu_input требует &mut self,
                 // но также нужна ссылка на high_score_display (NLL не может разделить borrows)
+                // Исправление аудита #4: проверено — clone() необходим из-за ограничений NLL
                 let score_clone = self.high_score_display.clone();
                 self.process_menu_input(key, &score_clone);
             }

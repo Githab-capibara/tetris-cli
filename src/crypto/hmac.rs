@@ -106,6 +106,10 @@ pub fn hmac_sha256(key: &str, data: &str) -> String {
 /// Текущая реализация — best-effort защита. `compiler_fence` предотвращает ТОЛЬКО
 /// переупорядочивание компилятором. Для полной защиты от timing-атак на уровне CPU
 /// используйте crate `subtle` (constant-time сравнение).
+///
+/// # Исправление аудита 2026-04-11 (Пакет 1, #3)
+/// Для HMAC-SHA256 обе строки всегда ровно 64 hex-символа, поэтому padding
+/// и аллокации удалены — используется прямое constant-time сравнение срезов.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
@@ -115,28 +119,13 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    // Исправление аудита 2026-04-11 (Пакет 3, #39):
-    // Для HMAC-SHA256 обе строки всегда 64 hex-символа, но для best-effort
-    // защиты от timing-атак при нестандартных входах используем padding
-    // до максимальной длины и constant-time сравнение всего буфера.
-    let max_len = actual_bytes.len().max(expected_bytes.len());
-    if max_len == 0 {
+    // Для HMAC-SHA256 обе строки всегда ровно 64 hex-символа
+    if actual_bytes.len() != expected_bytes.len() {
         return false;
     }
 
-    // Padding: если длины разные, дополняем нулями до max_len
-    // ct_eq сравнит весь буфер constant-time
-    let mut actual_padded = vec![0u8; max_len];
-    let mut expected_padded = vec![0u8; max_len];
-    actual_padded[..actual_bytes.len()].copy_from_slice(actual_bytes);
-    expected_padded[..expected_bytes.len()].copy_from_slice(expected_bytes);
-
-    // Проверяем что длины совпадают (constant-time через XOR)
-    let len_eq = (actual_bytes.len() == expected_bytes.len()) as u8;
-
-    // Constant-time сравнение: результат AND с проверкой длины
-    let data_eq = actual_padded.ct_eq(&expected_padded).unwrap_u8();
-    (len_eq & data_eq) == 1
+    // Constant-time сравнение без аллокаций
+    actual_bytes.ct_eq(expected_bytes).unwrap_u8() == 1
 }
 
 /// Вычислить HMAC подпись для данных с солью.
@@ -298,6 +287,9 @@ pub fn hmac_verify_with_salt_bytes(key: &str, salt: &str, data: &[u8], signature
 ///
 /// # Исправление P3-ID41
 /// Добавлена для устранения UTF-8 roundtrip в цепочке `verify_hash_for_value`.
+///
+/// # Исправление аудита 2026-04-11 (Пакет 1, #3b)
+/// Устранены избыточные аллокации — используется прямое constant-time сравнение.
 #[must_use = "Результат проверки должен быть использован"]
 #[inline]
 pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> bool {
@@ -306,20 +298,12 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    // Исправление аудита 2026-04-11 (Пакет 3, #39): constant-time сравнение с padding
-    let max_len = actual_bytes.len().max(expected_bytes.len());
-    if max_len == 0 {
+    // HMAC-SHA256 всегда даёт 64 hex-символа
+    if actual_bytes.len() != expected_bytes.len() {
         return false;
     }
 
-    let mut actual_padded = vec![0u8; max_len];
-    let mut expected_padded = vec![0u8; max_len];
-    actual_padded[..actual_bytes.len()].copy_from_slice(actual_bytes);
-    expected_padded[..expected_bytes.len()].copy_from_slice(expected_bytes);
-
-    let len_eq = (actual_bytes.len() == expected_bytes.len()) as u8;
-    let data_eq = actual_padded.ct_eq(&expected_padded).unwrap_u8();
-    (len_eq & data_eq) == 1
+    actual_bytes.ct_eq(expected_bytes).unwrap_u8() == 1
 }
 
 /// Вычислить HMAC-SHA256 подпись (байтовая версия).
