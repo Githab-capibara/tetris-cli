@@ -91,6 +91,28 @@ impl Default for KeyReader {
 }
 
 #[cfg(unix)]
+/// Определить количество дополнительных байт для UTF-8 последовательности.
+///
+/// # Аргументы
+/// * `first_byte` — первый байт UTF-8 последовательности
+///
+/// # Возвращает
+/// Количество дополнительных байт или `None` если байт не является
+/// валидным началом UTF-8 последовательности
+#[inline]
+fn utf8_additional_bytes(first_byte: u8) -> Option<usize> {
+    if (0xC2..=0xDF).contains(&first_byte) {
+        Some(1)
+    } else if (0xE0..=0xEF).contains(&first_byte) {
+        Some(2)
+    } else if (0xF0..=0xF4).contains(&first_byte) {
+        Some(3)
+    } else {
+        None
+    }
+}
+
+#[cfg(unix)]
 impl KeyReader {
     /// Создать новый читатель клавиш.
     ///
@@ -143,13 +165,7 @@ impl KeyReader {
                     return Ok(Some(first_byte));
                 }
 
-                let bytes_to_read = if (0xC2..=0xDF).contains(&first_byte) {
-                    1
-                } else if (0xE0..=0xEF).contains(&first_byte) {
-                    2
-                } else if (0xF0..=0xF4).contains(&first_byte) {
-                    3
-                } else {
+                let Some(bytes_to_read) = utf8_additional_bytes(first_byte) else {
                     return Ok(None);
                 };
 
@@ -213,15 +229,7 @@ impl KeyReader {
                     return Some(byte as char);
                 }
 
-                let additional_bytes = if (0xC2..=0xDF).contains(&byte) {
-                    1
-                } else if (0xE0..=0xEF).contains(&byte) {
-                    2
-                } else if (0xF0..=0xF4).contains(&byte) {
-                    3
-                } else {
-                    return None;
-                };
+                let additional_bytes = utf8_additional_bytes(byte)?;
 
                 let mut buffer = [0u8; 3];
                 if self
