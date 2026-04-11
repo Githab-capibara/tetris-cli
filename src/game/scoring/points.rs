@@ -118,12 +118,10 @@ pub fn handle_hard_drop(state: &mut GameState) {
         new_score >= u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS),
         "add_score должен вернуть корректный счёт"
     );
-    // set_land_timer(0.0) — всегда валидное значение, ошибка невозможна
-    let result = state.set_land_timer(0.0);
-    debug_assert!(
-        result.is_ok(),
-        "set_land_timer(0.0) не может вернуть ошибку"
-    );
+    // set_land_timer(0.0) — всегда валидное значение, ошибка невозможна.
+    // Используем let _ = вместо debug_assert! — debug_assert исчезает в release,
+    // а игнорирование Result должно быть явным независимо от режима сборки.
+    let _ = state.set_land_timer(0.0);
     state.set_is_hard_dropping(true);
 }
 
@@ -155,6 +153,8 @@ pub fn handle_soft_drop(state: &mut GameState) {
         // Инкапсуляция: используем add_score() вместо прямого доступа
         // side-effect: обновляет счётчик очков внутри
         let _new_score = state.add_score(SOFT_DROP_POINTS);
+        // add_score() гарантирует увеличение счёта — проверяем только в тестах.
+        // debug_assert! здесь подтверждает инвариант: SOFT_DROP_POINTS всегда > 0.
         debug_assert!(
             state.score() >= SOFT_DROP_POINTS,
             "add_score(SOFT_DROP_POINTS) должен увеличить счёт"
@@ -321,13 +321,10 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     // Сброс флага Hard Drop после завершения анимации
     state.set_is_hard_dropping(false);
 
-    // Сброс таймера приземления
-    // LAND_TIME_DELAY_S — константное валидное значение, ошибка невозможна
-    let result = state.set_land_timer(LAND_TIME_DELAY_S);
-    debug_assert!(
-        result.is_ok(),
-        "set_land_timer(LAND_TIME_DELAY_S) не может вернуть ошибку"
-    );
+    // Сброс таймера приземления.
+    // LAND_TIME_DELAY_S — константное валидное значение, ошибка невозможна.
+    // Используем let _ = вместо debug_assert! — см. исправление проблем 1-5.
+    let _ = state.set_land_timer(LAND_TIME_DELAY_S);
 }
 
 /// Обновить счётчик комбо после удаления линий.

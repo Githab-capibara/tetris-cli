@@ -119,17 +119,13 @@ impl RenderCache {
         self.last_cached_lines = lines;
         self.last_cached_high_score = high_score;
         // Исправление #7: храним с padding для прямой отрисовки без format!
-        // write! в String не может завершиться ошибкой (кроме OOM, который panic anyhow)
-        write!(self.cached_score_str, "{score:10}")
-            .expect("Запись в String не может завершиться ошибкой");
-        write!(self.cached_level_str, "{level:10}")
-            .expect("Запись в String не может завершиться ошибкой");
-        write!(self.cached_lines_str, "{lines:10}")
-            .expect("Запись в String не может завершиться ошибкой");
+        // write! в String не может завершиться ошибкой — используем let _ = для явного игнорирования.
+        let _ = write!(self.cached_score_str, "{score:10}");
+        let _ = write!(self.cached_level_str, "{level:10}");
+        let _ = write!(self.cached_lines_str, "{lines:10}");
         // Исправление проблемы 21: используем write! вместо format! для переиспользования буфера
         self.cached_high_score_str.clear();
-        write!(self.cached_high_score_str, "{high_score:10}")
-            .expect("Запись в String не может завершиться ошибкой");
+        let _ = write!(self.cached_high_score_str, "{high_score:10}");
     }
 }
 
