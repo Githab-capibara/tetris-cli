@@ -770,7 +770,9 @@ impl Leaderboard {
         match load(APP_NAME, Some("leaderboard")) {
             Ok(leaderboard) => leaderboard,
             Err(_e) => {
-                crate::log_warn!("Не удалось загрузить таблицу лидеров. Попытка загрузки из backup...");
+                crate::log_warn!(
+                    "Не удалось загрузить таблицу лидеров. Попытка загрузки из backup..."
+                );
                 // Попытка загрузить из backup файла
                 match load(APP_NAME, Some("leaderboard_backup")) {
                     Ok(backup_leaderboard) => {
@@ -778,7 +780,9 @@ impl Leaderboard {
                         backup_leaderboard
                     }
                     Err(_backup_e) => {
-                        crate::log_warn!("Не удалось загрузить backup. Используется пустая таблица.");
+                        crate::log_warn!(
+                            "Не удалось загрузить backup. Используется пустая таблица."
+                        );
                         Self::default()
                     }
                 }
