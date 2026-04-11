@@ -44,8 +44,7 @@
 //! ```
 
 // std
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 // external
 use termion::terminal_size;
@@ -58,6 +57,7 @@ use crate::game::GameState;
 use crate::highscore::{Leaderboard, SaveData};
 use crate::io::{Canvas, KeyReader};
 use crate::menu::run_game_mode;
+use crate::util::frame_timing::maintain_fps;
 
 /// Приложение Tetris CLI.
 ///
@@ -202,14 +202,13 @@ impl Application {
     /// Обрабатывает отрисовку меню и ввод пользователя.
     fn run_menu_loop(&mut self) {
         use crate::constants::FRAME_DELAY_MS;
-        use std::time::Instant;
 
         let mut last_time = Instant::now();
         let interval_ms = FRAME_DELAY_MS;
 
         loop {
-            // Поддержание стабильного FPS
-            if !Self::wait_for_next_frame(&mut last_time, interval_ms) {
+            // Поддержание стабильного FPS (общая функция с игровым циклом)
+            if maintain_fps(&mut last_time, interval_ms).is_none() {
                 continue;
             }
 
@@ -308,36 +307,6 @@ impl Application {
             SaveData::save_value(self.high_score);
         }
         score
-    }
-
-    /// Подождать следующего кадра для поддержания FPS.
-    ///
-    /// # Возвращает
-    /// `true` если пришло время обновлять кадр, `false` если нужно ждать
-    ///
-    /// # Исправление ISSUE-079
-    /// Убрано % 1000 — `as_millis()` возвращает u128 и не требует модуля.
-    /// Используем `try_into()` для безопасной конвертации u128 -> u64.
-    fn wait_for_next_frame(last_time: &mut Instant, interval_ms: u64) -> bool {
-        let now = Instant::now();
-        // ISSUE-079: безопасная конвертация u128 -> u64 без % 1000
-        // unwrap_or(0): если delta > u64::MAX (практически невозможно),
-        // используем 0 — sleep(interval_ms) обеспечит корректную задержку
-        let delta_time_ms: u64 = now
-            .duration_since(*last_time)
-            .as_millis()
-            .try_into()
-            .unwrap_or(0);
-
-        if delta_time_ms < interval_ms {
-            sleep(Duration::from_millis(
-                interval_ms.saturating_sub(delta_time_ms),
-            ));
-            return false;
-        }
-
-        *last_time = now;
-        true
     }
 }
 
