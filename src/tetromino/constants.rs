@@ -80,7 +80,6 @@ pub const SHAPE_COUNT: usize = 7;
 /// let t_coords = get_shape_coords(0); // T фигура
 /// ```
 #[must_use]
-#[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
     if shape_index < SHAPE_COUNT {
@@ -106,7 +105,6 @@ pub const fn get_shape_coords(shape_index: usize) -> &'static [(i16, i16); 4] {
 /// let (x, y) = get_shape_block_coords(0, 0); // Первый блок T фигуры
 /// ```
 #[must_use]
-#[inline]
 #[allow(dead_code)] // Публичный API для будущих расширений
 pub const fn get_shape_block_coords(shape_index: usize, block_index: usize) -> (i16, i16) {
     if shape_index < SHAPE_COUNT {

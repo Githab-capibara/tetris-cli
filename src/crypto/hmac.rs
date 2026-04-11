@@ -115,13 +115,28 @@ pub fn verify_hmac_sha256(key: &str, data: &str, expected_hash: &str) -> bool {
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    // Сравниваем с учётом длины: если длины разные — сразу false,
-    // иначе используем constant-time сравнение
-    if actual_bytes.len() != expected_bytes.len() {
+    // Исправление аудита 2026-04-11 (Пакет 3, #39):
+    // Для HMAC-SHA256 обе строки всегда 64 hex-символа, но для best-effort
+    // защиты от timing-атак при нестандартных входах используем padding
+    // до максимальной длины и constant-time сравнение всего буфера.
+    let max_len = actual_bytes.len().max(expected_bytes.len());
+    if max_len == 0 {
         return false;
     }
 
-    actual_bytes.ct_eq(expected_bytes).into()
+    // Padding: если длины разные, дополняем нулями до max_len
+    // ct_eq сравнит весь буфер constant-time
+    let mut actual_padded = vec![0u8; max_len];
+    let mut expected_padded = vec![0u8; max_len];
+    actual_padded[..actual_bytes.len()].copy_from_slice(actual_bytes);
+    expected_padded[..expected_bytes.len()].copy_from_slice(expected_bytes);
+
+    // Проверяем что длины совпадают (constant-time через XOR)
+    let len_eq = (actual_bytes.len() == expected_bytes.len()) as u8;
+
+    // Constant-time сравнение: результат AND с проверкой длины
+    let data_eq = actual_padded.ct_eq(&expected_padded).unwrap_u8();
+    (len_eq & data_eq) == 1
 }
 
 /// Вычислить HMAC подпись для данных с солью.
@@ -291,11 +306,20 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
     let actual_bytes = actual_hash.as_bytes();
     let expected_bytes = expected_hash.as_bytes();
 
-    if actual_bytes.len() != expected_bytes.len() {
+    // Исправление аудита 2026-04-11 (Пакет 3, #39): constant-time сравнение с padding
+    let max_len = actual_bytes.len().max(expected_bytes.len());
+    if max_len == 0 {
         return false;
     }
 
-    actual_bytes.ct_eq(expected_bytes).into()
+    let mut actual_padded = vec![0u8; max_len];
+    let mut expected_padded = vec![0u8; max_len];
+    actual_padded[..actual_bytes.len()].copy_from_slice(actual_bytes);
+    expected_padded[..expected_bytes.len()].copy_from_slice(expected_bytes);
+
+    let len_eq = (actual_bytes.len() == expected_bytes.len()) as u8;
+    let data_eq = actual_padded.ct_eq(&expected_padded).unwrap_u8();
+    (len_eq & data_eq) == 1
 }
 
 /// Вычислить HMAC-SHA256 подпись (байтовая версия).
