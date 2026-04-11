@@ -227,29 +227,7 @@ impl Time {
         }
     }
 
-    /// Проверить, больше ли одно время другого.
-    ///
-    /// # Аргументы
-    /// * `other` - время для сравнения
-    ///
-    /// # Возвращает
-    /// `true` если self > other
-    #[must_use]
-    pub fn gt(&self, other: &Self) -> bool {
-        self.inner > other.inner
-    }
-
-    /// Проверить, меньше ли одно время другого.
-    ///
-    /// # Аргументы
-    /// * `other` - время для сравнения
-    ///
-    /// # Возвращает
-    /// `true` если self < other
-    #[must_use]
-    pub fn lt(&self, other: &Self) -> bool {
-        self.inner < other.inner
-    }
+    // Методы gt/lt удалены — используются операторы > и < через PartialOrd/Ord
 }
 
 // Реализация трейтов сравнения для Time (исправляет clippy::should_implement_trait)
@@ -389,10 +367,10 @@ mod time_tests {
         let t1 = Time::from_secs(1.0);
         let t2 = Time::from_secs(2.0);
 
-        assert!(!t1.gt(&t2));
-        assert!(t2.gt(&t1));
-        assert!(t1.lt(&t2));
-        assert!(!t2.lt(&t1));
+        assert!(!(&t1 > &t2));
+        assert!(&t2 > &t1);
+        assert!(&t1 < &t2);
+        assert!(!(&t2 < &t1));
     }
 
     #[test]
