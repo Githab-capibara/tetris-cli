@@ -6,14 +6,9 @@
 //! - Расчёт очков за падение (Soft Drop, Hard Drop)
 //!
 //! # Зависимости
-//! - [`state.rs`](crate::game::state): константы очков, `GameState`
-//! - [`tetromino.rs`](crate::tetromino): `Tetromino`
-//! - [`lines.rs`](super::lines): удаление линий
-//!
-//! ## Архитектурные заметки (COHESION-1)
-//!
-//! Используется прямой доступ к полям `GameState` вместо сеттеров
-//! по соображениям производительности (внутренняя логика одного модуля).
+//! - `state.rs`: константы очков, `GameState`
+//! - `tetromino.rs`: `Tetromino`
+//! - `lines.rs`: удаление линий
 
 use crate::game::state::GameState;
 use crate::tetromino::Tetromino;
@@ -21,7 +16,6 @@ use crate::types::UpdateEndState;
 
 /// Максимальное безопасное значение f32 для конвертации в u32.
 ///
-/// # Исправление ISSUE-074
 /// Константа вынесена на уровень модуля для переиспользования.
 /// `u32::MAX` = `4_294_967_295`, используем явное значение для избежания потери точности.
 const MAX_SAFE_F32_AS_U32: f32 = 4_294_967_295.0;
@@ -42,14 +36,11 @@ const MAX_SAFE_F32_AS_U32: f32 = 4_294_967_295.0;
 /// конвертации f32 в u32. При появлении общей функции `saturating_cast`<f32, u32>
 /// эту функцию следует заменить на неё.
 ///
-/// # Исправление C1 (CRITICAL)
 /// Использует явную проверку границ вместо clamp для избежания потери точности.
 /// Проблема: `u32::MAX as f32` теряет точность из-за представления float.
 /// Защита от `NaN`, Infinity, отрицательных значений и переполнения.
 ///
-/// # Исправление #25 (HIGH)
 /// Использует корректную проверку диапазона перед конвертацией.
-/// # Исправление аудита 2026-03-30
 /// Использует точную границу 4294967295.0 вместо `u32::MAX` as f32 для избежания потери точности.
 ///
 /// # Видимость
@@ -78,10 +69,9 @@ pub(crate) fn safe_f32_to_u32(value: f32) -> u32 {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 ///
-/// # Инкапсуляция (Задача HIGH)
+/// # Инкапсуляция
 /// Использует методы `GameState` вместо прямого доступа к полям.
 ///
-/// # Исправление C1
 /// Использует `saturating_mul` для защиты от переполнения при начислении очков за падение.
 ///
 /// # Panics
@@ -104,14 +94,14 @@ pub fn handle_hard_drop(state: &mut GameState) {
     }
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast
-    // Исправление #1 (CRITICAL): защита от NaN, Infinity и переполнения
+    // Защита от NaN, Infinity и переполнения
     // Расстояние падения всегда неотрицательное (текущая позиция >= начальной),
     // поэтому .abs() избыточен, но оставлен для самодокументирования.
     let drop_distance_f32 = (state.curr_shape().pos().1 - start_y).abs();
     let drop_distance = safe_f32_to_u32(drop_distance_f32);
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
-    // Исправление C1: saturating_mul для защиты от переполнения
+    // saturating_mul для защиты от переполнения
     let new_score = state.add_score(u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS));
     debug_assert!(
         new_score >= u128::from(drop_distance).saturating_mul(HARD_DROP_POINTS),
@@ -129,13 +119,11 @@ pub fn handle_hard_drop(state: &mut GameState) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 ///
-/// # Инкапсуляция (Задача HIGH)
+/// # Инкапсуляция
 /// Использует методы `GameState` вместо прямого доступа к полям.
 ///
-/// # Исправление C1
 /// Использует `saturating_mul` для защиты от переполнения при начислении очков за падение.
 ///
-/// # Исправление ISSUE-054
 /// `add_score()` возвращает u128, используем let _ = для игнорирования.
 ///
 /// # Panics
@@ -208,24 +196,21 @@ pub fn handle_hold(state: &mut GameState) {
 /// - `Some(UpdateEndState::Won)` - победа (завершение режима)
 /// - `None` - продолжить игру
 ///
-/// # Исправление #24
 /// Функция разделена на подфункции для улучшения читаемости:
 /// - `check_game_over_condition()` - проверка проигрыша
 /// - `calculate_landing_bonus()` - расчёт бонуса за приземление
 /// - `spawn_next_tetromino()` - переход к следующей фигуре
 /// - `check_mode_completion()` - проверка окончания режима
 ///
-/// # Исправление M6 (MEDIUM)
 /// Использует ранний выход (early return) для проверки проигрыша
 /// и явный возврат результата для улучшения читаемости.
 pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
-    // Проверка проигрыша (Исправление #24: вынесено в подфункцию)
-    // Исправление M6: ранний выход для улучшения читаемости
+    // Проверка проигрыша
     if check_game_over_condition(state) {
         return Some(UpdateEndState::Lost);
     }
 
-    // Начисление очков за приземление (Исправление #24: вынесено в подфункцию)
+    // Начисление очков за приземление
     calculate_landing_bonus(state);
 
     // Сохранение фигуры в сетке поля
@@ -237,11 +222,10 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
     // Обновление комбо
     update_combo_on_clear(state, lines_cleared);
 
-    // Переход к следующей фигуре (Исправление #24: вынесено в подфункцию)
+    // Переход к следующей фигуре
     spawn_next_tetromino(state);
 
-    // Проверка окончания режима (Исправление #24: вынесено в подфункцию)
-    // Исправление M6: явный возврат результата
+    // Проверка окончания режима
     check_mode_completion(state)
 }
 
@@ -253,7 +237,6 @@ pub fn handle_landing(state: &mut GameState) -> Option<UpdateEndState> {
 /// # Возвращает
 /// `true` если фигура достигла верха поля (проигрыш)
 ///
-/// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 #[allow(clippy::cast_possible_wrap)]
 fn check_game_over_condition(state: &GameState) -> bool {
@@ -273,19 +256,14 @@ fn check_game_over_condition(state: &GameState) -> bool {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 ///
-/// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
-/// # Инкапсуляция (Задача HIGH)
+/// # Инкапсуляция
 /// Использует методы `GameState` вместо прямого доступа к полям.
 ///
-/// # Исправление C1
 /// Использует `saturating_add` и `saturating_mul` для защиты от переполнения.
-///
-/// # Исправление аудита 2026-03-30
 /// Использует `safe_f32_to_u32()` для консистентности вместо ручного clamp.
 ///
-/// # Исправление ISSUE-055
 /// `add_score()` возвращает u128, используем let _ = для игнорирования.
 pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     use crate::constants::{
@@ -294,12 +272,11 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 
     // Расчёт бонуса за скорость падения
     let limited_fall_spd = state.fall_speed().min(MAX_FALL_SPEED);
-    // Исправление аудита 2026-03-30: используем safe_f32_to_u32() для консистентности
     let fall_bonus_u32 = safe_f32_to_u32(limited_fall_spd * PIECE_SCORE_FALL_MULT);
     let fall_bonus_u128 = u128::from(fall_bonus_u32);
 
     // Инкапсуляция: используем add_score() вместо прямого доступа
-    // Исправление C1: saturating_add для защиты от переполнения
+    // saturating_add для защиты от переполнения
     // side-effect: add_score updates scoreboard internally
     let _ = state.add_score(PIECE_SCORE_INC.saturating_add(fall_bonus_u128));
     debug_assert!(
@@ -308,7 +285,7 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
     );
 
     // Начисление очков за Soft Drop
-    // Исправление C1: saturating_mul для защиты от переполнения
+    // saturating_mul для защиты от переполнения
     let soft_drop_distance = state.soft_drop_distance();
     if soft_drop_distance > 0 {
         let _ = state.add_score(u128::from(soft_drop_distance).saturating_mul(SOFT_DROP_POINTS));
@@ -330,26 +307,24 @@ pub(crate) fn calculate_landing_bonus(state: &mut GameState) {
 /// * `state` - состояние игры (изменяемое)
 /// * `lines_cleared` - количество удалённых линий
 ///
-/// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
-/// # Инкапсуляция (Задача HIGH)
+/// # Инкапсуляция
 /// Использует методы `GameState` вместо прямого доступа к полям.
 ///
-/// # Исправление C1
 /// Использует `saturating_mul` для защиты от переполнения при начислении комбо-бонуса.
 pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
     use crate::constants::COMBO_BONUS;
 
     if lines_cleared > 0 {
-        // perf #38 / исправление #14: Сохраняем ссылку на stats_mut() для избежания
-        // двойного вызова — stats_mut() возвращает &mut GameStats, не копию.
+        // Сохраняем ссылку на stats_mut() для избежания двойного вызова
+        // stats_mut() возвращает &mut GameStats, не копию.
         let stats_mut = state.stats_mut();
         let new_combo = stats_mut.combo_counter().saturating_add(1);
         stats_mut.set_combo_counter(new_combo);
         let combo_bonus = if new_combo > 1 {
             // Инкапсуляция: используем add_score() вместо прямого доступа
-            // Исправление C1: saturating_mul для защиты от переполнения
+            // saturating_mul для защиты от переполнения
             Some(COMBO_BONUS.saturating_mul(u128::from(new_combo - 1)))
         } else {
             None
@@ -367,7 +342,6 @@ pub(crate) fn update_combo_on_clear(state: &mut GameState, lines_cleared: u32) {
 /// # Аргументы
 /// * `state` - состояние игры (изменяемое)
 ///
-/// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 fn spawn_next_tetromino(state: &mut GameState) {
     state.set_curr_shape(*state.next_shape());
@@ -389,11 +363,9 @@ fn spawn_next_tetromino(state: &mut GameState) {
 /// - `Some(UpdateEndState::Won)` - режим завершён
 /// - `None` - продолжить игру
 ///
-/// # Исправление #24
 /// Выделена из `handle_landing()` для улучшения читаемости.
 ///
-/// # Исправление 2.1
-/// Использует [`state.lines_cleared()`](GameState::lines_cleared) вместо переданного параметра `lines_cleared`
+/// Использует `state.lines_cleared()` вместо переданного параметра `lines_cleared`
 /// для получения общего количества очищенных линий.
 fn check_mode_completion(state: &mut GameState) -> Option<UpdateEndState> {
     let mode_trait = state.get_mode_trait();
@@ -446,7 +418,7 @@ mod points_tests {
     }
 
     // ========================================================================
-    // ТЕСТЫ НА ПЕРЕПОЛНЕНИЕ ОЧКОВ (Исправление #1 - ВЫСОКИЙ ПРИОРИТЕТ)
+    // ТЕСТЫ НА ПЕРЕПОЛНЕНИЕ ОЧКОВ
     // ========================================================================
 
     /// Тест на защиту от переполнения при добавлении очков.
@@ -540,10 +512,10 @@ mod points_tests {
     }
 
     // ========================================================================
-    // ТЕСТЫ ДЛЯ C1: safe_f32_to_u32() - БЕЗОПАСНАЯ КОНВЕРТАЦИЯ
+    // ТЕСТЫ ДЛЯ safe_f32_to_u32() - БЕЗОПАСНАЯ КОНВЕРТАЦИЯ
     // ========================================================================
 
-    /// Тест C1: проверка конвертации нормальных значений
+    /// Тест: проверка конвертации нормальных значений
     #[test]
     fn test_fix_c1_safe_f32_to_u32_normal_values() {
         assert_eq!(safe_f32_to_u32(0.0), 0);
@@ -554,21 +526,21 @@ mod points_tests {
         assert_eq!(safe_f32_to_u32(1_000_000.0), 1_000_000);
     }
 
-    /// Тест C1: проверка обработки `NaN`
+    /// Тест: проверка обработки `NaN`
     #[test]
     fn test_fix_c1_safe_f32_to_u32_nan() {
         assert_eq!(safe_f32_to_u32(f32::NAN), 0);
         assert_eq!(safe_f32_to_u32(-f32::NAN), 0);
     }
 
-    /// Тест C1: проверка обработки бесконечности
+    /// Тест: проверка обработки бесконечности
     #[test]
     fn test_fix_c1_safe_f32_to_u32_infinity() {
         assert_eq!(safe_f32_to_u32(f32::INFINITY), 0);
         assert_eq!(safe_f32_to_u32(f32::NEG_INFINITY), 0);
     }
 
-    /// Тест C1: проверка обработки отрицательных значений
+    /// Тест: проверка обработки отрицательных значений
     #[test]
     fn test_fix_c1_safe_f32_to_u32_negative_values() {
         assert_eq!(safe_f32_to_u32(-1.0), 0);
@@ -577,7 +549,7 @@ mod points_tests {
         assert_eq!(safe_f32_to_u32(-f32::MAX), 0);
     }
 
-    /// Тест C1: проверка обработки переполнения
+    /// Тест: проверка обработки переполнения
     #[test]
     fn test_fix_c1_safe_f32_to_u32_overflow() {
         assert_eq!(safe_f32_to_u32(u32::MAX as f32), u32::MAX);
@@ -595,7 +567,7 @@ mod points_tests {
         assert!(safe_f32_to_u32(f32::MAX) >= u32::MAX / 2);
     }
 
-    /// Тест C1: проверка граничных значений
+    /// Тест: проверка граничных значений
     #[test]
     fn test_fix_c1_safe_f32_to_u32_boundary_values() {
         assert_eq!(safe_f32_to_u32(0.0001), 0);
@@ -607,10 +579,10 @@ mod points_tests {
     }
 
     // ========================================================================
-    // ТЕСТЫ ДЛЯ M6: handle_landing() С РАННИМ ВЫХОДОМ
+    // ТЕСТЫ ДЛЯ handle_landing() С РАННИМ ВЫХОДОМ
     // ========================================================================
 
-    /// Тест M6: проверка раннего выхода при проигрыше
+    /// Тест: проверка раннего выхода при проигрыше
     #[test]
     fn test_fix_m6_handle_landing_early_exit_on_loss() {
         use crate::game::GameState;
@@ -634,7 +606,7 @@ mod points_tests {
         );
     }
 
-    /// Тест M6: проверка что `handle_landing` продолжает игру при отсутствии проигрыша
+    /// Тест: проверка что `handle_landing` продолжает игру при отсутствии проигрыша
     #[test]
     fn test_fix_m6_handle_landing_continues_on_no_loss() {
         use crate::game::GameState;
@@ -664,7 +636,7 @@ mod points_tests {
         );
     }
 
-    /// Тест M6: проверка что `check_game_over_condition` используется для раннего выхода
+    /// Тест: проверка что `check_game_over_condition` используется для раннего выхода
     #[test]
     fn test_fix_m6_check_game_over_condition_for_early_exit() {
         use crate::constants::MIN_Y;

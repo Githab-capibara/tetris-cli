@@ -224,6 +224,7 @@ impl LeaderboardValidator {
     /// Этот метод позволяет выполнить валидацию для конкретного значения,
     /// что предотвращает TOCTOU уязвимость.
     #[must_use]
+    // Переменная `e` используется в макросе log_error!
     #[allow(unused_variables)]
     pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
         // Используем разделители ':' для предотвращения коллизий конкатенации

@@ -2,9 +2,6 @@
 //!
 //! Предоставляет структуры для хранения одиночного рекорда
 //! с защитой от подделки через хэширование с солью.
-//!
-//! # Исправление #3 (CRITICAL)
-//! HMAC логика перемещена в модуль `crypto::hmac`.
 
 use crate::config::keys::get_save_data_hmac_key;
 use crate::constants::MAX_CONFIG_FILE_SIZE;
@@ -22,13 +19,9 @@ use super::APP_NAME;
 /// - `Ok(PathBuf)` - путь к файлу конфигурации
 /// - `Err(String)` - если не удалось определить базовую директорию или создать директорию
 ///
-/// # Исправление #3
 /// Сначала проверяется `XDG_CONFIG_HOME`, затем fallback на `HOME/.config`.
-///
-/// # Исправление аудита 2026-04-05 (Проблема 18)
 /// Ошибка `create_dir_all` теперь возвращается вызывающему коду вместо игнорирования.
 fn get_config_file_path() -> Result<PathBuf, String> {
-    // Исправление #3: XDG_CONFIG_HOME → HOME/.config fallback
     let config_base = std::env::var("XDG_CONFIG_HOME")
         .ok()
         .filter(|p| !p.is_empty())
@@ -87,9 +80,6 @@ fn check_config_file_size(path: &PathBuf) -> Result<(), String> {
 /// Данные для сохранения рекорда.
 /// Содержит значение рекорда, соль для хеширования и сам хеш для защиты от подделки.
 /// Использует u128 для предотвращения переполнения счёта.
-///
-/// # Исправление #16
-/// Поля переименованы: `high_score` → `score`, `high_score_salt` → `salt`, `high_score_hash` → `hash`.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SaveData {
     /// Значение рекорда.
@@ -106,18 +96,13 @@ impl SaveData {
     /// # Возвращает
     /// `SaveData` по умолчанию при ошибке загрузки или при обнаружении подделки
     ///
-    /// # Исправление #26
     /// Добавлено предупреждение в UI о проблемах с загрузкой конфигурации.
-    ///
-    /// # Исправление #23
     /// Добавлена проверка размера файла перед загрузкой для защиты от атак через большие файлы.
-    ///
-    /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлена обработка ошибок с попыткой загрузки из backup файла.
-    ///
-    /// # Исправление H10 (HIGH)
     /// Методы загрузки консолидированы - общая логика вынесена в `load_with_validation()`
     #[must_use = "Загруженные данные должны быть использованы"]
+    // Переменные `e` и `backup_e` используются в макросах log_warn!/log_error!
+    // rustc не видит использование через #[macro_export] макросы
     #[allow(unused_variables)]
     pub fn load_config() -> Self {
         Self::load_config_result().unwrap_or_else(|e| {
@@ -142,10 +127,6 @@ impl SaveData {
     /// - `Ok(SaveData)` - успешно загруженные данные из backup
     /// - `Err(String)` - ошибка загрузки
     ///
-    /// # Исправление #23 (MEDIUM SEVERITY)
-    /// Добавлен метод для загрузки из backup файла.
-    ///
-    /// # Исправление H10 (HIGH)
     /// Использует консолидированный метод `load_with_validation()`
     fn load_backup_config() -> Result<Self, String> {
         let data: Self = load::<Self>(APP_NAME, Some("config_backup"))
@@ -161,13 +142,10 @@ impl SaveData {
     /// - `Ok(SaveData)` - успешно загруженные данные
     /// - `Err(String)` - ошибка загрузки
     ///
-    /// # Примечания
     /// Этот метод использует единый стиль обработки ошибок с Result.
-    ///
-    /// # Исправление H10 (HIGH)
     /// Использует консолидированный метод `load_with_validation()`
     fn load_config_result() -> Result<Self, String> {
-        // Проверка размера файла перед загрузкой (Исправление #23)
+        // Проверка размера файла перед загрузкой
         if let Ok(config_path) = get_config_file_path() {
             check_config_file_size(&config_path)?;
         }
@@ -188,7 +166,6 @@ impl SaveData {
     /// - `Ok(SaveData)` - данные прошли валидацию
     /// - `Err(String)` - данные не прошли валидацию
     ///
-    /// # Исправление H10 (HIGH)
     /// Общая логика валидации вынесена в отдельный метод для устранения дублирования.
     fn load_with_validation(data: Self) -> Result<Self, String> {
         data.verify_and_get_score_result().map_or_else(
@@ -219,14 +196,7 @@ impl SaveData {
     /// ```
     /// Использует u128 для предотвращения переполнения.
     ///
-    /// # Исправление #16
-    /// Поля переименованы: используется `score`, `salt`, `hash`.
-    ///
-    /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::hmac`.
-    ///
-    /// # Исправление аудита
-    /// Заменён `.expect()` на `match` — при ошибке HMAC возвращается `None`.
+    /// При ошибке HMAC (теоретически невозможной для валидных &str) возвращается `None`.
     #[must_use]
     pub fn from_value(score: u128) -> Option<Self> {
         let score_str = score.to_string();
@@ -248,7 +218,7 @@ impl SaveData {
     /// # Аргументы
     /// * `high_score` - значение рекорда для сохранения
     ///
-    /// # Поведение при ошибках (Исправление #32)
+    /// # Поведение при ошибках
     /// Метод использует стратегию graceful degradation:
     /// 1. Попытка сохранения в основной файл конфигурации
     /// 2. При ошибке — попытка сохранения в backup файл
@@ -259,9 +229,8 @@ impl SaveData {
     /// используйте `save_value_result` (доступен только в тестах).
     ///
     /// Использует u128 для предотвращения переполнения.
-    ///
-    /// # Исправление #23 (MEDIUM SEVERITY)
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
+    // Переменные `e` и `backup_e` используются в макросах log_error!
     #[allow(unused_variables)]
     pub fn save_value(high_score: u128) {
         let Some(save) = Self::from_value(high_score) else {
@@ -297,9 +266,6 @@ impl SaveData {
     /// assert_eq!(save.verify_and_get_score(), Some(1000));
     /// ```
     ///
-    /// # Исправление #3 (CRITICAL)
-    /// HMAC логика перемещена в `crypto::hmac`.
-    ///
     /// # Примечание
     /// Для явной обработки ошибок используйте [`Self::verify_and_get_score_result()`].
     #[must_use]
@@ -328,14 +294,10 @@ impl SaveData {
     /// }
     /// ```
     ///
-    /// # Исправление C10 (CRITICAL)
     /// Метод возвращает Result вместо Option для явной обработки ошибок.
     #[allow(clippy::missing_panics_doc)]
-    #[allow(unused_variables)]
     pub fn verify_and_get_score_result(&self) -> Result<u128, String> {
         let score_str = self.score.to_string();
-        // Исправление аудита #4: hmac_verify_with_salt возвращает Result<Bool, io::Error>,
-        // поэтому .expect() некорректен — используем map_err для явной обработки
         let valid =
             hmac_verify_with_salt(get_save_data_hmac_key(), &self.salt, &score_str, &self.hash)
                 .map_err(|e| format!("Ошибка HMAC при проверке рекорда: {e}"))?;
