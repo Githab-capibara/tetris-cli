@@ -283,9 +283,11 @@ impl Level {
     ///
     /// # Примечания
     /// Если value < 1, будет установлено значение 1.
+    /// В debug-режиме паникует для обнаружения багов на этапе разработки.
     #[must_use]
     pub fn with_value(value: u32) -> Self {
         debug_assert!(value >= 1, "Level::with_value(0) может маскировать баги");
+        // В release-режиме гарантируем инвариант level >= 1
         Self(value.max(1))
     }
 
