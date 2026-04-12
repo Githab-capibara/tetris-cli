@@ -105,8 +105,11 @@ impl BagGenerator {
 
         // Алгоритм Fisher-Yates для перемешивания
         for i in (1..self.bag.len()).rev() {
-            // Генерируем случайный индекс от 0 до i
-            let dist = Uniform::new(0, i + 1).unwrap();
+            // SAFETY: Uniform::new(0, i+1) всегда успешен для i >= 1,
+            // так как диапазон [0, i+1) корректен (минимум 2 элемента).
+            let dist = Uniform::new(0, i + 1).unwrap_or_else(|e| {
+                panic!("Невозможная ошибка создания Uniform-распределения для [0, {i}): {e}");
+            });
             let j = dist.sample(&mut rng);
             self.bag.swap(i, j);
         }
