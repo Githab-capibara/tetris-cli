@@ -181,20 +181,10 @@ fn test_fisher_yates_guarantees_randomness() {
     );
 }
 
-/// Тест 9: Перемешивание не теряет фигуры
-#[test]
-fn test_shuffle_does_not_lose_pieces() {
-    let mut bag = BagGenerator::new();
-    let mut total_pieces = 0;
-
-    // Получаем 100 фигур
-    for _ in 0..100 {
-        let _shape = bag.next_shape();
-        total_pieces += 1;
-    }
-
-    assert_eq!(total_pieces, 100, "Должно быть получено ровно 100 фигур");
-}
+// Тест test_shuffle_does_not_lose_pieces удалён — был тавтологическим
+// (проверял счётчик цикла, а не логику BagGenerator).
+// Аналогичная логика проверяется в test_bag_generator_creation и
+// test_uniform_distribution_multiple_bags.
 
 /// Тест 12: Случайность перемешивания
 #[test]
