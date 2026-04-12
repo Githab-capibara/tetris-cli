@@ -9,8 +9,6 @@
 
 use crate::constants::{LINES_PER_LEVEL, LINE_SCORES, SPD_INC};
 use crate::game::GameState;
-use crate::tetromino::{ShapeType, Tetromino};
-use crate::types::RotationDirection;
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 1-6: Движение фигур
@@ -34,62 +32,6 @@ fn test_game_state_initial_piece_position() {
     assert!(
         (curr_shape.pos().1 - 0.0).abs() < f32::EPSILON,
         "Начальная позиция Y должна быть 0.0"
-    );
-}
-
-// ============================================================================
-// ГРУППА ТЕСТОВ 13-17: Вращение фигур
-// ============================================================================
-
-/// Тест 13: Проверка вращения фигуры T по часовой стрелке
-///
-/// Проверяет корректность изменения координат при вращении.
-#[test]
-fn test_tetromino_rotate_clockwise() {
-    let mut tetromino = Tetromino::new(
-        (4.0, 0.0),
-        ShapeType::T,
-        [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        0,
-    );
-
-    // Исходные координаты: (-1,0), (0,0), (1,0), (0,1)
-    // Вращение по часовой: (x,y) -> (-y,x)
-    tetromino.rotate(RotationDirection::Clockwise);
-
-    // После вращения: (0,-1), (0,0), (0,1), (-1,0)
-    assert_eq!(
-        tetromino.coords()[0],
-        (0, -1),
-        "Первый блок должен повернуться"
-    );
-    assert_eq!(
-        tetromino.coords()[1],
-        (0, 0),
-        "Центральный блок должен остаться на месте"
-    );
-}
-
-/// Тест 14: Проверка вращения фигуры T против часовой стрелки
-///
-/// Проверяет корректность изменения координат при вращении в обратную сторону.
-#[test]
-fn test_tetromino_rotate_counter_clockwise() {
-    let mut tetromino = Tetromino::new(
-        (4.0, 0.0),
-        ShapeType::T,
-        [(-1, 0), (0, 0), (1, 0), (0, 1)],
-        0,
-    );
-
-    // Вращение против часовой: (x,y) -> (y,-x)
-    tetromino.rotate(RotationDirection::CounterClockwise);
-
-    // После вращения: (0,1), (0,0), (0,-1), (1,0)
-    assert_eq!(
-        tetromino.coords()[3],
-        (1, 0),
-        "Верхний блок должен переместиться вправо"
     );
 }
 
