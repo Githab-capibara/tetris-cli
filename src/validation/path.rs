@@ -5,34 +5,13 @@
 //! - Проверка разрешённых символов
 //! - Защита от symlink атак
 //! - Защита от path traversal (..)
-//! - Защита от URL-encoded path traversal (%2e%2e%2f и др.)
-//! - Проверка на null байты (\0)
+//! - Защита от URL-encoded path traversal
+//! - Проверка на null байты
 //!
 //! ## Структуры
 //! - [`PathValidator`] — валидатор путей
 //! - [`PathError`] — ошибка валидации
 //! - [`PathErrorKind`] — тип ошибки валидации
-
-//! ## Ограничения и важные замечания
-//!
-//! ### URL-encoding
-//! **Исправление аудита 2026-03-31**: Валидатор ТЕПЕРЬ поддерживает обнаружение URL-encoded путей.
-//! Пути вида `config%2Ejson` или `..%2F..%2Fetc%2Fpasswd` БУДУТ распознаны как path traversal атаки.
-//! Метод `validate_no_traversal()` проверяет на:
-//! - `%2e` и `%2E` (.)
-//! - `%2f` и `%2F` (/)
-//! - `%5c` и `%5C` (\)
-//! - Двойное кодирование: `%252e`, `%252f`
-//!
-//! ### Null байты
-//! Валидатор автоматически отклоняет пути содержащие null байты (\0).
-//! Это предотвращает атаки типа null byte injection когда путь обрывается
-//! на середине строки (например: `config.json\0.exe`).
-//!
-//! ### Unicode нормализация
-//! Валидатор НЕ выполняет Unicode нормализацию. Пути в разной Unicode-форме
-//! (NFC, NFD, NFKC, NFKD) могут проходить валидацию по-разному. Если ваше
-//! приложение работает с Unicode путями, рассмотрите предварительную нормализацию.
 //!
 //! ## Пример использования
 //! ```ignore
@@ -99,26 +78,8 @@ pub enum PathErrorKind {
 
 /// Конвертация `PathError` в стандартный `io::Error`.
 ///
-/// # Audit 2026-04-12, Issue 5.3
-///
-/// Эта реализация позволяет использовать `PathError` в контекстах,
-/// требующих `io::Error`, например при работе с файловыми операциями.
 /// Все ошибки валидации путей маппятся в `io::ErrorKind::InvalidInput`,
 /// так как они представляют некорректный пользовательский ввод.
-///
-/// # Примеры использования
-///
-/// ```ignore
-/// use std::io;
-/// use tetris_cli::validation::path::{PathValidator, PathError};
-///
-/// fn save_config(path: &str) -> io::Result<()> {
-///     let validator = PathValidator::new();
-///     let validated = validator.validate_all(path, &std::env::current_dir()?)?;
-///     // PathError автоматически конвертируется в io::Error
-///     Ok(())
-/// }
-/// ```
 impl From<PathError> for io::Error {
     fn from(err: PathError) -> Self {
         Self::new(io::ErrorKind::InvalidInput, err.message())
@@ -127,16 +88,7 @@ impl From<PathError> for io::Error {
 
 /// Валидатор путей для конфигурации.
 ///
-/// Объединяет все проверки в одном месте (DRY).
-///
-/// # Архитектурные заметки
-/// ## Problem 2.3 - Консолидация валидации путей
-/// Этот валидатор заменяет отдельные функции:
-/// - `validate_path_length`
-/// - `validate_path_characters`
-/// - `validate_no_symlinks`
-/// - `validate_path_within_directory`
-/// - `validate_config_path`
+/// Объединяет все проверки в одном месте.
 ///
 /// # Пример использования
 /// ```ignore
