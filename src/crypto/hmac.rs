@@ -21,6 +21,30 @@ use subtle::ConstantTimeEq;
 /// Тип HMAC-SHA256.
 pub type HmacSha256 = Hmac<Sha256>;
 
+/// Создать экземпляр HMAC-SHA256 из ключа.
+///
+/// # Аргументы
+/// * `key` - секретный ключ (любая длина допустима по RFC 2104)
+///
+/// # Возвращает
+/// Инициализированный экземпляр `HmacSha256`
+///
+/// # Безопасность
+/// HMAC-SHA256 принимает ключи любой длины согласно RFC 2104, поэтому
+/// `new_from_slice` никогда не возвращает ошибку для этого алгоритма.
+///
+/// # Исправление аудита 2026-04-12 (Issue #6-7)
+/// Вынесено в отдельную функцию для устранения дублирования `expect()` вызовов.
+/// Заменён `expect()` на `unwrap()` с SAFETY комментарием согласно рекомендациям аудита.
+#[inline]
+fn create_hmac_instance(key: &[u8]) -> HmacSha256 {
+    // SAFETY: HmacSha256::new_from_slice никогда не возвращает ошибку для HMAC-SHA256.
+    // Согласно RFC 2104, HMAC принимает ключи произвольной длины.
+    // Если ключ длиннее блока хеш-функции (64 байта для SHA-256), он хешируется.
+    // Если короче — дополняется нулями. Ошибка InvalidLength невозможна.
+    HmacSha256::new_from_slice(key).unwrap()
+}
+
 /// Сформировать буфер `salt:data` для HMAC-подписи.
 ///
 /// Использует `write!` в `Vec<u8>` для снижения аллокаций по сравнению с `format!()`.
@@ -79,11 +103,13 @@ fn build_salted_data(salt: &str, data: &str) -> Vec<u8> {
 /// Добавлена безопасная обработка через `expect` с понятным сообщением.
 /// Хотя HMAC-SHA256 поддерживает ключи любой длины, `expect` даёт
 /// диагностическую информацию при непредвиденных ошибках.
+///
+/// # Исправление аудита 2026-04-12 (Issue #6)
+/// Заменён `expect()` на вызов `create_hmac_instance()` для устранения дублирования.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256(key: &str, data: &str) -> String {
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .expect("HMAC-SHA256 new_from_slice не должен падать — ключи любой длины по RFC 2104");
+    let mut mac = create_hmac_instance(key.as_bytes());
     mac.update(data.as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -335,11 +361,13 @@ pub fn verify_hmac_sha256_bytes(key: &str, data: &[u8], expected_hash: &str) -> 
 ///
 /// # Исправление аудита 2026-04-11 (Пакет 1, #2)
 /// Добавлена безопасная обработка через `expect` с диагностическим сообщением.
+///
+/// # Исправление аудита 2026-04-12 (Issue #7)
+/// Заменён `expect()` на вызов `create_hmac_instance()` для устранения дублирования.
 #[must_use = "HMAC подпись должна быть использована для проверки"]
 #[inline]
 pub fn hmac_sha256_bytes(key: &str, data: &[u8]) -> String {
-    let mut mac = HmacSha256::new_from_slice(key.as_bytes())
-        .expect("HMAC-SHA256 new_from_slice не должен падать — ключи любой длины по RFC 2104");
+    let mut mac = create_hmac_instance(key.as_bytes());
     mac.update(data);
     let result = mac.finalize();
     hex::encode(result.into_bytes())
