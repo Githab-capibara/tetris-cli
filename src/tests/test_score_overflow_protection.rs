@@ -82,59 +82,9 @@ fn test_score_overflow_saturating_add_normal_values() {
     );
 }
 
-/// Тест 3+11: Saturating add comprehensive (overflow protection и edge cases)
-///
-/// Проверяет `saturating_add` с переполнением и краевыми значениями.
-#[test]
-fn test_saturating_add_comprehensive() {
-    // --- Overflow protection ---
-    let max_value = u128::MAX;
-
-    let result = max_value.saturating_add(1);
-    assert_eq!(
-        result,
-        u128::MAX,
-        "saturating_add должен вернуть MAX при переполнении"
-    );
-
-    let result2 = max_value.saturating_add(1000);
-    assert_eq!(
-        result2,
-        u128::MAX,
-        "saturating_add должен вернуть MAX при добавлении 1000"
-    );
-
-    let result3 = max_value.saturating_add(max_value);
-    assert_eq!(
-        result3,
-        u128::MAX,
-        "saturating_add(MAX, MAX) должен вернуть MAX"
-    );
-
-    let near_max = u128::MAX - 100;
-    let result4 = near_max.saturating_add(200);
-    assert_eq!(
-        result4,
-        u128::MAX,
-        "saturating_add должен вернуть MAX при переполнении near_max"
-    );
-
-    let normal_score: u128 = 1000;
-    let result5 = normal_score.saturating_add(500);
-    assert_eq!(
-        result5, 1500,
-        "saturating_add должен корректно складывать нормальные значения"
-    );
-
-    // --- Edge cases ---
-    assert_eq!(0u128.saturating_add(0), 0);
-    assert_eq!(0u128.saturating_add(1), 1);
-    assert_eq!(1u128.saturating_add(0), 1);
-    assert_eq!((u128::MAX - 1).saturating_add(1), u128::MAX);
-    assert_eq!((u128::MAX - 1).saturating_add(2), u128::MAX);
-    assert_eq!((u128::MAX / 2).saturating_add(u128::MAX / 2), u128::MAX - 1);
-    assert_eq!((u128::MAX / 2).saturating_add(u128::MAX / 2 + 1), u128::MAX);
-}
+// Тест saturating_add_comprehensive удалён — тестировал стандартную библиотеку Rust,
+// а не логику проекта. Защита от переполнения проверяется в test_score_does_not_exceed_max
+// и test_stress_score_overflow_protection через реальные вызовы update_score_for_lines.
 
 // ============================================================================
 // ГРУППА ТЕСТОВ 4-7: Экстремальные значения (уровень 10000+, комбо 1000+)

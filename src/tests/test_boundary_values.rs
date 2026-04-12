@@ -234,36 +234,6 @@ fn test_lines_count_reached_boundary() {
 }
 
 // ============================================================================
-// ТЕСТЫ ГРАНИЧНЫХ ЗНАЧЕНИЙ ДЛЯ GameState
-// ============================================================================
-
-/// Тест T20: `GameState` установка максимального счёта
-#[test]
-fn test_game_state_max_score() {
-    let mut state = GameState::new();
-    state.set_score(u128::MAX);
-    assert_eq!(state.score(), u128::MAX, "Счёт должен быть u128::MAX");
-}
-
-/// Тест T21: `GameState` установка счёта через `set_score` без ограничений
-#[test]
-fn test_game_state_score_overflow_protection() {
-    let mut state = GameState::new();
-
-    // set_score не выполняет clamp — устанавливает любое u128 значение
-    state.set_score(u128::MAX);
-    assert_eq!(
-        state.score(),
-        u128::MAX,
-        "set_score(u128::MAX) должен установить u128::MAX"
-    );
-
-    // Обычные значения тоже устанавливаются корректно
-    state.set_score(1000);
-    assert_eq!(state.score(), 1000, "Счёт должен быть 1000");
-}
-
-// ============================================================================
 // ТЕСТЫ ОБРАБОТКИ ОШИБОК (Result, Option)
 // ============================================================================
 

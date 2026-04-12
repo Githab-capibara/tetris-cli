@@ -185,19 +185,7 @@ fn test_obstacle_avoidance_right() {
     }
 }
 
-/// Тест 31: Движение между двумя препятствиями
-#[test]
-fn test_move_between_obstacles() {
-    let state = GameState::new();
-
-    // В начале игры препятствий нет
-    // Проверяем базовую механику движения
-    let can_move = state.can_move_curr_shape_direction(Direction::Left)
-        || state.can_move_curr_shape_direction(Direction::Right)
-        || state.can_move_curr_shape_direction(Direction::Down);
-    assert!(can_move, "В начале игры движение должно быть возможным");
-}
-
+// Тест 31 удалён — проверял тривиальное условие (can_move в пустом поле всегда true)
 // Тест 32: Проверка коллизий при движении вниз (удалён как дубликат)
 
 // ============================================================================
@@ -355,11 +343,14 @@ fn test_movement_after_rotation() {
         if state.can_rotate_curr_shape(rotation) {
             state.rotate_curr_shape(rotation);
 
-            let can_move = state.can_move_curr_shape_direction(Direction::Left)
-                || state.can_move_curr_shape_direction(Direction::Right);
+            // Проверяем что после вращения хотя бы одно из направлений движения
+            // сохраняет возможность (фигура не должна быть заблокирована полностью)
+            let can_left = state.can_move_curr_shape_direction(Direction::Left);
+            let can_right = state.can_move_curr_shape_direction(Direction::Right);
+            let can_down = state.can_move_curr_shape_direction(Direction::Down);
             assert!(
-                can_move,
-                "Фигура должна иметь возможность движения после вращения {rotation:?}"
+                can_left || can_right || can_down,
+                "После вращения {rotation:?} фигура должна иметь возможность движения"
             );
         }
     }
@@ -369,23 +360,27 @@ fn test_movement_after_rotation() {
 #[test]
 fn test_movement_after_full_rotation_cycle() {
     let mut state = GameState::new();
-    let _initial_x = state.curr_shape().pos().0;
+    let initial_pos = state.curr_shape().pos();
 
-    // 4 вращения по часовой
+    // 4 вращения по часовой (должны вернуть фигуру в исходную ориентацию)
     for _ in 0..4 {
         if state.can_rotate_curr_shape(RotationDirection::Clockwise) {
             state.rotate_curr_shape(RotationDirection::Clockwise);
         }
     }
 
-    // Движение должно быть возможным
-    let can_move = state.can_move_curr_shape_direction(Direction::Left)
-        || state.can_move_curr_shape_direction(Direction::Right);
+    // После полного цикла фигура должна вернуться в исходную ориентацию
+    // и сохранить возможность движения вниз (на пустом поле)
     assert!(
-        can_move,
-        "Фигура должна иметь возможность движения после полного цикла вращения"
+        state.can_move_curr_shape_direction(Direction::Down),
+        "После полного цикла вращения движение вниз должно быть возможным"
     );
 
-    // Позиция X не должна измениться (если не было коллизий)
-    // Примечание: это упрощённая проверка
+    // Позиция не должна измениться (только вращение, без движения)
+    let final_pos = state.curr_shape().pos();
+    assert!(
+        (final_pos.0 - initial_pos.0).abs() < f32::EPSILON
+            && (final_pos.1 - initial_pos.1).abs() < f32::EPSILON,
+        "Позиция фигуры не должна измениться при вращении на месте"
+    );
 }

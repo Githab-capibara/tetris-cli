@@ -418,36 +418,8 @@ fn test_boundary_values_fall_speed_and_land_timer() {
     assert_f64_eq!(state.land_timer(), small_value);
 }
 
-/// Тест 13: Интеграционный тест валидации в GameState
-///
-/// Проверяет что валидация работает в контексте GameState.
-#[test]
-fn test_validation_in_game_state_context() {
-    let mut state = GameState::new();
-
-    // Проверяем начальные значения
-    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
-    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
-
-    // Пытаемся установить невалидные значения
-    assert!(state.set_fall_speed(f32::NAN).is_err());
-    assert!(state.set_fall_speed(f32::INFINITY).is_err());
-    assert!(state.set_land_timer(f64::NAN).is_err());
-    assert!(state.set_land_timer(f64::INFINITY).is_err());
-
-    // Проверяем что значения не изменились
-    assert_f32_eq!(state.fall_speed(), INITIAL_FALL_SPD);
-    assert_f64_eq!(state.land_timer(), LAND_TIME_DELAY_S);
-
-    // Устанавливаем валидные значения
-    assert!(state.set_fall_speed(5.0).is_ok());
-    assert!(state.set_land_timer(0.2).is_ok());
-
-    // Проверяем что значения изменились
-    assert_f32_eq!(state.fall_speed(), 5.0);
-    assert_f64_eq!(state.land_timer(), 0.2);
-}
-
+// Тест test_validation_in_game_state_context удалён — дублирует отдельные тесты
+// NaN/Infinity (тесты 1-3, 6-8) и валидные значения (тесты 4, 9).
 /// Тест 15: Стресс-тест валидации
 ///
 /// Проверяет валидацию при множественных вызовах.
