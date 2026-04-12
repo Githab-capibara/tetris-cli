@@ -97,6 +97,28 @@ pub enum PathErrorKind {
     NullByte,
 }
 
+/// Конвертация `PathError` в стандартный `io::Error`.
+///
+/// # Audit 2026-04-12, Issue 5.3
+///
+/// Эта реализация позволяет использовать `PathError` в контекстах,
+/// требующих `io::Error`, например при работе с файловыми операциями.
+/// Все ошибки валидации путей маппятся в `io::ErrorKind::InvalidInput`,
+/// так как они представляют некорректный пользовательский ввод.
+///
+/// # Примеры использования
+///
+/// ```ignore
+/// use std::io;
+/// use tetris_cli::validation::path::{PathValidator, PathError};
+///
+/// fn save_config(path: &str) -> io::Result<()> {
+///     let validator = PathValidator::new();
+///     let validated = validator.validate_all(path, &std::env::current_dir()?)?;
+///     // PathError автоматически конвертируется в io::Error
+///     Ok(())
+/// }
+/// ```
 impl From<PathError> for io::Error {
     fn from(err: PathError) -> Self {
         Self::new(io::ErrorKind::InvalidInput, err.message())
@@ -287,6 +309,12 @@ impl PathValidator {
         // для гарантии безопасности — canonical_base_dir может измениться между вызовами
         // (например, если директория была переименована или перемонтирована).
         // Кэширование здесь не применяется ради корректности проверок безопасности.
+        //
+        // TOCTOU MITIGATION (Audit 2026-04-12, Issue 1.1):
+        // Потенциальная уязвимость TOCTOU (Time-Of-Check-Time-Of-Use) между проверкой
+        // родительской директории и созданием файла смягчается использованием O_NOFOLLOW
+        // флага при открытии файлов (см. OpenOptions в controls.rs, highscore/leaderboard.rs).
+        // O_NOFOLLOW обеспечивает атомарную защиту на уровне ядра от symlink-атак.
         let canonical_base_dir = base_dir.canonicalize().map_err(|e| PathError {
             message: format!("Не удалось получить canonical путь базовой директории: {e}"),
             kind: PathErrorKind::InvalidPath,
@@ -424,7 +452,12 @@ impl PathValidator {
     }
 
     /// Максимальная глубина проверки symlink в родительских директориях.
-    /// Ограничиваем проверку до 3 уровней — дальше это paranoia.
+    ///
+    /// Audit 2026-04-12, Issue 3.4: Ограничиваем проверку до 3 уровней вверх по иерархии.
+    /// Это балансирует между безопасностью и производительностью:
+    /// - Проверка всех родительских директорий до корня была бы избыточной
+    /// - 3 уровня покрывают типичные сценарии атак через symlink
+    /// - Дальнейшая проверка даёт минимальный прирост безопасности при значительных затратах
     const MAX_SYMLINK_CHECK_DEPTH: usize = 3;
 
     /// Проверить отсутствие символических ссылок.

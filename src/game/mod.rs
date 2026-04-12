@@ -15,15 +15,6 @@
 //! ## Архитектурные заметки
 //!
 //! ### PROB-131: Архитектурная рекомендация — Event System
-
-// Cast-ы безопасны в контексте игры (поле 10x20)
-#![allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
-    clippy::cast_precision_loss,
-    clippy::no_effect_underscore_binding
-)]
 //! TODO: рассмотреть внедрение системы событий (Event System) для расцепления
 //! модулей game. Сейчас модули напрямую вызывают функции друг друга.
 //! Event-driven архитектура позволила бы снизить связность.
@@ -109,7 +100,10 @@ pub mod view; // pub: GameView используется из exports.rs и menu.
 
 // #[doc(hidden)] — реэкспорт для обратной совместимости.
 // Предпочтительный путь импорта: `crate::game::state::GameState`
-#[deprecated(since = "0.97.0", note = "Используйте `crate::game::state::GameState`")]
+#[deprecated(
+    since = "0.97.0",
+    note = "Используйте `crate::game::state::GameState`. Будет удалено в версии 1.0.0"
+)]
 #[doc(hidden)]
 pub use state::GameState;
 
@@ -117,7 +111,7 @@ pub use state::GameState;
 // Предпочтительный путь импорта: `crate::game::logic::*`
 #[deprecated(
     since = "0.97.0",
-    note = "Используйте `crate::game::logic::*` напрямую"
+    note = "Используйте `crate::game::logic::*` напрямую. Будет удалено в версии 1.0.0"
 )]
 #[doc(hidden)]
 pub use logic::{
@@ -128,7 +122,7 @@ pub use logic::{
 // Предпочтительный путь импорта: `crate::game::scoring::*`
 #[deprecated(
     since = "0.97.0",
-    note = "Используйте `crate::game::scoring::*` напрямую"
+    note = "Используйте `crate::game::scoring::*` напрямую. Будет удалено в версии 1.0.0"
 )]
 #[doc(hidden)]
 pub use scoring::{check_rows, handle_hold};

@@ -222,7 +222,10 @@ impl Application {
                 }
                 // Клонирование необходимо: process_menu_input требует &mut self,
                 // но также нужна ссылка на high_score_display (NLL не может разделить borrows)
-                // Исправление аудита #4: проверено — clone() необходим из-за ограничений NLL
+                // Audit 2026-04-12, Issue 2.3: Clone необходим из-за ограничений borrow checker.
+                // Альтернатива (реструктуризация для избежания clone) потребует значительного
+                // рефакторинга архитектуры Application. Текущее решение оптимально по соотношению
+                // производительность/сложность, так как clone происходит только при нажатии клавиши.
                 let score_clone = self.high_score_display.clone();
                 self.process_menu_input(key, &score_clone);
             }
