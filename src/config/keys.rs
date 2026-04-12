@@ -1,41 +1,17 @@
 //! Модуль конфигурации HMAC ключей.
 //!
-//! # Ответственность
-//! - Централизованное управление HMAC ключами
-//! - Определение констант ключей в одном месте
-//! - Предотвращение дублирования ключей
-//! - Валидация ключей при запуске
-//!
-//! # Fallback на пустой ключ (намеренное поведение)
-//! Если переменная окружения HMAC ключа не установлена, возвращается пустая строка.
-//! Это намеренное решение для dev-режима: приложение продолжает работать без HMAC ключа,
-//! что удобно для локальной разработки и тестирования.
-//! В продакшене ОБЯЗАТЕЛЬНО установите переменные окружения через `validate_all_keys()`.
-//! Пустой HMAC ключ ослабляет защиту от подделки — это логируется через `log_once_empty_key`.
-//!
-//! # Использование
-//! ```ignore
-//! use tetris_cli::config::keys::{CONTROLS_HMAC_KEY, LEADERBOARD_HMAC_KEY, SAVE_DATA_HMAC_KEY};
-//!
-//! let key = CONTROLS_HMAC_KEY;
-//! ```
+//! Централизованное управление HMAC ключами с валидацией при запуске.
+//! Если переменная окружения HMAC ключа не установлена, возвращается пустая строка
+//! (удобно для dev-режима). В продакшене установите переменные окружения.
 
 use std::sync::OnceLock;
 
 /// Минимальная длина HMAC ключа в байтах (128 бит).
 ///
-/// Ключи короче 16 байт (128 бит) считаются небезопасными согласно
-/// рекомендациям NIST SP 800-107. Это минимальная длина для обеспечения
-/// криптографической стойкости HMAC-SHA256.
+/// Ключи короче 16 байт считаются небезопасными согласно NIST SP 800-107.
 pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 
-// ============================================================================
-// LOG_ONCE ДЛЯ ПУСТЫХ HMAC КЛЮЧЕЙ (Исправление аудита 2026-04-05, Проблема 6)
-// ============================================================================
-
 /// Вывести предупреждение о пустом HMAC ключе ТОЛЬКО ОДИН РАЗ при первом вызове.
-/// Использует `OnceLock` для гарантии однократного вывода независимо от
-/// количества вызовов функции.
 fn log_once_empty_key(_key_name: &str) {
     static ONCE: OnceLock<()> = OnceLock::new();
     ONCE.get_or_init(|| {
@@ -46,60 +22,48 @@ fn log_once_empty_key(_key_name: &str) {
     });
 }
 
-/// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
-///
-/// # Audit 2026-04-12, Issue 6.1
-/// Эта функция является частью паттерна, дублируемого для трёх типов ключей.
-/// Рассмотрена возможность использования макроса для устранения дублирования,
-/// но текущая реализация выбрана для явности и простоты отладки.
-fn get_controls_hmac_key_runtime() -> &'static String {
-    static CONTROLS_KEY: OnceLock<String> = OnceLock::new();
-    CONTROLS_KEY.get_or_init(|| {
-        std::env::var("TETRIS_CONTROLS_HMAC_KEY").unwrap_or_else(|_e| {
-            log_once_empty_key("TETRIS_CONTROLS_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_CONTROLS_HMAC_KEY: {e}");
-            String::new()
-        })
-    })
+/// Создать функцию получения HMAC ключа из переменной окружения.
+macro_rules! define_hmac_key_getter {
+    ($fn_name:ident, $env_var:literal, $static_name:ident, $doc:literal) => {
+        #[doc = $doc]
+        fn $fn_name() -> &'static String {
+            static $static_name: OnceLock<String> = OnceLock::new();
+            $static_name.get_or_init(|| {
+                std::env::var($env_var).unwrap_or_else(|_| {
+                    log_once_empty_key($env_var);
+                    crate::log_warn!("Ошибка чтения {}: нет переменной окружения", $env_var);
+                    String::new()
+                })
+            })
+        }
+    };
 }
 
-/// Получить ключ для HMAC подписи таблицы лидеров из переменной окружения.
-///
-/// # Audit 2026-04-12, Issue 6.1
-/// См. документацию к `get_controls_hmac_key_runtime` о паттерне дублирования.
-fn get_leaderboard_hmac_key_runtime() -> &'static String {
-    static LEADERBOARD_KEY: OnceLock<String> = OnceLock::new();
-    LEADERBOARD_KEY.get_or_init(|| {
-        std::env::var("TETRIS_LEADERBOARD_HMAC_KEY").unwrap_or_else(|_e| {
-            log_once_empty_key("TETRIS_LEADERBOARD_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_LEADERBOARD_HMAC_KEY: {e}");
-            String::new()
-        })
-    })
-}
+define_hmac_key_getter!(
+    get_controls_hmac_key_runtime,
+    "TETRIS_CONTROLS_HMAC_KEY",
+    CONTROLS_KEY,
+    "Ключ для HMAC подписи конфигурации управления"
+);
 
-/// Получить ключ для HMAC подписи данных рекордов из переменной окружения.
-///
-/// # Audit 2026-04-12, Issue 6.1
-/// См. документацию к `get_controls_hmac_key_runtime` о паттерне дублирования.
-fn get_save_data_hmac_key_runtime() -> &'static String {
-    static SAVEDATA_KEY: OnceLock<String> = OnceLock::new();
-    SAVEDATA_KEY.get_or_init(|| {
-        std::env::var("TETRIS_SAVEDATA_HMAC_KEY").unwrap_or_else(|_e| {
-            log_once_empty_key("TETRIS_SAVEDATA_HMAC_KEY");
-            crate::log_warn!("Ошибка чтения TETRIS_SAVEDATA_HMAC_KEY: {e}");
-            String::new()
-        })
-    })
-}
+define_hmac_key_getter!(
+    get_leaderboard_hmac_key_runtime,
+    "TETRIS_LEADERBOARD_HMAC_KEY",
+    LEADERBOARD_KEY,
+    "Ключ для HMAC подписи таблицы лидеров"
+);
+
+define_hmac_key_getter!(
+    get_save_data_hmac_key_runtime,
+    "TETRIS_SAVEDATA_HMAC_KEY",
+    SAVEDATA_KEY,
+    "Ключ для HMAC подписи данных рекордов"
+);
 
 /// Получить ключ для HMAC подписи конфигурации управления.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_CONTROLS_HMAC_KEY` или пустую строку если не установлен
-///
-/// # Исправление #6
-/// Использует runtime `env::var()` вместо compile-time `option_env!`.
+/// Ключ из переменной окружения `TETRIS_CONTROLS_HMAC_KEY` или пустую строку
 #[must_use]
 pub fn get_controls_hmac_key() -> &'static str {
     get_controls_hmac_key_runtime().as_str()
@@ -108,10 +72,7 @@ pub fn get_controls_hmac_key() -> &'static str {
 /// Получить ключ для HMAC подписи таблицы лидеров.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_LEADERBOARD_HMAC_KEY` или пустую строку если не установлен
-///
-/// # Исправление #6
-/// Использует runtime `env::var()` вместо compile-time `option_env!`.
+/// Ключ из переменной окружения `TETRIS_LEADERBOARD_HMAC_KEY` или пустую строку
 #[must_use]
 pub fn get_leaderboard_hmac_key() -> &'static str {
     get_leaderboard_hmac_key_runtime().as_str()
@@ -120,10 +81,7 @@ pub fn get_leaderboard_hmac_key() -> &'static str {
 /// Получить ключ для HMAC подписи данных рекордов.
 ///
 /// # Возвращает
-/// Ключ из переменной окружения `TETRIS_SAVEDATA_HMAC_KEY` или пустую строку если не установлен
-///
-/// # Исправление #6
-/// Использует runtime `env::var()` вместо compile-time `option_env!`.
+/// Ключ из переменной окружения `TETRIS_SAVEDATA_HMAC_KEY` или пустую строку
 #[must_use]
 pub fn get_save_data_hmac_key() -> &'static str {
     get_save_data_hmac_key_runtime().as_str()
@@ -135,15 +93,9 @@ pub fn get_save_data_hmac_key() -> &'static str {
 /// * `key` - ключ для проверки
 /// * `key_name` - имя ключа для сообщения об ошибке
 ///
-/// # Исправление аудита 2026-04-01 (C1)
-/// Добавлена валидация HMAC ключей при запуске с проверкой наличия ключа.
-///
-/// # Исправление NEW-146 (2026-04-02)
-/// Добавлена проверка минимальной длины ключа (16 байт).
-///
 /// # Errors
 /// Возвращает ошибку если ключ пустой, содержит только пробельные символы
-/// или короче минимальной длины.
+/// или короче минимальной длины (16 байт).
 pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
     if key.trim().is_empty() {
         return Err(format!(
@@ -165,32 +117,12 @@ pub fn validate_hmac_key(key: &str, key_name: &str) -> Result<(), String> {
 
 /// Проверить все HMAC ключи при запуске приложения.
 ///
-/// # Правила валидации
-/// ## Проверка для каждого ключа
-/// 1. **Наличие**: Ключ не должен быть пустым или содержать только пробелы
-/// 2. **Минимальная длина**: Ключ должен быть не короче `MIN_HMAC_KEY_LENGTH` (16 байт)
-/// 3. **Проверка всех трёх ключей**:
-///    - `CONTROLS_HMAC_KEY` - для конфигурации управления
-///    - `LEADERBOARD_HMAC_KEY` - для таблицы лидеров
-///    - `SAVE_DATA_HMAC_KEY` - для данных рекордов
-///
-/// ## Критерии отказа
-/// - Пустой ключ (только пробелы)
-/// - Ключ короче 16 байт
-/// - Отсутствие переменной окружения `TETRIS_HMAC_KEY`
+/// Проверяет наличие и минимальную длину (16 байт) всех трёх ключей:
+/// `CONTROLS_HMAC_KEY`, `LEADERBOARD_HMAC_KEY`, `SAVE_DATA_HMAC_KEY`.
 ///
 /// # Возвращает
 /// - `Ok(())` если все ключи прошли валидацию
 /// - `Err(Vec<String>)` с описанием всех обнаруженных проблем
-///
-/// # Исправление аудита 2026-04-01 (C1)
-/// Добавлена функция для валидации всех ключей при запуске.
-///
-/// # Намеренное поведение (Исправление аудита 2026-04-02)
-/// Эта функция возвращает `Result` и вызывающий код (`Application::new()`)
-/// обрабатывает ошибку логированием предупреждения. Приложение продолжает
-/// работу с пустым HMAC ключом — это корректно для dev-режима.
-/// В продакшене рекомендуется устанавливать HMAC ключи через переменные окружения.
 ///
 /// # Errors
 /// Возвращает ошибку если хотя бы один ключ пустой или слишком короткий.
