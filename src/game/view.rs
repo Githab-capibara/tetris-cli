@@ -94,6 +94,11 @@ pub struct GameView<'a> {
 
     // === Анимации ===
     /// Битовая маска строк для анимации очистки.
+    ///
+    /// # Audit 2026-04-12, Issue 8
+    /// Поле используется для передачи состояния анимации в рендерер.
+    /// В будущем может быть использовано для мигания строк при очистке.
+    #[allow(dead_code)]
     pub(crate) animating_rows: u32,
 
     // === Режим и статистика ===
@@ -244,7 +249,6 @@ impl<'a> GameView<'a> {
         use termion::color::Reset;
 
         for y in 0..GRID_HEIGHT {
-            let _is_animating = (self.animating_rows & (1 << y)) != 0;
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
                     // cast: i8 -> usize, потеря знака допустима: цвет блока неотрицательный (0-6)
