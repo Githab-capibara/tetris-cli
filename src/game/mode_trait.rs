@@ -287,7 +287,7 @@ mod tests {
                 0 => assert_eq!(mode.name(), "Классика"),
                 1 => assert_eq!(mode.name(), "Спринт"),
                 2 => assert_eq!(mode.name(), "Марафон"),
-                _ => panic!(
+                _ => unreachable!(
                     "Неизвестный индекс режима: {i}. Если добавлен новый режим, обновите этот match."
                 ),
             }
