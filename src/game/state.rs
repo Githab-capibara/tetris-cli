@@ -4,44 +4,6 @@
 //! - `GameState` - основное состояние игры
 //! - `GameModeTrait` - трейт режима игры
 //! - Константы игры
-//!
-//! ## Архитектурные заметки
-//!
-//! ### PROB-116: Ответственность GameState (God Object)
-//! `GameState` намеренно содержит множество полей — это центральная структура игры,
-//! которая координирует все игровые компоненты. Рефакторинг на отдельные сервисы
-//! стал бы breaking change. Вместо этого используется композиция: GameState делегирует
-//! специализированным компонентам (`GameBoard`, `ScoreBoard`, `FigureManager`, `AnimationState`).
-//! Все методы-делегаты предоставляют удобный доступ к вложенным компонентам.
-//!
-//! ## Исправление #1 (Разделение `GameState`)
-//! - `GameStats` перемещён в отдельный модуль [`super::stats`]
-//! - `RenderCache` перемещён в отдельный модуль `super::cache`
-//! - `GameState` использует композицию: содержит `stats: GameStats`, `cache: RenderCache`
-//!
-//! ## Исправление #12 (MEDIUM SEVERITY) - SOLID принципы
-//! Начато разделение `GameState` для соблюдения Single Responsibility Principle:
-//! - `GameBoard` (в процессе) - состояние поля (blocks, `filled_lines`)
-//! - `ScoreBoard` (в процессе) - состояние очков (score, level, `lines_cleared`)
-//! - `FigureManager` (в процессе) - состояние фигур (`curr_shape`, `next_shape`, `held_shape`, bag)
-//! - `AnimationState` (в процессе) - состояние анимаций (`animating_rows_mask`, `is_hard_dropping`)
-//!
-//! ### Выполнено:
-//! - ✅ `GameStats` вынесен в отдельный модуль `game/stats.rs`
-//! - ✅ `RenderCache` вынесен в отдельный модуль `game/cache.rs`
-//! - ✅ `GameState` использует композицию вместо наследования
-//! - ✅ `FigureManager` выделен в отдельный компонент `game/components/figure_manager.rs`
-//! - ✅ `AnimationState` выделен в отдельный компонент `game/components/animation_state.rs`
-//! - ✅ `GameBoard` выделен в отдельный компонент `game/components/board_state.rs`
-//!
-//! ## Архитектурное улучшение 2026-04-01 (CRITICAL #1)
-//! `GameState` разделён на специализированные компоненты:
-//! - `FigureManager` — управление фигурами (`curr_shape`, `next_shape`, `held_shape`, bag, `can_hold`)
-//! - `AnimationState` — управление анимациями (`animating_rows_mask`, `is_hard_dropping`)
-//! - `GameBoard` — управление полем (board, `filled_lines_mask`)
-//! - `ScoreBoard` — управление очками (score, level, `lines_cleared`)
-//! - `GameStats` — статистика игры
-//! - `RenderCache` — кэш для отрисовки
 
 // std
 // (нет импортов std)
