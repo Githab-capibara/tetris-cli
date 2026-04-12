@@ -453,7 +453,7 @@ impl GameState {
 
     /// Получить статистику игры (мутуабельная ссылка).
     #[must_use]
-    pub fn stats_mut(&mut self) -> &mut GameStats {
+    pub const fn stats_mut(&mut self) -> &mut GameStats {
         &mut self.stats
     }
 
@@ -496,7 +496,7 @@ impl GameState {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `GameBoard`
-    pub fn board_mut(&mut self) -> &mut GameBoard {
+    pub const fn board_mut(&mut self) -> &mut GameBoard {
         &mut self.board
     }
 
@@ -519,7 +519,7 @@ impl GameState {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `ScoreBoard`
-    pub fn scoreboard_mut(&mut self) -> &mut ScoreBoard {
+    pub const fn scoreboard_mut(&mut self) -> &mut ScoreBoard {
         &mut self.scoreboard
     }
 
@@ -562,7 +562,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Прямой доступ к компоненту `AnimationState` для сложной логики.
-    pub fn animation_state_mut(&mut self) -> &mut AnimationState {
+    pub const fn animation_state_mut(&mut self) -> &mut AnimationState {
         &mut self.animation_state
     }
 
@@ -579,7 +579,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
-    pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub const fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         self.board.get_blocks_mut()
     }
 
@@ -656,7 +656,7 @@ impl GameState {
     }
 
     /// Получить кэш для отрисовки (мутуабельная ссылка).
-    pub fn get_render_cache_mut(&mut self) -> &mut RenderCache {
+    pub const fn get_render_cache_mut(&mut self) -> &mut RenderCache {
         &mut self.render_cache
     }
 
@@ -674,7 +674,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn set_score(&mut self, value: u128) {
+    pub const fn set_score(&mut self, value: u128) {
         self.scoreboard.set_score(value);
     }
 
@@ -692,7 +692,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn set_lines_cleared(&mut self, value: u32) {
+    pub const fn set_lines_cleared(&mut self, value: u32) {
         self.scoreboard.set_lines_cleared(value);
     }
 
@@ -802,7 +802,7 @@ impl GameState {
     }
 
     /// Установить расстояние Soft Drop.
-    pub fn set_soft_drop_distance(&mut self, value: u32) {
+    pub const fn set_soft_drop_distance(&mut self, value: u32) {
         self.soft_drop_distance = value;
     }
 
@@ -810,7 +810,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `AnimationState`.
-    pub fn set_is_hard_dropping(&mut self, value: bool) {
+    pub const fn set_is_hard_dropping(&mut self, value: bool) {
         self.animation_state.set_is_hard_dropping(value);
     }
 
@@ -818,7 +818,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn set_can_hold(&mut self, value: bool) {
+    pub const fn set_can_hold(&mut self, value: bool) {
         self.figure_manager.set_can_hold(value);
     }
 
@@ -826,7 +826,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn set_curr_shape(&mut self, value: Tetromino) {
+    pub const fn set_curr_shape(&mut self, value: Tetromino) {
         self.figure_manager.set_curr_shape(value);
     }
 
@@ -834,7 +834,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn set_next_shape(&mut self, value: Tetromino) {
+    pub const fn set_next_shape(&mut self, value: Tetromino) {
         self.figure_manager.set_next_shape(value);
     }
 
@@ -842,32 +842,68 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn set_held_shape(&mut self, value: Option<Tetromino>) {
+    pub const fn set_held_shape(&mut self, value: Option<Tetromino>) {
         self.figure_manager.set_held_shape(value);
     }
 
-    /// Получить текущую фигуру (мутуабельная ссылка).
+    /// Вращать текущую фигуру.
+    ///
+    /// # Аргументы
+    /// * `dir` - направление вращения
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn get_curr_shape_mut(&mut self) -> &mut Tetromino {
-        self.figure_manager.curr_shape_mut()
+    pub fn rotate_curr_shape(&mut self, dir: crate::types::RotationDirection) {
+        self.figure_manager.rotate_curr_shape(dir);
     }
 
-    /// Получить следующую фигуру (мутуабельная ссылка).
+    /// Применить замыкание к текущей фигуре для мутации.
     ///
-    /// # Архитектурные заметки (CRITICAL #1)
-    /// Делегирует вызов компоненту `FigureManager`.
-    pub fn get_next_shape_mut(&mut self) -> &mut Tetromino {
-        self.figure_manager.next_shape_mut()
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Tetromino`
+    pub fn mutate_curr_shape<F: FnOnce(&mut Tetromino)>(&mut self, f: F) {
+        self.figure_manager.mutate_curr_shape(f);
     }
 
-    /// Получить удержанную фигуру (мутуабельная ссылка).
+    /// Применить замыкание к следующей фигуре для мутации.
     ///
-    /// # Архитектурные заметки (CRITICAL #1)
-    /// Делегирует вызов компоненту `FigureManager`.
-    pub fn get_held_shape_mut(&mut self) -> &mut Option<Tetromino> {
-        self.figure_manager.held_shape_mut()
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Tetromino`
+    pub fn mutate_next_shape<F: FnOnce(&mut Tetromino)>(&mut self, f: F) {
+        self.figure_manager.mutate_next_shape(f);
+    }
+
+    /// Применить замыкание к удержанной фигуре для мутации.
+    ///
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Option<Tetromino>`
+    pub fn mutate_held_shape<F: FnOnce(&mut Option<Tetromino>)>(&mut self, f: F) {
+        self.figure_manager.mutate_held_shape(f);
+    }
+
+    /// Установить позицию текущей фигуры.
+    ///
+    /// # Аргументы
+    /// * `x` - позиция по X
+    /// * `y` - позиция по Y
+    pub fn set_curr_pos(&mut self, x: f32, y: f32) {
+        self.figure_manager.set_curr_pos(x, y);
+    }
+
+    /// Сместить позицию текущей фигуры по X.
+    ///
+    /// # Аргументы
+    /// * `dx` - смещение по X
+    pub fn move_curr_dx(&mut self, dx: f32) {
+        self.figure_manager.move_curr_dx(dx);
+    }
+
+    /// Сместить позицию текущей фигуры по Y.
+    ///
+    /// # Аргументы
+    /// * `dy` - смещение по Y
+    pub fn move_curr_dy(&mut self, dy: f32) {
+        self.figure_manager.move_curr_dy(dy);
     }
 
     /// Получить генератор фигур.
@@ -883,7 +919,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `FigureManager`.
-    pub fn get_bag_mut(&mut self) -> &mut BagGenerator {
+    pub const fn get_bag_mut(&mut self) -> &mut BagGenerator {
         self.figure_manager.bag_mut()
     }
 
@@ -900,7 +936,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (CRITICAL #1)
     /// Делегирует вызов компоненту `AnimationState`.
-    pub fn set_animating_rows_mask(&mut self, value: u32) {
+    pub const fn set_animating_rows_mask(&mut self, value: u32) {
         self.animation_state.set_animating_rows_mask(value);
     }
 
@@ -917,7 +953,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A1)
     /// Делегирует вызов компоненту `GameBoard`.
-    pub fn set_filled_lines(&mut self, value: u32) {
+    pub const fn set_filled_lines(&mut self, value: u32) {
         self.board.set_filled_lines_mask(value);
     }
 
@@ -941,7 +977,7 @@ impl GameState {
     /// # Исправление аудита 2026-04-02 (H16)
     /// Добавлен `#[must_use]` так как возвращаемое значение (новое количество линий) важно.
     #[must_use = "Новое количество линий должно быть использовано"]
-    pub fn add_lines_cleared(&mut self, lines: u32) -> u32 {
+    pub const fn add_lines_cleared(&mut self, lines: u32) -> u32 {
         self.scoreboard.add_lines_cleared(lines)
     }
 
@@ -952,7 +988,7 @@ impl GameState {
     ///
     /// # Архитектурные заметки (A3)
     /// Делегирует вызов компоненту `ScoreBoard`.
-    pub fn increment_level(&mut self) -> u32 {
+    pub const fn increment_level(&mut self) -> u32 {
         self.scoreboard.increment_level()
     }
 
@@ -997,24 +1033,6 @@ impl GameState {
     // ========================================================================
     // Эти методы инкапсулируют сложную логику и валидацию данных
 
-    /// Применить гравитацию к текущей фигуре.
-    ///
-    /// Увеличивает скорость падения на основе уровня.
-    /// Используется при повышении уровня для автоматического увеличения сложности.
-    ///
-    /// # Исправление M3 (MEDIUM)
-    /// Инкапсулирует логику изменения скорости падения с валидацией.
-    pub fn apply_gravity(&mut self) {
-        use crate::constants::{MAX_FALL_SPEED, SPD_INC};
-        let new_speed = self.fall_speed + SPD_INC;
-        // Валидация: скорость не должна превышать максимальную
-        if new_speed <= MAX_FALL_SPEED {
-            self.fall_speed = new_speed;
-        } else {
-            self.fall_speed = MAX_FALL_SPEED;
-        }
-    }
-
     /// Появить новую фигуру из генератора.
     ///
     /// Берёт следующую фигуру из bag, устанавливает её как текущую,
@@ -1034,7 +1052,7 @@ impl GameState {
         self.figure_manager.spawn_new_piece();
 
         // Сбрасываем позицию текущей фигуры
-        *self.figure_manager.curr_shape_mut().pos_mut() = (SPAWN_X, 0.0);
+        self.set_curr_pos(SPAWN_X, 0.0);
 
         // Добавляем в статистику
         self.stats
@@ -1046,23 +1064,6 @@ impl GameState {
         }
 
         Some(())
-    }
-
-    /// Обновить скорость падения на основе уровня.
-    ///
-    /// Вычисляет скорость по формуле: `INITIAL_FALL_SPD` + (level - 1) * `SPD_INC`
-    ///
-    /// # Исправление M3 (MEDIUM)
-    /// Инкапсулирует логику расчёта скорости с валидацией диапазона.
-    pub fn update_fall_speed(&mut self) {
-        use crate::constants::{INITIAL_FALL_SPD, MAX_FALL_SPEED, SPD_INC};
-        let level = self.level();
-        // Потеря точности допустима: level <= 15 (максимум для тетриса)
-        #[allow(clippy::cast_precision_loss)]
-        let calculated_speed = ((level - 1) as f32).mul_add(SPD_INC, INITIAL_FALL_SPD);
-
-        // Валидация: скорость должна быть в допустимых пределах
-        self.fall_speed = calculated_speed.clamp(INITIAL_FALL_SPD, MAX_FALL_SPEED);
     }
 }
 

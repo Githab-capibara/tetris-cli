@@ -41,13 +41,13 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     }
 
     if state.can_move_curr_shape_direction(Direction::Down) {
-        let curr_shape = state.get_curr_shape_mut();
-        // Потеря точности допустима: delta_time_ms небольшое значение (обычно 16-100 мс)
         let fall_distance = fall_speed * (delta_time_ms as f32 / MILLIS_PER_SECOND);
-        let current_y = curr_shape.pos().1;
+        let current_y = state.curr_shape().pos().1;
         // Ограничиваем падение нижней границей поля — фигура не может провалиться сквозь пол
         let max_y = (GRID_HEIGHT - 1) as f32;
-        curr_shape.pos_mut().1 = (current_y + fall_distance).min(max_y);
+        let new_y = (current_y + fall_distance).min(max_y);
+        let current_x = state.curr_shape().pos().0;
+        state.set_curr_pos(current_x, new_y);
         false
     } else if state.land_timer() > 0.0 {
         let land_timer = state.land_timer();

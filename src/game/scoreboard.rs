@@ -8,13 +8,8 @@
 //! # Архитектурные заметки
 //! Выделено из `GameState` для соблюдения Single Responsibility Principle (SRP).
 //! `ScoreBoard` инкапсулирует состояние очков и предоставляет контролируемый доступ.
-//!
-//! ## Трейты
-//! - `ScoreAccess` (импортирован из `crate::game::access`) - доступ только на чтение
-//! - `ScoreMutable` (импортирован из `crate::game::access`) - доступ на чтение и запись
 
-// Импортируем трейты из access.rs для избежания дублирования
-use crate::game::access::{ScoreAccess, ScoreMutable};
+// crate
 
 /// Состояние счёта и уровней.
 ///
@@ -157,7 +152,7 @@ impl ScoreBoard {
     ///
     /// # Валидация (H3)
     /// Проверяет значение на разумные пределы (максимум `u128::MAX`).
-    pub fn set_score(&mut self, value: u128) {
+    pub const fn set_score(&mut self, value: u128) {
         // Валидация (H3): u128 уже имеет естественные границы
         self.score = value;
     }
@@ -210,7 +205,7 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.increment_level(), 3);
     /// ```
     #[must_use = "Новый уровень должен быть использован"]
-    pub fn increment_level(&mut self) -> u32 {
+    pub const fn increment_level(&mut self) -> u32 {
         self.level = self.level.saturating_add(1);
         self.level
     }
@@ -235,7 +230,7 @@ impl ScoreBoard {
     /// assert_eq!(scoreboard.add_lines_cleared(3), 8);
     /// ```
     #[must_use = "Новое количество линий должно быть использовано"]
-    pub fn add_lines_cleared(&mut self, count: u32) -> u32 {
+    pub const fn add_lines_cleared(&mut self, count: u32) -> u32 {
         self.lines_cleared = self.lines_cleared.saturating_add(count);
         self.lines_cleared
     }
@@ -244,27 +239,8 @@ impl ScoreBoard {
     ///
     /// # Аргументы
     /// * `value` - новое значение количества линий
-    pub fn set_lines_cleared(&mut self, value: u32) {
+    pub const fn set_lines_cleared(&mut self, value: u32) {
         self.lines_cleared = value;
-    }
-}
-
-// S9: Удаление избыточных #[allow(clippy::too_many_arguments)] — методы имеют 0-1 аргумент
-impl ScoreAccess for ScoreBoard {
-    fn get_score(&self) -> u128 {
-        // Вызываем inherent метод, а не трейт-метод (избегаем бесконечной рекурсии)
-        self.score
-    }
-}
-
-impl ScoreMutable for ScoreBoard {
-    fn add_score(&mut self, points: u128) {
-        // Новый счёт отбрасывается — трейт требует () возвращаемый тип
-        let _ = self.add_score(points);
-    }
-
-    fn set_score(&mut self, value: u128) {
-        self.set_score(value);
     }
 }
 

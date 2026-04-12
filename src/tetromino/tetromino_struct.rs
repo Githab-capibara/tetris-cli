@@ -131,7 +131,7 @@ impl Tetromino {
     /// Мутация позиции должна оставаться в пределах игрового поля.
     /// Неправильное использование может привести к выходу фигуры за границы поля
     /// или к некорректной работе коллизий.
-    pub fn pos_mut(&mut self) -> &mut (f32, f32) {
+    pub const fn pos_mut(&mut self) -> &mut (f32, f32) {
         &mut self.pos
     }
 
@@ -139,7 +139,7 @@ impl Tetromino {
     ///
     /// # Возвращает
     /// Мутабельная ссылка на массив координат
-    pub fn coords_mut(&mut self) -> &mut [(i16, i16); 4] {
+    pub const fn coords_mut(&mut self) -> &mut [(i16, i16); 4] {
         &mut self.coords
     }
 
@@ -179,7 +179,7 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `pos` - новая позиция (x, y)
-    pub fn set_pos(&mut self, pos: (f32, f32)) {
+    pub const fn set_pos(&mut self, pos: (f32, f32)) {
         self.pos = pos;
     }
 
@@ -187,7 +187,7 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `shape` - новый тип фигуры
-    pub fn set_shape(&mut self, shape: ShapeType) {
+    pub const fn set_shape(&mut self, shape: ShapeType) {
         self.shape = shape;
     }
 
@@ -195,7 +195,7 @@ impl Tetromino {
     ///
     /// # Аргументы
     /// * `coords` - новый массив координат
-    pub fn set_coords(&mut self, coords: [(i16, i16); 4]) {
+    pub const fn set_coords(&mut self, coords: [(i16, i16); 4]) {
         self.coords = coords;
     }
 

@@ -21,10 +21,10 @@ pub const ALL_SHAPES: [ShapeType; 7] = [
 /// Создать GameState с конкретной фигурой
 pub fn state_with_shape(shape: ShapeType) -> GameState {
     let mut state = GameState::new();
-    state.get_curr_shape_mut().set_shape(shape);
-    state
-        .get_curr_shape_mut()
-        .set_coords(SHAPE_COORDS[shape as usize]);
+    state.mutate_curr_shape(|s| {
+        s.set_shape(shape);
+        s.set_coords(SHAPE_COORDS[shape as usize]);
+    });
     state
 }
 
@@ -34,21 +34,21 @@ pub fn push_to_wall(state: &mut GameState, dir: Direction) {
         match dir {
             Direction::Left => {
                 if state.can_move_curr_shape_direction(Direction::Left) {
-                    state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+                    state.move_curr_dx(-1.0);
                 } else {
                     break;
                 }
             }
             Direction::Right => {
                 if state.can_move_curr_shape_direction(Direction::Right) {
-                    state.get_curr_shape_mut().pos_mut().0 += 1.0;
+                    state.move_curr_dx(1.0);
                 } else {
                     break;
                 }
             }
             Direction::Down => {
                 if state.can_move_curr_shape_direction(Direction::Down) {
-                    state.get_curr_shape_mut().pos_mut().1 += 1.0;
+                    state.move_curr_dy(1.0);
                 } else {
                     break;
                 }

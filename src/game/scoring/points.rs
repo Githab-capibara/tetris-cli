@@ -100,8 +100,7 @@ pub fn handle_hard_drop(state: &mut GameState) {
         return;
     }
     while state.can_move_curr_shape_direction(Direction::Down) {
-        let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos_mut().1 += 1.0;
+        state.move_curr_dy(1.0);
     }
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast
@@ -146,8 +145,7 @@ pub fn handle_soft_drop(state: &mut GameState) {
     use crate::types::Direction;
 
     if state.can_move_curr_shape_direction(Direction::Down) {
-        let curr_shape = state.get_curr_shape_mut();
-        curr_shape.pos_mut().1 += 1.0;
+        state.move_curr_dy(1.0);
         let soft_drop_distance = state.soft_drop_distance();
         state.set_soft_drop_distance(soft_drop_distance.saturating_add(1));
         // Инкапсуляция: используем add_score() вместо прямого доступа
@@ -195,8 +193,7 @@ pub fn handle_hold(state: &mut GameState) {
             state.set_next_shape(next_shape);
         }
 
-        let curr_shape = state.get_curr_shape_mut();
-        *curr_shape.pos_mut() = (4.0, 0.0);
+        state.set_curr_pos(4.0, 0.0);
         state.set_can_hold(false);
     }
 }
@@ -480,7 +477,7 @@ mod points_tests {
         state.set_score(u128::MAX - 50);
 
         // Устанавливаем фигуру высоко для большого падения
-        state.get_curr_shape_mut().pos_mut().1 = 0.0;
+        state.set_curr_pos(state.curr_shape().pos().0, 0.0);
 
         // Выполняем Hard Drop
         handle_hard_drop(&mut state);
@@ -623,7 +620,7 @@ mod points_tests {
 
         // Устанавливаем фигуру так чтобы она достигла верха поля (проигрыш)
         // Для этого устанавливаем координату Y отрицательной
-        state.get_curr_shape_mut().pos_mut().1 = -5.0;
+        state.set_curr_pos(state.curr_shape().pos().0, -5.0);
 
         // Сохраняем фигуру в сетке чтобы создать коллизию
         state.save_tetromino();
@@ -646,7 +643,7 @@ mod points_tests {
         let mut state = GameState::new();
 
         // Устанавливаем фигуру в нормальной позиции (на поле)
-        state.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state.set_curr_pos(state.curr_shape().pos().0, 10.0);
 
         // Сохраняем фигуру в сетке
         state.save_tetromino();
@@ -679,7 +676,7 @@ mod points_tests {
         state.get_blocks_mut()[0][4] = 1;
 
         // Устанавливаем фигуру так чтобы её блок был выше поля
-        state.get_curr_shape_mut().pos_mut().1 = -2.0;
+        state.set_curr_pos(state.curr_shape().pos().0, -2.0);
 
         // Проверяем условие проигрыша напрямую
         let game_over = state.curr_shape().coords().iter().any(|&(_, coord_y)| {
@@ -705,7 +702,7 @@ mod points_tests {
         state.set_lines_cleared(39);
 
         // Фигура в нормальной позиции, не проигрыш
-        state.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state.set_curr_pos(state.curr_shape().pos().0, 10.0);
         state.save_tetromino();
 
         // handle_landing должен вернуть None — игра продолжается (39 < 40)
@@ -718,7 +715,7 @@ mod points_tests {
         // Теперь устанавливаем 40 линий — условие победы выполнено
         let mut state2 = GameState::new_sprint();
         state2.set_lines_cleared(40);
-        state2.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state2.set_curr_pos(state2.curr_shape().pos().0, 10.0);
         state2.save_tetromino();
 
         // handle_landing должен вернуть Some(UpdateEndState::Won)
@@ -734,8 +731,7 @@ mod points_tests {
     fn test_handle_hold_overflow() {
         let mut state = GameState::new();
         // Устанавливаем позицию в NaN — должно сработать как защита от бесконечного цикла
-        state.get_curr_shape_mut().pos_mut().0 = f32::NAN;
-        state.get_curr_shape_mut().pos_mut().1 = f32::NAN;
+        state.set_curr_pos(f32::NAN, f32::NAN);
 
         // handle_hold должен выйти без паники благодаря проверке NaN
         handle_hold(&mut state);
@@ -752,7 +748,7 @@ mod points_tests {
 
         // Проигрыш: фигура выше поля
         let mut state_lost = GameState::new();
-        state_lost.get_curr_shape_mut().pos_mut().1 = -5.0;
+        state_lost.set_curr_pos(state_lost.curr_shape().pos().0, -5.0);
         let shape_block_y = state_lost.curr_shape().pos().1 as i16;
         let game_over = state_lost
             .curr_shape()
@@ -766,7 +762,7 @@ mod points_tests {
 
         // Не проигрыш: фигура на поле
         let mut state_ok = GameState::new();
-        state_ok.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state_ok.set_curr_pos(state_ok.curr_shape().pos().0, 10.0);
         let shape_block_y_ok = state_ok.curr_shape().pos().1 as i16;
         let game_over_ok = state_ok.curr_shape().coords().iter().any(|&(_, coord_y)| {
             let block_y = coord_y + shape_block_y_ok;

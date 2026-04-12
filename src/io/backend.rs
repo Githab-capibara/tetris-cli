@@ -1,15 +1,12 @@
-//! Абстракция и реализация терминального бэкенда.
+//! Терминальный бэкенд на основе termion.
 //!
 //! # Ответственность
-//! - Определение интерфейса для работы с терминалом (трейты)
-//! - Реализация бэкенда на основе termion
-//! - Абстрагирование от конкретной реализации терминала
+//! - Реализация бэкенда для вывода в терминал через termion
+//! - Управление курсором, очисткой экрана, отрисовкой строк
 //!
 //! ## Архитектурные заметки
-//! Выделено для соблюдения Dependency Inversion Principle (DIP).
-//! Модули ввода/вывода зависят от абстракции (трейт), а не от конкретной реализации.
-//!
-//! Архитектурное улучшение 2026-04-01 (CRITICAL #3): Terminal Backend Abstraction
+//! Бэкенд предоставляет низкоуровневый API для работы с терминалом.
+//! Модули игры используют `TermionBackend` для отрисовки.
 
 use std::io::{self, stdout, Stdout, Write};
 use termion::{
@@ -21,132 +18,13 @@ use termion::{
 };
 
 // ============================================================================
-// ТРЕЙТЫ (АБСТРАКЦИЯ)
-// ============================================================================
-
-/// Трейт терминального бэкенда для операций вывода.
-///
-/// Определяет интерфейс для отрисовки в терминале.
-/// Позволяет заменять реализацию (termion, crossterm, и т.д.) без изменения кода.
-///
-/// ## Архитектурные заметки
-/// Выделено для соблюдения Dependency Inversion Principle (DIP).
-///
-/// ## Пример реализации
-/// ```ignore
-/// use tetris_cli::io::backend::TerminalBackend;
-/// use termion::color::{White, Reset};
-///
-/// struct TermionBackend {
-///     // ...
-/// }
-///
-/// impl TerminalBackend for TermionBackend {
-///     fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) {
-///         // Реализация через termion
-///     }
-/// }
-/// ```
-pub trait TerminalBackend {
-    /// Отрисовать строку в указанной позиции.
-    ///
-    /// # Аргументы
-    /// * `text` - текст для отрисовки
-    /// * `x` - координата X (1-based)
-    /// * `y` - координата Y (1-based)
-    /// * `fg` - цвет переднего плана
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) -> io::Result<()>;
-
-    /// Отрисовать строки в указанных позициях.
-    ///
-    /// # Аргументы
-    /// * `lines` - массив строк для отрисовки
-    /// * `x` - начальная координата X (1-based)
-    /// * `y` - начальная координата Y (1-based)
-    /// * `fg` - цвет переднего плана
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn draw_strings(&mut self, lines: &[&str], x: u16, y: u16, fg: &dyn Color) -> io::Result<()>;
-
-    /// Очистить экран.
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn clear_screen(&mut self) -> io::Result<()>;
-
-    /// Переместить курсор в указанную позицию.
-    ///
-    /// # Аргументы
-    /// * `x` - координата X (1-based)
-    /// * `y` - координата Y (1-based)
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn goto(&mut self, x: u16, y: u16) -> io::Result<()>;
-
-    /// Скрыть курсор.
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn hide_cursor(&mut self) -> io::Result<()>;
-
-    /// Показать курсор.
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn show_cursor(&mut self) -> io::Result<()>;
-
-    /// Выполнить flush буфера вывода.
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn flush(&mut self) -> io::Result<()>;
-
-    /// Сбросить терминал в исходное состояние.
-    ///
-    /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
-    fn reset(&mut self) -> io::Result<()>;
-}
-
-/// Трейт терминального бэкенда для операций ввода.
-///
-/// Определяет интерфейс для чтения ввода из терминала.
-/// Позволяет заменять реализацию (termion, crossterm, и т.д.) без изменения кода.
-///
-/// ## Архитектурные заметки
-/// Выделено для соблюдения Dependency Inversion Principle (DIP).
-pub trait TerminalInputBackend {
-    /// Получить код нажатой клавиши.
-    ///
-    /// # Возвращает
-    /// - `Ok(Some(u8))` — код нажатой клавиши
-    /// - `Ok(None)` — если клавиша не была нажата
-    /// - `Err(io::Error)` — если произошла ошибка чтения
-    ///
-    /// # Errors
-    /// Возвращает `io::Error` при ошибке чтения из терминала.
-    fn read_key(&mut self) -> io::Result<Option<u8>>;
-
-    /// Получить нажатую клавишу с поддержкой UTF-8.
-    ///
-    /// # Возвращает
-    /// - `Some(char)` — символ Unicode
-    /// - `None` — при ошибке чтения или невалидном UTF-8
-    fn read_key_unicode(&mut self) -> Option<char>;
-}
-
-// ============================================================================
 // РЕАЛИЗАЦИЯ (TERMION)
 // ============================================================================
 
-/// Реализация `TerminalBackend` на основе termion.
+/// Терминальный бэкенд на основе termion.
 ///
 /// Обёртка над `RawTerminal` для отрисовки в терминале.
+/// Управляет курсором, очисткой экрана и выводом текста.
 pub struct TermionBackend {
     /// Внутренний raw терминал
     out: RawTerminal<Stdout>,
@@ -180,10 +58,18 @@ impl TermionBackend {
     pub const fn with_raw(out: RawTerminal<Stdout>) -> Self {
         Self { out }
     }
-}
 
-impl TerminalBackend for TermionBackend {
-    fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) -> io::Result<()> {
+    /// Отрисовать строку в указанной позиции.
+    ///
+    /// # Аргументы
+    /// * `text` - текст для отрисовки
+    /// * `x` - координата X (1-based)
+    /// * `y` - координата Y (1-based)
+    /// * `fg` - цвет переднего плана
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn draw_string(&mut self, text: &str, x: u16, y: u16, fg: &dyn Color) -> io::Result<()> {
         write!(
             self.out,
             "{}{}{}{}{}{}",
@@ -196,7 +82,23 @@ impl TerminalBackend for TermionBackend {
         )
     }
 
-    fn draw_strings(&mut self, lines: &[&str], x: u16, y: u16, fg: &dyn Color) -> io::Result<()> {
+    /// Отрисовать строки в указанных позициях.
+    ///
+    /// # Аргументы
+    /// * `lines` - массив строк для отрисовки
+    /// * `x` - начальная координата X (1-based)
+    /// * `y` - начальная координата Y (1-based)
+    /// * `fg` - цвет переднего плана
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn draw_strings(
+        &mut self,
+        lines: &[&str],
+        x: u16,
+        y: u16,
+        fg: &dyn Color,
+    ) -> io::Result<()> {
         let mut current_y = y;
         for line in lines {
             write!(
@@ -214,27 +116,55 @@ impl TerminalBackend for TermionBackend {
         Ok(())
     }
 
-    fn clear_screen(&mut self) -> io::Result<()> {
+    /// Очистить экран.
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn clear_screen(&mut self) -> io::Result<()> {
         write!(self.out, "{}{}", All, Goto(1, 1))
     }
 
-    fn goto(&mut self, x: u16, y: u16) -> io::Result<()> {
+    /// Переместить курсор в указанную позицию.
+    ///
+    /// # Аргументы
+    /// * `x` - координата X (1-based)
+    /// * `y` - координата Y (1-based)
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn goto(&mut self, x: u16, y: u16) -> io::Result<()> {
         write!(self.out, "{}", Goto(x, y))
     }
 
-    fn hide_cursor(&mut self) -> io::Result<()> {
+    /// Скрыть курсор.
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn hide_cursor(&mut self) -> io::Result<()> {
         write!(self.out, "{Hide}")
     }
 
-    fn show_cursor(&mut self) -> io::Result<()> {
+    /// Показать курсор.
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn show_cursor(&mut self) -> io::Result<()> {
         write!(self.out, "{Show}")
     }
 
-    fn flush(&mut self) -> io::Result<()> {
+    /// Выполнить flush буфера вывода.
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn flush(&mut self) -> io::Result<()> {
         self.out.flush()
     }
 
-    fn reset(&mut self) -> io::Result<()> {
+    /// Сбросить терминал в исходное состояние.
+    ///
+    /// # Errors
+    /// Возвращает ошибку при неудачной записи в терминал
+    pub fn reset(&mut self) -> io::Result<()> {
         write!(self.out, "{Show}\r\n")?;
         write!(self.out, "{ToMainScreen}")?;
         self.out.flush()
@@ -249,91 +179,14 @@ impl Drop for TermionBackend {
     }
 }
 
-// ============================================================================
-// КОМБИНИРОВАННЫЙ БЭКЕНД
-// ============================================================================
-
-/// Комбинированный бэкенд для ввода и вывода.
-///
-/// Объединяет `TermionBackend` для вывода и `KeyReader` для ввода.
-///
-/// # Исправление аудита 2026-04-11 (Пакет 2, #21-#22)
-/// Поля `output` и `input` сделаны приватными для соблюдения инкапсуляции.
-/// Доступ через геттеры: `output()` и `input()`.
-pub struct TermionIOBackend {
-    /// Бэкенд для вывода
-    output: TermionBackend,
-    /// Бэкенд для ввода
-    input: crate::io::key_reader::KeyReader,
-}
-
-impl TermionIOBackend {
-    /// Создать новый комбинированный бэкенд.
-    ///
-    /// # Errors
-    /// Возвращает ошибку если не удалось инициализировать терминал
-    pub fn new() -> io::Result<Self> {
-        Ok(Self {
-            output: TermionBackend::new()?,
-            input: crate::io::key_reader::KeyReader::new(),
-        })
-    }
-
-    /// Получить ссылку на бэкенд вывода.
-    #[must_use]
-    pub fn output(&self) -> &TermionBackend {
-        &self.output
-    }
-
-    /// Получить mutable ссылку на бэкенд вывода.
-    pub fn output_mut(&mut self) -> &mut TermionBackend {
-        &mut self.output
-    }
-
-    /// Получить ссылку на бэкенд ввода.
-    #[must_use]
-    pub fn input(&self) -> &crate::io::key_reader::KeyReader {
-        &self.input
-    }
-
-    /// Получить mutable ссылку на бэкенд ввода.
-    pub fn input_mut(&mut self) -> &mut crate::io::key_reader::KeyReader {
-        &mut self.input
-    }
-}
-
-impl TerminalInputBackend for TermionIOBackend {
-    fn read_key(&mut self) -> io::Result<Option<u8>> {
-        self.input.get_key()
-    }
-
-    fn read_key_unicode(&mut self) -> Option<char> {
-        self.input.get_key_unicode()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // Compile-time тесты — проверяют что трейты определены
-    #[test]
-    fn test_terminal_backend_trait_methods_exist() {
-        fn assert_backend<T: TerminalBackend>() {}
-        assert_backend::<TermionBackend>();
-    }
 
     #[test]
     #[allow(clippy::assertions_on_constants)]
     fn test_wall_kick_offset_bounds() {
         assert!(crate::constants::GRID_WIDTH > 0);
         assert!(crate::constants::GRID_HEIGHT > 0);
-    }
-
-    #[test]
-    #[allow(clippy::used_underscore_items)]
-    fn test_terminal_traits_are_send_sync() {
-        fn _assert_terminal_backend<T: TerminalBackend>() {}
-        _assert_terminal_backend::<TermionBackend>();
     }
 }

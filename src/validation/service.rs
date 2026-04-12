@@ -32,7 +32,7 @@ use super::ValidationError;
 /// assert!(validate_f32_finite(f32::NAN).is_err());
 /// assert!(validate_f32_finite(f32::INFINITY).is_err());
 /// ```
-pub fn validate_f32_finite(value: f32) -> Result<(), ValidationError> {
+pub const fn validate_f32_finite(value: f32) -> Result<(), ValidationError> {
     if value.is_nan() || value.is_infinite() {
         return Err(ValidationError::NotFinite { value });
     }

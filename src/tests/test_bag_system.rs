@@ -324,6 +324,8 @@ fn test_bag_distribution_statistics() {
 
     // Вычисляем дисперсию
     let expected: f32 = 100.0; // 700 / 7
+                               // Потеря точности допустима: i32 → f32 для статистических расчётов в тестах
+    #[allow(clippy::cast_precision_loss)]
     let variance: f32 = counts
         .iter()
         .map(|&c| (c as f32 - expected).powi(2))
@@ -335,6 +337,8 @@ fn test_bag_distribution_statistics() {
     );
 
     // Вычисляем хи-квадрат статистику
+    // Потеря точности допустима: i32 → f32 для статистических расчётов в тестах
+    #[allow(clippy::cast_precision_loss)]
     let chi_square: f32 = counts
         .iter()
         .map(|&c| ((c as f32 - expected).powi(2)) / expected)

@@ -136,80 +136,6 @@ pub trait BoardMutable: BoardReadonly {
     /// # Возвращает
     /// Количество очищенных линий.
     fn clear_filled_lines(&mut self) -> u32;
-
-    /// Получить скорость падения.
-    fn get_fall_speed(&self) -> f32;
-
-    /// Установить скорость падения.
-    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::errors::GameError>;
-
-    /// Получить таймер приземления.
-    fn get_land_timer(&self) -> f64;
-
-    /// Установить таймер приземления.
-    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::errors::GameError>;
-}
-
-// ============================================================================
-// ТРЕЙТ SCOREACCESS (только чтение)
-// ============================================================================
-
-/// Трейт для доступа только на чтение к очкам и уровням.
-///
-/// Предоставляет методы для чтения очков, уровней и линий,
-/// не раскрывая внутреннюю структуру [`GameState`](crate::game::state::GameState).
-///
-/// ## Архитектурные заметки
-/// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
-/// Этот трейт выделяет доступ только для чтения к системе очков в отдельный интерфейс,
-/// что позволяет создавать функции, работающие только с чтением очков,
-/// без возможности их изменения. Соответствует Interface Segregation Principle.
-///
-/// ## Пример использования
-/// ```ignore
-/// use crate::game::access::ScoreAccess;
-///
-/// fn display_score<T: ScoreAccess>(score: &T) {
-///     println!("Счёт: {}", score.get_score());
-/// }
-/// ```
-#[allow(dead_code)] // Трейт используется в scoreboard.rs для полиморфного доступа к очкам
-pub trait ScoreAccess {
-    /// Получить текущий счёт.
-    fn get_score(&self) -> u128;
-}
-
-// ============================================================================
-// ТРЕЙТ SCOREMUTABLE (чтение и запись)
-// ============================================================================
-
-/// Трейт для доступа на чтение и запись к очкам и уровням.
-///
-/// Расширяет [`ScoreAccess`] методами для изменения очков.
-///
-/// ## Архитектурные заметки
-/// ## Разделение ответственности (Problem 2.3, 2.9, ISP)
-/// Этот трейт расширяет [`ScoreAccess`] методами для изменения состояния.
-/// Разделение на `ScoreAccess` (чтение) и `ScoreMutable` (запись) позволяет
-/// следовать Interface Segregation Principle и предоставлять минимально
-/// необходимый интерфейс для каждой функции.
-///
-/// ## Пример использования
-/// ```ignore
-/// use crate::game::access::ScoreMutable;
-///
-/// fn add_line_bonus<T: ScoreMutable>(score: &mut T, lines: u32) {
-///     let bonus = lines * 100;
-///     score.add_score(bonus);
-/// }
-/// ```
-#[allow(dead_code)] // Трейт используется в scoreboard.rs для полиморфного изменения очков
-pub trait ScoreMutable: ScoreAccess {
-    /// Добавить очки к текущему счёту.
-    fn add_score(&mut self, points: u128);
-
-    /// Установить счёт (для тестов).
-    fn set_score(&mut self, score: u128);
 }
 
 // ============================================================================
@@ -280,40 +206,6 @@ impl BoardMutable for crate::game::state::GameState {
         self.set_filled_lines(0);
         count
     }
-
-    fn get_fall_speed(&self) -> f32 {
-        self.fall_speed()
-    }
-
-    fn set_fall_speed(&mut self, spd: f32) -> Result<(), crate::errors::GameError> {
-        self.set_fall_speed(spd)
-    }
-
-    fn get_land_timer(&self) -> f64 {
-        self.land_timer()
-    }
-
-    fn set_land_timer(&mut self, timer: f64) -> Result<(), crate::errors::GameError> {
-        self.set_land_timer(timer)
-    }
-}
-
-impl ScoreAccess for crate::game::state::GameState {
-    #[inline]
-    fn get_score(&self) -> u128 {
-        self.score()
-    }
-}
-
-impl ScoreMutable for crate::game::state::GameState {
-    fn add_score(&mut self, points: u128) {
-        // add_score возвращает u128 (новый счёт), а не Result — saturating_add защищает от переполнения
-        let _ = self.scoreboard_mut().add_score(points);
-    }
-
-    fn set_score(&mut self, score: u128) {
-        self.scoreboard_mut().set_score(score);
-    }
 }
 
 // ============================================================================
@@ -322,31 +214,16 @@ impl ScoreMutable for crate::game::state::GameState {
 
 #[cfg(test)]
 mod access_tests {
-    use super::*;
+    use super::BoardMutable;
     use crate::game::state::GameState;
 
-    /// Тест: проверка default-методов `BoardMutable` (`set_fall_speed/set_land_timer`)
-    /// Для GameState эти методы переопределены и возвращают Ok(())
+    /// Тест: проверка методов BoardMutable (clear_filled_lines)
     #[test]
-    fn test_board_mutable_defaults() {
+    fn test_board_mutable_clear_lines() {
         let mut state = GameState::new();
-        // set_fall_speed и set_land_timer для GameState вызывают реальные реализации
-        assert!(
-            state.set_fall_speed(1.5).is_ok(),
-            "set_fall_speed должен вернуть Ok"
-        );
-        assert!(
-            state.set_land_timer(2.0).is_ok(),
-            "set_land_timer должен вернуть Ok"
-        );
-    }
-
-    /// Тест: проверка default-метода `ScoreAccess::get_score`
-    /// Для GameState `get_score` переопределён и возвращает реальный счёт
-    #[test]
-    fn test_score_access_default() {
-        let state = GameState::new();
-        // GameState переопределяет get_score, поэтому возвращает 0 (начальный счёт)
-        assert_eq!(state.get_score(), 0, "Начальный счёт должен быть 0");
+        state.set_filled_lines(0b1111);
+        let count = state.clear_filled_lines();
+        assert_eq!(count, 4);
+        assert_eq!(state.filled_lines(), 0);
     }
 }
