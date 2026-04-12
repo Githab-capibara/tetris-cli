@@ -102,6 +102,12 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 
     // Оптимизация: если фигура далеко от стен, wall kick не нужен
     // (x > 2 && x < GRID_WIDTH - 3) — достаточно места для вращения
+    // Audit 2026-04-12, Issue #9: f32 -> i16 cast безопасен
+    // Координаты фигуры ограничены размером поля: 0.0..10.0 для X
+    debug_assert!(
+        state.curr_shape().pos().0 >= 0.0 && state.curr_shape().pos().0 <= 10.0,
+        "X координата вне допустимого диапазона"
+    );
     let x = state.curr_shape().pos().0 as i16;
     if x > 2 && x < crate::constants::GRID_WIDTH_I16 - 3 {
         return false; // Фигура в центре, но прямое вращение заблокировано — значит коллизия сверху/снизу

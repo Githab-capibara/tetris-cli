@@ -251,16 +251,18 @@ impl<'a> GameView<'a> {
         for y in 0..GRID_HEIGHT {
             for x in 0..GRID_WIDTH {
                 if self.blocks[y][x] != -1 {
-                    // cast: i8 -> usize, потеря знака допустима: цвет блока неотрицательный (0-6)
+                    // Audit 2026-04-12, Issue #10: i8 -> usize cast безопасен
+                    // Проверка blocks[y][x] != -1 гарантирует неотрицательное значение (0-6)
                     let color_idx = self.blocks[y][x] as usize;
                     if color_idx < SHAPE_COLORS.len() {
-                        // cast: usize -> u16, потеря точности допустима: координаты в пределах экрана
+                        // Audit 2026-04-12, Issue #11: usize -> u16 cast безопасен
+                        // Координаты ограничены размером терминала (обычно < 200x60)
+                        // GRID_WIDTH=10, GRID_HEIGHT=20, SHAPE_WIDTH=2 -> max ~40x40
+                        let draw_x = (x * SHAPE_WIDTH + SHAPE_OFFSET_X as usize) as u16;
+                        let draw_y = (y + SHAPE_DRAW_OFFSET_Y as usize) as u16;
                         canvas.draw_strs(
                             &[SHAPE_STR],
-                            (
-                                (x * SHAPE_WIDTH + SHAPE_OFFSET_X as usize) as u16,
-                                (y + SHAPE_DRAW_OFFSET_Y as usize) as u16,
-                            ),
+                            (draw_x, draw_y),
                             SHAPE_COLORS[color_idx],
                             &Reset,
                         );
