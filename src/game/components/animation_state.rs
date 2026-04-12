@@ -61,7 +61,7 @@ impl AnimationState {
     ///
     /// # Аргументы
     /// * `mask` - битовая маска строк для анимации
-    pub fn set_animating_rows_mask(&mut self, mask: u32) {
+    pub const fn set_animating_rows_mask(&mut self, mask: u32) {
         self.animating_rows_mask = mask;
     }
 
@@ -78,7 +78,7 @@ impl AnimationState {
     ///
     /// # Аргументы
     /// * `value` - значение флага Hard Drop
-    pub fn set_is_hard_dropping(&mut self, value: bool) {
+    pub const fn set_is_hard_dropping(&mut self, value: bool) {
         self.is_hard_dropping = value;
     }
 
@@ -98,16 +98,18 @@ impl AnimationState {
     /// state.add_row_to_animation(5);
     /// assert_eq!(state.animating_rows_mask(), 1 << 5);
     /// ```
-    pub fn add_row_to_animation(&mut self, row: u32) {
-        if row < 32 {
-            self.animating_rows_mask |= 1 << row;
-        }
+    pub const fn add_row_to_animation(&mut self, row: u32) {
+        assert!(row < 32);
+        self.animating_rows_mask |= 1 << row;
     }
 
     /// Удалить строку из маски анимации.
     ///
     /// # Аргументы
     /// * `row` - номер строки (0-19)
+    ///
+    /// # Паника
+    /// Паникует если `row >= 32` (выход за пределы битовой маски u32)
     ///
     /// # Пример
     /// ```ignore
@@ -118,10 +120,9 @@ impl AnimationState {
     /// state.remove_row_from_animation(5);
     /// assert_eq!(state.animating_rows_mask(), 0);
     /// ```
-    pub fn remove_row_from_animation(&mut self, row: u32) {
-        if row < 32 {
-            self.animating_rows_mask &= !(1 << row);
-        }
+    pub const fn remove_row_from_animation(&mut self, row: u32) {
+        assert!(row < 32);
+        self.animating_rows_mask &= !(1 << row);
     }
 
     /// Очистить маску анимации.
@@ -136,7 +137,7 @@ impl AnimationState {
     /// state.clear_animation_mask();
     /// assert_eq!(state.animating_rows_mask(), 0);
     /// ```
-    pub fn clear_animation_mask(&mut self) {
+    pub const fn clear_animation_mask(&mut self) {
         self.animating_rows_mask = 0;
     }
 

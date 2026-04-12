@@ -96,8 +96,7 @@ pub const WALL_KICK_OFFSETS: [(i32, i32); 8] = [
 pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationDirection) -> bool {
     // Проверяем прямое вращение без смещения
     if super::collision::can_rotate_curr_shape(state, dir) {
-        let curr_shape = state.get_curr_shape_mut();
-        curr_shape.rotate(dir);
+        state.rotate_curr_shape(dir);
         return true;
     }
 
@@ -110,14 +109,10 @@ pub fn rotate_with_wall_kick(state: &mut GameState, dir: crate::types::RotationD
 
     // Пытаемся вращать с wall kick смещениями
     if let Some((offset_x, offset_y)) = try_wall_kick_offsets(state, dir) {
-        // Объединённое мутабельное заимствование: применяем смещение и вращение за один доступ
-        let curr_shape = state.get_curr_shape_mut();
-        let pos = curr_shape.pos_mut();
-        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
-        pos.0 += offset_x as f32;
-        // SAFETY: wall kick offsets are -2..=2, fits in f32 without precision loss
-        pos.1 += offset_y as f32;
-        curr_shape.rotate(dir);
+        // Применяем смещение и вращение
+        state.move_curr_dx(offset_x as f32);
+        state.move_curr_dy(offset_y as f32);
+        state.rotate_curr_shape(dir);
         return true;
     }
 

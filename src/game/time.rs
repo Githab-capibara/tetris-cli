@@ -121,7 +121,7 @@ impl Time {
     /// assert_eq!(time.as_secs_f64(), 1.5);
     /// ```
     #[must_use]
-    pub fn as_secs_f64(&self) -> f64 {
+    pub const fn as_secs_f64(&self) -> f64 {
         self.inner.as_secs_f64()
     }
 
@@ -367,10 +367,10 @@ mod time_tests {
         let t1 = Time::from_secs(1.0);
         let t2 = Time::from_secs(2.0);
 
-        assert!(!(&t1 > &t2));
-        assert!(&t2 > &t1);
-        assert!(&t1 < &t2);
-        assert!(!(&t2 < &t1));
+        assert!((t1 <= t2));
+        assert!(t2 > t1);
+        assert!(t1 < t2);
+        assert!((t2 >= t1));
     }
 
     #[test]

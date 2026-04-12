@@ -192,14 +192,13 @@ fn handle_movement_input(state: &mut GameState, dir: Direction) {
     match dir {
         Direction::Left | Direction::Right => {
             if state.can_move_curr_shape_direction(dir) {
-                let curr_shape = state.get_curr_shape_mut();
                 // Direction::Down невозможен благодаря внешнему match —
                 // эта ветка вызывается только для Left/Right.
                 if dir == Direction::Left {
-                    curr_shape.pos_mut().0 -= 1.0;
+                    state.move_curr_dx(-1.0);
                 } else {
                     // Direction::Right
-                    curr_shape.pos_mut().0 += 1.0;
+                    state.move_curr_dx(1.0);
                 }
             }
         }

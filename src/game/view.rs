@@ -454,7 +454,7 @@ impl<'a> GameView<'a> {
         R: crate::io_traits::Renderer,
     {
         use crate::constants::{PREVIEW_X, PREVIEW_Y};
-        self.draw_shape_preview(
+        draw_shape_preview(
             canvas,
             self.next_shape,
             PREVIEW_X,
@@ -487,7 +487,7 @@ impl<'a> GameView<'a> {
         use crate::constants::{HOLD_PREVIEW_X, HOLD_PREVIEW_Y};
         if let Some(held) = self.held_shape {
             let is_faded = false; // can_hold не доступен в GameView
-            self.draw_shape_preview(
+            draw_shape_preview(
                 canvas,
                 held,
                 HOLD_PREVIEW_X,
@@ -497,60 +497,58 @@ impl<'a> GameView<'a> {
             );
         }
     }
+}
 
-    /// Отрисовать предпросмотр фигуры (вспомогательный метод).
-    ///
-    /// ## Dependency Inversion (H1)
-    /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
-    ///
-    /// # Аргументы
-    /// * `canvas` - канвас для отрисовки (реализует трейт Renderer)
-    /// * `shape` - фигура для отрисовки
-    /// * `pos_x` - позиция по X
-    /// * `pos_y` - позиция по Y
-    /// * `title` - заголовок
-    /// * `is_faded` - если true, рисовать тусклым цветом
-    #[allow(clippy::ignored_unit_patterns, clippy::unused_self)]
-    fn draw_shape_preview<R>(
-        &self,
-        canvas: &mut R,
-        shape: &crate::tetromino::Tetromino,
-        pos_x: u16,
-        pos_y: u16,
-        title: &str,
-        is_faded: bool,
-    ) where
-        R: crate::io_traits::Renderer,
-    {
-        use crate::constants::{BORDER_COLOR, DISP_HEIGHT, DISP_WIDTH, DRAW_OFFSET_X};
-        use crate::constants::{SHAPE_STR, SHAPE_WIDTH};
-        use crate::tetromino::SHAPE_COLORS;
-        use termion::color::Reset;
+/// Отрисовать предпросмотр фигуры (свободная функция).
+///
+/// ## Dependency Inversion (H1)
+/// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
+///
+/// # Аргументы
+/// * `canvas` - канвас для отрисовки (реализует трейт Renderer)
+/// * `shape` - фигура для отрисовки
+/// * `pos_x` - позиция по X
+/// * `pos_y` - позиция по Y
+/// * `title` - заголовок
+/// * `is_faded` - если true, рисовать тусклым цветом
+fn draw_shape_preview<R>(
+    canvas: &mut R,
+    shape: &crate::tetromino::Tetromino,
+    pos_x: u16,
+    pos_y: u16,
+    title: &str,
+    is_faded: bool,
+) where
+    R: crate::io_traits::Renderer,
+{
+    use crate::constants::{BORDER_COLOR, DISP_HEIGHT, DISP_WIDTH, DRAW_OFFSET_X};
+    use crate::constants::{SHAPE_STR, SHAPE_WIDTH};
+    use crate::tetromino::SHAPE_COLORS;
+    use termion::color::Reset;
 
-        canvas.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
+    canvas.draw_string(title, (pos_x, pos_y - 2), BORDER_COLOR, &Reset);
 
-        let shape_width_i16 = SHAPE_WIDTH as i16;
+    let shape_width_i16 = SHAPE_WIDTH as i16;
 
-        for coord in shape.coords() {
-            let (coord_x, coord_y) = coord;
-            let x = pos_x as i16 + coord_x * shape_width_i16 + DRAW_OFFSET_X;
-            let y = pos_y as i16 + coord_y + 1;
+    for coord in shape.coords() {
+        let (coord_x, coord_y) = coord;
+        let x = pos_x as i16 + coord_x * shape_width_i16 + DRAW_OFFSET_X;
+        let y = pos_y as i16 + coord_y + 1;
 
-            // Проверка всех границ
-            // cast: usize -> i16, потеря точности допустима: DISP_WIDTH/DISP_HEIGHT константы
-            #[allow(clippy::cast_possible_wrap)]
-            if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
-                let display_char = if is_faded { "░░" } else { SHAPE_STR };
-                // cast: i16 -> u16, потеря знака допустима: x, y >= 0 после проверки
-                canvas.draw_strs(
-                    &[display_char],
-                    (x as u16, y as u16),
-                    // cast: u8 -> usize, потеря точности допустима: fg < 7 (количество фигур)
-                    #[allow(clippy::cast_possible_truncation)]
-                    SHAPE_COLORS[shape.fg() as usize],
-                    &Reset,
-                );
-            }
+        // Проверка всех границ
+        // cast: usize -> i16, потеря точности допустима: DISP_WIDTH/DISP_HEIGHT константы
+        #[allow(clippy::cast_possible_wrap)]
+        if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
+            let display_char = if is_faded { "░░" } else { SHAPE_STR };
+            // cast: i16 -> u16, потеря знака допустима: x, y >= 0 после проверки
+            canvas.draw_strs(
+                &[display_char],
+                (x as u16, y as u16),
+                // cast: u8 -> usize, потеря точности допустима: fg < 7 (количество фигур)
+                #[allow(clippy::cast_possible_truncation)]
+                SHAPE_COLORS[shape.fg() as usize],
+                &Reset,
+            );
         }
     }
 }

@@ -174,7 +174,7 @@ impl Score {
     /// assert_eq!(score.value(), 150);
     /// ```
     #[inline]
-    pub fn add(&mut self, points: u128) {
+    pub const fn add(&mut self, points: u128) {
         self.0 = self.0.saturating_add(points);
     }
 
@@ -194,13 +194,13 @@ impl Score {
     /// assert_eq!(score.value(), 200);
     /// ```
     #[inline]
-    pub fn multiply(&mut self, multiplier: u128) {
+    pub const fn multiply(&mut self, multiplier: u128) {
         self.0 = self.0.saturating_mul(multiplier);
     }
 
     /// Сбросить очки в ноль.
     #[inline]
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.0 = 0;
     }
 
@@ -310,7 +310,7 @@ impl Level {
     /// ```
     #[must_use]
     #[inline]
-    pub fn increment(&mut self) -> bool {
+    pub const fn increment(&mut self) -> bool {
         if self.0 < u32::MAX {
             self.0 += 1;
             true
@@ -327,7 +327,7 @@ impl Level {
     /// # Возвращает
     /// `true` если уровень был увеличен, `false` если достигнуто максимальное значение
     #[must_use]
-    pub fn increment_by(&mut self, amount: u32) -> bool {
+    pub const fn increment_by(&mut self, amount: u32) -> bool {
         let (new_level, overflow) = self.0.overflowing_add(amount);
         if overflow {
             self.0 = u32::MAX;
@@ -339,7 +339,7 @@ impl Level {
     }
 
     /// Сбросить уровень к начальному значению (1).
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.0 = 1;
     }
 }
@@ -402,7 +402,7 @@ impl LinesCount {
     /// assert_eq!(lines.value(), 15);
     /// ```
     #[inline]
-    pub fn add(&mut self, amount: u32) {
+    pub const fn add(&mut self, amount: u32) {
         self.0 = self.0.saturating_add(amount);
     }
 
@@ -411,7 +411,7 @@ impl LinesCount {
     /// # Возвращает
     /// `true` если значение было увеличено, `false` если достигнуто максимальное значение
     #[must_use]
-    pub fn increment(&mut self) -> bool {
+    pub const fn increment(&mut self) -> bool {
         if self.0 < u32::MAX {
             self.0 += 1;
             true
@@ -421,7 +421,7 @@ impl LinesCount {
     }
 
     /// Сбросить количество линий в ноль.
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.0 = 0;
     }
 

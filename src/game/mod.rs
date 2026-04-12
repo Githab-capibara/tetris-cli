@@ -317,7 +317,7 @@ mod game_tests {
         let mut drop_height = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            state.move_curr_dy(1.0);
             drop_height += 1;
         }
 
@@ -336,7 +336,7 @@ mod game_tests {
         let start_y = state.curr_shape().pos().1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            state.move_curr_dy(1.0);
         }
 
         let drop_distance = (state.curr_shape().pos().1 - start_y) as u64;
@@ -360,7 +360,7 @@ mod game_tests {
         );
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            state.move_curr_dy(1.0);
         }
         state.set_is_hard_dropping(true);
 
@@ -384,7 +384,7 @@ mod game_tests {
         let initial_y = state.curr_shape().pos().1;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            state.move_curr_dy(1.0);
         }
 
         assert!(
@@ -447,7 +447,7 @@ mod game_tests {
         let mut soft_drop_moves = 0;
 
         while state.can_move_curr_shape_direction(Direction::Down) {
-            state.get_curr_shape_mut().pos_mut().1 += 1.0;
+            state.move_curr_dy(1.0);
             soft_drop_moves += 1;
         }
 
@@ -476,7 +476,7 @@ mod game_tests {
         let test_moves = 5;
         for _ in 0..test_moves {
             if state.can_move_curr_shape_direction(Direction::Down) {
-                state.get_curr_shape_mut().pos_mut().1 += 1.0;
+                state.move_curr_dy(1.0);
                 state.set_soft_drop_distance(state.soft_drop_distance() + 1);
             }
         }

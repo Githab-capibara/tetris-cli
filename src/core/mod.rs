@@ -150,7 +150,7 @@ impl Position {
     /// assert_eq!(pos.x(), 5);
     /// ```
     #[inline]
-    pub fn set_x(&mut self, x: i16) {
+    pub const fn set_x(&mut self, x: i16) {
         self.x = x;
     }
 
@@ -164,7 +164,7 @@ impl Position {
     /// assert_eq!(pos.y(), 10);
     /// ```
     #[inline]
-    pub fn set_y(&mut self, y: i16) {
+    pub const fn set_y(&mut self, y: i16) {
         self.y = y;
     }
 
@@ -178,7 +178,7 @@ impl Position {
     /// assert_eq!(pos.to_tuple(), (5, 10));
     /// ```
     #[inline]
-    pub fn set(&mut self, x: i16, y: i16) {
+    pub const fn set(&mut self, x: i16, y: i16) {
         self.x = x;
         self.y = y;
     }
@@ -241,7 +241,7 @@ impl Position {
     /// assert_eq!(pos.y(), 7);
     /// ```
     #[inline]
-    pub fn offset(&mut self, dx: i16, dy: i16) {
+    pub const fn offset(&mut self, dx: i16, dy: i16) {
         self.x = self.x.saturating_add(dx);
         self.y = self.y.saturating_add(dy);
     }

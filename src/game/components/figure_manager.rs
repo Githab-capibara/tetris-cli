@@ -105,7 +105,7 @@ impl FigureManager {
     ///
     /// # Возвращает
     /// Мутуабельная ссылка на `BagGenerator`
-    pub fn bag_mut(&mut self) -> &mut BagGenerator {
+    pub const fn bag_mut(&mut self) -> &mut BagGenerator {
         &mut self.bag
     }
 
@@ -113,7 +113,7 @@ impl FigureManager {
     ///
     /// # Аргументы
     /// * `value` - новая текущая фигура
-    pub fn set_curr_shape(&mut self, value: Tetromino) {
+    pub const fn set_curr_shape(&mut self, value: Tetromino) {
         self.curr_shape = value;
     }
 
@@ -121,7 +121,7 @@ impl FigureManager {
     ///
     /// # Аргументы
     /// * `value` - новая следующая фигура
-    pub fn set_next_shape(&mut self, value: Tetromino) {
+    pub const fn set_next_shape(&mut self, value: Tetromino) {
         self.next_shape = value;
     }
 
@@ -129,7 +129,7 @@ impl FigureManager {
     ///
     /// # Аргументы
     /// * `value` - новая удержанная фигура
-    pub fn set_held_shape(&mut self, value: Option<Tetromino>) {
+    pub const fn set_held_shape(&mut self, value: Option<Tetromino>) {
         self.held_shape = value;
     }
 
@@ -137,32 +137,65 @@ impl FigureManager {
     ///
     /// # Аргументы
     /// * `value` - значение флага возможности удержания
-    pub fn set_can_hold(&mut self, value: bool) {
+    pub const fn set_can_hold(&mut self, value: bool) {
         self.can_hold = value;
     }
 
-    /// Получить текущую фигуру (мутуабельная ссылка).
+    /// Вращать текущую фигуру.
     ///
-    /// # Возвращает
-    /// Мутуабельная ссылка на текущую фигуру
-    pub fn curr_shape_mut(&mut self) -> &mut Tetromino {
-        &mut self.curr_shape
+    /// # Аргументы
+    /// * `dir` - направление вращения
+    pub fn rotate_curr_shape(&mut self, dir: crate::types::RotationDirection) {
+        self.curr_shape.rotate(dir);
     }
 
-    /// Получить следующую фигуру (мутуабельная ссылка).
+    /// Применить замыкание к текущей фигуре для мутации.
     ///
-    /// # Возвращает
-    /// Мутуабельная ссылка на следующую фигуру
-    pub fn next_shape_mut(&mut self) -> &mut Tetromino {
-        &mut self.next_shape
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Tetromino`
+    pub fn mutate_curr_shape<F: FnOnce(&mut Tetromino)>(&mut self, f: F) {
+        f(&mut self.curr_shape);
     }
 
-    /// Получить удержанную фигуру (мутуабельная ссылка).
+    /// Применить замыкание к следующей фигуре для мутации.
     ///
-    /// # Возвращает
-    /// Мутуабельная ссылка на удержанную фигуру
-    pub fn held_shape_mut(&mut self) -> &mut Option<Tetromino> {
-        &mut self.held_shape
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Tetromino`
+    pub fn mutate_next_shape<F: FnOnce(&mut Tetromino)>(&mut self, f: F) {
+        f(&mut self.next_shape);
+    }
+
+    /// Применить замыкание к удержанной фигуре для мутации.
+    ///
+    /// # Аргументы
+    /// * `f` - замыкание принимающее `&mut Option<Tetromino>`
+    pub fn mutate_held_shape<F: FnOnce(&mut Option<Tetromino>)>(&mut self, f: F) {
+        f(&mut self.held_shape);
+    }
+
+    /// Установить позицию текущей фигуры.
+    ///
+    /// # Аргументы
+    /// * `x` - позиция по X
+    /// * `y` - позиция по Y
+    pub fn set_curr_pos(&mut self, x: f32, y: f32) {
+        self.curr_shape.set_pos((x, y));
+    }
+
+    /// Сместить позицию текущей фигуры по X.
+    ///
+    /// # Аргументы
+    /// * `dx` - смещение по X
+    pub fn move_curr_dx(&mut self, dx: f32) {
+        self.curr_shape.pos_mut().0 += dx;
+    }
+
+    /// Сместить позицию текущей фигуры по Y.
+    ///
+    /// # Аргументы
+    /// * `dy` - смещение по Y
+    pub fn move_curr_dy(&mut self, dy: f32) {
+        self.curr_shape.pos_mut().1 += dy;
     }
 
     /// Обновить фигуры после установки новой.

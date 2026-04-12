@@ -338,7 +338,7 @@ mod tests {
         assert!(mode.check_win_condition(500));
     }
 
-    /// Тест: factory функция для создания режима по умолчанию (через mode_registry)
+    /// Тест: factory функция для создания режима по умолчанию (через `mode_registry`)
     #[test]
     fn test_create_default_mode_via_registry() {
         // create_default_game_mode удалён как дубликат create_default_mode из mode_registry.

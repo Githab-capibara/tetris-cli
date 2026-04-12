@@ -129,7 +129,7 @@ mod update_tests {
     fn test_save_tetromino_basic() {
         let mut state = GameState::new();
         // Устанавливаем фигуру в известную позицию
-        state.get_curr_shape_mut().pos_mut().1 = 10.0;
+        state.set_curr_pos(state.curr_shape().pos().0, 10.0);
 
         let initial_blocks = *state.get_blocks();
         save_tetromino(&mut state);
@@ -155,8 +155,7 @@ mod update_tests {
     fn test_save_tetromino_respects_bounds() {
         let mut state = GameState::new();
         // Устанавливаем фигуру близко к границе
-        state.get_curr_shape_mut().pos_mut().0 = 0.0;
-        state.get_curr_shape_mut().pos_mut().1 = 0.0;
+        state.set_curr_pos(0.0, 0.0);
 
         // Вызов не должен паниковать
         save_tetromino(&mut state);

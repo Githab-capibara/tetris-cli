@@ -245,7 +245,7 @@ impl GameStats {
     ///
     /// # Валидация
     /// Комбо не может быть отрицательным (гарантируется типом u32)
-    pub fn set_combo_counter(&mut self, value: u32) {
+    pub const fn set_combo_counter(&mut self, value: u32) {
         self.combo_counter = value;
     }
 
@@ -284,7 +284,7 @@ impl GameStats {
     }
 
     /// Увеличить счётчик для указанной фигуры.
-    pub fn add_piece(&mut self, piece_type: ShapeType) {
+    pub const fn add_piece(&mut self, piece_type: ShapeType) {
         match piece_type {
             ShapeType::T => self.t_pieces += 1,
             ShapeType::L => self.l_pieces += 1,
@@ -309,7 +309,7 @@ impl GameStats {
     }
 
     /// Обновить максимальное комбо.
-    pub fn update_max_combo(&mut self, lines: u32) {
+    pub const fn update_max_combo(&mut self, lines: u32) {
         if lines > self.max_combo {
             self.max_combo = lines;
         }

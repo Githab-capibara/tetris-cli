@@ -118,7 +118,7 @@ impl GameBoard {
     /// # Panics
     /// Никогда не паникует. Возвращает `None` при выходе координат за границы поля.
     #[must_use = "Результат установки ячейки должен быть использован"]
-    pub fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
+    pub const fn set_block(&mut self, x: usize, y: usize, value: i8) -> Option<()> {
         if x < GRID_WIDTH && y < GRID_HEIGHT {
             self.blocks[y][x] = value;
             Some(())
@@ -149,7 +149,7 @@ impl GameBoard {
     ///
     /// # Аргументы
     /// * `mask` - битовая маска заполненных линий
-    pub fn set_filled_lines_mask(&mut self, mask: u32) {
+    pub const fn set_filled_lines_mask(&mut self, mask: u32) {
         self.filled_lines = mask;
     }
 
@@ -176,7 +176,7 @@ impl GameBoard {
     /// let count = board.clear_filled_lines();
     /// assert_eq!(count, 4);
     /// ```
-    pub fn clear_filled_lines(&mut self) -> u32 {
+    pub const fn clear_filled_lines(&mut self) -> u32 {
         let count = self.get_filled_lines_count();
         self.filled_lines = 0;
         count
@@ -213,7 +213,7 @@ impl GameBoard {
     /// let blocks = board.get_blocks_mut();
     /// blocks[0][0] = 1; // Установить блок
     /// ```
-    pub fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
+    pub const fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &mut self.blocks
     }
 }
@@ -281,22 +281,6 @@ impl BoardMutable for GameBoard {
         let count = self.filled_lines.count_ones();
         self.filled_lines = 0;
         count
-    }
-
-    fn get_fall_speed(&self) -> f32 {
-        0.0
-    }
-
-    fn set_fall_speed(&mut self, _spd: f32) -> Result<(), crate::errors::GameError> {
-        Ok(())
-    }
-
-    fn get_land_timer(&self) -> f64 {
-        0.0
-    }
-
-    fn set_land_timer(&mut self, _timer: f64) -> Result<(), crate::errors::GameError> {
-        Ok(())
     }
 }
 

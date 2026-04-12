@@ -71,27 +71,27 @@ fn test_piece_movement_cycle() {
     let mut state = GameState::new();
 
     // Запоминаем начальную позицию
-    let initial_x = state.get_curr_shape_mut().pos().0;
-    let initial_y = state.get_curr_shape_mut().pos().1;
+    let initial_x = state.curr_shape().pos().0;
+    let initial_y = state.curr_shape().pos().1;
 
     // Двигаем влево
     if state.can_move_curr_shape_direction(Direction::Left) {
-        state.get_curr_shape_mut().pos_mut().0 -= 1.0;
+        state.move_curr_dx(-1.0);
     }
 
     // Двигаем вправо
     if state.can_move_curr_shape_direction(Direction::Right) {
-        state.get_curr_shape_mut().pos_mut().0 += 1.0;
+        state.move_curr_dx(1.0);
     }
 
     // Двигаем вниз
     if state.can_move_curr_shape_direction(Direction::Down) {
-        state.get_curr_shape_mut().pos_mut().1 += 1.0;
+        state.move_curr_dy(1.0);
     }
 
     // Проверяем, что позиция изменилась
-    let final_x = state.get_curr_shape_mut().pos().0;
-    let final_y = state.get_curr_shape_mut().pos().1;
+    let final_x = state.curr_shape().pos().0;
+    let final_y = state.curr_shape().pos().1;
 
     // Хотя бы одна координата должна измениться
     assert!(
