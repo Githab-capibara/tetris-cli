@@ -562,7 +562,7 @@ pub const HARD_DROP_POINTS: u128 = 2;
 // Эти константы заменяют магические числа в коде игры.
 
 /// Код клавиши Backspace для выхода.
-pub const KEY_BACKSPACE: u8 = 127;
+pub const KEY_BACKSPACE: u8 = b'\x7f';
 
 /// Код клавиши Enter (LF - Line Feed).
 /// Используется в Unix-системах для обозначения конца строки.
@@ -573,10 +573,10 @@ pub const KEY_ENTER_LF: u8 = b'\n';
 pub const KEY_ENTER_CR: u8 = b'\r';
 
 /// Код клавиши Escape.
-pub const KEY_ESCAPE: u8 = 27;
+pub const KEY_ESCAPE: u8 = b'\x1b';
 
 /// Код клавиши Tab.
-pub const KEY_TAB: u8 = 9;
+pub const KEY_TAB: u8 = b'\t';
 
 /// Код клавиши Space (пробел).
 pub const KEY_SPACE: u8 = b' ';
