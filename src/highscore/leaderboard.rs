@@ -98,7 +98,9 @@ fn create_entry_data(name: &str, score: u128) -> Option<(String, String, String)
 /// Клонирование записи клонирует все поля включая hash/salt.
 /// Это осознанное решение — клонирование нужно для тестов,
 /// клонированная запись валидна с тем же ключом (feature, не bug).
-#[allow(clippy::expl_impl_clone_on_copy)]
+///
+/// ## Audit 2026-04-12, Issue 42
+/// Удалена явная реализация Clone - используется derive(Clone) для Copy типа.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct LeaderboardEntry {
     /// Имя игрока.
