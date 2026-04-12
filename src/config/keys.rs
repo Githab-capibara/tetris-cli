@@ -51,6 +51,11 @@ fn log_once_empty_key(key_name: &str) -> Option<&'static str> {
 }
 
 /// Получить ключ для HMAC подписи конфигурации управления из переменной окружения.
+///
+/// # Audit 2026-04-12, Issue 6.1
+/// Эта функция является частью паттерна, дублируемого для трёх типов ключей.
+/// Рассмотрена возможность использования макроса для устранения дублирования,
+/// но текущая реализация выбрана для явности и простоты отладки.
 fn get_controls_hmac_key_runtime() -> &'static String {
     static CONTROLS_KEY: OnceLock<String> = OnceLock::new();
     CONTROLS_KEY.get_or_init(|| {
@@ -63,6 +68,9 @@ fn get_controls_hmac_key_runtime() -> &'static String {
 }
 
 /// Получить ключ для HMAC подписи таблицы лидеров из переменной окружения.
+///
+/// # Audit 2026-04-12, Issue 6.1
+/// См. документацию к `get_controls_hmac_key_runtime` о паттерне дублирования.
 fn get_leaderboard_hmac_key_runtime() -> &'static String {
     static LEADERBOARD_KEY: OnceLock<String> = OnceLock::new();
     LEADERBOARD_KEY.get_or_init(|| {
@@ -75,6 +83,9 @@ fn get_leaderboard_hmac_key_runtime() -> &'static String {
 }
 
 /// Получить ключ для HMAC подписи данных рекордов из переменной окружения.
+///
+/// # Audit 2026-04-12, Issue 6.1
+/// См. документацию к `get_controls_hmac_key_runtime` о паттерне дублирования.
 fn get_save_data_hmac_key_runtime() -> &'static String {
     static SAVEDATA_KEY: OnceLock<String> = OnceLock::new();
     SAVEDATA_KEY.get_or_init(|| {
