@@ -328,11 +328,16 @@ impl ControlsConfig {
             hmac_key: HMAC_KEY_PLACEHOLDER.to_string(),
             signature: String::new(),
         })
-        .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
+        .map_err(|e| {
+            io::Error::other(format!("Ошибка сериализации конфигурации управления: {e}"))
+        })?;
 
         // Вычисляем HMAC-SHA256 подпись на canonical (compact) JSON
-        let canonical_json = serde_json::to_string(&config_value)
-            .map_err(|e| io::Error::other(format!("Ошибка сериализации: {e}")))?;
+        let canonical_json = serde_json::to_string(&config_value).map_err(|e| {
+            io::Error::other(format!(
+                "Ошибка канонической сериализации конфигурации управления: {e}"
+            ))
+        })?;
         let signature = Self::compute_signature(global_hmac_key, &canonical_json)?;
 
         // Модифицируем Value с подписью
