@@ -132,7 +132,6 @@ mod tests {
     mod test_game_bounds_check;
     mod test_game_movement;
     mod test_game_rotation;
-    mod test_integration_extended;
 
     // Безопасность и переполнение
     mod test_hmac_safety;

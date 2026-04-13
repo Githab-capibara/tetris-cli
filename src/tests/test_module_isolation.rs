@@ -73,8 +73,11 @@ fn test_highscore_types_independent_of_game() {
     use crate::highscore::leaderboard::LeaderboardEntry;
 
     // LeaderboardEntry создаётся без GameState
-    let entry =
-        LeaderboardEntry::new("Player", 1000).expect("LeaderboardEntry должен быть создан успешно");
+    // Используем unwrap_or_else для graceful fallback если HMAC ключ не установлен
+    let entry = LeaderboardEntry::new("Player", 1000).unwrap_or_else(|| {
+        // Если HMAC ключ не установлен, пропускаем тест с informational message
+        panic!("HMAC ключ для leaderboard не установлен — тест требует корректного окружения")
+    });
     assert_eq!(entry.name(), "Player");
     assert_eq!(entry.score(), Some(1000));
 }

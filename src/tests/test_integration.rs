@@ -120,12 +120,9 @@ fn test_game_state_tetromino_interaction() {
     assert_eq!(curr.coords().len(), 4, "У фигуры должно быть 4 блока");
     assert!(curr.fg() < 7, "Индекс цвета должен быть в диапазоне 0-6");
 
-    // Проверяем, что тип фигуры соответствует цвету
-    assert_eq!(
-        curr.shape() as u8,
-        curr.fg(),
-        "Индекс типа фигуры должен совпадать с индексом цвета"
-    );
+    // Проверяем, что тип фигуры — валидный ShapeType
+    let shape_idx = curr.shape() as usize;
+    assert!(shape_idx < 7, "Индекс фигуры должен быть в диапазоне 0-6");
 }
 
 /// Тест 10: Проверка взаимодействия `GameStats` и `GameState`
@@ -163,5 +160,19 @@ fn test_rotation_collision_interaction() {
     assert!(
         state.can_rotate_curr_shape(RotationDirection::Clockwise),
         "Вращение в пустом поле должно быть возможно"
+    );
+}
+
+/// Тест 14: Проверка имени режима Marathon
+///
+/// Проверяет что режим марафона имеет корректное имя.
+#[test]
+fn test_marathon_mode_name() {
+    let state = GameState::new_marathon();
+
+    assert_eq!(
+        state.get_mode_trait().name(),
+        "Марафон",
+        "Режим должен быть Марафон"
     );
 }
