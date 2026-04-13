@@ -42,8 +42,10 @@ fn test_hmac_rejects_tampered_signature() {
 /// Тест: HMAC с солью даёт уникальные подписи
 #[test]
 fn test_hmac_with_salt_unique_signatures() {
-    let sig1 = hmac_sign_with_salt("key", "salt1", "data").unwrap();
-    let sig2 = hmac_sign_with_salt("key", "salt2", "data").unwrap();
+    let sig1 = hmac_sign_with_salt("key", "salt1", "data")
+        .expect("Первая подпись с солью должна быть создана");
+    let sig2 = hmac_sign_with_salt("key", "salt2", "data")
+        .expect("Вторая подпись с солью должна быть создана");
     assert_ne!(sig1, sig2, "Разные соли должны давать разные подписи");
 }
 

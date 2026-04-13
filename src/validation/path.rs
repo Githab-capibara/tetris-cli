@@ -20,7 +20,7 @@
 //!
 //! let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-");
 //! let path = Path::new("config.json");
-//! validator.validate(path).unwrap();
+//! validator.validate(path).expect("Путь должен пройти валидацию");
 //! ```
 
 use std::io;
@@ -96,7 +96,7 @@ impl From<PathError> for io::Error {
 ///
 /// let validator = PathValidator::new(255, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-");
 /// let path = Path::new("config.json");
-/// validator.validate(path).unwrap();
+/// validator.validate(path).expect("Путь должен пройти валидацию");
 /// ```
 pub struct PathValidator {
     /// Максимальная длина пути.
@@ -953,7 +953,7 @@ mod validation_path_tests {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/",
         );
 
-        let current_dir = std::env::current_dir().unwrap();
+        let current_dir = std::env::current_dir().expect("current_dir должен быть доступен");
 
         // Проверяем обработку несуществующего файла
         let nonexistent_file = "nonexistent_file_12345.txt";
@@ -1016,7 +1016,10 @@ mod validation_path_tests {
 
         if let Ok(canonical_path) = result {
             assert!(canonical_path.exists(), "Путь должен существовать");
-            assert!(canonical_path.file_name().unwrap() == "Cargo.toml");
+            assert!(
+                canonical_path.file_name().expect("Файл должен иметь имя") == "Cargo.toml",
+                "Имя файла должно быть Cargo.toml"
+            );
         }
 
         Ok(())
@@ -1281,7 +1284,7 @@ mod validation_path_tests {
     /// Тест: Несуществующие файлы принимаются (проверка не применима)
     #[test]
     fn test_validate_no_symlinks_nonexistent_file() {
-        let temp_dir = tempfile::tempdir().unwrap();
+        let temp_dir = tempfile::tempdir().expect("Временная директория должна быть создана");
         let nonexistent = temp_dir.path().join("nonexistent_file.txt");
 
         let validator = PathValidator::new(

@@ -191,7 +191,8 @@ impl SaveData {
     /// # Пример
     /// ```no_run
     /// use tetris_cli::highscore::SaveData;
-    /// let save = SaveData::from_value(1000).unwrap();
+    /// let save = SaveData::from_value(1000)
+    ///     .expect("SaveData должен быть создан из значения 1000");
     /// // [`score`] содержит значение 1000
     /// ```
     /// Использует u128 для предотвращения переполнения.

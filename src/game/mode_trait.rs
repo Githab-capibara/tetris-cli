@@ -282,16 +282,15 @@ mod tests {
             Box::new(MarathonMode::new()),
         ];
 
-        for (i, mode) in modes.iter().enumerate() {
-            match i {
-                0 => assert_eq!(mode.name(), "Классика"),
-                1 => assert_eq!(mode.name(), "Спринт"),
-                2 => assert_eq!(mode.name(), "Марафон"),
-                _ => unreachable!(
-                    "Неизвестный индекс режима: {i}. Если добавлен новый режим, обновите этот match."
-                ),
-            }
+        let expected_names = ["Классика", "Спринт", "Марафон"];
+        for (i, (mode, expected)) in modes.iter().zip(expected_names.iter()).enumerate() {
+            assert_eq!(
+                mode.name(),
+                *expected,
+                "Режим {i} должен иметь имя '{expected}'"
+            );
         }
+        assert_eq!(modes.len(), 3, "Должно быть ровно 3 режима игры");
     }
 
     /// Тест: проверка clone для режимов

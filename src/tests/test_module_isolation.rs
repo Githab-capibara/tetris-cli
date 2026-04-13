@@ -73,7 +73,8 @@ fn test_highscore_types_independent_of_game() {
     use crate::highscore::leaderboard::LeaderboardEntry;
 
     // LeaderboardEntry создаётся без GameState
-    let entry = LeaderboardEntry::new("Player", 1000).unwrap();
+    let entry =
+        LeaderboardEntry::new("Player", 1000).expect("LeaderboardEntry должен быть создан успешно");
     assert_eq!(entry.name(), "Player");
     assert_eq!(entry.score(), Some(1000));
 }

@@ -15,7 +15,7 @@
 
 use super::LeaderboardEntry;
 use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt};
+use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};
 
 /// Максимальное количество рекордов в таблице лидеров.
 /// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
@@ -222,16 +222,11 @@ impl LeaderboardValidator {
     /// Этот метод позволяет выполнить валидацию для конкретного значения,
     /// что предотвращает TOCTOU уязвимость.
     #[must_use]
-    // Переменная `e` используется в макросе log_error!
-    #[allow(unused_variables)]
     pub fn verify_hash(salt: &str, name: &str, score_value: u128, hash: &str) -> bool {
-        // Используем разделители ':' для предотвращения коллизий конкатенации
+        // Используем разделители ':' для предотвращения коллизий конкатенации.
+        // verify_hmac_sha256 напрямую — соответствует compute_signature.
         let salt_name_score = format!("{salt}:{name}:{score_value}");
-        hmac_verify_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score, hash)
-            .unwrap_or_else(|e| {
-                crate::log_error!("Ошибка HMAC проверки в storage: {e}");
-                false
-            })
+        verify_hmac_sha256(get_leaderboard_hmac_key(), &salt_name_score, hash)
     }
 
     /// Вычислить HMAC-SHA256 подпись для данных рекорда с солью и именем.
@@ -243,19 +238,13 @@ impl LeaderboardValidator {
     ///
     /// # Возвращает
     /// HMAC-SHA256 подпись в hex формате
-    ///
-    /// # Panics
-    /// Паникует при невозможной ошибке инициализации HMAC (теоретически недостижимо
-    /// для валидных UTF-8 строк и корректного HMAC ключа).
     #[must_use]
     pub fn compute_signature(salt: &str, name: &str, score: u128) -> String {
-        // Используем разделители ':' для предотвращения коллизий конкатенации
+        // Используем разделители ':' для предотвращения коллизий конкатенации.
+        // hmac_sha256 напрямую — avoids UTF-8 roundtrip и Result-обработку,
+        // так как format!() с &str всегда даёт валидный UTF-8.
         let salt_name_score = format!("{salt}:{name}:{score}");
-        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score).expect(
-            "Невозможная ошибка HMAC при создании подписи рекорда. \
-             HMAC-SHA256 для валидных UTF-8 строк всегда успешен. \
-             Это указывает на критическое изменение в библиотеке hmac или невалидный ключ.",
-        )
+        hmac_sha256(get_leaderboard_hmac_key(), &salt_name_score)
     }
 
     /// Создать новую валидированную запись.

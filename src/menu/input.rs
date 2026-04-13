@@ -52,7 +52,8 @@ const MAX_INPUT_ATTEMPTS: u64 = 10_000;
 /// use tetris_cli::io::{Canvas, KeyReader};
 /// use tetris_cli::menu::input::get_player_name;
 ///
-/// let mut canvas = Canvas::new().unwrap();
+/// let mut canvas = Canvas::new()
+///     .expect("Canvas должен быть создан успешно");
 /// let mut reader = KeyReader::new();
 /// let name = get_player_name(&mut canvas, &mut reader);
 /// ```

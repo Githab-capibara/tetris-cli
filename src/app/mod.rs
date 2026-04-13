@@ -424,7 +424,8 @@ mod tests {
         use crate::highscore::SaveData;
 
         // Создаём валидный SaveData для проверки unwrap_or_else
-        let save = SaveData::from_value(1000).unwrap();
+        let save = SaveData::from_value(1000)
+            .expect("SaveData::from_value(1000) должен успешно создать запись");
         let result = save.verify_and_get_score();
 
         // Проверяем что валидный рекорд возвращается
