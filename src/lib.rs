@@ -119,7 +119,6 @@ pub use exports::*;
 #[allow(clippy::unwrap_used)]
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::cognitive_complexity)]
-#[allow(unused_must_use)]
 mod tests {
     // Основные юнит-тесты
     mod test_collision;
