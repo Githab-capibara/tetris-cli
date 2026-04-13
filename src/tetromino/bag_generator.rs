@@ -107,9 +107,10 @@ impl BagGenerator {
         for i in (1..self.bag.len()).rev() {
             // SAFETY: Uniform::new(0, i+1) всегда успешен для i >= 1,
             // так как диапазон [0, i+1) корректен (минимум 2 элемента).
-            let dist = Uniform::new(0, i + 1).unwrap_or_else(|e| {
-                panic!("Невозможная ошибка создания Uniform-распределения для [0, {i}): {e}");
-            });
+            let dist = Uniform::new(0, i + 1).expect(
+                "Невозможная ошибка создания Uniform-распределения для [0, {i}). \
+                 Fisher-Yates требует i >= 1, что гарантируется циклом (1..self.bag.len()).rev()",
+            );
             let j = dist.sample(&mut rng);
             self.bag.swap(i, j);
         }

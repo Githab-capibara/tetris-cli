@@ -91,13 +91,11 @@ impl LeaderboardStorage {
 
         // P3-ID56: Schwartzian transform — score() (HMAC-верификация) вызывается
         // ровно один раз для каждой записи, затем сортировка по предвычисленным значениям.
-        let mut scored_entries: Vec<_> = self
-            .entries
-            .drain(..)
-            .map(|e| (e.score().unwrap_or(0), e))
-            .collect();
-        scored_entries.sort_by_key(|(s, _)| std::cmp::Reverse(*s));
-        self.entries = scored_entries.into_iter().map(|(_, e)| e).collect();
+        // Используем sort_by_key на месте для избежания лишних аллокаций (drain/collect).
+        self.entries.sort_by_key(|e| {
+            let score = e.score().unwrap_or(0);
+            std::cmp::Reverse(score)
+        });
 
         // Обрезаем до максимального размера
         if self.entries.len() > MAX_LEADERBOARD_SIZE {
@@ -253,11 +251,10 @@ impl LeaderboardValidator {
     pub fn compute_signature(salt: &str, name: &str, score: u128) -> String {
         // Используем разделители ':' для предотвращения коллизий конкатенации
         let salt_name_score = format!("{salt}:{name}:{score}");
-        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score).unwrap_or_else(
-            |e| {
-                // Недостижимый путь: HMAC-SHA256 для валидных UTF-8 строк всегда успешен
-                panic!("Невозможная ошибка HMAC при создании подписи рекорда: {e}");
-            },
+        hmac_sign_with_salt(get_leaderboard_hmac_key(), salt, &salt_name_score).expect(
+            "Невозможная ошибка HMAC при создании подписи рекорда. \
+             HMAC-SHA256 для валидных UTF-8 строк всегда успешен. \
+             Это указывает на критическое изменение в библиотеке hmac или невалидный ключ.",
         )
     }
 
