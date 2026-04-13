@@ -278,7 +278,7 @@ fn test_rotation_above_piece_all_shapes() {
         } else {
             assert_ne!(
                 t.coords(),
-                SHAPE_COORDS[shape_index],
+                original_coords,
                 "{shape:?}-фигура должна вращаться над другой фигурой"
             );
         }
@@ -326,7 +326,7 @@ fn test_rotation_with_collision_all_shapes() {
         } else {
             assert_ne!(
                 t.coords(),
-                SHAPE_COORDS[shape_index],
+                original_coords,
                 "{shape:?}-фигура должна пытаться вращаться при коллизии"
             );
         }
@@ -334,10 +334,11 @@ fn test_rotation_with_collision_all_shapes() {
 
     // Дополнительная проверка для T-фигуры у правой стены (x=8)
     let mut t = Tetromino::new((8.0, 5.0), ShapeType::T, SHAPE_COORDS[0], 0);
+    let original_coords = t.coords();
     t.rotate(RotationDirection::Clockwise);
     assert_ne!(
         t.coords(),
-        SHAPE_COORDS[0],
+        original_coords,
         "T-фигура должна пытаться вращаться при коллизии справа"
     );
 }
