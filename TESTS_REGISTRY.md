@@ -9,9 +9,9 @@
 | `test_collision.rs` | Тесты столкновений фигур со стенами, полом и препятствиями | Модульный | active |
 | `test_game_logic.rs` | Тесты базовой игровой логики: движение, вращение, уровни | Модульный | active |
 | `test_integration.rs` | Интеграционные тесты: инициализация, движение фигур, режимы, статистика | Интеграционный | active |
-| `test_physics.rs` | Тесты физики: скорость падения, hold, призрачная фигура | Модульный | active |
+| `test_physics.rs` | Тесты физики: hold, призрачная фигура | Модульный | active |
 | `test_bag_system.rs` | Тесты генератора фигур (Bag System): распределение, случайность | Модульный | active |
-| `test_boundary_values.rs` | Тесты граничных значений: уровни, очки, линии, конвертация | Модульный | active |
+| `test_boundary_values.rs` | Тесты граничных значений: уровни, очки, линии, leaderboard, combo | Модульный | active |
 | `test_game_bounds_check.rs` | Тесты границ игрового поля: позиции на краях | Модульный | active |
 | `test_game_movement.rs` | Тесты движения фигур: влево, вправо, вниз, hard drop | Модульный | active |
 | `test_game_rotation.rs` | Тесты вращения фигур: все типы, столкновения при вращении | Модульный | active |
@@ -20,9 +20,27 @@
 | `test_score_overflow_protection.rs` | Тесты защиты от переполнения счёта: MAX_SCORE, saturating arithmetic | Модульный | active |
 | `test_state_validation.rs` | Тесты валидации fall_speed и land_timer: NaN, Infinity, clamp | Модульный | active |
 | `test_crypto_security.rs` | Тесты криптографических функций: HMAC, hash, соль | Модульный | active |
-| `test_edge_cases.rs` | Тесты краевых случаев: конфигурация, лидерборд, опциональные значения | Модульный | active |
+| `test_edge_cases.rs` | Тесты краевых случаев: HMAC, path traversal, config load | Модульный | active |
 | `test_module_isolation.rs` | Тесты модульной изоляции: независимость crypto, validation, types, errors, highscore | Модульный | active |
 | `test_panic_handling.rs` | Тесты отсутствия паник: GameState, BagGenerator, PathValidator | Модульный | active |
+
+## Удалённые тесты (2026-04-13)
+
+| Файл | Тест | Причина |
+|------|------|---------|
+| `test_safe_cast.rs` | `test_safe_f32_to_u32_no_panic` | Без ассертов, только вызов функции |
+| `test_boundary_values.rs` | `test_combo_bonus_at_zero`, `test_combo_bonus_at_high_combo` | Тестировали локальную арифметику, не игровую логику |
+| `test_edge_cases.rs` | `test_leaderboard_load_handles_corrupted_data` | Слабая валидация — только catch_unwind |
+| `test_collision.rs` | `test_collision_after_multiple_moves` | Тривиальное утверждение `can_down` на пустом поле |
+| `test_physics.rs` | `test_falling_speed_increase` | Тестировал константы, не реальную игровую логику |
+
+## Исправленные баги (2026-04-13)
+
+| Файл | Тест | Исправление |
+|------|------|-------------|
+| `test_game_rotation.rs` | `test_rotation_with_collision_all_shapes` | Сравнение с `original_coords` вместо `SHAPE_COORDS[shape_index]` |
+| `test_game_rotation.rs` | `test_rotation_above_piece_all_shapes` | Сравнение с `original_coords` вместо `SHAPE_COORDS[shape_index]` |
+| `test_module_isolation.rs` | `test_highscore_types_independent_of_game` | Graceful fallback без паники при отсутствии HMAC key env var |
 
 ## Встроенные модульные тесты (src/)
 
