@@ -141,10 +141,8 @@ impl Application {
         // Исправление #2: логирование всех ошибок загрузки
         let save = SaveData::load_config();
         let mut leaderboard = Leaderboard::load();
-        // validate() удаляет невалидные записи, логируем если были удалены
-        let initial_count = leaderboard.len();
-        leaderboard.validate();
-        let removed_count = initial_count.saturating_sub(leaderboard.len());
+        // validate() теперь возвращает количество удалённых записей (PROB-021)
+        let removed_count = leaderboard.validate();
         if removed_count > 0 {
             crate::log_warn!("Удалено {removed_count} невалидных записей из таблицы лидеров.");
         }
@@ -525,7 +523,7 @@ mod tests {
         let _ = leaderboard.add_score("Player2", 2000);
 
         let initial_count = leaderboard.len();
-        leaderboard.validate();
+        let _ = leaderboard.validate();
 
         // Проверяем что валидные записи не удалены
         assert_eq!(
