@@ -31,7 +31,6 @@ macro_rules! define_hmac_key_getter {
             $static_name.get_or_init(|| {
                 std::env::var($env_var).unwrap_or_else(|_| {
                     log_once_empty_key($env_var);
-                    crate::log_warn!("Ошибка чтения {}: нет переменной окружения", $env_var);
                     String::new()
                 })
             })
