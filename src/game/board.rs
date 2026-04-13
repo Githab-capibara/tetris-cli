@@ -213,6 +213,7 @@ impl GameBoard {
     /// let blocks = board.get_blocks_mut();
     /// blocks[0][0] = 1; // Установить блок
     /// ```
+    #[must_use = "Мутабельная ссылка на массив поля должна быть использована"]
     pub const fn get_blocks_mut(&mut self) -> &mut [[i8; GRID_WIDTH]; GRID_HEIGHT] {
         &mut self.blocks
     }

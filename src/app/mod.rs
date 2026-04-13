@@ -221,14 +221,10 @@ impl Application {
                 if Self::check_exit_condition(key) {
                     break;
                 }
-                // Клонирование необходимо: process_menu_input требует &mut self,
-                // но также нужна ссылка на high_score_display (NLL не может разделить borrows)
-                // Audit 2026-04-12, Issue 2.3: Clone необходим из-за ограничений borrow checker.
-                // Альтернатива (реструктуризация для избежания clone) потребует значительного
-                // рефакторинга архитектуры Application. Текущее решение оптимально по соотношению
-                // производительность/сложность, так как clone происходит только при нажатии клавиши.
-                let score_clone = self.high_score_display.clone();
-                self.process_menu_input(key, &score_clone);
+                // Исправление аудита 2026-04-13 (PROB-001):
+                // Устранён избыточный clone(). process_menu_input теперь читает
+                // high_score_display из self, что позволяет разделить borrows.
+                self.process_menu_input(key);
             }
         }
     }
@@ -248,27 +244,29 @@ impl Application {
     ///
     /// # Аргументы
     /// * `key` - код нажатой клавиши
-    /// * `high_score_display` - строка для отображения рекорда
-    fn process_menu_input(&mut self, key: u8, high_score_display: &str) {
+    ///
+    /// # Исправление аудита 2026-04-13 (PROB-001)
+    /// Устранён параметр `high_score_display` — читается из `self.high_score_display` напрямую.
+    fn process_menu_input(&mut self, key: u8) {
         use crate::menu::show_leaderboard;
 
         match key {
             // ЗАПУСК КЛАССИЧЕСКОЙ ИГРЫ (Enter)
             b'\n' | b'\r' => {
                 let state = GameState::new();
-                self.run_game_mode_with_state(high_score_display, state, true);
+                self.run_game_mode_with_state(state, true);
             }
 
             // ЗАПУСК РЕЖИМА СПРИНТ (R)
             b'r' => {
                 let state = GameState::new_sprint();
-                self.run_game_mode_with_state(high_score_display, state, false);
+                self.run_game_mode_with_state(state, false);
             }
 
             // ЗАПУСК РЕЖИМА МАРАФОН (M)
             b'm' => {
                 let state = GameState::new_marathon();
-                self.run_game_mode_with_state(high_score_display, state, true);
+                self.run_game_mode_with_state(state, true);
             }
 
             // ОТОБРАЖЕНИЕ ТАБЛИЦЫ ЛИДЕРОВ (L)
@@ -284,22 +282,19 @@ impl Application {
     /// Запустить игровой режим с указанным состоянием.
     ///
     /// # Аргументы
-    /// * `high_score_display` — строка для отображения рекорда
     /// * `state` — начальное состояние игры
     /// * `save_score` — сохранять ли рекорд после игры
     ///
     /// # Возвращает
     /// Набранные очки (если `save_score` — `true`) или `0`
-    fn run_game_mode_with_state(
-        &mut self,
-        high_score_display: &str,
-        state: GameState,
-        save_score: bool,
-    ) -> u128 {
+    ///
+    /// # Исправление аудита 2026-04-13 (PROB-001)
+    /// Устранён параметр `high_score_display` — читается из `self.high_score_display` напрямую.
+    fn run_game_mode_with_state(&mut self, state: GameState, save_score: bool) -> u128 {
         let score = run_game_mode(
             &mut self.canvas,
             &mut self.input,
-            high_score_display,
+            &self.high_score_display,
             state,
             save_score,
             &mut self.leaderboard,

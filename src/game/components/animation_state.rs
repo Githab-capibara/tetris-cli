@@ -21,6 +21,7 @@
 /// ## Архитектурные заметки
 /// Выделено из `GameState` для соблюдения Single Responsibility Principle.
 /// Используется композиция в `GameState` через поле `animation_state: AnimationState`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AnimationState {
     /// Строки для анимации (мигание при очистке).
     /// Каждый бит соответствует линии поля (бит 0 = линия 0).
@@ -53,7 +54,7 @@ impl AnimationState {
     /// # Возвращает
     /// Битовая маска анимируемых строк
     #[must_use = "Маска анимации должна быть использована"]
-    pub const fn animating_rows_mask(&self) -> u32 {
+    pub const fn animating_rows_mask(self) -> u32 {
         self.animating_rows_mask
     }
 
@@ -70,7 +71,7 @@ impl AnimationState {
     /// # Возвращает
     /// `true` если активен Hard Drop
     #[must_use = "Флаг Hard Drop должен быть использован"]
-    pub const fn is_hard_dropping(&self) -> bool {
+    pub const fn is_hard_dropping(self) -> bool {
         self.is_hard_dropping
     }
 
@@ -146,7 +147,7 @@ impl AnimationState {
     /// # Возвращает
     /// `true` если есть активные анимации
     #[must_use = "Результат проверки анимаций должен быть использован"]
-    pub const fn has_active_animations(&self) -> bool {
+    pub const fn has_active_animations(self) -> bool {
         self.animating_rows_mask != 0 || self.is_hard_dropping
     }
 }
@@ -194,5 +195,31 @@ mod tests {
         state.add_row_to_animation(10);
         state.clear_animation_mask();
         assert_eq!(state.animating_rows_mask(), 0);
+    }
+
+    #[test]
+    fn test_animation_state_clone_and_equality() {
+        let mut state = AnimationState::new();
+        state.add_row_to_animation(3);
+        state.set_is_hard_dropping(true);
+
+        // Clone должен сохранять равенство
+        let cloned = state;
+        assert_eq!(state, cloned);
+
+        // Изменение оригинала не влияет на копию
+        let mut state2 = state;
+        state2.set_is_hard_dropping(false);
+        assert_ne!(state, state2);
+    }
+
+    #[test]
+    fn test_animation_state_debug_display() {
+        let state = AnimationState::new();
+        let debug_str = format!("{state:?}");
+        assert!(
+            debug_str.contains("AnimationState"),
+            "Debug должен содержать имя типа"
+        );
     }
 }

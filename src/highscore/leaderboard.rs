@@ -33,9 +33,9 @@ use crate::crypto::hmac::{hmac_sign_with_salt, hmac_verify_with_salt_bytes};
 use crate::highscore::APP_NAME;
 use crate::validation::name::sanitize_player_name;
 
-/// Максимальное количество рекордов в таблице лидеров.
-/// Переэкспорт из constants.rs для централизации констант.
-use crate::constants::MAX_LEADERBOARD_ENTRIES as MAX_LEADERBOARD_SIZE;
+// Константа MAX_LEADERBOARD_ENTRIES импортируется напрямую из constants.rs
+// для предотвращения дублирования алиасов (Исправление аудита 2026-04-13, PROB-023)
+use crate::constants::MAX_LEADERBOARD_ENTRIES;
 
 /// Приватная функция для создания данных записи (соль, хеш, санитаризация имени).
 ///
@@ -442,7 +442,7 @@ impl Leaderboard {
         }
 
         // Проверка: достаточно ли высок рекорд для попадания в таблицу
-        if self.entries.len() >= MAX_LEADERBOARD_SIZE {
+        if self.entries.len() >= MAX_LEADERBOARD_ENTRIES {
             // Если таблица полная, проверяем минимальный рекорд
             // заменено unwrap_or(0) на unwrap_or_default()
             let min_score = self
@@ -476,8 +476,8 @@ impl Leaderboard {
             .sort_by_key(|b| std::cmp::Reverse(b.score_value));
 
         // Оставляем только топ-5
-        if self.entries.len() > MAX_LEADERBOARD_SIZE {
-            self.entries.truncate(MAX_LEADERBOARD_SIZE);
+        if self.entries.len() > MAX_LEADERBOARD_ENTRIES {
+            self.entries.truncate(MAX_LEADERBOARD_ENTRIES);
         }
 
         true
