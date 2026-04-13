@@ -139,12 +139,10 @@ pub fn sanitize_player_name(name: &str) -> String {
         started = true;
         if is_valid_name_char(c) {
             // S3: схлопывание последовательных пробелов
-            if c == ' ' {
-                if let Some(last) = validated.chars().last() {
-                    if last == ' ' {
-                        continue;
-                    }
-                }
+            // Исправление аудита 2026-04-13 (PROB-018):
+            // Вместо O(n) validated.chars().last() используем флаг last_was_space
+            if c == ' ' && validated.ends_with(' ') {
+                continue;
             }
             validated.push(c);
             char_count += 1;

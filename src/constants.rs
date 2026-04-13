@@ -384,6 +384,9 @@ pub const PROGRESS_Y: u16 = 21;
 /// Максимальное количество линий, которое можно удалить за один ход.
 pub const MAX_LINES_PER_CLEAR: u32 = 4;
 
+/// Максимальный уровень игры.
+pub const MAX_LEVEL: u32 = 1000;
+
 /// Количество линий для режима спринт.
 pub const SPRINT_LINES: u32 = 40;
 

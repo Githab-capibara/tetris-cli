@@ -36,7 +36,8 @@ pub mod validator;
 // Реэкспорт HMAC функций для удобства импорта
 pub use hmac::{hmac_sha256, verify_hmac_sha256};
 
-use rand::Rng;
+use rand::rngs::SysRng;
+use rand::TryRng;
 
 /// Вычислить BLAKE3 хеш строки.
 ///
@@ -79,10 +80,13 @@ pub fn hash(data: &str) -> String {
 
 /// Сгенерировать случайную соль из 64 шестнадцатеричных символов (256 бит).
 ///
-/// Использует криптографически стойкий генератор случайных чисел (`OsRng`).
+/// Использует криптографически стойкий генератор случайных чисел (`SysRng`).
 ///
 /// # Возвращает
 /// Hex-строка из 64 символов (32 байта = 256 бит)
+///
+/// # Panics
+/// Panics if the system random number generator is unavailable.
 ///
 /// # Безопасность
 /// ## Криптографическая стойкость
@@ -109,7 +113,9 @@ pub fn hash(data: &str) -> String {
 #[must_use = "Соль должна быть использована для хеширования"]
 pub fn generate_salt() -> String {
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
-    rand::rng().fill_bytes(&mut bytes);
+    let mut rng = SysRng;
+    rng.try_fill_bytes(&mut bytes)
+        .expect("OsRng: сбой системного ГСЧ");
     hex::encode(bytes)
 }
 
