@@ -32,7 +32,7 @@ fn test_score_does_not_exceed_max() {
 
     // Начисляем очень много очков симулируя множество линий
     for _ in 0..1000 {
-        update_score_for_lines(&mut score, level, 4, &mut combo_counter);
+        let _ = update_score_for_lines(&mut score, level, 4, &mut combo_counter);
     }
 
     // Счёт не должен превышать MAX_SCORE
@@ -100,7 +100,7 @@ fn test_extreme_scoring_parameters() {
     let extreme_level = 10_000u32;
     let mut combo_counter: u32 = 0;
 
-    update_score_for_lines(&mut score, extreme_level, 4, &mut combo_counter);
+    let _ = update_score_for_lines(&mut score, extreme_level, 4, &mut combo_counter);
 
     assert!(
         score <= MAX_SCORE,
@@ -118,7 +118,7 @@ fn test_extreme_scoring_parameters() {
     let level = 1u32;
     let mut combo_counter = 1000;
 
-    update_score_for_lines(&mut score_combo, level, 1, &mut combo_counter);
+    let _ = update_score_for_lines(&mut score_combo, level, 1, &mut combo_counter);
 
     assert!(
         score_combo <= MAX_SCORE,
@@ -143,7 +143,7 @@ fn test_stress_score_overflow_protection() {
     let mut combo_counter: u32 = 1000;
 
     for _ in 0..100 {
-        update_score_for_lines(&mut score, extreme_level, 4, &mut combo_counter);
+        let _ = update_score_for_lines(&mut score, extreme_level, 4, &mut combo_counter);
     }
 
     assert!(
@@ -192,7 +192,7 @@ fn test_game_state_score_overflow() {
 
     // Начисляем много очков
     for _ in 0..100 {
-        update_score_for_lines(&mut score, level, 4, &mut combo_counter);
+        let _ = update_score_for_lines(&mut score, level, 4, &mut combo_counter);
     }
 
     // Устанавливаем счёт обратно в состояние
@@ -229,7 +229,7 @@ fn test_no_panic_at_extreme_values() {
 
     // Многократные начисления не должны вызывать панику
     for _ in 0..1000 {
-        update_score_for_lines(&mut score, level, 4, &mut combo_counter);
+        let _ = update_score_for_lines(&mut score, level, 4, &mut combo_counter);
     }
 
     // Счёт должен оставаться в пределах u128 (saturating arithmetic предотвращает переполнение)
