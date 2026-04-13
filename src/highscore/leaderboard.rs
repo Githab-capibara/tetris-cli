@@ -523,8 +523,16 @@ impl Leaderboard {
     /// Проверить валидность всех записей.
     ///
     /// Удаляет все записи с невалидным хешем (подделанные).
-    pub fn validate(&mut self) {
+    ///
+    /// # Возвращает
+    /// Количество удалённых невалидных записей.
+    ///
+    /// # Исправление аудита 2026-04-13 (PROB-021)
+    /// Теперь возвращает количество удалённых записей для лучшей наблюдаемости.
+    pub fn validate(&mut self) -> u32 {
+        let before = self.entries.len();
         self.entries.retain(LeaderboardEntry::is_valid);
+        u32::try_from(before.saturating_sub(self.entries.len())).unwrap_or(u32::MAX)
     }
 
     /// Получить количество записей в таблице.
