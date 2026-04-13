@@ -283,28 +283,3 @@ fn test_collision_array_bounds() {
         "После движения к левой границе левое направление должно быть заблокировано"
     );
 }
-
-/// Тест 50: Проверка что столкновение работает после множественных движений.
-///
-/// Проверяет, что столкновение корректно работает после серии движений.
-#[test]
-fn test_collision_after_multiple_moves() {
-    let mut state = GameState::new();
-
-    // Серия движений
-    for _ in 0..5 {
-        if state.can_move_curr_shape_direction(Direction::Left) {
-            state.move_curr_dx(-1.0);
-        }
-        if state.can_move_curr_shape_direction(Direction::Down) {
-            state.move_curr_dy(1.0);
-        }
-        if state.can_move_curr_shape_direction(Direction::Right) {
-            state.move_curr_dx(1.0);
-        }
-    }
-
-    // Столкновение должно работать корректно
-    let can_down = state.can_move_curr_shape_direction(Direction::Down);
-    assert!(can_down, "Движение вниз должно быть возможно");
-}

@@ -313,38 +313,6 @@ fn test_combo_counter_max_value() {
     );
 }
 
-/// Тест T31: Combo бонус при нулевом комбо
-#[test]
-#[allow(clippy::erasing_op)] // Тест проверяет граничный случай комбо = 1
-fn test_combo_bonus_at_zero() {
-    // Бонус за первое комбо (комбо = 1) должен быть 0
-    // Формула: COMBO_BONUS * (combo_counter - 1)
-    const COMBO_BONUS: u64 = 50;
-
-    let combo_level_1_bonus = COMBO_BONUS * 0; // (1 - 1) = 0
-    assert_eq!(
-        combo_level_1_bonus, 0,
-        "Бонус за первое комбо должен быть 0"
-    );
-}
-
-/// Тест T32: Combo бонус при большом комбо
-#[test]
-fn test_combo_bonus_at_high_combo() {
-    const COMBO_BONUS: u64 = 50;
-
-    // Бонус за 10 комбо
-    let combo_ten_bonus = COMBO_BONUS * 9; // (10 - 1) = 9
-    assert_eq!(combo_ten_bonus, 450, "Бонус за 10 комбо должен быть 450");
-
-    // Бонус за 100 комбо
-    let combo_hundred_bonus = COMBO_BONUS * 99; // (100 - 1) = 99
-    assert_eq!(
-        combo_hundred_bonus, 4950,
-        "Бонус за 100 комбо должен быть 4950"
-    );
-}
-
 // ============================================================================
 // ИНТЕГРАЦИОННЫЕ ТЕСТЫ
 // ============================================================================

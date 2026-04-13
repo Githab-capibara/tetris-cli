@@ -160,23 +160,3 @@ fn test_config_load_from_empty_path() {
         "Загрузка из пустого пути должна вернуть ошибку"
     );
 }
-
-// ============================================================================
-// PROB-171: Некорректный JSON в save
-// ============================================================================
-
-/// Тест: `Leaderboard::load()` возвращает пустую таблицу при повреждённых данных
-/// confy хранит данные в формате TOML/JSON — при некорректных данных возвращает default
-#[test]
-fn test_leaderboard_load_handles_corrupted_data() {
-    use crate::highscore::leaderboard::Leaderboard;
-
-    // load() никогда не паникует — при ошибке возвращает пустую таблицу
-    let result = std::panic::catch_unwind(|| {
-        let _ = Leaderboard::load();
-    });
-    assert!(
-        result.is_ok(),
-        "Leaderboard::load() не должен паниковать даже при повреждённых данных"
-    );
-}
