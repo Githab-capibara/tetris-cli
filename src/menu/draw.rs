@@ -66,7 +66,8 @@ pub fn draw_menu(cnv: &mut Canvas, high_score_display: &str) {
 /// use tetris_cli::highscore::Leaderboard;
 /// use tetris_cli::menu::draw::draw_leaderboard;
 ///
-/// let mut canvas = Canvas::new().unwrap();
+/// let mut canvas = Canvas::new()
+///     .expect("Canvas должен быть создан успешно");
 /// let leaderboard = Leaderboard::load();
 /// draw_leaderboard(&mut canvas, &leaderboard);
 /// ```
@@ -120,7 +121,8 @@ pub fn draw_leaderboard(cnv: &mut Canvas, leaderboard: &Leaderboard) {
 /// use tetris_cli::io::Canvas;
 /// use tetris_cli::menu::draw::draw_game_stats;
 ///
-/// let mut canvas = Canvas::new().unwrap();
+/// let mut canvas = Canvas::new()
+///     .expect("Canvas должен быть создан успешно");
 /// draw_game_stats(&mut canvas, "Классика", 1000, 5, 50, 100, 3, 120.5);
 /// ```
 // Архитектурная заметка (ID 74, 75): 8 параметров — чистая функция отрисовки

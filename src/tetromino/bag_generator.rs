@@ -105,12 +105,10 @@ impl BagGenerator {
 
         // Алгоритм Fisher-Yates для перемешивания
         for i in (1..self.bag.len()).rev() {
-            // SAFETY: Uniform::new(0, i+1) всегда успешен для i >= 1,
-            // так как диапазон [0, i+1) корректен (минимум 2 элемента).
-            let dist = Uniform::new(0, i + 1).expect(
-                "Невозможная ошибка создания Uniform-распределения для [0, {i}). \
-                 Fisher-Yates требует i >= 1, что гарантируется циклом (1..self.bag.len()).rev()",
-            );
+            // SAFETY: Диапазон [0, i+1) всегда корректен, так как i >= 1 в цикле Fisher-Yates.
+            // Uniform::new возвращает Result, но ошибка здесь недостижима.
+            let dist = Uniform::new(0, i + 1)
+                .expect("Fisher-Yates: диапазон [0, i+1) всегда корректен при i >= 1");
             let j = dist.sample(&mut rng);
             self.bag.swap(i, j);
         }

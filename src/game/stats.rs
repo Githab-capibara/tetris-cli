@@ -37,7 +37,7 @@ use std::time::Instant;
 /// ```ignore
 /// use std::sync::{Arc, Mutex};
 /// let stats = Arc::new(Mutex::new(GameStats::new()));
-/// stats.lock().unwrap().add_piece(ShapeType::T);
+/// stats.lock().expect("Mutex не должен быть отравлен").add_piece(ShapeType::T);
 /// ```
 ///
 /// # Инкапсуляция (Исправление #2 - MEDIUM SEVERITY)

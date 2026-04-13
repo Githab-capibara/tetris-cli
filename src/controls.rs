@@ -291,7 +291,9 @@ impl ControlsConfig {
     /// use tetris_cli::controls::ControlsConfig;
     ///
     /// let config = ControlsConfig::default_config();
-    /// config.save_to_file("my_controls.json").unwrap();
+    /// config
+    ///     .save_to_file("my_controls.json")
+    ///     .expect("Конфиг должен быть сохранён успешно");
     /// ```
     ///
     /// # Errors
@@ -437,7 +439,8 @@ impl ControlsConfig {
     /// ```no_run
     /// use tetris_cli::controls::ControlsConfig;
     ///
-    /// let config = ControlsConfig::load_from_file("my_controls.json").unwrap();
+    /// let config = ControlsConfig::load_from_file("my_controls.json")
+    ///     .expect("Конфиг должен быть загружен успешно");
     /// ```
     pub fn load_from_file(path: &str) -> io::Result<Self> {
         // Валидация пути через DEFAULT_PATH_VALIDATOR

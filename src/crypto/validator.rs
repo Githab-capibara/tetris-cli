@@ -37,9 +37,14 @@ mod validator_tests {
         let key = "test_key";
         let salt = "test_salt";
         let data = "test_data";
-        let signature = hmac_sign_with_salt(key, salt, data).unwrap();
+        let signature =
+            hmac_sign_with_salt(key, salt, data).expect("Подпись должна быть создана успешно");
 
-        assert!(hmac_verify_with_salt(key, salt, data, &signature).unwrap());
+        assert!(
+            hmac_verify_with_salt(key, salt, data, &signature)
+                .expect("Проверка должна быть выполнена успешно"),
+            "Подпись должна проходить проверку"
+        );
     }
 
     #[test]
@@ -49,7 +54,9 @@ mod validator_tests {
         let data = "test_data";
         let wrong_signature = "invalid";
 
-        assert!(!hmac_verify_with_salt(key, salt, data, wrong_signature).unwrap());
+        let is_valid = hmac_verify_with_salt(key, salt, data, wrong_signature)
+            .expect("Проверка должна быть выполнена успешно");
+        assert!(!is_valid, "Невалидная подпись должна возвращать false");
     }
 
     #[test]
@@ -58,9 +65,11 @@ mod validator_tests {
         let salt = "test_salt";
         let data = "test_data";
 
-        let sig1 = hmac_sign_with_salt(key, salt, data).unwrap();
-        let sig2 = hmac_sign_with_salt(key, salt, data).unwrap();
+        let sig1 =
+            hmac_sign_with_salt(key, salt, data).expect("Первая подпись должна быть создана");
+        let sig2 =
+            hmac_sign_with_salt(key, salt, data).expect("Вторая подпись должна быть создана");
 
-        assert_eq!(sig1, sig2);
+        assert_eq!(sig1, sig2, "Подписи должны быть идентичны");
     }
 }

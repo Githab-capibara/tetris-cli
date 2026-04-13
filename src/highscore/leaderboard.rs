@@ -175,23 +175,27 @@ impl LeaderboardEntry {
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
     ///
     /// // Короткое имя
-    /// let entry = LeaderboardEntry::new("Al", 1000).unwrap();
+    /// let entry = LeaderboardEntry::new("Al", 1000)
+    ///     .expect("Запись с коротким именем должна быть создана");
     /// assert_eq!(entry.name(), "Al");
     ///
     /// // Длинное имя (обрезается до 32 символов)
     /// let long_name = "a".repeat(50);
-    /// let entry = LeaderboardEntry::new(&long_name, 2000).unwrap();
+    /// let entry = LeaderboardEntry::new(&long_name, 2000)
+    ///         .expect("Запись с длинным именем должна быть создана");
     /// assert_eq!(entry.name().len(), 32);
     ///
     /// // Пустое имя (заменяется на "Anonymous")
-    /// let entry = LeaderboardEntry::new("", 3000).unwrap();
+    /// let entry = LeaderboardEntry::new("", 3000)
+    ///     .expect("Запись с пустым именем должна быть создана");
     /// assert_eq!(entry.name(), "Anonymous");
     /// ```
     ///
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player", 1000).unwrap();
+    /// let entry = LeaderboardEntry::new("Player", 1000)
+    ///     .expect("Запись должна быть создана");
     /// assert_eq!(entry.name(), "Player");
     /// assert_eq!(entry.score(), Some(1000));
     /// ```
@@ -230,7 +234,8 @@ impl LeaderboardEntry {
     /// # Пример
     /// ```
     /// use tetris_cli::highscore::leaderboard::LeaderboardEntry;
-    /// let entry = LeaderboardEntry::new("Player", 1000).unwrap();
+    /// let entry = LeaderboardEntry::new("Player", 1000)
+    ///     .expect("Запись должна быть создана");
     /// assert!(entry.is_valid());
     /// ```
     #[must_use]
@@ -264,13 +269,13 @@ impl LeaderboardEntry {
 /// // Поток 1
 /// let lb_clone = Arc::clone(&leaderboard);
 /// std::thread::spawn(move || {
-///     lb_clone.lock().unwrap().add_score("Player1", 1000);
+///     lb_clone.lock().expect("Mutex не должен быть отравлен").add_score("Player1", 1000);
 /// });
 ///
 /// // Поток 2
 /// let lb_clone2 = Arc::clone(&leaderboard);
 /// std::thread::spawn(move || {
-///     lb_clone2.lock().unwrap().add_score("Player2", 2000);
+///     lb_clone2.lock().expect("Mutex не должен быть отравлен").add_score("Player2", 2000);
 /// });
 /// ```
 ///
