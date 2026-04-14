@@ -1086,10 +1086,6 @@ mod controls_tests {
             "Загруженный HMAC ключ не должен быть пустым"
         );
         // Длина ключа зависит от внутренней константы CONTROLS_HMAC_KEY (28 символов)
-        assert!(
-            !loaded.get_hmac_key().is_empty(),
-            "Длина HMAC ключа должна быть больше 0"
-        );
 
         // Очищаем тестовый файл
         let _ = fs::remove_file(test_path);

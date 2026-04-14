@@ -198,6 +198,10 @@ impl Position {
     /// assert_eq!(pos.x(), 5);
     /// assert_eq!(pos.y(), 10);
     /// ```
+    #[deprecated(
+        since = "0.96.15",
+        note = "Use `Position::from((x, y))` or `(x, y).into()` instead"
+    )]
     #[must_use]
     #[inline]
     pub const fn from_tuple(tuple: (i16, i16)) -> Self {
@@ -220,6 +224,10 @@ impl Position {
     /// assert_eq!(x, 5);
     /// assert_eq!(y, 10);
     /// ```
+    #[deprecated(
+        since = "0.96.15",
+        note = "Use `Into::<(i16, i16)>::into(pos)` or destructuring instead"
+    )]
     #[must_use]
     #[inline]
     pub const fn to_tuple(self) -> (i16, i16) {
@@ -289,6 +297,7 @@ impl From<(i16, i16)> for Position {
 /// assert_eq!(tuple, (5, 10));
 /// ```
 impl From<Position> for (i16, i16) {
+    #[allow(deprecated)]
     fn from(pos: Position) -> Self {
         pos.to_tuple()
     }
