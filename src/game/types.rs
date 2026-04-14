@@ -113,6 +113,22 @@ impl GameAction {
     }
 }
 
+impl fmt::Display for GameAction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MoveLeft => write!(f, "MoveLeft"),
+            Self::MoveRight => write!(f, "MoveRight"),
+            Self::SoftDrop => write!(f, "SoftDrop"),
+            Self::HardDrop => write!(f, "HardDrop"),
+            Self::RotateLeft => write!(f, "RotateLeft"),
+            Self::RotateRight => write!(f, "RotateRight"),
+            Self::Hold => write!(f, "Hold"),
+            Self::Pause => write!(f, "Pause"),
+            Self::Quit => write!(f, "Quit"),
+        }
+    }
+}
+
 // ============================================================================
 // ТИП-ОБЁРТКА ДЛЯ ОЧКОВ (Score)
 // ============================================================================
