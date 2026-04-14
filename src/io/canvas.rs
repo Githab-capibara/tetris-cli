@@ -407,6 +407,6 @@ impl Renderer for Canvas {
         fg: &dyn Color,
         bg: &dyn Color,
     ) -> Result<(), std::io::Error> {
-        Canvas::draw_strs_buffered(self, lines, pos, fg, bg)
+        Self::draw_strs_buffered(self, lines, pos, fg, bg)
     }
 }
