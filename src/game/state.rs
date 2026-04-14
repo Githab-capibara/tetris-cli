@@ -108,7 +108,12 @@ impl GameMode {
     /// let trait_obj = mode.as_trait();
     /// assert_eq!(trait_obj.name(), "Классика");
     /// ```
+    ///
+    /// # Производительность
+    /// Метод помечен `#[inline]` для предотвращения создания `Box` при каждом вызове
+    /// в release-режиме с LTO.
     #[must_use]
+    #[inline]
     pub fn as_trait(self) -> Box<dyn GameModeTrait> {
         match self {
             Self::Classic => Box::new(super::mode_trait::ClassicMode),

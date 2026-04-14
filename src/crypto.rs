@@ -83,10 +83,11 @@ pub fn hash(data: &str) -> String {
 /// Использует криптографически стойкий генератор случайных чисел (`SysRng`).
 ///
 /// # Возвращает
-/// Hex-строка из 64 символов (32 байта = 256 бит)
+/// - `Ok(String)` — Hex-строка из 64 символов (32 байта = 256 бит)
+/// - `Err(String)` — если системный ГСЧ недоступен
 ///
-/// # Panics
-/// Panics if the system random number generator is unavailable.
+/// # Errors
+/// Возвращает ошибку если системный генератор случайных чисел недоступен.
 ///
 /// # Безопасность
 /// ## Криптографическая стойкость
@@ -107,16 +108,15 @@ pub fn hash(data: &str) -> String {
 /// # Пример
 /// ```
 /// use tetris_cli::crypto::generate_salt;
-/// let salt = generate_salt();
+/// let salt = generate_salt().expect("ГСЧ должен быть доступен");
 /// assert_eq!(salt.len(), 64);
 /// ```
-#[must_use = "Соль должна быть использована для хеширования"]
-pub fn generate_salt() -> String {
+pub fn generate_salt() -> Result<String, String> {
     let mut bytes = [0u8; 32]; // 32 байта = 256 бит
     let mut rng = SysRng;
     rng.try_fill_bytes(&mut bytes)
-        .expect("OsRng: сбой системного ГСЧ");
-    hex::encode(bytes)
+        .map_err(|e| format!("OsRng: сбой системного ГСЧ: {e}"))?;
+    Ok(hex::encode(bytes))
 }
 
 // ============================================================================
@@ -162,14 +162,14 @@ mod crypto_tests {
 
     #[test]
     fn test_generate_salt_unique() {
-        let s1 = generate_salt();
-        let s2 = generate_salt();
+        let s1 = generate_salt().expect("ГСЧ должен быть доступен");
+        let s2 = generate_salt().expect("ГСЧ должен быть доступен");
         assert_ne!(s1, s2, "Соли должны быть уникальными");
     }
 
     #[test]
     fn test_generate_salt_length() {
-        let salt = generate_salt();
+        let salt = generate_salt().expect("ГСЧ должен быть доступен");
         assert_eq!(
             salt.len(),
             64,

@@ -51,7 +51,7 @@ use crate::constants::MAX_LEADERBOARD_ENTRIES;
 /// для устранения дублирования кода (генерация соли, хеша, санитаризация имени).
 fn create_entry_data(name: &str, score: u128) -> Option<(String, String, String)> {
     let valid_name = sanitize_player_name(name);
-    let salt = crate::crypto::generate_salt();
+    let salt = crate::crypto::generate_salt().ok()?;
     // Проблема 9: Разделители ':' предотвращают коллизии конкатенации
     let salt_name_score = format!("{salt}:{valid_name}:{score}");
     // При ошибке HMAC возвращаем None вместо паники
