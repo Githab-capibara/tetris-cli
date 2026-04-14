@@ -130,12 +130,22 @@ pub const GRID_HEIGHT: usize = 20;
 ///
 /// Вычисляется из `GRID_WIDTH` на этапе компиляции.
 /// Приведение безопасно — значение 10 гарантированно помещается в i16.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    reason = "GRID_WIDTH = 10, всегда помещается в i16"
+)]
 pub const GRID_WIDTH_I16: i16 = GRID_WIDTH as i16;
 
 /// Высота игрового поля в блоках (i16 для коллизий).
 ///
 /// Вычисляется из `GRID_HEIGHT` на этапе компиляции.
 /// Приведение безопасно — значение 20 гарантированно помещается в i16.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    reason = "GRID_HEIGHT = 20, всегда помещается в i16"
+)]
 pub const GRID_HEIGHT_I16: i16 = GRID_HEIGHT as i16;
 
 /// Ширина блока в символах.

@@ -4,6 +4,16 @@
 //! неизменяемого представления состояния игры.
 //! Уменьшает связанность между render.rs и `GameState`.
 
+// Координаты ограничены GRID_WIDTH=10, GRID_HEIGHT=20, фрейм < u16::MAX,
+// поэтому все приведения f32→i16, usize→i16, u16→i16, i16→u16 безопасны.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss,
+    reason = "Координаты ограничены размером поля (10x20), фрейм < u16::MAX"
+)]
+
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
 use crate::constants::{GRID_HEIGHT, GRID_WIDTH};

@@ -8,6 +8,14 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`, `UpdateEndState`
 //! - [`input.rs`](super::input): `handle_input`
+
+// Координаты ограничены полем, cast безопасен.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    reason = "Координаты ограничены размером поля (10x20)"
+)]
 //! - [`physics.rs`](super::physics): `handle_falling`
 //! - [`scoring.rs`](crate::game::scoring): `handle_landing`
 //!

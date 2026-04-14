@@ -216,7 +216,7 @@ mod access_tests {
     use super::BoardMutable;
     use crate::game::state::GameState;
 
-    /// Тест: проверка методов BoardMutable (clear_filled_lines)
+    /// Тест: проверка методов `BoardMutable` (`clear_filled_lines`)
     #[test]
     fn test_board_mutable_clear_lines() {
         let mut state = GameState::new();
