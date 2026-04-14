@@ -174,9 +174,6 @@ pub const SHAPE_DRAW_OFFSET: i16 = 5;
 /// Смещение отрисовки фигур по горизонтали.
 pub const SHAPE_OFFSET_X: i16 = 2;
 
-/// Смещение отрисовки фигур по вертикали (дополнительное).
-pub const SHAPE_OFFSET_Y: i16 = 0;
-
 /// Смещение отрисовки фигур по горизонтали (для предпросмотра).
 pub const DRAW_OFFSET_X: i16 = 2;
 
@@ -457,9 +454,6 @@ pub const KEY_ENTER_CR: u8 = b'\r';
 
 /// Код клавиши Escape.
 pub const KEY_ESCAPE: u8 = b'\x1b';
-
-/// Код клавиши Tab.
-pub const KEY_TAB: u8 = b'\t';
 
 /// Код клавиши Space (пробел).
 pub const KEY_SPACE: u8 = b' ';
