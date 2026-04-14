@@ -36,8 +36,13 @@ pub fn handle_falling(state: &mut GameState, delta_time_ms: u64) -> bool {
     // Защита от NaN/Infinity в fall_speed — предотвращает NaN в fall_distance
     let fall_speed = state.fall_speed();
     if !fall_speed.is_finite() {
-        crate::log_warn!("handle_falling: fall_speed некорректен ({fall_speed}), пропускаем");
-        return false;
+        crate::log_warn!("handle_falling: fall_speed некорректен ({fall_speed}), сбрасываем в начальное значение");
+        // Сбрасываем к начальному значению чтобы фигура не "зависала"
+        if let Ok(()) = state.set_fall_speed(crate::constants::INITIAL_FALL_SPD) {
+            // Продолжаем с корректным значением
+        } else {
+            return false;
+        }
     }
 
     if state.can_move_curr_shape_direction(Direction::Down) {
