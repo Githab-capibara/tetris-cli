@@ -219,36 +219,40 @@ impl SaveData {
     /// # Аргументы
     /// * `high_score` - значение рекорда для сохранения
     ///
-    /// # Поведение при ошибках
+    /// # Errors
+    /// Возвращает `Err(String)` если:
+    /// - Не удалось создать HMAC подпись
+    /// - Не удалось сохранить в основной файл конфигурации
+    /// - Не удалось сохранить в backup файл
+    ///
+    /// # Поведение при ошибках (C1.6 Fix)
     /// Метод использует стратегию graceful degradation:
     /// 1. Попытка сохранения в основной файл конфигурации
     /// 2. При ошибке — попытка сохранения в backup файл
-    /// 3. При ошибке backup — логирование критической ошибки
-    ///
-    /// Вызывающий код не получает явную ошибку (метод возвращает `()`),
-    /// но все ошибки логируются в stderr. Для явной обработки ошибок
-    /// используйте `save_value_result` (доступен только в тестах).
+    /// 3. При ошибке backup — возврат ошибки вызывающему коду
     ///
     /// Использует u128 для предотвращения переполнения.
     /// Добавлена обработка ошибок с сохранением backup файла при неудаче.
     // Переменные `e` и `backup_e` используются в макросах log_error!
     #[allow(unused_variables)]
-    pub fn save_value(high_score: u128) {
+    pub fn save_value(high_score: u128) -> Result<(), String> {
         let Some(save) = Self::from_value(high_score) else {
-            crate::log_error!("Не удалось создать SaveData — HMAC подпись вернула ошибку");
-            return;
+            let err = "Не удалось создать SaveData — HMAC подпись вернула ошибку".to_string();
+            crate::log_error!("{err}");
+            return Err(err);
         };
         if let Err(e) = store(APP_NAME, Some("config"), &save) {
             crate::log_error!("Ошибка сохранения рекорда: {e}. Попытка сохранения в backup...");
             // Попытка сохранить в backup файл
             if let Err(backup_e) = store(APP_NAME, Some("config_backup"), &save) {
-                crate::log_error!(
-                    "Критическая ошибка: не удалось сохранить даже в backup: {backup_e}"
-                );
-            } else {
-                crate::log_info!("Успешно сохранено в backup файл.");
+                let err =
+                    format!("Критическая ошибка: не удалось сохранить даже в backup: {backup_e}");
+                crate::log_error!("{err}");
+                return Err(err);
             }
+            crate::log_info!("Успешно сохранено в backup файл.");
         }
+        Ok(())
     }
 
     /// Проверить целостность рекорда и вернуть значение.
