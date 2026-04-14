@@ -420,7 +420,8 @@ mod core_tests {
     #[test]
     fn test_position_to_tuple() {
         let pos = Position::new(3, 7);
-        assert_eq!(pos.to_tuple(), (3, 7));
+        let tuple: (i16, i16) = pos.into();
+        assert_eq!(tuple, (3, 7));
     }
 
     #[test]

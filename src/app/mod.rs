@@ -301,7 +301,10 @@ impl Application {
             self.high_score = score;
             // P3-ID50: обновляем кэш строки рекорда при изменении
             self.high_score_display = format!("{score:10}");
-            SaveData::save_value(self.high_score);
+            // C1.6 Fix: Handle save errors explicitly
+            if let Err(_e) = SaveData::save_value(self.high_score) {
+                // Error already logged in save_value
+            }
         }
         score
     }

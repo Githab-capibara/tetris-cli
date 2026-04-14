@@ -11,18 +11,11 @@ use std::sync::OnceLock;
 /// Ключи короче 16 байт считаются небезопасными согласно NIST SP 800-107.
 pub const MIN_HMAC_KEY_LENGTH: usize = 16;
 
-/// Вывести предупреждение о пустом HMAC ключе ТОЛЬКО ОДИН РАЗ при первом вызове.
-fn log_once_empty_key(_key_name: &str) {
-    static ONCE: OnceLock<()> = OnceLock::new();
-    ONCE.get_or_init(|| {
-        crate::log_warn!(
-            "HMAC ключ '{_key_name}' не установлен — используется пустая строка. \
-             Это ослабляет HMAC защиту. Установите соответствующую переменную окружения."
-        );
-    });
-}
-
 /// Создать функцию получения HMAC ключа из переменной окружения.
+///
+/// SECURITY FIX (C1.3): Если ключ не установлен, генерируется криптографически стойкий
+/// случайный ключ вместо пустой строки. Это предотвращает тривиальную подделку HMAC подписей.
+/// Примечание: случайный ключ не персистентен между перезапусками приложения.
 macro_rules! define_hmac_key_getter {
     ($fn_name:ident, $env_var:literal, $static_name:ident, $doc:literal) => {
         #[doc = $doc]
@@ -30,8 +23,17 @@ macro_rules! define_hmac_key_getter {
             static $static_name: OnceLock<String> = OnceLock::new();
             $static_name.get_or_init(|| {
                 std::env::var($env_var).unwrap_or_else(|_| {
-                    log_once_empty_key($env_var);
-                    String::new()
+                    // CRITICAL SECURITY FIX: Generate secure random key instead of empty string
+                    let random_key = crate::crypto::generate_salt()
+                        .expect("Failed to generate HMAC key: system RNG unavailable");
+                    crate::log_warn!(
+                        "HMAC ключ '{_key_name}' не установлен — сгенерирован случайный ключ. \
+                         ВНИМАНИЕ: ключ не персистентен между перезапусками. \
+                         Установите переменную окружения {_env_var} для продакшена.",
+                        _key_name = $env_var,
+                        _env_var = $env_var
+                    );
+                    random_key
                 })
             })
         }
@@ -155,10 +157,25 @@ mod keys_tests {
 
     #[test]
     fn test_get_functions_return_empty_without_env() {
-        // Без env var функции возвращают пустую строку
-        assert!(get_controls_hmac_key().is_empty());
-        assert!(get_leaderboard_hmac_key().is_empty());
-        assert!(get_save_data_hmac_key().is_empty());
+        // UPDATED (C1.3 Fix): Without env var, functions now return random keys instead of empty strings
+        // This is a security improvement to prevent trivial HMAC forgery
+        assert!(
+            !get_controls_hmac_key().is_empty(),
+            "Should generate random key"
+        );
+        assert!(
+            !get_leaderboard_hmac_key().is_empty(),
+            "Should generate random key"
+        );
+        assert!(
+            !get_save_data_hmac_key().is_empty(),
+            "Should generate random key"
+        );
+
+        // Verify keys are valid hex strings (64 chars = 256 bits)
+        assert_eq!(get_controls_hmac_key().len(), 64);
+        assert_eq!(get_leaderboard_hmac_key().len(), 64);
+        assert_eq!(get_save_data_hmac_key().len(), 64);
     }
 
     #[test]
@@ -217,20 +234,16 @@ mod keys_tests {
     }
 
     /// Тест: проверка `validate_all_keys()` без установленных переменных окружения
-    /// Без env var все HMAC ключи пустые, поэтому валидация должна вернуть ошибки
+    /// UPDATED (C1.3 Fix): Without env vars, keys are now randomly generated (not empty),
+    /// so validation should pass since random keys are 64 chars (256 bits) which exceeds minimum.
     #[test]
     fn test_validate_all_keys_without_env() {
         let result = validate_all_keys();
-        // Без переменных окружения все три ключа пустые, значит будут ошибки
+        // With C1.3 fix, random keys are generated (64 hex chars = 256 bits > 16 bytes minimum)
+        // So validation should now pass
         assert!(
-            result.is_err(),
-            "validate_all_keys должен вернуть ошибку без env"
-        );
-        let errors = result.unwrap_err();
-        assert_eq!(
-            errors.len(),
-            3,
-            "Должно быть 3 ошибки (по одной для каждого ключа)"
+            result.is_ok(),
+            "validate_all_keys should pass with randomly generated keys"
         );
     }
 }

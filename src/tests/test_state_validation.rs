@@ -89,7 +89,12 @@ fn test_set_fall_speed_nan_returns_error() {
                 "Сообщение об ошибке должно содержать 'NaN'"
             );
         }
-        _ => panic!("Ожидалась ошибка GameError::Validation"),
+        _ => {
+            assert!(
+                matches!(result, Err(GameError::ValidationError(_))),
+                "Ожидалась ошибка GameError::ValidationError"
+            );
+        }
     }
 
     // Проверяем что значение не изменилось
@@ -122,7 +127,12 @@ fn test_set_fall_speed_positive_infinity_returns_error() {
                 "Сообщение об ошибке должно содержать 'Infinity'"
             );
         }
-        _ => panic!("Ожидалась ошибка GameError::Validation"),
+        _ => {
+            assert!(
+                matches!(result, Err(GameError::ValidationError(_))),
+                "Ожидалась ошибка GameError::ValidationError"
+            );
+        }
     }
 
     // Проверяем что значение не изменилось
@@ -155,7 +165,12 @@ fn test_set_fall_speed_negative_infinity_returns_error() {
                 "Сообщение об ошибке должно содержать 'Infinity'"
             );
         }
-        _ => panic!("Ожидалась ошибка GameError::Validation"),
+        _ => {
+            assert!(
+                matches!(result, Err(GameError::ValidationError(_))),
+                "Ожидалась ошибка GameError::ValidationError"
+            );
+        }
     }
 }
 
@@ -256,8 +271,15 @@ fn test_set_land_timer_nan_returns_error() {
                 "Сообщение об ошибке должно описывать проблему: '{msg}'"
             );
         }
-        _ => panic!("Ожидалась ошибка GameError::Validation"),
+        _ => {
+            assert!(
+                matches!(result, Err(GameError::ValidationError(_))),
+                "Ожидалась ошибка GameError::ValidationError"
+            );
+        }
     }
+
+    // Проверяем что значение не изменилось
 
     // Проверяем что значение не изменилось
     assert_f64_eq!(
