@@ -221,7 +221,8 @@ pub trait Renderer {
         pos: (u16, u16),
         fg: &dyn Color,
         bg: &dyn Color,
-    ) {
+    ) -> Result<(), std::io::Error> {
         self.draw_strs(lines, pos, fg, bg);
+        Ok(())
     }
 }
