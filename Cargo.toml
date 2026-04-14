@@ -54,10 +54,10 @@ panic = "abort"
 
 # Базовая оптимизация для dev-сборки
 [profile.dev]
-opt-level = 1
+opt-level = 0
 
 [profile.test]
-opt-level = 1
+opt-level = 0
 debug = true
 
 # Настройки линтера clippy
