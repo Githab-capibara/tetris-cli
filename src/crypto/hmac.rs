@@ -31,6 +31,7 @@ pub type HmacSha256 = Hmac<Sha256>;
 fn create_hmac_instance(key: &[u8]) -> HmacSha256 {
     // SAFETY: HmacSha256::new_from_slice никогда не возвращает ошибку для HMAC-SHA256.
     // Согласно RFC 2104, HMAC принимает ключи произвольной длины.
+    // unwrap() безопасен — алгоритм HMAC-SHA256 не имеет ограничений на длину ключа.
     HmacSha256::new_from_slice(key)
         .expect("HMAC-SHA256: RFC 2104 гарантирует принятие ключей любой длины")
 }

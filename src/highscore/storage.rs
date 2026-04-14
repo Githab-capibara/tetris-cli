@@ -256,11 +256,15 @@ impl LeaderboardValidator {
     /// # Возвращает
     /// Кортеж (salt, hash) для новой записи
     ///
+    /// # Panics
+    /// Паникует если системный генератор случайных чисел недоступен (крайне маловероятно).
+    ///
     /// # Безопасность
     /// Генерирует уникальную соль для каждой записи.
     #[must_use = "Результат создания записи должен быть использован"]
     pub fn create_validated_entry(name: &str, score: u128) -> (String, String) {
-        let salt = crate::crypto::generate_salt();
+        let salt =
+            crate::crypto::generate_salt().expect("ГСЧ должен быть доступен для создания записи");
         let hash = Self::compute_signature(&salt, name, score);
         (salt, hash)
     }

@@ -178,7 +178,7 @@ impl FigureManager {
     /// # Аргументы
     /// * `x` - позиция по X
     /// * `y` - позиция по Y
-    pub fn set_curr_pos(&mut self, x: f32, y: f32) {
+    pub const fn set_curr_pos(&mut self, x: f32, y: f32) {
         self.curr_shape.set_pos((x, y));
     }
 

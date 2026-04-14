@@ -201,7 +201,7 @@ impl SaveData {
     #[must_use]
     pub fn from_value(score: u128) -> Option<Self> {
         let score_str = score.to_string();
-        let salt = crate::crypto::generate_salt();
+        let salt = crate::crypto::generate_salt().ok()?;
         // При ошибке HMAC (теоретически невозможной для валидных &str) возвращаем None
         let hash = match hmac_sign_with_salt(get_save_data_hmac_key(), &salt, &score_str) {
             Ok(h) => h,
