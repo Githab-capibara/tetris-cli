@@ -32,20 +32,21 @@ fn create_hmac_instance(key: &[u8]) -> HmacSha256 {
     // SAFETY: HmacSha256::new_from_slice никогда не возвращает ошибку для HMAC-SHA256.
     // Согласно RFC 2104, HMAC принимает ключи произвольной длины.
     // unwrap() безопасен — алгоритм HMAC-SHA256 не имеет ограничений на длину ключа.
-    HmacSha256::new_from_slice(key)
-        .expect("HMAC-SHA256: RFC 2104 гарантирует принятие ключей любой длины")
+    HmacSha256::new_from_slice(key).unwrap_or_else(|_| {
+        unreachable!("HMAC-SHA256: RFC 2104 гарантирует принятие ключей любой длины")
+    })
 }
 
 /// Сформировать буфер `salt:data` для HMAC-подписи.
 ///
-/// Использует `write!` в `Vec<u8>` для снижения аллокаций по сравнению с `format!()`.
-/// Буфер предварительно выделяется с точной ёмкостью для избежания реаллокаций.
+/// Использует `extend_from_slice` для более эффективной конкатенации
+/// по сравнению с `write!` — избегает форматирования и парсинга.
 #[inline]
 fn build_salted_data(salt: &str, data: &str) -> Vec<u8> {
     let mut buf = Vec::with_capacity(salt.len() + 1 + data.len());
-    // write! в Vec<u8> никогда не возвращает ошибку, так как Vec<u8> всегда успешно расширяется.
-    // Игнорирование Result здесь безопасно и является идиоматичным для Rust.
-    let _ = write!(buf, "{salt}:{data}");
+    buf.extend_from_slice(salt.as_bytes());
+    buf.push(b':');
+    buf.extend_from_slice(data.as_bytes());
     buf
 }
 
