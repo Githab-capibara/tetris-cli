@@ -333,7 +333,7 @@ mod game_tests {
             state.move_curr_dy(1.0);
         }
 
-        let drop_distance = (state.curr_shape().pos().1 - start_y) as u64;
+        let drop_distance = (state.curr_shape().pos().1 - start_y).max(0.0) as u64;
 
         assert_eq!(
             HARD_DROP_POINTS, 2,

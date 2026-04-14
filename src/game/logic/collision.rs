@@ -385,7 +385,8 @@ mod collision_tests {
         let curr_y = state.curr_shape().pos().1 as i16;
         let blocks = state.get_blocks_mut();
         if curr_y + 1 < GRID_HEIGHT as i16 {
-            blocks[(curr_y + 1) as usize][4] = 1; // Блок под фигурой
+            let idx = usize::try_from(curr_y + 1).unwrap_or(0);
+            blocks[idx][4] = 1; // Блок под фигурой
         }
 
         // Движение вниз должно быть невозможно

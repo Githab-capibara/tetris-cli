@@ -250,16 +250,16 @@ impl<'a> GameView<'a> {
 
         for y in 0..GRID_HEIGHT {
             for x in 0..GRID_WIDTH {
-                if self.blocks[y][x] != -1 {
-                    // Audit 2026-04-12, Issue #10: i8 -> usize cast безопасен
-                    // Проверка blocks[y][x] != -1 гарантирует неотрицательное значение (0-6)
-                    let color_idx = self.blocks[y][x] as usize;
+                let block_val = self.blocks[y][x];
+                if block_val != -1 {
+                    // i8 -> usize: проверка != -1 гарантирует значение 0..=127, безопасно
+                    let color_idx = usize::try_from(block_val).unwrap_or(0);
                     if color_idx < SHAPE_COLORS.len() {
-                        // Audit 2026-04-12, Issue #11: usize -> u16 cast безопасен
-                        // Координаты ограничены размером терминала (обычно < 200x60)
-                        // GRID_WIDTH=10, GRID_HEIGHT=20, SHAPE_WIDTH=2 -> max ~40x40
-                        let draw_x = (x * SHAPE_WIDTH + SHAPE_OFFSET_X as usize) as u16;
-                        let draw_y = (y + SHAPE_DRAW_OFFSET_Y as usize) as u16;
+                        // usize -> u16: координаты ограничены GRID_WIDTH/HEIGHT (10x20)
+                        let draw_x = u16::try_from(x * SHAPE_WIDTH + usize::from(SHAPE_OFFSET_X))
+                            .unwrap_or(u16::MAX);
+                        let draw_y =
+                            u16::try_from(y + usize::from(SHAPE_DRAW_OFFSET_Y)).unwrap_or(u16::MAX);
                         canvas.draw_strs(
                             &[SHAPE_STR],
                             (draw_x, draw_y),
@@ -307,21 +307,23 @@ impl<'a> GameView<'a> {
 
         for coord in self.curr_shape.coords() {
             let (coord_x, coord_y) = coord;
-            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_OFFSET_X = 2
+            // u16 -> i16: SHAPE_OFFSET_X = 2, coord_x <= 3, shape_block_x в пределах поля
+            // coord_x и coord_y — маленькие константы (0..=3), преобразование безопасно
             #[allow(clippy::cast_possible_wrap)]
-            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X as i16;
-            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_DRAW_OFFSET_Y = 5
+            let x = (coord_x as i16) + shape_block_x * shape_width_i16
+                + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
-            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET_Y as i16;
+            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET_Y as i16);
 
             if x >= 0 {
-                // cast: i16 -> u16, потеря знака допустима: координата x >= 0 после проверки
+                // i16 -> u16: проверка x >= 0 гарантирует неотрицательное значение
+                let ux = u16::try_from(x).unwrap_or(u16::MAX);
+                let uy = u16::try_from(y).unwrap_or(u16::MAX);
                 canvas.draw_strs(
                     &[SHAPE_STR],
-                    (x as u16, y as u16),
-                    // cast: u8 -> usize, потеря точности допустима: fg < 7 (количество фигур)
-                    #[allow(clippy::cast_possible_truncation)]
-                    SHAPE_COLORS[self.curr_shape.fg() as usize],
+                    (ux, uy),
+                    // u8 -> usize: fg < 7 (количество фигур)
+                    SHAPE_COLORS[usize::from(self.curr_shape.fg())],
                     &Reset,
                 );
             }
@@ -390,10 +392,10 @@ impl<'a> GameView<'a> {
 
             let mut dist_to_block = grid_height_i16 - 1 - block_y;
             for y in (block_y + 1)..grid_height_i16 {
-                // cast: i16 -> usize, потеря знака допустима: x >= 0 после проверки
-                // cast: i16 -> usize, потеря знака допустима: y >= 0 (индекс строки)
-                #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-                if x >= 0 && x < grid_width_i16 && self.blocks[y as usize][x as usize] != -1 {
+                // i16 -> usize: проверки x >= 0 и y >= 0 гарантируют безопасное преобразование
+                let uy = usize::try_from(y).unwrap_or(0);
+                let ux = usize::try_from(x).unwrap_or(usize::MAX);
+                if x >= 0 && x < grid_width_i16 && self.blocks[uy][ux] != -1 {
                     dist_to_block = y - block_y - 1;
                     break;
                 }
@@ -416,23 +418,23 @@ impl<'a> GameView<'a> {
 
         for coord in ghost_shape.coords() {
             let (coord_x, coord_y) = coord;
-            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_OFFSET_X = 2
+            // u16 -> i16: константы маленькие (SHAPE_OFFSET_X=2, SHAPE_DRAW_OFFSET_Y=5)
             #[allow(clippy::cast_possible_wrap)]
-            let x = (coord_x + shape_block_x) * shape_width_i16 + SHAPE_OFFSET_X as i16;
-            // cast: u16 -> i16, потеря знака допустима: константа SHAPE_DRAW_OFFSET_Y = 5
+            let x = (coord_x as i16) + shape_block_x * shape_width_i16
+                + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
-            let y = coord_y + shape_block_y + SHAPE_DRAW_OFFSET_Y as i16;
+            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET_Y as i16);
 
-            // cast: usize -> i16, потеря точности допустима: GRID_WIDTH константа (10)
-            #[allow(clippy::cast_possible_wrap)]
-            if x >= 0 && x < GRID_WIDTH as i16 {
-                // cast: i16 -> u16, потеря знака допустима: x >= 0 после проверки
+            // usize -> i16: GRID_WIDTH = 10, безопасно
+            if x >= 0 && x < i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX) {
+                // i16 -> u16: проверка x >= 0 гарантирует неотрицательность
+                let ux = u16::try_from(x).unwrap_or(u16::MAX);
+                let uy = u16::try_from(y).unwrap_or(u16::MAX);
                 canvas.draw_strs(
                     &["░░"],
-                    (x as u16, y as u16),
-                    // cast: u8 -> usize, потеря точности допустима: fg < 7 (количество фигур)
-                    #[allow(clippy::cast_possible_truncation)]
-                    SHAPE_COLORS[ghost_shape.fg() as usize],
+                    (ux, uy),
+                    // u8 -> usize: fg < 7
+                    SHAPE_COLORS[usize::from(ghost_shape.fg())],
                     &Reset,
                 );
             }
@@ -538,21 +540,22 @@ fn draw_shape_preview<R>(
 
     for coord in shape.coords() {
         let (coord_x, coord_y) = coord;
-        let x = pos_x as i16 + coord_x * shape_width_i16 + DRAW_OFFSET_X;
-        let y = pos_y as i16 + coord_y + 1;
+        let x = (pos_x as i16) + coord_x * shape_width_i16 + DRAW_OFFSET_X;
+        let y = (pos_y as i16) + coord_y + 1;
 
-        // Проверка всех границ
-        // cast: usize -> i16, потеря точности допустима: DISP_WIDTH/DISP_HEIGHT константы
-        #[allow(clippy::cast_possible_wrap)]
-        if x >= 0 && y >= 0 && x < DISP_WIDTH as i16 && y < DISP_HEIGHT as i16 {
+        // Проверка всех границ — DISP_WIDTH/DISP_HEIGHT константы
+        let disp_w = i16::try_from(DISP_WIDTH).unwrap_or(i16::MAX);
+        let disp_h = i16::try_from(DISP_HEIGHT).unwrap_or(i16::MAX);
+        if x >= 0 && y >= 0 && x < disp_w && y < disp_h {
             let display_char = if is_faded { "░░" } else { SHAPE_STR };
-            // cast: i16 -> u16, потеря знака допустима: x, y >= 0 после проверки
+            // i16 -> u16: проверки >= 0 гарантируют безопасное преобразование
+            let ux = u16::try_from(x).unwrap_or(u16::MAX);
+            let uy = u16::try_from(y).unwrap_or(u16::MAX);
             canvas.draw_strs(
                 &[display_char],
-                (x as u16, y as u16),
-                // cast: u8 -> usize, потеря точности допустима: fg < 7 (количество фигур)
-                #[allow(clippy::cast_possible_truncation)]
-                SHAPE_COLORS[shape.fg() as usize],
+                (ux, uy),
+                // u8 -> usize: fg < 7
+                SHAPE_COLORS[usize::from(shape.fg())],
                 &Reset,
             );
         }
