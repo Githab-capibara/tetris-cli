@@ -215,6 +215,9 @@ pub trait Renderer {
     /// существующие реализации `Renderer` продолжают работать без изменений.
     /// `Canvas` переопределяет этот метод с оптимизированной буферизацией.
     /// Это не нарушение Single Responsibility — это extension point с безопасным fallback.
+    ///
+    /// # Errors
+    /// Возвращает ошибку ввода/вывода при неудачной записи в терминал.
     fn draw_strs_buffered(
         &mut self,
         lines: &[&str],
