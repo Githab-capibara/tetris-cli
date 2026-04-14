@@ -144,16 +144,21 @@ fn bench_check_rows(c: &mut Criterion) {
         );
     });
 
-    // Tetris - 4 линии одновременно
+    // Tetris - 4 линии одновременно — инициализация ВЫНЕСЕНА
     group.bench_function("clear_tetris", |b| {
-        b.iter(|| {
-            let mut game_state = GameState::new();
-            for line in [16, 17, 18, 19] {
-                game_state.fill_line_for_bench(line);
-            }
-            game_state.clear_lines_for_bench();
-            black_box(game_state);
-        });
+        b.iter_with_setup(
+            || {
+                let mut game_state = GameState::new();
+                for line in [16, 17, 18, 19] {
+                    game_state.fill_line_for_bench(line);
+                }
+                game_state
+            },
+            |mut game_state| {
+                game_state.clear_lines_for_bench();
+                black_box(game_state);
+            },
+        );
     });
 
     group.finish();
