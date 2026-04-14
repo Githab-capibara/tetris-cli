@@ -16,14 +16,8 @@
 
 use super::mode_trait::GameModeTrait;
 use super::state::GameState;
-use crate::constants::{GRID_HEIGHT, GRID_WIDTH};
+use crate::constants::{GRID_HEIGHT, GRID_WIDTH, SHAPE_DRAW_OFFSET, SHAPE_OFFSET_X};
 use crate::tetromino::Tetromino;
-
-/// Вертикальное смещение фигур при отрисовке на игровом поле (строки от верха терминала).
-const SHAPE_DRAW_OFFSET_Y: u16 = 5;
-
-/// Горизонтальное смещение фигур при отрисовке на игровом поле (пиксели от левого края поля).
-const SHAPE_OFFSET_X: u16 = 2;
 
 /// Представление игрового состояния для отрисовки.
 ///
@@ -266,10 +260,10 @@ impl<'a> GameView<'a> {
                     let color_idx = usize::try_from(block_val).unwrap_or(0);
                     if color_idx < SHAPE_COLORS.len() {
                         // usize -> u16: координаты ограничены GRID_WIDTH/HEIGHT (10x20)
-                        let draw_x = u16::try_from(x * SHAPE_WIDTH + usize::from(SHAPE_OFFSET_X))
+                        let draw_x = u16::try_from(x * SHAPE_WIDTH + (SHAPE_OFFSET_X as usize))
                             .unwrap_or(u16::MAX);
                         let draw_y =
-                            u16::try_from(y + usize::from(SHAPE_DRAW_OFFSET_Y)).unwrap_or(u16::MAX);
+                            u16::try_from(y + (SHAPE_DRAW_OFFSET as usize)).unwrap_or(u16::MAX);
                         canvas.draw_strs(
                             &[SHAPE_STR],
                             (draw_x, draw_y),
@@ -323,7 +317,7 @@ impl<'a> GameView<'a> {
             let x = (coord_x as i16) + shape_block_x * shape_width_i16
                 + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
-            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET_Y as i16);
+            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET as i16);
 
             if x >= 0 {
                 // i16 -> u16: проверка x >= 0 гарантирует неотрицательное значение
@@ -428,12 +422,12 @@ impl<'a> GameView<'a> {
 
         for coord in ghost_shape.coords() {
             let (coord_x, coord_y) = coord;
-            // u16 -> i16: константы маленькие (SHAPE_OFFSET_X=2, SHAPE_DRAW_OFFSET_Y=5)
+            // u16 -> i16: константы маленькие (SHAPE_OFFSET_X=2, SHAPE_DRAW_OFFSET=5)
             #[allow(clippy::cast_possible_wrap)]
             let x = (coord_x as i16) + shape_block_x * shape_width_i16
                 + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
-            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET_Y as i16);
+            let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET as i16);
 
             // usize -> i16: GRID_WIDTH = 10, безопасно
             if x >= 0 && x < i16::try_from(GRID_WIDTH).unwrap_or(i16::MAX) {
