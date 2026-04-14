@@ -1,2 +1,4 @@
 too-many-arguments-threshold = 7
+cognitive-complexity-threshold = 15
+type-complexity-threshold = 250
 doc-valid-idents = ["Tetris", "CLI", "GameState", "Tetromino"]
