@@ -314,8 +314,7 @@ impl<'a> GameView<'a> {
             // u16 -> i16: SHAPE_OFFSET_X = 2, coord_x <= 3, shape_block_x в пределах поля
             // coord_x и coord_y — маленькие константы (0..=3), преобразование безопасно
             #[allow(clippy::cast_possible_wrap)]
-            let x = (coord_x as i16) + shape_block_x * shape_width_i16
-                + (SHAPE_OFFSET_X as i16);
+            let x = (coord_x as i16) + shape_block_x * shape_width_i16 + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
             let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET as i16);
 
@@ -424,8 +423,7 @@ impl<'a> GameView<'a> {
             let (coord_x, coord_y) = coord;
             // u16 -> i16: константы маленькие (SHAPE_OFFSET_X=2, SHAPE_DRAW_OFFSET=5)
             #[allow(clippy::cast_possible_wrap)]
-            let x = (coord_x as i16) + shape_block_x * shape_width_i16
-                + (SHAPE_OFFSET_X as i16);
+            let x = (coord_x as i16) + shape_block_x * shape_width_i16 + (SHAPE_OFFSET_X as i16);
             #[allow(clippy::cast_possible_wrap)]
             let y = (coord_y as i16) + shape_block_y + (SHAPE_DRAW_OFFSET as i16);
 
