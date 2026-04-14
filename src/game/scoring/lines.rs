@@ -157,12 +157,10 @@ pub fn check_rows(state: &mut GameState) -> u32 {
     // Примечание: анимация упрощена до установки флага и звукового сигнала
     if remove_count > 0 {
         state.set_animating_rows_mask(rows_mask);
-        print!("{BELL}");
-        // Исправление #31: flush после print! для гарантированного вывода bell
-        #[allow(unused_variables)]
-        if let Err(e) = std::io::stdout().flush() {
-            crate::log_error!("Не удалось выполнить flush после звукового сигнала: {e}");
-        }
+        // Исправление: используем write! напрямую в stdout вместо print!
+        // для избежания race condition с Canvas выводом
+        let _ = write!(std::io::stdout(), "{BELL}");
+        let _ = std::io::stdout().flush();
         state.stats_mut().update_max_combo(remove_count);
     }
 
