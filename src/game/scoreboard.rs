@@ -25,8 +25,9 @@
 /// Используется композиция в `GameState` через поле `scoreboard: ScoreBoard`.
 ///
 /// ## M19: Debug для отладки
-/// Добавлен #[derive(Debug)] для возможности отладки через `fmt::Debug`.
-#[derive(Debug)]
+/// Добавлен #[derive(Debug, Clone)] для возможности отладки через `fmt::Debug`
+/// и клонирования для snapshot-систем и тестирования.
+#[derive(Debug, Clone)]
 pub struct ScoreBoard {
     /// Текущий счёт.
     score: u128,

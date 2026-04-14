@@ -100,6 +100,11 @@ pub fn handle_hard_drop(state: &mut GameState) {
     }
     while state.can_move_curr_shape_direction(Direction::Down) {
         state.move_curr_dy(1.0);
+        // Защита от бесконечного цикла на случай бага в логике коллизий
+        debug_assert!(
+            state.curr_shape().pos().1 - start_y < 100.0,
+            "handle_hard_drop: фигура упала на >100 клеток — возможна ошибка коллизий"
+        );
     }
 
     // Безопасная конвертация f32 → u32 с использованием clamp + cast

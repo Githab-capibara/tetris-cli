@@ -297,9 +297,8 @@ impl From<(i16, i16)> for Position {
 /// assert_eq!(tuple, (5, 10));
 /// ```
 impl From<Position> for (i16, i16) {
-    #[allow(deprecated)]
     fn from(pos: Position) -> Self {
-        pos.to_tuple()
+        (pos.x, pos.y)
     }
 }
 

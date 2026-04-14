@@ -15,7 +15,7 @@
 
 use super::LeaderboardEntry;
 use crate::config::keys::get_leaderboard_hmac_key;
-use crate::crypto::hmac::{hmac_sha256, verify_hmac_sha256};
+use crate::crypto::{hmac_sha256, verify_hmac_sha256};
 
 /// Максимальное количество рекордов в таблице лидеров.
 /// Переэкспорт из constants.rs для централизации констант (ISSUE-137).
