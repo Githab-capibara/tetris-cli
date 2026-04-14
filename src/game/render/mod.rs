@@ -58,7 +58,7 @@ use termion::color::Reset;
 /// Использует трейт `Renderer` вместо конкретного типа `Canvas`.
 pub fn draw<R: Renderer>(view: &GameView, cnv: &mut R) {
     // 2.5: Используем draw_strs_buffered для BORDER — буферизация снижает число системных вызовов
-    cnv.draw_strs_buffered(&BORDER, (1, 1), BORDER_COLOR, &Reset);
+    let _ = cnv.draw_strs_buffered(&BORDER, (1, 1), BORDER_COLOR, &Reset);
 
     // Отрисовка UI (счёт, уровень, линии, комбо, рекорд)
     cnv.draw_string(view.score_str(), (SCORE_X, SCORE_Y), BORDER_COLOR, &Reset);

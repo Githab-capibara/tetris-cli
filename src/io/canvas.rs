@@ -406,8 +406,7 @@ impl Renderer for Canvas {
         pos: (u16, u16),
         fg: &dyn Color,
         bg: &dyn Color,
-    ) {
-        // Игнорируем ошибку — draw_strs_buffered уже логирует ошибки внутри
-        let _ = self.draw_strs_buffered(lines, pos, fg, bg);
+    ) -> Result<(), std::io::Error> {
+        Canvas::draw_strs_buffered(self, lines, pos, fg, bg)
     }
 }
