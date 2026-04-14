@@ -299,14 +299,14 @@ mod tests {
 
         // maintain_fps() должен вернуть Some(delta_time_ms)
         let result = maintain_fps(&mut last_time, interval_ms);
-        assert!(
-            result.is_some(),
-            "maintain_fps() должен вернуть Some когда прошло больше интервала"
-        );
-        assert!(
-            result.unwrap() >= interval_ms,
-            "delta_time_ms должен быть >= interval_ms"
-        );
+        if let Some(delta_time_ms) = result {
+            assert!(
+                delta_time_ms >= interval_ms,
+                "delta_time_ms должен быть >= interval_ms"
+            );
+        } else {
+            panic!("maintain_fps() должен вернуть Some когда прошло больше интервала");
+        }
     }
 
     /// Тест: `maintain_fps()` обновляет `last_time`
