@@ -11,8 +11,15 @@
 //! - `cache` — кэширование строк для отрисовки
 //! - `cycle` — игровой цикл (FPS, ввод, отрисовка)
 //! - [`mode_trait`] — трейт режима игры ([`mode_trait::GameModeTrait`])
-//!
-//! ## Архитектурные заметки
+
+// Координаты ограничены полем, очки — небольшие значения, cast безопасен.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss,
+    reason = "Координаты и очки ограничены, cast безопасен"
+)]
 //!
 //! ### PROB-131: Архитектурная рекомендация — Event System
 //! TODO: рассмотреть внедрение системы событий (Event System) для расцепления

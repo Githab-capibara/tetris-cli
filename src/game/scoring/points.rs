@@ -8,6 +8,15 @@
 //! # Зависимости
 //! - `state.rs`: константы очков, `GameState`
 //! - `tetromino.rs`: `Tetromino`
+
+// Очки — небольшие значения, координаты ограничены полем, cast безопасен.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss,
+    reason = "Очки и координаты ограничены, cast безопасен"
+)]
 //! - `lines.rs`: удаление линий
 
 use crate::game::state::GameState;

@@ -8,6 +8,14 @@
 //! # Зависимости
 //! - [`state.rs`](crate::game::state): `GameState`
 //! - [`collision.rs`](super::collision): `check_rotation_collision`
+
+// Координаты вращения ограничены полем (10x20), cast безопасен.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    reason = "Координаты вращения ограничены размером поля (10x20)"
+)]
 //!
 //! # Исправление #4 (HIGH)
 //! Устранено дублирование кода wall kick между collision.rs и rotation.rs.
