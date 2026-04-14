@@ -114,7 +114,7 @@ impl Application {
         // Проверка целостности рекорда (Исправление C3, C10: Result вместо Option)
         // Используем verify_and_get_score_result() для явной обработки ошибок
         let high_score = save.verify_and_get_score_result().unwrap_or_else(|_| {
-            log_error!("Рекорд не прошёл валидацию. Используется 0.");
+            crate::log_error!("Рекорд не прошёл валидацию. Используется 0.");
             0u128
         });
 
