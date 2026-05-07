@@ -91,7 +91,8 @@ impl TermionBackend {
     /// * `fg` - цвет переднего плана
     ///
     /// # Errors
-    /// Возвращает ошибку при неудачной записи в терминал
+    /// Возвращает ошибку при неудачной записи в терминал.
+    #[allow(clippy::explicit_counter_loop)]
     pub fn draw_strings(
         &mut self,
         lines: &[&str],
